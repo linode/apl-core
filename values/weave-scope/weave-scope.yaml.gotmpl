@@ -1,0 +1,16 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+weave-scope-frontend:
+  ingress:
+    enabled: true
+    annotations:
+      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
+      {{- readFile "../_snippets/auth-annotations.yaml" | nindent 6 }}
+    paths:
+      - /
+    hosts:
+      - scope.{{ $v.cluster }}
+    tls:
+      - secretName: weave-scope-tls
+        hosts:
+          - scope.{{ $v.cluster }}

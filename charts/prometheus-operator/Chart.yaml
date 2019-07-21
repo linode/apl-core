@@ -1,0 +1,20 @@
+apiVersion: v1
+appVersion: 0.31.1
+description: Provides easy monitoring definitions for Kubernetes services, and deployment
+  and management of Prometheus instances.
+engine: gotpl
+home: https://github.com/coreos/prometheus-operator
+icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+keywords:
+- operator
+- prometheus
+maintainers:
+- email: gianrubio@gmail.com
+  name: gianrubio
+- name: anothertobi
+- name: vsliouniaev
+name: prometheus-operator
+sources:
+- https://github.com/coreos/prometheus-operator
+- https://coreos.com/operators/prometheus
+version: 5.14.1

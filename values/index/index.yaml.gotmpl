@@ -1,0 +1,20 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+{{- $prefix := (eq $ev "prd" | ternary "" (printf "%s." $ev)) -}}
+ingress:
+  enabled: true
+  annotations:
+    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+    {{- readFile "../_snippets/auth-annotations.yaml" | nindent 4 }}
+  hosts:
+    - name: index.{{ $v.cluster }}
+      path: /
+  tls:
+    - secretName: index-tls
+      hosts:
+        - index.{{ $v.cluster }}
+env: {{ $ev }}
+prefix: "" #{{ $prefix }}
+cluster: {{ $v.cluster }}
+services: {{ $v.services | toYaml | nindent 2 }}
+sites: {{ $v.sites | toYaml | nindent 2 }}

@@ -1,0 +1,10 @@
+host: grafana.k8s.essent.nl
+
+dashboards:
+  default:
+    sitespeed:
+      file: "dashboards/sitespeed.json"
+
+sidecar:
+  dashboards:
+    label: grafana_dashboard

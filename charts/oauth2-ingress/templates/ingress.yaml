@@ -1,0 +1,24 @@
+{{ $domain := .Values.domain }}
+{{- range $service := .Values.services }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: oauth-proxy-{{ $service }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+spec:
+  rules:
+    - host: {{ $service }}.{{ $domain }}
+      http:
+        paths:
+          - path: /oauth2
+            backend:
+              serviceName: oauth2-proxy
+              servicePort: http
+  tls:
+    - hosts:
+      - {{ $service }}.{{ $domain }}
+      secretName: {{ $service }}-tls
+---
+{{- end }}

@@ -1,0 +1,5 @@
+sites:
+  - host: dev.otomi.cloud
+sitespeed:
+  - host: dev.otomi.cloud
+    paths: [/]

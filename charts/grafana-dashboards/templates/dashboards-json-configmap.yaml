@@ -1,0 +1,30 @@
+{{- if .Values.dashboards }}
+{{ $files := .Files }}
+{{- range $provider, $dashboards := .Values.dashboards }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "grafana-dashboards.fullname" $ }}-{{ $provider }}
+  labels:
+    app: {{ template "grafana-dashboards.name" $ }}
+    chart: {{ template "grafana-dashboards.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    dashboard-provider: {{ $provider }}
+    {{ $.Values.sidecar.dashboards.label }}: "1"
+data:
+{{- range $key, $value := $dashboards }}
+{{- if (or (hasKey $value "json") (hasKey $value "file")) }}
+{{ print $key | indent 2 }}.json:
+{{- if hasKey $value "json" }}
+    |-
+{{ $value.json | indent 6 }}
+{{- end }}
+{{- if hasKey $value "file" }}
+{{ toYaml ( $files.Get $value.file ) | replace "##ENV##" $.Values.host | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

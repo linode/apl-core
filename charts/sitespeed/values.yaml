@@ -1,0 +1,10 @@
+sites: []
+schedule: "*/15 * * * *"
+persistentVolumeClaim:
+  create: true # if false the below names are used
+  results: sitespeed-results
+  graphite: sitespeed-graphite
+config:
+  carbon:
+  storageAggregation:
+  storageSchemas:

@@ -1,0 +1,23 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+
+# ingress:
+#   enabled: true
+#   path: /oauth2
+#   hosts:
+#     - login.{{ $v.cluster }}
+#   tls:
+#     hosts: login.{{ $v.cluster }}
+
+config:
+  clientID: oidc-auth-client
+  clientSecret: bladibladi
+  cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
+
+extraArgs:
+  provider: oidc
+  oidc-issuer-url: https://auth.{{ $v.cluster }}
+  cookie-domain: {{ $v.cluster }}
+  cookie-secure: false
+  pass-authorization-header: true
+  set-authorization-header: true

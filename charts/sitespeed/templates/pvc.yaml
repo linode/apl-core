@@ -1,0 +1,25 @@
+{{- if .Values.persistentVolumeClaim.create }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.persistentVolumeClaim.results }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: slow
+  resources:
+    requests:
+      storage: 10Gi
+---      
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.persistentVolumeClaim.graphite }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast
+  resources:
+    requests:
+      storage: 2Gi
+{{- end }}

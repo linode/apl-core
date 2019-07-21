@@ -1,0 +1,47 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+images:
+  server:
+    tag: 1.0.1
+ingress:
+  enabled: true
+  hosts:
+    - drone.{{ $v.cluster }}
+  annotations:
+    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+    {{- readFile "../_snippets/auth-annotations.yaml" | nindent 4 }}
+  tls:
+    - secretName: drone-tls
+      hosts:
+        - drone.{{ $v.cluster }}
+sourceControl:
+  provider: github
+  secret: drone-server-secrets
+  github:
+    clientID: 48b05bbc8fc85d78c919
+    server: https://github.com        
+server:
+  host: drone.{{ $v.cluster }}
+  protocol: https
+  adminUser: 
+  env:
+    DRONE_OPEN: true
+    DRONE_GITHUB_SKIP_VERIFY: true
+    DRONE_LOGS_DEBUG: true
+    DRONE_LOGS_TRACE: true
+    DRONE_LOGS_COLOR: true
+    DRONE_PROMETHEUS_AUTH_TOKEN: 
+    DRONE_RPC_PROTO: http
+    DRONE_RPC_HOST: drone-drone.system
+    DRONE_RPC_DEBUG: true
+dind:
+  enabled: false    
+persistence:
+  enabled: true
+  storageClass: fast
+  # existingClaim: fast-pvc
+rbac:
+  create: true
+metrics:
+  prometheus:
+    enabled: true

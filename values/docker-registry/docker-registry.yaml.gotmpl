@@ -1,0 +1,26 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+hostNetwork: false 
+localproxy:
+  enabled: false
+ingress:
+  enabled: true
+  path: /
+  hosts:
+    - reg.{{ $v.cluster }}
+  annotations:
+    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+  tls:
+    - secretName: docker-registry-tls
+      hosts:
+        - reg.{{ $v.cluster }}
+persistence:
+  enabled: true
+  storageClass: slow
+  existingClaim: docker-registry
+secrets:
+  htpasswd: drone:$2y$05$JNR6OE0gQntmjrR4ZebOu.Gjd4EF5QVAgl8emUibKcA4UixbD.RbG
+  haSharedSecret: 

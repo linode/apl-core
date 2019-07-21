@@ -1,0 +1,117 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+prometheusOperator:
+  createCustomResource: false
+prometheus:
+  prometheusSpec:
+    externalUrl: https://prom{{ $v.cluster }}
+    additionalScrapeConfigs:
+      - job_name: 'probe-sites'
+        metrics_path: /probe
+        params:
+          module: [http_2xx]  # Look for a HTTP 200 response.
+        static_configs:
+          - targets:
+            {{ range $site := $v.sites }}
+            - https://{{ $site }}
+            {{- end }}
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prometheus-blackbox-exporter:9115
+  additionalServiceMonitors:
+    {{- readFile "service-monitors.yaml" | nindent 4 }}
+  ingress:
+    enabled: true
+    annotations:
+      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
+      {{- readFile "../_snippets/auth-annotations.yaml" | nindent 6 }}
+    paths:
+      - /
+    hosts:
+      - prom.{{ $v.cluster }}
+    tls:
+      - secretName: prom-tls
+        hosts:
+          - prom.{{ $v.cluster }}
+      
+additionalPrometheusRules:
+  - name: blackbox
+    {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  - name: cluster-autoscaler
+    {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
+  # - name: ssl-expiry
+  #   {{- readFile "rules/ssl-expiry.yaml" | nindent 4 }}
+alertmanager:
+  alertmanagerSpec:
+    externalUrl: https://alerts{{ $v.cluster }}
+    logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
+  config:
+    global:
+      slack_api_url: https://hooks.slack.com/services/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
+    route:
+      receiver: default
+      group_by: [alertname] #alertname
+      group_interval: {{ $v.alertmanager.groupInterval }}
+      repeat_interval: {{ $v.alertmanager.repeatInterval }}
+      routes:
+        - match:
+            alertname: Watchdog
+          receiver: "null"
+        - match:
+            severity: critical
+          receiver: critical
+    receivers:
+      - name: "null"
+      - name: default
+        slack_configs:
+          - channel: "#mon-{{ $ev }}"
+            {{- readFile "slack-configs.yaml" | nindent 12 }}
+      - name: critical
+        slack_configs:
+          - channel: "#mon-{{ $ev }}-crit"
+            {{- readFile "slack-configs.yaml" | nindent 12 }}
+  ingress:
+    enabled: true
+    annotations:
+      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
+      {{- readFile "../_snippets/auth-annotations.yaml" | nindent 6 }}
+    paths:
+      - /
+    hosts:
+      - alerts.{{ $v.cluster }}
+    tls:
+      - secretName: alerts-tls
+        hosts:
+          - alerts.{{ $v.cluster }}
+grafana:
+  adminPassword: bladibla
+  rbac:
+    pspUseAppArmor: false
+  ingress:
+    enabled: true
+    annotations:
+      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
+      {{- readFile "../_snippets/auth-annotations.yaml" | nindent 6 }}
+    path: /
+    hosts:
+      - grafana.{{ $v.cluster }}
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.{{ $v.cluster }}
+  auth:
+    oauthAutoLogin: true
+    disableLoginForm: true
+    basic:
+      enabled: false
+    anonymous:
+      enabled: false
+    genericOauth:
+      enabled: true
+      clientId: grafana
+      clientSecret: apie4eeX6hiC9ainiel1
+      scopes: openid email

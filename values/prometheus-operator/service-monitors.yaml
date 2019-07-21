@@ -1,0 +1,13 @@
+- name: blackbox
+  additionalLabels:
+    prometheus: prometheus-operator-prometheus
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  selector:
+    matchLabels:
+      app: prometheus-blackbox-exporter
+  endpoints:
+    - port: http
+      interval: 30s
+      path: /metrics

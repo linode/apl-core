@@ -1,0 +1,171 @@
+# To be used with current stable/prometheus-operator helm chart on kops clusters
+# where 4001/4002 ports are blocked from the worker nodes
+# 
+# In you helm, disable etcd monitor by setting kubeEtcd.enabled=false
+# Then apply this yaml, and you should see the etcd stats on your main instance
+#
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus-operator-prometheus-master
+  labels:
+    app: prometheus-operator-prometheus-master
+  namespace: monitoring
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: prometheus
+            prometheus: prometheus-operator-prometheus-master
+        topologyKey: kubernetes.io/hostname
+  alerting:
+    alertmanagers:
+    - name: prometheus-operator-alertmanager
+      namespace: monitoring
+      pathPrefix: /
+      port: web
+  nodeSelector:
+    node-role.kubernetes.io/master: ""      
+  replicas: 1
+  resources:
+    limit:
+      memory: 100Mi
+      cpu: 0.3
+  retention: 10d
+  routePrefix: /
+  ruleSelector:
+    matchLabels:
+      app: prometheus-operator-master
+  serviceAccountName: prometheus-operator-prometheus
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector:
+    matchLabels:
+      app: prometheus-operator-master
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule  
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prometheus-operator-master
+  name: prometheus-operator-kube-etcd
+  namespace: monitoring
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 15s
+    port: http-metrics
+  jobLabel: jobLabel
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app: prometheus-operator-kube-etcd
+      jobLabel: kube-etcd
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prometheus-operator-master
+  name: prometheus-operator-kube-etcd-events
+  namespace: monitoring
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 15s
+    port: http-metrics
+  jobLabel: jobLabel
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app: prometheus-operator-kube-etcd-events
+      jobLabel: kube-etcd-events
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prometheus-operator-kube-etcd
+    jobLabel: kube-etcd
+  name: prometheus-operator-kube-etcd
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 4001
+    protocol: TCP
+    targetPort: 4001
+  selector:
+    k8s-app: etcd-server
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prometheus-operator-kube-etcd-events
+    jobLabel: kube-etcd-events
+  name: prometheus-operator-kube-etcd-events
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 4002
+    protocol: TCP
+    targetPort: 4002
+  selector:
+    k8s-app: etcd-server-events
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prometheus-operator-prometheus-master
+  name: prometheus-operator-prometheus-master
+  namespace: monitoring
+spec:
+  ports:
+  - name: http
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app: prometheus
+    prometheus: prometheus-operator-prometheus-master
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus-operator
+  name: prometheus-etcd-relay
+  namespace: monitoring
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: 30s
+    params:
+      'match[]':
+      - '{job="kube-etcd"}'
+      - '{job="kube-etcd-events"}'
+    path: /federate
+    port: http
+  namespaceSelector:
+    matchNames:
+    - monitoring
+  selector:
+    matchLabels:
+      app: prometheus-operator-prometheus-master

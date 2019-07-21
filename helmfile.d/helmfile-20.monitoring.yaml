@@ -1,0 +1,65 @@
+{{ readFile "../helmfile-defaults.yaml" }}
+---
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+releases:
+  - name: grafana-dashboards
+    installed: true
+    namespace: monitoring
+    chart: ../charts/grafana-dashboards
+    values:
+      - ../values/grafana-dashboards/grafana-dashboards.yaml.gotmpl 
+  - name: loki
+    installed: true
+    namespace: monitoring
+    version: 0.10.0
+    chart: loki/loki
+    values:
+      - ../values/loki/loki.yaml
+  # - name: nginx
+  #   installed: true
+  #   namespace: monitoring
+  #   chart: ../charts/nginx
+  #   values:
+  #     - ../values/nginx/nginx.yaml
+  #     - ../values/nginx/nginx.yaml.gotmpl
+  - name: prometheus-blackbox-exporter
+    installed: true
+    namespace: monitoring
+    version: 0.4.0
+    chart: ../charts/prometheus-blackbox-exporter
+    # chart: stable/prometheus-blackbox-exporter
+    values:
+      - ../values/prometheus-blackbox-exporter/prometheus-blackbox-exporter.yaml
+      - ../values/prometheus-blackbox-exporter/prometheus-blackbox-exporter.yaml.gotmpl
+  - name: prometheus-operator
+    installed: true
+    namespace: monitoring
+    version: 5.14.1
+    # chart: stable/prometheus-operator
+    chart: ../charts/prometheus-operator # needed to avoid Kind: List bug (https://github.com/helm/charts/issues/15064)
+    values:
+      - ../values/prometheus-operator/prometheus-operator.yaml 
+      - ../values/prometheus-operator/prometheus-operator.yaml.gotmpl 
+      # - nameOverride: prometheus-operator
+  - name: promtail
+    installed: true
+    namespace: monitoring
+    version: 0.8.1
+    chart: loki/promtail # needed to avoid Kind: List bug (https://github.com/helm/charts/issues/15064)
+    values:
+      - ../values/promtail/promtail.yaml 
+  - name: sitespeed-{{ $ev }}
+    installed: false
+    namespace: monitoring
+    chart: ../charts/sitespeed
+    values:
+      - ../values/sitespeed/sitespeed.yaml.gotmpl
+  - name: weave-scope
+    installed: true
+    namespace: monitoring
+    version: 1.1.2
+    chart: stable/weave-scope
+    values:
+      - ../values/weave-scope/weave-scope.yaml
+      - ../values/weave-scope/weave-scope.yaml.gotmpl

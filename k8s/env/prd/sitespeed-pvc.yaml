@@ -1,0 +1,25 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sitespeed-results
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: slow
+  resources:
+    requests:
+      storage: 100Gi
+---      
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sitespeed-graphite
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast
+  resources:
+    requests:
+      storage: 20Gi

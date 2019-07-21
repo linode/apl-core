@@ -1,0 +1,4 @@
+description: Sitespeed custom chart
+engine: gotpl
+name: sitespeed
+version: 0.1.0

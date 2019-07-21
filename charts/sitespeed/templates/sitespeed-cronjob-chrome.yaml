@@ -1,0 +1,48 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sitespeed-chrome
+  labels:
+    app: sitespeed
+spec:
+  schedule: "{{ .Values.schedule }}"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: graphite-sa
+          containers:
+          - image: sitespeedio/sitespeed.io:9.6.0
+            name: sitespeed-chrome
+            resources:
+              requests:
+                cpu: 500m
+                memory: 512Mi
+              limits:
+                cpu: 1
+                memory: 1Gi
+            args: 
+              - --graphite.host=graphite
+              - --browsertime.chrome.args='proxy-server=socks5://sitespeed-throttling-proxy:1080'
+              {{- range $site := .Values.sitespeed }}
+              - https://{{ $site.host }}{{ $site.path | default "/" }}
+              {{- end }}
+            volumeMounts:
+            - name: size-limit
+              mountPath: /dev/shm
+            - name: sitespeed-results
+              mountPath: /sitespeed.io/sitespeed-result
+          volumes:
+          - name: size-limit
+            emptyDir:
+              sizeLimit: "1000Mi"
+              medium: "Memory"
+          - name: sitespeed-results
+            persistentVolumeClaim:
+              claimName: {{ .Values.persistentVolumeClaim.results }}
+          restartPolicy: Never

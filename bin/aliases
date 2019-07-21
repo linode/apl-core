@@ -1,0 +1,38 @@
+cluster=gke_otomi-247314_europe-west4_otomi-control
+
+alias k="kubectl"
+alias ksk="kubectl -n kube-system"
+alias ki="k -n ingress"
+alias ks="k -n system"
+alias ksh="k -n shared"
+alias km="k -n monitoring"
+alias ka="kubectl --all-namespaces=true"
+alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
+alias kap="ka get po"
+alias kdel="k delete"
+alias kcv="k config view"
+alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
+alias kcu="k config use-context"
+alias uuid="python -c 'import sys,uuid; sys.stdout.write(uuid.uuid4().hex)' | pbcopy && pbpaste && echo"
+
+alias kp="k proxy &"
+alias h="helm tiller run tillerless -- helm"
+alias his="h upgrade --install --force"
+alias hk="h delete --purge"
+alias kk="killall kubectl"
+
+function kpk() { ps aux|grep "$@" | awk '{print $2}' | xargs kill; }
+function kad() { k delete "$@" --all; }
+function kcns() { k config set-context $(k config current-context) --namespace="$@"; }
+function hsk() { his --namespace=kube-system "$@"; }
+function hm() { his --namespace=monitoring "$@"; }
+function hin() { his --namespace=ingress "$@"; }
+function hs() { his --namespace=system "$@"; }
+function hsh() { his --namespace=shared "$@"; }
+
+function hf() { kcu $cluster && helmfile $@ --concurrency=1 --skip-deps; }
+function hfd() { hf -e dev $@; }
+function hft() { hf -e tst $@; }
+function hfa() { hf -e acc $@; }
+function hfp() { hf -e prd $@; }
+

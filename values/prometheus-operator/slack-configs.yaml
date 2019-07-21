@@ -1,0 +1,16 @@
+color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Events Notification'
+pretext: '{{ .CommonAnnotations.summary }}'
+text: |-
+  {{ range .Alerts }}
+    {{- if .Annotations.summary }}    *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`{{- end }}
+    *Description:* {{ .Annotations.description }}{{ .Annotations.message }}
+    *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>{{ if or .Annotations.runbook .Annotations.runbook_url }} *Runbook:* <{{ .Annotations.runbook }}{{ .Annotations.runbook_url }}|:spiral_note_pad:>{{ end }}
+    *Details:*
+    {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+    {{ end }}
+  {{ end }}
+fallback: '{{ template "slack.default.fallback" . }}'
+icon_emoji: '{{ template "slack.default.iconemoji" . }}'
+icon_url: '{{ template "slack.default.iconurl" . }}'
+send_resolved: true

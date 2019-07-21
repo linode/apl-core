@@ -1,0 +1,22 @@
+{{- $ev := .Environment.Name }}
+{{- $v := .Environment.Values }}
+{{- $ret := (eq .Environment.Name "prd" | ternary "10m:30d,30m:60d" "10m:7d,30m:14d") }}
+{{- $schedule := (eq .Environment.Name "prd" | ternary "*/10 * * * *" "*/30 * * * *") }}
+sites:
+  {{ $v.sitespeed | toYaml | nindent 2 }}
+schedule: "{{ $schedule }}"
+persistentVolumeClaim:
+  create: {{ if eq $ev "prd" }}false{{ else }}true{{ end }} # we don't auto delete pvc on helm delete for prd
+config:
+  storageSchemas: |
+    [carbon]
+    pattern = ^carbon\.
+    retentions = 60:1d
+
+    [sitespeed]
+    pattern = ^sitespeed_io\.
+    retentions = {{ $ret }}
+
+    [catch_them_all]
+    pattern = .*
+    retentions = {{ $ret }}
