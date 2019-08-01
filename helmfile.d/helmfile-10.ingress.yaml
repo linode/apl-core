@@ -1,50 +1,35 @@
-{{ readFile "../helmfile-defaults.yaml" }}
----
-{{- $ev := .Environment.Name }}
-{{- $v := .Environment.Values }}
+bases:
+  - snippets/helmfile-defaults.yaml
+
+environments:
+  default:
+    values:
+      - ../values/default.yaml
+      - ../values/otomi.yaml
+
+{{ readFile "snippets/templates.yaml" }}
 releases:
-- name: cert-manager
-  installed: true
-  namespace: ingress
-  version: v0.8.1
-  chart: jetstack/cert-manager
-  values:
-    - ../values/cert-manager/cert-manager.yaml 
-- name: cert-manager-cluster-issuer
-  installed: true
-  namespace: ingress
-  version: 0.1.0
-  chart: ../charts/cert-manager-cluster-issuer
-  values:
-    - ../values/cert-manager/cert-manager-cluster-issuer.yaml.gotmpl
-- name: dex
-  installed: true
-  namespace: ingress
-  version: 1.5.1
-  chart: stable/dex
-  values:
-    - ../values/dex/dex.yaml
-    - ../values/dex/dex.yaml.gotmpl
-- name: nginx-ingress
-  installed: true
-  namespace: ingress
-  version: 1.11.0
-  chart: stable/nginx-ingress
-  values:
-    - ../values/nginx-ingress/nginx-ingress.yaml
-    - ../values/nginx-ingress/nginx-ingress.yaml.gotmpl
-- name: oauth2-ingress
-  installed: true
-  namespace: ingress
-  version: 0.1.0
-  chart: ../charts/oauth2-ingress
-  values:
-    - ../values/oauth2-ingress/oauth2-ingress.yaml.gotmpl
-- name: oauth2-proxy
-  installed: true
-  namespace: ingress
-  version: 0.13.0
-  chart: stable/oauth2-proxy
-  values:
-    - ../values/oauth2-proxy/oauth2-proxy.yaml
-    - ../values/oauth2-proxy/oauth2-proxy.yaml.gotmpl
+  - name: cert-manager
+    installed: true
+    namespace: ingress
+    <<: *default
+  - name: cert-manager-cluster-issuer
+    installed: true
+    namespace: ingress
+    <<: *default
+  - name: dex
+    installed: false
+    namespace: ingress
+    <<: *default
+  - name: nginx-ingress
+    installed: true
+    namespace: ingress
+    <<: *default
+  - name: oauth2-ingress
+    installed: false
+    namespace: ingress
+    <<: *default
+  - name: oauth2-proxy
+    installed: true
+    namespace: ingress
+    <<: *default

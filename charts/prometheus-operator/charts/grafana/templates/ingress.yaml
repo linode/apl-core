@@ -7,6 +7,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "grafana.name" . }}
     chart: {{ template "grafana.chart" . }}
     release: {{ .Release.Name }}

@@ -164,7 +164,7 @@ metrics:
     ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
     ##
   # resources: {}
-env: prd
+env: ""
 prefix: ""
 cluster: ""
 services: []

@@ -5833,7 +5833,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "Sitespeed ##ENV##",
+  "title": "Sitespeed Metrics",
   "uid": "000000043",
   "version": 1
 }

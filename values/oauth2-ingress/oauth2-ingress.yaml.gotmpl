@@ -1,4 +1,0 @@
-{{- $ev := .Environment.Name }}
-{{- $v := .Environment.Values }}
-domain: {{ $v.cluster }}
-services: {{ $v.services | toYaml | nindent 2 }}

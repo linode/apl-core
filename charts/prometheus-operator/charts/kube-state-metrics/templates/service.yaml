@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ template "kube-state-metrics.fullname" . }}
   labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "kube-state-metrics.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"

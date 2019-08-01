@@ -1,4 +1,0 @@
-description: Chart for oauth2-ingresses
-engine: gotpl
-name: oauth2-ingress
-version: 0.1.0

@@ -3,6 +3,7 @@ kind: CronJob
 metadata:
   name: sitespeed-chrome
   labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
     app: sitespeed
 spec:
   schedule: "{{ .Values.schedule }}"
@@ -14,6 +15,8 @@ spec:
   jobTemplate:
     spec:
       template:
+        labels:
+{{ toYaml .Values.customerLabels | indent 10 }}
         spec:
           serviceAccountName: graphite-sa
           containers:

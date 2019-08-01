@@ -1,29 +1,29 @@
-{{- $ev := .Environment.Name }}
 {{- $v := .Environment.Values }}
+{{- $host := printf "drone.%s" $v.domain }}
 images:
   server:
     tag: 1.0.1
 ingress:
   enabled: true
   hosts:
-    - drone.{{ $v.cluster }}
+    - {{ $host }}
   annotations:
     {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
-    {{- readFile "../_snippets/auth-annotations.yaml" | nindent 4 }}
+    {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
   tls:
     - secretName: drone-tls
       hosts:
-        - drone.{{ $v.cluster }}
+        - {{ $host }}
 sourceControl:
-  provider: github
-  secret: drone-server-secrets
+  provider: {{ $v.drone.sourceControl | getOrNil "provider" | default "github" }}
   github:
-    clientID: 48b05bbc8fc85d78c919
+    clientID: {{ $v.drone.sourceControl.github.clientID }}
+    clientSecretValue: {{ $v.drone.sourceControl.github.clientSecretValue }}
     server: https://github.com        
 server:
-  host: drone.{{ $v.cluster }}
+  host: {{ $host }}
   protocol: https
-  adminUser: 
+  adminUser: {{ $v.drone.server.adminUser }}
   env:
     DRONE_OPEN: true
     DRONE_GITHUB_SKIP_VERIFY: true

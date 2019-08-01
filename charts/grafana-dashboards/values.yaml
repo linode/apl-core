@@ -1,5 +1,3 @@
-host: grafana.k8s.essent.nl
-
 dashboards:
   default:
     sitespeed:

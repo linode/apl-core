@@ -1,29 +1,22 @@
-{{ readFile "../helmfile-defaults.yaml" }}
----
-{{- $ev := .Environment.Name }}
-{{- $v := .Environment.Values }}
+{{ readFile "snippets/helmfile-defaults.yaml" }}
+
+environments:
+  default:
+    values:
+      - ../values/default.yaml
+      - ../values/otomi.yaml
+
+{{ readFile "snippets/templates.yaml" }}
 releases:
-  - name: docker-registry
-    installed: true
-    namespace: system
-    version: 1.8.0
-    chart: stable/docker-registry
-    values:
-      - ../values/docker-registry/docker-registry.yaml
-      - ../values/docker-registry/docker-registry.yaml.gotmpl
-  - name: drone
-    installed: true
-    namespace: system
-    version: 2.0.5
-    chart: stable/drone
-    values:
-      - ../values/drone/drone.yaml
-      - ../values/drone/drone.yaml.gotmpl
   - name: index
     installed: true
     namespace: system
-    version: 2.0.5
-    chart: ../charts/index
-    values:
-      - ../values/index/index.yaml
-      - ../values/index/index.yaml.gotmpl
+    <<: *default
+  - name: drone
+    installed: true
+    namespace: system
+    <<: *default
+  - name: gitlab
+    installed: false
+    namespace: system
+    <<: *default

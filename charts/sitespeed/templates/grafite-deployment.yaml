@@ -12,6 +12,7 @@ spec:
   template:
     metadata:
       labels:
+{{ toYaml .Values.customerLabels | indent 8 }}
         app: graphite
     spec:
       serviceAccountName: graphite-sa

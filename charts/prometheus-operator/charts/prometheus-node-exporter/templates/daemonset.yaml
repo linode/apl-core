@@ -15,6 +15,7 @@ spec:
   template:
     metadata:
       labels: {{ include "prometheus-node-exporter.labels" . | indent 8 }}
+{{ toYaml .Values.customerLabels | indent 8 }}
     spec:
 {{- if and .Values.rbac.create .Values.serviceAccount.create }}
       serviceAccountName: {{ template "prometheus-node-exporter.serviceAccountName" . }}

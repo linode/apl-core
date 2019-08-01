@@ -4,6 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ template "grafana.fullname" . }}
   labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "grafana.name" . }}
     chart: {{ template "grafana.chart" . }}
     release: {{ .Release.Name }}

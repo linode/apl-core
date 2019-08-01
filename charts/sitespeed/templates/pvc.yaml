@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ .Values.persistentVolumeClaim.results }}
+  labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -15,6 +17,8 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ .Values.persistentVolumeClaim.graphite }}
+  labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

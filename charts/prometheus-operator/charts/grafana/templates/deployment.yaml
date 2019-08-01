@@ -25,6 +25,7 @@ spec:
   template:
     metadata:
       labels:
+{{ toYaml .Values.customerLabels | indent 8 }}
         app: {{ template "grafana.name" . }}
         release: {{ .Release.Name }}
       annotations:

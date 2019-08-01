@@ -15,6 +15,7 @@ spec:
   template:
     metadata:
       labels:
+{{ toYaml .Values.customerLabels | indent 8 }}
         app: {{ template "kube-state-metrics.name" . }}
         release: "{{ .Release.Name }}"
 {{- if .Values.podAnnotations }}

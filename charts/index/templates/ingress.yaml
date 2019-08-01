@@ -4,6 +4,7 @@ kind: Ingress
 metadata:
   name: {{ template "fullname" . }}
   labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"

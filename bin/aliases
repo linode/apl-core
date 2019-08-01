@@ -30,9 +30,4 @@ function hin() { his --namespace=ingress "$@"; }
 function hs() { his --namespace=system "$@"; }
 function hsh() { his --namespace=shared "$@"; }
 
-function hf() { kcu $cluster && helmfile $@ --concurrency=1 --skip-deps; }
-function hfd() { hf -e dev $@; }
-function hft() { hf -e tst $@; }
-function hfa() { hf -e acc $@; }
-function hfp() { hf -e prd $@; }
-
+function hf() { bin/list-customers.sh && kcu $cluster && helmfile $@ --concurrency=1 --skip-deps; }

@@ -16,12 +16,13 @@ spec:
   template:
     metadata:
       labels:
+{{ toYaml .Values.customerLabels | indent 8 }}
         app: {{ template "fullname" . }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
         heritage: "{{ .Release.Service }}"
       annotations:
-        checksum/config: {{ .Files.Get "index.html" | sha256sum }}
+        checksum/config: {{ include (print .Template.BasePath "/cm-files.yaml") . | sha256sum | trunc 63 }}
 {{- if or .Values.podAnnotations .Values.metrics.enabled }}
   {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
