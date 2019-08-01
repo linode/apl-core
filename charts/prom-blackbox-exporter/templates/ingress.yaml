@@ -1,0 +1,43 @@
+{{- if .Values.ingress.enabled -}}
+{{- $serviceName := include "prometheus-blackbox-exporter.fullname" . -}}
+{{- $servicePort := .Values.service.port -}}
+{{- $paths := .Values.ingress.paths -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "prometheus-blackbox-exporter.fullname" . }}
+  labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
+    app: {{ template "prometheus-blackbox-exporter.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+spec:
+  rules:
+  {{- if .Values.ingress.hosts }}
+  {{- range $host := .Values.ingress.hosts }}
+    - host: {{ tpl $host $ }}
+      http:
+        paths:
+  {{- range $p := $paths }}
+          - path: {{ tpl $p $ }}
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+  {{- end -}}
+  {{- end -}}
+  {{- else }}
+    - http:
+        paths:
+  {{- range $p := $paths }}
+          - path: {{ tpl $p $ }}
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+  {{- end -}}
+  {{- end }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end -}}

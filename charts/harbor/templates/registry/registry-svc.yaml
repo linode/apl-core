@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.registry" . }}"
+  labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: registry
+      port: 5000
+    - name: controller
+      port: 8080
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: registry

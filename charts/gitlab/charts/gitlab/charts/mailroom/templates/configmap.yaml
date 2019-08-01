@@ -1,0 +1,37 @@
+{{- if and .Values.enabled .Values.global.appConfig.incomingEmail.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  mail_room.yml: |
+    :mailboxes:
+      -
+        {{- with .Values.global.appConfig.incomingEmail }}
+        :host: {{ .host }}
+        :port: {{ .port }}
+        :ssl: {{ .ssl }}
+        :start_tls: {{ .startTls }}
+        :email: {{ .user }}
+        :password: "<%= File.read("/etc/gitlab/mailroom/password").strip.dump[1..-2] %>"
+        :idle_timeout: {{ .idleTimeout }}
+        :name: {{ .mailbox }}
+        :delete_after_delivery: true
+        :delivery_method: sidekiq
+        {{- end }}
+        :delivery_options:
+          :redis_url: {{ template "gitlab.redis.url" . }}
+          :namespace: resque:gitlab
+          :queue: email_receiver
+          :worker: EmailReceiverWorker
+        :arbitration_method: redis
+        :arbitration_options:
+          :redis_url: {{ template "gitlab.redis.url" . }}
+          :namespace: mail_room:gitlab
+  configure: |
+    {{- include "gitlab.scripts.configure.secrets" (dict "required" "mailroom" "optional" "redis") | nindent 4 }}
+# Leave this here - This line denotes end of block to the parser.
+{{- end }}

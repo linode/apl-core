@@ -1,0 +1,50 @@
+bases:
+  - ../snippets/helmfile-defaults.yaml
+---
+{{- $v := .Environment.Values }}
+{{- $custId := (requiredEnv "CUST_ID") }}
+{{- $customers := $v.customers }}
+{{ $cust := index $customers $custId }}
+
+helmfiles:
+  {{- range $nsId, $ns := $cust.namespaces }}
+  {{- $custNs := printf "cust-%s-%s" $custId $ns.name }}
+  - path: "../snippets/releases.gotmpl"
+    values:
+      - release:
+          name: {{ $custNs }}
+          installed: {{ $cust.active }}
+          namespace: {{ $custNs }}
+          chart: customer-ns
+          nameOverride: {{ $custNs }}
+        {{- $cust.values | toYaml | nindent 8 }}
+        customerLabels:
+          customer: {{ $custId }}
+          namespace: {{ $ns.name }}
+  {{- range $chart := $ns.charts }}
+  - path: "../snippets/releases.gotmpl"
+    values:
+      - release:
+          name: {{ $custNs }}-{{ $chart.name }}
+          installed: {{ if hasKey $chart "installed" }}{{ $chart.installed }}{{ else }}true{{ end }}
+          namespace: {{ $custNs }}
+          chart: {{ $chart.name }}
+          nameOverride: {{ $chart.name }}-{{ $custNs }}
+        namespace: {{ $custNs }}
+      - level: environment
+        {{- $v | toYaml | nindent 8 }}
+      - level: customer
+        {{- $cust.values | toYaml | nindent 8 }}
+        customerLabels:
+          customer: {{ $custId }}
+          namespace: {{ $ns.name }}
+      - level: chart
+        {{- if $chart.values }}
+        {{ $chart.name }}:
+          {{ $chart.values | toYaml | nindent 10 }}
+        {{- end }}
+        {{- if not (hasKey $chart.values "domain") }}
+        domain: {{ $cust.values | getOrNil "domain" | default (printf "%s.%s.%s" $ns.name $custId $v.customerDomain)}}
+        {{- end }}
+  {{- end }}
+  {{- end }}

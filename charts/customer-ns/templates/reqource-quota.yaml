@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  {{- include "customer-ns.labels" . | nindent 2 }}
+  name: {{ template "customer-ns.fullname" . }}
+spec:
+  hard:
+    pods: "{{ .Values.resourceQuota.pods }}"
+    persistentvolumeclaims: "5"
+    services.loadbalancers: "20"
+    resourcequotas: "1"

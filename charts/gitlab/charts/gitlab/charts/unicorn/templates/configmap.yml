@@ -1,0 +1,204 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  installation_type: |
+    gitlab-helm-chart
+  database.yml.erb: |
+    production:
+      adapter: postgresql
+      encoding: unicode
+      database: {{ template "gitlab.psql.database" . }}
+      pool: 10
+      username: {{ template "gitlab.psql.username" . }}
+      password: "<%= File.read("/etc/gitlab/postgres/psql-password").strip.dump[1..-2] %>"
+      host: {{ template "gitlab.psql.host" . }}
+      port: {{ template "gitlab.psql.port" . }}
+      # load_balancing:
+      #   hosts:
+      #     - host1.example.com
+      #     - host2.example.com
+{{- include "gitlab.psql.ssl.config" . | indent 6 }}
+  smtp_settings.rb: |
+{{ include "gitlab.smtp_settings" . | indent 4 }}
+  resque.yml.erb: |
+    production:
+      # Redis (single instance)
+      url: {{ template "gitlab.redis.url" . }}
+      id:
+  unicorn.rb: |
+    # This file should be equivalent to `unicorn.rb` from:
+    # * gitlab-ce: https://gitlab.com/gitlab-org/gitlab-ce/blob/master/config/unicorn.rb.example
+    # * omnibus: https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-cookbooks/gitlab/templates/default/unicorn.rb.erb
+    worker_processes {{ .Values.workerProcesses }}
+    working_directory "/srv/gitlab"
+    listen "0.0.0.0:{{ .Values.service.internalPort }}", :tcp_nopush => true
+    timeout {{ .Values.workerTimeout }}
+    pid "/home/git/unicorn.pid"
+    preload_app true
+
+    require_relative "/srv/gitlab/lib/gitlab/cluster/lifecycle_events"
+
+    before_exec do |server|
+      # Signal application hooks that we're about to restart
+      Gitlab::Cluster::LifecycleEvents.do_master_restart
+    end
+
+    run_once = true
+    before_fork do |server, worker|
+      if run_once
+        # There is a difference between Puma and Unicorn:
+        # - Puma calls before_fork once when booting up master process
+        # - Unicorn runs before_fork whenever new work is spawned
+        # To unify this behavior we call before_fork only once (we use
+        # this callback for deleting Prometheus files so for our purposes
+        # it makes sense to align behavior with Puma)
+        run_once = false
+
+        # Signal application hooks that we're about to fork
+        Gitlab::Cluster::LifecycleEvents.do_before_fork
+      end
+
+      # The following is only recommended for memory/DB-constrained
+      # installations.  It is not needed if your system can house
+      # twice as many worker_processes as you have configured.
+      #
+      # This allows a new master process to incrementally
+      # phase out the old master process with SIGTTOU to avoid a
+      # thundering herd (especially in the "preload_app false" case)
+      # when doing a transparent upgrade.  The last worker spawned
+      # will then kill off the old master process with a SIGQUIT.
+      old_pid = "#{server.config[:pid]}.oldbin"
+      if old_pid != server.pid
+        begin
+          sig = (worker.nr + 1) >= server.worker_processes ? :QUIT : :TTOU
+          Process.kill(sig, File.read(old_pid).to_i)
+        rescue Errno::ENOENT, Errno::ESRCH
+        end
+      end
+      #
+      # Throttle the master from forking too quickly by sleeping.  Due
+      # to the implementation of standard Unix signal handlers, this
+      # helps (but does not completely) prevent identical, repeated signals
+      # from being lost when the receiving process is busy.
+      # sleep 1
+    end
+
+    after_fork do |server, worker|
+      # Signal application hooks of worker start
+      Gitlab::Cluster::LifecycleEvents.do_worker_start
+
+      # per-process listener ports for debugging/admin/migrations
+      # addr = "127.0.0.1:#{9293 + worker.nr}"
+      # server.listen(addr, :tries => -1, :delay => 5, :tcp_nopush => true)
+    end
+
+    ENV['GITLAB_UNICORN_MEMORY_MIN'] = ({{ int .Values.memory.min }} * 1 << 20).to_s
+    ENV['GITLAB_UNICORN_MEMORY_MAX'] = ({{ int .Values.memory.max }} * 1 << 20).to_s
+
+  gitlab.yml.erb: |
+    production: &base
+      gitlab:
+        host: {{ template "gitlab.gitlab.hostname" . }}
+        https: {{ hasPrefix "https://" (include "gitlab.gitlab.url" .) }}
+        {{- with .Values.global.hosts.ssh }}
+        ssh_host: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.global.appConfig }}
+        impersonation_enabled: {{ .enableImpersonation }}
+        usage_ping_enabled: {{ eq .enableUsagePing true }}
+        default_can_create_group: {{ eq .defaultCanCreateGroup true }}
+        username_changing_enabled: {{ eq .usernameChangingEnabled true }}
+        issue_closing_pattern: {{ .issueClosingPattern | quote }}
+        default_theme: {{ .defaultTheme }}
+        {{- include "gitlab.appConfig.defaultProjectsFeatures.configuration" $ | nindent 8 }}
+        webhook_timeout: {{ .webhookTimeout }}
+        {{- end }}
+        trusted_proxies:
+        {{- if .Values.trusted_proxies }}
+{{ toYaml .Values.trusted_proxies | indent 10 }}
+        {{- end }}
+        time_zone: {{ .Values.global.time_zone | quote }}
+        email_from: {{ template "gitlab.email.from" . }}
+        email_display_name: {{ .Values.global.email.display_name | quote }}
+        email_reply_to: {{ template "gitlab.email.reply_to" . }}
+        email_subject_suffix: {{ .Values.global.email.subject_suffix | quote }}
+      {{- with .Values.global.appConfig }}
+      {{- if eq .incomingEmail.enabled true }}
+{{ include "gitlab.appConfig.incoming_email" . | indent 6 }}
+      {{- end }}
+      {{- include "gitlab.appConfig.cronJobs" . | nindent 6 }}
+      gravatar:
+        plain_url: {{ .gravatar.plainUrl }}
+        ssl_url: {{ .gravatar.sslUrl }}
+{{ include "gitlab.appConfig.extra" . | indent 6 }}
+      {{- end }}
+      {{- include "gitlab.appConfig.artifacts.configuration" (dict "config" $.Values.global.appConfig.artifacts "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.lfs.configuration" (dict "config" $.Values.global.appConfig.lfs "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.uploads.configuration" (dict "config" $.Values.global.appConfig.uploads "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.packages.configuration" (dict "config" $.Values.global.appConfig.packages "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.external_diffs.configuration" (dict "config" $.Values.global.appConfig.externalDiffs "context" $) | nindent 6 }}
+      pages:
+        enabled: false
+      mattermost:
+        enabled: false
+      gitlab_ci:
+      {{- include "gitlab.appConfig.ldap.configuration" $ | nindent 6 }}
+      {{- include "gitlab.appConfig.omniauth.configuration" $ | nindent 6 }}
+      kerberos:
+        enabled: false
+      shared:
+{{ include "gitlab.appConfig.gitaly" . | indent 6 }}
+{{ include "gitlab.appConfig.repositories" . | indent 6 }}
+      backup:
+        path: "tmp/backups"   # Relative paths are relative to Rails.root (default: tmp/backups/)
+{{ include "gitlab.appConfig.shell" . | indent 6 }}
+{{ include "gitlab.appConfig.shell.ssh_port" . | indent 8 }}
+{{ include "gitlab.appConfig.shell.secret_file" . | indent 8 }}
+      workhorse:
+        secret_file: /etc/gitlab/gitlab-workhorse/secret
+      git:
+        bin_path: /usr/bin/git
+      webpack:
+      monitoring:
+        ip_whitelist:
+          - 0.0.0.0/0
+        sidekiq_exporter:
+{{ include "gitlab.appConfig.rackAttack" . | indent 6 }}
+      ## Registry Integration
+      {{- include "gitlab.appConfig.registry.configuration" $ | nindent 6 }}
+  configure: |
+    {{- include "gitlab.scripts.configure.secrets" (dict) | nindent 4 -}}
+    {{- include "gitlab.psql.ssl.initScript" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name }}-workhorse-config
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  installation_type: |
+    gitlab-helm-chart
+  workhorse-config.toml.erb: |
+    [redis]
+    URL = "{{ template "gitlab.redis.scheme" . }}://{{ template "gitlab.redis.host" . }}:{{ template "gitlab.redis.port" . }}"
+    {{- if .Values.global.redis.password.enabled }}
+    Password = "<%= File.read("/etc/gitlab/redis/password").strip.dump[1..-2] %>"
+    {{- end }}
+  configure: |
+      set -e
+      mkdir -p /init-secrets-workhorse/gitlab-workhorse
+      cp -v -r -L /init-config/gitlab-workhorse/secret /init-secrets-workhorse/gitlab-workhorse/secret
+      {{- if .Values.global.redis.password.enabled }}
+      mkdir -p /init-secrets-workhorse/redis
+      cp -v -r -L /init-config/redis/password /init-secrets-workhorse/redis/
+      {{- end }}
+# Leave this here - This line denotes end of block to the parser.
+{{- end }}

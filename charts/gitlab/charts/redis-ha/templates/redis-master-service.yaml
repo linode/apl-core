@@ -1,0 +1,33 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+{{- if .Values.servers.annotations }}
+{{ toYaml .Values.servers.annotations | indent 4 }}
+{{- end }}
+{{- if .Values.metrics.enabled }}
+{{ toYaml .Values.metrics.annotations | indent 4 }}
+{{- end }}
+{{ include "gitlab.serviceAnnotations" . | indent 4 }}
+spec:
+  ports:
+  - name: redis
+    port: {{ .Values.servers.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.servers.internalPort }}
+  {{- if .Values.metrics.enabled }}
+  - name: metrics
+    port: {{ .Values.metrics.port }}
+    targetPort: metrics
+  {{- end }}
+  selector:
+{{ include "labels.immutable" . | indent 4 }}
+    redis-node: "true"
+    redis-role: "master"
+  type: "{{ .Values.servers.serviceType }}"
+{{- end -}}

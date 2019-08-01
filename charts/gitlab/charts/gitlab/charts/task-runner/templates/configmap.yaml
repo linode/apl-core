@@ -1,0 +1,132 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  database.yml.erb: |
+    production:
+      adapter: postgresql
+      encoding: unicode
+      database: {{ template "gitlab.psql.database" . }}
+      pool: 10
+      username: {{ template "gitlab.psql.username" . }}
+      password: "<%= File.read("/etc/gitlab/postgres/psql-password").strip.dump[1..-2] %>"
+      host: {{ template "gitlab.psql.host" . }}
+      port: {{ template "gitlab.psql.port" . }}
+{{- include "gitlab.psql.ssl.config" . | indent 6 }}
+  smtp_settings.rb: |
+{{ include "gitlab.smtp_settings" . | indent 4 }}
+  resque.yml.erb: |
+    production:
+      # Redis (single instance)
+      url: {{ template "gitlab.redis.url" . }}
+      id:
+  gitlab.yml.erb: |
+    production: &base
+      gitlab:
+        host: {{ template "gitlab.gitlab.hostname" . }}
+        https: {{ hasPrefix "https://" (include "gitlab.gitlab.url" .) }}
+        {{- with .Values.global.hosts.ssh }}
+        ssh_host: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.global.appConfig }}
+        impersonation_enabled: {{ .enableImpersonation }}
+        usage_ping_enabled: {{ eq .enableUsagePing true }}
+        default_can_create_group: {{ eq .defaultCanCreateGroup true }}
+        username_changing_enabled: {{ eq .usernameChangingEnabled true }}
+        issue_closing_pattern: {{ .issueClosingPattern | quote }}
+        default_theme: {{ .defaultTheme }}
+        {{- include "gitlab.appConfig.defaultProjectsFeatures.configuration" $ | nindent 8 }}
+        webhook_timeout: {{ .webhookTimeout }}
+        {{- end }}
+        trusted_proxies:
+        {{- if .Values.trusted_proxies }}
+{{ toYaml .Values.trusted_proxies | indent 10 }}
+        {{- end }}
+        time_zone: {{ .Values.global.time_zone | quote }}
+        email_from: {{ template "gitlab.email.from" . }}
+        email_display_name: {{ .Values.global.email.display_name | quote }}
+        email_reply_to: {{ template "gitlab.email.reply_to" . }}
+        email_subject_suffix: {{ .Values.global.email.subject_suffix | quote }}
+      {{- with .Values.global.appConfig }}
+      {{- include "gitlab.appConfig.cronJobs" . | nindent 6 }}
+      {{- end }}
+      {{- include "gitlab.appConfig.artifacts.configuration" (dict "config" $.Values.global.appConfig.artifacts "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.lfs.configuration" (dict "config" $.Values.global.appConfig.lfs "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.uploads.configuration" (dict "config" $.Values.global.appConfig.uploads "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.packages.configuration" (dict "config" $.Values.global.appConfig.packages "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.external_diffs.configuration" (dict "config" $.Values.global.appConfig.externalDiffs "context" $) | nindent 6 }}
+      {{- include "gitlab.appConfig.pseudonymizer.configuration" $ | nindent 6 }}
+      pages:
+        enabled: false
+      mattermost:
+        enabled: false
+      ## Registry Integration
+      {{- include "gitlab.appConfig.registry.configuration" $ | nindent 6 }}
+      gitlab_ci:
+      {{- include "gitlab.appConfig.ldap.configuration" $ | nindent 6 }}
+      {{- include "gitlab.appConfig.omniauth.configuration" $ | nindent 6 }}
+      kerberos:
+        enabled: false
+      shared:
+{{ include "gitlab.appConfig.gitaly" . | indent 6 }}
+{{ include "gitlab.appConfig.repositories" . | indent 6 }}
+      backup:
+        path: "tmp/backups"   # Relative paths are relative to Rails.root (default: tmp/backups/)
+{{ include "gitlab.appConfig.shell" . | indent 6 }}
+{{ include "gitlab.appConfig.shell.secret_file" . | indent 8 }}
+      workhorse:
+      git:
+        bin_path: /usr/bin/git
+      webpack:
+      monitoring:
+        ip_whitelist:
+          - 127.0.0.0/8
+        sidekiq_exporter:
+      extra:
+        {{- if .Values.extra }}
+{{ toYaml .Values.extra | indent 8 }}
+        {{- end }}
+  configure: |
+    {{- include "gitlab.scripts.configure.secrets" (dict "required" "shell gitaly registry postgres rails-secrets") | nindent 4 -}}
+    {{- include "gitlab.psql.ssl.initScript" . | nindent 4 }}
+
+    {{- if eq .Values.backups.objectStorage.backend "s3" }}
+    if [ ! -f "/${secret_dir}/objectstorage/.s3cfg" ]; then
+    cat <<EOF > "/${secret_dir}/.s3cfg"
+    [default]
+    access_key = $(cat /init-secrets/minio/accesskey)
+    secret_key = $(cat /init-secrets/minio/secretkey)
+    bucket_location = us-east-1
+    host_base = {{ template "gitlab.minio.hostname" . }}
+    host_bucket = {{ template "gitlab.minio.hostname" . }}/%(bucket)
+    default_mime_type = binary/octet-stream
+    enable_multipart = True
+    multipart_max_chunks = 10000
+    recursive = True
+    recv_chunk = 65536
+    send_chunk = 65536
+    server_side_encryption = False
+    signature_v2 = True
+    socket_timeout = 300
+    use_mime_magic = True
+    verbosity = WARNING
+    website_endpoint = {{ template "gitlab.minio.url" . }}
+    EOF
+    else
+      mv "/${secret_dir}/objectstorage/.s3cfg" "/${secret_dir}/.s3cfg"
+    fi
+    {{- end }}
+  configure-gsutil: |
+    # The following script is used to configure gsutil when creating backups
+    # It provides inputs to the `gsutil config -e` prompt as follows:
+    # 1) Path to service account JSON key file
+    # 2) Do not set permissions for key file
+    # 3) GCP Project ID
+    # 4) Decline anonymous usage statistics
+    printf "$GOOGLE_APPLICATION_CREDENTIALS\nN\n{{ .Values.backups.objectStorage.config.gcpProject }}\nN\n" | gsutil config -e && while sleep 3600; do :; done
+{{- end }}

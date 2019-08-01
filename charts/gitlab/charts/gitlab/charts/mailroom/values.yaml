@@ -1,0 +1,47 @@
+image:
+  repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-mailroom
+  tag: 0.9.1
+  pullSecrets: []
+  # pullPolicy: IfNotPresent
+
+enabled: true
+
+init:
+  image: busybox
+  tag: latest
+  resources:
+    requests:
+      cpu: 50m
+
+# Tolerations for pod scheduling
+tolerations: []
+
+global:
+  # imagePullPolicy: IfNotPresent
+  redis:
+    password: {}
+  appConfig:
+    incomingEmail:
+      enabled: false
+      address:
+      host:
+      port: 993
+      ssl: true
+      startTls: false
+      user:
+      password:
+        secret: ""
+        key: password
+      mailbox: inbox
+      idleTimeout: 60
+
+redis:
+  password: {}
+
+resources:
+  # limits:
+  #  cpu: 1
+  #  memory: 2G
+  requests:
+    cpu: 50m
+    memory: 150M

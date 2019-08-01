@@ -1,0 +1,16 @@
+apiVersion: v1
+appVersion: 1.53.0
+description: Git RPC service for handling all the git calls made by GitLab
+home: https://about.gitlab.com/
+icon: https://gitlab.com/gitlab-com/gitlab-artwork/raw/master/logo/logo-square.svg
+keywords:
+- gitlab
+- gitaly
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+name: gitaly
+sources:
+- https://gitlab.com/charts/gitlab/tree/master/charts/gitlab/charts/gitaly
+- https://gitlab.com/gitlab-org/build/CNG/tree/master/gitaly
+version: 2.1.3

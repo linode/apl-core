@@ -1,0 +1,17 @@
+appVersion: 12.1.0
+description: GitLab Runner
+icon: https://gitlab.com/uploads/-/system/project/avatar/250833/runner_logo.png
+keywords:
+- git
+- ci
+- deploy
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+- email: dj@gitlab.com
+  name: DJ Mountney
+name: gitlab-runner
+sources:
+- https://hub.docker.com/r/gitlab/gitlab-runner/
+- https://docs.gitlab.com/runner/
+version: 0.7.0

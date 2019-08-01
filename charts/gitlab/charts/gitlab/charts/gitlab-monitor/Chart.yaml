@@ -1,0 +1,17 @@
+apiVersion: v1
+appVersion: 4.0.0
+description: Exporter for GitLab Prometheus metrics (e.g. CI, pull mirrors)
+home: https://about.gitlab.com/
+icon: https://gitlab.com/gitlab-com/gitlab-artwork/raw/master/logo/logo-square.svg
+keywords:
+- gitlab
+- gitlab-monitor
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+name: gitlab-monitor
+sources:
+- https://gitlab.com/charts/gitlab/tree/master/charts/gitlab/charts/gitlab-monitor
+- https://gitlab.com/gitlab-org/build/CNG/tree/master/gitlab-monitor
+- https://gitlab.com/gitlab-org/gitlab-monitor
+version: 2.1.3

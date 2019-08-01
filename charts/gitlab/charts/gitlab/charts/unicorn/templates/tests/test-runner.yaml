@@ -1,0 +1,32 @@
+{{- if and .Values.enabled .Values.helmTests.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ template "fullname" . }}-test-runner-{{ randAlphaNum 5 | lower }}
+  namespace: {{ $.Release.Namespace }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+  - name: test-runner
+    image: {{ coalesce .Values.image.repository (include "image.repository" .) }}:{{ coalesce .Values.image.tag (include "gitlab.versionTag" . ) }}
+    command: ['sh', '/tests/test_login']
+    volumeMounts:
+      - name: tests
+        mountPath: '/tests'
+      - name: root-password
+        readOnly: true
+        mountPath: /initial_root_password
+        subPath: initial_root_password
+  volumes:
+  - name: tests
+    configMap:
+      name: {{ template "fullname" . }}-tests
+  - name: root-password
+    secret:
+      secretName: {{ template "gitlab.migrations.initialRootPassword.secret" . }}
+      items:
+        - key: {{ template "gitlab.migrations.initialRootPassword.key" . }}
+          path: initial_root_password
+  restartPolicy: Never
+  {{- end }}

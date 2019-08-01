@@ -1,0 +1,3 @@
+{{- if and .Values.enabled (not .Values.global.operator.enabled) }}
+{{ include (print $.Template.BasePath "/_jobspec.yaml") . }}
+{{- end }}

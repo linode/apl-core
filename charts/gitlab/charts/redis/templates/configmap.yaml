@@ -1,0 +1,43 @@
+{{- if .Values.enabled -}}
+{{- $httpSecret := randAlphaNum 128 | b64enc -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  redis.conf: |
+    # stay in foreground
+    daemonize no
+    # listen on all interfaces
+    bind 0.0.0.0
+    port {{ .Values.service.internalPort }}
+    timeout {{ .Values.timeout }}
+    tcp-keepalive {{ .Values.tcpKeepalive}}
+    # Log level
+    loglevel {{ .Values.loglevel }}
+    # Log to stdout
+    logfile ""
+    # database count (picked from Omnibus' redis.conf)
+    databases 16
+    # Database filename
+    dbfilename {{ template "fullname" . }}.rdb
+    # Working Directory (where DB is written)
+    dir /data/redis
+    # Configure persistence snapshotting
+    {{- if .Values.persistence.save }}
+    {{-   range .Values.persistence.save }}
+    save {{ .time }} {{ .writes }}
+    {{-   end }}
+    {{- else }}
+    save ""
+    {{- end }}
+  configure: |
+    set -e
+    cat /config/redis.conf > /redis/redis.conf;
+    echo "requirepass $(cat /config/password)" >> /redis/redis.conf
+    echo "127.0.0.1:{{ .Values.service.internalPort }},$(cat /config/password),{{ template "fullname" . }}" > /metrics/redis
+# leave this here. Signals end of block to the parser
+{{- end -}}

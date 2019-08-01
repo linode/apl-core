@@ -1,0 +1,14 @@
+{{- if .Values.enabled -}}
+{{- if and .Values.tcp (not .Values.tcpExternalConfig) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "nginx-ingress.tcp-configmap" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+    component: "{{ .Values.controller.name }}"
+data:
+{{ toYaml .Values.tcp | indent 2 }}
+{{- end }}
+{{- end }}

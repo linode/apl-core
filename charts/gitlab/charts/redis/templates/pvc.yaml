@@ -1,0 +1,34 @@
+{{- if and .Values.enabled .Values.persistence.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size | quote }}
+{{- if .Values.persistence.volumeName }}
+  volumeName: {{ .Values.persistence.volumeName }}
+{{- end }}
+{{- if .Values.persistence.storageClass }}
+{{- if (eq "-" .Values.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistence.storageClass }}"
+{{- end -}}
+{{- end }}
+  selector:
+{{- if .Values.persistence.matchLabels }}
+    matchLabels:
+{{ toYaml .Values.persistence.matchLabels | indent 6 }}
+{{- end -}}
+{{- if .Values.persistence.matchExpressions }}
+    matchExpressions:
+{{ toYaml .Values.persistence.matchExpressions | indent 6 }}
+{{- end -}}
+{{- end }}

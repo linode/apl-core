@@ -1,0 +1,20 @@
+{{ if (pluck "configureCertmanager" .Values.global.ingress (dict "configureCertmanager" false) | first) }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: {{ .Release.Name }}-issuer
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  acme:
+    # The ACME server URL
+    server: {{ .Values.server | quote }}
+    # Email address used for ACME registration
+    email: {{ required "You must provide an email to associate with your TLS certificates. Please set certmanager-issuer.email" .Values.email | quote }}
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: {{ .Release.Name }}-acme-key
+    # Enable the HTTP-01 challenge provider
+    http01: {}
+{{ end }}

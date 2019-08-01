@@ -1,0 +1,37 @@
+image: registry.gitlab.com/charts/alpine-helm
+
+stages:
+  - test
+  - release
+
+lint:
+  stage: test
+  script:
+    - helm lint .
+
+release-chart:
+  stage: release
+  script:
+    - curl --request POST
+           --form "token=$CI_JOB_TOKEN"
+           --form ref=master
+           --form "variables[CHART_NAME]=$CI_PROJECT_NAME"
+           --form "variables[RELEASE_REF]=$CI_COMMIT_REF_NAME"
+           https://gitlab.com/api/v4/projects/2860651/trigger/pipeline
+  only:
+    - /\Av[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?\Z/@charts/gitlab-runner
+
+release-development:
+  stage: release
+  script:
+    - helm init --client-only
+    - helm package .
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+  artifacts:
+    paths:
+      - gitlab-runner*.tgz
+    expire_in: 7d

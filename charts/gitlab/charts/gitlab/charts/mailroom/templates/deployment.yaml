@@ -1,0 +1,133 @@
+{{- if and .Values.enabled .Values.global.appConfig.incomingEmail.enabled }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      {{- if eq (default .Values.global.antiAffinity .antiAffinity) "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app: {{ template "name" . }}
+                  release: {{ .Release.Name }}
+      {{- else if eq (default .Values.global.antiAffinity .antiAffinity) "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: {{ template "name" . }}
+                  release: {{ .Release.Name }}
+      {{- end }}
+      initContainers:
+{{ include "gitlab.extraInitContainers" . | indent 8 }}
+{{ include "gitlab.certificates.initContainer" . | indent 8 }}
+        - name: configure
+          command: ['sh', '/config/configure']
+          image: {{ .Values.init.image }}:{{ .Values.init.tag }}
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" . | indent 10 }}
+          - name: mailroom-config
+            mountPath: /config/configure
+            subPath: configure
+            readOnly: true
+          - name: init-mailroom-secrets
+            mountPath: /init-config
+            readOnly: true
+          - name: mailroom-secrets
+            mountPath: /init-secrets
+            readOnly: false
+          resources:
+{{ toYaml .Values.init.resources | indent 12 }}
+{{- include "pullsecrets" .Values.image | indent 6}}
+      containers:
+{{ include "gitlab.extraContainers" . | indent 8 }}
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ coalesce .Values.image.tag (include "gitlab.versionTag" . ) }}"
+          {{ template "gitlab.imagePullPolicy" . }}
+          volumeMounts:
+            - name: mailroom-config
+              mountPath: /var/opt/gitlab/mail_room.yml
+              subPath: mail_room.yml
+            - name: mailroom-secrets
+              mountPath: '/etc/gitlab'
+              readOnly: true
+{{ include "gitlab.extraVolumeMounts" . | indent 12 }}
+{{ include "gitlab.certificates.volumeMount" . | indent 12 }}
+          livenessProbe:
+            exec:
+              command:
+                - pgrep
+                - -f
+                - mail_room
+          readinessProbe:
+            exec:
+              command:
+                - pgrep
+                - -f
+                - mail_room
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "pkill -f 'mail_room'"]
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+{{ include "gitlab.extraVolumes" . | indent 6 }}
+      - name: mailroom-config
+        configMap:
+          name: {{ template "fullname" . }}
+      - name: init-mailroom-secrets
+        projected:
+          defaultMode: 0400
+          sources:
+          {{- if .Values.global.redis.password.enabled }}
+          - secret:
+              name: {{ template "gitlab.redis.password.secret" . }}
+              items:
+                - key: {{ template "gitlab.redis.password.key" . }}
+                  path: redis/password
+          {{- end }}
+          - secret:
+              name: {{ .Values.global.appConfig.incomingEmail.password.secret | required "Missing required secret containing the IMAP password for incoming email. Make sure to set `global.appConfig.incomingEmail.password.secret`" }}
+              items:
+                - key: {{ .Values.global.appConfig.incomingEmail.password.key }}
+                  path: mailroom/password
+      - name: mailroom-secrets
+        emptyDir:
+          medium: "Memory"
+{{ include "gitlab.certificates.volumes" . | indent 6 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+{{- end }}

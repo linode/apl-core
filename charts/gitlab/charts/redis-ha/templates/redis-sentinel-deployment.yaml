@@ -1,0 +1,78 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}-sentinel
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas.sentinels }}
+  selector:
+    matchLabels:
+{{ include "labels.standard" . | indent 6 }}
+      name: "redis-sentinel"
+  template:
+    metadata:
+      labels:
+        name: "redis-sentinel"
+{{ include "labels.standard" . | indent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ template "name" . }}
+                - key: release
+                  operator: In
+                  values:
+                  - {{ .Release.Name | quote }}
+                - key: redis-role
+                  operator: In
+                  values:
+                  - sentinel
+              topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+{{- include "pullsecrets" .Values.image | indent 6}}
+      containers:
+      - name: sentinel
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ default "" .Values.image.pullPolicy | quote }}
+        resources:
+{{ toYaml .Values.resources.sentinel | indent 10 }}
+        env:
+          - name: SENTINEL
+            value: "true"
+          - name: REDIS_CHART_PREFIX
+            value: {{ template "fullname" . }}
+          - name: REDIS_PASSWORD_FILE
+            value: "/config/password"
+        ports:
+          - containerPort: 26379
+        volumeMounts:
+          - name: {{ .Release.Name }}-config
+            mountPath: /config/
+      volumes:
+      - name: {{ .Release.Name }}-config
+        projected:
+          sources:
+          - secret:
+              name: {{ template "gitlab.redis.password.secret" . }}
+              items:
+                - key: {{ template "gitlab.redis.password.key" . }}
+                  path: password
+{{- end -}}

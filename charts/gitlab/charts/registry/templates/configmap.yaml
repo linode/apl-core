@@ -1,0 +1,75 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  configure: |-
+{{ .Values.init.script | indent 4 }}
+  config.yml: |
+    version: 0.1
+    log:
+      level: warn
+      fields:
+        service: registry
+    # health:
+    #   storagedriver:
+    #     enabled: true
+    #     interval: 10s
+    #     threshold: 3
+    http:
+      {{- if .Values.debug }}
+      debug:
+        addr: ':{{ .Values.debug.addr.port | int }}'
+        prometheus:
+          enabled: {{ eq true .Values.debug.prometheus.enabled }}
+          path: {{ .Values.debug.prometheus.path }}
+      {{- end }}
+      headers:
+        X-Content-Type-Options: [nosniff]
+    # Filled from chart
+    http:
+      addr: :{{ .Values.service.internalPort }}
+      secret: "HTTP_SECRET"
+    auth:
+      token:
+        realm: {{ template "registry.authEndpoint" . }}/jwt/auth
+        service: {{ .Values.tokenService }}
+        issuer: {{ .Values.tokenIssuer | quote }}
+        # This is provided from the initContainer execution, at a known path.
+        rootcertbundle: /etc/docker/registry/certificate.crt
+        autoredirect: {{ .Values.authAutoRedirect }}
+    {{- if .Values.compatibility }}
+    compatibility:
+      {{- if .Values.compatibility.schema1 }}
+      schema1:
+        enabled: {{ eq true .Values.compatibility.schema1.enabled }}
+      {{- end }}
+    {{- end }}
+    storage:
+      {{- if .Values.storage }}
+      {{- else if .Values.global.minio.enabled }}
+      s3:
+        accesskey: "ACCESS_KEY"
+        secretkey: "SECRET_KEY"
+        region: us-east-1
+        regionendpoint: {{ template "registry.minio.url" . }}
+        bucket: {{ coalesce .Values.minio.bucket .Values.global.registry.bucket }}
+        secure: true
+        v4auth: true
+        rootdirectory: /
+      cache:
+        blobdescriptor: 'inmemory'
+      delete:
+        enabled: true
+      {{- if not .Values.minio.redirect }}
+      redirect:
+        disable: true
+      {{- end }}
+      {{- else }}
+{{ include (print $.Template.BasePath "/_storage_default.yaml") . | indent 6}}
+      {{- end }}
+{{- end -}}

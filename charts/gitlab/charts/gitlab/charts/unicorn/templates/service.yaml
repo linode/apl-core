@@ -1,0 +1,25 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+{{ include "gitlab.serviceAnnotations" . | indent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.externalPort }}
+      targetPort: {{ .Values.service.internalPort }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
+    - port: {{ .Values.service.workhorseExternalPort }}
+      targetPort: {{ .Values.service.workhorseInternalPort }}
+      protocol: TCP
+      name: workhorse
+  selector:
+    app: {{ template "name" . }}
+    release: {{ .Release.Name }}
+{{- end }}

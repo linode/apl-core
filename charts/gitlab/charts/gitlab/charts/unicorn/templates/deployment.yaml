@@ -1,0 +1,310 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  {{- if .Values.global.operator.enabled }}
+  paused: true
+  {{- end }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yml") . | sha256sum }}
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      {{- range $key, $value := .Values.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+{{- if .Values.metrics.enabled }}
+{{ toYaml .Values.metrics.annotations | indent 8 }}
+{{- end }}
+    spec:
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      {{- if eq (default .Values.global.antiAffinity .Values.antiAffinity) "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app: {{ template "name" . }}
+                  release: {{ .Release.Name }}
+      {{- else if eq (default .Values.global.antiAffinity .Values.antiAffinity) "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: {{ template "name" . }}
+                  release: {{ .Release.Name }}
+      {{- end }}
+      initContainers:
+{{ include "gitlab.extraInitContainers" . | indent 8 }}
+{{ include "gitlab.certificates.initContainer" . | indent 8 }}
+        - name: configure
+          command: ['sh']
+          args: [ '-c', 'sh -x /config-unicorn/configure ; sh -x /config-workhorse/configure']
+          image: {{ .Values.init.image }}:{{ .Values.init.tag }}
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" . | indent 10 }}
+{{ include "gitlab.psql.ssl.volumeMount" . | indent 10 }}
+          - name: unicorn-config
+            mountPath: /config-unicorn
+            readOnly: true
+          - name: workhorse-config
+            mountPath: /config-workhorse
+            readOnly: true
+          - name: init-unicorn-secrets
+            mountPath: /init-config
+            readOnly: true
+          - name: unicorn-secrets
+            mountPath: /init-secrets
+            readOnly: false
+          - name: workhorse-secrets
+            mountPath: /init-secrets-workhorse
+            readOnly: false
+          resources:
+{{ toYaml .Values.init.resources | indent 12 }}
+        - name: dependencies
+          image: "{{ coalesce .Values.image.repository (include "image.repository" .) }}:{{ coalesce .Values.image.tag (include "gitlab.versionTag" . ) }}"
+          {{ template "gitlab.imagePullPolicy" . }}
+          args:
+            - /scripts/wait-for-deps
+          env:
+{{- if .Values.global.operator.enabled }}
+            - name: BYPASS_SCHEMA_VERSION
+              value: 'true'
+{{- end }}
+            - name: GITALY_FEATURE_DEFAULT_ON
+              value: "1"
+            - name: CONFIG_TEMPLATE_DIRECTORY
+              value: '/var/opt/gitlab/templates'
+            - name: CONFIG_DIRECTORY
+              value: '/srv/gitlab/config'
+            - name: WORKHORSE_ARCHIVE_CACHE_DISABLED
+              value: "1"
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" . | indent 12 }}
+            - name: unicorn-config
+              mountPath: '/var/opt/gitlab/templates'
+            - name: unicorn-secrets
+              mountPath: '/etc/gitlab'
+              readOnly: true
+          resources:
+{{ toYaml .Values.init.resources | indent 12 }}
+{{- include "pullsecrets" .Values.image | indent 6}}
+      containers:
+{{ include "gitlab.extraContainers" . | indent 8 }}
+        - name: {{ .Chart.Name }}
+          image: "{{ coalesce .Values.image.repository (include "image.repository" .) }}:{{ coalesce .Values.image.tag (include "gitlab.versionTag" . ) }}"
+          {{ template "gitlab.imagePullPolicy" . }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+              name: unicorn
+          env:
+            - name: GITALY_FEATURE_DEFAULT_ON
+              value: "1"
+            - name: CONFIG_TEMPLATE_DIRECTORY
+              value: '/var/opt/gitlab/templates'
+            - name: CONFIG_DIRECTORY
+              value: '/srv/gitlab/config'
+{{- if .Values.metrics.enabled }}
+            - name: prometheus_multiproc_dir
+              value: /metrics
+{{- end }}
+{{- if .Values.workhorse.sentryDSN }}
+            - name: GITLAB_WORKHORSE_SENTRY_DSN
+              value: {{ .Values.workhorse.sentryDSN }}
+{{- end }}
+          volumeMounts:
+{{- if .Values.metrics.enabled }}
+            - name: unicorn-metrics
+              mountPath: '/metrics'
+{{- end }}
+            - name: unicorn-config
+              mountPath: '/var/opt/gitlab/templates'
+            - name: unicorn-secrets
+              mountPath: '/etc/gitlab'
+              readOnly: true
+            - name: unicorn-secrets
+              mountPath: /srv/gitlab/config/secrets.yml
+              subPath: rails-secrets/secrets.yml
+            - name: unicorn-config
+              mountPath: '/srv/gitlab/config/initializers/smtp_settings.rb'
+              subPath: smtp_settings.rb
+            - name: unicorn-config
+              mountPath: '/srv/gitlab/INSTALLATION_TYPE'
+              subPath: installation_type
+            - name: shared-upload-directory
+              mountPath: /srv/gitlab/public/uploads/tmp
+              readOnly: false
+            - name: shared-artifact-directory
+              mountPath: /srv/gitlab/shared
+              readOnly: false
+{{ include "gitlab.certificates.volumeMount" . | indent 12 }}
+{{ include "gitlab.extraVolumeMounts" . | indent 12 }}
+          livenessProbe:
+            exec:
+              command:
+              - /scripts/healthcheck
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            periodSeconds: 60
+          readinessProbe:
+            exec:
+              command:
+              - /scripts/healthcheck
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "pkill -SIGQUIT -f 'unicorn master'"]
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+        - name: gitlab-workhorse
+          image: "{{ coalesce .Values.workhorse.image (include "workhorse.repository" .) }}:{{ coalesce .Values.workhorse.tag (include "gitlab.versionTag" . ) }}"
+          {{ template "gitlab.imagePullPolicy" . }}
+          ports:
+            - containerPort: {{ .Values.service.workhorseInternalPort }}
+              name: workhorse
+          env:
+            - name: GITLAB_WORKHORSE_EXTRA_ARGS
+              value: {{ .Values.workhorse.extraArgs | quote }}
+            - name: GITLAB_WORKHORSE_LISTEN_PORT
+              value: {{ default 8181 .Values.service.workhorseInternalPort | int | quote }}
+            - name: CONFIG_TEMPLATE_DIRECTORY
+              value: '/var/opt/gitlab/templates'
+            - name: CONFIG_DIRECTORY
+              value: '/srv/gitlab/config'
+          volumeMounts:
+            - name: workhorse-config
+              mountPath: '/var/opt/gitlab/templates'
+            - name: workhorse-secrets
+              mountPath: '/etc/gitlab'
+              readOnly: true
+            - name: shared-upload-directory
+              mountPath: /srv/gitlab/public/uploads/tmp
+              readOnly: false
+            - name: shared-artifact-directory
+              mountPath: /srv/gitlab/shared
+              readOnly: false
+{{ include "gitlab.certificates.volumeMount" . | indent 12 }}
+{{ include "gitlab.extraVolumeMounts" . | indent 12 }}
+          livenessProbe:
+            exec:
+              command:
+              - /scripts/healthcheck
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            periodSeconds: 60
+          readinessProbe:
+            exec:
+              command:
+              - /scripts/healthcheck
+          resources:
+{{ toYaml .Values.workhorse.resources | indent 12 }}
+      volumes:
+{{ include "gitlab.extraVolumes" . | indent 6 }}
+{{ include "gitlab.psql.ssl.volume" . | indent 6 }}
+{{- if .Values.metrics.enabled }}
+      - name: unicorn-metrics
+        emptyDir:
+          medium: "Memory"
+{{- end }}
+      - name: unicorn-config
+        configMap:
+          name: {{ template "fullname" . }}
+      - name: workhorse-config
+        configMap:
+            name: {{ .Release.Name }}-workhorse-config
+      - name: init-unicorn-secrets
+        projected:
+          defaultMode: 0400
+          sources:
+          - secret:
+              name: {{ template "gitlab.rails-secrets.secret" . }}
+              items:
+                - key: secrets.yml
+                  path: rails-secrets/secrets.yml
+          - secret:
+              name: {{ template "gitlab.gitlab-shell.authToken.secret" . }}
+              items:
+                - key: {{ template "gitlab.gitlab-shell.authToken.key" . }}
+                  path: shell/.gitlab_shell_secret
+          - secret:
+              name: {{ template "gitlab.gitaly.authToken.secret" . }}
+              items:
+                - key: {{ template "gitlab.gitaly.authToken.key" . }}
+                  path: gitaly/gitaly_token
+          {{- if .Values.global.redis.password.enabled }}
+          - secret:
+              name: {{ template "gitlab.redis.password.secret" . }}
+              items:
+                - key: {{ template "gitlab.redis.password.key" . }}
+                  path: redis/password
+          {{- end }}
+          - secret:
+              name: {{ template "gitlab.psql.password.secret" . }}
+              items:
+                - key: {{ template "gitlab.psql.password.key" . }}
+                  path: postgres/psql-password
+          - secret:
+              name: {{ template "gitlab.registry.certificate.secret" . }}
+              items:
+                - key: registry-auth.key
+                  path: registry/gitlab-registry.key
+          - secret:
+              name: {{ template "gitlab.workhorse.secret" . }}
+              items:
+                - key: {{ template "gitlab.workhorse.key" . }}
+                  path: gitlab-workhorse/secret
+          {{- include "gitlab.minio.mountSecrets" $ | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "artifacts" "config" $.Values.global.appConfig.artifacts) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "lfs" "config" $.Values.global.appConfig.lfs) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "uploads" "config" $.Values.global.appConfig.uploads) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "packages" "config" $.Values.global.appConfig.packages) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "external_diffs" "config" $.Values.global.appConfig.externalDiffs) | nindent 10 }}
+          {{- include "gitlab.appConfig.ldap.servers.mountSecrets" $ | nindent 10 }}
+          {{- include "gitlab.appConfig.omniauth.mountSecrets" $ | nindent 10 }}
+          {{- if and $.Values.global.smtp.enabled $.Values.global.smtp.authentication }}
+          - secret:
+              name: {{ .Values.global.smtp.password.secret | required "Missing required secret containing the SMTP password. Make sure to set `global.smtp.password.secret`" }}
+              items:
+                - key: {{ .Values.global.smtp.password.key }}
+                  path: smtp/smtp-password
+          {{- end }}
+      - name: unicorn-secrets
+        emptyDir:
+          medium: "Memory"
+      - name: workhorse-secrets
+        emptyDir:
+          medium: "Memory"
+      - name: shared-upload-directory
+        emptyDir: {}
+      - name: shared-artifact-directory
+        emptyDir: {}
+{{ include "gitlab.certificates.volumes" . | indent 6 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+{{- end }}

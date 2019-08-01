@@ -1,0 +1,7 @@
+# if a customer has more namespaces and they need to be able to access others:
+siblingNamespaces: []
+resourceQuota:
+  pods: 50
+customerLabels:
+  customer: ""
+  namespace: ""

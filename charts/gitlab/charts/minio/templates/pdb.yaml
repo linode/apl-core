@@ -1,0 +1,16 @@
+{{- if .Values.global.minio.enabled -}}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "minio.fullname" . }}-v1
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  maxUnavailable: {{ .Values.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: {{ template "minio.name" . }}
+      release: {{ .Release.Name }}
+      component: app
+{{- end -}}

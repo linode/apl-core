@@ -1,0 +1,16 @@
+apiVersion: v1
+appVersion: v0.9.0
+description: A Helm chart for deploying the cert-manager webhook component
+home: https://github.com/jetstack/cert-manager
+keywords:
+- cert-manager
+- kube-lego
+- letsencrypt
+- tls
+maintainers:
+- email: james@jetstack.io
+  name: munnerz
+name: webhook
+sources:
+- https://github.com/jetstack/cert-manager
+version: v0.9.0

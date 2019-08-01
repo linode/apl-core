@@ -1,0 +1,69 @@
+{{- if .Values.enabled -}}
+{{- if and .Values.rbac.create (not .Values.controller.scope.enabled) -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "nginx-ingress.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+    verbs:
+      - list
+      - watch
+{{- if and .Values.controller.scope.enabled .Values.controller.scope.namespace }}
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    resourceNames:
+      - "{{ .Values.controller.scope.namespace }}"
+    verbs:
+      - get
+{{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,23 @@
+{{- if .Values.networkPolicy.enabled | and .Values.global.minio.enabled }}
+kind: NetworkPolicy
+apiVersion: {{ template "minio.networkPolicy.apiVersion" . }}
+metadata:
+  name: {{ template "minio.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ template "minio.name" . }}
+      release: {{ .Release.Name }}
+  ingress:
+    - ports:
+        - port: {{ .Values.servicePort }}
+      {{- if not .Values.networkPolicy.allowExternal }}
+      from:
+        - podSelector:
+            matchLabels:
+              {{ template "minio.fullname" . }}-client: "true"
+      {{- end }}
+{{- end }}

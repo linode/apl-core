@@ -1,0 +1,46 @@
+sites: []
+  # - otomi.cloud
+
+sitespeed: []
+  # - host: otomi.cloud
+  #   paths: [/]
+
+letsencrypt:
+  email: "morriz@idiotz.nl"
+  stage: "production"
+
+oidc:
+  grafana:
+    clientId: grafana
+    clientSecret: apie4eeX6hiC9ainiel1
+
+prometheus-operator:
+  grafana:
+    ini:
+      github:
+        clientID: 9c72f5a6c479451272d6
+        clientSecret: 8437a3603320743bf9994f06a2627e51f1821550
+
+oauth2-proxy:
+  config:
+    clientID: 5ee6373eec36e3616f8a
+    clientSecret: 153acea33adb0d6fccb7e4e757d24b53d439215c
+    cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
+
+drone:
+  server:
+    adminUser: Morriz
+  sourceControl:
+    github:
+      clientID: 6455ffb30c8e270c402f
+      clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
+
+services:
+  - index
+  - dashboard
+  - blackbox
+  - grafana
+  - scope
+  - prom
+  - alerts
+  - drone

@@ -1,0 +1,19 @@
+apiVersion: v1
+appVersion: 0.2.2
+description: Configuration Job to add LetsEncrypt Issuer to cert-manager
+home: https://about.gitlab.com/
+icon: https://gitlab.com/gitlab-com/gitlab-artwork/raw/master/logo/logo-square.svg
+keywords:
+- gitlab
+- cert-manager
+- tls
+- letsencrypt
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+name: certmanager-issuer
+sources:
+- https://gitlab.com/charts/gitlab/tree/master/charts/certmanager-issuer
+- https://gitlab.com/gitlab-org/build/CNG/tree/master/kubectl
+- https://github.com/jetstack/cert-manager
+version: 0.1.0

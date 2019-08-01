@@ -1,0 +1,52 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  database.yml.erb: |
+    production:
+      adapter: postgresql
+      encoding: unicode
+      database: {{ template "gitlab.psql.database" . }}
+      pool: 10
+      username: {{ template "gitlab.psql.username" . }}
+      password: "<%= File.read("/etc/gitlab/postgres/psql-password").strip.dump[1..-2] %>"
+      host: {{ template "gitlab.psql.host" . }}
+      port: {{ template "gitlab.psql.port" . }}
+      # load_balancing:
+      #   hosts:
+      #     - host1.example.com
+      #     - host2.example.com
+{{- include "gitlab.psql.ssl.config" . | indent 6 }}
+  resque.yml.erb: |
+    production:
+      # Redis (single instance)
+      url: {{ template "gitlab.redis.url" . }}
+      id:
+  gitlab.yml.erb: |
+    production: &base
+      gitlab:
+{{ include "gitlab.appConfig.gitaly" . | indent 6 }}
+{{ include "gitlab.appConfig.repositories" . | indent 6 }}
+  configure: |
+    {{- include "gitlab.scripts.configure.secrets" (dict "required" "postgres rails-secrets migrations gitaly") | nindent 4 -}}
+    {{- include "gitlab.psql.ssl.initScript" . | nindent 4 }}
+{{- if .Values.global.operator.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-migrations-jobspec
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  template: |-
+{{ include (print $.Template.BasePath "/_jobspec.yaml") . | indent 4 }}
+{{- end }}
+# Leave this here - This line denotes end of block to the parser.
+{{- end }}

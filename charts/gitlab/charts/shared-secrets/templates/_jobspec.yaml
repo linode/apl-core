@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "shared-secrets.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+{{- if and .Values.enabled (not .Values.global.operator.enabled) }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+{{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      {{- if .Values.rbac.create }}
+      serviceAccountName: {{ template "shared-secrets.serviceAccountName" . }}
+      {{- end }}
+      restartPolicy: Never
+{{- include "pullsecrets" .Values.image | indent 6}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ['/bin/bash', '/scripts/generate-secrets']
+          {{ template "gitlab.imagePullPolicy" . }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: ssh
+              mountPath: /etc/ssh
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "fullname" . }}
+      - name: ssh
+        emptyDir: {}

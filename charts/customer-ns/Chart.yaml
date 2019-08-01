@@ -1,0 +1,4 @@
+description: Chart for customer namespace resources
+engine: gotpl
+name: customer-ns
+version: 0.1.0

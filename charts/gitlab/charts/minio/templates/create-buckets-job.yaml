@@ -1,0 +1,45 @@
+{{- if and .Values.global.minio.enabled .Values.defaultBuckets }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "minio.createBucketsJobName" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+spec:
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: {{ template "minio.name" . }}
+        release: {{ .Release.Name }}
+        component: create-buckets
+    spec:
+      restartPolicy: OnFailure
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+    {{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: minio-configuration
+          projected:
+            sources:
+            - configMap:
+                name: {{ template "minio.fullname" . }}-config-cm
+            - secret:
+                name: {{ template "gitlab.minio.credentials.secret" . }}
+      containers:
+      - name: minio-mc
+        image: {{ .Values.minioMc.image }}:{{ .Values.minioMc.tag }}
+        command: ["/bin/sh", "/config/initialize"]
+        env:
+          - name: MINIO_ENDPOINT
+            value: {{ template "minio.fullname" . }}-svc
+          - name: MINIO_PORT
+            value: {{ .Values.servicePort | quote }}
+        volumeMounts:
+          - name: minio-configuration
+            mountPath: /config
+        resources:
+{{ toYaml .Values.init.resources | indent 10 }}
+    {{- end }}

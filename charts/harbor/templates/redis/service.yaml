@@ -1,0 +1,15 @@
+{{- if eq .Values.redis.type "internal" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "harbor.redis" . }}
+  labels:
+{{ toYaml .Values.customerLabels | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 6379
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: redis
+{{- end -}}

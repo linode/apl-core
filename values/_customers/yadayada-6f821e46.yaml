@@ -1,0 +1,57 @@
+# domain: can be overridden but defaults to yadayada-6f821e46.in.itomi.cloud
+active: true
+values:
+  customer:
+    id: yadayada-6f821e46 # 8 chars of md5(yadayada)
+    name: yadayada
+  oidc:
+    grafana:
+      clientId: grafana
+      secret: yadayada-6f821e46
+namespaces:
+  dev:
+    name: dev # becomes yadayada-6f821e46-dev
+    # domain: can be overridden but defaults to dev.yadayada-6f821e46.in.itomi.cloud
+    charts: # private
+      - name: index
+        values: {}
+      - name: drone
+        values:
+          sourceControl:
+            github:
+              clientID: 48b05bbc8fc85d78c919
+              clientSecretValue: 6f821e46bd67ac27249ceaa26c207923
+          server:
+            adminUser:
+          persistence:
+            enabled: false
+      - name: prom-blackbox-exporter
+        values: {}
+      - name: prometheus-operator
+        values:
+          alertmanager:
+            config:
+              global:
+                slack_api_url: https://hooks.slack.com/services/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
+          grafana:
+            ini:
+              github:
+                clientID: 9c72f5a6c479451272d6
+                clientSecret: 8437a3603320743bf9994f06a2627e51f1821550
+      - name: grafana-dashboards
+        values: {}
+      - name: oauth2-proxy
+        values:
+          config:
+            clientID: 220f10429095bd368ec6
+            clientSecret: 1c7191d82201ebe62129d5b6f4666cdd7bdfcb4c
+            cookieSecret: d051NUlTUTg4QWZ2NFlBQVlLRkg1UlBVc3V5bXB3NEI=
+      # - promtail
+      # - loki
+      # - sitespeed
+    siblingNamespaces:
+      - prd # allows default SA token access, allows drone deploy
+  prd:
+    name: prd
+    domain: yadayada.io
+    charts: []

@@ -1,0 +1,65 @@
+{{- if .Values.upgradeCheck.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}-upgrade-check
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-11"
+    "helm.sh/hook-delete-policy": before-hook-creation
+data:
+  runcheck: |
+{{ include (print $.Template.BasePath "/_runcheck.tpl") . | indent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "fullname" . }}-upgrade-check
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.upgradeCheck.tolerations }}
+      tolerations:
+{{ toYaml .Values.upgradeCheck.tolerations | indent 8 }}
+      {{- end }}
+      restartPolicy: Never
+{{- include "pullsecrets" .Values.upgradeCheck.image | indent 6}}
+      containers:
+        - name: run-check
+          image: "{{ .Values.upgradeCheck.image.repository }}:{{ .Values.upgradeCheck.image.tag }}"
+          command: ['/bin/sh', '/scripts/runcheck']
+          {{ template "gitlab.imagePullPolicy" . }}
+          env:
+            - name: GITLAB_VERSION
+              value: '{{ coalesce .Values.global.gitlabVersion .Chart.AppVersion }}'
+          volumeMounts:
+            - name: chart-info
+              mountPath: /chart-info
+            - name: scripts
+              mountPath: /scripts
+          resources:
+{{ toYaml .Values.upgradeCheck.resources | indent 12 }}
+      volumes:
+      - name: chart-info
+        configMap:
+          name: {{ template "fullname" . }}-chart-info
+          optional: true
+      - name: scripts
+        configMap:
+          name: {{ template "fullname" . }}-upgrade-check
+{{- end }}

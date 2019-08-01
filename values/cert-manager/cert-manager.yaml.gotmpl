@@ -1,0 +1,13 @@
+prometheus:
+  servicemonitor:
+    enabled: true
+
+ingressShim:
+  defaultIssuerName: letsencrypt-prod
+  defaultIssuerKind: ClusterIssuer
+
+
+cainjector:
+  customerLabels: {{ toYaml .Environment.Values.customerLabels | nindent 4 }}
+webhook:
+  customerLabels: {{ toYaml .Environment.Values.customerLabels | nindent 4 }}

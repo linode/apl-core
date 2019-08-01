@@ -1,0 +1,16 @@
+apiVersion: v1
+appVersion: RELEASE.2017-12-28T01-21-00Z
+description: Object storage server built for cloud applications and devops.
+home: https://minio.io
+icon: https://www.minio.io/img/logo_160x160.png
+keywords:
+- S3
+- gitlab
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+name: minio
+sources:
+- https://gitlab.com/charts/gitlab/charts/minio
+- https://github.com/minio/minio
+version: 0.4.3

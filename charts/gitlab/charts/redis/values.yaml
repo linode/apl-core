@@ -1,0 +1,94 @@
+image:
+  repository: redis
+  tag: '3.2.12'
+  pullPolicy: 'IfNotPresent'
+  pullSecrets: []
+init:
+  image: busybox
+  tag: latest
+  resources:
+    requests:
+      cpu: 50m
+service:
+  name: redis
+  type: ClusterIP
+  externalPort: 6379
+  internalPort: 6379
+  clusterIP: '0.0.0.0'
+maxUnavailable: 1
+# define some sane resource requests and limitations
+resources:
+  # limits:
+  #   cpu: 200m
+  #   memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+# Chart operation controls
+enabled: true
+
+# Configuration items
+timeout: 60
+tcpKeepalive: 300
+loglevel: "notice"
+
+metrics:
+  enabled: true
+  port: 9121
+  image: oliver006/redis_exporter
+  imageTag: v0.34.1-alpine
+  imagePullPolicy: IfNotPresent
+  resources: {}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9121"
+
+securityContext:
+  runAsUser: 999
+  fsGroup: 999
+  allowPrivilegeEscalation: false
+
+# Configure persistence for Redis instance
+persistence:
+  enabled: true
+
+  ## postgres data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 5Gi
+
+  ## If subPath is set mount a sub folder of a volume instead of the root of the volume.
+  ## This is especially handy for volume plugins that don't natively support sub mounting (like glusterfs).
+  ##
+  subPath: ""
+
+  ## if volumeName is set, use this existing PersistentVolume
+  # volumeName:
+
+  ## Only bind to a volume with the following exactly matched labels with values.
+  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
+  matchLabels: {}
+
+  ## Only bind to a volume with the following exppression matched labels.
+  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
+  matchExpressions: []
+
+  # Configure save points
+  # https://redis.io/topics/persistence
+  # - time: every X seconds
+  # - writes: if at least Y keys have changed
+  # If this is intentionally empty, persistence will be disabled!
+  save:
+    - time: 60
+      writes: 1000
+    - time: 300
+      writes: 10
+    - time: 900
+      writes: 1

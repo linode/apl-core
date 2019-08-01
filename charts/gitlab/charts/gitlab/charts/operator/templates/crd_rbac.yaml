@@ -1,0 +1,108 @@
+{{- if .Values.global.operator.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" $ | indent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if (include "gitlab.operator.namespaced" .) }}
+kind: Role
+{{- else }}
+kind: ClusterRole
+{{- end }}
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+{{ include "gitlab.standardLabels" $ | indent 4 }}
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - statefulsets
+  - daemonsets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+{{- if not (include "gitlab.operator.namespaced" .) }}
+    - clusterroles
+    - clusterrolebindings
+{{- end }}
+    - roles
+    - rolebindings
+  verbs:
+    - get
+    - list
+    - create
+    - update
+    - watch
+    - patch
+    - delete
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - configmaps
+  - serviceaccounts
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - {{ template "gitlab.operator.groupName" . }}
+  resources:
+  - gitlabs
+  verbs:
+  - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if (include "gitlab.operator.namespaced" .) }}
+kind: RoleBinding
+{{- else }}
+kind: ClusterRoleBinding
+{{- end }}
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+{{ include "gitlab.standardLabels" $ | indent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+{{- if (include "gitlab.operator.namespaced" .) }}
+  kind: Role
+{{- else }}
+  kind: ClusterRole
+{{- end }}
+  name: {{ template "fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+{{- end }}

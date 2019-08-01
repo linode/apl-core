@@ -1,0 +1,7 @@
+{{- if and .Values.enabled .Values.rbac.create (not .Values.global.operator.enabled) -}}
+{{ include (print $.Template.BasePath "/_rbac-serviceaccount.yaml") . }}
+---
+{{ include (print $.Template.BasePath "/_rbac-role.yaml") . }}
+---
+{{ include (print $.Template.BasePath "/_rbac-rolebinding.yaml") . }}
+{{- end}}

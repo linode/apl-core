@@ -1,0 +1,41 @@
+{{- if .Values.global.minio.enabled -}}
+{{- if eq (include "gitlab.ingress.enabled" $) "true" -}}
+{{- $minioHostname := include "gitlab.minio.hostname" . -}}
+{{- $tlsSecret := include "minio.tlsSecret" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "minio.fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "{{ template "minio.ingressclass" . }}"
+    kubernetes.io/ingress.provider: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.proxyBodySize | quote }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.proxyReadTimeout | quote }}
+    nginx.ingress.kubernetes.io/proxy-request-buffering: {{ .Values.ingress.proxyBuffering | quote }}
+    nginx.ingress.kubernetes.io/proxy-buffering: {{ .Values.ingress.proxyBuffering | quote }}
+    {{ include "gitlab.certmanager_annotations" . }}
+  {{- range $key, $value := merge .Values.ingress.annotations .Values.global.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+spec:
+  rules:
+    - host: {{ $minioHostname }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "minio.fullname" . }}-svc
+              servicePort: {{ .Values.servicePort }}
+  {{- if (and $tlsSecret (eq (include "gitlab.ingress.tls.enabled" $) "true" )) }}
+  tls:
+    - hosts:
+      - {{ $minioHostname }}
+      secretName: {{ $tlsSecret }}
+  {{- else }}
+  tls: []
+  {{- end }}
+{{- end -}}
+{{- end -}}

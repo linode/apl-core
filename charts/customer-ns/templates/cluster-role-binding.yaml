@@ -1,0 +1,31 @@
+{{- $v := .Values }}
+# allow teams to view all resources in all namespaces except secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  {{- include "customer-ns.labels" . | nindent 2 }}
+  name: {{ template "customer-ns.fullname" . }}-clusterview
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Release.Namespace }}
+---
+# allow to use helmfile which wants to do bookkeeping in the tillerless namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  {{- include "customer-ns.labels" . | nindent 2 }}
+  name: {{ template "customer-ns.fullname" . }}-tillerless
+  namespace: tillerless
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tillerless
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Release.Namespace }}

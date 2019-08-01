@@ -1,0 +1,295 @@
+{{- if .Values.enabled -}}
+{{- $chart := printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" -}}
+{{- $name := default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $releaseName := .Release.Name -}}
+{{- $releaseService := .Release.Service -}}
+{{- $fullname := printf "%s-%s" $releaseName $name | trunc 63 | trimSuffix "-" -}}
+{{- $image := printf "%s:%s" (coalesce .Values.image.repository (include "image.repository" .)) (coalesce .Values.image.tag (include "gitlab.versionTag" . )) -}}
+{{- $concurrency := .Values.concurrency -}}
+{{- $timeout := .Values.timeout -}}
+{{- $resources := .Values.resources -}}
+{{- $nodeSelector := .Values.nodeSelector -}}
+{{- $minioEnabled := .Values.global.minio.enabled -}}
+{{- $minioSecret := include "gitlab.minio.credentials.secret" . -}}
+{{- $redisSecret := include "gitlab.redis.password.secret" . -}}
+{{- $redisKey := include "gitlab.redis.password.key" . -}}
+{{- $gitalySecret := include "gitlab.gitaly.authToken.secret" . -}}
+{{- $gitalyKey := include "gitlab.gitaly.authToken.key" . -}}
+{{- $railsSecretName := include "gitlab.rails-secrets.secret" . -}}
+{{- $metricsEnabled := .Values.metrics.enabled -}}
+{{- $metricsPort := .Values.metrics.port -}}
+{{- $metricsAnnotations := .Values.metrics.annotations -}}
+{{- $initImage := .Values.init.image }}
+{{- $initTag := .Values.init.tag }}
+{{- /* The below is an messy attempt to read in, and reflect on the configmap-queues.yaml template. */}}
+{{- $queueConfigList := include (print $.Template.BasePath "/configmap-queue.yaml") . | split "\n---" }}
+{{- $queues := dict }}
+{{- range $k,$v := $queueConfigList }}
+{{-   $tmpConfig := $v | fromYaml }}
+{{-   $md := $tmpConfig.metadata }}
+{{-   $labels :=  $md.labels }}
+{{-   $_ := set $queues ( $labels.queue_pod_name | quote ) ( $v | quote ) }}
+{{- end }}
+{{- $configMapChecksum := include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+{{- range .Values.pods -}}
+{{- $queueName := printf "%s-%s" $fullname .name | trunc 63}}
+{{- $podNodeSelector := default $nodeSelector .nodeSelector -}}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ $queueName }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" $ | indent 4 }}
+    queue-pod-name: {{ .name }}
+spec:
+  {{- if $.Values.global.operator.enabled }}
+  paused: true
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+      release: {{ $releaseName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+        release: {{ $releaseName }}
+      annotations:
+        checksum/configmap: {{ $configMapChecksum }}
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        checksum/configmap-pod: {{ pluck ( .name | quote ) $queues | last | sha256sum }}
+      {{- range $key, $value := $.Values.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+{{- if $metricsEnabled }}
+{{ toYaml $metricsAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      {{- if $.Values.tolerations }}
+      tolerations:
+{{ toYaml $.Values.tolerations | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      {{- if eq (default $.Values.global.antiAffinity .antiAffinity) "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  app: {{ $name }}
+                  release: {{ $releaseName }}
+      {{- else if eq (default $.Values.global.antiAffinity .antiAffinity) "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: {{ $name }}
+                  release: {{ $releaseName }}
+      {{- end }}
+      initContainers:
+{{ include "gitlab.extraInitContainers" $ | indent 8 }}
+{{ include "gitlab.certificates.initContainer" $ | indent 8 }}
+        - name: configure
+          command: ['sh', '/config/configure']
+          image: {{ $initImage }}:{{ $initTag }}
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" $ | indent 10 }}
+{{ include "gitlab.psql.ssl.volumeMount" $ | indent 10 }}
+          - name: sidekiq-config
+            mountPath: /config
+            readOnly: true
+          - name: init-sidekiq-secrets
+            mountPath: /init-config
+            readOnly: true
+          - name: sidekiq-secrets
+            mountPath: /init-secrets
+            readOnly: false
+          resources:
+{{ toYaml $.Values.init.resources | indent 12 }}
+        - name: dependencies
+          image: "{{ $image }}"
+          {{ template "gitlab.imagePullPolicy" $ }}
+          args:
+            - /scripts/wait-for-deps
+          env:
+            - name: GITALY_FEATURE_DEFAULT_ON
+              value: "1"
+            - name: CONFIG_TEMPLATE_DIRECTORY
+              value: '/var/opt/gitlab/templates'
+            - name: CONFIG_DIRECTORY
+              value: '/srv/gitlab/config'
+            - name: SIDEKIQ_CONCURRENCY
+              value: {{ default $concurrency .concurrency | quote }}
+            - name: SIDEKIQ_TIMEOUT
+              value: {{ default $timeout .timeout | quote }}
+{{- if $.Values.global.operator.enabled }}
+            - name: BYPASS_SCHEMA_VERSION
+              value: 'true'
+{{- end }}
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" $ | indent 10 }}
+          - name: sidekiq-config
+            mountPath: '/var/opt/gitlab/templates'
+            readOnly: true
+          - name: sidekiq-secrets
+            mountPath: '/etc/gitlab'
+            readOnly: true
+          resources:
+{{ toYaml $.Values.init.resources | indent 12 }}
+{{- include "pullsecrets" $.Values.image | indent 6}}
+      containers:
+{{ include "gitlab.extraContainers" $ | indent 8 }}
+        - name: {{ $name }}
+          image: "{{ $image }}"
+          {{ template "gitlab.imagePullPolicy" $ }}
+          env:
+{{- if $metricsEnabled }}
+            - name: prometheus_multiproc_dir
+              value: /metrics
+{{- end }}
+            - name: GITALY_FEATURE_DEFAULT_ON
+              value: "1"
+            - name: CONFIG_TEMPLATE_DIRECTORY
+              value: '/var/opt/gitlab/templates'
+            - name: CONFIG_DIRECTORY
+              value: '/srv/gitlab/config'
+            - name: SIDEKIQ_CONCURRENCY
+              value: {{ default $concurrency .concurrency | quote }}
+            - name: SIDEKIQ_TIMEOUT
+              value: {{ default $timeout .timeout | quote }}
+            - name: SIDEKIQ_MEMORY_KILLER_MAX_RSS
+              value: {{ int $.Values.memoryKiller.maxRss | quote }}
+            - name: SIDEKIQ_MEMORY_KILLER_GRACE_TIME
+              value: {{ int $.Values.memoryKiller.graceTime | quote }}
+            - name: SIDEKIQ_MEMORY_KILLER_SHUTDOWN_WAIT
+              value: {{ int $.Values.memoryKiller.shutdownWait | quote }}
+{{- if $metricsEnabled }}
+          ports:
+          - containerPort: {{ $metricsPort }}
+            name: metrics
+{{- end }}
+          volumeMounts:
+{{ include "gitlab.extraVolumeMounts" $ | indent 10 }}
+{{- if $metricsEnabled }}
+          - name: sidekiq-metrics
+            mountPath: '/metrics'
+{{- end }}
+          - name: sidekiq-config
+            mountPath: '/var/opt/gitlab/templates'
+            readOnly: true
+          - name: sidekiq-secrets
+            mountPath: '/etc/gitlab'
+            readOnly: true
+          - name: sidekiq-secrets
+            mountPath: /srv/gitlab/config/secrets.yml
+            subPath: rails-secrets/secrets.yml
+          - name: sidekiq-config
+            mountPath: '/srv/gitlab/config/initializers/smtp_settings.rb'
+            subPath: smtp_settings.rb
+          - name: sidekiq-config
+            mountPath: '/srv/gitlab/INSTALLATION_TYPE'
+            subPath: installation_type
+{{ include "gitlab.certificates.volumeMount" $ | indent 10 }}
+          livenessProbe:
+            exec:
+              command:
+                - pgrep
+                - -f
+                - sidekiq
+          readinessProbe:
+            exec:
+              command:
+                - head
+                - -c1
+                - /dev/random
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/bash", "-c", "pkill -f 'sidekiq'"]
+          resources:
+{{ toYaml ( default $resources .resources ) | indent 12 }}
+      volumes:
+{{ include "gitlab.extraVolumes" $ | indent 6 }}
+{{ include "gitlab.psql.ssl.volume" $ | indent 6 }}
+{{- if $metricsEnabled }}
+      - name: sidekiq-metrics
+        emptyDir:
+          medium: "Memory"
+{{- end }}
+      - name: sidekiq-config
+        projected:
+          sources:
+            - configMap:
+                name: {{ $fullname }}
+            - configMap:
+                name: {{ $queueName }}
+            {{- if $.Values.global.appConfig.pseudonymizer.configMap }}
+            - configMap:
+                name: {{ $.Values.global.appConfig.pseudonymizer.configMap }}
+            {{- end }}
+      - name: init-sidekiq-secrets
+        projected:
+          defaultMode: 0400
+          sources:
+          - secret:
+              name: {{ $railsSecretName }}
+              items:
+                - key: secrets.yml
+                  path: rails-secrets/secrets.yml
+          - secret:
+              name: {{ $gitalySecret }}
+              items:
+                - key: {{ $gitalyKey }}
+                  path: gitaly/gitaly_token
+          {{- if $.Values.global.redis.password.enabled }}
+          - secret:
+              name: {{ $redisSecret }}
+              items:
+                - key: {{ $redisKey }}
+                  path: redis/password
+          {{- end }}
+          - secret:
+              name: {{ template "gitlab.psql.password.secret" $ }}
+              items:
+                - key: {{ template "gitlab.psql.password.key" $ }}
+                  path: postgres/psql-password
+          - secret:
+              name: {{ template "gitlab.registry.certificate.secret" $ }}
+              items:
+                - key: registry-auth.key
+                  path: registry/gitlab-registry.key
+          {{- include "gitlab.minio.mountSecrets" $ | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "lfs" "config" $.Values.global.appConfig.lfs) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "artifacts" "config" $.Values.global.appConfig.artifacts) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "uploads" "config" $.Values.global.appConfig.uploads) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "packages" "config" $.Values.global.appConfig.packages) | nindent 10 }}
+          {{- include "gitlab.appConfig.objectStorage.mountSecrets" (dict "name" "external_diffs" "config" $.Values.global.appConfig.externalDiffs) | nindent 10 }}
+          {{- include "gitlab.appConfig.pseudonymizer.mountSecrets" $ | nindent 10 }}
+          {{- include "gitlab.appConfig.ldap.servers.mountSecrets" $ | nindent 10 }}
+          {{- include "gitlab.appConfig.omniauth.mountSecrets" $ | nindent 10 }}
+          {{- if and $.Values.global.smtp.enabled $.Values.global.smtp.authentication }}
+          - secret:
+              name: {{ $.Values.global.smtp.password.secret | required "Missing required secret containing the SMTP password. Make sure to set `global.smtp.password.secret`" }}
+              items:
+                - key: {{ $.Values.global.smtp.password.key }}
+                  path: smtp/smtp-password
+          {{- end }}
+      - name: sidekiq-secrets
+        emptyDir:
+          medium: "Memory"
+{{ include "gitlab.certificates.volumes" $ | indent 6 }}
+    {{- if $podNodeSelector }}
+      nodeSelector:
+{{ toYaml $podNodeSelector | indent 8 }}
+    {{- end }}
+---
+{{-   end -}}
+{{- end }}

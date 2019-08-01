@@ -1,0 +1,77 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+data:
+  redis-slave.conf: |
+    slaveof %master-ip% %master-port%
+    slave-priority 100
+    slave-read-only yes
+    slave-serve-stale-data yes
+    # requirepass
+    # masterauth
+    # stay in foreground
+    daemonize no
+    # listen on all interfaces
+    bind 0.0.0.0
+    port {{ .Values.servers.internalPort }}
+    timeout {{ .Values.timeout }}
+    tcp-keepalive {{ .Values.tcpKeepalive}}
+    # Log level
+    loglevel {{ .Values.loglevel }}
+    # Log to stdout
+    logfile ""
+    # database count (picked from Omnibus' redis.conf)
+    databases 16
+    # Database filename
+    dbfilename {{ template "fullname" . }}.rdb
+    # Working Directory (where DB is written)
+    dir /redis-master-data
+    # Configure persistence snapshotting
+    {{- if .Values.persistence.save }}
+    {{-   range .Values.persistence.save }}
+    save {{ .time }} {{ .writes }}
+    {{-   end }}
+    {{- else }}
+    save ""
+    {{- end }}
+
+  redis-master.conf: |
+    # requirepass
+    # stay in foreground
+    daemonize no
+    # listen on all interfaces
+    bind 0.0.0.0
+    port {{ .Values.servers.internalPort }}
+    timeout {{ .Values.timeout }}
+    tcp-keepalive {{ .Values.tcpKeepalive}}
+    # Log level
+    loglevel {{ .Values.loglevel }}
+    # Log to stdout
+    logfile ""
+    # database count (picked from Omnibus' redis.conf)
+    databases 16
+    # Database filename
+    dbfilename {{ template "fullname" . }}.rdb
+    # Working Directory (where DB is written)
+    dir /redis-master-data
+    # Configure persistence snapshotting
+    {{- if .Values.persistence.save }}
+    {{-   range .Values.persistence.save }}
+    save {{ .time }} {{ .writes }}
+    {{-   end }}
+    {{- else }}
+    save ""
+    {{- end }}
+  configure: |
+    set -e
+    cat /config/redis-master.conf > /redis/master.conf
+    cat /config/redis-slave.conf > /redis/slave.conf
+    echo "$(cat /config/password)" >> /redis/pass
+    echo "127.0.0.1:{{ .Values.servers.internalPort }},$(cat /config/password),{{ template "fullname" . }}" > /metrics/redis
+# leave this here. Signals end of block to the parser
+{{- end -}}

@@ -1,0 +1,17 @@
+apiVersion: v1
+appVersion: 3.2.6
+description: Highly available Redis cluster using StatefuleSets with multiple sentinels
+  and standbys. Redis is an advanced key-value cache and store.
+home: http://redis.io/
+icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
+keywords:
+- redis
+- gitlab
+maintainers:
+- email: support@gitlab.com
+  name: GitLab Inc.
+name: redis-ha
+sources:
+- https://gitlab.com/gitlab-org/build/CNG/tree/master/gitlab-redis-ha
+- https://gitlab.com/charts/gitlab/charts/redis-ha
+version: 0.1.0
