@@ -1,0 +1,7 @@
+helmDefaults:
+  tillerNamespace: kube-system
+  tillerless: true
+  atomic: false
+  wait: true
+  timeout: 1200
+  force: true

@@ -1,0 +1,62 @@
+{{- $v := .Environment.Values }}
+{{- $host := printf "dex.%s" $v.domain }}
+ingress:
+  enabled: true
+  annotations:
+    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+  hosts:
+    - {{ $host }}
+  path: /
+  tls: 
+    - secretName: auth-tls
+      hosts:
+        - {{ $host }}
+
+certs:
+  web:
+    altNames:
+    - {{ $host }}
+  grpc:
+    altNames:
+    - {{ $host }}
+
+config:
+  issuer: https://{{ $host }}
+  connectors:
+    - type: github
+      id: github
+      name: GitHub
+      config:
+        clientID: 96ff6080482a9928f1db
+        clientSecret: a990b0c3ad1d68928db0545375c1b686290ece88
+        redirectURI: https://{{ $host }}/oauth2/callback
+        orgs:
+          - name: otomi-cloud
+  staticPasswords:
+    - email: "maurice@otomi.cloud"
+      # bcrypt hash of the string "password"
+      hash: "$2y$10$U2h7UE6GCT/RFVPbwlv4NeNn/5wv3ugRxwJIX9eEG5sj5ZxdIS9bq" # bladibl@
+      username: "maurice"
+      groups:
+        - admin
+      userID: "a2c96269ecc24b97ac83f2c8008547da"
+    - email: "sander@otomi.cloud"
+      hash: "$2y$10$nkKcBD4OZXRwdKTutgJLduS4/46IpN3zCqzaLbzvUgNK6QU9FCmsS" # yadayad@
+      username: "sander"
+      groups:
+        - admin
+      userID: "751269bd689848f7b6b7a42cae6e6214"
+  staticClients:
+    - id: oidc-auth-client
+      redirectURIs:
+      - https://{{ $host }}/oauth2/callback
+      {{- range $svc := $v.services }}
+        - https://{{ $svc }}.{{ $v.domain }}/oauth2/callback
+      {{- end }}
+      name: oidc-auth-client
+      secret: bladibladi
+    - id: {{ $v.oidc.grafana.clientId }}
+      name: oidc-grafana-client
+      redirectURIs:
+      - 'https://grafana.{{ $v.domain }}/login/generic_oauth'
+      secret: {{ $v.oidc.grafana.clientSecret }}

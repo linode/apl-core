@@ -1,5 +1,6 @@
 bases:
-  - ../snippets/helmfile-defaults.yaml
+  - ../snippets/defaults.yaml
+  - ../snippets/repos.yaml
 ---
 {{- $v := .Environment.Values }}
 {{- $custId := (requiredEnv "CUST_ID") }}

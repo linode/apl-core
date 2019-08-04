@@ -1,0 +1,33 @@
+rbac:
+  create: true
+controller:
+  minAvailable: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  extraArgs:
+    v: 3
+  config:
+    ssl-redirect: "true"
+    hsts: "true"
+    disable-ipv6: "true"
+    client-body-timeout: 5s
+    client-header-timeout: 5s
+    enable-modsecurity: "true"
+    enable-owasp-modsecurity-crs: "true"
+    proxy-buffers-number: 8 16k
+    proxy-buffer-size: 16k
+  stats:
+    enabled: true
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels: # needed to be picked up by our one and only prometheus-operator:
+        release: prometheus-operator
+  service:
+    type: LoadBalancer
+    loadBalancerIP: 

@@ -1,48 +1,48 @@
 {{- $v := .Values }}
+{{ $namespaces := prepend $v.siblingNamespaces .Release.Namespace }}
+{{- range $ns := $namespaces }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   {{- include "customer-ns.labels" . | nindent 2 }}
-  name: {{ template "customer-ns.fullname" . }}-admin
+  name: cluster-admin-{{ $ns }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: admin
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: {{ .Release.Namespace }}
----
-{{- range $ns := $v.siblingNamespaces }}
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  {{- include "customer-ns.labels" . | nindent 2 }}
-  name: {{ template "customer-ns.fullname" . }}-sibling
   namespace: {{ $ns }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: admin
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: {{ .Release.Namespace }}
 ---
-{{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   {{- include "customer-ns.labels" . | nindent 2 }}
-  name: {{ template "customer-ns.fullname" . }}-unpriviliged
+  name: admin-team-{{ $ns }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
+  name: admin-team
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{ $ns }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  {{- include "customer-ns.labels" . | nindent 2 }}
+  name: unprivileged-{{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
   name: psp:unprivileged
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $ns }}
 ---
+{{- end }}
 
 

@@ -1,12 +1,26 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: psp:unprivileged
+  name: psp:restricted
 rules:
 - apiGroups:
   - extensions
   resourceNames:
-  - unprivileged
+  - restricted
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:unrestricted
+rules:
+- apiGroups:
+  - extensions
+  resourceNames:
+  - unrestricted
   resources:
   - podsecuritypolicies
   verbs:

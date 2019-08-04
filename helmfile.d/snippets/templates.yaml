@@ -3,5 +3,5 @@ templates:
     chart: ../charts/{{ .Release.Name }}
     missingFileHandler: Warn
     values:
-    - ../values/{{ .Release.Name }}/{{ .Release.Name }}.yaml.gotmpl
-    - ../values/default.yaml.gotmpl
+    - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
+    - ../values/default.gotmpl

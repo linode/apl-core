@@ -1,0 +1,14 @@
+
+repositories:
+  - name: stable
+    url: https://kubernetes-charts.storage.googleapis.com
+  - name: incubator
+    url: http://storage.googleapis.com/kubernetes-charts-incubator
+  - name: bitnami
+    url: https://charts.bitnami.com
+  - name: loki
+    url: https://grafana.github.io/loki/charts
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: banzaicloud-stable
+    url: http://kubernetes-charts.banzaicloud.com

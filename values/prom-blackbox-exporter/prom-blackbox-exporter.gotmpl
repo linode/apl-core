@@ -1,0 +1,15 @@
+{{- $v := .Environment.Values }}
+{{- $host := printf "blacbox.%s" $v.domain }}
+ingress:
+  enabled: true
+  annotations:
+    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+    {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
+  paths:
+    - /
+  hosts:
+    - {{ $host }}
+  tls:
+    - secretName: blackbox-tls
+      hosts:
+        - {{ $host }}

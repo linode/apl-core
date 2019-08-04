@@ -1,4 +1,7 @@
-cluster=gke_otomi-247314_europe-west4_otomi-control
+. ./.env
+. ./.gce
+
+cluster=$CLUSTER_CTX
 
 alias k="kubectl"
 alias ksk="kubectl -n kube-system"
@@ -16,10 +19,36 @@ alias kcu="k config use-context"
 alias uuid="python -c 'import sys,uuid; sys.stdout.write(uuid.uuid4().hex)' | pbcopy && pbpaste && echo"
 
 alias kp="k proxy &"
-alias h="helm tiller run tillerless -- helm"
+#alias h="helm tiller run tillerless -- helm"
+# for kyma we need to use an old helm binary:
+function h() { bin/helm-v2.10.0 $@ --tls; }
 alias his="h upgrade --install --force"
 alias hk="h delete --purge"
 alias kk="killall kubectl"
+
+function kdnp() {
+  for ns in default kube-system system monitoring logging team-backend; do
+    kad networkpolicy -n $ns
+  done
+}
+function kkns() {
+  k get ns | grep Terminating | awk '{print $1}' | xargs  -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize" '
+}
+function kkc() {
+  hk $(h ls --all --short) > /dev/null
+  k delete ns --all
+  kkns
+}
+
+alias kku="k label installation/kyma-installation action=uninstall --overwrite"
+function kkk() {
+  k delete -f k8s/kyma/kyma-installer-cluster-${KYMA_VERSION}.yaml
+  k delete -f k8s/kyma/tiller-${KYMA_VERSION}.yaml
+  ksk delete secret tiller-secret
+  # k delete ns kyma-installer
+  k delete crd adapters.config.istio.io apikeys.config.istio.io attributemanifests.config.istio.io authorizations.config.istio.io bypasses.config.istio.io checknothings.config.istio.io circonuses.config.istio.io deniers.config.istio.io destinationrules.networking.istio.io edges.config.istio.io envoyfilters.networking.istio.io fluentds.config.istio.io gateways.networking.istio.io handlers.config.istio.io httpapispecbindings.config.istio.io httpapispecs.config.istio.io instances.config.istio.io kubernetesenvs.config.istio.io kuberneteses.config.istio.io listcheckers.config.istio.io listentries.config.istio.io logentries.config.istio.io memquotas.config.istio.io meshpolicies.authentication.istio.io metrics.config.istio.io noops.config.istio.io opas.config.istio.io policies.authentication.istio.io prometheuses.config.istio.io quotas.config.istio.io quotaspecbindings.config.istio.io quotaspecs.config.istio.io rbacconfigs.rbac.istio.io rbacs.config.istio.io redisquotas.config.istio.io reportnothings.config.istio.io rules.config.istio.io servicecontrolreports.config.istio.io servicecontrols.config.istio.io serviceentries.networking.istio.io servicerolebindings.rbac.istio.io serviceroles.rbac.istio.io signalfxs.config.istio.io solarwindses.config.istio.io stackdrivers.config.istio.io statsds.config.istio.io stdios.config.istio.io templates.config.istio.io tracespans.config.istio.io virtualservices.networking.istio.io zipkins.config.istio.io
+}
+
 
 function kpk() { ps aux|grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }

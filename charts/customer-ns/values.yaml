@@ -1,7 +1,22 @@
 # if a customer has more namespaces and they need to be able to access others:
 siblingNamespaces: []
 resourceQuota:
-  pods: 50
+  objectCounts:
+    configmaps: "50"
+    secrets: "50"
+    persistentvolumeclaims: "10"
+    replicationcontrollers: "50"
+    deployments: "10"
+    services: "20"
+    services.loadbalancers: "5"
+    resourcequotas: "1"
+  computeResources:
+    pods: "100"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    requests.nvidia.com/gpu: "10"
 customerLabels:
   customer: ""
   namespace: ""

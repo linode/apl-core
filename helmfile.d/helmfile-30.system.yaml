@@ -1,4 +1,6 @@
-{{ readFile "snippets/helmfile-defaults.yaml" }}
+bases:
+  - snippets/defaults.yaml
+  - snippets/repos.yaml
 
 environments:
   default:

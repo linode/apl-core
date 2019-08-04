@@ -1,0 +1,57 @@
+{{- $c := .Environment.Values.config }}
+{{- $s := .Environment.Values.secrets }}
+templates:
+{{- if $c.global }}
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: global-overrides
+      labels:
+        installer: overrides
+        kyma-project.io/installation: ""
+    data:
+      {{- range $key, $val := $c.global }}
+      {{ $key }}: {{ $val | b64enc }}
+      {{- end}}
+{{- end }}
+{{- range $compName, $compValues := $c.components }}      
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: {{ $compName }}-overrides
+      labels:
+        installer: overrides
+        component: {{ $compName }}
+        kyma-project.io/installation: ""
+    data:
+      {{- $compValues | toYaml | nindent 8 }}
+{{- end }}      
+{{- if $s.global }}
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: global-overrides
+      labels:
+        installer: overrides
+        kyma-project.io/installation: ""
+    data:
+      {{- range $key, $val := $s.global }}
+      {{ $key }}: {{ $val | b64enc }}
+      {{- end}}
+{{- end }}      
+{{- range $compName, $compValues := $s.components }}      
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $compName }}-overrides
+      labels:
+        installer: overrides
+        component: {{ $compName }}
+        kyma-project.io/installation: ""
+    data:
+      {{- $compValues | toYaml | nindent 8 }}
+{{- end }}      

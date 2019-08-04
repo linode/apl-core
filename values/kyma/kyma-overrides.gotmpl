@@ -1,0 +1,2 @@
+config: {{- readFile "config.yaml" | nindent 2 }}
+secrets: {{- readFile "secrets.yaml" | nindent 2 }}    
