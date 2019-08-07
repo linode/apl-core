@@ -1,1 +1,3 @@
 # otomi-cloud
+
+Otomi Cloud is our Otomotion As A Service kubernetes cluster, offering an easy service deployment experience. A seamless integration with off the shelf 3rd party open source software allows for quick development of (multi-) service architectures. Got parts that are working well already? You can bring your own anything, and easily wire it up. We can do that for you of course, but we can also show you the way together, if you wish ;) We are enthusiastic about the simplicity of our solutions, and could bring your workforce up to speed with our "Cloud Optimal Development" ™ training.
