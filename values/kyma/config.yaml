@@ -5,4 +5,4 @@ components:
   kiali:
     deployment.imageTag: v1.2.0
   monitoring:
-    monitoring.grafana.users.default.theme: dark 
+    grafana.users.default.theme: dark 

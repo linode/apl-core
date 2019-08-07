@@ -1,0 +1,53 @@
+# grafana:
+#   enabled: true
+# prometheus:
+#   enabled: true
+# tracing:
+#   enabled: true
+# kiali:
+#   enabled: true
+# certmanager:
+#   enabled: false
+# istio_cni:
+#   enabled: false # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
+pilot:
+  autoscaleMin: 2
+  traceSampling: 100
+mixer:
+  adapters:
+    prometheus:
+      enabled: false  
+sidecarInjectorWebhook:
+  enabled: true
+  enableNamespacesByDefault: true
+gateways:
+  istio-ingressgateway:
+    sds:
+      enabled: true
+    autoscaleMin: 1
+    autoscaleMax: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+prometheus:
+  enabled: false
+global:
+#   tag: 1.2.2
+#   logging:
+#     level: "default:info"
+#   k8sIngress:
+#     enabled: false
+#     gatewayName: ingressgateway
+#     enableHttps: false
+  proxy:
+#     includeIPRanges: "*"
+#     excludeIPRanges: ""
+#     excludeOutboundPorts: ""
+#     includeInboundPorts: "*"
+#     excludeInboundPorts: ""
+    autoInject: disabled
+#     tracer: "zipkin"
+  # controlPlaneSecurityEnabled: false
+  disablePolicyChecks: true
+  # enableTracing: true

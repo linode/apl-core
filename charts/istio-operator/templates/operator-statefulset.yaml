@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ include "istio-operator.fullname" . }}-operator"
+  labels:
+    control-plane: controller-manager
+    controller-tools.k8s.io: "1.0"
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+      controller-tools.k8s.io: "1.0"
+      app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: operator
+  serviceName: {{ include "istio-operator.fullname" . }}-operator
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+        controller-tools.k8s.io: "1.0"
+        app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: operator
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ include "istio-operator.fullname" . }}-operator
+      {{- end }}
+      terminationGracePeriodSeconds: 60
+      containers:
+      {{- if and .Values.prometheusMetrics.enabled .Values.prometheusMetrics.authProxy.enabled }}
+      - name: kube-rbac-proxy
+        image: "{{ .Values.prometheusMetrics.authProxy.image.repository }}:{{ .Values.prometheusMetrics.authProxy.image.tag }}"
+        imagePullPolicy: {{ .Values.prometheusMetrics.authProxy.image.pullPolicy }}
+        args:
+          - "--secure-listen-address=0.0.0.0:8443"
+          - "--upstream=http://127.0.0.1:8080/"
+          - "--logtostderr=true"
+          - "--v=10"
+        ports:
+          - containerPort: 8443
+            name: https
+      {{- end }}
+      - command:
+        - /manager
+        image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
+        imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
+        name: manager
+        args:
+          {{- if and .Values.prometheusMetrics.enabled .Values.prometheusMetrics.authProxy.enabled }}
+          - "--metrics-addr=127.0.0.1:8080"
+          {{- end }}
+          - "--watch-created-resources-events=false"
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        ports:
+        - containerPort: 443
+          name: webhook-server
+          protocol: TCP
+          {{- if and .Values.prometheusMetrics.enabled (not .Values.prometheusMetrics.authProxy.enabled) }}
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+          {{- end }}
+        resources:
+{{ toYaml .Values.operator.resources | indent 10 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

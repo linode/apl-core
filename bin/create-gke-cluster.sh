@@ -11,10 +11,11 @@ gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER" --regi
   --enable-ip-alias --network "projects/$GCE_PROJECT/global/networks/default" \
   --subnetwork "projects/$GCE_PROJECT/regions/$REGION/subnetworks/default" \
   --default-max-pods-per-node "110" --enable-autoscaling --min-nodes "1" --max-nodes "10" \
-  --enable-network-policy --addons HorizontalPodAutoscaling --enable-autoupgrade --enable-autorepair \
+  --enable-network-policy --addons HorizontalPodAutoscaling,HttpLoadBalancing --enable-autoupgrade --enable-autorepair \
   --maintenance-window "01:00" --labels customer=$CUSTOMER --enable-tpu \
   --enable-autoprovisioning --min-cpu 1 --max-cpu 8 --min-memory 8 --max-memory 32 \
   --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
+  # --enable-pod-security-policy
 
 gcloud container clusters get-credentials $CLUSTER --region $REGION --project $GCP_PROJECT
 

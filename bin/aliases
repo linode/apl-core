@@ -6,6 +6,7 @@ cluster=$CLUSTER_CTX
 alias k="kubectl"
 alias ksk="kubectl -n kube-system"
 alias ki="k -n ingress"
+alias kis="k -n istio-system"
 alias ks="k -n system"
 alias ksh="k -n shared"
 alias km="k -n monitoring"
@@ -19,9 +20,9 @@ alias kcu="k config use-context"
 alias uuid="python -c 'import sys,uuid; sys.stdout.write(uuid.uuid4().hex)' | pbcopy && pbpaste && echo"
 
 alias kp="k proxy &"
-#alias h="helm tiller run tillerless -- helm"
+alias h="helm tiller run tillerless -- helm"
 # for kyma we need to use an old helm binary:
-function h() { bin/helm-v2.10.0 $@ --tls; }
+#function h() { bin/helm-v2.10.0 $@ --tls; }
 alias his="h upgrade --install --force"
 alias hk="h delete --purge"
 alias kk="killall kubectl"
@@ -45,8 +46,13 @@ function kkk() {
   k delete -f k8s/kyma/kyma-installer-cluster-${KYMA_VERSION}.yaml
   k delete -f k8s/kyma/tiller-${KYMA_VERSION}.yaml
   ksk delete secret tiller-secret
-  # k delete ns kyma-installer
-  k delete crd adapters.config.istio.io apikeys.config.istio.io attributemanifests.config.istio.io authorizations.config.istio.io bypasses.config.istio.io checknothings.config.istio.io circonuses.config.istio.io deniers.config.istio.io destinationrules.networking.istio.io edges.config.istio.io envoyfilters.networking.istio.io fluentds.config.istio.io gateways.networking.istio.io handlers.config.istio.io httpapispecbindings.config.istio.io httpapispecs.config.istio.io instances.config.istio.io kubernetesenvs.config.istio.io kuberneteses.config.istio.io listcheckers.config.istio.io listentries.config.istio.io logentries.config.istio.io memquotas.config.istio.io meshpolicies.authentication.istio.io metrics.config.istio.io noops.config.istio.io opas.config.istio.io policies.authentication.istio.io prometheuses.config.istio.io quotas.config.istio.io quotaspecbindings.config.istio.io quotaspecs.config.istio.io rbacconfigs.rbac.istio.io rbacs.config.istio.io redisquotas.config.istio.io reportnothings.config.istio.io rules.config.istio.io servicecontrolreports.config.istio.io servicecontrols.config.istio.io serviceentries.networking.istio.io servicerolebindings.rbac.istio.io serviceroles.rbac.istio.io signalfxs.config.istio.io solarwindses.config.istio.io stackdrivers.config.istio.io statsds.config.istio.io stdios.config.istio.io templates.config.istio.io tracespans.config.istio.io virtualservices.networking.istio.io zipkins.config.istio.io
+  # delete tiller bookkeeping as well:
+  ksk delete cm $(ksk get cm | egrep "\.v[0-9]+" | awk '{print$1}')
+  ksk delete secret $(ksk get secret | egrep "\.v[0-9]+" | awk '{print$1}')
+  # delete crds that came with kyma:
+  k delete crd $(k get crd | egrep "istio|ory|kyma|coreos|knative" | awk '{print $1}')
+  # should not be needed:
+  # k delete ns istio-system kyma-integration kyma-system natss knative-build knative-eventing knative-serving
 }
 
 

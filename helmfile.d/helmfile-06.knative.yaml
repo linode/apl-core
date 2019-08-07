@@ -1,0 +1,10 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates-skeleton.gotmpl" }}
+
+releases:
+  - name: knative
+    installed: true
+    namespace: default
+    <<: *skeleton

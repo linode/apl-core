@@ -1,32 +1,6 @@
-{{ $v := .Environment.Values }}
-{{ $r := $v.release }}
-helmDefaults:
-  tillerNamespace: tillerless
-  tillerless: true
-  atomic: true
-  wait: true
-  timeout: 1200
-  force: false
-
-repositories:
-  - name: stable
-    url: https://kubernetes-charts.storage.googleapis.com
-  - name: incubator
-    url: http://storage.googleapis.com/kubernetes-charts-incubator
-  - name: bitnami
-    url: https://charts.bitnami.com
-  - name: loki
-    url: https://grafana.github.io/loki/charts
-  - name: jetstack
-    url: https://charts.jetstack.io
-  - name: banzaicloud-stable
-    url: http://kubernetes-charts.banzaicloud.com
-
-environments:
-  default:
-    values:
-      - ../../values/default.yaml
-      - ../../values/_customers/customers.yaml
+{{- $r := .Environment.Values.release }}
+{{ readFile "../snippets/defaults.yaml" }}
+{{ readFile "../snippets/repos.yaml" }}
 
 releases:
   - name: {{ $r.name }}
@@ -34,7 +8,7 @@ releases:
     chart: ../../charts/{{ $r.chart }}
     missingFileHandler: Warn
     values:
-      - ../../values/{{ $r.chart }}/{{ $r.chart }}.yaml
+      - nameOverride: {{ $r | getOrNil "nameOverride" }}
       - ../../values/{{ $r.chart }}/{{ $r.chart }}.gotmpl
       - ../../values/{{ $r.chart }}/{{ $r.chart }}-customer.gotmpl
       - ../../values/default.gotmpl

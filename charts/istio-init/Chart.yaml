@@ -1,0 +1,13 @@
+apiVersion: v1
+appVersion: 1.2.2
+description: Helm chart to initialize Istio CRDs
+engine: gotpl
+icon: https://istio.io/favicons/android-192x192.png
+keywords:
+- istio
+- crd
+name: istio-init
+sources:
+- http://github.com/istio/istio
+tillerVersion: '>=2.7.2-0'
+version: 1.2.2

@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "*.tmpl": "nginx",
+    "*.tpl": "yaml",
+    "*.gotmpl": "helm",
+    "helmfile.yaml": "helm",
+    "helmfile-*.yaml": "helm"
+  }
+}

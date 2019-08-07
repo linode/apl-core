@@ -1,0 +1,21 @@
+{
+  "apiVersion": "v1",
+  "kind": "Namespace",
+  "metadata": {
+    "creationTimestamp": "2019-08-04T10:55:41Z",
+    "deletionTimestamp": "2019-08-04T12:59:26Z",
+    "labels": {
+      "istio-injection": "enabled"
+    },
+    "name": "test",
+    "resourceVersion": "259000",
+    "selfLink": "/api/v1/namespaces/test",
+    "uid": "667b22f2-b6a6-11e9-8363-42010aa4020b"
+  },
+  "spec": {
+    "finalizers": []
+  },
+  "status": {
+    "phase": "Terminating"
+  }
+}

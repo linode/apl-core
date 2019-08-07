@@ -1,6 +1,5 @@
 bases:
   - snippets/defaults.yaml
-  - snippets/repos.yaml
 
 environments:
   default:

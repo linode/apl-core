@@ -52,7 +52,8 @@ kind: PodSecurityPolicy
 metadata:
   name: unrestricted
 spec:
-  privileged: false
+  privileged: true
+  hostNetwork: true
   seLinux:
     rule: RunAsAny
   supplementalGroups:

@@ -1,1 +1,1 @@
-customerLabels: {{- toYaml .Environment.Values.customerLabels | nindent 2 }}
+customerLabels: {{ if hasKey .Environment.Values "customerLabels" }}{{- toYaml .Environment.Values.customerLabels | nindent 2 }}{{ else }}{}{{ end }}

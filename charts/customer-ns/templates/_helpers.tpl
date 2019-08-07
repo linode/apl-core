@@ -35,7 +35,7 @@ Add label block to resource
 */}}
 {{- define "customer-ns.labels" -}}
 labels:
-{{ toYaml .Values.customerLabels | indent 2}}
+{{ toYaml .Values.customerLabels | indent 2 }}
   app: "{{ template "customer-ns.fullname" . }}"
   chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   release: "{{ .Release.Name }}"

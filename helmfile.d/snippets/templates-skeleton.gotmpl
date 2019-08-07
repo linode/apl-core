@@ -1,0 +1,12 @@
+templates:
+  skeleton: &skeleton
+    chart: /tmp/charts/{{ .Release.Name }}
+    hooks:
+      - events: ["prepare"]
+        showlogs: true
+        command: "../bin/skeleton-chart.sh"
+        args: ["{{ .Release.Name }}", "create", "true"]
+      - events: ["cleanup"]
+        showlogs: true
+        command: "../bin/skeleton-chart.sh"
+        args: ["{{ .Release.Name }}", "{{`{{.HelmfileCommand}}`}}", "true"]

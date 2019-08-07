@@ -2,11 +2,28 @@
 {{ $promHost := printf "prom.%s" $v.domain }}
 {{ $alertsHost := printf "alerts.%s" $v.domain }}
 {{ $grafanaHost := printf "grafana.%s" $v.domain }}
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: true
+kubeEtcd:
+  enabled: false    
 prometheusOperator:
+  configReloaderCpu: 200m
   createCustomResource: false
 
 prometheus:
   prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        metadata:
+          name: promdata
+        spec:
+          storageClassName: "fast"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
     enableAdminAPI: true
     externalUrl: https://{{ $promHost }}
     # additionalScrapeConfigs:
@@ -90,6 +107,17 @@ alertmanager:
         hosts:
           - {{ $alertsHost }}
 grafana:
+  additionalDataSources:
+    - name: Graphite
+      editable: false
+      type: graphite
+      access: proxy
+      url: http://graphite:80
+    - name: Loki
+      editable: false
+      type: loki
+      access: proxy
+      url: http://loki:3100
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: bladibla
   rbac:
@@ -158,3 +186,13 @@ kube-state-metrics:
 prometheus-node-exporter:
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 
+kubeControllerManager:
+  service:
+    selector:
+      component: null
+      k8s-app: kube-controller-manager
+kubeScheduler:
+  service:
+    selector:
+      component: null
+      k8s-app: kube-scheduler

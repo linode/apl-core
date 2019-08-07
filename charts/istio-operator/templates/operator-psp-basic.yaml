@@ -1,0 +1,97 @@
+{{- if and .Values.rbac.enabled .Values.rbac.psp.enabled }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "istio-operator.fullname" . }}-basic
+  labels:
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+spec:
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - secret
+  - configMap
+  - emptyDir
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: psp:{{ include "istio-operator.fullname" . }}-basic
+  labels:
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - {{ include "istio-operator.fullname" . }}-basic
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: psp:{{ include "istio-operator.fullname" . }}-basic
+  labels:
+    app.kubernetes.io/name: {{ include "istio-operator.name" . }}
+    helm.sh/chart: {{ include "istio-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/component: operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: psp:{{ include "istio-operator.fullname" . }}-basic
+subjects:
+  - kind: ServiceAccount
+    name: istio-citadel-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-galley-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-egressgateway-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-ingressgateway-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-mixer-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-operator-authproxy
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-pilot-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-sidecar-injector-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istiocoredns-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-nodeagent-service-account
+    namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: istio-operator-operator
+    namespace: {{ .Release.Namespace }}
+{{- end }}

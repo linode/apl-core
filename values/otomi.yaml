@@ -5,9 +5,13 @@ sitespeed: []
   # - host: otomi.cloud
   #   paths: [/]
 
-letsencrypt:
+cert-manager:
   email: "morriz@idiotz.nl"
   stage: "production"
+  provider:
+    cloudDns:
+      enabled: true
+      projectId: otomi-cloud
 
 oidc:
   grafana:

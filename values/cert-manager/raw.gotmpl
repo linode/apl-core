@@ -1,0 +1,14 @@
+{{- $v := .Environment.Values }}
+{{- $s := .Environment.Values.secrets }}
+templates:
+  {{- if ($v | getOrNil "cert-manager.provider.cloudDns.enabled" }}
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: cloud-dns-key
+      labels:
+        release: cert-manager
+    data:
+      key.json: {{ $v | getOrNil "cert-manager.provider.cloudDns.key" | b64enc }}
+{{- end }}

@@ -30,13 +30,13 @@ gcloud projects add-iam-policy-binding $GCP_PROJECT \
     --member serviceAccount:dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com --role roles/dns.admin
 gcloud iam service-accounts keys create ./letsencrypt/key.json --iam-account dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com
 
-# get certs from letsencrypt
-docker run -it --name certbot --rm \
-    -v "$(pwd)/letsencrypt:/etc/letsencrypt" \
-    certbot/dns-google \
-    certonly \
-    -m $CERT_ISSUER_EMAIL --agree-tos --no-eff-email \
-    --dns-google \
-    --dns-google-credentials /etc/letsencrypt/key.json \
-    --server https://acme-v02.api.letsencrypt.org/directory \
-    -d "*.$DOMAIN"
+# get certs from letsencrypt for *.$DOMAIN (kyma only)
+# docker run -it --name certbot --rm \
+#     -v "$(pwd)/letsencrypt:/etc/letsencrypt" \
+#     certbot/dns-google \
+#     certonly \
+#     -m $CERT_ISSUER_EMAIL --agree-tos --no-eff-email \
+#     --dns-google \
+#     --dns-google-credentials /etc/letsencrypt/key.json \
+#     --server https://acme-v02.api.letsencrypt.org/directory \
+#     -d "*.$DOMAIN"

@@ -1,20 +1,27 @@
 bases:
   - ../snippets/defaults.yaml
   - ../snippets/repos.yaml
+
+environments:
+  default:
+    values:
+      - ../../values/default.yaml
+      - ../../values/_customers/customers.yaml
+
 ---
 {{- $v := .Environment.Values }}
 {{- $custId := (requiredEnv "CUST_ID") }}
 {{- $customers := $v.customers }}
 {{ $cust := index $customers $custId }}
-
 helmfiles:
+  {{/* range $custId, $cust := $customers */}}
   {{- range $nsId, $ns := $cust.namespaces }}
   {{- $custNs := printf "cust-%s-%s" $custId $ns.name }}
+  {{- if $cust.active }}
   - path: "../snippets/releases.gotmpl"
     values:
       - release:
           name: {{ $custNs }}
-          installed: {{ $cust.active }}
           namespace: {{ $custNs }}
           chart: customer-ns
           nameOverride: {{ $custNs }}
@@ -26,11 +33,9 @@ helmfiles:
   - path: "../snippets/releases.gotmpl"
     values:
       - release:
-          name: {{ $custNs }}-{{ $chart.name }}
-          installed: {{ if hasKey $chart "installed" }}{{ $chart.installed }}{{ else }}true{{ end }}
+          name: {{ $chart.name }}-{{ $custNs }}
           namespace: {{ $custNs }}
           chart: {{ $chart.name }}
-          nameOverride: {{ $chart.name }}-{{ $custNs }}
         namespace: {{ $custNs }}
       - level: environment
         {{- $v | toYaml | nindent 8 }}
@@ -49,3 +54,7 @@ helmfiles:
         {{- end }}
   {{- end }}
   {{- end }}
+  {{- end }}
+  {{/*- end */}}
+  
+# no main release here, as we abuse the above (sub)helmfiles to enable to inject namespace data
