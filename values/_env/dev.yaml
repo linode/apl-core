@@ -1,0 +1,16 @@
+domain: k8s-dev.otomi.cloud
+customerDomain: in-dev.otomi.cloud
+
+drone:
+  sourceControl:
+    github:
+      clientID: eb64c85b4e173785041f
+      clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+
+prometheus-operator:
+  grafana:
+    ini:
+      github:
+        clientID: 0679369f78fc13c6e9de
+        clientSecret: 31e3cbe7ef64711dbc3a8df5706f6adf7e254e98
+

@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
-{{- $s := .Environment.Values.secrets }}
+{{- $cm := index $v "cert-manager" }}
 templates:
-  {{- if ($v | getOrNil "cert-manager.provider.cloudDns.enabled" }}
+  {{- if ($cm | getOrNil "provider.cloudDns.enabled") }}
   - |
     apiVersion: v1
     kind: Secret
@@ -10,5 +10,90 @@ templates:
       labels:
         release: cert-manager
     data:
-      key.json: {{ $v | getOrNil "cert-manager.provider.cloudDns.key" | b64enc }}
-{{- end }}
+      key.json: {{ $v| getOrNil "google.cloudDns.key" | b64enc }}
+  {{- end }}
+  {{ range $env := (list "staging" "production") }}
+  - |
+    apiVersion: certmanager.k8s.io/v1alpha1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt-{{ $env }}
+    spec:
+      acme:
+        server: https://acme{{ (eq $env "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
+        email: {{ $cm.email }}
+        privateKeySecretRef:
+          name: letsencrypt-{{ $env }}
+        dns01:
+          providers:
+          {{- if $cm.provider.cloudDns.enabled }}
+          - name: cloud-dns-provider
+            clouddns:
+              project: {{ $v.google.projectId }}
+              serviceAccountSecretRef:
+                name: cloud-dns-key
+                key: key.json
+          {{- end }}
+  {{- end }}
+  - |
+    apiVersion: certmanager.k8s.io/v1alpha1
+    kind: Certificate
+    metadata:
+      name: letsencrypt-{{ $cm.stage }}-k8s
+      # Istio certs secret lives in the istio-system namespace, and
+      # a cert-manager Certificate is namespace-scoped.
+      namespace: istio-system
+    spec:
+      # Reference to the Istio default cert secret.
+      secretName: letsencrypt-{{ $cm.stage }}-k8s
+      acme:
+        config:
+        # Each certificate could rely on different ACME challenge
+        # solver.  In this example we are using one provider for all
+        # the domains.
+        - dns01:
+            provider: cloud-dns-provider
+          domains:
+          # Since certificate wildcards only allow one level, we will
+          # need to one for every namespace that Knative is used in.
+          # We don't need to use wildcard here, fully-qualified domains
+          # will work fine too.
+          - "*.{{ $v.domain }}"
+      # The certificate common name, use one from your domains.
+      commonName: "*.{{ $v.domain }}"
+      dnsNames:
+      # Provide same list as `domains` section.
+      - "*.{{ $v.domain }}"
+      # Reference to the ClusterIssuer we created in the previous step.
+      issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-{{ $cm.stage }}
+  {{- range $custId, $cust := $v.customers }}
+  - |
+    apiVersion: certmanager.k8s.io/v1alpha1
+    kind: Certificate
+    metadata:
+      name: letscencrypt-{{ $cm.stage }}-cust-{{ $custId }}
+      namespace: istio-system
+    spec:
+      secretName: letscencrypt-{{ $cm.stage }}-cust-{{ $custId }}
+      acme:
+        config:
+        - dns01:
+            provider: cloud-dns-provider
+          domains:
+          - "*.{{ $custId }}.{{ $v.customerDomain }}"
+          {{- range $nsName, $ns := $cust.namespaces }}
+          - "*.{{ $nsName }}.{{ $custId }}.{{ $v.customerDomain }}"
+          {{- end }}
+      commonName: "*.{{ $custId }}.{{ $v.customerDomain }}"
+      dnsNames:
+      - "*.{{ $custId }}.{{ $v.customerDomain }}"
+      {{- range $nsName, $ns := $cust.namespaces }}
+      - "*.{{ $nsName }}.{{ $custId }}.{{ $v.customerDomain }}"
+      {{- end }}
+      # Reference to the ClusterIssuer we created in the previous step.
+      issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-{{ $cm.stage }}
+  {{- end }}

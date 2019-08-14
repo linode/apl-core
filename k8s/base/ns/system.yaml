@@ -4,39 +4,6 @@ metadata:
   name: system
   labels:
     name: system
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: system-admin
-  namespace: system
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: system-admin
-  namespace: system
-subjects:
-  - kind: ServiceAccount
-    name: admin
-    namespace: system
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system-admin:psp:privileged
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: psp:privileged
-subjects:
-- kind: ServiceAccount
-  name: system-admin
-  namespace: system
 ---  
 apiVersion: v1
 kind: ServiceAccount
@@ -60,11 +27,11 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ci-deploy:psp:unprivileged
+  name: ci-deploy:psp:unrestricted
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: psp:unprivileged
+  name: psp:unrestricted
 subjects:
 - kind: ServiceAccount
   name: ci-deploy

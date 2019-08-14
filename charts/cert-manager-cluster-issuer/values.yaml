@@ -1,6 +1,0 @@
-email: you@yourdoma.in
-stage: staging # production
-provider:
-  cloudDns:
-    enabled: true
-    projectId: ""

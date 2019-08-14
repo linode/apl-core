@@ -164,6 +164,8 @@ metrics:
     ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
     ##
   # resources: {}
+
+clusters: {}  
 env: ""
 prefix: ""
 cluster: ""

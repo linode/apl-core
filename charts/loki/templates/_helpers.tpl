@@ -41,3 +41,7 @@ Create the name of the service account
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{- define "promtail.name" -}}
+{{- .Values.promtail.serviceName -}}
+{{- end -}}

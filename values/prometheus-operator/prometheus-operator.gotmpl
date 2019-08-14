@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
-{{ $promHost := printf "prom.%s" $v.domain }}
-{{ $alertsHost := printf "alerts.%s" $v.domain }}
+{{ $promHost := printf "prometheus.%s" $v.domain }}
+{{ $alertsHost := printf "alertmanager.%s" $v.domain }}
 {{ $grafanaHost := printf "grafana.%s" $v.domain }}
 coreDns:
   enabled: false
@@ -26,7 +26,8 @@ prometheus:
               storage: 5Gi
     enableAdminAPI: true
     externalUrl: https://{{ $promHost }}
-    # additionalScrapeConfigs:
+    additionalScrapeConfigs:
+      {{- readFile "./istio-scraping.yaml" | nindent 6 }}
     #   - job_name: 'probe-sites'
     #     metrics_path: /probe
     #     params:
@@ -46,7 +47,7 @@ prometheus:
   additionalServiceMonitors:
     {{- readFile "service-monitors.yaml" | nindent 4 }}
   ingress:
-    enabled: true
+    # enabled: true
     annotations:
       {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
       {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $promHost | nindent 6 }}
@@ -94,7 +95,7 @@ alertmanager:
           - channel: "#mon-k8s-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
   ingress:
-    enabled: true
+    # enabled: true
     annotations:
       {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
       {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $alertsHost | nindent 6 }}
@@ -123,7 +124,7 @@ grafana:
   rbac:
     pspUseAppArmor: false
   ingress:
-    enabled: true
+    # enabled: true
     annotations:
       {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
       {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $grafanaHost | nindent 6 }}
@@ -153,7 +154,7 @@ grafana:
     users:
       allow_sign_up: false
       auto_assign_org: true
-      auto_assign_org_role: Editor
+      auto_assign_org_role: Admin
     "auth.proxy":
       enabled: false
       header_name: X-Forwarded-Email

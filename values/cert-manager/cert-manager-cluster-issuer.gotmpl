@@ -1,7 +1,0 @@
-{{ $v := Environment.Values }}
-email: {{ .$v.letsencrypt.email }}
-stage: {{ $v.letsencrypt.stage }}
-provider:
-  cloudDns:
-    enabled: {{ $v | getOrNil "cert-manager.provider.cloudDns.enabled" | default "true" }}
-    projectId: {{ $v | getOrNil "cert-manager.provider.cloudDns.projectId" }}

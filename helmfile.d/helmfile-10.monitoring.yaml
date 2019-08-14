@@ -1,0 +1,38 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates.yaml" }}
+
+releases:
+  - name: grafana-dashboards
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: loki
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: prom-blackbox-exporter
+    installed: false 
+    namespace: monitoring
+    <<: *default
+  - name: prometheus-operator
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: prometheus-operator-istio
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: promtail
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: sitespeed
+    installed: false
+    namespace: monitoring
+    <<: *default
+  - name: weave-scope
+    installed: true
+    namespace: monitoring
+    <<: *default
