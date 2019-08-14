@@ -1,0 +1,52 @@
+{{- $v := .Environment.Values }}
+{{- $g := $v.google }}
+{{- $dns := index $v "external-dns" }}
+image:
+  tag: 0.5.15-debian-9-r1
+sources:
+- service
+- ingress
+- istio-gateway
+# - crd
+
+## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
+##
+provider: {{ $dns | getOrNil "provider" | default "google" }}
+google:
+  project: {{ $g.projectId }}
+  serviceAccountKey: |
+    {{- $v | getOrNil "google.cloudDns.key" | nindent 4 }}
+
+domainFilters: ["{{ $g.cloudDns.domain }}"]
+zoneIdFilters: ["{{ $g.cloudDns.zone }}"]
+annotationFilter: ""
+dryRun: false
+crd:
+  create: false
+  apiversion: ""
+  kind: ""
+
+rbac:
+  create: true
+  apiVersion: v1beta1
+  pspEnabled: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+
+resources: {}
+#  limits:
+#    cpu: 50m
+#    memory: 50Mi
+#  requests:
+#    memory: 50Mi
+#    cpu: 10m
+
+metrics:
+  enabled: true

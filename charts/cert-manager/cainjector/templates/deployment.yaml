@@ -60,6 +60,13 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - curl 
+
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

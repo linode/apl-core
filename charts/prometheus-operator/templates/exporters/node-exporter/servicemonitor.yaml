@@ -17,6 +17,14 @@ spec:
     {{- if .Values.nodeExporter.serviceMonitor.interval }}
     interval: {{ .Values.nodeExporter.serviceMonitor.interval }}
     {{- end }}
+    {{- if .Values.istioEnabled }}
+    scheme: https
+    tlsConfig:
+      caFile: /etc/prometheus/secrets/istio.default/root-cert.pem
+      certFile: /etc/prometheus/secrets/istio.default/cert-chain.pem
+      keyFile: /etc/prometheus/secrets/istio.default/key.pem
+      insecureSkipVerify: true
+    {{- end }}
 {{- if .Values.nodeExporter.serviceMonitor.metricRelabelings }}
     metricRelabelings:
 {{ tpl (toYaml .Values.nodeExporter.serviceMonitor.metricRelabelings | indent 4) . }}

@@ -1,13 +1,8 @@
 bases:
   - snippets/defaults.yaml
 
-environments:
-  default:
-    values:
-      - ../values/default.yaml
-      - ../values/otomi.yaml
-
 {{ readFile "snippets/templates.yaml" }}
+
 releases:
   - name: index
     installed: true

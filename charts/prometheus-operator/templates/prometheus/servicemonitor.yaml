@@ -20,6 +20,14 @@ spec:
     interval: {{ .Values.prometheus.serviceMonitor.interval }}
     {{- end }}
     path: "{{ trimSuffix "/" .Values.prometheus.prometheusSpec.routePrefix }}/metrics"
+    {{- if .Values.global.istioEnabled }}
+    scheme: https
+    tlsConfig:
+      caFile: /etc/prometheus/secrets/istio.default/root-cert.pem
+      certFile: /etc/prometheus/secrets/istio.default/cert-chain.pem
+      keyFile: /etc/prometheus/secrets/istio.default/key.pem
+      insecureSkipVerify: true
+    {{- end }}
 {{- if .Values.prometheus.serviceMonitor.metricRelabelings }}
     metricRelabelings:
 {{ tpl (toYaml .Values.prometheus.serviceMonitor.metricRelabelings | indent 6) . }}

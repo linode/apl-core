@@ -1,0 +1,23 @@
+image:
+  tag: v0.1.0
+
+loki:
+  serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
+
+nameOverride: promtail
+
+resources: {}
+#  limits:
+#    cpu: 200m
+#    memory: 128Mi
+#  requests:
+#    cpu: 100m
+#    memory: 128Mi
+
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsGroup: 0
+  runAsUser: 0
+
+podAnnotations:
+  sidecar.istio.io/inject: "false"

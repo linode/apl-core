@@ -1,13 +1,16 @@
+{{- $v := .Environment.Values }}
 prometheus:
   servicemonitor:
     enabled: true
 
 ingressShim:
-  defaultIssuerName: letsencrypt-prod
+  defaultIssuerName: letsencrypt-{{ $v | getOrNil "cert-manager.stage" | default "staging" }}
   defaultIssuerKind: ClusterIssuer
 
-
 cainjector:
-  customerLabels: {{ toYaml .Environment.Values.customerLabels | nindent 4 }}
+  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 webhook:
-  customerLabels: {{ toYaml .Environment.Values.customerLabels | nindent 4 }}
+  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
+
+podAnnotations:
+  sidecar.istio.io/inject: "false"  

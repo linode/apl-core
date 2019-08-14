@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates-skeleton.gotmpl" }}
+
+releases:
+  - name: prometheus-operator-init
+    installed: true
+    namespace: default
+    labels:
+      init: true
+    <<: *skeleton # just install the stuff in k8s/apps/cert-manager

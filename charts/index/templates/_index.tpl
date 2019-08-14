@@ -15,6 +15,11 @@
         background-color: red;
         color: white;
       }
+      header a {
+        color: white;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
       main a {
         color: red;
       }
@@ -25,13 +30,25 @@
     </style>
   </head>
   <body>
+    {{- if $v.isCustomer }}
     <header>
       <h1>service index for {{ $v.domain }}</h1>
     </header>
     <main>
+    {{- else }}
+    <header>
+      <h1>
+        {{- range $name, $dom := $v.clusters }}
+        <a href="https://index.{{ $dom }}">{{ $name }}</a>{{ if not (eq $name "prd") }} | {{ end }}
+        {{- end }}
+      </h1>
+    </header>
+    <main>
+      <h2>index for cluster: {{ $v.domain }}</h2>
+    {{- end }}
       <h3>Services</h3>
       {{ range $svc := $v.services }}
-      <a target="_blank" href="https://{{ $svc }}.{{ $v.domain }}">{{ $svc }}</a><br/>
+      <a target="_blank" href="https://{{ $svc.name }}.{{ $v.domain }}">{{ $svc.name }}</a><br/>
       {{- end }}
       <h3>Websites</h3>
       {{ range $site := $v.sites }}

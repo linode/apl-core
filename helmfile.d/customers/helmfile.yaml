@@ -1,11 +1,10 @@
 bases:
   - ../snippets/defaults.yaml
-  - ../snippets/repos.yaml
 
 environments:
   default:
     values:
-      - ../../values/default.yaml
+      - ../../values/_env/default.yaml
       - ../../values/_customers/customers.yaml
 
 ---
@@ -26,6 +25,7 @@ helmfiles:
           chart: customer-ns
           nameOverride: {{ $custNs }}
         {{- $cust.values | toYaml | nindent 8 }}
+        isCustomer: true
         customerLabels:
           customer: {{ $custId }}
           namespace: {{ $ns.name }}
@@ -41,6 +41,7 @@ helmfiles:
         {{- $v | toYaml | nindent 8 }}
       - level: customer
         {{- $cust.values | toYaml | nindent 8 }}
+        isCustomer: true
         customerLabels:
           customer: {{ $custId }}
           namespace: {{ $ns.name }}

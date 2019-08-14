@@ -10,44 +10,51 @@
 #   enabled: false
 # istio_cni:
 #   enabled: false # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
-pilot:
-  autoscaleMin: 2
-  traceSampling: 100
-mixer:
-  adapters:
-    prometheus:
-      enabled: false  
+# pilot:
+#   autoscaleMin: 2
+#   traceSampling: 100
+# mixer:
+#   adapters:
+#     prometheus:
+#       enabled: false  
 sidecarInjectorWebhook:
   enabled: true
   enableNamespacesByDefault: true
+  # If true, webhook or istioctl injector will rewrite PodSpec for liveness
+  # health check to redirect request to sidecar. This makes liveness check work
+  # even when mTLS is enabled.
+  rewriteAppHTTPProbe: true
 gateways:
   istio-ingressgateway:
     sds:
       enabled: true
-    autoscaleMin: 1
-    autoscaleMax: 1
-    resources:
-      requests:
-        cpu: 500m
-        memory: 256Mi
-prometheus:
-  enabled: false
 global:
+  mtls:
+    enabled: true
+  sds:
+    enabled: true
+    udsPath: "unix:/var/run/sds/uds_path"
+    useNormalJwt: true
+
 #   tag: 1.2.2
 #   logging:
 #     level: "default:info"
-#   k8sIngress:
-#     enabled: false
-#     gatewayName: ingressgateway
-#     enableHttps: false
-  proxy:
+  # proxy:
+    # autoInject: disabled
 #     includeIPRanges: "*"
 #     excludeIPRanges: ""
 #     excludeOutboundPorts: ""
 #     includeInboundPorts: "*"
 #     excludeInboundPorts: ""
-    autoInject: disabled
 #     tracer: "zipkin"
   # controlPlaneSecurityEnabled: false
   disablePolicyChecks: true
   # enableTracing: true
+
+nodeagent:
+  enabled: true
+  image: node-agent-k8s
+  env:
+    CA_PROVIDER: "Citadel"
+    CA_ADDR: "istio-citadel:8060"
+    VALID_TOKEN: true

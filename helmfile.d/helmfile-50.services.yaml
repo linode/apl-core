@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates.yaml" }}
+
+releases:
+  - name: istio-artifacts
+    installed: true
+    namespace: ingress
+    chart: ../charts/raw
+    values:
+    - ../values/istio/raw.gotmpl

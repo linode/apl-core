@@ -2,7 +2,7 @@
 {{- $host := printf "scope.%s" $v.domain }}
 weave-scope-frontend:
   ingress:
-    enabled: true
+    # enabled: true
     annotations:
       {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
       {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 6 }}
