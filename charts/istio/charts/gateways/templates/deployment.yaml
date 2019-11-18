@@ -1,18 +1,15 @@
 {{- range $key, $spec := .Values }}
 {{- if ne $key "enabled" }}
 {{- if $spec.enabled }}
+
+{{- $labels := merge (dict "release" $.Release.Name "chart" (include "gateway.chart" $) "heritage" $.Release.Service) $spec.labels }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $key }}
   namespace: {{ $spec.namespace | default $.Release.Namespace }}
   labels:
-    chart: {{ template "gateway.chart" $ }}
-    heritage: {{ $.Release.Service }}
-    release: {{ $.Release.Name }}
-    {{- range $key, $val := $spec.labels }}
-    {{ $key }}: {{ $val }}
-    {{- end }}
+{{ $labels | toYaml | indent 4 }}
 spec:
 {{- if not $spec.autoscaleEnabled }}
 {{- if $spec.replicaCount }}
@@ -26,15 +23,14 @@ spec:
       {{- range $key, $val := $spec.labels }}
       {{ $key }}: {{ $val }}
       {{- end }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ $spec.rollingMaxSurge }}
+      maxUnavailable: {{ $spec.rollingMaxUnavailable }}
   template:
     metadata:
       labels:
-        chart: {{ template "gateway.chart" $ }}
-        heritage: {{ $.Release.Service }}
-        release: {{ $.Release.Name }}
-        {{- range $key, $val := $spec.labels }}
-        {{ $key }}: {{ $val }}
-        {{- end }}
+{{ $labels | toYaml | indent 8 }}
       annotations:
         sidecar.istio.io/inject: "false"
 {{- if $spec.podAnnotations }}
@@ -48,11 +44,7 @@ spec:
 {{- if $.Values.global.proxy.enableCoreDump }}
       initContainers:
         - name: enable-core-dump
-{{- if contains "/" $.Values.global.proxy_init.image }}
-          image: "{{ $.Values.global.proxy_init.image }}"
-{{- else }}
-          image: "{{ $.Values.global.hub }}/{{ $.Values.global.proxy_init.image }}:{{ $.Values.global.tag }}"
-{{- end }}
+          image: {{ $.Values.global.proxy.enableCoreDumpImage }}
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
           command:
             - /bin/sh
@@ -129,21 +121,42 @@ spec:
           - '10s' #connectTimeout
           - --serviceCluster
           - {{ $key }}
+        {{- if eq $.Values.global.proxy.tracer "lightstep" }}
+          - --lightstepAddress
+          - {{ $.Values.global.tracer.lightstep.address }}
+          - --lightstepAccessToken
+          - {{ $.Values.global.tracer.lightstep.accessToken }}
+          - --lightstepSecure={{ $.Values.global.tracer.lightstep.secure }}
+          - --lightstepCacertPath
+          - {{ $.Values.global.tracer.lightstep.cacertPath }}
+        {{- else if eq $.Values.global.proxy.tracer "zipkin" }}
           - --zipkinAddress
-        {{- if $.Values.global.tracer.zipkin.address }}
+          {{- if $.Values.global.tracer.zipkin.address }}
           - {{ $.Values.global.tracer.zipkin.address }}
-        {{- else if $.Values.global.istioNamespace }}
+          {{- else if $.Values.global.istioNamespace }}
           - zipkin.{{ $.Values.global.istioNamespace }}:9411
-        {{- else }}
+          {{- else }}
           - zipkin:9411
+          {{- end }}
+        {{- else if eq $.Values.global.proxy.tracer "datadog" }}
+          - --datadogAgentAddress
+          - {{ $.Values.global.tracer.datadog.address }}
         {{- end }}
         {{- if $.Values.global.proxy.envoyStatsd.enabled }}
           - --statsdUdpAddress
           - {{ $.Values.global.proxy.envoyStatsd.host }}:{{ $.Values.global.proxy.envoyStatsd.port }}
         {{- end }}
         {{- if $.Values.global.proxy.envoyMetricsService.enabled }}
-          - --envoyMetricsServiceAddress
-          - {{ $.Values.global.proxy.envoyMetricsService.host }}:{{ $.Values.global.proxy.envoyMetricsService.port }}
+          - --envoyMetricsService
+          {{- with  $.Values.global.proxy.envoyMetricsService }}
+          - '{"address":"{{ .host }}:{{.port }}"{{ if .tlsSettings }},"tlsSettings":{{ .tlsSettings | toJson }}{{- end }}{{ if .tcpKeepalive }},"tcpKeepalive":{{ .tcpKeepalive | toJson }}{{- end }}}'
+          {{- end }}
+        {{- end}}
+        {{- if $.Values.global.proxy.envoyAccessLogService.enabled }}
+          - --envoyAccessLogService
+          {{- with  $.Values.global.proxy.envoyAccessLogService }}
+          - '{"address":"{{ .host }}:{{.port }}"{{ if .tlsSettings }},"tlsSettings":{{ .tlsSettings | toJson }}{{- end }}{{ if .tcpKeepalive }},"tcpKeepalive":{{ .tcpKeepalive | toJson }}{{- end }}}'
+          {{- end }}
         {{- end }}
           - --proxyAdminPort
           - "15000"
@@ -166,10 +179,6 @@ spec:
           - istio-pilot.{{ $.Values.global.istioNamespace }}:15010
           {{- else }}
           - istio-pilot:15010
-          {{- end }}
-          {{- if $spec.applicationPorts }}
-          - --applicationPorts
-          - "{{ $spec.applicationPorts }}"
           {{- end }}
         {{- end }}
         {{- if $.Values.global.trustDomain }}
@@ -217,6 +226,14 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: status.hostIP
+          - name: SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName  
+          {{- if $.Values.global.mtls.auto }}
+          - name: ISTIO_AUTO_MTLS_ENABLED
+            value: "true"
+          {{- end }}
           - name: ISTIO_META_POD_NAME
             valueFrom:
               fieldRef:
@@ -226,6 +243,48 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: ISTIO_METAJSON_LABELS
+            value: |
+              {{ $labels | toJson}}
+          - name: ISTIO_META_CLUSTER_ID
+            value: "{{ $.Values.global.multiCluster.clusterName | default `Kubernetes` }}"
+          - name: SDS_ENABLED
+            value: "{{ $.Values.global.sds.enabled }}"
+          - name: ISTIO_META_WORKLOAD_NAME
+            value: {{ $key }}
+          - name: ISTIO_META_OWNER
+            value: kubernetes://api/apps/v1/namespaces/{{ $spec.namespace | default $.Release.Namespace }}/deployments/{{ $key }}
+          {{- if $.Values.global.meshID }}
+          - name: ISTIO_META_MESH_ID
+            value: "{{ $.Values.global.meshID }}"
+          {{- else if $.Values.global.trustDomain }}
+          - name: ISTIO_META_MESH_ID
+            value: "{{ $.Values.global.trustDomain }}"
+          {{- end }}
+          {{- if eq $.Values.global.proxy.tracer "datadog" }}
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          {{- end }}
+          {{- if eq $.Values.global.proxy.tracer "stackdriver" }}
+          - name: STACKDRIVER_TRACING_ENABLED
+            value: "true"
+          - name: STACKDRIVER_TRACING_DEBUG
+            value: "{{ $.Values.global.tracer.stackdriver.debug }}"
+          {{- if $.Values.global.tracer.stackdriver.maxNumberOfAnnotations }}
+          - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_ANNOTATIONS
+            value: "{{ $.Values.global.tracer.stackdriver.maxNumberOfAnnotations }}"
+          {{- end }}
+          {{- if $.Values.global.tracer.stackdriver.maxNumberOfAttributes }}
+          - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_ATTRIBUTES
+            value: "{{ $.Values.global.tracer.stackdriver.maxNumberOfAttributes }}"
+          {{- end }}
+          {{- if $.Values.global.tracer.stackdriver.maxNumberOfMessageEvents }}
+          - name: STACKDRIVER_TRACING_MAX_NUMBER_OF_MESSAGE_EVENTS
+            value: "{{ $.Values.global.tracer.stackdriver.maxNumberOfMessageEvents }}"
+          {{- end }}
+          {{- end }}
           {{- if $spec.sds }}
           {{- if $spec.sds.enabled }}
           - name: ISTIO_META_USER_SDS
@@ -238,15 +297,20 @@ spec:
             value: {{ $val }}
           {{- end }}
           {{- end }}
+          {{ if eq $key "istio-ingressgateway" }}
+          {{ $network_set := index $spec.env "ISTIO_META_NETWORK" }}
+          {{- if and (not $network_set) $.Values.global.network }}
+          - name: ISTIO_META_NETWORK
+            value: {{ $.Values.global.network }}
+          {{- end }}
+          {{- end }}
           volumeMounts:
           {{- if $.Values.global.sds.enabled }}
           - name: sdsudspath
             mountPath: /var/run/sds
             readOnly: true
-          {{- if $.Values.global.sds.useTrustworthyJwt }}
           - name: istio-token
             mountPath: /var/run/secrets/tokens
-          {{- end }}
           {{- end }}
           {{- if $spec.sds }}
           {{- if $spec.sds.enabled }}
@@ -260,6 +324,11 @@ spec:
           {{- range $spec.secretVolumes }}
           - name: {{ .name }}
             mountPath: {{ .mountPath | quote }}
+            readOnly: true
+          {{- end }}
+          {{- if and (eq $.Values.global.proxy.tracer "lightstep") $.Values.global.tracer.lightstep.cacertPath }}
+          - mountPath: {{ dir $.Values.global.tracer.lightstep.cacertPath }}
+            name: lightstep-certs
             readOnly: true
           {{- end }}
 {{- if $spec.additionalContainers }}
@@ -276,15 +345,13 @@ spec:
       - name: sdsudspath
         hostPath:
           path: /var/run/sds
-      {{- if $.Values.global.sds.useTrustworthyJwt }}
       - name: istio-token
         projected:
           sources:
           - serviceAccountToken:
               path: istio-token
               expirationSeconds: 43200
-              audience: {{ $.Values.global.trustDomain }}
-      {{- end }}
+              audience: {{ $.Values.global.sds.token.aud }}
       {{- end }}
       - name: istio-certs
         secret:
@@ -301,6 +368,12 @@ spec:
         configMap:
           name: {{ .configMapName | quote }}
           optional: true
+      {{- end }}
+      {{- if and (eq $.Values.global.proxy.tracer "lightstep") $.Values.global.tracer.lightstep.cacertPath }}
+      - name: lightstep-certs
+        secret:
+          optional: true
+          secretName: lightstep.cacert
       {{- end }}
       affinity:
       {{- include "gatewaynodeaffinity" (dict "root" $ "nodeSelector" $spec.nodeSelector) | indent 6 }}

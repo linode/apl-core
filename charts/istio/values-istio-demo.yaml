@@ -1,8 +1,9 @@
-# This is used to generate minimal demo mode. It is included from demo and demo-auth values.
+# This is used to generate istio.yaml for minimal, demo mode.
 # It is shipped with the release, used for bookinfo or quick installation of istio.
 # Includes components used in the demo, defaults to alpha3 rules.
-# Note: please only put common configuration for the demo profiles here.
 global:
+  controlPlaneSecurityEnabled: false
+  
   proxy:
     accessLogFile: "/dev/stdout"
     resources:
@@ -12,6 +13,11 @@ global:
 
   disablePolicyChecks: false
 
+  mtls:
+    # Default setting for service-to-service mtls. Can be set explicitly using
+    # destination rules or service annotations.
+    enabled: false
+
 sidecarInjectorWebhook:
   enabled: true
   # If true, webhook or istioctl injector will rewrite PodSpec for liveness
@@ -20,6 +26,7 @@ sidecarInjectorWebhook:
   rewriteAppHTTPProbe: false
 
 pilot:
+  autoscaleEnabled: false
   traceSampling: 100.0
   resources:
     requests:
@@ -29,6 +36,7 @@ pilot:
 mixer:
   policy:
     enabled: true
+    autoscaleEnabled: false
     resources:
       requests:
         cpu: 10m
@@ -36,6 +44,7 @@ mixer:
 
   telemetry:
     enabled: true
+    autoscaleEnabled: false
     resources:
       requests:
         cpu: 50m
@@ -57,6 +66,7 @@ kiali:
 
 gateways:
   istio-ingressgateway:
+    autoscaleEnabled: false
     resources:
       requests:
         cpu: 10m
@@ -64,20 +74,8 @@ gateways:
 
   istio-egressgateway:
     enabled: true
+    autoscaleEnabled: false
     resources:
       requests:
         cpu: 10m
         memory: 40Mi
-# This is used to generate istio.yaml for minimal, demo mode.
-# It is shipped with the release, used for bookinfo or quick installation of istio.
-# Includes components used in the demo, defaults to alpha3 rules.
-
-# @include <values-istio-demo-common.yaml>
-#
-global:
-  controlPlaneSecurityEnabled: false
-
-  mtls:
-    # Default setting for service-to-service mtls. Can be set explicitly using
-    # destination rules or service annotations.
-    enabled: false

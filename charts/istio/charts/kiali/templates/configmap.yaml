@@ -11,8 +11,16 @@ metadata:
 data:
   config.yaml: |
     istio_namespace: {{ .Release.Namespace }}
+    deployment:
+      accessible_namespaces: ['**']
     auth:
-      strategy: "login"
+      strategy: {{ .Values.dashboard.auth.strategy }}
+{{- if eq .Values.dashboard.auth.strategy "ldap" }}
+      ldap:
+{{- with .Values.dashboard.auth.strategy.ldap }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
     server:
       port: 20001
 {{- if .Values.contextPath }}
@@ -25,3 +33,8 @@ data:
         url: {{ .Values.dashboard.grafanaURL }}
       prometheus:
         url: {{ .Values.prometheusAddr }}
+{{- if .Values.security.enabled }}
+    identity:
+      cert_file: {{ .Values.security.cert_file }}
+      private_key_file: {{ .Values.security.private_key_file }}
+{{- end}}

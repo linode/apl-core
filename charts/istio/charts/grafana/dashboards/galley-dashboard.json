@@ -211,7 +211,7 @@
           "refId": "H"
         },
         {
-          "expr": "sum(container_memory_usage_bytes{container_name=~\"galley\", pod_name=~\"istio-galley-.*\"})",
+          "expr": "sum(container_memory_usage_bytes{job=\"kubernetes-cadvisor\",container=~\"galley\", pod=~\"istio-galley-.*\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total (kis)",
@@ -296,17 +296,17 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\",container_name=~\"galley\", pod_name=~\"istio-galley-.*\"}[1m]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\",container=~\"galley\", pod=~\"istio-galley-.*\"}[1m]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Total (k8s)",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\",container_name=~\"galley\", pod_name=~\"istio-galley-.*\"}[1m])) by (container_name)",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\",container=~\"galley\", pod=~\"istio-galley-.*\"}[1m])) by (container)",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{ container_name }} (k8s)",
+          "legendFormat": "{{ container }} (k8s)",
           "refId": "B"
         },
         {
@@ -402,10 +402,10 @@
           "refId": "A"
         },
         {
-          "expr": "container_fs_usage_bytes{container_name=~\"galley\", pod_name=~\"istio-galley-.*\"}",
+          "expr": "container_fs_usage_bytes{job=\"kubernetes-cadvisor\",container=~\"galley\", pod=~\"istio-galley-.*\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{ container_name }} ",
+          "legendFormat": "{{ container }} ",
           "refId": "B"
         }
       ],
@@ -494,14 +494,14 @@
           "refId": "A"
         },
         {
-          "expr": "galley_mcp_source_clients_total",
+          "expr": "istio_mcp_clients_total{component=\"galley\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "clients_total",
           "refId": "B"
         },
         {
-          "expr": "go_goroutines{job=\"galley\"}/galley_mcp_source_clients_total",
+          "expr": "go_goroutines{job=\"galley\"}/sum(istio_mcp_clients_total{component=\"galley\"}) without (component)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "avg_goroutines_per_client",
@@ -903,10 +903,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (typeURL) (galley_runtime_state_type_instances_total)",
+          "expr": "sum by (collection) (galley_runtime_state_type_instances_total)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{ typeURL }}",
+          "legendFormat": "{{ collection }}",
           "refId": "A"
         }
       ],
@@ -1348,91 +1348,6 @@
       "gridPos": {
         "h": 6,
         "w": 8,
-        "x": 8,
-        "y": 35
-      },
-      "id": 16,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(galley_source_kube_dynamic_converter_success_total[1m]) * 60",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{apiVersion=\"{{apiVersion}}\",group=\"{{group}}\",kind=\"{{kind}}\"}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Kubernetes Object Conversion Successes",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "Conversions/min",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "fill": 1,
-      "gridPos": {
-        "h": 6,
-        "w": 8,
         "x": 16,
         "y": 35
       },
@@ -1558,7 +1473,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(galley_mcp_source_clients_total)",
+          "expr": "sum(istio_mcp_clients_total{component=\"galley\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Clients",
@@ -1643,7 +1558,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by(collection)(irate(galley_mcp_source_request_acks_total[1m]) * 60)",
+          "expr": "sum by(collection)(irate(istio_mcp_request_acks_total{component=\"galley\"}[1m]) * 60)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
@@ -1728,7 +1643,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(galley_mcp_source_request_nacks_total[1m]) * 60",
+          "expr": "rate(istio_mcp_request_nacks_total{component=\"galley\"}[1m]) * 60",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
