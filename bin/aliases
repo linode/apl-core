@@ -30,7 +30,7 @@ if [ $hasDocker -eq 0 ]; then
   hasHelmfileContainer=$(d ps -af name=$containerId | grep -w $containerId)
   if [ "$hasHelmfileContainer" = "" ]; then
     echo "Running one time init of helmfile container. Please type exit and return."
-    d run -it --name $containerId -v $PWD:$PWD -v ~/.kube:/root/.kube -w $PWD $img bash
+    d run -it --name $containerId -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp -w $PWD $img bash
     d start $containerId && d exec -t $containerId bash -c 'helmfile repos'
     echo READY!
   fi
