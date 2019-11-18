@@ -1,0 +1,10 @@
+{{- $v := .Environment.Values }}
+templates:
+  - |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: config-domain
+        namespace: knative-serving
+      data:
+        {{ $v.domain }}: ""
