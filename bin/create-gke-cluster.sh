@@ -3,8 +3,10 @@
 . ./.gce
 
 # create the cluster
-gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER" --region "$REGION" \
-  --no-enable-basic-auth --cluster-version "1.13.7-gke.8" --machine-type "n1-standard-4" \
+gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER" \
+  --zone "$ZONE" \
+  # --region "$REGION" \
+  --no-enable-basic-auth --cluster-version "1.14.8-gke.12" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
   --max-pods-per-node "110" --num-nodes "1" --no-enable-cloud-logging --no-enable-cloud-monitoring \
