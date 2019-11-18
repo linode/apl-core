@@ -9,4 +9,4 @@ releases:
     namespace: default
     labels:
       init: true
-    <<: *skeleton # just install the stuff in k8s/apps/cert-manager
+    <<: *skeleton

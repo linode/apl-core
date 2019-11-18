@@ -23,7 +23,7 @@ gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER" \
   --maintenance-window "01:00" --labels customer=$CUSTOMER --enable-tpu \
   --enable-autoprovisioning --min-cpu 1 --max-cpu 8 --min-memory 8 --max-memory 32 \
   --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
-  # --enable-pod-security-policy
+# --enable-pod-security-policy
 
 gcloud container clusters get-credentials $CLUSTER $CLUSTER_LOCATTION --project $GCP_PROJECT
 
