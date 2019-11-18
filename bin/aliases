@@ -1,15 +1,14 @@
 . ./.env
 . ./.gce
 
+alias d="docker"
 alias k="kubectl"
 alias ksk="kubectl -n kube-system"
 alias ki="k -n ingress"
-alias kis="k -n istio-system"
 alias ks="k -n system"
 alias ksh="k -n shared"
 alias km="k -n monitoring"
-alias knb="k -n knative-build"
-alias kns="k -n knative-serving"
+alias kt="k -n tillerless"
 alias ka="kubectl --all-namespaces=true"
 alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
 alias kap="ka get po"
@@ -18,23 +17,57 @@ alias kcv="k config view"
 alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
 alias kcu="k config use-context"
-alias uuid="python -c 'import sys,uuid; sys.stdout.write(uuid.uuid4().hex)' | pbcopy && pbpaste && echo"
+
+img=otomi/helmfile:1.15
+containerId=helmfile-otomi-stack
+test=$(d --version) &> /dev/null
+hasDocker=$?
 
 alias kp="k proxy &"
-alias h="helm tiller run tillerless -- helm"
-alias hf="helmfile"
-alias his="h upgrade --install --force"
+alias hf_="d start $containerId && d exec -ti $containerId bash"
+if [ $hasDocker -eq 0 ]; then
+  echo "Found docker binary, will use $img instead of local helmfile"
+  hasHelmfileContainer=$(d ps -af name=$containerId | grep -w $containerId)
+  if [ "$hasHelmfileContainer" = "" ]; then
+    echo "Running one time init of helmfile container. Please type exit and return."
+    d run -it --name $containerId -v $PWD:$PWD -v ~/.kube:/root/.kube -w $PWD $img bash
+    d start $containerId && d exec -t $containerId bash -c 'helmfile repos'
+    echo READY!
+  fi
+  function h() {
+    args="$@"
+    d start $containerId && d exec -ti $containerId sh -c ". bin/aliases && helm tiller run tillerless -- helm $args";
+  }
+  function hf() {
+    args="$@"
+    d start $containerId && d exec -ti $containerId sh -c "helmfile $args";
+  }
+else
+  alias h="helm tiller run tillerless -- helm"
+  alias hf="helmfile"
+fi
 alias hk="h delete --purge"
 alias kk="killall kubectl"
 
+function kpk() { ps aux|grep "$@" | awk '{print $2}' | xargs kill; }
+function kad() { k delete "$@" --all; }
+function kcns() { k config set-context $(k config current-context) --namespace="$@"; }
+function hsk() { his --namespace=kube-system "$@"; }
+function hm() { his --namespace=monitoring "$@"; }
+function hin() { his --namespace=ingress "$@"; }
+function hs() { his --namespace=system "$@"; }
+function hsh() { his --namespace=shared "$@"; }
+
 function kdnp() {
-  for ns in default kube-system system monitoring logging team-backend; do
+  for ns in default kube-system system monitoring ingress shared; do
     kad networkpolicy -n $ns
   done
 }
+# force erase all namespaces
 function kkns() {
   k get ns | grep Terminating | awk '{print $1}' | xargs  -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize" '
 }
+# erase entire stack but keep nodes
 function kkc() {
   hk $(h ls --all --short) > /dev/null
   k delete ns --all
@@ -55,10 +88,7 @@ function kkk() {
   # k delete ns istio-system kyma-integration kyma-system natss knative-build knative-eventing knative-serving
 }
 
-
-function kpk() { ps aux|grep "$@" | awk '{print $2}' | xargs kill; }
-function kad() { k delete "$@" --all; }
-function kcns() { k config set-context $(k config current-context) --namespace="$@"; }
-
 function hfd() { kcu dev.otomi && hf -e dev $@ --concurrency=1 --skip-deps; }
 function hfp() { kcu prd.otomi && hf -e prd $@ --concurrency=1 --skip-deps; }
+
+echo "Aliases loaded."
