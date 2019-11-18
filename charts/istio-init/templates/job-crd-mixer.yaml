@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   namespace: {{ .Release.Namespace }}
-  name: istio-init-crd-10
+  name: istio-init-crd-mixer-{{ .Values.global.tag | printf "%v" | trunc 32 | trimSuffix "-" }}
 spec:
   template:
     metadata:
@@ -11,16 +11,20 @@ spec:
     spec:
       serviceAccountName: istio-init-service-account
       containers:
-      - name: istio-init-crd-10
+      - name: istio-init-crd-mixer
         image: "{{ .Values.global.hub }}/kubectl:{{ .Values.global.tag }}"
         imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+{{- if .Values.job.resources }}
+        resources:
+{{ toYaml .Values.job.resources | indent 10 }}
+{{- end }}
         volumeMounts:
-        - name: crd-10
-          mountPath: /etc/istio/crd-10
+        - name: crd-mixer
+          mountPath: /etc/istio/crd-mixer
           readOnly: true
-        command: ["kubectl",  "apply", "-f", "/etc/istio/crd-10/crd-10.yaml"]
+        command: ["kubectl",  "apply", "-f", "/etc/istio/crd-mixer/crd-mixer.yaml"]
       volumes:
-      - name: crd-10
+      - name: crd-mixer
         configMap:
-          name: istio-crd-10
+          name: istio-crd-mixer
       restartPolicy: OnFailure
