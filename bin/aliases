@@ -18,7 +18,7 @@ alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
 alias kcu="k config use-context"
 
-img=otomi/helmfile:1.15
+img=otomi/tools:1.15
 containerId=helmfile-otomi-stack
 test=$(d --version) &> /dev/null
 hasDocker=$?
