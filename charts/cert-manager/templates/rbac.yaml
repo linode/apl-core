@@ -1,9 +1,10 @@
 {{- if .Values.global.rbac.create -}}
 
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: {{ template "cert-manager.fullname" . }}-leaderelection
+  name: {{ template "cert-manager.fullname" . }}:leaderelection
+  namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
     app: {{ template "cert-manager.name" . }}
     app.kubernetes.io/name: {{ template "cert-manager.name" . }}
@@ -12,9 +13,35 @@ metadata:
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
   # Used for leader election by the controller
+  # TODO: refine the permission to *just* the leader election configmap
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "create", "update", "patch"]
+
+---
+
+# grant cert-manager permission to manage the leaderelection configmap in the
+# leader election namespace
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: {{ include "cert-manager.fullname" . }}:leaderelection
+  namespace: {{ .Values.global.leaderElection.namespace }}
+  labels:
+    app: {{ include "cert-manager.name" . }}
+    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app.kubernetes.io/instance:  {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "cert-manager.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "cert-manager.fullname" . }}:leaderelection
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "cert-manager.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 
 ---
 
@@ -30,10 +57,10 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["issuers", "issuers/status"]
     verbs: ["update"]
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["issuers"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
@@ -57,10 +84,10 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["clusterissuers", "clusterissuers/status"]
     verbs: ["update"]
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["clusterissuers"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
@@ -84,21 +111,21 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates", "certificates/status", "certificaterequests", "certificaterequests/status"]
     verbs: ["update"]
-  - apiGroups: ["certmanager.k8s.io"]
-    resources: ["certificates", "certificaterequests", "clusterissuers", "issuers", "orders"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates", "certificaterequests", "clusterissuers", "issuers"]
     verbs: ["get", "list", "watch"]
   # We require these rules to support users with the OwnerReferencesPermissionEnforcement
-  # admission controller enabled:
+  # admission controller enabled:
   # https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates/finalizers"]
     verbs: ["update"]
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["orders"]
-    verbs: ["create", "delete"]
+    verbs: ["create", "delete", "get", "list", "watch"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "update", "delete"]
@@ -120,19 +147,22 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["orders", "orders/status"]
     verbs: ["update"]
-  - apiGroups: ["certmanager.k8s.io"]
-    resources: ["orders", "clusterissuers", "issuers", "challenges"]
+  - apiGroups: ["acme.cert-manager.io"]
+    resources: ["orders", "challenges"]
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["clusterissuers", "issuers"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["challenges"]
     verbs: ["create", "delete"]
   # We require these rules to support users with the OwnerReferencesPermissionEnforcement
-  # admission controller enabled:
+  # admission controller enabled:
   # https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["orders/finalizers"]
     verbs: ["update"]
   - apiGroups: [""]
@@ -157,12 +187,16 @@ metadata:
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
   # Use to update challenge resource status
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["challenges", "challenges/status"]
     verbs: ["update"]
+  # Used to watch challenge resources
+  - apiGroups: ["acme.cert-manager.io"]
+    resources: ["challenges"]
+    verbs: ["get", "list", "watch"]
   # Used to watch challenges, issuer and clusterissuer resources
-  - apiGroups: ["certmanager.k8s.io"]
-    resources: ["challenges", "issuers", "clusterissuers"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["issuers", "clusterissuers"]
     verbs: ["get", "list", "watch"]
   # Need to be able to retrieve ACME account private key to complete challenges
   - apiGroups: [""]
@@ -188,12 +222,12 @@ rules:
     verbs: ["create"]
 {{- end }}
   # We require these rules to support users with the OwnerReferencesPermissionEnforcement
-  # admission controller enabled:
+  # admission controller enabled:
   # https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["acme.cert-manager.io"]
     resources: ["challenges/finalizers"]
     verbs: ["update"]
-  # DNS01 rules (duplicated above)
+  # DNS01 rules (duplicated above)
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch"]
@@ -212,17 +246,17 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates", "certificaterequests"]
     verbs: ["create", "update", "delete"]
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["extensions"]
     resources: ["ingresses"]
     verbs: ["get", "list", "watch"]
   # We require these rules to support users with the OwnerReferencesPermissionEnforcement
-  # admission controller enabled:
+  # admission controller enabled:
   # https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement
   - apiGroups: ["extensions"]
     resources: ["ingresses/finalizers"]
@@ -394,7 +428,7 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates", "certificaterequests", "issuers"]
     verbs: ["get", "list", "watch"]
 
@@ -413,7 +447,7 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
-  - apiGroups: ["certmanager.k8s.io"]
+  - apiGroups: ["cert-manager.io"]
     resources: ["certificates", "certificaterequests", "issuers"]
     verbs: ["create", "delete", "deletecollection", "patch", "update"]
 

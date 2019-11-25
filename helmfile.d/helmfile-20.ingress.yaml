@@ -4,14 +4,18 @@ bases:
 {{ readFile "snippets/templates.yaml" }}
 
 releases:
-  - name: cert-manager
-    installed: true
-    namespace: ingress
-    <<: *default
+  # - name: cert-manager
+  #   installed: true
+  #   namespace: ingress
+  #   labels:
+  #     tag: cert-manager
+  #   <<: *default
   - name: cert-manager-artifacts
     installed: true
     namespace: ingress
     chart: ../charts/raw
+    labels:
+      tag: cert-manager
     values:
     - ../values/cert-manager/raw.gotmpl
   - name: external-dns

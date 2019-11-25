@@ -5,6 +5,8 @@ alias d="docker"
 alias k="kubectl"
 alias ksk="kubectl -n kube-system"
 alias ki="k -n ingress"
+alias kis="k -n istio-system"
+alias kys="k -n kyma-system"
 alias ks="k -n system"
 alias ksh="k -n shared"
 alias km="k -n monitoring"
@@ -20,8 +22,8 @@ alias kcu="k config use-context"
 
 img=otomi/tools:1.15
 containerId=helmfile-otomi-stack
-test=$(d --version) &> /dev/null
-hasDocker=$?
+test=$(d --version) &>/dev/null
+hasDocker=1 #$?
 
 alias kp="k proxy &"
 alias hf_="d start $containerId && d exec -ti $containerId bash"
@@ -36,20 +38,23 @@ if [ $hasDocker -eq 0 ]; then
   fi
   function h() {
     args="$@"
-    d start $containerId && d exec -ti $containerId sh -c ". bin/aliases && helm tiller run tillerless -- helm $args";
+    d start $containerId && d exec -ti $containerId sh -c "helm $args"
   }
   function hf() {
     args="$@"
-    d start $containerId && d exec -ti $containerId sh -c "helmfile $args";
+    d start $containerId && d exec -ti $containerId sh -c "helmfile $args"
   }
 else
-  alias h="helm tiller run tillerless -- helm"
+  #alias h="helm"
+  function h() {
+    helm $@ --tls
+  }
   alias hf="helmfile"
 fi
 alias hk="h delete --purge"
 alias kk="killall kubectl"
 
-function kpk() { ps aux|grep "$@" | awk '{print $2}' | xargs kill; }
+function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }
 function kcns() { k config set-context $(k config current-context) --namespace="$@"; }
 function hsk() { his --namespace=kube-system "$@"; }
@@ -65,30 +70,30 @@ function kdnp() {
 }
 # force erase all namespaces
 function kkns() {
-  k get ns | grep Terminating | awk '{print $1}' | xargs  -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize" '
+  k proxy &
+  k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize" '
+  kk
 }
 # erase entire stack but keep nodes
 function kkc() {
-  hk $(h ls --all --short) > /dev/null
+  hk $(h ls --all --short) >/dev/null
   k delete ns --all
   kkns
 }
 
 alias kku="k label installation/kyma-installation action=uninstall --overwrite"
 function kkk() {
-  k delete -f k8s/kyma/kyma-installer-cluster-${KYMA_VERSION}.yaml
-  k delete -f k8s/kyma/tiller-${KYMA_VERSION}.yaml
+  k delete -f https://github.com/kyma-project/kyma/releases/download/$KYMA_VERSION/kyma-installer-cluster.yaml
+  k delete -f https://raw.githubusercontent.com/kyma-project/kyma/$KYMA_VERSION/installation/resources/tiller.yaml
+  k delete all --all
+  kkc
+  k delete crd $(k get crd | egrep "istio|ory|kyma|coreos|knative|velero" | awk '{print $1}')
+  ksk delete deploy tiller-deploy
+  ksk delete job tiller-certs-job
   ksk delete secret tiller-secret
-  # delete tiller bookkeeping as well:
-  ksk delete cm $(ksk get cm | egrep "\.v[0-9]+" | awk '{print$1}')
-  ksk delete secret $(ksk get secret | egrep "\.v[0-9]+" | awk '{print$1}')
-  # delete crds that came with kyma:
-  k delete crd $(k get crd | egrep "istio|ory|kyma|coreos|knative" | awk '{print $1}')
-  # should not be needed:
-  # k delete ns istio-system kyma-integration kyma-system natss knative-build knative-eventing knative-serving
 }
 
-function hfd() { kcu dev.otomi && hf -e dev $@ --concurrency=1 --skip-deps; }
-function hfp() { kcu prd.otomi && hf -e prd $@ --concurrency=1 --skip-deps; }
+function hfd() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-dev && hf -e dev $@ --concurrency=1 --skip-deps; }
+function hfp() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-prd && hf -e prd $@ --concurrency=1 --skip-deps; }
 
 echo "Aliases loaded."

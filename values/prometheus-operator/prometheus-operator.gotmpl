@@ -2,16 +2,17 @@
 {{ $promHost := printf "prometheus.%s" $v.domain }}
 {{ $alertsHost := printf "alertmanager.%s" $v.domain }}
 {{ $grafanaHost := printf "grafana.%s" $v.domain }}
-coreDns:
-  enabled: false
-kubeDns:
-  enabled: true
+global:
+  rbac:
+    pspEnabled: false
 kubeEtcd:
   enabled: false    
 prometheusOperator:
   configReloaderCpu: 200m
-  createCustomResource: false
-
+  admissionWebhooks:
+    enabled: false
+  tlsProxy:
+    enabled: false
 prometheus:
   prometheusSpec:
     storageSpec:
@@ -19,15 +20,14 @@ prometheus:
         metadata:
           name: promdata
         spec:
-          storageClassName: "fast"
+          storageClassName: fast
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
               storage: 5Gi
     enableAdminAPI: true
     externalUrl: https://{{ $promHost }}
-    additionalScrapeConfigs:
-      {{- readFile "./istio-scraping.yaml" | nindent 6 }}
+    # additionalScrapeConfigs:
     #   - job_name: 'probe-sites'
     #     metrics_path: /probe
     #     params:
@@ -108,6 +108,9 @@ alertmanager:
         hosts:
           - {{ $alertsHost }}
 grafana:
+  rbac:
+    pspUseAppArmor: false
+    pspEnabled: false
   additionalDataSources:
     - name: Graphite
       editable: false
@@ -121,8 +124,6 @@ grafana:
       url: http://loki:3100
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: bladibla
-  rbac:
-    pspUseAppArmor: false
   ingress:
     # enabled: true
     annotations:
@@ -135,17 +136,6 @@ grafana:
       - secretName: grafana-tls
         hosts:
           - {{ $grafanaHost }}
-  additionalDataSources:
-    - name: Graphite
-      editable: false
-      type: graphite
-      access: proxy
-      url: http://graphite:80
-    - name: Loki
-      editable: false
-      type: loki
-      access: proxy
-      url: http://loki:3100
   grafana.ini:
     log:
       level: debug
@@ -183,8 +173,12 @@ grafana:
 
 commonLabels: {{ toYaml $v.customerLabels | nindent 2 }}
 kube-state-metrics:
+  podSecurityPolicy:
+    enabled: false
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 prometheus-node-exporter:
+  rbac:
+    pspEnabled: false
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 
 kubeControllerManager:

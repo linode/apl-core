@@ -24,7 +24,6 @@ spec:
   template:
     metadata:
       labels:
-{{ toYaml .Values.customerLabels | indent 8 }}
         app: {{ template "cert-manager.name" . }}
         app.kubernetes.io/name: {{ template "cert-manager.name" . }}
         app.kubernetes.io/instance:  {{ .Release.Name }}
@@ -65,11 +64,7 @@ spec:
         {{- else }}
           - --cluster-resource-namespace=$(POD_NAMESPACE)
         {{- end }}
-        {{- if .Values.global.leaderElection.namespace }}
           - --leader-election-namespace={{ .Values.global.leaderElection.namespace }}
-        {{- else }}
-          - --leader-election-namespace=$(POD_NAMESPACE)
-        {{- end }}
         {{- if .Values.extraArgs }}
 {{ toYaml .Values.extraArgs | indent 10 }}
         {{- end }}
@@ -80,6 +75,9 @@ spec:
           {{- if .defaultIssuerKind }}
           - --default-issuer-kind={{ .defaultIssuerKind }}
           {{- end }}
+          {{- if .defaultIssuerGroup }}
+          - --default-issuer-group={{ .defaultIssuerGroup }}
+          {{- end }}
           {{- if .defaultACMEChallengeType }}
           - --default-acme-issuer-challenge-type={{ .defaultACMEChallengeType }}
           {{- end }}
@@ -87,6 +85,10 @@ spec:
           - --default-acme-issuer-dns01-provider-name={{ .defaultACMEDNS01ChallengeProvider }}
           {{- end }}
           {{- end }}
+          - --webhook-namespace=$(POD_NAMESPACE)
+          - --webhook-ca-secret={{ include "webhook.rootCACertificate" . }}
+          - --webhook-serving-secret={{ include "webhook.servingCertificate" . }}
+          - --webhook-dns-names={{ include "webhook.fullname" . }},{{ include "webhook.fullname" . }}.{{ .Release.Namespace }},{{ include "webhook.fullname" . }}.{{ .Release.Namespace }}.svc
           ports:
           - containerPort: 9402
           env:

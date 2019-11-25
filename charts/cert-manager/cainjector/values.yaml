@@ -10,6 +10,9 @@ global:
   rbac:
     create: true
 
+  podSecurityPolicy:
+    enabled: false
+
   leaderElection:
     # Override the namespace used to store the ConfigMap for leader election
     namespace: ""
@@ -33,6 +36,10 @@ resources: {}
   #   memory: 32Mi
 
 nodeSelector: {}
+
+affinity: {}
+
+tolerations: []
 
 image:
   repository: quay.io/jetstack/cert-manager-cainjector

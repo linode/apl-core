@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  {{- include "customer-ns.labels" . | nindent 2 }}
-  name: {{ template "customer-ns.fullname" . }}
-spec:
-  hard:
-    {{- .Values.resourceQuota | toYaml | nindent 4 }}

@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.gateway }}
+{{- $iv := readFile "values.yaml" | fromYaml }}
 templates:
   - |
     apiVersion: networking.istio.io/v1alpha3
@@ -40,4 +41,16 @@ templates:
             port:
               number: {{ $s | getOrNil "port" | default 80 }}
           weight: 100
+  {{- end }}
+  {{- range $s := $iv.noTLS }}
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+    metadata:
+      name: {{ $s.name }}
+    spec:
+      host: {{ $s.host}}.svc.cluster.local
+      trafficPolicy:
+        tls:
+          mode: DISABLE
   {{- end }}

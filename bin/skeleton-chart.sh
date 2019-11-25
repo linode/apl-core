@@ -7,17 +7,22 @@ root=..
 app=${1}
 shift
 args=${@:-''}
+appDir=/tmp/charts/$app
+tplDir="$appDir/templates"
+tpls="$tplDir/all.yaml"
 
 echo "Creating tmp chart from skeleton with manifests from: k8s/apps/$app"
 # just copy the sources temporarily to /tmp if not there yet
-[ -f "/tmp/charts/$app" ] && rm -rf /tmp/charts/$app
-mkdir -p /tmp/charts/$app/templates
-cp -r $root/charts/skeleton/* /tmp/charts/$app/
-sed -i -e "s/##CHART/$app/g" /tmp/charts/$app/Chart.yaml
-printf "" >/tmp/charts/$app/templates/all.yaml
+[ -f "/tmp/charts/$app" ] && echo "removing old $appDir" && rm -rf $appDir
+mkdir -p $tplDir
+cp -r $root/charts/skeleton/* $appDir/
+sed -i -e "s/##CHART/$app/g" $appDir/Chart.yaml
+printf "" >$tpls
 if [ "$args" != "" ]; then
-  kubectl apply $args -f $root/k8s/apps/$app --dry-run -o yaml >/tmp/charts/$app/templates/all.yaml
+  kubectl apply $args -f $root/k8s/apps/$app --dry-run -o yaml >$tpls
 else
-  find $root/k8s/apps/$app/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>/tmp/charts/$app/templates/all.yaml
+  find $root/k8s/apps/$app/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
 fi
-echo "manifests:"
+# sed -i -e 's/^[ \t]*#.*$//g' $tpls
+sed -i -e 's/{{/{{ \`{{/g' $tpls
+sed -i -e "s/}}/\` }}/g" $tpls

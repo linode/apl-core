@@ -1,11 +1,12 @@
 bases:
   - snippets/defaults.yaml
 
-releases:
-  - name: istio
-    installed: true
-    namespace: istio-system
-    chart: ../charts/istio
-    values:
-    - ../values/istio/istio.gotmpl
-    - ../values/default.gotmpl
+{{ readFile "snippets/templates-skeleton.gotmpl" }}
+
+releases: []
+  # - name: istio-operator
+  #   installed: true
+  #   namespace: istio-operator
+  #   labels:
+  #     pkg: istio-operator
+  #   <<: *skeleton

@@ -7,7 +7,6 @@ metadata:
 {{ toYaml .Values.service.annotations | indent 4 }}
 {{- end }}
   labels: {{ include "prometheus-node-exporter.labels" . | indent 4 }}
-{{ toYaml .Values.customerLabels | indent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:

@@ -1,0 +1,4 @@
+noTLS: []
+  # - name: loki
+  #   host: loki.monitoring
+  #   mode: ISTIO_MUTUAL

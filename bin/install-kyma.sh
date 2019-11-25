@@ -2,32 +2,35 @@
 
 . ./.gce
 
-KYMA_VERSION=${KYMA_VERSION:-"1.3.0"}
+KYMA_VERSION=${KYMA_VERSION:-"1.7.0"}
 
-TLS_CERT=$(cat ./letsencrypt/live/$DOMAIN/fullchain.pem | base64 | sed 's/ /\\ /g' | tr -d '\n');
+TLS_CERT=$(cat ./letsencrypt/live/$DOMAIN/fullchain.pem | base64 | sed 's/ /\\ /g' | tr -d '\n')
 TLS_KEY=$(cat ./letsencrypt/live/$DOMAIN/privkey.pem | base64 | sed 's/ /\\ /g' | tr -d '\n')
 
-kubectl apply -f k8s/kyma/tiller-${KYMA_VERSION}.yaml
+# override with custom domain
+kubectl create namespace kyma-installer &&
+  kubectl create configmap owndomain-overrides -n kyma-installer --from-literal=global.domainName=$DOMAIN --from-literal=global.tlsCrt=$TLS_CERT --from-literal=global.tlsKey=$TLS_KEY &&
+  kubectl label configmap owndomain-overrides -n kyma-installer installer=overrides
 
+# install tiller
+kubectl apply -f https://raw.githubusercontent.com/kyma-project/kyma/$KYMA_VERSION/installation/resources/tiller.yaml
 kubectl -n kube-system rollout status deploy/tiller-deploy
 
-kubectl create namespace kyma-installer \
-&& kubectl create configmap owndomain-overrides -n kyma-installer --from-literal=global.domainName=$DOMAIN --from-literal=global.tlsCrt=$TLS_CERT --from-literal=global.tlsKey=$TLS_KEY \
-&& kubectl label configmap owndomain-overrides -n kyma-installer installer=overrides
-
-kubectl apply -f k8s/kyma/kyma-installer-cluster-${KYMA_VERSION}.yaml
-
+# install kyma
+kubectl apply -f https://github.com/kyma-project/kyma/releases/download/$KYMA_VERSION/kyma-installer-cluster.yaml
 kubectl -n kyma-installer rollout status deploy/kyma-installer
 
-kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.ca\.crt']}" | base64 --decode > "$(helm home)/ca.pem";
-kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.tls\.crt']}" | base64 --decode > "$(helm home)/cert.pem";
-kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.tls\.key']}" | base64 --decode > "$(helm home)/key.pem";
+kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.ca\.crt']}" | base64 --decode >"$(helm home)/ca.pem"
+kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.tls\.crt']}" | base64 --decode >"$(helm home)/cert.pem"
+kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.helm\.tls\.key']}" | base64 --decode >"$(helm home)/key.pem"
 
 kubectl get pods --all-namespaces
 
-while true; do \
-  kubectl -n default get installation/kyma-installation -o jsonpath="{'Status: '}{.status.state}{', description: '}{.status.description}"; echo; \
-  sleep 5; \
+while true; do
+  msg=$(kubectl -n default get installation/kyma-installation -o jsonpath="{'Status: '}{.status.state}{', description: '}{.status.description}")
+  echo
+  sleep 5 || break
+  [ "$msg" = "Status: Installed, description: Kyma installed" ] && break
 done
 
 # kubectl -n kyma-installer logs -l 'name=kyma-installer'

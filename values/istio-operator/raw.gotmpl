@@ -1,0 +1,51 @@
+{{- $v := .Environment.Values }}
+templates:
+  - |
+    apiVersion: install.istio.io/v1alpha2
+    kind: IstioControlPlane
+    metadata:
+      namespace: istio-operator
+      name: istiocontrolplane
+    spec:
+      profile: sds
+      # autoInjection:
+      #   enabled: false
+      # cni:
+      #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
+      # security:
+      #   components:
+      #     certManager:
+      #       enabled: true
+      #     citadel:
+      #       enabled: false
+      values:
+        global:
+          # mtls:
+          #   enabled: false
+          # tag: 1.2.2
+          # logging:
+          #   level: "default:info"
+          # proxy:
+            # autoInject: disabled
+          # controlPlaneSecurityEnabled: false
+          # disablePolicyChecks: false
+          # enableTracing: false
+        # grafana:
+        #   enabled: true
+        prometheus:
+          enabled: false
+        # tracing:
+        #   enabled: true
+        # kiali:
+        #   enabled: true
+        sidecarInjectorWebhook:
+          enabled: true
+          enableNamespacesByDefault: true
+          # If true, webhook or istioctl injector will rewrite PodSpec for liveness
+          # health check to redirect request to sidecar. This makes liveness check work
+          # even when mTLS is enabled.
+          rewriteAppHTTPProbe: true
+        gateways:
+          istio-ingressgateway:
+            sds:
+              enabled: true
