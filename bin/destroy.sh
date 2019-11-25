@@ -11,13 +11,12 @@ if [[ ! $envs == *$ev* ]]; then
   exit 1
 fi
 
-
 kcu $CLUSTER
 hf -e $ev destroy --concurrency=1
-if [ -f "k8s/cloud/${CLOUD}" ]; then
+if [ -d "k8s/cloud/${CLOUD}" ]; then
   k delete -f k8s/cloud/${CLOUD} --recursive
 fi
-if [ -f "k8s/env${ev}" ]; then
+if [ -d "k8s/env${ev}" ]; then
   k delete -f k8s/env/$ev --recursive
 fi
 k delete -f k8s/apps --recursive

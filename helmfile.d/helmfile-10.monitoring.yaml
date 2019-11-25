@@ -8,26 +8,22 @@ releases:
     installed: true
     namespace: monitoring
     <<: *default
-  - name: loki
-    installed: true
-    namespace: monitoring
-    <<: *default
+  # - name: loki
+  #   installed: true
+  #   namespace: monitoring
+  #   <<: *default
   - name: prom-blackbox-exporter
-    installed: false 
+    installed: true 
     namespace: monitoring
     <<: *default
-  - name: prometheus-operator
-    installed: true
-    namespace: monitoring
-    <<: *default
-  - name: prometheus-operator-istio
-    installed: true
-    namespace: monitoring
-    <<: *default
-  - name: promtail
-    installed: true
-    namespace: monitoring
-    <<: *default
+  # - name: prometheus-operator-istio
+  #   installed: true
+  #   namespace: monitoring
+  #   <<: *default
+  # - name: promtail
+  #   installed: true
+  #   namespace: monitoring
+  #   <<: *default
   - name: sitespeed
     installed: false
     namespace: monitoring

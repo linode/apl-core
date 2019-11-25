@@ -1,10 +1,26 @@
 {{- $v := .Environment.Values }}
 templates:
   - |
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: config-domain
-        namespace: knative-serving
-      data:
-        {{ $v.domain }}: ""
+    apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: knative-serving
+      namespace: knative-serving
+    spec:
+      config:
+        defaults:
+          revision-timeout-seconds: "300"  # 5 minutes
+        autoscaler:
+          stable-window: "60s"
+        deployment:
+          registriesSkippingTagResolving: "ko.local,dev.local"
+        logging:
+          loglevel.controller: "debug"
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: config-domain
+      namespace: knative-serving
+    data:
+      {{ $v.domain }}: ""

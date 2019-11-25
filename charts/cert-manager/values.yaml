@@ -14,11 +14,15 @@ global:
   rbac:
     create: true
 
+  podSecurityPolicy:
+    enabled: false
+
+  # Set the verbosity of cert-manager. Range of 0 - 6 with 6 being the most verbose.
   logLevel: 2
 
   leaderElection:
     # Override the namespace used to store the ConfigMap for leader election
-    namespace: ""
+    namespace: "kube-system"
 
 replicaCount: 1
 
@@ -47,6 +51,7 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+  annotations: {}
 
 # Optional additional arguments
 extraArgs: []
@@ -91,6 +96,7 @@ nodeSelector: {}
 ingressShim: {}
   # defaultIssuerName: ""
   # defaultIssuerKind: ""
+  # defaultIssuerGroup: ""
   # defaultACMEChallengeType: ""
   # defaultACMEDNS01ChallengeProvider: ""
 
@@ -103,9 +109,47 @@ prometheus:
     path: /metrics
     interval: 60s
     scrapeTimeout: 30s
+    labels: {}
 
 webhook:
   enabled: true
+  replicaCount: 1
+
+  strategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 0
+    #   maxUnavailable: 1
+
+  podAnnotations: {}
+
+  # Optional additional arguments for webhook
+  extraArgs: []
+
+  resources: {}
+    # requests:
+    #   cpu: 10m
+    #   memory: 32Mi
+
+  nodeSelector: {}
+
+  affinity: {}
+
+  tolerations: []
+
+  image:
+    repository: quay.io/jetstack/cert-manager-webhook
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion will be used.
+    # tag: canary
+    pullPolicy: IfNotPresent
+
+  # If true, the apiserver's cabundle will be automatically injected into the
+  # webhook's ValidatingWebhookConfiguration resource by the CA injector.
+  # in future this will default to false, as the apiserver can use the loopback
+  # configuration caBundle to talk to itself in kubernetes 1.11+
+  # see https://github.com/kubernetes/kubernetes/pull/62649
+  injectAPIServerCA: true
 
 cainjector:
   enabled: true

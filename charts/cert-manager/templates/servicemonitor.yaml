@@ -3,30 +3,33 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "cert-manager.fullname" . }}
+{{- if .Values.prometheus.servicemonitor.namespace }}
+  namespace: {{ .Values.prometheus.servicemonitor.namespace }}
+{{- else }}
   namespace: {{ .Release.Namespace | quote }}
+{{- end }}
   labels:
     app: {{ template "cert-manager.name" . }}
-    chart: {{ template "cert-manager.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ template "cert-manager.name" . }}
+    app.kubernetes.io/instance:  {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ template "cert-manager.chart" . }}
     prometheus: {{ .Values.prometheus.servicemonitor.prometheusInstance }}
+{{- if .Values.prometheus.servicemonitor.labels }}
+{{ toYaml .Values.prometheus.servicemonitor.labels | indent 4}}
+{{- end }}
 spec:
   jobLabel: {{ template "cert-manager.fullname" . }}
   selector:
     matchLabels:
-      app: {{ template "cert-manager.name" . }}
-      release: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "cert-manager.name" . }}
+      app.kubernetes.io/instance:  {{ .Release.Name }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
   endpoints:
   - targetPort: {{ .Values.prometheus.servicemonitor.targetPort }}
     path: {{ .Values.prometheus.servicemonitor.path }}
     interval: {{ .Values.prometheus.servicemonitor.interval }}
     scrapeTimeout: {{ .Values.prometheus.servicemonitor.scrapeTimeout }}
-    {{- if .Values.istioEnabled }}
-    scheme: https
-    tlsConfig:
-      caFile: /etc/prometheus/secrets/istio.default/root-cert.pem
-      certFile: /etc/prometheus/secrets/istio.default/cert-chain.pem
-      keyFile: /etc/prometheus/secrets/istio.default/key.pem
-      insecureSkipVerify: true
-    {{- end }}
 {{- end }}

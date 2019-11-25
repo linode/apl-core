@@ -19,24 +19,15 @@ echo "and make sure the domain registrar uses them, then continue here"
 
 echo -n "Ready to proceed (y/n)? "
 read answer
-if [ "$answer" != "${answer#[Yy]}" ] ;then
-    exit
+if [ "$answer" != "${answer#[Yy]}" ]; then
+  exit
 fi
 
 # set up dns manager and letsencrypt access
-mkdir letsencrypt > /dev/null
+mkdir letsencrypt >/dev/null
 gcloud iam service-accounts create dnsmanager --display-name "dnsmanager" --project "$GCP_PROJECT"
 gcloud projects add-iam-policy-binding $GCP_PROJECT \
-    --member serviceAccount:dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com --role roles/dns.admin
+  --member serviceAccount:dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com --role roles/dns.admin
 gcloud iam service-accounts keys create ./letsencrypt/key.json --iam-account dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com
 
-# get certs from letsencrypt for *.$DOMAIN (kyma only)
-# docker run -it --name certbot --rm \
-#     -v "$(pwd)/letsencrypt:/etc/letsencrypt" \
-#     certbot/dns-google \
-#     certonly \
-#     -m $CERT_ISSUER_EMAIL --agree-tos --no-eff-email \
-#     --dns-google \
-#     --dns-google-credentials /etc/letsencrypt/key.json \
-#     --server https://acme-v02.api.letsencrypt.org/directory \
-#     -d "*.$DOMAIN"
+# bin/get-kyma-certs.sh

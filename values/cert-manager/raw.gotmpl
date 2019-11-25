@@ -14,7 +14,7 @@ templates:
   {{- end }}
   {{ range $env := (list "staging" "production") }}
   - |
-    apiVersion: certmanager.k8s.io/v1alpha1
+    apiVersion: cert-manager.io/v1alpha2
     kind: ClusterIssuer
     metadata:
       name: letsencrypt-{{ $env }}
@@ -24,19 +24,19 @@ templates:
         email: {{ $cm.email }}
         privateKeySecretRef:
           name: letsencrypt-{{ $env }}
-        dns01:
-          providers:
-          {{- if $cm.provider.cloudDns.enabled }}
-          - name: cloud-dns-provider
-            clouddns:
-              project: {{ $v.google.projectId }}
-              serviceAccountSecretRef:
-                name: cloud-dns-key
-                key: key.json
-          {{- end }}
+        solvers:
+          - selector: {}
+            dns01:
+              {{- if $cm.provider.cloudDns.enabled }}
+              clouddns:
+                project: {{ $v.google.projectId }}
+                serviceAccountSecretRef:
+                  name: cloud-dns-key
+                  key: key.json
+              {{- end }}
   {{- end }}
   - |
-    apiVersion: certmanager.k8s.io/v1alpha1
+    apiVersion: cert-manager.io/v1alpha2
     kind: Certificate
     metadata:
       name: letsencrypt-{{ $cm.stage }}-k8s
@@ -70,13 +70,13 @@ templates:
         name: letsencrypt-{{ $cm.stage }}
   {{- range $custId, $cust := $v.customers }}
   - |
-    apiVersion: certmanager.k8s.io/v1alpha1
+    apiVersion: cert-manager.io/v1alpha2
     kind: Certificate
     metadata:
-      name: letscencrypt-{{ $cm.stage }}-cust-{{ $custId }}
+      name: letsencrypt-{{ $cm.stage }}-cust-{{ $custId }}
       namespace: istio-system
     spec:
-      secretName: letscencrypt-{{ $cm.stage }}-cust-{{ $custId }}
+      secretName: letsencrypt-{{ $cm.stage }}-cust-{{ $custId }}
       acme:
         config:
         - dns01:
