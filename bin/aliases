@@ -1,6 +1,7 @@
 . ./.env
 . ./.gce
 
+
 alias d="docker"
 alias k="kubectl"
 alias ksk="kubectl -n kube-system"
@@ -19,6 +20,11 @@ alias kcv="k config view"
 alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
 alias kcu="k config use-context"
+alias kp="k proxy &"
+alias hf="helmfile"
+alias hk="h delete --purge"
+alias kk="killall kubectl"
+
 
 function docker_run()
 {
@@ -32,31 +38,48 @@ function docker_start(){
   d start $DOCKER_CONTAINER_ID && d exec -ti $DOCKER_CONTAINER_ID bash
 }
 
-alias kp="k proxy &"
-
-function h() {
+function h()
+{
   helm $@ --tls
 }
-alias hf="helmfile"
 
-if [ $USE_DOCKER == "yes" ]; then
-  unalias hf
-  hasHelmfileContainer=$(d ps -af name=$containerId | grep -w $containerId)
-  if [ "$hasHelmfileContainer" = "" ]; then
+function is_docker()
+{
+  test=$(d --version) &>/dev/null
+  echo $?
+}
+
+function is_helmfile_container()
+{
+  test=$(d ps -af name=$DOCKER_CONTAINER_ID | grep -w $DOCKER_CONTAINER_ID)
+  echo $?
+}
+
+function remove_alias()
+{
+  local aliasName=$1
+  if [[ $(type -t $aliasName) == "alias" ]]; then
+    unalias $aliasName
+  fi
+}
+
+if [[ "$(is_docker)" == "0" ]]; then
+  if [ "$(is_helmfile_container)" != "0" ]; then
     docker_run
   fi
+
   function h() {
     args="$@"
-    d start $containerId && d exec -ti $containerId sh -c "helm $args"
+    d start $DOCKER_CONTAINER_ID && d exec -ti $DOCKER_CONTAINER_ID sh -c "helm $args"
   }
+
+  remove_alias "hf"
   function hf() {
     args="$@"
-    d start $containerId && d exec -ti $containerId sh -c "helmfile $args"
+    d start $DOCKER_CONTAINER_ID && d exec -ti $DOCKER_CONTAINER_ID sh -c "helmfile $args"
   }
 fi
 
-alias hk="h delete --purge"
-alias kk="killall kubectl"
 
 function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }
@@ -97,6 +120,7 @@ function kkk() {
   ksk delete secret tiller-secret
 }
 
-function hfe() { hf --kube-context ${KUBECTL_CONTEXT} -e ${HELMFILE_ENVIRONMENT} $@ --concurrency=1 --skip-deps; }
+function hfd() { hf --kube-context gke_otomi-cloud_europe-west4_otomi-cloud-dev -e dev $@ --concurrency=1 --skip-deps; }
+function hfp() { hf --kube-context gke_otomi-cloud_europe-west4_otomi-cloud-prd -e prd $@ --concurrency=1 --skip-deps; }
 
 echo "Aliases loaded."
