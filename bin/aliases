@@ -20,21 +20,30 @@ alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
 alias kcu="k config use-context"
 
-img=otomi/tools:1.15
-containerId=helmfile-otomi-stack
-test=$(d --version) &>/dev/null
-hasDocker=1 #$?
+function docker_run()
+{
+  echo "Running one time init of helmfile container. Please type exit and return."
+  d run -it --name $DOCKER_CONTAINER_ID -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp -w $PWD ${DOCKER_IMAGE} bash
+  d start ${DOCKER_CONTAINER_ID} && d exec -t ${DOCKER_CONTAINER_ID} bash -c 'helmfile repos'
+  echo READY!
+}
+
+function docker_start(){
+  d start $DOCKER_CONTAINER_ID && d exec -ti $DOCKER_CONTAINER_ID bash
+}
 
 alias kp="k proxy &"
-alias hf_="d start $containerId && d exec -ti $containerId bash"
-if [ $hasDocker -eq 0 ]; then
-  echo "Found docker binary, will use $img instead of local helmfile"
+
+function h() {
+  helm $@ --tls
+}
+alias hf="helmfile"
+
+if [ $USE_DOCKER == "yes" ]; then
+  unalias hf
   hasHelmfileContainer=$(d ps -af name=$containerId | grep -w $containerId)
   if [ "$hasHelmfileContainer" = "" ]; then
-    echo "Running one time init of helmfile container. Please type exit and return."
-    d run -it --name $containerId -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp -w $PWD $img bash
-    d start $containerId && d exec -t $containerId bash -c 'helmfile repos'
-    echo READY!
+    docker_run
   fi
   function h() {
     args="$@"
@@ -44,13 +53,8 @@ if [ $hasDocker -eq 0 ]; then
     args="$@"
     d start $containerId && d exec -ti $containerId sh -c "helmfile $args"
   }
-else
-  #alias h="helm"
-  function h() {
-    helm $@ --tls
-  }
-  alias hf="helmfile"
 fi
+
 alias hk="h delete --purge"
 alias kk="killall kubectl"
 
@@ -93,7 +97,6 @@ function kkk() {
   ksk delete secret tiller-secret
 }
 
-function hfd() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-dev && hf -e dev $@ --concurrency=1 --skip-deps; }
-function hfp() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-prd && hf -e prd $@ --concurrency=1 --skip-deps; }
+function hfe() { hf --kube-context ${KUBECTL_CONTEXT} -e ${HELMFILE_ENVIRONMENT} $@ --concurrency=1 --skip-deps; }
 
 echo "Aliases loaded."
