@@ -2,7 +2,7 @@
 
 . ./.gce
 
-STAGE=${STAGE:-prd}
+STAGE=${STAGE:-dev}
 
 # create the cluster
 gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER-$STAGE" --region "$REGION" \
