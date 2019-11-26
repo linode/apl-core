@@ -1,6 +1,6 @@
 helmDefaults:
-  # tillerNamespace: tillerless
-  tillerless: false
+  tillerNamespace: tillerless
+  tillerless: true
   atomic: false
   wait: true
   timeout: 1200
@@ -16,4 +16,4 @@ environments:
     values:
       - ../values/_env/default.yaml
       - ../values/_env/prd.yaml
-      - ../values/_customers/prd/all.gotmpl
+      # - ../values/_customers/prd/all.gotmpl
