@@ -68,32 +68,3 @@ templates:
       issuerRef:
         kind: ClusterIssuer
         name: letsencrypt-{{ $cm.stage }}
-  {{- range $custId, $cust := $v.customers }}
-  - |
-    apiVersion: cert-manager.io/v1alpha2
-    kind: Certificate
-    metadata:
-      name: letsencrypt-{{ $cm.stage }}-cust-{{ $custId }}
-      namespace: istio-system
-    spec:
-      secretName: letsencrypt-{{ $cm.stage }}-cust-{{ $custId }}
-      acme:
-        config:
-        - dns01:
-            provider: cloud-dns-provider
-          domains:
-          - "*.{{ $custId }}.{{ $v.customerDomain }}"
-          {{- range $nsName, $ns := $cust.namespaces }}
-          - "*.{{ $nsName }}.{{ $custId }}.{{ $v.customerDomain }}"
-          {{- end }}
-      commonName: "*.{{ $custId }}.{{ $v.customerDomain }}"
-      dnsNames:
-      - "*.{{ $custId }}.{{ $v.customerDomain }}"
-      {{- range $nsName, $ns := $cust.namespaces }}
-      - "*.{{ $nsName }}.{{ $custId }}.{{ $v.customerDomain }}"
-      {{- end }}
-      # Reference to the ClusterIssuer we created in the previous step.
-      issuerRef:
-        kind: ClusterIssuer
-        name: letsencrypt-{{ $cm.stage }}
-  {{- end }}
