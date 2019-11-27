@@ -21,7 +21,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-img=otomi/tools:1.15-kyma
+img=otomi/tools:1.16-kyma
 containerId=helmfile-otomi-stack-kyma
 d --version &>/dev/null
 hasDocker=$?
@@ -29,7 +29,11 @@ d ps &> /dev/null
 dockerRunning=$?
 
 drun() {
-  d run -it --rm -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/  /root/.config/gcloud/ -w $PWD $img $@
+  cp -r ~/.kube /tmp/.kube
+  # Update path to google-cloud-sdk, so it can refresh tokens
+  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > /tmp/.kube/config 
+  d run -it --rm -v $PWD:$PWD -v /tmp/.kube:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
+  rm -rf /tmp/.kube
 }
 # if not has docker: ci
 if [ $hasDocker -ne 0 ]; then
