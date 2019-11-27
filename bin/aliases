@@ -29,7 +29,7 @@ d ps &> /dev/null
 dockerRunning=$?
 
 drun() {
-  d run -it --rm -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp -w $PWD $img $@
+  d run -it --rm -v $PWD:$PWD -v ~/.kube:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/  /root/.config/gcloud/ -w $PWD $img $@
 }
 # if not has docker: ci
 if [ $hasDocker -ne 0 ]; then
