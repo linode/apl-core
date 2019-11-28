@@ -1,7 +1,6 @@
 #/usr/bin/env bash
 
 . ./.env
-. ./.gce
 
 KYMA_VERSION=${KYMA_VERSION:-"1.7.0"}
 
