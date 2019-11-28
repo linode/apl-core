@@ -1,8 +1,6 @@
 #/usr/bin/env bash
 
-. ./.gce
-
-STAGE=${STAGE:-dev}
+. ./.env
 
 # create the cluster
 gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER-$STAGE" --region "$REGION" \
