@@ -1,5 +1,6 @@
 #/usr/bin/env bash
 
+. ./.env
 . ./.gce
 
 KYMA_VERSION=${KYMA_VERSION:-"1.7.0"}
@@ -26,11 +27,11 @@ kubectl get -n kyma-installer secret helm-secret -o jsonpath="{.data['global\.he
 
 kubectl get pods --all-namespaces
 
-while true; do
+msg=""
+while [ "$msg" != "Status: Installed, description: Kyma installed" ]; do
   msg=$(kubectl -n default get installation/kyma-installation -o jsonpath="{'Status: '}{.status.state}{', description: '}{.status.description}")
-  echo
+  echo $msg
   sleep 5 || break
-  [ "$msg" = "Status: Installed, description: Kyma installed" ] && break
 done
 
 # kubectl -n kyma-installer logs -l 'name=kyma-installer'
