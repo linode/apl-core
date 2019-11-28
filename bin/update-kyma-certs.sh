@@ -1,6 +1,6 @@
 #/usr/bin/env bash
 
-. ./.gce
+. ./.env
 
 # bin/get-kyma-certs.sh
 
