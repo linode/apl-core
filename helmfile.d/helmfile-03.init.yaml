@@ -4,13 +4,13 @@ bases:
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
 releases:
-  # - name: cert-manager-init
-  #   installed: true
-  #   namespace: default
-  #   labels:
-  #     init: true
-  #     tag: cert-manager
-  #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
+  - name: cert-manager-init
+    installed: true
+    namespace: default
+    labels:
+      init: true
+      tag: cert-manager
+    <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   # - name: knative-init
   #   installed: true
   #   namespace: default
