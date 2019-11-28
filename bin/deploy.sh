@@ -2,20 +2,19 @@
 shopt -s expand_aliases
 . bin/aliases
 . .env
+
 set -e
 
 ev=${CI_ENVIRONMENT_NAME:-dev}
 suffix="-$ev"
 [ "$ev" == "prd" ] && suffix=""
-apiHost="api.k8s${suffix}.$DNS_NAME"
-cluster="$ev.$CUSTOMER"
+cluster="$CLUSTER_PREFIX-$ev"
 
 if [ ! -d ~/.kube ]; then
   echo "Creating kube config"
-  mkdir ~/.kube
-  cat KUBECONFIG | sed -e "s/##CLUSTER##/$cluster/g" >~/.kube/config
-  k config set-cluster $cluster --server="https://${apiHost}" --insecure-skip-tls-verify=true
-  k config set-credentials $cluster --token="$(echo $KUBE_TOKEN)"
+  k config set-cluster $cluster --server=$CLUSTER_API_HOST --insecure-skip-tls-verify=true
+  k config set-credentials $cluster --token="$KUBE_TOKEN"
+  k config set-context $cluster --cluster=$cluster
 fi
 
 kcu $cluster
