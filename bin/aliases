@@ -23,15 +23,15 @@ alias kp="k proxy &"
 img=otomi/tools:1.15-kyma
 d --version &>/dev/null
 hasDocker=$?
-d ps &> /dev/null
+d ps &>/dev/null
 dockerRunning=$?
 
 drun() {
   KUBE=$PWD.tmpKube
   cp -r ~/.kube $KUBE
   # Update path to google-cloud-sdk, so it can refresh tokens
-  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > $KUBE/config 
-  d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
+  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config >$KUBE/config
+  d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
   rm -rf $KUBE
 }
 # if not has docker: ci
@@ -42,20 +42,19 @@ else
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
-    unalias h &> /dev/null
-    unalias hf &> /dev/null
-    function helm() {
+    unalias h &>/dev/null
+    unalias hf &>/dev/null
+    function h() {
       drun helm --tls \
         --tls-ca-cert $HELM_TLS_CA_CERT \
         --tls-cert $HELM_TLS_CERT \
         --tls-key $HELM_TLS_KEY \
         $@
     }
-    alias h="helm"
     alias hf="drun helmfile"
   else
     echo "No docker daemon running. Please start and source aliases again."
-  fi  
+  fi
 fi
 
 alias hk="h delete --purge"
