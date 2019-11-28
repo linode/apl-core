@@ -21,7 +21,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-img=otomi/tools:1.16-kyma
+img=otomi/tools:1.15-kyma
 containerId=helmfile-otomi-stack-kyma
 d --version &>/dev/null
 hasDocker=$?
