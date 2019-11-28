@@ -1,6 +1,0 @@
-customers:
-{{- range $_, $file := ((exec "sh" (list "-c" "echo *yaml")) | splitList " " ) }}
-{{- $custId := ($file | replace ".yaml" "" | replace ".yml" "") | trim }}
-{{ $bits := fromYaml (exec "sh" (list "-c" (printf "cat %s" $file))) }}
-  {{ $custId }}: {{- toYaml $bits | nindent 4 }}
-{{ end }}

@@ -3,7 +3,7 @@ bases:
 
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
-releases: []
+releases:
   # - name: cert-manager-init
   #   installed: true
   #   namespace: default
