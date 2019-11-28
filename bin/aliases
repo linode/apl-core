@@ -1,5 +1,4 @@
 . ./.env
-. ./.gce
 
 alias d="docker"
 alias k="kubectl"
@@ -22,18 +21,18 @@ alias kcu="k config use-context"
 alias kp="k proxy &"
 
 img=otomi/tools:1.15-kyma
-containerId=helmfile-otomi-stack-kyma
 d --version &>/dev/null
 hasDocker=$?
 d ps &> /dev/null
 dockerRunning=$?
 
 drun() {
-  cp -r ~/.kube /tmp/.kube
+  KUBE=$PWD.tmpKube
+  cp -r ~/.kube $KUBE
   # Update path to google-cloud-sdk, so it can refresh tokens
-  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > /tmp/.kube/config 
-  d run -it --rm -v $PWD:$PWD -v /tmp/.kube:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
-  rm -rf /tmp/.kube
+  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > $KUBE/config 
+  d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp  -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
+  rm -rf $KUBE
 }
 # if not has docker: ci
 if [ $hasDocker -ne 0 ]; then
@@ -53,10 +52,7 @@ else
         $@
     }
     alias h="helm"
-    function hf() {
-      args="$@"
-      drun sh -c "helmfile $args"
-    }
+    alias hf="drun helmfile"
   else
     echo "No docker daemon running. Please start and source aliases again."
   fi  
@@ -67,13 +63,6 @@ alias kk="killall kubectl"
 
 function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }
-function kcns() { k config set-context $(k config current-context) --namespace="$@"; }
-function hsk() { his --namespace=kube-system "$@"; }
-function hm() { his --namespace=monitoring "$@"; }
-function hin() { his --namespace=ingress "$@"; }
-function hs() { his --namespace=system "$@"; }
-function hsh() { his --namespace=shared "$@"; }
-
 function kdnp() {
   for ns in default kube-system system monitoring ingress shared; do
     kad networkpolicy -n $ns
@@ -104,5 +93,5 @@ function kkk() {
   ksk delete secret tiller-secret
 }
 
-function hfd() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-dev && hf -e dev $@ --concurrency=1 --skip-deps; }
-function hfp() { kcu gke_otomi-cloud_europe-west4_otomi-cloud-prd && hf -e prd $@ --concurrency=1 --skip-deps; }
+function hfd() { kcu ${CLUSTER_PREFIX}-dev && hf -e dev $@ --concurrency=1 --skip-deps; }
+function hfp() { kcu ${CLUSTER_PREFIX}-prd && hf -e prd $@ --concurrency=1 --skip-deps; }

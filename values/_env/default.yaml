@@ -81,42 +81,26 @@ services:
   - name: index
     svc: index-index
     namespace: system
-  - name: dashboard
-    svc: kubernetes-dashboard
-    namespace: kube-system
+  # - name: dashboard
+  #   svc: kubernetes-dashboard
+  #   namespace: kube-system
   - name: blackbox
     svc: blackbox
     namespace: monitoring
-  - name: grafana
-    svc: prometheus-operator-grafana
-    namespace: monitoring
+  # - name: grafana
+  #   svc: prometheus-operator-grafana
+  #   namespace: monitoring
   - name: scope
     svc: weave-scope-weave-scope
     namespace: monitoring
-  - name: prometheus
-    svc: prometheus-operator-prometheus
-    port: 9090
-    namespace: monitoring
-  - name: alertmanager
-    svc: prometheus-operator-alertmanager
-    port: 9093
-    namespace: monitoring
+  # - name: prometheus
+  #   svc: prometheus-operator-prometheus
+  #   port: 9090
+  #   namespace: monitoring
+  # - name: alertmanager
+  #   svc: prometheus-operator-alertmanager
+  #   port: 9093
+  #   namespace: monitoring
   - name: drone
     svc: drone-drone
     namespace: system
-
-customerServices:
-  - name: index
-    svc: index-index
-  - name: dashboard
-    svc: kubernetes-dashboard
-  - name: grafana
-    svc: prometheus-operator-grafana
-  - name: prometheus
-    svc: prometheus-operator-prometheus
-    port: 9090
-  - name: alertmanager
-    svc: prometheus-operator-alertmanager
-    port: 9093
-  - name: drone
-    svc: drone-drone

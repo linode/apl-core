@@ -3,6 +3,7 @@
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
     "*.gotmpl": "helm",
+    "aliases": "shellscript",
     "helmfile.yaml": "helm",
     "helmfile-*.yaml": "helm"
   }
