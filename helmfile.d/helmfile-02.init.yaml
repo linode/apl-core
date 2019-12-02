@@ -4,7 +4,7 @@ bases:
 {{ readFile "snippets/templates.yaml" }}
 
 releases: []
-  # - name: prometheus-operator
-  #   installed: true
-  #   namespace: monitoring
-  #   <<: *default
+  - name: prometheus-operator
+    installed: true
+    namespace: monitoring
+    <<: *default
