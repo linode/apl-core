@@ -1,12 +1,10 @@
 helmDefaults:
+  tillerNamespace: helm
+  tillerless: true
   atomic: false
   wait: true
   timeout: 1200
   force: false
-  tls: true
-  tlsKey: ../.helm/key.pem
-  tlsCert: ../.helm/cert.pem
-  tlsCACert: ../.helm/ca.pem
 
 environments:
   dev:

@@ -4,9 +4,9 @@ bases:
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
 releases: []
-  # - name: istio-operator
-  #   installed: true
-  #   namespace: istio-operator
-  #   labels:
-  #     pkg: istio-operator
-  #   <<: *skeleton
+  - name: istio-operator
+    installed: true
+    namespace: istio-operator
+    labels:
+      pkg: istio-operator
+    <<: *skeleton

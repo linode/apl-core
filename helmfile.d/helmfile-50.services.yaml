@@ -11,9 +11,9 @@ releases:
     values:
     - ../values/istio/values.yaml
     - ../values/istio/raw.gotmpl
-  # - name: knative-serving-artifacts
-  #   installed: true
-  #   namespace: knative-serving
-  #   chart: ../charts/raw
-  #   values:
-  #   - ../values/knative/serving-raw.gotmpl
+  - name: knative-serving-artifacts
+    installed: true
+    namespace: knative-serving
+    chart: ../charts/raw
+    values:
+    - ../values/knative/serving-raw.gotmpl

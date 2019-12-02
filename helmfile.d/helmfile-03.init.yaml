@@ -11,9 +11,9 @@ releases:
       init: true
       tag: cert-manager
     <<: *skeleton # just install the stuff in k8s/apps/cert-manager
-  # - name: knative-init
-  #   installed: true
-  #   namespace: default
-  #   labels:
-  #     init: true
-  #   <<: *skeleton
+  - name: knative-init
+    installed: true
+    namespace: default
+    labels:
+      init: true
+    <<: *skeleton
