@@ -3,7 +3,7 @@
 . ./.env
 
 # create the cluster
-gcloud beta container --project "$GCP_PROJECT" clusters create "$CLUSTER-$STAGE" --region "$REGION" \
+gcloud container --project "$GCP_PROJECT" clusters create "$CLUSTER_NAME-$STAGE" --region "$REGION" \
   --no-enable-basic-auth --cluster-version "1.14.8-gke.17" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
