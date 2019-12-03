@@ -1,10 +1,12 @@
 bases:
   - snippets/defaults.yaml
 
-{{ readFile "snippets/templates.yaml" }}
+{{ readFile "snippets/templates-skeleton.gotmpl" }}
 
-releases: []
-  - name: prometheus-operator
+releases:
+  - name: prometheus-operator-init
     installed: true
     namespace: monitoring
-    <<: *default
+    labels:
+      init: true
+    <<: *skeleton

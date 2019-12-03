@@ -5,7 +5,6 @@ alias k="kubectl"
 alias ksk="kubectl -n kube-system"
 alias ki="k -n ingress"
 alias kis="k -n istio-system"
-alias kys="k -n kyma-system"
 alias ks="k -n system"
 alias ksh="k -n shared"
 alias km="k -n monitoring"
@@ -20,7 +19,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-img=otomi/tools:1.0.0
+img=otomi/tools:1.15
 d --version &>/dev/null
 hasDocker=$?
 d ps &>/dev/null
@@ -34,18 +33,19 @@ drun() {
   d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
   rm -rf $KUBE
 }
+
+alias h="helm tiller run tillerless -- helm"
+alias hf="helmfile"
+
 # if not has docker: ci
-if [ $hasDocker -ne 0 ]; then
-  alias h="helm"
-  alias hf="helmfile"
-else
+if [ $hasDocker -eq 0 ]; then
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
     unalias h &>/dev/null
     unalias hf &>/dev/null
     function h() {
-      drun helm $@
+      drun sh -c "helm run tillerless -- helm $@"
     }
     alias hf="drun helmfile"
   else
@@ -76,16 +76,9 @@ function kkc() {
   kkns
 }
 
-alias kku="k label installation/kyma-installation action=uninstall --overwrite"
 function kkk() {
-  k delete -f https://github.com/kyma-project/kyma/releases/download/$KYMA_VERSION/kyma-installer-cluster.yaml
-  k delete -f https://raw.githubusercontent.com/kyma-project/kyma/$KYMA_VERSION/installation/resources/tiller.yaml
-  k delete all --all
   kkc
-  k delete crd $(k get crd | egrep "istio|ory|kyma|coreos|knative|velero" | awk '{print $1}')
-  ksk delete deploy tiller-deploy
-  ksk delete job tiller-certs-job
-  ksk delete secret tiller-secret
+  k delete crd $(k get crd | egrep "istio|ory|coreos|knative|velero" | awk '{print $1}')
 }
 
 function hfd() { kcu ${CLUSTER_PREFIX}-dev && hf -e dev $@ --concurrency=1 --skip-deps; }

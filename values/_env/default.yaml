@@ -6,18 +6,20 @@ clusters:
 
 customerLabels:
   customer: otomi
-  
-sites: []
+
+sites:
+  []
   # - otomi.cloud
 
-sitespeed: []
+sitespeed:
+  []
   # - host: otomi.cloud
   #   paths: [/]
 
 alertmanager:
   groupInterval: 5m
   repeatInterval: 3h
-  
+
 google:
   projectId: otomi-cloud
   cloudDns:
@@ -36,7 +38,7 @@ google:
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dnsmanager%40otomi-cloud.iam.gserviceaccount.com"
       }
-  
+
 cert-manager:
   stage: "production"
   email: admins@otomi.cloud
@@ -54,7 +56,7 @@ drone:
 
 external-dns:
   provider: google
-        
+
 gateway:
   name: otomi
   namespace: ingress
@@ -87,20 +89,20 @@ services:
   - name: blackbox
     svc: blackbox
     namespace: monitoring
-  # - name: grafana
-  #   svc: prometheus-operator-grafana
-  #   namespace: monitoring
+  - name: grafana
+    svc: prometheus-operator-grafana
+    namespace: monitoring
   - name: scope
     svc: weave-scope-weave-scope
     namespace: monitoring
-  # - name: prometheus
-  #   svc: prometheus-operator-prometheus
-  #   port: 9090
-  #   namespace: monitoring
-  # - name: alertmanager
-  #   svc: prometheus-operator-alertmanager
-  #   port: 9093
-  #   namespace: monitoring
+  - name: prometheus
+    svc: prometheus-operator-prometheus
+    port: 9090
+    namespace: monitoring
+  - name: alertmanager
+    svc: prometheus-operator-alertmanager
+    port: 9093
+    namespace: monitoring
   - name: drone
     svc: drone-drone
     namespace: system

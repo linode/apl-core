@@ -3,7 +3,7 @@ bases:
 
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
-releases: []
+releases:
   - name: istio-operator
     installed: true
     namespace: istio-operator

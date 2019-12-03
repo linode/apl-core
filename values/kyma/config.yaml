@@ -1,8 +1,0 @@
-global: {}
-components:
-  logging:
-    loki.config.auth_enabled: "false"
-  kiali:
-    deployment.imageTag: v1.2.0
-  monitoring:
-    grafana.users.default.theme: dark 

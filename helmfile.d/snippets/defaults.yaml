@@ -1,5 +1,5 @@
 helmDefaults:
-  tillerNamespace: helm
+  tillerNamespace: tillerless
   tillerless: true
   atomic: false
   wait: true
