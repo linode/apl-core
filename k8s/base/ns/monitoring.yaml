@@ -4,3 +4,5 @@ metadata:
   name: monitoring
   labels:
     name: monitoring
+    istio-injection: disabled
+li

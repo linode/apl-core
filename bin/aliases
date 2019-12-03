@@ -35,6 +35,7 @@ drun() {
 }
 
 alias h="helm tiller run tillerless -- helm"
+alias hk="h delete --purge"
 alias hf="helmfile"
 
 # if not has docker: ci
@@ -43,17 +44,16 @@ if [ $hasDocker -eq 0 ]; then
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
     unalias h &>/dev/null
-    unalias hf &>/dev/null
     function h() {
-      drun sh -c "helm run tillerless -- helm $@"
+      drun sh -c "helm tiller run tillerless -- helm $@"
     }
     alias hf="drun helmfile"
+    alias hk="drun helm tiller run tillerless -- helm delete --purge"
   else
     echo "No docker daemon running. Please start and source aliases again."
   fi
 fi
 
-alias hk="h delete --purge"
 alias kk="killall kubectl"
 
 function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
