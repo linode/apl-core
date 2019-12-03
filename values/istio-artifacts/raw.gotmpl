@@ -54,3 +54,15 @@ templates:
         tls:
           mode: DISABLE
   {{- end }}
+  - |
+    apiVersion: authentication.istio.io/v1alpha1
+    kind: Policy
+    metadata:
+      name: weave-scope-policy
+      namespace: monitoring
+    spec:
+      peers:
+        - mtls:
+            mode: PERMISSIVE
+      targets:
+        - name: weave-scope-weave-scope

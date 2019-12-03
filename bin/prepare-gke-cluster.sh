@@ -29,5 +29,3 @@ gcloud iam service-accounts create dnsmanager --display-name "dnsmanager" --proj
 gcloud projects add-iam-policy-binding $GCP_PROJECT \
   --member serviceAccount:dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com --role roles/dns.admin
 gcloud iam service-accounts keys create ./letsencrypt/key.json --iam-account dnsmanager@$GCP_PROJECT.iam.gserviceaccount.com
-
-# bin/get-kyma-certs.sh
