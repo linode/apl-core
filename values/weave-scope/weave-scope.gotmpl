@@ -1,5 +1,14 @@
 {{- $v := .Environment.Values }}
 {{- $host := printf "scope.%s" $v.domain }}
+global:
+  image:
+    tag: 1.12.0
+  service:
+    name: weave-scope
+weave-scope-agent:
+  nameOverride: weave-scope-agent
+weave-scope-cluster-agent:
+  nameOverride: weave-scope-cluster-agent
 weave-scope-frontend:
   ingress:
     # enabled: true

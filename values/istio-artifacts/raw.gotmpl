@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.gateway }}
-{{- $iv := readFile "values.yaml" | fromYaml }}
 templates:
   - |
     apiVersion: networking.istio.io/v1alpha3
@@ -41,28 +40,31 @@ templates:
             port:
               number: {{ $s | getOrNil "port" | default 80 }}
           weight: 100
-  {{- end }}
-  {{- range $s := $iv.noTLS }}
+  {{- if ($s | getOrNil "mtls.disabled") }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: DestinationRule
     metadata:
-      name: {{ $s.name }}
+      name: {{ $s.name }}-notls
+      namespace: {{ $s.namespace }}
     spec:
-      host: {{ $s.host}}.svc.cluster.local
+      host: {{ $s.svc}}.{{ $s.namespace }}.svc.cluster.local
       trafficPolicy:
         tls:
           mode: DISABLE
   {{- end }}
+  {{- if or ($s | getOrNil "mtls.disabled") ($s | getOrNil "mtls.permissive") }}
   - |
     apiVersion: authentication.istio.io/v1alpha1
     kind: Policy
     metadata:
-      name: weave-scope-policy
-      namespace: monitoring
+      name: {{ $s.name }}-permissive
+      namespace: {{ $s.namespace }}
     spec:
       peers:
         - mtls:
             mode: PERMISSIVE
       targets:
-        - name: weave-scope-weave-scope
+        - name: {{ $s.svc }}
+  {{- end }}
+  {{- end }}
