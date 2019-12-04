@@ -112,6 +112,11 @@ grafana:
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
+  # sidecar:
+  #   dashboards:
+  #     enabled: false
+  podAnnotations:
+    sidecar.istio.io/inject: "true"
   additionalDataSources:
     - name: Graphite
       editable: false

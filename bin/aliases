@@ -19,7 +19,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-img=otomi/tools:1.15
+img=otomi/tools:1.0.0
 d --version &>/dev/null
 hasDocker=$?
 d ps &>/dev/null

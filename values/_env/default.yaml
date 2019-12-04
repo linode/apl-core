@@ -92,17 +92,25 @@ services:
   - name: grafana
     svc: prometheus-operator-grafana
     namespace: monitoring
+    mtls:
+      disabled: true
   - name: scope
-    svc: weave-scope-weave-scope
+    svc: weave-scope
     namespace: monitoring
+    mtls:
+      permissive: true
   - name: prometheus
     svc: prometheus-operator-prometheus
     port: 9090
     namespace: monitoring
+    mtls:
+      disabled: true
   - name: alertmanager
     svc: prometheus-operator-alertmanager
     port: 9093
     namespace: monitoring
+    mtls:
+      disabled: true
   - name: drone
     svc: drone-drone
     namespace: system

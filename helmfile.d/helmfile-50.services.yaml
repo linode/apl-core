@@ -9,7 +9,6 @@ releases:
     namespace: ingress
     chart: ../charts/raw
     values:
-    - ../values/istio-artifacts/values.yaml
     - ../values/istio-artifacts/raw.gotmpl
   - name: knative-serving-artifacts
     installed: true
