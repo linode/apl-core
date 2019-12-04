@@ -13,6 +13,7 @@ This readme has the following index:
 1. [Prerequisites](#1-prerequisites)
 2. [Development](#2-development)
 3. [Operation](#3-operation)
+4. [Troubleshooting](#4-troubleshooting)
 
 ## 1. Prerequisites
 
@@ -95,3 +96,10 @@ So far we have the following services (shown for `dev`):
 6. [Blackbox](https://blackbox-dev.k8s.otomi.cloud): shows the http probes that we test for.
 
 It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
+
+# 4. Troubleshooting
+
+```bash
+# istio auth checks from gateway to service (here grafana):
+istioctl -n istio-system authn tls-check $(kis get po -l app=istio-ingressgateway | tail -n1| awk '{print $1}') prometheus-operator-grafana.monitoring.svc.cluster.local
+```
