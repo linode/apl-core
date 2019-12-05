@@ -16,6 +16,10 @@ prometheusOperator:
   createCustomResource: false
 prometheus:
   prometheusSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    portName: http-web
     storageSpec:
       volumeClaimTemplate:
         metadata:
@@ -68,6 +72,10 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    portName: http-web
     externalUrl: https://{{ $alertsHost }}
     logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
   config:
@@ -116,7 +124,7 @@ grafana:
   #   dashboards:
   #     enabled: false
   podAnnotations:
-    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/inject: "false"
   additionalDataSources:
     - name: Graphite
       editable: false
@@ -130,6 +138,8 @@ grafana:
       url: http://loki:3100
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: bladibla
+  service:
+    portName: http-service
   ingress:
     # enabled: true
     annotations:

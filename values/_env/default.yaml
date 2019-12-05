@@ -86,31 +86,41 @@ services:
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
-  - name: blackbox
-    svc: blackbox
+  - name: loki
+    svc: loki-headless
     namespace: monitoring
-  - name: grafana
-    svc: prometheus-operator-grafana
-    namespace: monitoring
+    private: true
     mtls:
-      disabled: true
+      policyMode: permissive
   - name: scope
     svc: weave-scope
     namespace: monitoring
     mtls:
-      permissive: true
+      policyMode: permissive
+  - name: grafana
+    svc: prometheus-operator-grafana
+    namespace: monitoring
+    mtls:
+      policyMode: permissive
+      gatewayDisabled: true
   - name: prometheus
     svc: prometheus-operator-prometheus
     port: 9090
     namespace: monitoring
     mtls:
-      disabled: true
+      # policyMode: permissive
+      gatewayDisabled: true
   - name: alertmanager
     svc: prometheus-operator-alertmanager
     port: 9093
     namespace: monitoring
     mtls:
-      disabled: true
+      # policyMode: permissive
+      gatewayDisabled: true
   - name: drone
     svc: drone-drone
     namespace: system
+  - name: blackbox
+    svc: prom-blackbox-exporter
+    port: 9115
+    namespace: monitoring

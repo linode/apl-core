@@ -47,8 +47,10 @@
       <h2>index for cluster: {{ $v.domain }}</h2>
     {{- end }}
       <h3>Services</h3>
-      {{ range $svc := $v.services }}
+      {{- range $svc := $v.services }}
+      {{- if not (or (eq $svc.name "index") (hasKey $svc "private")) }}
       <a target="_blank" href="https://{{ $svc.name }}.{{ $v.domain }}">{{ $svc.name }}</a><br/>
+      {{- end }}
       {{- end }}
       <h3>Websites</h3>
       {{ range $site := $v.sites }}
