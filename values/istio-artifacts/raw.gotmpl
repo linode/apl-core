@@ -22,6 +22,7 @@ templates:
           mode: SIMPLE
           credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
+  {{- if not ($s | getOrNil "private") }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
@@ -40,7 +41,8 @@ templates:
             port:
               number: {{ $s | getOrNil "port" | default 80 }}
           weight: 100
-  {{- if ($s | getOrNil "mtls.disabled") }}
+  {{- end }}
+  {{- if ($s | getOrNil "mtls.gatewayDisabled") }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: DestinationRule
@@ -53,17 +55,18 @@ templates:
         tls:
           mode: DISABLE
   {{- end }}
-  {{- if or ($s | getOrNil "mtls.disabled") ($s | getOrNil "mtls.permissive") }}
+  {{- if or ($s | getOrNil "mtls.gatewayDisabled") ($s | getOrNil "mtls.policyMode") }}
+  {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
   - |
     apiVersion: authentication.istio.io/v1alpha1
     kind: Policy
     metadata:
-      name: {{ $s.name }}-permissive
+      name: {{ $s.name }}-{{ $mode }}
       namespace: {{ $s.namespace }}
     spec:
       peers:
         - mtls:
-            mode: PERMISSIVE
+            mode: {{ $mode | upper }}
       targets:
         - name: {{ $s.svc }}
   {{- end }}
