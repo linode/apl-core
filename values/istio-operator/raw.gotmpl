@@ -21,7 +21,7 @@ templates:
       values:
         global:
           mtls:
-            enabled: true
+            enabled: {{ $v.istio.mtls.enabled }}
           # tag: 1.2.2
           # logging:
           #   level: "default:info"
