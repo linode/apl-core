@@ -124,3 +124,7 @@ services:
     svc: prom-blackbox-exporter
     port: 9115
     namespace: monitoring
+
+istio:
+  mtls:
+    enabled: false

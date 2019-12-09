@@ -23,11 +23,11 @@ releases:
     namespace: ingress
     <<: *default
   - name: dex
-    installed: false
+    installed: true
     namespace: ingress
     <<: *default
   - name: nginx-ingress
-    installed: true
+    installed: false
     namespace: ingress
     <<: *default
   - name: oauth2-proxy

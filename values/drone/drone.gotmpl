@@ -3,17 +3,6 @@
 images:
   server:
     tag: 1.0.1
-ingress:
-  # enabled: true
-  hosts:
-    - {{ $host }}
-  annotations:
-    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
-    {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
-  tls:
-    - secretName: drone-tls
-      hosts:
-        - {{ $host }}
 sourceControl:
   provider: {{ $v.drone.sourceControl | getOrNil "provider" | default "github" }}
   github:
