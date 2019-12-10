@@ -6,16 +6,15 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "oauth2-proxy.name" . }}
     chart: {{ template "oauth2-proxy.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: {{ template "oauth2-proxy.fullname" . }}
+{{- with .Values.ingress.annotations }}
   annotations:
-    {{- range $key, $value := .Values.ingress.annotations }}
-      {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   rules:
     {{- range $host := .Values.ingress.hosts }}
