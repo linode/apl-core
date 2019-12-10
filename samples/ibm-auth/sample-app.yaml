@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sample-app
+# ---
+# apiVersion: networking.istio.io/v1alpha3
+# kind: Gateway
+# metadata:
+#   name: gw-sample-app
+#   namespace: sample-app
+#   labels:
+#     app: sample-app
+# spec:
+#   selector:
+#     istio: ingressgateway # use Istio default gateway implementation
+#   servers:
+#     - port:
+#         name: http
+#         number: 80
+#         protocol: HTTP
+#       hosts:
+#         - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vsvc-sample-app
+  namespace: sample-app
+  labels:
+    app: sample-app
+spec:
+  hosts:
+    - "sample-app.k8s-dev.otomi.cloud"
+  gateways:
+    - ingress/otomi
+  http:
+    - match:
+        - uri:
+            prefix: /api
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            port:
+              number: 8000
+            host: svc-sample-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dpl-sample-app
+  namespace: sample-app
+  labels:
+    app: sample-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers:
+        - name: sample-app
+          image: ibmcloudsecurity/app-identity-and-access-adapter-sample-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-sample-app
+  namespace: sample-app
+  labels:
+    app: sample-app
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8000
+      protocol: TCP
+  selector:
+    app: sample-app
+
+## -------------------------------------------------------------------------------------------
+---
+# For frontend applications
+apiVersion: "security.cloud.ibm.com/v1"
+kind: OidcConfig
+metadata:
+  name: oidc-provider-config-with-secret-ref
+  namespace: sample-app
+  labels:
+    app: sample-app
+spec:
+    # discoveryUrl - a well-known endpoint that contains a JSON document of OIDC/OAuth 2.0 configuration information.
+    discoveryUrl: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/v2.0/.well-known/openid-configuration
+    clientId:     5eb129f2-1b26-4910-a05a-70d8b6a380cd
+    clientSecret: "CKH?8FXb5l8DE:ea=B0_kwWw5SnIIQ-y"
+
+---
+apiVersion: "security.cloud.ibm.com/v1"
+kind: Policy
+metadata:
+  name: tenant-1
+  namespace: sample-app
+  labels:
+    app: sample-app
+spec:
+  targets:
+    -
+      # serviceName - the name of Kubernetes service in the Policy namespace that you want to protect.
+      serviceName: svc-sample-app
+      paths:
+        - prefix: /
+          # method - ALL, GET, PUT, POST, DELETE, PATCH - Defaults to ALL
+          method: ALL
+          policies:
+            - policyType: oidc
+              config: oidc-provider-config-with-secret-ref
+              # After successful authentication client is redirected  the original request URL. You may enforce a specific URL by setting redirectUri
