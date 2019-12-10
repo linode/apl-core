@@ -5,17 +5,3 @@ global:
     tag: 1.12.0
   service:
     name: weave-scope
-weave-scope-frontend:
-  ingress:
-    # enabled: true
-    annotations:
-      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
-      {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 6 }}
-    paths:
-      - /
-    hosts:
-      - {{ $host }}
-    tls:
-      - secretName: weave-scope-tls
-        hosts:
-          - {{ $host }}
