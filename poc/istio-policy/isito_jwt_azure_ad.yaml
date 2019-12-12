@@ -1,0 +1,18 @@
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: bookinfo
+spec:
+  targets:
+  - name: productpage
+  # peers:
+  # - mtls: {}
+  origins:
+  - jwt:
+      issuer: http://sts.windows.net/57a3f6ea-7e70-4260-acb4-e06ce452f695/
+      # jwksUri: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/discovery/v2.0/keys/
+      jwksUri: http://login.microsoftonline.com/common/discovery/keys
+
+      
+      triggerRules: []
+  principalBinding: USE_ORIGIN
