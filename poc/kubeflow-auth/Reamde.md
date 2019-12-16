@@ -3,7 +3,7 @@
 
 ## What community says:
 
-To support `Single Sign-On` scenario, `Istio Origin Authentication` should accept a `JWT Token` sent in a `cookie`:
+To support Single Sign-On scenario, Istio Origin Authentication should accept a JWT Token sent in a cookie:
 https://github.com/istio/istio/issues/8619#issuecomment-503468943
 
 
@@ -18,22 +18,24 @@ https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/#log-in-with-ld
 https://journal.arrikto.com/kubeflow-authentication-with-istio-dex-5eafdfac4782
 
 Pros:
-The JWT is stored in cookie
-They use DEX which allows to integrate with other OIDC providers
+- The JWT is stored in cookie
+- They use DEX which allows to integrate with other OIDC providers
+
+Pros:
+- cookie based so apps does not need to know to iclude it in header
 
 Cons:
-Cookie based 
-Need to extract cookie with JWT and put it as a separate header so istio authentication and authorization policies can verified it.
+- need to extract cookie with JWT and put it as a separate header so istio authentication and authorization policies can verified it.
 
 
 ### Kyma:
 https://kyma-project.io/docs/0.4/components/authorization-and-authentication#architecture-architecture
 
 Cons:
-The JWT is stored in sessionStorage
+- The JWT is stored in sessionStorage
 
 Pros:
-They use DEX which allows to integrate with other OIDC providers
+- They use DEX which allows to integrate with other OIDC providers
 
 
 # Kubeflow
