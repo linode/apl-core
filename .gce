@@ -1,7 +1,3 @@
 export GCP_ORG_ID="938752195901"
-export GCP_PROJECT="otomi-cloud"
-export DNS_ZONE="otomi"
-export REGION="europe-west4"
-export CUSTOMER="otomi"
 
 export METERING_SET="otomi_metering"
