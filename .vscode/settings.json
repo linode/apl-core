@@ -3,8 +3,13 @@
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
     "*.gotmpl": "helm",
+    ".env": "shellscript",
+    ".aws": "shellscript",
+    ".gcp": "shellscript",
+    ".azure": "shellscript",
     "aliases": "shellscript",
     "helmfile.yaml": "helm",
     "helmfile-*.yaml": "helm"
-  }
+  },
+  "cSpell.enabled": false
 }

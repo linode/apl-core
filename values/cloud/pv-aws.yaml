@@ -1,0 +1,44 @@
+- |
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: storage-cold
+  parameters:
+    type: sc1
+  provisioner: kubernetes.io/aws-ebs
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+- |
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: storage-frequent
+  parameters:
+    type: st1
+  provisioner: kubernetes.io/aws-ebs
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+- |
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: std
+  parameters:
+    type: gp2
+  provisioner: kubernetes.io/aws-ebs
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+- |
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: fast
+  parameters:
+    type: io1
+  provisioner: kubernetes.io/aws-ebs
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
