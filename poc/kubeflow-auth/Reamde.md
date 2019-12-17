@@ -13,7 +13,14 @@ https://docs.google.com/document/d/1mGpUsRgmA9wPB73trfTiB9YUuwYh-31iulYg9USxe0Y/
 
 ## How developers handle it now:
 
-### Kubeflow
+## Kubeflow
+
+This solution is composed by:
+- Envoy filter that forwards packet to auth-service
+- Auth-service that verifies session cookie and is able extract id_token from cookie and put the token as a header
+ (see more: https://github.com/arrikto/oidc-authservice/commits/master)
+- Dex server that works as identity provide/proxy
+
 https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/#log-in-with-ldap-active-directory
 https://journal.arrikto.com/kubeflow-authentication-with-istio-dex-5eafdfac4782
 
@@ -28,7 +35,8 @@ Cons:
 - need to extract cookie with JWT and put it as a separate header so istio authentication and authorization policies can verified it.
 
 
-### Kyma:
+
+## Kyma:
 https://kyma-project.io/docs/0.4/components/authorization-and-authentication#architecture-architecture
 
 Cons:
@@ -38,7 +46,7 @@ Pros:
 - They use DEX which allows to integrate with other OIDC providers
 
 
-# Installation
+# Installation based on kubeflow
 
 Create cluster
 ```
@@ -66,7 +74,7 @@ Apply only parts that relates to single sign-on
 kfctl apply -V -f kfctl_auth_only.yaml
 ```
 
-# Deploy productinfo app
+## Deploy productinfo app
 
 ```
 k apply -f productinfo-app.yaml
@@ -83,3 +91,5 @@ In your webbrowser access `127.0.0.1:8080/productpage`. You should be redirected
 user: admin@kubeflow.org
 pass: 12341234
 ```
+
+
