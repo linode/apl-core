@@ -42,3 +42,6 @@ Set log level
 ```
 kubectl exec $(kubectl get pod --selector app=productpage --output jsonpath='{.items[0].metadata.name}') -c istio-proxy -- curl -X POST http://localhost:15000/logging?level=debug
 ```
+
+
+kubectl exec $(kubectl get pod --selector app=productpage --output jsonpath='{.items[0].metadata.name}') -c istio-proxy -- curl -X POST http://localhost:15000/logging/jwt?level=debug

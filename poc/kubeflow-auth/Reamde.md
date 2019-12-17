@@ -38,7 +38,17 @@ Pros:
 - They use DEX which allows to integrate with other OIDC providers
 
 
-# Kubeflow
+# Installation
+
+Create cluster
+```
+minikube start --cpus=6 --memory=10000 --kubernetes-version='v1.14.8'
+```
+
+Install istio
+```
+istioctl manifest apply
+```
 
 Install kfctl:
 ```
@@ -56,3 +66,20 @@ Apply only parts that relates to single sign-on
 kfctl apply -V -f kfctl_auth_only.yaml
 ```
 
+# Deploy productinfo app
+
+```
+k apply -f productinfo-app.yaml
+```
+
+Setup port forwarding
+Access ingress gateway
+```
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
+
+In your webbrowser access `127.0.0.1:8080/productpage`. You should be redirected to dex to authenticate.
+```
+user: admin@kubeflow.org
+pass: 12341234
+```
