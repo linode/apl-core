@@ -77,7 +77,7 @@ kfctl apply -V -f kfctl_auth_only.yaml
 ## Deploy productinfo app
 
 ```
-k apply -f productinfo-app.yaml
+k apply -f config/productinfo-app.yaml
 ```
 
 Setup port forwarding
