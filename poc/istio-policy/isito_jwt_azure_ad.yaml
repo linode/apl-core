@@ -9,10 +9,9 @@ spec:
   # - mtls: {}
   origins:
   - jwt:
-      issuer: http://sts.windows.net/57a3f6ea-7e70-4260-acb4-e06ce452f695/
+      issuer: http://sts.windows.net/
       # jwksUri: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/discovery/v2.0/keys/
-      jwksUri: http://login.microsoftonline.com/common/discovery/keys
-
+      jwksUri: https://login.windows.net/common/discovery/keys
       
       triggerRules: []
   principalBinding: USE_ORIGIN
