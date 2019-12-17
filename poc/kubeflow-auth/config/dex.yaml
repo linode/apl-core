@@ -15,10 +15,6 @@ spec:
         prefix: /login
     - uri:
         prefix: /logout
-    - uri:
-        prefix: /api/v1/products
-    - uri:
-        prefix: /login
     route:
     - destination:
         host: dex.auth.svc.cluster.local
