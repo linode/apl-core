@@ -1,6 +1,26 @@
 
 # Kubelow-auth
 
+## Overview
+
+
+Read the following articles to get familiar with architecure
+- https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
+- https://journal.arrikto.com/kubeflow-authentication-with-istio-dex-5eafdfac4782
+
+The `oidc-authservice` 
+- is between istio-ingress gateway with Dex server. 
+- appends session Cookie to the responses
+- appends Headers to requests (kubeflow-userid, kubeflow-userid-token)
+
+Refer to this repo to learn more about `oidc-authservice`
+- https://github.com/arrikto/oidc-authservice
+
+## Limitations
+- It requires to reserve some uri prefix for all subdomians (e.g.: /dex)
+- it does not use refresh tokens
+- if a cookie expiries a user is prompted to provide creadentials
+- poor documentation but it works
 
 ## Installation 
 
@@ -53,5 +73,4 @@ user: admin@kubeflow.org
 pass: 12341234
 ```
 
-Note: current state allows to go through authentication process.
-Unfortunately user is redirected to `http://dex.localhost.local/productpage` instead of `http://bookinfo.localhost.local/productpage`
+Note: current state allows to go through authentication process. Unfortunately user is redirected to `http://dex.localhost.local/productpage` instead of `http://bookinfo.localhost.local/productpage`
