@@ -20,13 +20,13 @@ spec:
       - name: userid-header
         value: kubeflow-userid
       - name: oidc_provider
-        value: http://dex.auth.svc.cluster.local:5556/dex
+        value: http://dex.auth.svc.cluster.local:5556
       - name: oidc_redirect_uri
-        value: /login/oidc
+        value: http://dex.localhost.local/login/oidc
       - name: oidc_auth_url
-        value: /dex/auth
+        value: http://dex.localhost.local/auth
       - name: skip_auth_uri
-        value: /dex
+        value: /auth
       - name: client_id
         value: kubeflow-oidc-authservice
       repoRef:
@@ -40,11 +40,11 @@ spec:
       - name: namespace
         value: auth
       - name: issuer
-        value: http://dex.auth.svc.cluster.local:5556/dex
+        value: http://dex.auth.svc.cluster.local:5556
       - name: client_id
         value: kubeflow-oidc-authservice
       - name: oidc_redirect_uris
-        value: '["/login/oidc"]'
+        value: '["dex.localhost.local/login/oidc"]'
       - name: static_email
         value: admin@kubeflow.org
       - name: static_password_hash
