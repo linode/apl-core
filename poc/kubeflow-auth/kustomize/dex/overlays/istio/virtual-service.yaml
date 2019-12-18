@@ -8,7 +8,7 @@ metadata:
   name: dex
 spec:
   gateways:
-  - bookinfo-gateway
+  - default/bookinfo-gateway
   hosts:
   - 'dex.localhost.local'
   http:
