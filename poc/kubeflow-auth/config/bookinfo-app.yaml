@@ -16,10 +16,10 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: bookinfo
+  name: bookinfo-subdomain
 spec:
   hosts:
-  - "*"
+  - "bookinfo.localhost.local"
   gateways:
   - bookinfo-gateway
   http:
@@ -34,23 +34,7 @@ spec:
     - destination:
         host: productpage
         port:
-          number: 9080
-        
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: "productpage-viewer"
-  namespace: default
-spec:
-  selector:
-    matchLabels:
-      app: productpage
-  rules:
-  - to:
-    - operation:
-        methods: ["GET"]
-
+          number: 9080        
 ---
   # Copyright 2017 Istio Authors
 #

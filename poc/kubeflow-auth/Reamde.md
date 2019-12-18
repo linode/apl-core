@@ -1,95 +1,57 @@
 
-# Single sign-on
-
-## What community says:
-
-To support Single Sign-On scenario, Istio Origin Authentication should accept a JWT Token sent in a cookie:
-https://github.com/istio/istio/issues/8619#issuecomment-503468943
+# Kubelow-auth
 
 
-Istio Design Document: End-User authentication with OIDC
-https://docs.google.com/document/d/1mGpUsRgmA9wPB73trfTiB9YUuwYh-31iulYg9USxe0Y/edit#heading=h.7zgnj8bwqfld
+## Installation 
 
-
-## How developers handle it now:
-
-## Kubeflow
-
-This solution is composed by:
-- Envoy filter that forwards packet to auth-service
-- Auth-service that verifies session cookie and is able extract id_token from cookie and put the token as a header
- (see more: https://github.com/arrikto/oidc-authservice/commits/master)
-- Dex server that works as identity provide/proxy
-
-https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/#log-in-with-ldap-active-directory
-https://journal.arrikto.com/kubeflow-authentication-with-istio-dex-5eafdfac4782
-
-Pros:
-- The JWT is stored in cookie
-- They use DEX which allows to integrate with other OIDC providers
-
-Pros:
-- cookie based so apps does not need to know to iclude it in header
-
-Cons:
-- need to extract cookie with JWT and put it as a separate header so istio authentication and authorization policies can verified it.
-
-
-
-## Kyma:
-https://kyma-project.io/docs/0.4/components/authorization-and-authentication#architecture-architecture
-
-Cons:
-- The JWT is stored in sessionStorage
-
-Pros:
-- They use DEX which allows to integrate with other OIDC providers
-
-
-# Installation based on kubeflow
-
+### Setup cluster on minikube
 Create cluster
 ```
 minikube start --cpus=6 --memory=10000 --kubernetes-version='v1.14.8'
 ```
 
-Install istio
+Setup minkube tunnel
+```
+minikube tunnel
+```
+
+Obtain loadbalancer IP address:
+```
+kis get svc istio-ingressgateway -ojsonpath="{.status.loadBalancer.ingress[0].ip}"
+```
+
+Set `/etc/hosts` with domains loadbalancer IP. Example:
+```
+10.99.48.72       localhost.local
+10.99.48.72       bookinfo.localhost.local
+10.99.48.72       dex.localhost.local
+```
+
+### Istio
+
+Install istio:
 ```
 istioctl manifest apply
 ```
 
+### Kubeflow
 Install kfctl:
 ```
 See: https://www.kubeflow.org/docs/aws/deploy/install-kubeflow/#prepare-your-environment
 ```
 
-Build configuration 
-```
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/dc04ff600cee722d93cf80d413aa73ddd8387f1f/kfdef/kfctl_existing_arrikto.0.7.0.yaml"
-kfctl build -V -f ${CONFIG_URI}
-```
-
 Apply only parts that relates to single sign-on
 ```
-kfctl apply -V -f kfctl_auth_only.yaml
+kfctl apply -V -f kubeflow-auth-only.yaml
 ```
 
-## Deploy productinfo app
-
-```
-k apply -f config/productinfo-app.yaml
-```
-
-Setup port forwarding
-Access ingress gateway
-```
-kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
-```
-
-In your webbrowser access `127.0.0.1:8080/productpage`. You should be redirected to dex to authenticate.
+## Test
+In your webbrowser access `http://bookinfo.localhost.local/productpage`. You should be redirected to dex to authenticate.
+Use below creadentials
 ```
 user: admin@kubeflow.org
 pass: 12341234
 ```
 
-
+Note: current state allows to go through authentication process.
+Unfortunately user is redirected to `http://dex.localhost.local/productpage` instead of `http://bookinfo.localhost.local/productpage`
