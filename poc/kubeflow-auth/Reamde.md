@@ -54,6 +54,13 @@ Install istio:
 istioctl manifest apply
 ```
 
+### Bookinfo app
+```
+k apply -f config/bookinfo-app.yaml
+```
+
+Try to access `http://bookinfo.localhost.local/productpage`
+
 ### Kubeflow
 Install kfctl:
 ```
@@ -74,3 +81,4 @@ pass: 12341234
 ```
 
 Note: current state allows to go through authentication process. Unfortunately user is redirected to `http://dex.localhost.local/productpage` instead of `http://bookinfo.localhost.local/productpage`
+
