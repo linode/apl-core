@@ -29,26 +29,12 @@ spec:
     - uri:
         prefix: /static
     - uri:
-        exact: /login
-    - uri:
-        exact: /logout
-    - uri:
         prefix: /api/v1/products
-    - uri:
-        prefix: /login
     route:
     - destination:
         host: productpage
         port:
           number: 9080
-  - match:
-    - uri:
-        prefix: /dex
-    route:
-    - destination:
-        host: dex.auth.svc.cluster.local
-        port:
-          number: 5556
         
 ---
 apiVersion: security.istio.io/v1beta1
