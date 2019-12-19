@@ -23,13 +23,23 @@ releases:
     namespace: ingress
     <<: *default
   - name: dex
-    installed: true
+    installed: false
     namespace: ingress
     <<: *default
   - name: nginx-ingress
     installed: true
     namespace: ingress
+    labels:
+      tag: nginx-ingress
     <<: *default
+  - name: nginx-ingress-artifacts
+    installed: true
+    namespace: ingress
+    chart: ../charts/raw
+    labels:
+      tag: nginx-ingress
+    values:
+    - ../values/nginx-ingress/raw.gotmpl
   - name: oauth2-proxy
     installed: true
     namespace: ingress
