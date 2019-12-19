@@ -27,7 +27,7 @@ releases:
     namespace: ingress
     <<: *default
   - name: nginx-ingress
-    installed: false
+    installed: true
     namespace: ingress
     <<: *default
   - name: oauth2-proxy
