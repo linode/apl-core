@@ -1,0 +1,59 @@
+apiVersion: kfdef.apps.kubeflow.org/v1beta1
+kind: KfDef
+metadata:
+  creationTimestamp: null
+  name: demo
+  namespace: kubeflow
+spec:
+  applications:
+  - kustomizeConfig:
+      repoRef:
+        name: manifests
+        path: application/application-crds
+    name: application-crds
+  - kustomizeConfig:
+      overlays:
+      - application
+      parameters:
+      - name: namespace
+        value: istio-system
+      - name: userid-header
+        value: kubeflow-userid
+      - name: oidc_provider
+        value: http://dex.auth.svc.cluster.local:5556/dex
+      - name: oidc_redirect_uri
+        value: http://dex.localhost.local/login/oidc
+      - name: oidc_auth_url
+        value: http://dex.localhost.local/dex/auth
+      - name: skip_auth_uri
+        value: /dex
+      - name: client_id
+        value: kubeflow-oidc-authservice
+      repoRef:
+        name: manifests
+        path: istio/oidc-authservice
+    name: oidc-authservice
+  - kustomizeConfig:
+      overlays:
+      - istio
+      parameters:
+      - name: namespace
+        value: auth
+      - name: issuer
+        value: http://dex.auth.svc.cluster.local:5556
+      - name: client_id
+        value: kubeflow-oidc-authservice
+      - name: oidc_redirect_uris
+        value: '["dex.localhost.local/login/oidc"]'
+      - name: static_email
+        value: admin@kubeflow.org
+      - name: static_password_hash
+        value: $2y$12$ruoM7FqXrpVgaol44eRZW.4HWS8SAvg6KYVVSCIwKQPBmTpCm.EeO
+      repoRef:
+        name: manifests
+        path: dex-auth/dex-crds
+    name: dex
+  repos:
+  - name: manifests
+    uri: https://github.com/kubeflow/manifests/archive/2b34c263cf5165339f856b50cd759db30c6cae9d.tar.gz
+status: {}
