@@ -13,12 +13,6 @@ templates:
         istio: ingressgateway
       servers:
       - hosts:
-          - sample-app.{{ $v.domain }}
-        port:
-          name: http
-          number: 80
-          protocol: HTTP
-      - hosts:
           - '*.{{ $v.domain }}'
         port:
           name: https
