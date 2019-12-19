@@ -1,5 +1,5 @@
-kubernetes.io/ingress.class: istio
-kubernetes.io/tls-acme: "true"
+kubernetes.io/ingress.class: nginx
+# kubernetes.io/tls-acme: "true"
 ingress.kubernetes.io/rewrite-target: /
 ingress.kubernetes.io/ssl-redirect: "true"
 # DDOS protection: see https://bobcares.com/blog/nginx-ddos-prevention/
@@ -8,7 +8,7 @@ nginx.ingress.kubernetes.io/limit-rps: "10" # per second per conn
 nginx.ingress.kubernetes.io/limit-rpm: "30" # per minute per conn
 nginx.ingress.kubernetes.io/limit-rate-after: "50000000" # After 50Mb throughput rate limiting will start
 nginx.ingress.kubernetes.io/limit-rate: "1000000" # 1Mbps thoughput after
-nginx.ingress.kubernetes.io/limit-whitelist: "83.85.129.89/32"
+# nginx.ingress.kubernetes.io/limit-whitelist: "83.85.129.89/32"
 # OWASP protection
 nginx.ingress.kubernetes.io/enable-modsecurity: "false"
 nginx.ingress.kubernetes.io/enable-owasp-core-rules: "false"

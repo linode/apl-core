@@ -26,6 +26,7 @@ spec:
       labels:
         app: {{ template "oauth2-proxy.name" . }}
         release: "{{ .Release.Name }}"
+{{ toYaml .Values.customerLabels | indent 8 }}
       {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
       {{- end }}
