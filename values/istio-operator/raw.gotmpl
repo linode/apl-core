@@ -19,6 +19,9 @@ templates:
       #     citadel:
       #       enabled: false
       values:
+        gateways:
+          istio-ingressgateway:
+            type: ClusterIP
         global:
           mtls:
             enabled: {{ $v.istio.mtls.enabled }}
