@@ -13,6 +13,7 @@ This readme has the following index:
 1. [Prerequisites](#1-prerequisites)
 2. [Development](#2-development)
 3. [Operation](#3-operation)
+4. [Troubleshooting](#4-troubleshooting)
 
 ## 1. Prerequisites
 
@@ -68,6 +69,12 @@ Custom charts are found in the `charts/custom` folder.
 
 ### Helm charts & helmfiles
 
+Open a terminal and watch all pods except those in `kube-system` namespace:
+
+```bash
+watch -n1 "kubectl --all-namespaces=true get po | grep -Fv kube-system"
+```
+
 You can test modifications to helm charts and helmfiles:
 
 ```bash
@@ -87,11 +94,17 @@ Lets work with the `dev` cluster for this example. Switch to it's context with `
 As explained in the intro, the services are listed under the [index of the system services](https://index-dev.k8s.otomi.cloud).
 So far we have the following services (shown for `dev`):
 
-1. [Grafana](https://grafana-dev.k8s.otomi.cloud): the famous metrics dashboard that shows prometheus metrics.
-2. [Weave Scope](https://weave-dev.k8s.otomi.cloud): a graphical overview of all the components and their relationships.
+1. [Weave Scope](https://weave-dev.k8s.otomi.cloud): a graphical overview of all the components and their relationships.
+2. [Grafana](https://grafana-dev.k8s.otomi.cloud): the famous metrics dashboard that shows prometheus metrics.
 3. [Prometheus](https://prom-dev.k8s.otomi.cloud/targets): the prometheus environment showing what is being monitored.
 4. [Alertmanager](https://alerts-dev.k8s.otomi.cloud/): Alerts and their configuration.
-5. [Kibana](https://kibana-dev.k8s.otomi.cloud): the log viewer and app-insights dashboard environment.
-6. [Blackbox](https://blackbox-dev.k8s.otomi.cloud): shows the http probes that we test for.
+5. [Blackbox](https://blackbox-dev.k8s.otomi.cloud): shows the http probes that we test for.
 
 It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
+
+# 4. Troubleshooting
+
+```bash
+# istio auth checks from gateway to service (here grafana):
+istioctl -n istio-system authn tls-check $(kis get po -l app=istio-ingressgateway | tail -n1| awk '{print $1}') prometheus-operator-grafana.monitoring.svc.cluster.local
+```

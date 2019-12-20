@@ -1,17 +1,5 @@
 {{- $v := .Environment.Values }}
 {{- $host := printf "dex.%s" $v.domain }}
-ingress:
-  enabled: true
-  annotations:
-    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
-  hosts:
-    - {{ $host }}
-  path: /
-  tls: 
-    - secretName: auth-tls
-      hosts:
-        - {{ $host }}
-
 certs:
   web:
     altNames:

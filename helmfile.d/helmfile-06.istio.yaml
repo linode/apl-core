@@ -3,12 +3,12 @@ bases:
 
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
-releases: []
-  # - name: istio-operator-artifacts
-  #   installed: true
-  #   namespace: istio-operator
-  #   labels:
-  #     pkg: istio-operator
-  #   chart: ../charts/raw
-  #   values:
-  #   - ../values/istio-operator/raw.gotmpl
+releases:
+  - name: istio-operator-artifacts
+    installed: true
+    namespace: istio-operator
+    labels:
+      pkg: istio-operator
+    chart: ../charts/raw
+    values:
+    - ../values/istio-operator/raw.gotmpl

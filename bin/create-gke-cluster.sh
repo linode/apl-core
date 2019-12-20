@@ -3,7 +3,7 @@
 . ./.env
 
 # create the cluster
-gcloud container --project "$GCP_PROJECT" clusters create "$CLUSTER_NAME-$STAGE" --region "$REGION" \
+gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME-$STAGE" --region "$REGION" \
   --no-enable-basic-auth --cluster-version "1.14.8-gke.17" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
@@ -17,7 +17,7 @@ gcloud container --project "$GCP_PROJECT" clusters create "$CLUSTER_NAME-$STAGE"
   --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
 # --enable-pod-security-policy
 
-gcloud container clusters get-credentials $CLUSTER-$STAGE --region $REGION --project $GCP_PROJECT
+gcloud container clusters get-credentials $CLUSTER-$STAGE --region $REGION --project $PROJECT
 
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 

@@ -21,12 +21,12 @@ templates:
       values:
         global:
           mtls:
-            auto: true
-          #   enabled: false
+            enabled: {{ $v.istio.mtls.enabled }}
           # tag: 1.2.2
           # logging:
           #   level: "default:info"
-          # proxy:
+          proxy:
+            accessLogFile: /dev/stdout
             # autoInject: disabled
           # controlPlaneSecurityEnabled: false
           # disablePolicyChecks: false
@@ -50,3 +50,4 @@ templates:
           istio-ingressgateway:
             sds:
               enabled: true
+            type: ClusterIP

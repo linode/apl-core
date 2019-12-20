@@ -47,8 +47,8 @@ spec:
         - name: nginx-server-block
           mountPath: /opt/bitnami/nginx/conf/server_blocks
         {{- end }}
-        - name: index
-          mountPath: /app
+        # - name: index
+        #   mountPath: /app
         resources:
 {{ toYaml .Values.resources | indent 12 }}
 {{- if .Values.metrics.enabled }}
@@ -80,6 +80,6 @@ spec:
         configMap:
           name: {{ template "fullname" . }}
       {{- end }}
-      - name: index
-        configMap:
-          name: {{ template "fullname" . }}-files
+      # - name: index
+      #   configMap:
+      #     name: {{ template "fullname" . }}-files
