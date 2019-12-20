@@ -16,12 +16,14 @@ templates:
       name: nginx-ingress
     spec:
       rules:
-      - host: 'index.{{ $v.domain }}'
+      {{- range $s := $v.services }}
+      - host: '{{ $s.name }}.{{ $v.domain }}'
         http:
           paths:
           - backend:
               serviceName: istio-ingressgateway
               servicePort: 443
+      {{- end }}
       tls: 
         - secretName: letsencrypt-{{ $cm.stage }}-k8s
           hosts:

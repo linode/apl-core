@@ -10,6 +10,7 @@ controller:
     targetMemoryUtilizationPercentage: 80
   extraArgs:
     v: 3
+    enable-ssl-passthrough: "true"
   config:
     ssl-redirect: "true"
     hsts: "true"
@@ -18,7 +19,6 @@ controller:
     client-header-timeout: 5s
     enable-modsecurity: "true"
     enable-owasp-modsecurity-crs: "true"
-    enable-ssl-passthrough: "true"
     proxy-buffers-number: 8 16k
     proxy-buffer-size: 16k
   stats:
