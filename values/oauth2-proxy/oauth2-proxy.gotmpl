@@ -1,8 +1,9 @@
 {{- $v := .Environment.Values }}
+{{- $cm := index $v "cert-manager" }}
 ingress:
   enabled: true
   annotations:
-    {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 4 }}
+    {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
     # trick to allow absolute url redirects, see auth-annotations.yaml using it
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
@@ -11,9 +12,9 @@ ingress:
     - auth.{{ $v.domain }}
   path: /oauth2
   tls: 
-    - secretName: auth-tls
+    - secretName: letsencrypt-{{ $cm.stage }}-k8s
       hosts:
-        - auth.{{ $v.domain }}
+        - '*.{{ $v.domain }}'
 
 config:
   # clientID: oidc-auth-client
@@ -32,7 +33,7 @@ extraArgs:
   # email-domain: "*"
   cookie-domain: {{ $v.domain }}
   cookie-secure: false
-  # cookie-refresh: 0h60m0s
+  cookie-refresh: 0h60m0s
   pass-authorization-header: true
   set-authorization-header: true
   pass-basic-auth: false

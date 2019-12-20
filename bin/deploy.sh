@@ -19,11 +19,4 @@ fi
 
 kcu $cluster
 k apply -f k8s/base --recursive
-if [ -d "k8s/env/${ev}" ]; then
-  k apply -f k8s/env/$ev --recursive
-fi
-if [ -d "k8s/cloud/${CLOUD}" ]; then
-  k apply -f k8s/cloud/${CLOUD} --recursive
-fi
-hf repos
 hf -e $ev apply --concurrency=1 --skip-deps

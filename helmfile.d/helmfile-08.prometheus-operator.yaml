@@ -1,0 +1,10 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates.yaml" }}
+
+releases:
+  - name: prometheus-operator
+    installed: true
+    namespace: monitoring
+    <<: *default

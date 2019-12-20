@@ -1,0 +1,32 @@
+{{- $v := .Environment.Values }}
+{{- $cm := index $v "cert-manager" }}
+templates:
+  - |
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      annotations:
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        {{- readFile "../_snippets/authz-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+      labels:
+        app: nginx-ingress
+        release: gateway
+      name: nginx-ingress
+    spec:
+      rules:
+      {{- range $s := $v.services }}
+      - host: '{{ $s.name }}.{{ $v.domain }}'
+        http:
+          paths:
+          - backend:
+              serviceName: istio-ingressgateway
+              servicePort: 80
+      {{- end }}
+      tls: 
+        - secretName: letsencrypt-{{ $cm.stage }}-k8s
+          hosts:
+            - '*.{{ $v.domain }}'

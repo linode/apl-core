@@ -1,0 +1,77 @@
+{{- $v := .Environment.Values }}
+{{- $cm := index $v "cert-manager" }}
+{{- $gw := $v.gateway }}
+templates:
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+    metadata:
+      name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+    spec:
+      selector:
+        istio: ingressgateway
+      servers:
+      - hosts:
+          - '*.{{ $v.domain }}'
+        port:
+          name: http
+          number: 80
+          protocol: HTTP
+        # port:
+        #   name: https
+        #   number: 443
+        #   protocol: HTTPS
+        # tls:
+        #   mode: SIMPLE
+        #   credentialName: letsencrypt-{{ $cm.stage }}-k8s
+  {{- range $s := $v.services }}
+  {{- if not ($s | getOrNil "private") }}
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: {{ $s.name }}-{{ $v.domain | replace "." "-" }}
+      namespace: {{ $s.namespace }}
+    spec:
+      gateways:
+      - {{ $gw.namespace }}/{{ $gw.name }}
+      hosts:
+      - {{ $s.name }}.{{ $v.domain }}
+      http:
+      - route:
+        - destination:
+            host: {{ $s.svc }}.{{ $s.namespace }}.svc.cluster.local
+            port:
+              number: {{ $s | getOrNil "port" | default 80 }}
+          weight: 100
+  {{- end }}
+  {{- if ($s | getOrNil "mtls.gatewayDisabled") }}
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+    metadata:
+      name: {{ $s.name }}-notls
+      namespace: {{ $s.namespace }}
+    spec:
+      host: {{ $s.svc}}.{{ $s.namespace }}.svc.cluster.local
+      trafficPolicy:
+        tls:
+          mode: DISABLE
+  {{- end }}
+  {{- if or ($s | getOrNil "mtls.gatewayDisabled") ($s | getOrNil "mtls.policyMode") }}
+  {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
+  - |
+    apiVersion: authentication.istio.io/v1alpha1
+    kind: Policy
+    metadata:
+      name: {{ $s.name }}-{{ $mode }}
+      namespace: {{ $s.namespace }}
+    spec:
+      peers:
+        - mtls:
+            mode: {{ $mode | upper }}
+      targets:
+        - name: {{ $s.svc }}
+  {{- end }}
+  {{- end }}

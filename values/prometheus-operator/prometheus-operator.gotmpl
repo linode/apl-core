@@ -5,6 +5,8 @@
 global:
   rbac:
     pspEnabled: false
+coreDns:
+  enabled: false    
 kubeEtcd:
   enabled: false    
 prometheusOperator:
@@ -13,8 +15,13 @@ prometheusOperator:
     enabled: false
   tlsProxy:
     enabled: false
+  createCustomResource: true
 prometheus:
   prometheusSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    portName: http-web
     storageSpec:
       volumeClaimTemplate:
         metadata:
@@ -45,30 +52,20 @@ prometheus:
     #       - target_label: __address__
     #         replacement: prom-blackbox-exporter:9115
   additionalServiceMonitors:
-    {{- readFile "service-monitors.yaml" | nindent 4 }}
-  ingress:
-    # enabled: true
-    annotations:
-      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
-      {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $promHost | nindent 6 }}
-    paths:
-      - /
-    hosts:
-      - {{ $promHost }}
-    tls:
-      - secretName: prom-tls
-        hosts:
-          - {{ $promHost }}
-      
+    {{- readFile "service-monitors.yaml" | nindent 4 }}      
 additionalPrometheusRules:
   # - name: blackbox
-  #   {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  #   {{/*- readFile "rules/blackbox.yaml" | nindent 4 */}}
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    portName: http-web
     externalUrl: https://{{ $alertsHost }}
-    logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
+    # logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
   config:
     global:
       slack_api_url: https://hooks.slack.com/services/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
@@ -94,23 +91,17 @@ alertmanager:
         slack_configs:
           - channel: "#mon-k8s-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
-  ingress:
-    # enabled: true
-    annotations:
-      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
-      {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $alertsHost | nindent 6 }}
-    paths:
-      - /
-    hosts:
-      - {{ $alertsHost }}
-    tls:
-      - secretName: alerts-tls
-        hosts:
-          - {{ $alertsHost }}
 grafana:
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
+  # sidecar:
+  #   dashboards:
+  #     enabled: false
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+  plugins:
+    - grafana-piechart-panel
   additionalDataSources:
     - name: Graphite
       editable: false
@@ -124,18 +115,8 @@ grafana:
       url: http://loki:3100
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: bladibla
-  ingress:
-    # enabled: true
-    annotations:
-      {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 6 }}
-      {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | replace "#RED" $grafanaHost | nindent 6 }}
-    path: /
-    hosts:
-      - {{ $grafanaHost }}
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - {{ $grafanaHost }}
+  service:
+    portName: http-service
   grafana.ini:
     log:
       level: debug
@@ -182,12 +163,6 @@ prometheus-node-exporter:
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 
 kubeControllerManager:
-  service:
-    selector:
-      component: null
-      k8s-app: kube-controller-manager
+  enabled: false
 kubeScheduler:
-  service:
-    selector:
-      component: null
-      k8s-app: kube-scheduler
+  enabled: false
