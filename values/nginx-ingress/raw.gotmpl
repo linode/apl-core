@@ -22,7 +22,7 @@ templates:
           paths:
           - backend:
               serviceName: istio-ingressgateway
-              servicePort: 443
+              servicePort: 80
       {{- end }}
       tls: 
         - secretName: letsencrypt-{{ $cm.stage }}-k8s
