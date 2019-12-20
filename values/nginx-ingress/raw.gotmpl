@@ -10,6 +10,8 @@ templates:
         {{- readFile "../_snippets/authz-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
         {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
         # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
       labels:
         app: nginx-ingress
         release: gateway
