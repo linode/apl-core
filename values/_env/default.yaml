@@ -1,3 +1,4 @@
+cloud: gce
 domain: k8s.otomi.cloud
 customerDomain: in.otomi.cloud
 clusters:

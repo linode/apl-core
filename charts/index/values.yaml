@@ -165,6 +165,8 @@ metrics:
     ##
   # resources: {}
 
+group: Admins
+interpunct: "."
 clusters: {}  
 env: ""
 prefix: ""
