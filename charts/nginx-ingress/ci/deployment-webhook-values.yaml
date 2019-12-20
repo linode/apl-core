@@ -1,4 +1,3 @@
 controller:
-  kind: DaemonSet
-  stats:
+  admissionWebhooks:
     enabled: true
