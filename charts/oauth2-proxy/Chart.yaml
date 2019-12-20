@@ -3,7 +3,7 @@ appVersion: 4.0.0
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 engine: gotpl
-home: http://www.videntity.com/
+home: https://pusher.github.io/oauth2_proxy/
 keywords:
 - kubernetes
 - oauth
@@ -20,4 +20,4 @@ maintainers:
 name: oauth2-proxy
 sources:
 - https://github.com/pusher/oauth2_proxy
-version: 2.1.0
+version: 2.1.1
