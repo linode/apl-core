@@ -6,9 +6,9 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/auth-annotations.yaml" | nindent 8 }}
-        {{- readFile "../_snippets/authz-annotations.yaml" | nindent 8 }}
-        {{- readFile "../_snippets/ingress-annotations.yaml" | nindent 8 }}
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        {{- readFile "../_snippets/authz-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
         # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
       labels:
         app: nginx-ingress
@@ -16,7 +16,7 @@ templates:
       name: nginx-ingress
     spec:
       rules:
-      - host: '*.{{ $v.domain }}'
+      - host: 'index.{{ $v.domain }}'
         http:
           paths:
           - backend:
