@@ -15,12 +15,16 @@ templates:
       - hosts:
           - '*.{{ $v.domain }}'
         port:
-          name: https
-          number: 443
-          protocol: HTTPS
-        tls:
-          mode: SIMPLE
-          credentialName: letsencrypt-{{ $cm.stage }}-k8s
+          name: http
+          number: 80
+          protocol: HTTP
+        # port:
+        #   name: https
+        #   number: 443
+        #   protocol: HTTPS
+        # tls:
+        #   mode: SIMPLE
+        #   credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
   {{- if not ($s | getOrNil "private") }}
   - |
