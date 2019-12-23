@@ -64,8 +64,9 @@ gateway:
 
 oauth2-proxy:
   config:
-    clientID: 5ee6373eec36e3616f8a
-    clientSecret: 153acea33adb0d6fccb7e4e757d24b53d439215c
+    clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
+    clientSecret: 3F]Eho:Nwo96e7RPQxDBBYdHHxeE:Tp=
+    # cookieSecret - the seed string for secure cookies (optionally base64 encoded)
     cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
 
 oidc:

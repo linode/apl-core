@@ -28,8 +28,9 @@ extraArgs:
   # provider: oidc
   # oidc-issuer-url: https://auth.{{ $v.domain }}
   whitelist-domain: {{ $v.domain }}
-  provider: github
-  github-org: "redkubes"
+  provider: azure
+  azure-tenant: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+  scope: User.Read
   # email-domain: "*"
   cookie-domain: {{ $v.domain }}
   cookie-secure: false
