@@ -30,3 +30,29 @@ templates:
         - secretName: letsencrypt-{{ $cm.stage }}-k8s
           hosts:
             - '*.{{ $v.domain }}'
+  - |
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      annotations:
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
+        ingress.kubernetes.io/rewrite-target: /
+        # trick to allow absolute url redirects, see auth-annotations.yaml using it
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+      labels:
+        app: dex
+        release: gateway
+      name: dex
+    spec:
+      rules:
+      - host: 'auth.{{ $v.domain }}'
+        http:
+          paths:
+          - backend:
+              serviceName: istio-ingressgateway
+              servicePort: 80
+      tls: 
+        - secretName: letsencrypt-{{ $cm.stage }}-k8s
+          hosts:
+            - '*.{{ $v.domain }}'

@@ -64,22 +64,33 @@ gateway:
 
 oauth2-proxy:
   config:
-    clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
-    clientSecret: 3F]Eho:Nwo96e7RPQxDBBYdHHxeE:Tp=
-    # cookieSecret - the seed string for secure cookies (optionally base64 encoded)
     cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
 
 oidc:
-  grafana:
-    clientId: grafana
-    clientSecret: apie4eeX6hiC9ainiel1
+  provider: azure
+  scope: "openid email profile"
 
-prometheus-operator:
-  grafana:
-    ini:
-      github:
-        clientID: 9c72f5a6c479451272d6
-        clientSecret: 8437a3603320743bf9994f06a2627e51f1821550
+  # GitHub
+  # provider: github
+  # clientID: 5ee6373eec36e3616f8a
+  # clientSecret: 153acea33adb0d6fccb7e4e757d24b53d439215c
+  # Azure
+  # provider: azure
+  clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
+  clientSecret: 3F]Eho:Nwo96e7RPQxDBBYdHHxeE:Tp=
+
+  microsoft:
+    # v2, for dex:
+    issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/v2.0
+    tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+  azure: # microsoft
+    # v1, for oauth2-proxy:
+    issuer: https://sts.windows.net/57a3f6ea-7e70-4260-acb4-e06ce452f695/
+    tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+  google:
+    issuer: https://accounts.google.com
+  github:
+    org: redkubes
 
 services:
   - name: index

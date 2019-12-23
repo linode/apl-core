@@ -1,4 +1,4 @@
-nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-Access-Token, Authorization
 nginx.ingress.kubernetes.io/configuration-snippet: |
   auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
 

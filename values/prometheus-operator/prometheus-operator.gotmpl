@@ -1,4 +1,5 @@
 {{- $v := .Environment.Values }}
+{{- $o := $v.oidc }}
 {{ $promHost := printf "prometheus.%s" $v.domain }}
 {{ $alertsHost := printf "alertmanager.%s" $v.domain }}
 {{ $grafanaHost := printf "grafana.%s" $v.domain }}
@@ -134,8 +135,8 @@ grafana:
     "auth.github":
       enabled: true
       allow_sign_up: true
-      client_id: {{ $v | getOrNil "prometheus-operator.grafana.ini.github.clientID" }}
-      client_secret: {{ $v | getOrNil "prometheus-operator.grafana.ini.github.clientSecret" }}
+      client_id: {{ $o.clientID }}
+      client_secret: {{ $o.clientSecret }}
       scopes: user:email,read:org
       auth_url: https://github.com/login/oauth/authorize
       token_url: https://github.com/login/oauth/access_token

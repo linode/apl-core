@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
+{{- $o := $v.oidc }}
+{{- $provider := index $o $o.provider }}
 ingress:
   enabled: true
   annotations:
@@ -20,23 +22,29 @@ config:
   # clientID: oidc-auth-client
   # clientSecret: bladibladi
   # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
-  clientID: {{ $v | getOrNil "oauth2-proxy.config.clientID" }}
-  clientSecret: {{ $v | getOrNil "oauth2-proxy.config.clientSecret" }}
+  clientID: {{ $o.clientID }}
+  clientSecret: {{ $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "oauth2-proxy.config.cookieSecret" }}
 
 extraArgs:
-  # provider: oidc
-  # oidc-issuer-url: https://auth.{{ $v.domain }}
+  # oidc, google, azure, github
+  provider: {{ $o.provider }}
+  oidc-issuer-url: {{ $provider | get "issuer" }}
   whitelist-domain: {{ $v.domain }}
-  provider: azure
-  azure-tenant: 57a3f6ea-7e70-4260-acb4-e06ce452f695
-  scope: User.Read
+  scope: {{ $o.scope }}
   # email-domain: "*"
   cookie-domain: {{ $v.domain }}
-  cookie-secure: false
+  cookie-secure: true
   cookie-refresh: 0h60m0s
   pass-authorization-header: true
   set-authorization-header: true
   pass-basic-auth: false
   skip-auth-regex: ^/metrics,/api/datasources,/api/dashboards,/api/topology,/login
   set-xauthrequest: true
+  redirect-url: https://auth.{{ $v.domain }}/oauth2/callback
+  ###
+  # Provider specifics:
+  ###
+  github-org: {{ $o.github.org }}
+  azure-tenant: {{ $o.azure.tenantID }}
+
