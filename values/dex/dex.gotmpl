@@ -1,5 +1,8 @@
 {{- $v := .Environment.Values }}
-{{- $host := printf "dex.%s" $v.domain }}
+{{- $cm := index $v "cert-manager" }}
+{{- $o := $v.oidc }}
+{{- $provider := index $o $o.provider }}
+{{- $host := printf "auth.%s" $v.domain }}
 certs:
   web:
     altNames:
@@ -8,18 +11,34 @@ certs:
     altNames:
     - {{ $host }}
 
+certs:
+  web:
+    pod:
+      annotations:
+        sidecar.istio.io/inject: "false"
+  grpc:
+    pod:
+      annotations:
+        sidecar.istio.io/inject: "false"
+# podAnnotations:
+#   sidecar.istio.io/inject: "false"
+
 config:
-  issuer: https://{{ $host }}
   connectors:
-    - type: github
-      id: github
-      name: GitHub
+    - type: {{ $o.provider }}
+      id: {{ $o.provider }}
+      name: {{ $o.provider | title }}
       config:
-        clientID: 96ff6080482a9928f1db
-        clientSecret: a990b0c3ad1d68928db0545375c1b686290ece88
+        basicAuthUnsupported: true
+        # insecureSkipEmailVerified: true 
+        insecureEnableGroups: true
+        issuer: {{ $provider.issuer }}
+        clientID: {{ $o.clientID }}
+        clientSecret: {{ $o.clientSecret }}
         redirectURI: https://{{ $host }}/oauth2/callback
+        tenant: {{ $provider.tenantID }}
         orgs:
-          - name: otomi-cloud
+          - name: redkubes
   staticPasswords:
     - email: "maurice@otomi.cloud"
       # bcrypt hash of the string "password"
@@ -43,8 +62,8 @@ config:
       {{- end }}
       name: oidc-auth-client
       secret: bladibladi
-    - id: {{ $v.oidc.grafana.clientId }}
+    - id: grafana
       name: oidc-grafana-client
       redirectURIs:
       - 'https://grafana.{{ $v.domain }}/login/generic_oauth'
-      secret: {{ $v.oidc.grafana.clientSecret }}
+      secret: apie4eeX6hiC9ainiel1
