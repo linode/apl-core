@@ -1,0 +1,30 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-crd-rules
+  annotations:
+    "helm.sh/hook-delete-policy": "before-hook-creation, hook-succeeded"
+    "helm.sh/hook": "pre-install, pre-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: {{ .Release.Name }}-crd-init
+      containers:
+      - name: {{ .Release.Name }}-crd-rules
+        image: "bitnami/kubectl:latest"
+        volumeMounts:
+        - name: crd-rules
+          mountPath: /etc/ory/crd
+          readOnly: true
+        command: ["kubectl",  "apply", "-f", "/etc/ory/crd/rules.yaml"]
+      volumes:
+      - name: crd-rules
+        configMap:
+          name: {{ .Release.Name }}-crd-rules
+      restartPolicy: OnFailure

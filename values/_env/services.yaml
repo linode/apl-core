@@ -1,0 +1,74 @@
+services:
+  - name: index
+    svc: index-index
+    namespace: system
+  # - name: dashboard
+  #   svc: kubernetes-dashboard
+  #   namespace: kube-system
+  - name: loki-private
+    svc: loki-headless
+    namespace: monitoring
+    private: true
+    mtls:
+      policyMode: permissive
+  - name: loki
+    svc: prometheus-operator-grafana
+    host: grafana
+    virtual: true
+    namespace: monitoring
+    path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
+  - name: scope
+    svc: weave-scope
+    namespace: monitoring
+    mtls:
+      policyMode: permissive
+  - name: grafana
+    svc: prometheus-operator-grafana
+    namespace: monitoring
+    mtls:
+      policyMode: permissive
+      gatewayDisabled: true
+  - name: grafana-istio
+    svc: grafana
+    port: 3000
+    logo: istio
+    namespace: istio-system
+    mtls:
+      policyMode: permissive
+      gatewayDisabled: true
+  - name: prometheus
+    svc: prometheus-operator-prometheus
+    port: 9090
+    namespace: monitoring
+    mtls:
+      gatewayDisabled: true
+  - name: prometheus-istio
+    svc: prometheus
+    port: 9090
+    logo: prometheus
+    namespace: istio-system
+    mtls:
+      gatewayDisabled: true
+  - name: alertmanager
+    svc: prometheus-operator-alertmanager
+    port: 9093
+    logo: prometheus
+    namespace: monitoring
+    mtls:
+      gatewayDisabled: true
+  - name: kiali
+    svc: kiali
+    port: 20001
+    namespace: istio-system
+    mtls:
+      gatewayDisabled: true
+  - name: tracing
+    svc: tracing
+    port: 9411
+    logo: jaeger
+    namespace: istio-system
+    mtls:
+      gatewayDisabled: true
+  - name: drone
+    svc: drone-drone
+    namespace: system

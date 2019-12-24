@@ -10,8 +10,10 @@ environments:
   dev:
     values:
       - ../values/_env/default.yaml
+      - ../values/_env/services.yaml
       - ../values/_env/dev.yaml
   prd:
     values:
       - ../values/_env/default.yaml
+      - ../values/_env/services.yaml
       - ../values/_env/prd.yaml

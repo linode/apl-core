@@ -22,7 +22,6 @@ alertmanager:
   repeatInterval: 3h
 
 google:
-  projectId: otomi-cloud
   cloudDns:
     domain: otomi.cloud
     zone: otomi
@@ -43,9 +42,14 @@ google:
 cert-manager:
   stage: "production"
   email: admins@otomi.cloud
+  cloudDns:
+    key:
   provider:
-    cloudDns:
-      enabled: true
+    clouddns:
+      project: otomi-cloud
+      serviceAccountSecretRef:
+        name: cloud-dns-key
+        key: key.json
 
 drone:
   server:
@@ -68,7 +72,7 @@ oauth2-proxy:
 
 oidc:
   provider: azure
-  scope: "openid email profile"
+  scope: "openid email groups"
 
   # GitHub
   # provider: github
@@ -83,60 +87,15 @@ oidc:
     # v2, for dex:
     issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/v2.0
     tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
-  azure: # microsoft
+  azure:
     # v1, for oauth2-proxy:
     issuer: https://sts.windows.net/57a3f6ea-7e70-4260-acb4-e06ce452f695/
+    # issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/v2.0
     tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
   google:
     issuer: https://accounts.google.com
   github:
     org: redkubes
-
-services:
-  - name: index
-    svc: index-index
-    namespace: system
-  # - name: dashboard
-  #   svc: kubernetes-dashboard
-  #   namespace: kube-system
-  - name: loki
-    svc: loki-headless
-    namespace: monitoring
-    private: true
-    mtls:
-      policyMode: permissive
-  - name: scope
-    svc: weave-scope
-    namespace: monitoring
-    mtls:
-      policyMode: permissive
-  - name: grafana
-    svc: prometheus-operator-grafana
-    namespace: monitoring
-    mtls:
-      policyMode: permissive
-      gatewayDisabled: true
-  - name: prometheus
-    svc: prometheus-operator-prometheus
-    port: 9090
-    namespace: monitoring
-    mtls:
-      # policyMode: permissive
-      gatewayDisabled: true
-  - name: alertmanager
-    svc: prometheus-operator-alertmanager
-    port: 9093
-    namespace: monitoring
-    mtls:
-      # policyMode: permissive
-      gatewayDisabled: true
-  - name: drone
-    svc: drone-drone
-    namespace: system
-  - name: blackbox
-    svc: prom-blackbox-exporter
-    port: 9115
-    namespace: monitoring
 
 istio:
   mtls:
