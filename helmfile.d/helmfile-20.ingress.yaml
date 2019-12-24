@@ -42,7 +42,7 @@ releases:
     - ../values/nginx-ingress/raw.gotmpl
   - name: oauth2-proxy
     installed: true
-    namespace: ingress
+    namespace: istio-system
     labels:
       tag: ingress
     <<: *default

@@ -1,9 +1,0 @@
-nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-Access-Token, Authorization
-nginx.ingress.kubernetes.io/configuration-snippet: |
-  auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-
-  access_by_lua_block {
-    if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-      ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-    end
-  }
