@@ -7,11 +7,7 @@ templates:
     metadata:
       annotations:
         {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
-        {{- readFile "../_snippets/authz-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
         {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
-        # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
       labels:
         app: nginx-ingress
         release: gateway
@@ -22,6 +18,10 @@ templates:
       - host: '{{ $s.name }}.{{ $v.domain }}'
         http:
           paths:
+          - path: /oauth2/userinfo
+            backend:
+              serviceName: oauth2-proxy
+              servicePort: 80
           - backend:
               serviceName: istio-ingressgateway
               servicePort: 80
@@ -35,22 +35,29 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 8 }}
-        ingress.kubernetes.io/rewrite-target: /
-        # trick to allow absolute url redirects, see auth-annotations.yaml using it
+        nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-Access-Token, Authorization
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
+
+          access_by_lua_block {
+            if ngx.var._oauth2_proxy_upstream_1 ~= "" then
+              ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
+            end
+          }
         nginx.ingress.kubernetes.io/configuration-snippet: |
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
       labels:
-        app: dex
+        app: auth
         release: gateway
-      name: dex
+      name: auth
+      namespace: ingress
     spec:
       rules:
-      - host: 'auth.{{ $v.domain }}'
+      - path: /oauth2
         http:
           paths:
           - backend:
-              serviceName: istio-ingressgateway
+              serviceName: oauth2-proxy
               servicePort: 80
       tls: 
         - secretName: letsencrypt-{{ $cm.stage }}-k8s

@@ -9,6 +9,34 @@
     <meta name="application-name" content="Otomi" />
     <title>Otomi - All of your apps in the cloud.</title>
     <link type="text/css" rel="stylesheet" href="style.css" />
+    <script type="text/javascript">
+      function getCookie(cname) {
+        var name = cname + '='
+        var decodedCookie = decodeURIComponent(document.cookie)
+        var ca = decodedCookie.split(';')
+        for (var i = 0; i < ca.length; i++) {
+          var c = ca[i]
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1)
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length)
+          }
+        }
+        return ''
+      }
+      window.onload = function() {
+        // var authCookie = getCookie('_oauth2_proxy');
+        var req = new XMLHttpRequest()
+        req.open('GET', 'https://auth.k8s-dev.otomi.cloud/oauth2/token', true)
+        req.onload = function(res) {
+          console.log('resp:', res.text)
+          var user = xhr.response
+          document.getElementsByClassName('admin')[0].innerHTML = user.email
+        }
+        req.send(null)
+      }
+    </script>
   </head>
   <body>
     <nav>

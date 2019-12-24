@@ -12,6 +12,39 @@
     <title>Otomi - All of your apps in the cloud.</title>
     <link type="text/css" rel="stylesheet" href="style.css" />
     <link rel="shortcut icon" href="favicon.ico" />
+    <script type="text/javascript">
+      function getCookie(cname) {
+        var name = cname + '='
+        var decodedCookie = decodeURIComponent(document.cookie)
+        var ca = decodedCookie.split(';')
+        for (var i = 0; i < ca.length; i++) {
+          var c = ca[i]
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1)
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length)
+          }
+        }
+        return ''
+      }
+      window.onload = function() {
+        // var authCookie = getCookie('_oauth2_proxy');
+        var xhr = new XMLHttpRequest()
+        xhr.open('GET', '/oauth2/userinfo', true)
+        xhr.responseType = 'json'
+        xhr.onload = function(res) {
+          if (xhr.readyState === xhr.DONE) {
+            if (xhr.status === 200) {
+              console.log(xhr.response);
+              var user = xhr.response
+              document.getElementsByClassName('admin')[0].innerHTML = user.email
+            }
+          }
+        }
+        xhr.send(null)
+      }
+    </script>
   </head>
   <body>
     <nav>
@@ -19,7 +52,7 @@
         <a href="/" class="active">dev</a> |
         <a href="/">prod</a>
       </div>
-      <div class="user-menu"><span>Admin</span><img src="user.svg" alt="user icon" /></div>
+      <div class="user-menu"><span class="admin">Admin</span><img src="user.svg" alt="user icon" /></div>
     </nav>
     <main>
       <div class="title">
