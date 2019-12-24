@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
 templates:
-  {{- if ($cm | getOrNil "provider.cloudDns.enabled") }}
   - |
     apiVersion: v1
     kind: Secret
@@ -11,7 +10,6 @@ templates:
         release: cert-manager
     data:
       key.json: {{ $v| getOrNil "google.cloudDns.key" | b64enc }}
-  {{- end }}
   {{ range $env := (list "staging" "production") }}
   - |
     apiVersion: cert-manager.io/v1alpha2
@@ -27,13 +25,7 @@ templates:
         solvers:
           - selector: {}
             dns01:
-              {{- if $cm.provider.cloudDns.enabled }}
-              clouddns:
-                project: {{ $v.google.projectId }}
-                serviceAccountSecretRef:
-                  name: cloud-dns-key
-                  key: key.json
-              {{- end }}
+              {{- $cm.provider | toYaml | nindent 14 }}
   {{- end }}
   - |
     apiVersion: cert-manager.io/v1alpha2

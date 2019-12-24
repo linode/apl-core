@@ -30,42 +30,20 @@
           Domain <b>{{ $v.domain }}</b>
         </p>
       </div>
-      <h2>Apps <span>(4)</span></h2>
+      <h2>Apps <span>({{ $v.services | len }})</span></h2>
       <div class="grid">
-        {{- if eq $v.group "Admins" }}
-        <div class="col-6">
-          <a href="https://scope{{ $v.interpunct }}{{ $v.domain }}" target="_blank" class="tile">
+        {{- range $s := $v.services }}
+        {{- if and (ne $s.name "index") (not (hasKey $s "private")) }}
+        <div class="col-3">
+          <a href='https://{{ $s.host | default $s.name }}{{ $v.interpunct }}{{ $v.domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
             <div class="img-wrapper">
-              <img src="scope_logo.png" alt="Scope logo" style="width: 65px;" />
+              <img src="{{ $s.logo | default $s.name }}_logo.svg" alt="{{ $s.name | title }} logo" style="width: 65px;" />
             </div>
-            <h4>Weave Scope</h4>
+            <h4>{{ $s.name | title }}</h4>
           </a>
         </div>
         {{- end }}
-        <div class="col-6">
-          <a href="https://grafana{{ $v.interpunct }}{{ $v.domain }}" target="_blank" class="tile">
-            <div class="img-wrapper">
-              <img src="./grafana_logo.svg" alt="Grafana logo" style="width: 65px;" />
-            </div>
-            <h4>Grafana</h4>
-          </a>
-        </div>
-        <div class="col-6">
-          <a href="https://prometheus{{ $v.interpunct }}{{ $v.domain }}" target="_blank" class="tile">
-            <div class="img-wrapper">
-              <img src="./prometheus_logo.svg" alt="Prometheus logo" />
-            </div>
-            <h4>Prometheus</h4>
-          </a>
-        </div>
-        <div class="col-6">
-          <a href="https://alertmanager{{ $v.interpunct }}{{ $v.domain }}/" target="_blank" class="tile">
-            <div class="img-wrapper">
-              <img src="./prometheus_logo.svg" alt="Prometheus logo" />
-            </div>
-            <h4>Alertmanager</h4>
-          </a>
-        </div>
+        {{- end }}
       </div>
     </main>
   </body>

@@ -122,3 +122,13 @@ main {
   width: 50%;
   box-sizing: border-box;
 }
+.grid .col-4 {
+  float: left;
+  width: 33.33%;
+  box-sizing: border-box;
+}
+.grid .col-3 {
+  float: left;
+  width: 25%;
+  box-sizing: border-box;
+}

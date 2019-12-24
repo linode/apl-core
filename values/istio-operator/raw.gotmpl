@@ -39,6 +39,12 @@ templates:
           enabled: true
         kiali:
           enabled: true
+          contextPath: "/"
+          dashboard:
+            # auth:
+            #   strategy: anonymous
+            jaegerURL: https://tracing.{{ $v.domain }}
+            grafanaURL: https://grafana-istio.{{ $v.domain }}
         sidecarInjectorWebhook:
           enabled: true
           enableNamespacesByDefault: true

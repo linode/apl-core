@@ -1,0 +1,158 @@
+# Mode for oathkeeper controller
+# Two possible modes are: controller or sidecar
+global:
+  ory:
+    oathkeeper:
+      maester:
+        mode: controller
+
+# Number of ORY Oathkeeper members
+replicaCount: 1
+
+image:
+  # ORY Oathkeeper image
+  repository: oryd/oathkeeper
+  # ORY Oathkeeper version
+  tag: v0.32.0-beta.1
+  # Image pull policy
+  pullPolicy: IfNotPresent
+
+# Options for the sidecar
+# TODO: change image after merge
+sidecar:
+  image:
+    repository: oryd/oathkeeper-maester
+    tag: v0.0.5
+  envs: {}
+
+# Image pull secrets
+imagePullSecrets: []
+# Chart name override
+nameOverride: ""
+# Full chart name override
+fullnameOverride: ""
+
+# If enabled, a demo deployment with exemplary access rules
+# and JSON Web Key Secrets will be generated.
+demo: false
+
+# Configures the Kubernetes service
+service:
+  # Configures the Kubernetes service for the proxy port.
+  proxy:
+    # En-/disable the service
+    enabled: true
+    # The service type
+    type: ClusterIP
+    # The service port
+    port: 4455
+    # If you do want to specify annotations, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
+    annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # Configures the Kubernetes service for the api port.
+  api:
+    # En-/disable the service
+    enabled: true
+    # The service type
+    type: ClusterIP
+    # The service port
+    port: 4456
+    # If you do want to specify annotations, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
+    annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+
+# Configure ingress
+ingress:
+  # Configure ingress for the proxy port.
+  proxy:
+    # En-/Disable the proxy ingress.
+    enabled: false
+    annotations: {}
+#     kubernetes.io/ingress.class: nginx
+#     kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: proxy.oathkeeper.localhost
+        paths: ["/"]
+#    tls: []
+#        hosts:
+#          - proxy.oathkeeper.local
+#      - secretName: oathkeeper-proxy-example-tls
+
+  api:
+    # En-/Disable the api ingress.
+    enabled: false
+
+    annotations: {}
+#      If you do want to specify annotations, uncomment the following
+#      lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
+#      kubernetes.io/ingress.class: nginx
+#      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: api.oathkeeper.localhost
+        paths: ["/"]
+#    tls: []
+#      hosts:
+#        - api.oathkeeper.local
+#      - secretName: oathkeeper-api-example-tls
+
+# Configure ORY Oathkeeper itself
+oathkeeper:
+  # The ORY Oathkeeper configuration. For a full list of available settings, check:
+  #   https://github.com/ory/oathkeeper/blob/master/docs/config.yaml
+  config:
+    access_rules:
+      repositories:
+        - file:///etc/rules/access-rules.json
+    serve:
+      proxy:
+        port: 4455
+      api:
+        port: 4456
+#  If set, uses the given JSON Web Key Set as the signing key for the ID Token Mutator.
+#  mutatorIdTokenJWKs: {}
+#  If set, uses the given access rules.
+#  accessRules: {}
+
+deployment: 
+  resources: {}
+  #  We usually recommend not to specify default resources and to leave this as a conscious
+  #  choice for the user. This also increases chances charts run on environments with little
+  #  resources, such as Minikube. If you do want to specify resources, uncomment the following
+  #  lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #  limits:
+  #    cpu: 100m
+  #    memory: 128Mi
+  #  requests:
+  #    cpu: 100m
+  #  memory: 128Mi
+
+  # Node labels for pod assignment.
+  nodeSelector: {}
+  # If you do want to specify node labels, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
+  #   foo: bar
+
+  # Configure node tolerations.
+  tolerations: []
+
+  labels: {}
+  #      If you do want to specify additional labels, uncomment the following
+  #      lines, adjust them as necessary, and remove the curly braces after 'labels:'.
+  #      e.g.  type: app
+
+  annotations: {}
+  #      If you do want to specify annotations, uncomment the following
+  #      lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
+  #      e.g.  sidecar.istio.io/rewriteAppHTTPProbers: "true"
+
+
+# Configure node affinity
+affinity: {}
+
+# Configures controller setup
+maester:
+  enabled: true

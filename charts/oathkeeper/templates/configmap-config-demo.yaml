@@ -1,0 +1,59 @@
+{{ if .Values.demo }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oathkeeper.fullname" . }}-config-demo
+  {{- if .Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+{{ include "oathkeeper.labels" . | indent 4 }}
+data:
+  "config.yaml": |
+    access_rules:
+      repositories:
+      - "https://raw.githubusercontent.com/ory/k8s/master/helm/charts/oathkeeper/demo/access-rules.json"
+    authenticators:
+      anonymous:
+        enabled: true
+      jwt:
+        enabled: true
+        config:
+          jwks_urls:
+            - "https://raw.githubusercontent.com/ory/k8s/master/helm/charts/oathkeeper/demo/authenticator.jwt.jwks.json"
+      noop:
+        enabled: true
+      unauthorized:
+        enabled: true
+    authorizers:
+      allow:
+        enabled: true
+      deny:
+        enabled: true
+    mutators:
+      cookie:
+        enabled: true
+        config:
+          cookies:
+            user: "{{ print .Subject }}"
+      header:
+        enabled: true
+        config:
+          headers:
+            X-User: "{{ print .Subject }}"
+      id_token:
+        enabled: true
+        config:
+          issuer_url: http://{{ include "oathkeeper.fullname" . }}/
+          jwks_url: https://raw.githubusercontent.com/ory/k8s/master/helm/charts/oathkeeper/demo/mutator.id_token.jwks.json
+      noop:
+        enabled: true
+    serve:
+      proxy:
+        cors:
+          enabled: true
+      api:
+        cors:
+          enabled: true
+{{ end }}

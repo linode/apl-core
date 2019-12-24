@@ -26,7 +26,7 @@ templates:
         #   mode: SIMPLE
         #   credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
-  {{- if not ($s | getOrNil "private") }}
+  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
@@ -37,7 +37,7 @@ templates:
       gateways:
       - {{ $gw.namespace }}/{{ $gw.name }}
       hosts:
-      - {{ $s.name }}.{{ $v.domain }}
+      - {{ $s | get "host" $s.name }}.{{ $v.domain }}
       http:
       - route:
         - destination:
