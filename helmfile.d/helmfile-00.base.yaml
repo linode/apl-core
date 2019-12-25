@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.yaml
+
+{{ readFile "snippets/templates-skeleton.gotmpl" }}
+
+releases:
+  # - name: base
+  #   installed: true
+  #   namespace: kube-system
+  #   labels:
+  #     init: true
+  #   <<: *skeleton

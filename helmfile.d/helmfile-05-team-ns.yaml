@@ -1,0 +1,15 @@
+bases:
+  - snippets/defaults.yaml
+
+{{- $t := readFile "../values/teams.yaml" | fromYaml }}
+releases:
+  {{- range $team := $t.teams }}
+  - name: team-ns-{{ $team.name }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+    values:
+      - {{- $team | toYaml | nindent 8 }}
+  {{- end }}

@@ -1,0 +1,29 @@
+{{- $v := .Environment.Values }}
+{{- $cm := index $v "cert-manager" }}
+templates:
+  {{- range $s := $v.services }}
+  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
+  - |
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: appgw-ingress-{{ $s.name }}
+      namespace: ingress
+      annotations:
+        kubernetes.io/ingress.class: azure/application-gateway
+        appgw.ingress.kubernetes.io/ssl-redirect: "true"
+        # appgw.ingress.kubernetes.io/backend-protocol: "https"
+    spec:
+      tls:
+        - hosts:
+            - {{ $s.name }}.{{ $v.domain }}
+          secretName: letsencrypt-{{ $cm.stage }}-k8s
+      rules:
+        - host: {{ $s.name }}.{{ $v.domain }}
+          http:
+            paths:
+              - backend:
+                  serviceName: nginx-ingress-controller
+                  servicePort: 80
+  {{- end }}
+  {{- end }}

@@ -1,0 +1,44 @@
+services:
+  - name: index
+    svc: index
+  # - name: dashboard
+  #   svc: kubernetes-dashboard
+  #   namespace: kube-system
+  - name: scope
+    svc: weave-scope
+    mtls:
+      policyMode: permissive
+  - name: grafana
+    svc: po-grafana
+    mtls:
+      policyMode: permissive
+      gatewayDisabled: true
+  - name: prometheus
+    svc: po-prometheus
+    port: 9090
+    mtls:
+      # policyMode: permissive
+      gatewayDisabled: true
+  - name: alertmanager
+    svc: po-alertmanager
+    port: 9093
+    mtls:
+      # policyMode: permissive
+      gatewayDisabled: true
+  # - name: drone
+  #   svc: drone
+  # - name: blackbox
+  #   svc: prom-blackbox-exporter
+  #   port: 9115
+
+# IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
+teams:
+  - name: team1
+    password: somepassworddd
+    # slackUrl: https://hooks.slack.com/services/xxx
+    # resourceQuota:
+    #   services.loadbalancers: "1"
+    # services:
+    #   - name: project1 # short name for urls
+    #     svc: project1 # internal k8s service
+    #     # port: 80 # 80 is default

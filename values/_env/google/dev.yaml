@@ -1,0 +1,3 @@
+stage: dev
+domain: k8s-dev.otomi.cloud
+teamDomain: in-dev.otomi.cloud
