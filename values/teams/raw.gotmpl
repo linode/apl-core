@@ -1,0 +1,120 @@
+{{- $v := .Environment.Values }}
+{{- $cm := index $v "cert-manager" }}
+{{- $gw := $v.istio.gateway }}
+{{- $t := readFile "../teams.yaml" | fromYaml }}
+templates:
+  {{- range $team := $t.teams }}
+  {{/*- $domain := printf "%s.%s" $team.name $v.teamDomain */}}
+  {{- $domain := printf "%s.%s" $team.name $v.domain }}
+  {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
+  {{- $services := $t.services }}
+  # - |
+  #   apiVersion: cert-manager.io/v1alpha2
+  #   kind: Certificate
+  #   metadata:
+  #     name: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+  #     # Istio certs secret lives in the istio-system namespace, and
+  #     # a cert-manager Certificate is namespace-scoped.
+  #     namespace: istio-system
+  #   spec:
+  #     # Reference to the Istio default cert secret.
+  #     secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+  #     acme:
+  #       config:
+  #       # Each certificate could rely on different ACME challenge
+  #       # solver.  In this example we are using one provider for all
+  #       # the domains.
+  #       - dns01:
+  #           provider: cloud-dns-provider
+  #         domains:
+  #         # Since certificate wildcards only allow one level, we will
+  #         # need to one for every namespace that Knative is used in.
+  #         # We don't need to use wildcard here, fully-qualified domains
+  #         # will work fine too.
+  #         - "*.{{ $domain }}"
+  #     # The certificate common name, use one from your domains.
+  #     commonName: "*.{{ $domain }}"
+  #     dnsNames:
+  #     # Provide same list as `domains` section.
+  #     - "*.{{ $domain }}"
+  #     # Reference to the ClusterIssuer we created in the previous step.
+  #     issuerRef:
+  #       kind: ClusterIssuer
+  #       name: letsencrypt-{{ $cm.stage }}
+  {{- range $s := $services }}
+  {{- if not ($s | getOrNil "private") }}
+  - |
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: appgw-ingress-{{ $team.name }}-{{ $s.name }}
+      namespace: istio-system
+      annotations:
+        kubernetes.io/ingress.class: azure/application-gateway
+        appgw.ingress.kubernetes.io/ssl-redirect: "true"
+        # appgw.ingress.kubernetes.io/backend-protocol: "https"
+    spec:
+      tls:
+        - hosts:
+            # - {{ $s.name }}.{{ $domain }}
+            - {{ $s.name }}-{{ $domain }}
+          # secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+          secretName: letsencrypt-{{ $cm.stage }}-k8s
+      rules:
+        # - host: {{ $s.name }}.{{ $domain }}
+        - host: {{ $s.name }}-{{ $domain }}
+          http:
+            paths:
+              - backend:
+                  serviceName: istio-ingressgateway
+                  servicePort: 80
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: {{ $s.name }}-{{ $domain | replace "." "-" }}
+      namespace: team-{{ $team.name }}
+    spec:
+      gateways:
+      - {{ $gw.namespace }}/{{ $gw.name }}
+      hosts:
+      # - {{ $s.name }}.{{ $domain }}
+      - {{ $s.name }}-{{ $domain }}
+      http:
+      - route:
+        - destination:
+            host: {{ $team.name }}-{{ $s.svc }}.team-{{ $team.name }}.svc.cluster.local
+            port:
+              number: {{ $s | getOrNil "port" | default 80 }}
+          weight: 100
+  {{- end }}
+  {{- if ($s | getOrNil "mtls.gatewayDisabled") }}
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+    metadata:
+      name: {{ $s.name }}-notls
+      namespace: team-{{ $team.name }}
+    spec:
+      host: {{ $team.name }}-{{ $s.svc}}.team-{{ $team.name }}.svc.cluster.local
+      trafficPolicy:
+        tls:
+          mode: DISABLE
+  {{- end }}
+  {{- if or ($s | getOrNil "mtls.gatewayDisabled") ($s | getOrNil "mtls.policyMode") }}
+  {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
+  - |
+    apiVersion: authentication.istio.io/v1alpha1
+    kind: Policy
+    metadata:
+      name: {{ $s.name }}-{{ $mode }}
+      namespace: team-{{ $team.name }}
+    spec:
+      peers:
+        - mtls:
+            mode: {{ $mode | upper }}
+      targets:
+        - name: {{ $s.svc }}
+  {{- end }}
+  {{- end }}
+  {{- end }}

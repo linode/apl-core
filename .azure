@@ -1,0 +1,5 @@
+export REGION="westeurope"
+export CLUSTER_PREFIX="k8s-redkubes"
+export DNS_ZONE="aks.redkubes.net"
+export CLUSTER_API_HOST="https://k8s-redkubes-${STAGE}-8e0e116f.hcp.westeurope.azmk8s.io"
+export DOMAIN="k8s.$DNS_ZONE"

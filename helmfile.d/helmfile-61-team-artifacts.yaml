@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.yaml
+
+releases:
+  - name: team-services
+    installed: true
+    namespace: system # only for the chart, all resources are namespaced elsewhere in raw.gotmpl
+    chart: ../charts/raw
+    labels:
+      tag: teams
+    values:
+      - ../values/teams/raw.gotmpl

@@ -1,0 +1,3 @@
+stage: dev
+domain: k8s-dev.aks.redkubes.net
+teamDomain: in-dev.aks.redkubes.net

@@ -1,0 +1,58 @@
+# The values.yaml file is important to templates.
+# This file contains the default values for a chart.
+# These values may be overridden during helm install or helm upgrade.
+
+replicaCount: 1
+
+# Verbosity level of the App Gateway Ingress Controller
+verbosityLevel: 3
+
+image:
+  repository: mcr.microsoft.com/azure-application-gateway/kubernetes-ingress
+  tag: 1.0.0
+  pullPolicy: Always
+
+
+kubernetes:
+
+    # Namespace(s) AGIC watches; Leaving this blank watches all namespaces;
+    # Accepts one or many comma-separated values
+    watchNamespace:
+
+    # Port for AGIC's HTTP API endpoint
+    httpServicePort: 8123
+
+
+################################################################################
+# Specify which application gateway the ingress controller will manage
+# Specity which cloud environment will be used AZURECHINACLOUD,AZUREGERMANCLOUD,AZUREPUBLICCLOUD,AZUREUSGOVERNMENTCLOUD default: AZUREPUBLICCLOUD
+#
+# appgw:
+#   environment: AZUREPUBLICCLOUD
+#   subscriptionId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+#   resourceGroup: myResourceGroup
+#   name: myApplicationGateway
+#   usePrivateIP: false
+
+################################################################################
+# Specify the authentication with Azure Resource Manager
+#
+# Two authentication methods are available:
+# - Option 1: AAD-Pod-Identity (https://github.com/Azure/aad-pod-identity)
+# armAuth:
+#   type: aadPodIdentity
+#   identityResourceID: <>
+#   identityClientID:  <>
+#
+# - Option 2: ServicePrincipal as a kubernetes secret
+# armAuth:
+#   type: servicePrincipal
+#
+#   # Generate this value with:
+#   #   az ad sp create-for-rbac --subscription <subscription-uuid> --sdk-auth | base64 -w0
+#   secretJSON: <base64-encoded-JSON-blob>
+
+################################################################################
+# Specify if the cluster is RBAC enabled or not
+rbac:
+    enabled: false # true/false

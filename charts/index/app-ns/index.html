@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="msapplication-TileColor" content="#ffc40d" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Index for cluster k8s-dev.aks.redkubes.net" />
+    <meta name="application-name" content="Otomi" />
+    <title>Otomi - All of your apps in the cloud.</title>
+    <link type="text/css" rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+  </head>
+  <body>
+    <nav>
+      {{- if $v.isNS }}
+      <a href="/" class="logo-link">
+        <img src="ns_logo_blue.svg" alt="NS logo" class="logo" />
+      </a>
+      {{- end }}
+      <div class="env-links">
+        <a href="/" class="active">dev</a> |
+        <a href="/">prod</a>
+      </div>
+      <div class="user-menu"><span>Cluster Admin</span><img src="user.svg" alt="user icon" /></div>
+    </nav>
+    <main>
+      <div class="title">
+        <h1>
+          Cluster admin dashboard
+        </h1>
+        <p class="sub">
+          Cluster
+          <b>k8s-dev.aks.redkubes.net</b>
+        </p>
+      </div>
+      <h2>Apps <span>(4)</span></h2>
+      <div class="grid">
+        <div class="col-6">
+          <a href="https://scope.k8s-dev.aks.redkubes.net" target="_blank" class="tile">
+            <div class="img-wrapper">
+              <img src="scope_logo.png" alt="Scope logo" style="width: 65px;" />
+            </div>
+            <h4>Weave Scope</h4>
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="https://grafana.k8s-dev.aks.redkubes.net" target="_blank" class="tile">
+            <div class="img-wrapper">
+              <img src="./grafana_logo.svg" alt="Grafana logo" style="width: 65px;" />
+            </div>
+            <h4>Grafana</h4>
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="https://prometheus.k8s-dev.aks.redkubes.net" target="_blank" class="tile">
+            <div class="img-wrapper">
+              <img src="./prometheus_logo.svg" alt="Prometheus logo" />
+            </div>
+            <h4>Prometheus</h4>
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="https://alertmanager.k8s-dev.aks.redkubes.net/" target="_blank" class="tile">
+            <div class="img-wrapper">
+              <img src="./prometheus_logo.svg" alt="Prometheus logo" />
+            </div>
+            <h4>Alertmanager</h4>
+          </a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
