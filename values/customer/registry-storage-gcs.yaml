@@ -1,3 +1,0 @@
-gcs:
-  bucket: #BUCKET#
-  keyfile: /etc/docker/registry/storage/gcs.json

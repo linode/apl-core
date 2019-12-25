@@ -2,6 +2,8 @@
 prometheus:
   servicemonitor:
     enabled: true
+    labels:
+      release: prometheus-operator
 
 ingressShim:
   defaultIssuerName: letsencrypt-{{ $v | getOrNil "cert-manager.stage" | default "staging" }}

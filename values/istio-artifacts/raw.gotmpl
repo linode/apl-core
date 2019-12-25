@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
-{{- $gw := $v.gateway }}
+{{- $gw := $v.istio.gateway }}
 templates:
   - |
     apiVersion: networking.istio.io/v1alpha3
@@ -18,13 +18,15 @@ templates:
           name: http
           number: 80
           protocol: HTTP
-        # port:
-        #   name: https
-        #   number: 443
-        #   protocol: HTTPS
-        # tls:
-        #   mode: SIMPLE
-        #   credentialName: letsencrypt-{{ $cm.stage }}-k8s
+      # - hosts:
+      #     - '*.{{ $v.domain }}'
+      #   port:
+      #     name: https
+      #     number: 443
+      #     protocol: HTTPS
+      #   tls:
+      #     mode: SIMPLE
+      #     credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
   {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
   - |

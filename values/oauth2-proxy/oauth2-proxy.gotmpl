@@ -6,7 +6,7 @@ image:
   tag: "v4.1.0"
 
 ingress:
-  enabled: true
+  enabled: false
   annotations:
     {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
     # trick to allow absolute url redirects, see auth-annotations.yaml using it

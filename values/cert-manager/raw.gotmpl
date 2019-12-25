@@ -1,6 +1,20 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v "cert-manager" }}
+{{- $provider := $v.provider }}
 templates:
+  {{- if eq $v.provider "azure" }}
+  {{- $ap := $cm.provider.azure.azuredns }}
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $ap.clientSecretSecretRef.name }}
+      labels:
+        release: cert-manager
+    data:
+      {{ $ap.clientSecretSecretRef.key }}: "{{ $ap.servicePrincipal | b64enc }}"
+  {{- end }}
+  {{- if eq $v.provider "google" }}
   - |
     apiVersion: v1
     kind: Secret
@@ -9,8 +23,9 @@ templates:
       labels:
         release: cert-manager
     data:
-      key.json: {{ $v| getOrNil "google.cloudDns.key" | b64enc }}
-  {{ range $env := (list "staging" "production") }}
+      key.json: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
+  {{- end }}
+  {{- range $env := (list "staging" "production") }}
   - |
     apiVersion: cert-manager.io/v1alpha2
     kind: ClusterIssuer
@@ -19,13 +34,13 @@ templates:
     spec:
       acme:
         server: https://acme{{ (eq $env "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
-        email: {{ $cm.email }}
+        email: {{ $cm.emailUser }}@{{ $v.emailDomain }}
         privateKeySecretRef:
           name: letsencrypt-{{ $env }}
         solvers:
           - selector: {}
             dns01:
-              {{- $cm.provider | toYaml | nindent 14 }}
+              {{- index $cm.provider $provider | toYaml | nindent 14 }}
   {{- end }}
   - |
     apiVersion: cert-manager.io/v1alpha2
@@ -34,7 +49,7 @@ templates:
       name: letsencrypt-{{ $cm.stage }}-k8s
       # Istio certs secret lives in the istio-system namespace, and
       # a cert-manager Certificate is namespace-scoped.
-      namespace: istio-system
+      namespace: ingress
     spec:
       # Reference to the Istio default cert secret.
       secretName: letsencrypt-{{ $cm.stage }}-k8s

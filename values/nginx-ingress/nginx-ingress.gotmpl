@@ -1,3 +1,4 @@
+{{- $v := .Environment.Values }}
 rbac:
   create: true
 controller:
@@ -12,7 +13,7 @@ controller:
     v: 3
     # enable-ssl-passthrough: "true"
   config:
-    ssl-redirect: "true"
+    ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     hsts: "true"
     disable-ipv6: "true"
     client-body-timeout: 5s
@@ -30,7 +31,6 @@ controller:
       additionalLabels: # needed to be picked up by our one and only prometheus-operator:
         release: prometheus-operator
   service:
-    type: LoadBalancer
-    loadBalancerIP: 
+    type: {{ if $v.hasCloudLB }}ClusterIP{{ else }}LoadBalancer{{ end }}
   publishService:
     enabled: true

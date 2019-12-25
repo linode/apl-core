@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: team-ns-quota
-spec:
-  hard:
-    {{- toYaml .Values.resourceQuota | nindent 4 }}

@@ -1,7 +1,0 @@
-namespace: ""
-siblingNamespaces: []
-resourceQuota:
-  pods: "50"
-  persistentvolumeclaims: "0"
-  services.loadbalancers: "0"
-  resourcequotas: "1"  

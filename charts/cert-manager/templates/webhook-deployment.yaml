@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
-    app.kubernetes.io/instance:  {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "webhook.chart" . }}
 spec:
@@ -16,7 +16,7 @@ spec:
     matchLabels:
       app: {{ include "webhook.name" . }}
       app.kubernetes.io/name: {{ include "webhook.name" . }}
-      app.kubernetes.io/instance:  {{ .Release.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- with .Values.webhook.strategy }}
   strategy:
@@ -27,7 +27,7 @@ spec:
       labels:
         app: {{ include "webhook.name" . }}
         app.kubernetes.io/name: {{ include "webhook.name" . }}
-        app.kubernetes.io/instance:  {{ .Release.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         helm.sh/chart: {{ include "webhook.chart" . }}
       annotations:
@@ -47,12 +47,22 @@ spec:
           {{- if .Values.global.logLevel }}
           - --v={{ .Values.global.logLevel }}
           {{- end }}
-          - --secure-port=6443
+          - --secure-port={{ .Values.webhook.securePort }}
           - --tls-cert-file=/certs/tls.crt
           - --tls-private-key-file=/certs/tls.key
         {{- if .Values.webhook.extraArgs }}
 {{ toYaml .Values.webhook.extraArgs | indent 10 }}
         {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 6080
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 6080
+              scheme: HTTP
           env:
           - name: POD_NAMESPACE
             valueFrom:

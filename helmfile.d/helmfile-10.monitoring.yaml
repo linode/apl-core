@@ -17,7 +17,7 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-operator-istio
-    installed: true
+    installed: false
     namespace: monitoring
     <<: *default
   - name: promtail

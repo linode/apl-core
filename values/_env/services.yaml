@@ -1,10 +1,29 @@
+loki:
+  authConfig:
+    users:
+      - username: admins
+        password: adminnns
+        orgId: admins
+      - username: team1
+        password: somepassworddd
+        orgId: team1
+      - username: team2
+        password: anoddapassa
+        orgId: team2
+
 services:
+  - name: auth
+    svc: oauth2-proxy
+    namespace: istio-system
   - name: index
     svc: index-index
     namespace: system
-  # - name: dashboard
-  #   svc: kubernetes-dashboard
-  #   namespace: kube-system
+  - name: dashboard
+    svc: kubernetes-dashboard
+    namespace: kube-system
+    mtls:
+      policyMode: permissive
+      gatewayDisabled: true
   - name: loki-private
     svc: loki-headless
     namespace: monitoring
@@ -12,7 +31,7 @@ services:
     mtls:
       policyMode: permissive
   - name: loki
-    svc: prometheus-operator-grafana
+    svc: po-grafana
     host: grafana
     virtual: true
     namespace: monitoring
@@ -23,7 +42,7 @@ services:
     mtls:
       policyMode: permissive
   - name: grafana
-    svc: prometheus-operator-grafana
+    svc: po-grafana
     namespace: monitoring
     mtls:
       policyMode: permissive
@@ -37,7 +56,7 @@ services:
       policyMode: permissive
       gatewayDisabled: true
   - name: prometheus
-    svc: prometheus-operator-prometheus
+    svc: po-prometheus
     port: 9090
     namespace: monitoring
     mtls:
@@ -50,7 +69,7 @@ services:
     mtls:
       gatewayDisabled: true
   - name: alertmanager
-    svc: prometheus-operator-alertmanager
+    svc: po-alertmanager
     port: 9093
     logo: prometheus
     namespace: monitoring
@@ -70,5 +89,5 @@ services:
     mtls:
       gatewayDisabled: true
   - name: drone
-    svc: drone-drone
+    svc: drone
     namespace: system
