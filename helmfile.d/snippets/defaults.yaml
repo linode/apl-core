@@ -4,16 +4,18 @@ helmDefaults:
   atomic: false
   wait: true
   timeout: 1200
-  force: true
+  force: false
 
 environments:
-  dev:
+  google-dev:
     values:
       - ../values/_env/default.yaml
       - ../values/_env/services.yaml
-      - ../values/_env/dev.yaml
-  prd:
+      - ../values/_env/google/default.yaml
+      - ../values/_env/google/dev.yaml
+  azure-dev:
     values:
       - ../values/_env/default.yaml
       - ../values/_env/services.yaml
-      - ../values/_env/prd.yaml
+      - ../values/_env/azure/default.yaml
+      - ../values/_env/azure/dev.yaml

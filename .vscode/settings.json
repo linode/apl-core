@@ -5,7 +5,7 @@
     "*.gotmpl": "helm",
     ".env": "shellscript",
     ".aws": "shellscript",
-    ".gcp": "shellscript",
+    ".google": "shellscript",
     ".azure": "shellscript",
     "aliases": "shellscript",
     "helmfile.yaml": "helm",

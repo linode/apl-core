@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="msapplication-TileColor" content="#ffc40d" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="Index for cluster k8s-dev.aks.redkubes.net" />
+    <meta name="description" content="Dashboard for cluster {{ $v.domain }}" />
     <meta name="application-name" content="Otomi" />
     <title>Otomi - All of your apps in the cloud.</title>
     <link type="text/css" rel="stylesheet" href="style.css" />
@@ -36,7 +36,6 @@
         xhr.onload = function(res) {
           if (xhr.readyState === xhr.DONE) {
             if (xhr.status === 200) {
-              console.log(xhr.response);
               var user = xhr.response
               document.getElementsByClassName('admin')[0].innerHTML = user.email
             }
@@ -48,9 +47,20 @@
   </head>
   <body>
     <nav>
+      {{- if $v.isNS }}
+      <a href="/" class="logo-link">
+        <img src="ns_logo_blue.svg" alt="NS logo" class="logo" />
+      </a>
+      {{- end }}
       <div class="env-links">
-        <a href="/" class="active">dev</a> |
-        <a href="/">prod</a>
+        {{- range $i, $c := $v.clusters }}
+        {{- if $i }} | {{ end }}
+        {{- if eq $c.name $v.env }}
+        <a href="javascript:void(0)" class="active"></a>
+        {{- else }}
+        <a href="https://index.{{ $c.host }}">{{ $c.name }}</a>
+        {{- end }}
+        {{- end }}
       </div>
       <div class="user-menu"><span class="admin">Admin</span><img src="user.svg" alt="user icon" /></div>
     </nav>

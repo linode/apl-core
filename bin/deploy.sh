@@ -5,10 +5,7 @@ shopt -s expand_aliases
 
 set -e
 
-ev=${CI_ENVIRONMENT_NAME:-dev}
-suffix="-$ev"
-[ "$ev" == "prd" ] && suffix=""
-cluster="$CLUSTER_PREFIX-$ev"
+cluster="$CLUSTER_PREFIX-$STAGE"
 
 if [ ! -d ~/.kube ]; then
   echo "Creating kube config"
@@ -18,5 +15,4 @@ if [ ! -d ~/.kube ]; then
 fi
 
 kcu $cluster
-k apply -f k8s/base --recursive
-hf -e $ev apply --concurrency=1 --skip-deps
+hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps

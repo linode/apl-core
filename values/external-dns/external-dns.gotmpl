@@ -1,6 +1,8 @@
 {{- $v := .Environment.Values }}
-{{- $g := $v.google }}
-{{- $dns := index $v "external-dns" }}
+{{- $dns := $v | get "external-dns" }}
+{{- $google := $v | get "google" dict }}
+{{- $aws := $v | get "aws" dict }}
+{{- $azure := $v | get "azure" dict }}
 image:
   tag: 0.5.15-debian-9-r1
 sources:
@@ -11,14 +13,21 @@ sources:
 
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 ##
-provider: {{ $dns | getOrNil "provider" | default "google" }}
+provider: {{ $v.provider }}
+{{- if eq $v.provider "google" }}
 google:
-  project: {{ $g.projectId }}
+  project: {{ $google.projectId }}
   serviceAccountKey: |
-    {{- $v | getOrNil "google.cloudDns.key" | nindent 4 }}
-
-domainFilters: ["{{ $g.cloudDns.domain }}"]
-zoneIdFilters: ["{{ $g.cloudDns.zone }}"]
+    {{- $google.cloudDnsKey | nindent 4 }}
+{{- end }}    
+{{- if eq $v.provider "azure" }}
+azure:
+  {{- $dns.azure | toYaml | nindent 2 }}
+  tenantId: {{ $azure.tenantId }}
+  subscriptionId: {{ $azure.subscriptionId }}
+{{- end }}  
+domainFilters: ["{{ $v.cloudDns.domain }}"]
+zoneIdFilters: ["{{ $v.cloudDns.zone }}"]
 annotationFilter: ""
 dryRun: false
 crd:

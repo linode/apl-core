@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ template "cert-manager.name" . }}
     app.kubernetes.io/name: {{ template "cert-manager.name" . }}
-    app.kubernetes.io/instance:  {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ template "cert-manager.chart" . }}
 spec:
@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app: {{ template "cert-manager.name" . }}
       app.kubernetes.io/name: {{ template "cert-manager.name" . }}
-      app.kubernetes.io/instance:  {{ .Release.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- with .Values.strategy }}
   strategy:
@@ -26,7 +26,7 @@ spec:
       labels:
         app: {{ template "cert-manager.name" . }}
         app.kubernetes.io/name: {{ template "cert-manager.name" . }}
-        app.kubernetes.io/instance:  {{ .Release.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         helm.sh/chart: {{ template "cert-manager.chart" . }}
 {{- if .Values.podLabels }}
@@ -78,12 +78,6 @@ spec:
           {{- if .defaultIssuerGroup }}
           - --default-issuer-group={{ .defaultIssuerGroup }}
           {{- end }}
-          {{- if .defaultACMEChallengeType }}
-          - --default-acme-issuer-challenge-type={{ .defaultACMEChallengeType }}
-          {{- end }}
-          {{- if .defaultACMEDNS01ChallengeProvider }}
-          - --default-acme-issuer-dns01-provider-name={{ .defaultACMEDNS01ChallengeProvider }}
-          {{- end }}
           {{- end }}
           - --webhook-namespace=$(POD_NAMESPACE)
           - --webhook-ca-secret={{ include "webhook.rootCACertificate" . }}
@@ -91,6 +85,7 @@ spec:
           - --webhook-dns-names={{ include "webhook.fullname" . }},{{ include "webhook.fullname" . }}.{{ .Release.Namespace }},{{ include "webhook.fullname" . }}.{{ .Release.Namespace }}.svc
           ports:
           - containerPort: 9402
+            protocol: TCP
           env:
           - name: POD_NAMESPACE
             valueFrom:

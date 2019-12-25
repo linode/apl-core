@@ -1,9 +1,11 @@
 {{ $v := .Environment.Values }}
 {{- $host := printf "index.%s" $v.domain }}
+{{ $v.index | toYaml }}
+fullnameOverride: index
 service:
   type: ClusterIP
 clusters: {{ $v.clusters | toYaml | nindent 2 }}  
-env: {{ .Environment.Name }}   
+env: {{ $v.stage }}   
 domain: {{ $v.domain }}
 services: {{ $v.services | toYaml | nindent 2 }}
 sites: {{ $v.sites | toYaml | nindent 2 }}

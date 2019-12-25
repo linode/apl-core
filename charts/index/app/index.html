@@ -30,7 +30,6 @@
         var req = new XMLHttpRequest()
         req.open('GET', 'https://auth.k8s-dev.otomi.cloud/oauth2/token', true)
         req.onload = function(res) {
-          console.log('resp:', res.text)
           var user = xhr.response
           document.getElementsByClassName('admin')[0].innerHTML = user.email
         }

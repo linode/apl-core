@@ -1,4 +1,0 @@
-description: Chart for team namespace resources
-engine: gotpl
-name: customer-ns
-version: 0.1.0

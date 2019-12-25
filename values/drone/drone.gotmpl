@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $host := printf "drone.%s" $v.domain }}
+fullnameOverride: drone
+sharedSecret: zumsecreetz
 images:
   server:
     tag: 1.0.1
@@ -21,7 +23,7 @@ server:
     DRONE_LOGS_COLOR: true
     DRONE_PROMETHEUS_AUTH_TOKEN: 
     DRONE_RPC_PROTO: http
-    DRONE_RPC_HOST: drone-drone.system
+    DRONE_RPC_HOST: drone.system
     DRONE_RPC_DEBUG: true
     DRONE_ORGS: redkubes
     DRONE_REPOSITORY_FILTER: redkubes

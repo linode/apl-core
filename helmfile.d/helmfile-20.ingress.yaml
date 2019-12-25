@@ -26,6 +26,18 @@ releases:
     installed: false
     namespace: ingress
     <<: *default
+  - name: ingress-azure
+    installed: true
+    namespace: ingress
+    <<: *default
+  - name: ingress-azure-artifacts
+    installed: true
+    namespace: ingress
+    chart: ../charts/raw
+    labels:
+      pkg: ingress-azure
+    values:
+    - ../values/ingress-azure/raw.gotmpl
   - name: nginx-ingress
     installed: true
     namespace: ingress

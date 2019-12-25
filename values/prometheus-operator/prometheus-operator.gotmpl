@@ -1,8 +1,10 @@
 {{- $v := .Environment.Values }}
-{{- $o := $v.oidc }}
+{{- $p := $v | get "prometheus-operator" }}
 {{ $promHost := printf "prometheus.%s" $v.domain }}
 {{ $alertsHost := printf "alertmanager.%s" $v.domain }}
 {{ $grafanaHost := printf "grafana.%s" $v.domain }}
+nameOverride: po
+fullnameOverride: po
 global:
   rbac:
     pspEnabled: false
@@ -69,12 +71,12 @@ alertmanager:
     # logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
   config:
     global:
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: {{ $p.alertmanager.slackUrl }}
     route:
       receiver: default
       group_by: [alertname] #alertname
-      group_interval: {{ $v.alertmanager.groupInterval }}
-      repeat_interval: {{ $v.alertmanager.repeatInterval }}
+      group_interval: {{ $p.alertmanager.groupInterval }}
+      repeat_interval: {{ $p.alertmanager.repeatInterval }}
       routes:
         - match:
             alertname: Watchdog
@@ -86,11 +88,11 @@ alertmanager:
       - name: "null"
       - name: default
         slack_configs:
-          - channel: "#mon-k8s"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.provider }}-{{ $v.stage }}"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
       - name: critical
         slack_configs:
-          - channel: "#mon-k8s-crit"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.provider }}-{{ $v.stage }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
 grafana:
   rbac:
@@ -127,31 +129,6 @@ grafana:
       allow_sign_up: false
       auto_assign_org: true
       auto_assign_org_role: Admin
-    "auth.proxy":
-      enabled: false
-      header_name: X-Forwarded-Email
-      header_property: email
-      # headers: Name:X-Forwarded-User Email:X-Forwarded-Email Groups:X-Forwarded-Groups
-    "auth.github":
-      enabled: true
-      allow_sign_up: true
-      client_id: {{ $o.clientID }}
-      client_secret: {{ $o.clientSecret }}
-      scopes: user:email,read:org
-      auth_url: https://github.com/login/oauth/authorize
-      token_url: https://github.com/login/oauth/access_token
-      api_url: https://api.github.com/user
-      # team_ids: admins
-      allowed_organizations: redkubes
-  #   "auth.generic_oauth":
-  #     enabled: true
-  #     name: OAuth
-  #     allow_sign_up: true
-  #     client_id: {{ $v.oidc.grafana.clientId }}
-  #     client_secret: {{ $v.oidc.grafana.clientSecret }}
-  #     auth_url: https://auth.{{ $v.domain }}/oauth2/authorize
-  #     token_url: https://auth.{{ $v.domain }}/oauth2/token
-  #     scopes: openid email groups
 
 commonLabels: {{ toYaml $v.customerLabels | nindent 2 }}
 kube-state-metrics:

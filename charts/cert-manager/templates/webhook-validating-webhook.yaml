@@ -6,13 +6,11 @@ metadata:
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
-    app.kubernetes.io/instance:  {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "webhook.chart" . }}
   annotations:
-{{- if .Values.webhook.injectAPIServerCA }}
-    cert-manager.io/inject-apiserver-ca: "true"
-{{- end }}
+    cert-manager.io/inject-ca-from-secret: "{{ .Release.Namespace }}/{{ include "webhook.servingCertificate" . }}"
 webhooks:
   - name: webhook.cert-manager.io
     namespaceSelector:
@@ -28,21 +26,19 @@ webhooks:
     rules:
       - apiGroups:
           - "cert-manager.io"
+          - "acme.cert-manager.io"
         apiVersions:
           - v1alpha2
         operations:
           - CREATE
           - UPDATE
         resources:
-          - certificates
-          - issuers
-          - clusterissuers
-          - certificaterequests
+          - "*/*"
     failurePolicy: Fail
     sideEffects: None
     clientConfig:
       service:
-        name: kubernetes
-        namespace: default
-        path: /apis/webhook.cert-manager.io/v1beta1/validations
+        name: {{ include "webhook.fullname" . }}
+        namespace: {{ .Release.Namespace | quote }}
+        path: /mutate
 {{- end -}}
