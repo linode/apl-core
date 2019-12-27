@@ -3,7 +3,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-  auth_enabled: false
+  auth_enabled: true
   ingester:
     chunk_idle_period: 15m
     chunk_block_size: 262144
@@ -38,11 +38,8 @@ config:
     retention_deletes_enabled: false
     retention_period: 0
 
-image:
-  tag: v0.1.0
-
 networkPolicy:
-  enabled: true
+  enabled: false
 
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 ## If you set enabled as "True", you need :
@@ -69,22 +66,61 @@ resources: {}
 fullnameOverride: loki
 
 promtail:
-  serviceName: "promtail"
+  serviceName: promtail
 
-livenessProbe:
-  httpGet: null
-  exec:
-    command:
-      - /bin/sh
-      - -c
-      - cat /dev/null | nc 127.0.0.1 3100
-readinessProbe:
-  httpGet: null
-  exec:
-    command:
-      - /bin/sh
-      - -c
-      - cat /dev/null | nc 127.0.0.1 3100
-      # - /bin/sh
-      # - -c
-      # - wget -O- http://127.0.0.1:3100/ready  
+# livenessProbe:
+#   httpGet: null
+#   exec:
+#     command:
+#       - /bin/sh
+#       - -c
+#       - cat /dev/null | nc 127.0.0.1 3100
+# readinessProbe:
+#   httpGet: null
+#   exec:
+#     command:
+#       - /bin/sh
+#       - -c
+#       - cat /dev/null | nc 127.0.0.1 3100
+#       # - /bin/sh
+#       # - -c
+#       # - wget -O- http://127.0.0.1:3100/ready  
+
+extraContainers:
+# Additional containers to be added to the loki pod.
+- name: reverse-proxy
+  image: angelbarrera92/basic-auth-reverse-proxy:dev
+  args:
+    - "serve"
+    - "--upstream=http://localhost:3100"
+    - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
+  ports:
+    - name: http
+      containerPort: 11811
+      protocol: TCP
+  volumeMounts:
+    - name: reverse-proxy-auth-config
+      mountPath: /etc/reverse-proxy-conf
+
+
+extraVolumes:
+## Additional volumes to the loki pod.
+- name: reverse-proxy-auth-config
+  secret:
+    secretName: reverse-proxy-auth-config
+
+## Extra volume mounts that will be added to the loki container
+extraVolumeMounts: []
+
+extraPorts:
+# Additional ports to the loki services. Useful to expose extra container ports.
+- port: 11811
+  protocol: TCP
+  name: http
+  targetPort: http
+
+serviceMonitor:
+  enabled: true
+
+extraArgs:
+  # log.level: debug

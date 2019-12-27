@@ -8,7 +8,7 @@ templates:
     kind: Ingress
     metadata:
       name: appgw-ingress-{{ $s.name }}
-      namespace: ingress
+      namespace: {{ if $s | getOrNil "isAuthProxy" }}istio-system{{ else }}ingress{{ end }}
       annotations:
         kubernetes.io/ingress.class: azure/application-gateway
         appgw.ingress.kubernetes.io/ssl-redirect: "true"
@@ -23,7 +23,7 @@ templates:
           http:
             paths:
               - backend:
-                  serviceName: nginx-ingress-controller
+                  serviceName: {{ if $s | getOrNil "isAuthProxy" }}oauth2-proxy{{ else }}nginx-ingress-controller{{ end }}
                   servicePort: 80
   {{- end }}
   {{- end }}

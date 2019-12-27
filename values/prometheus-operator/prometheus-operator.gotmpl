@@ -95,6 +95,8 @@ alertmanager:
           - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.provider }}-{{ $v.stage }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
 grafana:
+  nameOverride: po-grafana
+  fullnameOverride: po-grafana
   rbac:
     pspUseAppArmor: false
     pspEnabled: false

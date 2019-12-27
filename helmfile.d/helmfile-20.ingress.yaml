@@ -1,7 +1,8 @@
 bases:
   - snippets/defaults.yaml
-
+---
 {{ readFile "snippets/templates.yaml" }}
+{{- $v := .Environment.Values }}
 
 releases:
   - name: cert-manager
@@ -17,7 +18,7 @@ releases:
     labels:
       tag: cert-manager
     values:
-    - ../values/cert-manager/raw.gotmpl
+    - ../values/cert-manager/cert-manager-raw.gotmpl
   - name: external-dns
     installed: true
     namespace: ingress
@@ -27,17 +28,17 @@ releases:
     namespace: ingress
     <<: *default
   - name: ingress-azure
-    installed: true
+    installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
     namespace: ingress
     <<: *default
   - name: ingress-azure-artifacts
-    installed: true
+    installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
     namespace: ingress
     chart: ../charts/raw
     labels:
       pkg: ingress-azure
     values:
-    - ../values/ingress-azure/raw.gotmpl
+    - ../values/ingress-azure/ingress-azure-raw.gotmpl
   - name: nginx-ingress
     installed: true
     namespace: ingress
@@ -51,7 +52,7 @@ releases:
     labels:
       tag: ingress
     values:
-    - ../values/nginx-ingress/raw.gotmpl
+    - ../values/nginx-ingress/nginx-ingress-raw.gotmpl
   - name: oauth2-proxy
     installed: true
     namespace: istio-system

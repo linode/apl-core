@@ -1,0 +1,12 @@
+{{- $g := .Environment.Values }}
+{{- $v := index $g "loki" }}
+templates:
+  - |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: loki
+      name: reverse-proxy-auth-config
+    data:
+      authn.yaml: {{ toYaml $v.authConfig | b64enc }}

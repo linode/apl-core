@@ -76,7 +76,7 @@
       <h2>Apps <span>({{ $v.services | len }})</span></h2>
       <div class="grid">
         {{- range $s := $v.services }}
-        {{- if and (ne $s.name "index") (not (hasKey $s "private")) }}
+        {{- if ne $s.name "index" }}
         <div class="col-3">
           <a href='https://{{ $s.host | default $s.name }}{{ $v.interpunct }}{{ $v.domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
             <div class="img-wrapper">

@@ -4,9 +4,9 @@ bases:
 releases:
   - name: team-services
     installed: true
-    namespace: system # only for the chart, all resources are namespaced elsewhere in raw.gotmpl
+    namespace: system # only for the chart, all resources are namespaced elsewhere in teams-raw.gotmpl
     chart: ../charts/raw
     labels:
       tag: teams
     values:
-      - ../values/teams/raw.gotmpl
+      - ../values/teams/teams-raw.gotmpl

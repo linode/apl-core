@@ -21,8 +21,9 @@ tracing:
 config:
   auth_enabled: false
   ingester:
-    chunk_idle_period: 15m
+    chunk_idle_period: 3m
     chunk_block_size: 262144
+    chunk_retain_period: 1m
     lifecycler:
       ring:
         kvstore:
@@ -61,12 +62,12 @@ config:
   chunk_store_config:
     max_look_back_period: 0
   table_manager:
-    retention_deletes_enabled: true
+    retention_deletes_enabled: false
     retention_period: 0
 
 image:
   repository: grafana/loki
-  tag: v0.1.0
+  tag: v1.2.0
   pullPolicy: IfNotPresent
 
 ## Additional Loki container arguments, e.g. log level (debug, info, warn, error)
@@ -79,14 +80,18 @@ livenessProbe:
     port: http-metrics
   initialDelaySeconds: 45
 
-## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
 networkPolicy:
   enabled: false
 
-## ref: https://kubernetes.io/docs/user-guide/node-selection/
+## The app name of loki clients
+client: {}
+  # name:
+
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
 
-## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 ## If you set enabled as "True", you need :
 ## - create a pv which above 10Gi and has same namespace with loki
 ## - keep storageClassName same with below setting
@@ -95,7 +100,6 @@ persistence:
   accessModes:
   - ReadWriteOnce
   size: 10Gi
-  storageClassName: default
   annotations: {}
   # subPath: ""
   # existingClaim:
@@ -149,8 +153,9 @@ service:
 serviceAccount:
   create: true
   name:
+  annotations: {}
 
-terminationGracePeriodSeconds: 30
+terminationGracePeriodSeconds: 4800
 
 ## Tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -164,3 +169,51 @@ podDisruptionBudget: {}
 
 updateStrategy:
   type: RollingUpdate
+
+serviceMonitor:
+  enabled: false
+  interval: ""
+  additionalLabels: {}
+  # scrapeTimeout: 10s
+
+initContainers: []
+## Init containers to be added to the loki pod.
+# - name: my-init-container
+#   image: busybox:latest
+#   command: ['sh', '-c', 'echo hello']
+
+extraContainers: []
+## Additional containers to be added to the loki pod.
+# - name: reverse-proxy
+#   image: angelbarrera92/basic-auth-reverse-proxy:dev
+#   args:
+#     - "serve"
+#     - "--upstream=http://localhost:3100"
+#     - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
+#   ports:
+#     - name: http
+#       containerPort: 11811
+#       protocol: TCP
+#   volumeMounts:
+#     - name: reverse-proxy-auth-config
+#       mountPath: /etc/reverse-proxy-conf
+
+
+extraVolumes: []
+## Additional volumes to the loki pod.
+# - name: reverse-proxy-auth-config
+#   secret:
+#     secretName: reverse-proxy-auth-config
+
+## Extra volume mounts that will be added to the loki container
+extraVolumeMounts: []
+
+extraPorts: []
+## Additional ports to the loki services. Useful to expose extra container ports.
+# - port: 11811
+#   protocol: TCP
+#   name: http
+#   targetPort: http
+
+# Extra env variables to pass to the loki container
+env: []

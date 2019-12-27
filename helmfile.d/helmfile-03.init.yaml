@@ -17,3 +17,11 @@ releases:
     labels:
       init: true
     <<: *skeleton
+  - name: loki-artifacts
+    installed: true
+    namespace: monitoring
+    chart: ../charts/raw
+    labels:
+      pkg: loki
+    values:
+    - ../values/loki/loki-raw.gotmpl

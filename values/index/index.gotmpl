@@ -7,5 +7,10 @@ service:
 clusters: {{ $v.clusters | toYaml | nindent 2 }}  
 env: {{ $v.stage }}   
 domain: {{ $v.domain }}
-services: {{ $v.services | toYaml | nindent 2 }}
+services:
+  {{- range $s := $v.services }}
+  {{- if and (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+  - {{ $s | toYaml | nindent 4 }}
+  {{- end }}
+  {{- end }}
 sites: {{ $v.sites | toYaml | nindent 2 }}

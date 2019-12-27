@@ -42,7 +42,8 @@ templates:
   #       kind: ClusterIssuer
   #       name: letsencrypt-{{ $cm.stage }}
   {{- range $s := $services }}
-  {{- if not ($s | getOrNil "private") }}
+  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) (not ($s | getOrNil "isAuthProxy")) }}
+  {{- if eq $v.provider "azure" }}
   - |
     apiVersion: extensions/v1beta1
     kind: Ingress
@@ -68,6 +69,7 @@ templates:
               - backend:
                   serviceName: istio-ingressgateway
                   servicePort: 80
+{{- end }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService

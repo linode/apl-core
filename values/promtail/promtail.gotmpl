@@ -1,6 +1,4 @@
-image:
-  tag: v0.1.0
-
+{{- $t := readFile "../teams.yaml" | fromYaml }}
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 
@@ -19,5 +17,29 @@ securityContext:
   runAsGroup: 0
   runAsUser: 0
 
+serviceMonitor:
+  enabled: true
+
 podAnnotations:
   sidecar.istio.io/inject: "false"
+
+pipelineStages:
+  - docker: {}
+  - tenant:
+      value: admins
+  - json:
+      expressions:
+        namespace:
+  - labels:
+      namespace:
+  {{- range $team := $t.teams }}
+  - match:
+      selector: '{namespace="team-{{ $team.name }}"}'
+      stages:
+        - tenant:
+            value: {{ $team.name }}
+  {{- end }}
+
+# config:
+#   server:
+#     log.level: debug      
