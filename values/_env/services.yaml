@@ -15,15 +15,16 @@ services:
   - name: auth
     svc: oauth2-proxy
     namespace: istio-system
+    isAuthProxy: true
   - name: index
-    svc: index-index
+    svc: index
     namespace: system
-  - name: dashboard
-    svc: kubernetes-dashboard
-    namespace: kube-system
-    mtls:
-      policyMode: permissive
-      gatewayDisabled: true
+  # - name: dashboard
+  #   svc: kubernetes-dashboard
+  #   namespace: kube-system
+  #   mtls:
+  #     policyMode: permissive
+  #     gatewayDisabled: true
   - name: loki-private
     svc: loki-headless
     namespace: monitoring

@@ -1,12 +1,12 @@
 {{- $v := .Environment.Values }}
-{{- $dns := $v | get "external-dns" }}
+{{- $dns := $v | get "external-dns" dict }}
 {{- $google := $v | get "google" dict }}
 {{- $aws := $v | get "aws" dict }}
 {{- $azure := $v | get "azure" dict }}
 image:
   tag: 0.5.15-debian-9-r1
 sources:
-# - service
+- service
 - ingress
 # - istio-gateway
 # - crd

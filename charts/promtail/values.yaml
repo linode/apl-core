@@ -8,7 +8,7 @@ deploymentStrategy: RollingUpdate
 
 image:
   repository: grafana/promtail
-  tag: v0.1.0
+  tag: v1.2.0
   pullPolicy: IfNotPresent
 
 livenessProbe: {}
@@ -23,7 +23,7 @@ loki:
 nameOverride: promtail
 
 ## Node labels for pod assignment
-## ref: https://kubernetes.io/docs/user-guide/node-selection/
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
 
 pipelineStages:
@@ -64,6 +64,9 @@ resources: {}
 # Custom scrape_configs to override the default ones in the configmap
 scrapeConfigs: []
 
+# Custom scrape_configs together with the default ones in the configmap
+extraScrapeConfigs: []
+
 securityContext:
   readOnlyRootFilesystem: true
   runAsGroup: 0
@@ -77,6 +80,7 @@ serviceAccount:
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations:
 - key: node-role.kubernetes.io/master
+  operator: Exists
   effect: NoSchedule
 
 # Extra volumes to scrape logs from
@@ -112,7 +116,7 @@ config:
       # Maximum backoff time between retries
       maxbackoff: 5s
       # Maximum number of retries when sending batches, 0 means infinite retries
-      maxretries: 5
+      maxretries: 20
 
     # The labels to add to any time series or alerts when communicating with loki
     external_labels: {}
@@ -124,3 +128,9 @@ config:
   target_config:
     # Period to resync directories being watched and files being tailed
     sync_period: 10s
+
+serviceMonitor:
+  enabled: false
+  interval: ""
+  additionalLabels: {}
+  # scrapeTimeout: 10s

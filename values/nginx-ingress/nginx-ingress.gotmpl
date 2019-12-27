@@ -1,10 +1,15 @@
 {{- $v := .Environment.Values }}
 rbac:
   create: true
+defaultBackend:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 controller:
-  minAvailable: 2
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+  minAvailable: 1
   autoscaling:
-    enabled: true
+    enabled: false
     minReplicas: 2
     maxReplicas: 12
     targetCPUUtilizationPercentage: 80
@@ -18,8 +23,8 @@ controller:
     disable-ipv6: "true"
     client-body-timeout: 5s
     client-header-timeout: 5s
-    enable-modsecurity: "true"
-    enable-owasp-modsecurity-crs: "true"
+    # enable-modsecurity: "true"
+    # enable-owasp-modsecurity-crs: "true"
     proxy-buffers-number: 8 16k
     proxy-buffer-size: 16k
   stats:
@@ -33,4 +38,4 @@ controller:
   service:
     type: {{ if $v.hasCloudLB }}ClusterIP{{ else }}LoadBalancer{{ end }}
   publishService:
-    enabled: true
+    enabled: {{ if $v.hasCloudLB }}false{{ else }}true{{ end }}

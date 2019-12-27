@@ -7,4 +7,4 @@ releases:
   #   namespace: kube-system
   #   chart: ../charts/raw
   #   values:
-  #   - ../values/cloud/raw.gotmpl
+  #   - ../values/cloud/cloud-raw.gotmpl

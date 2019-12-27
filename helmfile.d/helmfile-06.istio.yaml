@@ -11,4 +11,4 @@ releases:
       pkg: istio-operator
     chart: ../charts/raw
     values:
-    - ../values/istio-operator/raw.gotmpl
+    - ../values/istio-operator/istio-operator-raw.gotmpl

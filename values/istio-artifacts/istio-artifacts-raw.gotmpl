@@ -28,7 +28,7 @@ templates:
       #     mode: SIMPLE
       #     credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
-  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
+  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) (not ($s | getOrNil "isAuthProxy")) }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService

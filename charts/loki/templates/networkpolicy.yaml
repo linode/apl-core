@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ template "loki.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "loki.name" . }}
     chart: {{ template "loki.chart" . }}
@@ -18,7 +19,7 @@ spec:
     - from:
       - podSelector:
           matchLabels:
-            app: {{ template "promtail.name" . }}
+            app: {{ template "client.name" . }}
             release: {{ .Release.Name }}
     - ports:
       - port: {{ .Values.service.port }}

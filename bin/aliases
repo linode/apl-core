@@ -84,4 +84,8 @@ function kkk() {
 }
 
 function hfd() { kcu ${CLUSTER_PREFIX}-dev && hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }
+function hfgd() { kcu ${CLUSTER_PREFIX}-dev && hf -e google-dev $@ --concurrency=1 --skip-deps; }
+function hfad() { kcu ${CLUSTER_PREFIX}-dev && hf -e azure-dev $@ --concurrency=1 --skip-deps; }
+function hfwd() { kcu ${CLUSTER_PREFIX}-dev && hf -e aws-dev $@ --concurrency=1 --skip-deps; }
+
 # function hfp() { kcu ${CLUSTER_PREFIX}-prd && hf -e ${CLOUD}-prd $@ --concurrency=1 --skip-deps; }
