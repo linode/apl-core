@@ -42,7 +42,6 @@ templates:
             dns01:
               {{- index $cm.provider $provider | toYaml | nindent 14 }}
   {{- end }}
-  {{- range $ns := list "ingress" "istio-system" }}
   - |
     apiVersion: cert-manager.io/v1alpha2
     kind: Certificate
@@ -50,7 +49,7 @@ templates:
       name: letsencrypt-{{ $cm.stage }}-k8s
       # Istio certs secret lives in the istio-system namespace, and
       # a cert-manager Certificate is namespace-scoped.
-      namespace: {{ $ns }}
+      namespace: istio-system
     spec:
       # Reference to the Istio default cert secret.
       secretName: letsencrypt-{{ $cm.stage }}-k8s
@@ -76,4 +75,3 @@ templates:
       issuerRef:
         kind: ClusterIssuer
         name: letsencrypt-{{ $cm.stage }}
-  {{- end }}

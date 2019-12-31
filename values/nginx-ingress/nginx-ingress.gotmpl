@@ -3,10 +3,14 @@ rbac:
   create: true
 defaultBackend:
   podAnnotations:
-    sidecar.istio.io/inject: "false"
+    sidecar.istio.io/inject: "false" # {{ if $v.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+{{- if eq $v.provider "azure" }}
+  nodeSelector: 
+    beta.kubernetes.io/os: linux
+{{- end }}    
 controller:
   podAnnotations:
-    sidecar.istio.io/inject: "false"
+    sidecar.istio.io/inject: "false" # {{ if $v.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   minAvailable: 1
   autoscaling:
     enabled: false
@@ -14,6 +18,10 @@ controller:
     maxReplicas: 12
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
+{{- if eq $v.provider "azure" }}
+  nodeSelector: 
+    beta.kubernetes.io/os: linux
+{{- end }}    
   extraArgs:
     v: 3
     # enable-ssl-passthrough: "true"
@@ -37,5 +45,9 @@ controller:
         release: prometheus-operator
   service:
     type: {{ if $v.hasCloudLB }}ClusterIP{{ else }}LoadBalancer{{ end }}
+    # {{- if eq $v.provider "azure" }}
+    # annotations:
+    #   external-dns.alpha.kubernetes.io/hostname: "*.{{ $v.domain }}"
+    # {{- end }}
   publishService:
-    enabled: {{ if $v.hasCloudLB }}false{{ else }}true{{ end }}
+    enabled: true

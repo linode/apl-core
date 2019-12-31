@@ -8,6 +8,7 @@ image:
 sources:
 - service
 - ingress
+
 # - istio-gateway
 # - crd
 
@@ -28,7 +29,7 @@ azure:
 {{- end }}  
 domainFilters: ["{{ $v.cloudDns.domain }}"]
 zoneIdFilters: ["{{ $v.cloudDns.zone }}"]
-annotationFilter: ""
+annotationFilter: "{{ if and (eq $v.provider "azure") $v.hasCloudLB }}provider=azure{{ end }}"
 dryRun: false
 crd:
   create: false

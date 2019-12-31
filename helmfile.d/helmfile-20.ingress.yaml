@@ -30,13 +30,15 @@ releases:
   - name: ingress-azure
     installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
     namespace: ingress
+    labels:
+      tag: ingress
     <<: *default
   - name: ingress-azure-artifacts
     installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
     namespace: ingress
     chart: ../charts/raw
     labels:
-      pkg: ingress-azure
+      tag: ingress
     values:
     - ../values/ingress-azure/ingress-azure-raw.gotmpl
   - name: nginx-ingress
