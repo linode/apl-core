@@ -24,7 +24,7 @@ templates:
           http:
             paths:
               - backend:
-                  serviceName: {{ if $s | getOrNil "isAuthProxy" }}oauth2-proxy{{ else }}nginx-ingress-controller{{ end }}
+                  serviceName: nginx-ingress-controller
                   servicePort: 80
   {{- end }}
   {{- end }}
