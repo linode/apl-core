@@ -45,17 +45,8 @@ templates:
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/configuration-snippet: |
-          auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-
-          access_by_lua_block {
-            if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-              ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-            end
-          }
-        nginx.ingress.kubernetes.io/configuration-snippet: |
+          # rewrite auth redirects to original hosts
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          proxy_set_header Host auth.{{ $v.domain }};
       labels:
         app: auth
         release: gateway

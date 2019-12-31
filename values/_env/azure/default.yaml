@@ -1,5 +1,6 @@
 provider: azure
 hasCloudLB: true
+publicIngressClass: '"azure/application-gateway"'
 clusters:
   - name: dev
     host: k8s-dev.aks.redkubes.net
@@ -23,6 +24,7 @@ cloudDns:
   zone: aks.redkubes.net
 
 cert-manager:
+  stage: "production"
   provider:
     azure:
       azuredns:

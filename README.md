@@ -4,18 +4,21 @@ Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box 
 
 All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which services will be synced.
 
-Click here to open the [index of the system services](https://index-dev.k8s.otomi.cloud).
+Click here to open the [index of the system services](https://index.k8s-dev.otomi.cloud).
 
-It is strongly advised to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases](bin/aliases) to understand what the commands in this readme do.
+It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases](bin/aliases) to understand what the commands in this readme do.
 
 This readme has the following index:
 
-1. [Prerequisites](#1-prerequisites)
-2. [Development](#2-development)
-3. [Operation](#3-operation)
-4. [Troubleshooting](#4-troubleshooting)
+1. [Prerequisites for installation](#1-prerequisites-for-installation)
+2. [Installation](#3-intallation)
+3. [Development](#2-development)
+4. [Operation](#3-operation)
+5. [Troubleshooting](#4-troubleshooting)
 
-## 1. Prerequisites
+## 1. Prerequisites for installation
+
+It is imperative to know the functioning of [helm](https://helm.sh) and [helmfile](https://github.com/roboll/helmfile). Please read about both beforehand. They both use Go templating and make use of the [Sprig template functions](http://masterminds.github.io/sprig/).
 
 Before listing the hard requirements I would like to offer some really helpful tools:
 
@@ -24,14 +27,31 @@ Before listing the hard requirements I would like to offer some really helpful t
 
 ### 1.1 Working k8s cluster
 
-Admin accessible k8s clusters as listed in KUBECONFIG (defaults to `~/.kube/config`). These clusters are bootstrapped with KOPS (see [redkubes/kops-(gcp|aws)-iaas](https://github.com/redkubes/kops-gce-iaas)).
-For convenience we have added `bin/create-gke-cluster.sh` to boot the Otomi GKE cluster.
+Admin accessible k8s cluster(s). For convenience we have added `bin/create-gke-cluster.sh` to create a k8s cluster in GKE.
 
-### 1.2 Otomi Github deployment
+### 1.2 Configured .env
 
-To enable CI/CD deployment from within github actions, for each cluster (DEV|TST|ACC|PRD):
+This monorepo is tergeting the cluster(s) as described in the `.(azure|google|aws)` files. Please register your target clusters there.
 
-1. Create and retrieve a token:
+### 1.3 Configured values
+
+Please look at the `values/_env/**` files and configure as needed for your target clusters.
+
+## 2. Installation
+
+The first time install must be done for each configured cloud and cluster like this:
+
+```bash
+export CLOUD=(azure|google|aws) && export STAGE=(dev|demo|prd) && bin/deploy.sh
+```
+
+It should install and start all the services in this repo.
+
+### 2.1 (Optional) CI/CD deployment
+
+After initial deployment, to enable Continuous Deployment of this repo (i.e. from within GitLab), for each cluster (DEV|TST|ACC|PRD):
+
+Create and retrieve a token:
 
 ```bash
 # to create the ci-deploy ServiceAccount:
@@ -43,29 +63,33 @@ TOKEN=$(k -n system get secret $SECRET_NAME -o json | jq -r .data.token)
 echo $TOKEN | pbcopy
 ```
 
-2. Create an environment variable `KUBE_TOKEN_(DEV|TST|ACC|PRD)` in Settings > CI/CD with the \$TOKEN content
+Create an environment variable `KUBE_TOKEN_(DEV|TST|ACC|PRD)` in GitLab Settings > CI/CD with the \$TOKEN content.
 
-This has all been done and this documentation serves only as reference for when we need to create a cluster from scratch.
+This should only happen when we need to create a cluster from scratch.
 
-It is also possible to run a local gitlab runner, and that is explained in the **Development** section below, as it is only needed when editing `.gitlab-ci.yml`, but that is highly unlikely.
+Please look at `.gitlab-ci.yml` to see how simple the pipelines are.
 
-### 1.3 Manual Deployment
+### 2.2 Manual Deployment
 
-It is possible to deploy the stack to any cluster directly through helmfile, but this is meant for dev clusters only.
-To be able to deploy manually, ask for a kube config from seniors, and put it in `~/.kube/config`.
+After initial deployment, it is possible to deploy (parts of) the stack to any cluster directly through helmfile, but this is meant for dev clusters only.
+To be able to deploy manually, you should have the right credentials and access rights in .kube/config.
 Deployment is preferably done by using the aliases:
 
 ```bash
-# use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see aliases!)
+# target the cloud you wish you deploy to and load the aliases
+export CLOUD=(azure|google|aws) && . bin/aliases
+# use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see `bin/aliases`)
 hfd apply|diff|template
 # or target a single chart:
 hfd -l name=index apply
+# or target a single chart in debug mode, while excluding cruft from other helmfiles:
+hfd --log-level=debug -f helmfile.d/helmfile-30.system.yaml -l name=index apply
 ```
 
 ## 2. Development
 
 The helmfiles are found in `helmfile.d/` and their values under `values/**`.
-Custom charts are found in the `charts/custom` folder.
+The charts are found in the `charts/custom` folder. These charts can be exact copies from their online counterparts (see their `Chart.yaml`), or contain slight modifications/adaptations. The only real explicit one is `chart/index` which is an adaption of `bitnami/nginx` to hold our custom index page listing all the accessible services in this repo.
 
 ### Helm charts & helmfiles
 
