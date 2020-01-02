@@ -1,4 +1,8 @@
-customerLabels: {{ toYaml .Environment.Values.customerLabels | nindent 2 }}
+{{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+domain: {{ $domain }}
+customerLabels: {{ toYaml $v.customerLabels | nindent 2 }}
 istioEnabled: true
 global:
   istioEnabled: true

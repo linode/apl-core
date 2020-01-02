@@ -1,7 +1,9 @@
 {{ $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 global:
   hosts:
-    domain: {{ $v.domain }}
+    domain: {{ $domain }}
     https: true
 
 nodeSelector:

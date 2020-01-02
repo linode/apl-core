@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 rbac:
   create: true
 defaultBackend:
@@ -47,7 +49,7 @@ controller:
     type: {{ if $v.hasCloudLB }}ClusterIP{{ else }}LoadBalancer{{ end }}
     # {{- if eq $v.provider "azure" }}
     # annotations:
-    #   external-dns.alpha.kubernetes.io/hostname: "*.{{ $v.domain }}"
+    #   external-dns.alpha.kubernetes.io/hostname: "*.{{ $domain }}"
     # {{- end }}
   publishService:
     enabled: true

@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $provider := $v.provider }}
 templates:
@@ -65,12 +67,12 @@ templates:
           # need to one for every namespace that Knative is used in.
           # We don't need to use wildcard here, fully-qualified domains
           # will work fine too.
-          - "*.{{ $v.domain }}"
+          - "*.{{ $domain }}"
       # The certificate common name, use one from your domains.
-      commonName: "*.{{ $v.domain }}"
+      commonName: "*.{{ $domain }}"
       dnsNames:
       # Provide same list as `domains` section.
-      - "*.{{ $v.domain }}"
+      - "*.{{ $domain }}"
       # Reference to the ClusterIssuer we created in the previous step.
       issuerRef:
         kind: ClusterIssuer

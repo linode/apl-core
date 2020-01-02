@@ -1,12 +1,5 @@
-provider: google
-clusters:
-  - name: dev
-    host: k8s-dev.otomi.cloud
-  - name: prd
-    host: k8s.otomi.cloud
-
 sites:
-  # - otomi.cloud
+# - otomi.cloud
 
 sitespeed:
   # - host: otomi.cloud
@@ -40,6 +33,12 @@ cert-manager:
         serviceAccountSecretRef:
           name: cloud-dns-key
           key: key.json
+
+drone:
+  sourceControl:
+    github:
+      clientID: 6455ffb30c8e270c402f
+      clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
 
 ingress-azure:
   appgw:

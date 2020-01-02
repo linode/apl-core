@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 templates:
   {{- range $s := $v.services }}
@@ -17,10 +19,10 @@ templates:
     spec:
       tls:
         - hosts:
-            - {{ $s.name }}.{{ $v.domain }}
+            - {{ $s.name }}.{{ $domain }}
           secretName: letsencrypt-{{ $cm.stage }}-k8s
       rules:
-        - host: {{ $s.name }}.{{ $v.domain }}
+        - host: {{ $s.name }}.{{ $domain }}
           http:
             paths:
               - backend:

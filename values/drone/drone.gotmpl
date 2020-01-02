@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
-{{- $host := printf "drone.%s" $v.domain }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $host := printf "drone.%s" $domain }}
 fullnameOverride: drone
 sharedSecret: zumsecreetz
 images:

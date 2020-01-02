@@ -1,6 +1,13 @@
+clusters:
+  azure:
+    host: aks.redkubes.net
+    stages: [dev, demo, prd]
+  google:
+    host: otomi.cloud
+    stages: [dev, demo, prd]
+
 isManaged: true
 hasCloudLB: false
-publicIngressClass: nginx
 emailDomain: redkubes.com
 sites: []
 sitespeed: []
@@ -15,10 +22,6 @@ cert-manager:
 drone:
   server:
     adminUser: Morriz
-  sourceControl:
-    github:
-      clientID: 6455ffb30c8e270c402f
-      clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
 
 index:
   image:

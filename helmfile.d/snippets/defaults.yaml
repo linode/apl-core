@@ -7,15 +7,19 @@ helmDefaults:
   force: false
 
 environments:
-  google-dev:
-    values:
-      - ../values/_env/default.yaml
-      - ../values/_env/services.yaml
-      - ../values/_env/google/default.yaml
-      - ../values/_env/google/dev.yaml
   azure-dev:
     values:
+      - stage: dev
+        provider: azure
       - ../values/_env/default.yaml
       - ../values/_env/services.yaml
       - ../values/_env/azure/default.yaml
       - ../values/_env/azure/dev.yaml
+  google-dev:
+    values:
+      - stage: dev
+        provider: google
+      - ../values/_env/default.yaml
+      - ../values/_env/services.yaml
+      - ../values/_env/google/default.yaml
+      - ../values/_env/google/dev.yaml

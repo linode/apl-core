@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
@@ -8,18 +10,18 @@ image:
 ingress:
   enabled: false
   annotations:
-    {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $v.domain | nindent 4 }}
+    {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 4 }}
     # trick to allow absolute url redirects, see auth-annotations.yaml using it
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
 
   hosts:
-    - auth.{{ $v.domain }}
+    - auth.{{ $domain }}
   path: /oauth2
   tls: 
     - secretName: letsencrypt-{{ $cm.stage }}-k8s
       hosts:
-        - '*.{{ $v.domain }}'
+        - '*.{{ $domain }}'
 
 config:
   # clientID: oidc-auth-client
@@ -34,11 +36,11 @@ extraArgs:
   # provider: oidc
   provider: {{ $o.provider }}
   oidc-issuer-url: {{ $provider | get "issuer" }}
-  whitelist-domain: {{ $v.domain }}
+  whitelist-domain: {{ $domain }}
   scope: {{ $o.scope }}
-  redirect-url: https://auth.{{ $v.domain }}/oauth2/callback
+  redirect-url: https://auth.{{ $domain }}/oauth2/callback
   # email-domain: "*"
-  cookie-domain: {{ $v.domain }}
+  cookie-domain: {{ $domain }}
   cookie-secure: true
   cookie-httponly: "false"
   cookie-refresh: 0h60m0s

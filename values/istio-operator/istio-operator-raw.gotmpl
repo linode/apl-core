@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 templates:
   - |
     apiVersion: install.istio.io/v1alpha2
@@ -51,8 +53,8 @@ templates:
           dashboard:
             # auth:
             #   strategy: anonymous
-            jaegerURL: https://tracing.{{ $v.domain }}
-            grafanaURL: https://grafana-istio.{{ $v.domain }}
+            jaegerURL: https://tracing.{{ $domain }}
+            grafanaURL: https://grafana-istio.{{ $domain }}
         sidecarInjectorWebhook:
           enabled: true
           enableNamespacesByDefault: true

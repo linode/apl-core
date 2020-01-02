@@ -1,11 +1,13 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.istio.gateway }}
 {{- $t := readFile "../teams.yaml" | fromYaml }}
 templates:
   {{- range $team := $t.teams }}
   {{/*- $domain := printf "%s.%s" $team.name $v.teamDomain */}}
-  {{- $domain := printf "%s.%s" $team.name $v.domain }}
+  {{- $domain := printf "%s.%s" $team.name $domain }}
   {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
   {{- $services := $t.services }}
   # - |

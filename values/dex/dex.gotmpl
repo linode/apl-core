@@ -1,8 +1,10 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
-{{- $host := printf "auth.%s" $v.domain }}
+{{- $host := printf "auth.%s" $domain }}
 certs:
   web:
     altNames:
@@ -58,12 +60,12 @@ config:
       redirectURIs:
       - https://{{ $host }}/oauth2/callback
       {{- range $svc := $v.services }}
-        - https://{{ $svc }}.{{ $v.domain }}/oauth2/callback
+        - https://{{ $svc }}.{{ $domain }}/oauth2/callback
       {{- end }}
       name: oidc-auth-client
       secret: bladibladi
     - id: grafana
       name: oidc-grafana-client
       redirectURIs:
-      - 'https://grafana.{{ $v.domain }}/login/generic_oauth'
+      - 'https://grafana.{{ $domain }}/login/generic_oauth'
       secret: apie4eeX6hiC9ainiel1

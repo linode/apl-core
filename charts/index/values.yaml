@@ -167,9 +167,9 @@ metrics:
 
 group: Admins
 interpunct: "."
-clusters: {}  
-env: ""
-prefix: ""
-cluster: ""
+providers: {}
+provider: ""
+stage: ""
+domain: ""
 services: []
 sites: []
