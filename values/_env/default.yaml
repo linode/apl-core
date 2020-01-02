@@ -24,9 +24,9 @@ drone:
     adminUser: Morriz
 
 index:
+  isNS: true
   image:
-    tag: 1.0.5
-    pullPolicy: Always
+    tag: 1.0.5-ns
 
 istio:
   gateway:
