@@ -8,7 +8,7 @@ templates:
     kind: Ingress
     metadata:
       name: appgw-ingress-{{ $s.name }}
-      namespace: {{ if $s | getOrNil "isAuthProxy" }}istio-system{{ else }}ingress{{ end }}
+      namespace: ingress
       annotations:
         kubernetes.io/ingress.class: azure/application-gateway
         provider: azure

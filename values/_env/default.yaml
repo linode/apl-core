@@ -9,7 +9,7 @@ customerLabels:
   customer: redkubes
 
 cert-manager:
-  stage: "staging"
+  stage: "staging" # production
   emailUser: admins # @ domain will be appended
 
 drone:
