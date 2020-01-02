@@ -49,8 +49,8 @@ templates:
           enabled: true
           contextPath: "/"
           dashboard:
-            auth:
-              strategy: anonymous
+            # auth:
+            #   strategy: anonymous
             jaegerURL: https://tracing.{{ $v.domain }}
             grafanaURL: https://grafana-istio.{{ $v.domain }}
         sidecarInjectorWebhook:

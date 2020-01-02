@@ -84,7 +84,6 @@ services:
       gatewayDisabled: true
   - name: tracing
     svc: tracing
-    port: 9411
     logo: jaeger
     namespace: istio-system
     mtls:

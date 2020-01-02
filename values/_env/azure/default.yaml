@@ -38,6 +38,12 @@ cert-manager:
         resourceGroupName: externaldns
         hostedZoneName: aks.redkubes.net
 
+drone:
+  sourceControl:
+    github:
+      clientID: eb64c85b4e173785041f
+      clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+
 external-dns:
   azure:
     resourceGroup: externaldns
