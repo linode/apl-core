@@ -1,12 +1,14 @@
 {{ $v := .Environment.Values }}
-{{- $host := printf "index.%s" $v.domain }}
-{{ $v.index | toYaml }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{ $v | getOrNil "index" | toYaml }}
 fullnameOverride: index
 service:
   type: ClusterIP
 clusters: {{ $v.clusters | toYaml | nindent 2 }}  
-env: {{ $v.stage }}   
-domain: {{ $v.domain }}
+provider: {{ $v.provider }}  
+stage: {{ $v.stage }}
+prefix: k8s
 services:
   {{- range $s := $v.services }}
   {{- if and (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}

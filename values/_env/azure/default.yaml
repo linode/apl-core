@@ -1,11 +1,4 @@
-provider: azure
 hasCloudLB: true
-publicIngressClass: '"azure/application-gateway"'
-clusters:
-  - name: dev
-    host: k8s-dev.aks.redkubes.net
-  - name: prd
-    host: k8s.aks.redkubes.net
 
 sites:
   # - redkubes.net

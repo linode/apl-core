@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 templates:
   - |
     apiVersion: operator.knative.dev/v1alpha1
@@ -23,4 +25,4 @@ templates:
       name: config-domain
       namespace: knative-serving
     data:
-      {{ $v.domain }}: ""
+      {{ $domain }}: ""

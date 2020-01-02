@@ -1,17 +1,20 @@
 bases:
   - snippets/defaults.yaml
 ---
-{{- $g := .Values }}
-{{- $v := index $g "prometheus-operator" }}
+{{- $v := .Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
+{{- $po := index $v "prometheus-operator" }}
 {{- $t := readFile "../values/teams.yaml" | fromYaml }}
 releases:
   {{- range $team := $t.teams }}
-  # {{- $promHost := printf "prometheus.%s.%s" $team.name $g.teamDomain }}
-  # {{- $alertsHost := printf "alertmanager.%s.%s" $team.name $g.teamDomain }}
-  # {{- $grafanaHost := printf "grafana.%s.%s" $team.name $g.teamDomain }}
-  {{- $promHost := printf "prometheus-%s.%s" $team.name $g.domain }}
-  {{- $alertsHost := printf "alertmanager-%s.%s" $team.name $g.domain }}
-  {{- $grafanaHost := printf "grafana-%s.%s" $team.name $g.domain }}
+  # {{- $promHost := printf "prometheus.%s.%s" $team.name $teamDomain }}
+  # {{- $alertsHost := printf "alertmanager.%s.%s" $team.name $teamDomain }}
+  # {{- $grafanaHost := printf "grafana.%s.%s" $team.name $teamDomain }}
+  {{- $promHost := printf "prometheus-%s.%s" $team.name $domain }}
+  {{- $alertsHost := printf "alertmanager-%s.%s" $team.name $domain }}
+  {{- $grafanaHost := printf "grafana-%s.%s" $team.name $domain }}
   - name: prometheus-team-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}
@@ -28,7 +31,7 @@ releases:
             externalUrl: https://{{ $alertsHost }}
           config:
             global:
-              slack_api_url: {{ $team | get "slackUrl" $v.alertmanager.slackUrl }}
+              slack_api_url: {{ $team | get "slackUrl" $po.alertmanager.slackUrl }}
           receivers:
             - name: "null"
             - name: default
@@ -90,12 +93,13 @@ releases:
     chart: ../charts/index
     labels:
       tag: teams
+      pkg: index
     values:
       - ../values/index/index.gotmpl
       - ../values/default.gotmpl
       - fullnameOverride: {{ $team.name }}-index
-        # domain: {{ printf "%s.%s" $team.name $g.teamDomain }}
-        domain: {{ printf "%s.%s" $team.name $g.domain }}
+        # prefix: {{ printf "%s.in" $team.name }}
+        prefix: {{ printf "%s.k8s" $team.name }}
         services: {{- $t.services | toYaml | nindent 10 }}
         group: {{ $team.name }}
         interpunct: "-"

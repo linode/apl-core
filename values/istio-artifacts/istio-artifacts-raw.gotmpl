@@ -1,4 +1,6 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.istio.gateway }}
 templates:
@@ -13,13 +15,13 @@ templates:
         istio: ingressgateway
       servers:
       - hosts:
-          - '*.{{ $v.domain }}'
+          - '*.{{ $domain }}'
         port:
           name: http
           number: 80
           protocol: HTTP
       # - hosts:
-      #     - '*.{{ $v.domain }}'
+      #     - '*.{{ $domain }}'
       #   port:
       #     name: https
       #     number: 443
@@ -33,13 +35,13 @@ templates:
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
-      name: {{ $s.name }}-{{ $v.domain | replace "." "-" }}
+      name: {{ $s.name }}-{{ $domain | replace "." "-" }}
       namespace: {{ $s.namespace }}
     spec:
       gateways:
       - {{ $gw.namespace }}/{{ $gw.name }}
       hosts:
-      - {{ $s | get "host" $s.name }}.{{ $v.domain }}
+      - {{ $s | get "host" $s.name }}.{{ $domain }}
       http:
       - route:
         - destination:

@@ -1,8 +1,10 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $p := $v | get "prometheus-operator" }}
-{{ $promHost := printf "prometheus.%s" $v.domain }}
-{{ $alertsHost := printf "alertmanager.%s" $v.domain }}
-{{ $grafanaHost := printf "grafana.%s" $v.domain }}
+{{ $promHost := printf "prometheus.%s" $domain }}
+{{ $alertsHost := printf "alertmanager.%s" $domain }}
+{{ $grafanaHost := printf "grafana.%s" $domain }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
