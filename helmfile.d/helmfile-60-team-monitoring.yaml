@@ -3,18 +3,23 @@ bases:
 ---
 {{- $v := .Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $adminDomain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
 {{- $po := index $v "prometheus-operator" }}
 {{- $t := readFile "../values/teams.yaml" | fromYaml }}
+# We can create subdomains only transparently on clouds other than azure for now.
+# REASON: we expect only one AppGW to be prepared. We could enable one per team but that costs $.)
+# So to simplify things we make all services on azure use the same domain suffix
+# so we set the domConnector to "-"
+{{- $domConnector := (eq $v.provider "azure" | ternary "-" ".") }}
 releases:
   {{- range $team := $t.teams }}
-  # {{- $promHost := printf "prometheus.%s.%s" $team.name $teamDomain }}
-  # {{- $alertsHost := printf "alertmanager.%s.%s" $team.name $teamDomain }}
-  # {{- $grafanaHost := printf "grafana.%s.%s" $team.name $teamDomain }}
-  {{- $promHost := printf "prometheus-%s.%s" $team.name $domain }}
-  {{- $alertsHost := printf "alertmanager-%s.%s" $team.name $domain }}
-  {{- $grafanaHost := printf "grafana-%s.%s" $team.name $domain }}
+  {{- $domain := printf "%s%s%s" $team.name $domConnector (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+  {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
+  {{- $services := $t.services }}
+  {{- $promHost := printf "prometheus%s%s" $domConnector $domain }}
+  {{- $alertsHost := printf "alertmanager%s%s" $domConnector $domain }}
+  {{- $grafanaHost := printf "grafana%s%s" $domConnector $domain }}
   - name: prometheus-team-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}
@@ -99,8 +104,33 @@ releases:
       - ../values/default.gotmpl
       - fullnameOverride: {{ $team.name }}-index
         # prefix: {{ printf "%s.in" $team.name }}
-        prefix: {{ printf "%s.k8s" $team.name }}
-        services: {{- $t.services | toYaml | nindent 10 }}
+        prefix: {{ printf "%s%sin" $team.name $domConnector }}
+        services: 
+          {{- range $s := $services }}
+          {{- if and (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+          - {{ $s | toYaml | nindent 12 }}
+          {{- end }}
+          {{- end }}
+
         group: {{ $team.name }}
-        interpunct: "-"
+        domConnector: {{ $domConnector }}
+  - name: oauth2-proxy-team-{{ $team.name }}
+    installed: true
+    namespace: istio-system
+    chart: ../charts/oauth2-proxy
+    labels:
+      tag: teams
+      pkg: oauth2-proxy
+    values:
+      - ../values/oauth2-proxy/oauth2-proxy.gotmpl
+      - ../values/default.gotmpl
+      - fullnameOverride: oauth2-proxy-team-{{ $team.name }}
+        config:
+          clientID: {{ $team.oidc.clientID }}
+          clientSecret: {{ $team.oidc.clientSecret }}
+        extraArgs:
+          whitelist-domain: {{ $domain }}
+          redirect-url: https://auth.{{ $domain }}/oauth2/callback
+          cookie-domain: {{ $domain }}
+
   {{- end }}
