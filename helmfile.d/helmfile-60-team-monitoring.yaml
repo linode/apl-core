@@ -14,7 +14,8 @@ bases:
 {{- $domConnector := (eq $v.provider "azure" | ternary "-" ".") }}
 releases:
   {{- range $team := $t.teams }}
-  {{- $domain := printf "%s%s%s" $team.name $domConnector (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+  {{- $domain := printf "%s.%s" $team.name (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+  {{- $cookieDomain := (eq $v.provider "azure" | ternary $adminDomain $domain) }}
   {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
   {{- $services := $t.services }}
   {{- $promHost := printf "prometheus%s%s" $domConnector $domain }}
@@ -113,7 +114,7 @@ releases:
           {{- end }}
 
         group: {{ $team.name }}
-        domConnector: {{ $domConnector }}
+        domConnector: "{{ $domConnector }}"
   - name: oauth2-proxy-team-{{ $team.name }}
     installed: true
     namespace: istio-system
@@ -129,8 +130,8 @@ releases:
           clientID: {{ $team.oidc.clientID }}
           clientSecret: {{ $team.oidc.clientSecret }}
         extraArgs:
-          whitelist-domain: {{ $domain }}
-          redirect-url: https://auth.{{ $domain }}/oauth2/callback
-          cookie-domain: {{ $domain }}
+          whitelist-domain: {{ $cookieDomain }}
+          redirect-url: https://auth{{ $domConnector }}{{ $domain }}/oauth2/callback
+          cookie-domain: {{ $cookieDomain }}
 
   {{- end }}
