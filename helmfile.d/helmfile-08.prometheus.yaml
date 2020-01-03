@@ -1,0 +1,15 @@
+bases:
+  - snippets/defaults.yaml
+---
+{{ readFile "snippets/templates.yaml" }}
+{{- $v := .Environment.Values }}
+
+releases:
+  - name: prometheus-operator
+    installed: true
+    namespace: monitoring
+    <<: *default
+  - name: promitor
+    installed: false # {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
+    namespace: monitoring
+    <<: *default

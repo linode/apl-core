@@ -1,0 +1,77 @@
+# Default values for promitor-agent-scraper.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: tomkerkhove/promitor-agent-scraper
+  tag: 1.0.0
+  pullPolicy: Always
+
+azureAuthentication:
+  appId: ""
+  appKey: ""
+
+prometheus:
+  scrapeEndpointPath: /metrics
+  enableMetricTimestamps: True
+  metricUnavailableValue: NaN
+telemetry:
+  defaultLogLevel: "Error"
+  applicationInsights:
+    enabled: False
+    key: ""
+    logLevel: ""
+  containerLogs:
+    enabled: True
+    logLevel: ""
+
+## Metric Declaration YAML
+azureMetadata:
+  tenantId: ""
+  subscriptionId: ""
+  resourceGroupName: promitor
+metricDefaults:
+  aggregation:
+    interval: 00:05:00
+  scraping:
+    schedule: "*/5 * * * *"
+metrics: []
+# Sample metric configuration below
+#   - name: demo_queue_size
+#     description: "Amount of active messages of the 'myqueue' queue (determined with ServiceBusQueue provider)"
+#     resourceType: ServiceBusQueue
+#     azureMetricConfiguration:
+#       metricName: ActiveMessages
+#       aggregation:
+#         type: Total
+#         interval: 00:15:00
+#     resources:
+#       - namespace: promitor-messaging
+#         queueName: orders
+
+secrets:
+  # To use your own secret, set createSecret to false and define the name/keys that your secret uses
+  createSecret: True
+  secretName: ""
+  appIdSecret: azure-app-id
+  appKeySecret: azure-app-key
+  appInsightsSecret: azure-appinsights-key
+
+service:
+  exposeExternally: False
+  port: 8888
+  targetPort: 88
+  labelType: infrastructure
+  selectorType: runtime
+
+resources: {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
