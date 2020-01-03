@@ -60,7 +60,7 @@
         {{- if eq $p $v.provider }}
         <a class="active">{{ $p | title }}</a>
         {{- else }}
-        <a href="https://index{{ $v.interpunct }}{{ $v.prefix }}-{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
+        <a href="https://index{{ $v.domConnector }}{{ $v.prefix }}-{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
         {{- end }}
         {{- end }}
         - Stage: 
@@ -69,7 +69,7 @@
         {{- if eq $stage $v.stage }}
         <a class="active">{{ $stage }}</a>
         {{- else }}
-        <a href="https://index{{ $v.interpunct }}{{ $v.prefix }}-{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
+        <a href="https://index{{ $v.domConnector }}{{ $v.prefix }}-{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
         {{- end }}
         {{- end }}
       </div>
@@ -89,7 +89,7 @@
         {{- range $s := $v.services }}
         {{- if ne $s.name "index" }}
         <div class="col-3">
-          <a href='https://{{ $s.host | default $s.name }}{{ $v.interpunct }}{{ $v.prefix }}-{{ $v.stage }}.{{ $provider.host }}{{ $s.path | default "/" }}' target="_blank" class="tile">
+          <a href='https://{{ $s.host | default $s.name }}{{ $v.domConnector }}{{ $v.prefix }}-{{ $v.stage }}.{{ $provider.host }}{{ $s.path | default "/" }}' target="_blank" class="tile">
             <div class="img-wrapper">
               <img src="{{ $s.logo | default $s.name }}_logo.svg" alt="{{ $s.name | title }} logo" style="width: 65px;" />
             </div>

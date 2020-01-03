@@ -166,7 +166,7 @@ metrics:
   # resources: {}
 
 group: Admins
-interpunct: "."
+domConnector: "."
 providers: {}
 provider: ""
 stage: ""

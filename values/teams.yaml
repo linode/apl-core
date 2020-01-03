@@ -1,4 +1,8 @@
 services:
+  - name: auth
+    svc: oauth2-proxy
+    namespace: istio-system
+    isAuthProxy: true
   - name: index
     svc: index
   # - name: dashboard
@@ -22,6 +26,7 @@ services:
   - name: alertmanager
     svc: po-alertmanager
     port: 9093
+    logo: prometheus
     mtls:
       # policyMode: permissive
       gatewayDisabled: true
@@ -35,6 +40,9 @@ services:
 teams:
   - name: team1
     password: somepassworddd
+    oidc:
+      clientID: ad7611c4-a726-4ec8-8ad3-a518441e728f
+      clientSecret: Qn/=aQ7x]A/9PgGJhbtAlHejq3fA0P4K
     # slackUrl: https://hooks.slack.com/services/xxx
     # resourceQuota:
     #   services.loadbalancers: "1"

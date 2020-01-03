@@ -54,10 +54,6 @@ ingress-azure:
     subnetName: appgw-subnet
     subnetPrefix: 10.1.0.0/16
 
-oidc:
-  clientID: 37521396-bb5b-4b4f-9c6c-6e1087a0611f
-  clientSecret: U-rb?8.6kAMeBGvCFCR3LDbLKaMV_es0
-
 istio:
   profile: default
   sds:

@@ -7,22 +7,6 @@
 image:
   tag: "v4.1.0"
 
-ingress:
-  enabled: false
-  annotations:
-    {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 4 }}
-    # trick to allow absolute url redirects, see auth-annotations.yaml using it
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
-
-  hosts:
-    - auth.{{ $domain }}
-  path: /oauth2
-  tls: 
-    - secretName: letsencrypt-{{ $cm.stage }}-k8s
-      hosts:
-        - '*.{{ $domain }}'
-
 config:
   # clientID: oidc-auth-client
   # clientSecret: bladibladi

@@ -20,15 +20,6 @@ templates:
           name: http
           number: 80
           protocol: HTTP
-      # - hosts:
-      #     - '*.{{ $domain }}'
-      #   port:
-      #     name: https
-      #     number: 443
-      #     protocol: HTTPS
-      #   tls:
-      #     mode: SIMPLE
-      #     credentialName: letsencrypt-{{ $cm.stage }}-k8s
   {{- range $s := $v.services }}
   {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) (not ($s | getOrNil "isAuthProxy")) }}
   - |

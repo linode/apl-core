@@ -1,50 +1,130 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $adminDomain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.istio.gateway }}
 {{- $t := readFile "../teams.yaml" | fromYaml }}
+# We can create subdomains only transparently on clouds other than azure for now.
+# REASON: we expect only one AppGW to be prepared. We could enable one per team but that costs $.)
+# So to simplify things we make all services on azure use the same domain suffix
+# so we set the domConnector to "-"
+{{- $domConnector := (eq $v.provider "azure" | ternary "-" ".") }}
 templates:
   {{- range $team := $t.teams }}
-  {{/*- $domain := printf "%s.%s" $team.name $v.teamDomain */}}
-  {{- $domain := printf "%s.%s" $team.name $domain }}
+  {{- $ns := printf "team-%s" $team.name }}
+  {{- $domain := printf "%s%s%s" $team.name $domConnector (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+  {{- $tlsDomain := (eq $v.provider "azure" | ternary $adminDomain $domain) }}
+  # @todo: uncomment next line once we fix it to work with no team services:
   {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
   {{- $services := $t.services }}
-  # - |
-  #   apiVersion: cert-manager.io/v1alpha2
-  #   kind: Certificate
-  #   metadata:
-  #     name: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
-  #     # Istio certs secret lives in the istio-system namespace, and
-  #     # a cert-manager Certificate is namespace-scoped.
-  #     namespace: istio-system
-  #   spec:
-  #     # Reference to the Istio default cert secret.
-  #     secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
-  #     acme:
-  #       config:
-  #       # Each certificate could rely on different ACME challenge
-  #       # solver.  In this example we are using one provider for all
-  #       # the domains.
-  #       - dns01:
-  #           provider: cloud-dns-provider
-  #         domains:
-  #         # Since certificate wildcards only allow one level, we will
-  #         # need to one for every namespace that Knative is used in.
-  #         # We don't need to use wildcard here, fully-qualified domains
-  #         # will work fine too.
-  #         - "*.{{ $domain }}"
-  #     # The certificate common name, use one from your domains.
-  #     commonName: "*.{{ $domain }}"
-  #     dnsNames:
-  #     # Provide same list as `domains` section.
-  #     - "*.{{ $domain }}"
-  #     # Reference to the ClusterIssuer we created in the previous step.
-  #     issuerRef:
-  #       kind: ClusterIssuer
-  #       name: letsencrypt-{{ $cm.stage }}
+  {{ if ne $v.provider "azure" }}
+  - |
+    apiVersion: cert-manager.io/v1alpha2
+    kind: Certificate
+    metadata:
+      name: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+      namespace: istio-system
+    spec:
+      secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+      acme:
+        config:
+        - dns01:
+            provider: cloud-dns-provider
+          domains:
+          - "*.{{ $tlsDomain }}"
+      commonName: "*.{{ $tlsDomain }}"
+      dnsNames:
+      - "*.{{ $tlsDomain }}"
+      issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-{{ $cm.stage }}
+  {{- end }}
+  - |
+    apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+    metadata:
+      name: {{ $team.name }}
+      namespace: {{ $ns }}
+    spec:
+      selector:
+        istio: ingressgateway
+      servers:
+      - hosts:
+          - '*.{{ $domain }}'
+        port:
+          name: http
+          number: 80
+          protocol: HTTP
+  - |
+    # main nginx ingress to handle team services
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      annotations:
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+      labels:
+        app: nginx-ingress
+        release: gateway-{{ $ns }}
+      name: nginx-ingress-{{ $ns }}
+      namespace: istio-system
+    spec:
+      rules: 
+      {{- range $s := $services }}
+      {{- if and (ne $s.name "auth") (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
+      - host: '{{ $s.name }}{{ $domConnector }}{{ $domain }}'
+        http:
+          paths:
+          - path: /oauth2/userinfo
+            backend:
+              serviceName: oauth2-proxy-{{ $ns }}
+              servicePort: 80
+          - backend:
+              serviceName: istio-ingressgateway
+              servicePort: 80
+      {{- end }}
+      {{- end }}
+      {{- if not $v.hasCloudLB }}
+      tls: 
+        - secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+          hosts:
+            - '*.{{ $tlsDomain }}'
+      {{- end }}
+  - |
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      annotations:
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+        nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          # rewrite auth redirects to original hosts
+          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+      labels:
+        app: auth
+        release: gateway-{{ $ns }}
+      name: auth-{{ $ns }}
+      namespace: istio-system
+    spec:
+      rules:
+      - host: 'auth{{ $domConnector }}{{ $domain }}'
+        path: /oauth2
+        http:
+          paths:
+          - backend:
+              serviceName: oauth2-proxy-{{ $ns }}
+              servicePort: 80
+      {{- if not $v.hasCloudLB }}
+      tls: 
+        - secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+          hosts:
+            - '*.{{ $tlsDomain }}'
+      {{- end }}
   {{- range $s := $services }}
-  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) (not ($s | getOrNil "isAuthProxy")) }}
+  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
   {{- if eq $v.provider "azure" }}
   - |
     apiVersion: extensions/v1beta1
@@ -59,35 +139,31 @@ templates:
     spec:
       tls:
         - hosts:
-            # - {{ $s.name }}.{{ $domain }}
-            - {{ $s.name }}-{{ $domain }}
-          # secretName: letsencrypt-{{ $cm.stage }}-{{ $team.name }}
+            - {{ $s.name }}{{ $domConnector }}{{ $domain }}
           secretName: letsencrypt-{{ $cm.stage }}-k8s
       rules:
-        # - host: {{ $s.name }}.{{ $domain }}
-        - host: {{ $s.name }}-{{ $domain }}
+        - host: {{ $s.name }}{{ $domConnector }}{{ $domain }}
           http:
             paths:
               - backend:
-                  serviceName: istio-ingressgateway
+                  serviceName: nginx-ingress-controller
                   servicePort: 80
-{{- end }}
+  {{- end }}
   - |
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
       name: {{ $s.name }}-{{ $domain | replace "." "-" }}
-      namespace: team-{{ $team.name }}
+      namespace: {{ $ns }}
     spec:
       gateways:
-      - {{ $gw.namespace }}/{{ $gw.name }}
+      - {{ $ns }}/{{ $team.name }}
       hosts:
-      # - {{ $s.name }}.{{ $domain }}
-      - {{ $s.name }}-{{ $domain }}
+      - {{ $s.name }}{{ $domConnector }}{{ $domain }}
       http:
       - route:
         - destination:
-            host: {{ $team.name }}-{{ $s.svc }}.team-{{ $team.name }}.svc.cluster.local
+            host: {{ $team.name }}-{{ $s.svc }}.{{ $ns }}.svc.cluster.local
             port:
               number: {{ $s | getOrNil "port" | default 80 }}
           weight: 100
@@ -98,9 +174,9 @@ templates:
     kind: DestinationRule
     metadata:
       name: {{ $s.name }}-notls
-      namespace: team-{{ $team.name }}
+      namespace: {{ $ns }}
     spec:
-      host: {{ $team.name }}-{{ $s.svc}}.team-{{ $team.name }}.svc.cluster.local
+      host: {{ $team.name }}-{{ $s.svc}}.{{ $ns }}.svc.cluster.local
       trafficPolicy:
         tls:
           mode: DISABLE
@@ -112,7 +188,7 @@ templates:
     kind: Policy
     metadata:
       name: {{ $s.name }}-{{ $mode }}
-      namespace: team-{{ $team.name }}
+      namespace: {{ $ns }}
     spec:
       peers:
         - mtls:
