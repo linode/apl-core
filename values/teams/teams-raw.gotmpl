@@ -13,7 +13,7 @@
 templates:
   {{- range $team := $t.teams }}
   {{- $ns := printf "team-%s" $team.name }}
-  {{- $domain := printf "%s%s%s" $team.name $domConnector (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+  {{- $domain := printf "%s.%s" $team.name (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
   {{- $tlsDomain := (eq $v.provider "azure" | ternary $adminDomain $domain) }}
   # @todo: uncomment next line once we fix it to work with no team services:
   {{/*- $services := (hasKey $team "services" | ternary (concat $t.services $team.services) $t.services) */}}
@@ -131,7 +131,7 @@ templates:
     kind: Ingress
     metadata:
       name: appgw-ingress-{{ $team.name }}-{{ $s.name }}
-      namespace: istio-system
+      namespace: ingress
       annotations:
         kubernetes.io/ingress.class: azure/application-gateway
         appgw.ingress.kubernetes.io/ssl-redirect: "true"

@@ -8,10 +8,6 @@ services:
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
-  - name: scope
-    svc: weave-scope
-    mtls:
-      policyMode: permissive
   - name: grafana
     svc: po-grafana
     mtls:

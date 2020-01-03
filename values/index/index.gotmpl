@@ -11,7 +11,7 @@ stage: {{ $v.stage }}
 prefix: k8s
 services:
   {{- range $s := $v.services }}
-  {{- if and (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+  {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
   - {{ $s | toYaml | nindent 4 }}
   {{- end }}
   {{- end }}

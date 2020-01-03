@@ -105,10 +105,10 @@ releases:
       - ../values/default.gotmpl
       - fullnameOverride: {{ $team.name }}-index
         # prefix: {{ printf "%s.in" $team.name }}
-        prefix: {{ printf "%s%sin" $team.name $domConnector }}
+        prefix: {{ printf "%s.%s" $team.name (eq $v.provider "azure" | ternary "k8s" "in") }}
         services: 
           {{- range $s := $services }}
-          {{- if and (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+          {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
           - {{ $s | toYaml | nindent 12 }}
           {{- end }}
           {{- end }}
