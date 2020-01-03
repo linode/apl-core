@@ -1,0 +1,49 @@
+{{- $metrics := toYaml .Values.metrics -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map-{{ template "promitor-agent-scraper.fullname" . }}
+  labels:
+    app: {{ template "promitor-agent-scraper.name" . }}
+    chart: {{ template "promitor-agent-scraper.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  runtime.yaml: |-
+      server:
+        httpPort: {{ .Values.service.targetPort | quote }}
+      prometheus:
+        metricUnavailableValue: {{ .Values.prometheus.metricUnavailableValue | quote }}
+        enableMetricTimestamps: {{ .Values.prometheus.enableMetricTimestamps | quote }}
+        scrapeEndpoint:
+          baseUriPath: {{ .Values.prometheus.scrapeEndpointPath | quote }}
+      metricsConfiguration:
+        absolutePath: /config/metrics-declaration.yaml
+      telemetry:
+        applicationInsights:
+  {{- if .Values.telemetry.applicationInsights.key }}
+          instrumentationKey: {{ .Values.telemetry.applicationInsights.key | quote }}
+  {{- end }}
+          isEnabled: {{ .Values.telemetry.applicationInsights.enabled | quote }}
+  {{- if .Values.telemetry.applicationInsights.logLevel }}
+          verbosity: {{ .Values.telemetry.applicationInsights.logLevel | quote }}
+  {{- end }}
+        containerLogs:
+          isEnabled: {{ .Values.telemetry.containerLogs.enabled | quote }}
+  {{- if .Values.telemetry.containerLogs.logLevel  }}
+          verbosity: {{ .Values.telemetry.containerLogs.logLevel | quote }}
+  {{- end }}
+        defaultVerbosity: {{ .Values.telemetry.defaultLogLevel | quote  }}
+  metrics-declaration.yaml: |-
+    version: v1
+    azureMetadata:
+      tenantId: {{ .Values.azureMetadata.tenantId }}
+      subscriptionId: {{ .Values.azureMetadata.subscriptionId }}
+      resourceGroupName: {{ .Values.azureMetadata.resourceGroupName }}
+    metricDefaults:
+      aggregation:
+        interval: {{ .Values.metricDefaults.aggregation.interval }}
+      scraping:
+        schedule: {{ .Values.metricDefaults.scraping.schedule | quote }}
+    metrics:
+{{ tpl $metrics . | indent 4 }}
