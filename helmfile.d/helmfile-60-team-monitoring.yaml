@@ -106,6 +106,13 @@ releases:
       - fullnameOverride: {{ $team.name }}-index
         # prefix: {{ printf "%s.in" $team.name }}
         prefix: {{ printf "%s.%s" $team.name (eq $v.provider "azure" | ternary "k8s" "in") }}
+        clusters:
+          azure:
+            prefix: {{ printf "%s.%s" $team.name "k8s" }}
+            domConnector: "-"
+          google:
+            prefix: {{ printf "%s.%s" $team.name "in" }}
+            domConnector: "."
         services: 
           {{- range $s := $services }}
           {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}

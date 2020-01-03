@@ -60,7 +60,7 @@
         {{- if eq $p $v.provider }}
         <a class="active">{{ $p | title }}</a>
         {{- else }}
-        <a href="https://index{{ $v.domConnector }}{{ $v.prefix }}-{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
+        <a href="https://index{{ $c.domConnector | default $v.domConnector }}{{ $c.prefix | default $v.prefix }}-{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
         {{- end }}
         {{- end }}
         - Stage: 
