@@ -19,7 +19,9 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-kcu ${CLUSTER_PREFIX}-${STAGE}
+echo taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
+#kcu ${CLUSTER_PREFIX}-${STAGE}
+kcu taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
 
 img=otomi/tools:1.0.1
 d --version &>/dev/null

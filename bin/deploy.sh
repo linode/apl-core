@@ -5,7 +5,8 @@ shopt -s expand_aliases
 
 set -e
 
-cluster="$CLUSTER_PREFIX-$STAGE"
+#cluster="$CLUSTER_PREFIX-$STAGE"
+cluster=taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
 
 if [ ! -d ~/.kube ]; then
   echo "Creating kube config"
@@ -14,5 +15,5 @@ if [ ! -d ~/.kube ]; then
   k config set-context $cluster --cluster=$cluster
 fi
 
-kcu $cluster
-hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps
+echo kcu $cluster
+echo hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps
