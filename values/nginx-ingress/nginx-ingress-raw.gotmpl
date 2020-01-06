@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
 {{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $domConnector := (eq $v.provider "azure" | ternary "-" ".") }}
 {{- $cm := index $v "cert-manager" }}
 templates:
   - |
@@ -9,8 +8,8 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#DOMCONNECTOR#" $domConnector |  nindent 8 }}
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#DOMCONNECTOR#" "." |  nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" "admins" | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
       labels:
         app: nginx-ingress
@@ -44,7 +43,7 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" "admins" | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/configuration-snippet: |

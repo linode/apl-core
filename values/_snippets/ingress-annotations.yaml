@@ -12,6 +12,10 @@ ingress.kubernetes.io/rewrite-target: /
 # nginx.ingress.kubernetes.io/enable-modsecurity: "true"
 # nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
 nginx.ingress.kubernetes.io/configuration-snippet: |
+  # set team header
+  add_header Auth-Group "#GROUP#";
+  proxy_set_header Auth-Group "#GROUP#";
+
   # split cookie if needed:
   auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
   access_by_lua_block {

@@ -1,7 +1,7 @@
 bases:
   - snippets/defaults.yaml
 
-{{- $t := readFile "../values/teams.yaml" | fromYaml }}
+{{- $t := readFile "../values/_env/teams.yaml" | fromYaml }}
 releases:
   {{- range $team := $t.teams }}
   - name: team-ns-{{ $team.name }}
