@@ -1,0 +1,10 @@
+{{- $t := readFile "../_env/teams.yaml" | fromYaml }}
+templates:
+  {{- range $team := $t.teams }}
+  {{- $ns := printf "team-%s" $team.name }}
+  - |
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: {{ $ns }}
+  {{- end }}
