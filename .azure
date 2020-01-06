@@ -1,2 +1,0 @@
-export CONTEXT_PREFIX="k8s-redkubes"
-export CLUSTER_API_HOST="https://k8s-redkubes-${STAGE}-8e0e116f.hcp.westeurope.azmk8s.io"

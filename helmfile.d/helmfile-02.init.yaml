@@ -4,9 +4,9 @@ bases:
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
 releases:
-  # - name: prometheus-operator-init
-  #   installed: false
-  #   namespace: monitoring
-  #   labels:
-  #     init: true
-  #   <<: *skeleton
+  - name: prometheus-operator-init
+    installed: false
+    namespace: monitoring
+    labels:
+      init: true
+    <<: *skeleton

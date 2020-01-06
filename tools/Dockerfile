@@ -3,7 +3,6 @@ FROM alpine:3.10
 ARG KUBECTL_VERSION=1.15.6
 ARG HELM_VERSION=3.0.2
 ARG HELM_DIFF_VERSION=v3.0.0-rc.7
-ARG HELM_TILLER_VERSION=v0.9.3
 ARG HELMFILE_VERSION=0.98.1
 ARG EKSCTL_VERSION=0.11.1
 
@@ -28,7 +27,6 @@ RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp \
   && rm -rf /tmp/*
 
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
-RUN helm plugin install https://github.com/rimusz/helm-tiller --version ${HELM_TILLER_VERSION}
 
 ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 /bin/helmfile
 RUN chmod 0755 /bin/helmfile

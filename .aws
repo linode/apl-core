@@ -1,2 +1,0 @@
-export CONTEXT_PREFIX="otomi-eks"
-export CLUSTER_API_HOST="https://A0CAB5BABD3FC926281D43C45AC57572.gr7.eu-central-1.eks.amazonaws.com"
