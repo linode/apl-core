@@ -1,0 +1,5 @@
+export CLOUD=${CLOUD:-aws}
+export STAGE=${STAGE:-dev}
+
+# source dependent env vars for CLOUD
+. $PWD/.env/$CLOUD
