@@ -13,4 +13,5 @@ if [ ! -d ~/.kube ]; then
 fi
 
 kcu $K8S_CONTEXT
+k apply --validate=false -f k8s/cert-manager-init
 hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps
