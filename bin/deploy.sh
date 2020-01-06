@@ -6,6 +6,7 @@ shopt -s expand_aliases
 set -e
 
 #cluster="$CLUSTER_PREFIX-$STAGE"
+# TODO: fix clustername
 cluster=taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
 
 if [ ! -d ~/.kube ]; then
