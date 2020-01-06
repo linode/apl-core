@@ -6,7 +6,7 @@ bases:
 {{- $adminDomain := printf "k8s-%s.%s" $v.stage $cluster.host }}
 {{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
 {{- $po := index $v "prometheus-operator" }}
-{{- $t := readFile "../values/teams.yaml" | fromYaml }}
+{{- $t := readFile "../values/_env/teams.yaml" | fromYaml }}
 # We can create subdomains only transparently on clouds other than azure for now.
 # REASON: we expect only one AppGW to be prepared. We could enable one per team but that costs $.)
 # So to simplify things we make all services on azure use the same domain suffix

@@ -40,15 +40,6 @@ drone:
       clientID: 6455ffb30c8e270c402f
       clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
 
-ingress-azure:
-  appgw:
-    subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
-    resourceGroup: k8s-redkubes-dev
-    name: appgw-k8s-redkubes-dev
-    usePrivateIP: false
-    subnetName: appgw-subnet
-    subnetPrefix: 10.1.0.0/16
-
 istio:
   mtls:
     enabled: false

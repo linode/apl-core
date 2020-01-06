@@ -1,4 +1,4 @@
-{{- $t := readFile "../teams.yaml" | fromYaml }}
+{{- $t := readFile "../_env/teams.yaml" | fromYaml }}
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 

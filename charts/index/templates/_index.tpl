@@ -38,7 +38,8 @@
           if (xhr.readyState === xhr.DONE) {
             if (xhr.status === 200) {
               var user = xhr.response
-              document.getElementsByClassName('admin')[0].innerHTML = user.email
+              var group = xhr.getResponseHeader('Auth-Group')
+              document.getElementsByClassName('admin')[0].innerHTML = `${user.email} (${group})`
             }
           }
         }

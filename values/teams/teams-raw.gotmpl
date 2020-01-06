@@ -4,7 +4,7 @@
 {{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v "cert-manager" }}
 {{- $gw := $v.istio.gateway }}
-{{- $t := readFile "../teams.yaml" | fromYaml }}
+{{- $t := readFile "../_env/teams.yaml" | fromYaml }}
 # We can create subdomains only transparently on clouds other than azure for now.
 # REASON: we expect only one AppGW to be prepared. We could enable one per team but that costs $.)
 # So to simplify things we make all services on azure use the same domain suffix
@@ -62,8 +62,8 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#DOMCONNECTOR#" $domConnector  | nindent 8 }}
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#DOMCONNECTOR#" $domConnector | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" $team.name | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
       labels:
         app: nginx-ingress
@@ -97,7 +97,7 @@ templates:
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | nindent 8 }}
+        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" $team.name | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/configuration-snippet: |
