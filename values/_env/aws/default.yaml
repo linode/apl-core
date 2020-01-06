@@ -1,0 +1,57 @@
+hasCloudLB: true
+
+sites:
+  # - redkubes.net
+
+sitespeed:
+  # - host: redkubes.net
+  #   paths: [/]
+
+cloudDns:
+  domain: aws.otomi.cloud
+  zone: aws.otomi.cloud
+
+cert-manager:
+  stage: "production"
+  provider:
+    azure:
+      azuredns:
+        clientID: 99d0ca10-8f98-49e5-b17b-9787a6f0ffd7
+        clientSecretSecretRef:
+          name: cert-manager-sp
+          key: CLIENT_SECRET
+        servicePrincipal: 8d348bbc-37d7-4dee-8777-1c7d89465ec9
+        tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+        subscriptionID: 50c24abd-f872-4a3b-9f65-419800dda5eb
+        resourceGroupName: externaldns
+        hostedZoneName: aks.redkubes.net
+
+drone:
+  sourceControl:
+    github:
+      clientID: eb64c85b4e173785041f
+      clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+
+external-dns:
+  azure:
+    resourceGroup: externaldns
+    aadClientId: b2570406-c9ae-40f9-a1d8-df8d28a055a5
+    aadClientSecret: 64ace611-4964-458d-9397-ebe923dfda37
+
+ingress-azure:
+  armAuth:
+    secretJSON: ewogICJjbGllbnRJZCI6ICI2NzkyMDJjMS1jMjY1LTRlMDctYWQ4YS1hMTU0YmE5OTMzMjQiLAogICJjbGllbnRTZWNyZXQiOiAiZjRhYmZkMWMtOTQ2Yi00OWY0LWFjMWYtNjRhZTkwN2RkZDJkIiwKICAic3Vic2NyaXB0aW9uSWQiOiAiNTBjMjRhYmQtZjg3Mi00YTNiLTlmNjUtNDE5ODAwZGRhNWViIiwKICAidGVuYW50SWQiOiAiNTdhM2Y2ZWEtN2U3MC00MjYwLWFjYjQtZTA2Y2U0NTJmNjk1IiwKICAiYWN0aXZlRGlyZWN0b3J5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tIiwKICAicmVzb3VyY2VNYW5hZ2VyRW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmF6dXJlLmNvbS8iLAogICJhY3RpdmVEaXJlY3RvcnlHcmFwaFJlc291cmNlSWQiOiAiaHR0cHM6Ly9ncmFwaC53aW5kb3dzLm5ldC8iLAogICJzcWxNYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQ6ODQ0My8iLAogICJnYWxsZXJ5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9nYWxsZXJ5LmF6dXJlLmNvbS8iLAogICJtYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQvIgp9Cg==
+  appgw:
+    subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
+    resourceGroup: k8s-redkubes-dev
+    name: appgw-k8s-redkubes-dev
+    usePrivateIP: false
+    subnetName: appgw-subnet
+    subnetPrefix: 10.1.0.0/16
+
+istio:
+  profile: default
+  sds:
+    enabled: false
+  mtls:
+    enabled: false
