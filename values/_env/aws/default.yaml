@@ -1,4 +1,4 @@
-hasCloudLB: true
+hasCloudLB: false
 
 sites:
   # - redkubes.net
