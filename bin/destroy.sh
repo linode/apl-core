@@ -5,7 +5,7 @@ shopt -s expand_aliases
 
 set -e
 
-cluster="$CLUSTER_PREFIX-$STAGE"
+context=$CONTEXT_PREFIX-$STAGE
 
-kcu $CLUSTER
+kcu $context
 hf -e $CLOUD-$STAGE destroy --concurrency=1

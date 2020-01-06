@@ -5,16 +5,14 @@ shopt -s expand_aliases
 
 set -e
 
-#cluster="$CLUSTER_PREFIX-$STAGE"
-# TODO: fix clustername
-cluster=taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
+context=$CONTEXT_PREFIX-$STAGE
 
 if [ ! -d ~/.kube ]; then
   echo "Creating kube config"
-  k config set-cluster $cluster --server=$CLUSTER_API_HOST --insecure-skip-tls-verify=true
-  k config set-credentials $cluster --token="$KUBE_TOKEN"
-  k config set-context $cluster --cluster=$cluster
+  k config set-context $context --server=$CLUSTER_API_HOST --insecure-skip-tls-verify=true
+  k config set-credentials $context --token="$KUBE_TOKEN"
+  k config set-context $context --context=$context
 fi
 
-echo kcu $cluster
-echo hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps
+kcu $context
+hf -e $CLOUD-$STAGE apply --concurrency=1 --skip-deps

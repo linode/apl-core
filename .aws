@@ -1,4 +1,2 @@
-export CLUSTER_PREFIX="k8s-redkubes"
-export DNS_ZONE="aws.otomi.cloud"
+export CONTEXT_PREFIX="otomi-eks"
 export CLUSTER_API_HOST="https://A0CAB5BABD3FC926281D43C45AC57572.gr7.eu-central-1.eks.amazonaws.com"
-export DOMAIN="k8s.$DNS_ZONE"
