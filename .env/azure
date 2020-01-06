@@ -1,0 +1,2 @@
+export CLUSTER_API_HOST="https://k8s-redkubes-${STAGE}-8e0e116f.hcp.westeurope.azmk8s.io"
+export K8S_CONTEXT="k8s-redkubes-dev"
