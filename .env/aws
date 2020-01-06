@@ -1,0 +1,2 @@
+export CLUSTER_API_HOST="https://26BE97258B91135D7C3B97D31A4C989F.gr7.eu-central-1.eks.amazonaws.com"
+export K8S_CONTEXT="maurice.faber@otomi-eks-${STAGE}.eu-central-1.eksctl.io" 
