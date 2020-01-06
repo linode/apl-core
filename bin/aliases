@@ -19,10 +19,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-#echo taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
-#kcu ${CLUSTER_PREFIX}-${STAGE}
-# TODO: cleanup clustername / find convention
-kcu taco.hamers@dev-redkubes-io.eu-central-1.eksctl.io
+kcu ${CONTEXT_PREFIX}-${STAGE}
 
 img=otomi/tools:1.0.1
 d --version &>/dev/null
@@ -86,4 +83,4 @@ function kkk() {
   k delete crd $(k get crd | egrep "istio|ory|coreos|knative|velero" | awk '{print $1}')
 }
 
-function hfd() { kcu ${CLUSTER_PREFIX}-dev && hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }
+function hfd() { kcu ${CONTEXT_PREFIX}-dev && hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }
