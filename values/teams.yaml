@@ -8,6 +8,11 @@ services:
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
+  - name: loki
+    svc: po-grafana
+    host: grafana
+    virtual: true
+    path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
   - name: grafana
     svc: po-grafana
     mtls:
