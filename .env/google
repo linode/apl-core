@@ -5,7 +5,7 @@ export DNS_NAME="otomi.cloud"
 export DNS_ZONE="otomi"
 export CLUSTER_API_HOST="https://34.90.97.189"
 export DOMAIN="k8s.$DNS_NAME"
-export CLUSTER_PREFIX="gke_${PROJECT}_${REGION}_${CLUSTER_NAME}"
+export K8S_CONTEXT="gke_otomi-cloud_europe-west4_otomi-cloud-${STAGE}"
 
 export GCP_ORG_ID="938752195901"
 export METERING_SET="otomi_metering"

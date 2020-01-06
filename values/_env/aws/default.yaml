@@ -1,0 +1,36 @@
+hasCloudLB: false
+
+sites:
+  # - redkubes.net
+
+sitespeed:
+  # - host: redkubes.net
+  #   paths: [/]
+
+cloudDns:
+  domain: aws.otomi.cloud
+  zone: aws.otomi.cloud
+
+cert-manager:
+  stage: "staging"
+  provider:
+    aws:
+      # see: https://cert-manager.io/docs/configuration/acme/dns01/route53/
+      # we use metadata inferred
+      route53:
+        region: eu-central-1
+        hostedZoneID: eks.otomi.cloud
+        role: arn:aws:iam::059522483251:role/eksctl-otomi-eks-dev-cluster-ServiceRole-1MWH3N8W5HRRI
+
+drone:
+  sourceControl:
+    github:
+      clientID: eb64c85b4e173785041f
+      clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+
+istio:
+  # profile: default
+  # sds:
+  #   enabled: false
+  mtls:
+    enabled: false

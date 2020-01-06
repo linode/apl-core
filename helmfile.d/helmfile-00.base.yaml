@@ -4,9 +4,9 @@ bases:
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
 releases:
-  # - name: base
-  #   installed: true
-  #   namespace: kube-system
-  #   labels:
-  #     init: true
-  #   <<: *skeleton
+  - name: base
+    installed: true
+    namespace: kube-system
+    labels:
+      init: true
+    <<: *skeleton
