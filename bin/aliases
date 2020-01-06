@@ -8,7 +8,6 @@ alias kis="k -n istio-system"
 alias ks="k -n system"
 alias ksh="k -n shared"
 alias km="k -n monitoring"
-alias kt="k -n tillerless"
 alias ka="k --all-namespaces=true"
 alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
 alias kap="ka get po"
@@ -39,8 +38,8 @@ drun() {
   rm -rf $KUBE
 }
 
-alias h="helm tiller run tillerless -- helm"
-alias hk="h delete --purge"
+alias h="helm"
+alias hk="h delete"
 alias hf="helmfile"
 
 # if not has docker: ci
@@ -50,10 +49,10 @@ if [ $hasDocker -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
     unalias h &>/dev/null
     function h() {
-      drun sh -c "helm tiller run tillerless -- helm $@"
+      drun sh -c "helm $@"
     }
     alias hf="drun helmfile"
-    alias hk="drun helm tiller run tillerless -- helm delete --purge"
+    alias hk="drun helm delete"
   else
     echo "No docker daemon running. Please start and source aliases again."
   fi

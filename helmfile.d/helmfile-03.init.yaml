@@ -4,13 +4,16 @@ bases:
 {{ readFile "snippets/templates-skeleton.gotmpl" }}
 
 releases:
-  - name: cert-manager-init
-    installed: true
-    namespace: default
-    labels:
-      init: true
-      tag: cert-manager
-    <<: *skeleton # just install the stuff in k8s/apps/cert-manager
+  # cert-manager can't be installed as skeleton because it needs --validate=false, which is not
+  # supported by helmfile, so we just apply by hand with:
+  # k apply --validate=false -f k8s/cert-manager-init
+  # - name: cert-manager-init
+  #   installed: true
+  #   namespace: default
+  #   labels:
+  #     init: true
+  #     tag: cert-manager
+  #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   - name: knative-init
     installed: true
     namespace: default

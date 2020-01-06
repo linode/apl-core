@@ -1,10 +1,8 @@
 helmDefaults:
-  # tillerNamespace: tillerless
-  # tillerless: true
-  atomic: false
+  atomic: true
   wait: true
   timeout: 1200
-  force: true
+  force: false
 
 environments:
   azure-dev:
