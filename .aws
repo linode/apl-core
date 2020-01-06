@@ -1,0 +1,11 @@
+export REGION="eu-central-1"
+export PROJECT="otomi-cloud"
+export CLUSTER_NAME="otomi-cloud"
+export DNS_NAME="aws.otomi.cloud"
+export DNS_ZONE="aws.otomi"
+export CLUSTER_API_HOST="https://A0CAB5BABD3FC926281D43C45AC57572.gr7.eu-central-1.eks.amazonaws.com"
+export DOMAIN="k8s.$DNS_NAME"
+export CLUSTER_PREFIX="aws_${PROJECT}_${REGION}_${CLUSTER_NAME}"
+
+#export GCP_ORG_ID="938752195901"
+#export METERING_SET="otomi_metering"
