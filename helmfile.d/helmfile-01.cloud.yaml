@@ -2,9 +2,9 @@ bases:
   - snippets/defaults.yaml
 
 releases:
-  # - name: cloud
-  #   installed: true
-  #   namespace: kube-system
-  #   chart: ../charts/raw
-  #   values:
-  #   - ../values/cloud/cloud-raw.gotmpl
+  - name: cloud
+    installed: true
+    namespace: kube-system
+    chart: ../charts/raw
+    values:
+    - ../values/cloud/cloud-raw.gotmpl

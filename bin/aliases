@@ -1,4 +1,4 @@
-. ./.env
+. .env/cloud
 
 alias d="docker"
 alias k="kubectl"
@@ -19,9 +19,9 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-kcu ${CONTEXT_PREFIX}-${STAGE}
+kcu ${K8S_CONTEXT}
 
-img=otomi/tools:1.0.1
+img=otomi/tools:1.1.0
 d --version &>/dev/null
 hasDocker=$?
 d ps &>/dev/null
@@ -32,7 +32,10 @@ drun() {
   cp -r ~/.kube $KUBE
   # Update path to google-cloud-sdk, so it can refresh tokens
   sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config >$KUBE/config
-  d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp -v ~/.config/gcloud/:/root/.config/gcloud/ -w $PWD $img $@
+  d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube -v /tmp:/tmp \
+    -v ~/.config/gcloud/:/root/.config/gcloud/ \
+    -v ~/.aws:/root/.aws/ \
+    -w $PWD $img $@
   rm -rf $KUBE
 }
 
@@ -83,4 +86,4 @@ function kkk() {
   k delete crd $(k get crd | egrep "istio|ory|coreos|knative|velero" | awk '{print $1}')
 }
 
-function hfd() { kcu ${CONTEXT_PREFIX}-dev && hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }
+function hfd() { hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }

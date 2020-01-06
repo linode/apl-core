@@ -1,11 +1,9 @@
 # /bin/bash
 shopt -s expand_aliases
 . bin/aliases
-. .env
+. .env/cloud
 
 set -e
 
-context=$CONTEXT_PREFIX-$STAGE
-
-kcu $context
+kcu $K8S_CONTEXT
 hf -e $CLOUD-$STAGE destroy --concurrency=1

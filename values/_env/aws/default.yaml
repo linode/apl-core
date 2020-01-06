@@ -29,8 +29,8 @@ drone:
       clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
 
 istio:
-  profile: default
-  sds:
-    enabled: false
+  # profile: default
+  # sds:
+  #   enabled: false
   mtls:
     enabled: false
