@@ -1,6 +1,9 @@
 . .env/cloud
 
 alias d="docker"
+alias aw="aws"
+alias az="azure"
+alias gc="gcloud"
 alias k="kubectl"
 alias ksk="k -n kube-system"
 alias ki="k -n ingress"
@@ -17,8 +20,6 @@ alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
 alias kcu="k config use-context"
 alias kp="k proxy &"
-
-kcu ${K8S_CONTEXT}
 
 img=otomi/tools:1.1.0
 d --version &>/dev/null
@@ -47,12 +48,13 @@ if [ $hasDocker -eq 0 ]; then
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
-    unalias h &>/dev/null
-    function h() {
-      drun sh -c "helm $@"
-    }
+    unalias h hf hk aw az gc 
+    alias h="drun helm"
     alias hf="drun helmfile"
-    alias hk="drun helm delete"
+    alias hk="drun helmfile delete"
+    alias aw="drun aws"
+    alias az="drun azure"
+    alias gc="drun gcloud"
   else
     echo "No docker daemon running. Please start and source aliases again."
   fi
@@ -85,4 +87,16 @@ function kkk() {
   k delete crd $(k get crd | egrep "istio|ory|coreos|knative|velero" | awk '{print $1}')
 }
 
+kcu ${K8S_CONTEXT}
+if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
+  # check if we have a mismatching context for an aws cluster
+  chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
+  if [ "$chek" != "$K8S_CONTEXT" ]; then
+    echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
+    k config rename-context $chek $K8S_CONTEXT
+  fi
+fi
+
 function hfd() { hf -e ${CLOUD}-dev $@ --concurrency=1 --skip-deps; }
+
+echo "Aliases loaded for target '$CLOUD'"
