@@ -10,7 +10,7 @@ ENV HELM_FILE_NAME helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
 WORKDIR /
 
-RUN apk --update --no-cache add bash ca-certificates coreutils git gnupg curl gettext jq python-dev
+RUN apk --update --no-cache add bash ca-certificates coreutils git gnupg curl gettext jq python-dev py-pip
 
 ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
@@ -20,6 +20,8 @@ RUN curl https://sdk.cloud.google.com | bash
 
 ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 RUN chmod +x /usr/local/bin/aws-iam-authenticator
+
+RUN pip install --upgrade --no-cache-dir awscli
 
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp \
