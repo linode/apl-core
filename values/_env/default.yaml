@@ -3,12 +3,19 @@ clusters:
     host: aks.redkubes.net
     stages: [dev, demo, prd]
   aws:
-    host: aws.otomi.cloud
+    host: eks.otomi.cloud
     stages: [dev, demo, prd]
   google:
     host: otomi.cloud
     stages: [dev, demo, prd]
 
+k8s:
+  namespaces:
+    - name: ingress
+    - name: istio-operator
+      disableIstio: true
+    - name: knative-serving
+    - name: monitoring
 isManaged: true
 hasCloudLB: false
 emailDomain: redkubes.com

@@ -91,7 +91,7 @@ releases:
       - ../values/default.gotmpl
       - dashboards:
           default:
-            kubernetes: null
+            kubernetes: {}
 
   - name: index-{{ $team.name }}
     installed: true

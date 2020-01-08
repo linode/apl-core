@@ -32,7 +32,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ci-deploy
+  name: otomi-admin
 subjects:
 - kind: ServiceAccount
   name: default

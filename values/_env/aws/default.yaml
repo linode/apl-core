@@ -8,8 +8,8 @@ sitespeed:
   #   paths: [/]
 
 cloudDns:
-  domain: aws.otomi.cloud
-  zone: aws.otomi.cloud
+  domain: eks.otomi.cloud
+  zone: eks.otomi.cloud
 
 cert-manager:
   stage: "staging"
@@ -27,6 +27,10 @@ drone:
     github:
       clientID: eb64c85b4e173785041f
       clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+
+external-dns:
+  aws:
+    region: eu-central-1
 
 istio:
   # profile: default

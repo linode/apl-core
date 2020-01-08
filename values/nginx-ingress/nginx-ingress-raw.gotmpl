@@ -57,12 +57,12 @@ templates:
     spec:
       rules:
       - host: 'auth.{{ $domain }}'
-        path: /oauth2
         http:
           paths:
           - backend:
               serviceName: oauth2-proxy
               servicePort: 80
+            path: /oauth2
       {{- if not $v.hasCloudLB }}
       tls: 
         - secretName: letsencrypt-{{ $cm.stage }}-k8s

@@ -10,3 +10,10 @@ releases:
     labels:
       init: true
     <<: *skeleton
+  - name: k8s
+    installed: true
+    labels:
+      init: true
+    chart: ../charts/raw
+    values:
+    - ../values/k8s/k8s-raw.gotmpl

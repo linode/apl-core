@@ -8,16 +8,16 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ci-deploy
+  name: otomi-admin
   namespace: system
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: ci-deploy
+  name: otomi-admin
 subjects:
   - kind: ServiceAccount
-    name: ci-deploy
+    name: otomi-admin
     namespace: system
 roleRef:
   kind: ClusterRole
@@ -27,12 +27,12 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ci-deploy:psp:unrestricted
+  name: otomi-admin:psp:unrestricted
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: psp:unrestricted
 subjects:
 - kind: ServiceAccount
-  name: ci-deploy
+  name: otomi-admin
   namespace: system
