@@ -5,3 +5,12 @@ metadata:
   labels:
     name: monitoring
     # istio-injection: disabled
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress
+  labels:
+    name: ingress
