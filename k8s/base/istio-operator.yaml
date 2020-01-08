@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: istio-operator
-  labels:
-    name: istio-operator
-    istio-injection: disabled

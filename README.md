@@ -54,10 +54,10 @@ After initial deployment, to enable Continuous Deployment of this repo (i.e. fro
 Create and retrieve a token:
 
 ```bash
-# to create the ci-deploy ServiceAccount:
+# to create the otomi-admin ServiceAccount:
 kubectl apply -f k8s/base --recursive
 # Get the token from the create sa:
-SECRET_NAME=$(kubectl -n system get sa ci-deploy -o json | jq -r .secrets[].name)
+SECRET_NAME=$(kubectl -n system get sa otomi-admin -o json | jq -r .secrets[].name)
 TOKEN=$(k -n system get secret $SECRET_NAME -o json | jq -r .data.token)
 # to copy to clipboard, on OSX:
 echo $TOKEN | pbcopy

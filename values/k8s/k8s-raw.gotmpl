@@ -1,0 +1,12 @@
+{{- $v := .Environment.Values }}
+templates:
+{{- range $ns := $v.k8s.namespaces }}
+  - |
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: {{ $ns.name }}
+      labels:
+        name: {{ $ns.name }}
+        istio-injection: {{ if $ns | getOrNil "disableIstio" }}disabled{{ else }}enabled{{ end }}
+{{- end }}

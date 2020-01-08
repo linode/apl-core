@@ -7,6 +7,6 @@ templates:
       #   command: "../bin/skeleton-chart.sh"
       #   args: ["{{ .Release.Name }}", "create"]
       - events: ["prepare"]
-        showlogs: true
+        showlogs: false
         command: "../bin/skeleton-chart.sh"
         args: ["{{ .Release.Name }}"]

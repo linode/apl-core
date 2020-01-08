@@ -20,8 +20,10 @@ google:
   project: {{ $google.projectId }}
   serviceAccountKey: |
     {{- $google.cloudDnsKey | nindent 4 }}
-{{- end }}    
-{{- if eq $v.provider "azure" }}
+{{- else if eq $v.provider "aws" }}
+aws:
+  {{- $dns.aws | toYaml | nindent 2 }}
+{{- else if eq $v.provider "azure" }}
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
   tenantId: {{ $azure.tenantId }}
