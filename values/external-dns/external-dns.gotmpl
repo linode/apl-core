@@ -30,7 +30,6 @@ azure:
   subscriptionId: {{ $azure.subscriptionId }}
 {{- end }}  
 domainFilters: ["{{ $v.cloudDns.domain }}"]
-zoneIdFilters: ["{{ $v.cloudDns.zone }}"]
 annotationFilter: "{{ if and (eq $v.provider "azure") $v.hasCloudLB }}provider=azure{{ end }}"
 dryRun: false
 crd:
