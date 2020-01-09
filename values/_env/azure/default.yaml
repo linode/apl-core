@@ -1,12 +1,5 @@
 hasCloudLB: true
 
-sites:
-  # - redkubes.net
-
-sitespeed:
-  # - host: redkubes.net
-  #   paths: [/]
-
 azure:
   tenantId: 57a3f6ea-7e70-4260-acb4-e06ce452f695
   subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
@@ -25,7 +18,7 @@ cert-manager:
         tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
         subscriptionID: 50c24abd-f872-4a3b-9f65-419800dda5eb
         resourceGroupName: externaldns
-        hostedZoneName: aks.redkubes.net
+        hostedZoneName: aks.otomi.cloud
 
 drone:
   sourceControl:
@@ -34,7 +27,7 @@ drone:
       clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
 
 external-dns:
-  domainFilters: [aks.redkubes.net]
+  domainFilters: [aks.otomi.cloud]
   zoneIdFilters:
   azure:
     resourceGroup: externaldns

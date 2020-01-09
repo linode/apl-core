@@ -1,12 +1,12 @@
 clusters:
   azure:
-    host: aks.redkubes.net
+    host: aks.otomi.cloud
     stages: [dev, demo, prd]
   aws:
     host: eks.otomi.cloud
     stages: [dev, demo, prd]
   google:
-    host: otomi.cloud
+    host: gks.otomi.cloud
     stages: [dev, demo, prd]
 
 k8s:
