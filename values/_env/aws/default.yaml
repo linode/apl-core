@@ -1,10 +1,10 @@
 hasCloudLB: false
 
 sites:
-  # - redkubes.net
+  # - eks.otomi.cloud
 
 sitespeed:
-  # - host: redkubes.net
+  # - host: eks.otomi.cloud
   #   paths: [/]
 
 cert-manager:
@@ -15,8 +15,6 @@ cert-manager:
       # we use metadata inferred
       route53:
         region: eu-central-1
-        hostedZoneID: eks.otomi.cloud
-        # role: arn:aws:iam::059522483251:role/eksctl-otomi-eks-dev-cluster-ServiceRole-1MWH3N8W5HRRI
 
 drone:
   sourceControl:
