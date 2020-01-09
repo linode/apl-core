@@ -21,7 +21,7 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-img=otomi/tools:1.1.1
+img=otomi/tools:1.1.2
 d --version &>/dev/null
 hasDocker=$?
 d ps &>/dev/null
@@ -91,7 +91,8 @@ function kkk() {
 kcu ${K8S_CONTEXT}
 if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
   # check if we have a mismatching context for an aws cluster
-  aw eks --region eu-central-1 update-kubeconfig --name $K8S_CONTEXT
+  chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
+  aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
   echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
   k config rename-context $chek $K8S_CONTEXT
 fi
