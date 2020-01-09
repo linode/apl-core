@@ -28,4 +28,3 @@ mkdir letsencrypt >/dev/null
 gcloud iam service-accounts create dnsmanager --display-name "dnsmanager" --project "$PROJECT"
 gcloud projects add-iam-policy-binding $PROJECT \
   --member serviceAccount:dnsmanager@$PROJECT.iam.gserviceaccount.com --role roles/dns.admin
-gcloud iam service-accounts keys create ./letsencrypt/key.json --iam-account dnsmanager@$PROJECT.iam.gserviceaccount.com

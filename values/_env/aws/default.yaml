@@ -1,7 +1,6 @@
 hasCloudLB: false
 
 cert-manager:
-  stage: "staging"
   provider:
     aws:
       # see: https://cert-manager.io/docs/configuration/acme/dns01/route53/
@@ -12,8 +11,8 @@ cert-manager:
 drone:
   sourceControl:
     github:
-      clientID: eb64c85b4e173785041f
-      clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
+      clientID: 68966e093b32da77269f
+      clientSecretValue: 08cdbdd613b2700c49f17e38dc077faf2e765344
 
 external-dns:
   domainFilters: [eks.otomi.cloud]

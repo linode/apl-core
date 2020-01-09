@@ -29,15 +29,16 @@ dockerRunning=$?
 
 drun() {
   KUBE=/tmp/kube.cfg
-  if [ ! -f $KUBE ]; then
-    cp ~/.kube/config $KUBE
-    # Update path to google-cloud-sdk, so it can refresh tokens
-    sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > $KUBE
-  fi
+  cp ~/.kube/config $KUBE
+  # Update path to google-cloud-sdk, so it can refresh tokens
+  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/root\/google-cloud-sdk/' ~/.kube/config > $KUBE
   d run -it --rm -v $PWD:$PWD -v $KUBE:/root/.kube/config -v /tmp:/tmp \
     -v ~/.config/gcloud/:/root/.config/gcloud/ \
     -v ~/.aws:/root/.aws/ \
+    -e K8S_CONTEXT=$K8S_CONTEXT \
+    -e STAGE=$STAGE \
     -w $PWD $img $@
+  rm $KUBE
 }
 
 alias h="helm"
@@ -97,6 +98,6 @@ if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
   k config rename-context $chek $K8S_CONTEXT
 fi
 
-function hfd() { hf -e ${CLOUD}-dev $@ --skip-deps; }
+function hfd() { hf -e ${CLOUD}-dev $@; }
 
 echo "Aliases loaded for target '$CLOUD'"
