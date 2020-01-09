@@ -1,12 +1,5 @@
 hasCloudLB: false
 
-sites:
-  # - eks.otomi.cloud
-
-sitespeed:
-  # - host: eks.otomi.cloud
-  #   paths: [/]
-
 cert-manager:
   stage: "staging"
   provider:
@@ -23,7 +16,7 @@ drone:
       clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
 
 external-dns:
-  domainFilters: [eks.redkubes.net]
+  domainFilters: [eks.otomi.cloud]
   zoneIdFilters:
   aws:
     region: eu-central-1

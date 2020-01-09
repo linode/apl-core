@@ -57,7 +57,7 @@
       <div class="env-links">
         Cloud:
         {{- range $p, $c := $v.clusters }}
-        {{- if ne $p "azure" }} | {{ end }}
+        {{- if ne $p "aws" }} | {{ end }}
         {{- if eq $p $v.provider }}
         <a class="active">{{ $p | title }}</a>
         {{- else }}
