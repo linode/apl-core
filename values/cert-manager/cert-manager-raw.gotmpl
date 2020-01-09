@@ -49,31 +49,18 @@ templates:
     kind: Certificate
     metadata:
       name: letsencrypt-{{ $cm.stage }}-k8s
-      # Istio certs secret lives in the istio-system namespace, and
-      # a cert-manager Certificate is namespace-scoped.
-      namespace: istio-system
+      namespace: {{ if $v.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
     spec:
-      # Reference to the Istio default cert secret.
       secretName: letsencrypt-{{ $cm.stage }}-k8s
       acme:
         config:
-        # Each certificate could rely on different ACME challenge
-        # solver.  In this example we are using one provider for all
-        # the domains.
         - dns01:
             provider: cloud-dns-provider
           domains:
-          # Since certificate wildcards only allow one level, we will
-          # need to one for every namespace that Knative is used in.
-          # We don't need to use wildcard here, fully-qualified domains
-          # will work fine too.
           - "*.{{ $domain }}"
-      # The certificate common name, use one from your domains.
       commonName: "*.{{ $domain }}"
       dnsNames:
-      # Provide same list as `domains` section.
       - "*.{{ $domain }}"
-      # Reference to the ClusterIssuer we created in the previous step.
       issuerRef:
         kind: ClusterIssuer
         name: letsencrypt-{{ $cm.stage }}

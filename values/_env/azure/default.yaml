@@ -6,7 +6,6 @@ azure:
   diskType: standard # premium
 
 cert-manager:
-  stage: "production"
   provider:
     azure:
       azuredns:
@@ -17,7 +16,7 @@ cert-manager:
           key: CLIENT_SECRET
         tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
         subscriptionID: 50c24abd-f872-4a3b-9f65-419800dda5eb
-        resourceGroupName: externaldns
+        resourceGroupName: external-dns
         hostedZoneName: aks.otomi.cloud
 
 drone:
@@ -39,8 +38,8 @@ ingress-azure:
     secretJSON: ewogICJjbGllbnRJZCI6ICJmOGYyYjQwNS05NTM3LTQ0MWItOGU4Ni00YWRhOWY4YmM2ODgiLAogICJjbGllbnRTZWNyZXQiOiAiZWY4ODQ3NzctMmM1Ny00N2U3LThlNjUtMzVhOThkZjIxNWY1IiwKICAic3Vic2NyaXB0aW9uSWQiOiAiNTBjMjRhYmQtZjg3Mi00YTNiLTlmNjUtNDE5ODAwZGRhNWViIiwKICAidGVuYW50SWQiOiAiNTdhM2Y2ZWEtN2U3MC00MjYwLWFjYjQtZTA2Y2U0NTJmNjk1IiwKICAiYWN0aXZlRGlyZWN0b3J5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tIiwKICAicmVzb3VyY2VNYW5hZ2VyRW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmF6dXJlLmNvbS8iLAogICJhY3RpdmVEaXJlY3RvcnlHcmFwaFJlc291cmNlSWQiOiAiaHR0cHM6Ly9ncmFwaC53aW5kb3dzLm5ldC8iLAogICJzcWxNYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQ6ODQ0My8iLAogICJnYWxsZXJ5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9nYWxsZXJ5LmF6dXJlLmNvbS8iLAogICJtYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQvIgp9Cg==
   appgw:
     subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
-    resourceGroup: k8s-redkubes-dev
-    name: appgw-k8s-redkubes-dev
+    resourceGroup: otomi-aks-dev
+    name: appgw-otomi-aks-dev
     usePrivateIP: false
     subnetName: appgw-subnet
     subnetPrefix: 10.1.0.0/16

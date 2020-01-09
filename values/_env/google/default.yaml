@@ -30,7 +30,7 @@ drone:
       clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
 
 external-dns:
-  domainFilters: [gks.otomi.cloud]
+  domainFilters: [otomi.cloud]
   zoneIdFilters: [otomi]
 
 istio:
