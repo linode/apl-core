@@ -1,7 +1,6 @@
 # /bin/bash
 shopt -s expand_aliases
 . bin/aliases
-. .env/cloud
 
 set -e
 

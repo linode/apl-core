@@ -14,7 +14,7 @@ templates:
       labels:
         release: cert-manager
     data:
-      {{ $ap.clientSecretSecretRef.key }}: "{{ $ap.servicePrincipal | b64enc }}"
+      {{ $ap.clientSecretSecretRef.key }}: "{{ $ap.clientSecret | b64enc }}"
   {{- end }}
   {{- if eq $v.provider "google" }}
   - |
