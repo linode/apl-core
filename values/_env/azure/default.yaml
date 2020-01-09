@@ -12,10 +12,6 @@ azure:
   subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
   diskType: standard # premium
 
-cloudDns:
-  domain: aks.redkubes.net
-  zone: aks.redkubes.net
-
 cert-manager:
   stage: "production"
   provider:
@@ -38,6 +34,8 @@ drone:
       clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
 
 external-dns:
+  domainFilters: [aks.redkubes.net]
+  zoneIdFilters:
   azure:
     resourceGroup: externaldns
     aadClientId: b2570406-c9ae-40f9-a1d8-df8d28a055a5

@@ -9,7 +9,7 @@ releases:
     installed: true
     namespace: monitoring
     <<: *default
-  - name: promitor
+  - name: promitor-agent-scraper
     installed: false # {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
     namespace: monitoring
     <<: *default

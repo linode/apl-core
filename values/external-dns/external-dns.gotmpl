@@ -6,14 +6,9 @@
 image:
   tag: 0.5.15-debian-9-r1
 sources:
-- service
 - ingress
 
-# - istio-gateway
-# - crd
-
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
-##
 provider: {{ $v.provider }}
 {{- if eq $v.provider "google" }}
 google:
@@ -29,7 +24,8 @@ azure:
   tenantId: {{ $azure.tenantId }}
   subscriptionId: {{ $azure.subscriptionId }}
 {{- end }}  
-domainFilters: ["{{ $v.cloudDns.domain }}"]
+domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
+zoneIdFilters: {{ $dns | get "zoneIdFilters" | toYaml | nindent 2 }}
 annotationFilter: "{{ if and (eq $v.provider "azure") $v.hasCloudLB }}provider=azure{{ end }}"
 dryRun: false
 crd:
