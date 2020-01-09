@@ -1,4 +1,4 @@
-export REGION="westeurope"
+export AZ_REGION="westeurope"
 export CLUSTER_NAME="otomi-aks"
-export CLUSTER_API_HOST="https://${CLUSTER_NAME}-${STAGE}-8e0e116f.hcp.${REGION}.azmk8s.io"
+export CLUSTER_API_HOST="https://${CLUSTER_NAME}-${STAGE}-8e0e116f.hcp.${AZ_REGION}.azmk8s.io"
 export K8S_CONTEXT="otomi-aks-$STAGE"
