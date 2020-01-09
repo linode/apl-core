@@ -7,10 +7,6 @@ sitespeed:
   # - host: redkubes.net
   #   paths: [/]
 
-cloudDns:
-  domain: eks.otomi.cloud
-  zone: eks.otomi.cloud
-
 cert-manager:
   stage: "staging"
   provider:
@@ -20,7 +16,7 @@ cert-manager:
       route53:
         region: eu-central-1
         hostedZoneID: eks.otomi.cloud
-        role: arn:aws:iam::059522483251:role/eksctl-otomi-eks-dev-cluster-ServiceRole-1MWH3N8W5HRRI
+        # role: arn:aws:iam::059522483251:role/eksctl-otomi-eks-dev-cluster-ServiceRole-1MWH3N8W5HRRI
 
 drone:
   sourceControl:
