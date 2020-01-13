@@ -5,6 +5,12 @@ bases:
 {{- $v := .Environment.Values }}
 
 releases:
+  - name: aws-alb-ingress-controller
+    installed: {{ if and (eq $v.provider "aws") ($v.hasCloudLB) }}true{{ else }}false {{ end }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    <<: *default
   - name: cert-manager
     installed: true
     namespace: ingress

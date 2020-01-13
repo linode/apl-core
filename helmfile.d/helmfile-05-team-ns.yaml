@@ -1,9 +1,15 @@
 bases:
   - snippets/defaults.yaml
-
+---
+{{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $adminDomain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $teamDomain := printf "in-%s.%s" $v.stage $cluster.host }}
+{{- $domConnector := (eq $v.provider "azure" | ternary "-" ".") }}
 {{- $t := readFile "../values/_env/teams.yaml" | fromYaml }}
 releases:
   {{- range $team := $t.teams }}
+  {{- $domain := printf "%s.%s" $team.name (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
   - name: team-ns-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}
@@ -11,5 +17,11 @@ releases:
     labels:
       tag: teams
     values:
-      - {{- $team | toYaml | nindent 8 }}
+      - provider: {{ $v.provider }}
+        hasCloudLB: {{ $v.hasCloudLB }}
+        domain: {{ printf "%s.%s" $team.name (eq $v.provider "azure" | ternary $adminDomain $teamDomain) }}
+        ingress:
+          domConnector: {{ $domConnector | quote }}
+        coreServices: {{- $t.services | toYaml | nindent 10 }}
+        {{- $team | toYaml | nindent 8 }}
   {{- end }}
