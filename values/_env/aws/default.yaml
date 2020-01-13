@@ -1,4 +1,4 @@
-hasCloudLB: false
+hasCloudLB: true
 
 cert-manager:
   provider:
