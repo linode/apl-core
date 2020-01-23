@@ -9,7 +9,7 @@ metadata:
     {{- $v.authAnnotations | toYaml | nindent 4 }}
     {{- $v.ingressAnnotations | toYaml | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
-  labels: {{- template "chart-labels" . | nindent 4 }}
+  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
   name: nginx-ingress-{{ $ns }}
   namespace: istio-system
 spec:

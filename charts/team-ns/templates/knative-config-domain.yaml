@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-domain
-  labels: {{- template "chart-labels" . | nindent 4 }}
+  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
 data:
   {{- if hasKey $v.knative.config "domain" }}
   {{- toYaml $v.knative.config.domain | nindent 2 }}

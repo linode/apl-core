@@ -9,7 +9,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: {{ $s.name }}-{{ $v.domain | replace "." "-" }}
-  labels: {{- template "chart-labels" . | nindent 4 }}
+  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
 spec:
   gateways:
   - {{ $ns }}/{{ $v.name }}

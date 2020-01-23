@@ -7,7 +7,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: {{ $s.name }}
-  labels: {{- template "chart-labels" . | nindent 4 }}
+  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
 spec:
   template:
     spec:
