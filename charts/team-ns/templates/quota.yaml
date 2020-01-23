@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: team-ns-quota
-  labels: {{- template "chart-labels" . | nindent 4 }}
+  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
 spec:
   hard:
     {{- toYaml .Values.resourceQuota | nindent 4 }}
