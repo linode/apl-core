@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $p := $v | get "prometheus-operator" }}
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $p := $v | get "charts.prometheus-operator" }}
 {{ $promHost := printf "prometheus.%s" $domain }}
 {{ $alertsHost := printf "alertmanager.%s" $domain }}
 {{ $grafanaHost := printf "grafana.%s" $domain }}
@@ -71,8 +71,7 @@ prometheus:
     #         target_label: instance
     #       - target_label: __address__
     #         replacement: prom-blackbox-exporter:9115
-  additionalServiceMonitors:
-    {{- readFile "service-monitors.yaml" | nindent 4 }}      
+  additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}      
 additionalPrometheusRules:
   # - name: blackbox
   #   {{/*- readFile "rules/blackbox.yaml" | nindent 4 */}}
@@ -134,15 +133,29 @@ grafana:
       editable: false
       type: loki
       access: proxy
+      {{- if $v.isMultitenant }}
       url: http://loki:11811
       basicAuth: true
       basicAuthUser: admins
-      basicAuthPassword: adminnns
+      basicAuthPassword: {{ $v.charts.loki.adminPassword }}
+      {{- else }}
+      url: http://loki:3100
+      {{- end }}
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
-  adminPassword: bladibla
+  adminPassword: {{ $p.grafana.adminPassword }}
   service:
     portName: http-service
   grafana.ini:
+    "auth.generic_oauth":
+      enabled: true
+      name: OAuth
+      allow_sign_up: true
+      oauth_auto_login: false # so we can login with admin / bladibla
+      client_id: {{ $v.oidc.clientID }}
+      client_secret: {{ $v.oidc.clientSecret }}
+      scopes: openid email name
+      auth_url: {{ $v.oidc.authUrl }}
+      token_url: {{ $v.oidc.tokenUrl }}
     log:
       level: debug
     server:

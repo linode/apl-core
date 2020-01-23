@@ -1,0 +1,28 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sitespeed-clean
+  labels:
+    app: sitespeed
+spec:
+  schedule: {{ $v.schedule.sitespeed }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: sitespeedio/sitespeed.io:9.6.0
+            name: sitespeed-cleaner
+            command: ["sh", "-c", "find sitespeed-result -type d -maxdepth 2 -mindepth 2 -mtime +98 -exec echo \"removing: {}\" \\; -exec rm -rf {} \\;"]
+            volumeMounts:
+            - name: sitespeed-results
+              mountPath: /sitespeed.io/sitespeed-result
+          volumes:
+          - name: sitespeed-results
+            persistentVolumeClaim:
+              claimName: sitespeed-results
+          restartPolicy: Never

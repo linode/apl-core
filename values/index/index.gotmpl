@@ -1,7 +1,7 @@
 {{ $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{ $v | getOrNil "index" | toYaml }}
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{ $v.charts.index | toYaml }}
 fullnameOverride: index
 service:
   type: ClusterIP

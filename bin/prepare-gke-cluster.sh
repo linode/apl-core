@@ -23,7 +23,7 @@ if [ "$answer" != "${answer#[Yy]}" ]; then
   exit
 fi
 
-# set up dns manager and letsencrypt access
+# set up dns manager
 mkdir letsencrypt >/dev/null
 gcloud iam service-accounts create dnsmanager --display-name "dnsmanager" --project "$PROJECT"
 gcloud projects add-iam-policy-binding $PROJECT \

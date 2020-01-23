@@ -1,0 +1,33 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- $services := concat $v.coreServices $v.services }}
+{{- if not (eq (len $services) 0) }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- $v.ingressAnnotations | toYaml | nindent 4 }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # rewrite auth redirects to original hosts
+      rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+  labels: {{- template "chart-labels" . | nindent 4 }}
+  name: auth-{{ $ns }}
+  namespace: istio-system
+spec:
+  rules:
+  - host: 'auth.{{ $v.domain }}'
+    http:
+      paths:
+      - backend:
+          serviceName: oauth2-proxy-{{ $ns }}
+          servicePort: 80
+        path: /oauth2
+  {{- if not $v.hasCloudLB }}
+  tls: 
+    - secretName: letsencrypt-{{ $v.certStage }}-{{ $ns }}
+      hosts:
+        - '*.{{ $v.domain }}'
+  {{- end }}
+{{- end }}

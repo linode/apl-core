@@ -1,23 +1,21 @@
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: std
   parameters:
     kind: Managed
-    storageaccounttype: __TYPE_LRS
+    storageaccounttype: { { .type } }
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: fast
   parameters:
     kind: Managed
-    storageaccounttype: __TYPE_LRS
+    storageaccounttype: { { .type } }
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete

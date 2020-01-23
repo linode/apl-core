@@ -1,11 +1,10 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $cm := index $v "cert-manager" }}
-{{- $gw := $v.istio.gateway }}
-templates:
-  - |
-    apiVersion: networking.istio.io/v1alpha3
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $cm := index $v.charts "cert-manager" }}
+{{- $gw := $v.charts.istio.gateway }}
+resources:
+  - apiVersion: networking.istio.io/v1alpha3
     kind: Gateway
     metadata:
       name: {{ $gw.name }}
@@ -22,8 +21,7 @@ templates:
           protocol: HTTP
   {{- range $s := $v.services }}
   {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) (not ($s | getOrNil "isAuthProxy")) }}
-  - |
-    apiVersion: networking.istio.io/v1alpha3
+  - apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
       name: {{ $s.name }}-{{ $domain | replace "." "-" }}
@@ -42,8 +40,7 @@ templates:
           weight: 100
   {{- end }}
   {{- if ($s | getOrNil "mtls.gatewayDisabled") }}
-  - |
-    apiVersion: networking.istio.io/v1alpha3
+  - apiVersion: networking.istio.io/v1alpha3
     kind: DestinationRule
     metadata:
       name: {{ $s.name }}-notls
@@ -56,8 +53,7 @@ templates:
   {{- end }}
   {{- if or ($s | getOrNil "mtls.gatewayDisabled") ($s | getOrNil "mtls.policyMode") }}
   {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
-  - |
-    apiVersion: authentication.istio.io/v1alpha1
+  - apiVersion: authentication.istio.io/v1alpha1
     kind: Policy
     metadata:
       name: {{ $s.name }}-{{ $mode }}

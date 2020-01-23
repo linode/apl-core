@@ -1,29 +1,24 @@
-{{- if .Values.persistentVolumeClaim.create }}
+{{- $v := .Values.pvc }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ .Values.persistentVolumeClaim.results }}
-  labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: slow
-  resources:
-    requests:
-      storage: 10Gi
----      
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: {{ .Values.persistentVolumeClaim.graphite }}
-  labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
+  name: sitespeed-results
 spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: fast
   resources:
     requests:
-      storage: 2Gi
-{{- end }}
+      storage: {{ $v.results }}
+---      
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sitespeed-graphite
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast
+  resources:
+    requests:
+      storage: {{ $v.graphite }}

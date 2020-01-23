@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 
 releases:
   - name: cloud
@@ -8,3 +8,15 @@ releases:
     chart: ../charts/raw
     values:
     - ../values/cloud/cloud-raw.gotmpl
+  - name: cloud-job-1
+    installed: true
+    namespace: ingress
+    chart: ../charts/raw
+    values:
+    - ../values/cloud/cloud-job-1.gotmpl
+  - name: cloud-job-2
+    installed: false
+    namespace: ingress
+    chart: ../charts/raw
+    values:
+    - ../values/cloud/cloud-job-2.gotmpl

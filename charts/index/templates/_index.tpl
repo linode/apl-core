@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="msapplication-TileColor" content="#ffc40d" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="Dashboard for cluster {{ $v.prefix }}-{{ $v.stage }}.{{ $provider.host }}" />
+    <meta name="description" content="Dashboard for cluster {{ $v.group }}-{{ $v.stage }}.{{ $provider.host }}" />
     <meta name="application-name" content="Otomi" />
     <title>Otomi - All of your apps in the cloud.</title>
     <link type="text/css" rel="stylesheet" href="style.css" />
@@ -61,7 +61,7 @@
         {{- if eq $p $v.provider }}
         <a class="active">{{ $p | title }}</a>
         {{- else }}
-        <a href="https://index{{ $c.domConnector | default $v.domConnector }}{{ $c.prefix | default $v.prefix }}-{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
+        <a href="https://index.{{ $v.group }}.{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
         {{- end }}
         {{- end }}
         - Stage: 
@@ -70,7 +70,7 @@
         {{- if eq $stage $v.stage }}
         <a class="active">{{ $stage }}</a>
         {{- else }}
-        <a href="https://index{{ $v.domConnector }}{{ $v.prefix }}-{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
+        <a href="https://index.{{ $v.group }}.{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
         {{- end }}
         {{- end }}
       </div>
@@ -82,7 +82,7 @@
           Team Dashboard - {{ $v.group | title }}
         </h1>
         <p class="sub">
-          Domain <b>{{ $v.prefix }}-{{ $v.stage }}.{{ $provider.host }}</b>
+          Domain <b>{{ $v.group }}.{{ $v.stage }}.{{ $provider.host }}</b>
         </p>
       </div>
       <h2>Apps <span>({{ $v.services | len }})</span></h2>
@@ -90,7 +90,7 @@
         {{- range $s := $v.services }}
         {{- if ne $s.name "index" }}
         <div class="col-3">
-          <a href='https://{{ $s.host | default $s.name }}{{ $v.domConnector }}{{ $v.prefix }}-{{ $v.stage }}.{{ $provider.host }}{{ $s.path | default "/" }}' target="_blank" class="tile">
+          <a href='https://{{ $s.host | default $s.name }}.{{ $v.group }}.{{ $v.stage }}.{{ $provider.host }}{{ $s.path | default "/" }}' target="_blank" class="tile">
             <div class="img-wrapper">
               <img src="{{ $s.logo | default $s.name }}_logo.svg" alt="{{ $s.name | title }} logo" style="width: 65px;" />
             </div>

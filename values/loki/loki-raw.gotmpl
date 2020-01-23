@@ -1,12 +1,13 @@
-{{- $g := .Environment.Values }}
-{{- $v := index $g "loki" }}
-templates:
-  - |
-    apiVersion: v1
+{{- $v := .Environment.Values }}
+{{- $l := $v.charts.loki }}
+{{- if $v.isMultitenant }}
+resources:
+  - apiVersion: v1
     kind: Secret
     metadata:
       labels:
         app: loki
       name: reverse-proxy-auth-config
     data:
-      authn.yaml: {{ toYaml $v.authConfig | b64enc }}
+      authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig.teams) | b64enc }}
+{{- end }}

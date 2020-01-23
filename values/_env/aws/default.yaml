@@ -1,28 +1,31 @@
 hasCloudLB: true
+useCloudCA: true
+clusterName: otomi-eks-dev
 
-cert-manager:
-  provider:
+charts:
+  cert-manager:
+    provider:
+      aws:
+        # see: https://cert-manager.io/docs/configuration/acme/dns01/route53/
+        # we use metadata inferred
+        route53:
+          region: eu-central-1
+
+  drone:
+    sourceControl:
+      github:
+        clientID: 68966e093b32da77269f
+        clientSecretValue: 08cdbdd613b2700c49f17e38dc077faf2e765344
+
+  external-dns:
+    domainFilters: [eks.otomi.cloud]
+    zoneIdFilters:
     aws:
-      # see: https://cert-manager.io/docs/configuration/acme/dns01/route53/
-      # we use metadata inferred
-      route53:
-        region: eu-central-1
+      region: eu-central-1
 
-drone:
-  sourceControl:
-    github:
-      clientID: 68966e093b32da77269f
-      clientSecretValue: 08cdbdd613b2700c49f17e38dc077faf2e765344
-
-external-dns:
-  domainFilters: [eks.otomi.cloud]
-  zoneIdFilters:
-  aws:
-    region: eu-central-1
-
-istio:
-  # profile: default
-  # sds:
-  #   enabled: false
-  mtls:
-    enabled: false
+  istio:
+    # profile: default
+    # sds:
+    #   enabled: false
+    mtls:
+      enabled: false

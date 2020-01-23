@@ -1,29 +1,30 @@
-{{ $ns := .Release.Namespace }}
+{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- if and (eq $v.provider "azure") ($v.hasCloudLB) }}
-{{- $domConnector := $v.ingress.domConnector }}
+{{- $services := concat $v.coreServices $v.services | default list }}
+{{- if and (eq $v.provider "azure") ($v.hasCloudLB) (not (eq (len $services) 0)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $ns }}
+  name: appgw-{{ $ns }}
   namespace: ingress
+  labels: {{- template "chart-labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/ssl-redirect: "{{ if $v.ingress.forceSsl }}true{{ else }}false{{ end }}"
-    appgw.ingress.kubernetes.io/backend-protocol: "{{ if $v.ingress.forceSsl }}https{{ else }}http{{ end }}"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    appgw.ingress.kubernetes.io/backend-protocol: "http"
     provider: azure
 spec:
   tls:
-    {{- range $s := concat $v.coreServices ($v.services | default list) }}
-    {{- $host := $s.domain | default (printf "%s%s%s" ($s.host | default $s.name) $domConnector $v.domain) }}
+    {{- range $s := $services }}
+    {{- $domain := printf "%s.%s" $s.name $v.domain }}
     - hosts:
-        - {{ $host }}
-      secretName: letsencrypt-{{ $v.certStage }}-k8s
+        - {{ $domain }}
+      secretName: letsencrypt-{{ $v.certStage }}-{{ $v.name }}
     {{- end }}
   rules:
-    {{- range $s := concat $v.coreServices ($v.services | default list) }}
-    {{- $host := $s.domain | default (printf "%s%s%s" ($s.host | default $s.name) $domConnector $v.domain) }}
-    - host: {{ $host }}
+    {{- range $s := $services }}
+    {{- $domain := printf "%s.%s" $s.name $v.domain }}
+    - host: {{ $domain }}
       http:
         paths:
           - backend:

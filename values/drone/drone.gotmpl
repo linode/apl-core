@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
+{{- $d := $v.charts.drone }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
 {{- $host := printf "drone.%s" $domain }}
 fullnameOverride: drone
 sharedSecret: zumsecreetz
@@ -8,15 +9,15 @@ images:
   server:
     tag: 1.0.1
 sourceControl:
-  provider: {{ $v.drone.sourceControl | getOrNil "provider" | default "github" }}
+  provider: {{ $d.sourceControl | getOrNil "provider" | default "github" }}
   github:
-    clientID: {{ $v.drone.sourceControl.github.clientID }}
-    clientSecretValue: {{ $v.drone.sourceControl.github.clientSecretValue }}
+    clientID: {{ $d.sourceControl.github.clientID }}
+    clientSecretValue: {{ $d.sourceControl.github.clientSecretValue }}
     server: https://github.com        
 server:
   host: {{ $host }}
   protocol: https
-  adminUser: {{ $v.drone.server.adminUser }}
+  adminUser: {{ $d.server.adminUser }}
   env:
     DRONE_OPEN: true
     DRONE_GITHUB_SKIP_VERIFY: true
@@ -26,8 +27,8 @@ server:
     DRONE_RPC_PROTO: http
     DRONE_RPC_HOST: drone.system
     DRONE_RPC_DEBUG: true
-    DRONE_ORGS: redkubes
-    DRONE_REPOSITORY_FILTER: redkubes
+    DRONE_ORGS: {{ $d.orgs }}
+    DRONE_REPOSITORY_FILTER: {{ $d.orgs }}
 dind:
   enabled: false    
 persistence:

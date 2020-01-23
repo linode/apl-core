@@ -14,25 +14,26 @@ google:
       "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dnsmanager%40otomi-cloud.iam.gserviceaccount.com"
     }
 
-cert-manager:
-  provider:
-    google:
-      clouddns:
-        project: otomi-cloud
-        serviceAccountSecretRef:
-          name: cloud-dns-key
-          key: key.json
+charts:
+  cert-manager:
+    provider:
+      google:
+        clouddns:
+          project: otomi-cloud
+          serviceAccountSecretRef:
+            name: cloud-dns-key
+            key: key.json
 
-drone:
-  sourceControl:
-    github:
-      clientID: 6455ffb30c8e270c402f
-      clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
+  drone:
+    sourceControl:
+      github:
+        clientID: 6455ffb30c8e270c402f
+        clientSecretValue: 7263c100c2b93064348fe4208c9b3da1bb0787db
 
-external-dns:
-  domainFilters: [otomi.cloud]
-  zoneIdFilters: [otomi]
+  external-dns:
+    domainFilters: [otomi.cloud]
+    zoneIdFilters: [otomi]
 
-istio:
-  mtls:
-    enabled: false
+  istio:
+    mtls:
+      enabled: false

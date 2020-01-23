@@ -1,7 +1,7 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 ---
-{{ readFile "snippets/templates.yaml" }}
+{{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
 
 releases:

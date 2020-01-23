@@ -1,5 +1,5 @@
-{{- $g := .Environment.Values }}
-{{- $v := index $g "ingress-azure" }}
+{{- $v := .Environment.Values }}
+{{- $i := index $v.charts "ingress-azure" }}
 
 ################################################################################
 # Specify the authentication with Azure Resource Manager
@@ -14,16 +14,16 @@
 ## Alternatively you can use Service Principal credentials
 armAuth:
   type: servicePrincipal
-  secretJSON: {{ $v.armAuth.secretJSON }}
+  secretJSON: {{ $i.armAuth.secretJSON }}
 ################################################################################
 # Specify which application gateway the ingress controller will manage
 #
 appgw:
-  subscriptionId: {{ $v.appgw.subscriptionId }}
-  resourceGroup: {{ $v.appgw.resourceGroup }}
-  name: {{ $v.appgw.name }}
-  subnetName: {{ $v.appgw.subnetName }}
-  subnetPrefix: {{ $v.appgw.subnetPrefix }}
+  subscriptionId: {{ $i.appgw.subscriptionId }}
+  resourceGroup: {{ $i.appgw.resourceGroup }}
+  name: {{ $i.appgw.name }}
+  subnetName: {{ $i.appgw.subnetName }}
+  subnetPrefix: {{ $i.appgw.subnetPrefix }}
   usePrivateIP: false
 
 rbac:

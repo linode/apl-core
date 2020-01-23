@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $cm := index $v "cert-manager" }}
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $cm := index $v.charts "cert-manager" }}
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
 image:
@@ -13,7 +13,7 @@ config:
   # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
   clientID: {{ $o.clientID }}
   clientSecret: {{ $o.clientSecret }}
-  cookieSecret: {{ $v | getOrNil "oauth2-proxy.config.cookieSecret" }}
+  cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
 extraArgs:
   # oidc, google, azure, github
