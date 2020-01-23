@@ -1,13 +1,13 @@
+{{- $ := . }}
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $ := . }}
 {{- range $s := $v.services }}
 {{- if and (not (index $s "private")) (not (index $s "virtual")) (not (index $s "svc")) }}
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: {{ $s.name }}
-  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
+  labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   template:
     spec:

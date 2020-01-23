@@ -5,7 +5,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing

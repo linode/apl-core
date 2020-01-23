@@ -1,11 +1,10 @@
-{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
 {{- if and (eq $v.provider "aws") ($v.hasCloudLB) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: "aws-certs-post-hook-1"
-  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
