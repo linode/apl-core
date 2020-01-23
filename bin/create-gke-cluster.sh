@@ -3,7 +3,7 @@
 . .env/cloud
 
 # create the cluster
-gcloud container --project "$PROJECT" clusters update "$CLUSTER_NAME-$STAGE" --region "$GOOGLE_REGION" \
+gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME-$STAGE" --region "$GOOGLE_REGION" \
   --no-enable-basic-auth --cluster-version "1.15.4-gke.22" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \

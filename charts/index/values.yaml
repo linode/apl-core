@@ -165,7 +165,7 @@ metrics:
     ##
   # resources: {}
 
-group: Admins
+group: admin
 domConnector: "."
 providers: {}
 provider: ""

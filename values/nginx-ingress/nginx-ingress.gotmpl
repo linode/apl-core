@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
 rbac:
   create: true
 defaultBackend:
@@ -46,7 +46,7 @@ controller:
       additionalLabels: # needed to be picked up by our one and only prometheus-operator:
         release: prometheus-operator
   service:
-    type: {{ if $v.hasCloudLB }}ClusterIP{{ else }}LoadBalancer{{ end }}
+    type: {{ if $v.hasCloudLB }}{{ if eq $v.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     # {{- if eq $v.provider "azure" }}
     # annotations:
     #   external-dns.alpha.kubernetes.io/hostname: "*.{{ $domain }}"

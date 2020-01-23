@@ -1,4 +1,5 @@
-{{- $t := readFile "../_env/teams.yaml" | fromYaml }}
+{{- $v := .Environment.Values }}
+{{- $t := $v.teamConfig }}
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 
@@ -25,6 +26,7 @@ podAnnotations:
 
 pipelineStages:
   - docker: {}
+  {{- if $v.isMultitenant }}
   - tenant:
       value: admins
   - json:
@@ -38,6 +40,7 @@ pipelineStages:
       stages:
         - tenant:
             value: {{ $team.name }}
+  {{- end }}
   {{- end }}
 
 # config:

@@ -1,7 +1,7 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 
-{{ readFile "snippets/templates.yaml" }}
+{{ readFile "snippets/templates.gotmpl" }}
 
 releases:
   - name: istio-artifacts
@@ -12,9 +12,3 @@ releases:
       tag: ingress
     values:
     - ../values/istio-artifacts/istio-artifacts-raw.gotmpl
-  - name: knative-serving-artifacts
-    installed: true
-    namespace: knative-serving
-    chart: ../charts/raw
-    values:
-    - ../values/knative/serving-raw.gotmpl

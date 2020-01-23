@@ -1,53 +1,57 @@
-services:
-  - name: auth
-    svc: oauth2-proxy
-    namespace: istio-system
-    isAuthProxy: true
-  - name: index
-    svc: index
-  # - name: dashboard
-  #   svc: kubernetes-dashboard
-  #   namespace: kube-system
-  - name: loki
-    svc: po-grafana
-    host: grafana
-    virtual: true
-    path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
-  - name: grafana
-    svc: po-grafana
-    mtls:
-      policyMode: permissive
-      gatewayDisabled: true
-  - name: prometheus
-    svc: po-prometheus
-    port: 9090
-    mtls:
-      # policyMode: permissive
-      gatewayDisabled: true
-  - name: alertmanager
-    svc: po-alertmanager
-    port: 9093
-    logo: prometheus
-    mtls:
-      # policyMode: permissive
-      gatewayDisabled: true
-  # - name: drone
-  #   svc: drone
-  # - name: blackbox
-  #   svc: prom-blackbox-exporter
-  #   port: 9115
+teamConfig:
+  services:
+    - name: auth
+      svc: oauth2-proxy
+      namespace: istio-system
+      isAuthProxy: true
+    - name: index
+      svc: index
+    - name: loki
+      svc: po-grafana
+      host: grafana
+      virtual: true
+      path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
+    - name: grafana
+      svc: po-grafana
+      mtls:
+        policyMode: permissive
+        gatewayDisabled: true
+    - name: prometheus
+      svc: po-prometheus
+      port: 9090
+      mtls:
+        # policyMode: permissive
+        gatewayDisabled: true
+    - name: alertmanager
+      svc: po-alertmanager
+      port: 9093
+      logo: prometheus
+      mtls:
+        # policyMode: permissive
+        gatewayDisabled: true
+    # - name: drone
+    #   svc: drone
+    # - name: blackbox
+    #   svc: prom-blackbox-exporter
+    #   port: 9115
 
-# IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
-teams:
-  - name: team1
-    password: somepassworddd
-    oidc:
-      clientID: ad7611c4-a726-4ec8-8ad3-a518441e728f
-      clientSecret: Qn/=aQ7x]A/9PgGJhbtAlHejq3fA0P4K
-    # slackUrl: https://hooks.slack.com/services/xxx
-    # resourceQuota:
-    #   services.loadbalancers: "1"
-    # services:
-    #   - name: project1 # short name for urls
-    #     svc: project1 # internal k8s service
-    #     # port: 80 # 80 is default
+  # IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
+  teams:
+    - name: team1
+      password: somepassworddd
+      oidc: # optional: to bring up an oauth2-proxy for the namespace, usually for isMultitenant = true
+        clientID: ad7611c4-a726-4ec8-8ad3-a518441e728f
+        clientSecret: Qn/=aQ7x]A/9PgGJhbtAlHejq3fA0P4K
+      # slackUrl: https://hooks.slack.com/services/xxx
+      # resourceQuota:
+      #   services.loadbalancers: "1"
+      services:
+        - name: hello # short name for urls
+          image: morriz/helloworld-nodejs
+          # env:
+          #   - name: TARGET
+          #     value: Universe
+          # svc: project1 # internal k8s service, can be left empty for knative service
+          # port: 80 # 80 is default
+          # isPublic: true # does not need oauth2 sso
+          # domain: override generated domain host with a custom one

@@ -1,15 +1,14 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $cm := index $v "cert-manager" }}
-templates:
-  - |
-    apiVersion: extensions/v1beta1
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $cm := index $v.charts "cert-manager" }}
+resources:
+  - apiVersion: extensions/v1beta1
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/auth-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#DOMCONNECTOR#" "." |  nindent 8 }}
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" "admins" | nindent 8 }}
+        {{- tpl (readFile "../_snippets/auth-annotations.gotmpl") (dict "domain" $domain) |  nindent 8 }}
+        {{- tpl (readFile "../_snippets/ingress-annotations.gotmpl") (dict "domain" $domain "group" "admin") | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
       labels:
         app: nginx-ingress
@@ -20,7 +19,7 @@ templates:
       rules: 
       {{- range $s := $v.services }}
       {{- if and (ne $s.name "auth") (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
-      - host: '{{ $s.name }}.{{ $domain }}'
+      - host: '{{ printf "%s.%s" $s.name $domain }}'
         http:
           paths:
           - path: /oauth2/userinfo
@@ -38,12 +37,11 @@ templates:
           hosts:
             - '*.{{ $domain }}'
       {{- end }}
-  - |
-    apiVersion: extensions/v1beta1
+  - apiVersion: extensions/v1beta1
     kind: Ingress
     metadata:
       annotations:
-        {{- readFile "../_snippets/ingress-annotations.yaml" | replace "#DOMAIN#" $domain | replace "#GROUP#" "admins" | nindent 8 }}
+        {{- tpl (readFile "../_snippets/ingress-annotations.gotmpl") (dict "domain" $domain "group" "admin") | nindent 8 }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/configuration-snippet: |

@@ -1,5 +1,4 @@
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: std
@@ -9,8 +8,7 @@
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: std-regional
@@ -21,8 +19,7 @@
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: fast
@@ -32,8 +29,7 @@
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
-- |
-  apiVersion: storage.k8s.io/v1
+- apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
     name: fast-regional

@@ -1,0 +1,24 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- $ := . }}
+{{- range $s := $v.services }}
+{{- if and (not (index $s "private")) (not (index $s "virtual")) (not (index $s "svc")) }}
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{ $s.name }}
+  labels: {{- template "chart-labels" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      containers:
+        - image: {{ $s.image }}
+          env:
+            - name: TEAM_NAME
+              value: {{ $s.name }}
+            {{- if hasKey $s "env" }}
+            {{- $s.env | toYaml | nindent 12 }}
+            {{- end }}
+---      
+{{- end }}
+{{- end }}

@@ -1,56 +1,14 @@
-clusters:
-  azure:
-    host: aks.otomi.cloud
-    stages: [dev, demo, prd]
-  aws:
-    host: eks.otomi.cloud
-    stages: [dev, demo, prd]
-  google:
-    host: gks.otomi.cloud
-    stages: [dev, demo, prd]
-
-k8s:
-  namespaces:
-    - name: ingress
-    - name: istio-operator
-      disableIstio: true
-    - name: knative-serving
-    - name: monitoring
 isManaged: true
+isMultitenant: true
+ingress:
+  allowedCidrs: []
 hasCloudLB: false
+useCloudCA: false
 emailDomain: redkubes.com
 sites: []
-sitespeed: []
 
 customerLabels:
   customer: redkubes
-
-cert-manager:
-  stage: "staging" # production
-  emailUser: admins # @ domain will be appended
-
-drone:
-  server:
-    adminUser: Morriz
-
-index:
-  isNS: true
-  image:
-    tag: 1.0.5-ns
-
-istio:
-  gateway:
-    name: otomi
-    namespace: ingress
-  profile: sds
-  sds:
-    enabled: true
-  mtls:
-    enabled: false
-
-oauth2-proxy:
-  config:
-    cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
 
 oidc:
   provider: azure
@@ -64,11 +22,9 @@ oidc:
   # provider: azure
   clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
   clientSecret: 3F]Eho:Nwo96e7RPQxDBBYdHHxeE:Tp=
+  authUrl: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/oauth2/authorize
+  tokenUrl: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/oauth2/token
 
-  microsoft:
-    # v2, for dex:
-    issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/v2.0
-    tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
   azure:
     # v1, for oauth2-proxy:
     issuer: https://sts.windows.net/57a3f6ea-7e70-4260-acb4-e06ce452f695/
@@ -79,9 +35,56 @@ oidc:
   github:
     org: redkubes
 
-prometheus-operator:
-  alertmanager:
-    slackUrl: https://hooks.slack.com/services/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
-    channelGroup: otomi
-    groupInterval: 5m
-    repeatInterval: 3h
+charts:
+  cert-manager:
+    stage: "staging" # production
+    emailUser: admins # @ domain will be appended
+
+  drone:
+    orgs: redkubes
+    server:
+      adminUser: Morriz
+
+  index:
+    isNS: true
+    image:
+      tag: 1.0.5-ns
+
+  istio:
+    gateway:
+      name: otomi
+      namespace: ingress
+    profile: sds
+    sds:
+      enabled: true
+    mtls:
+      enabled: false
+
+  loki:
+    adminPassword: adminnns
+    storageType: filesystem
+    retention:
+      duration: 6h
+      period: 24h
+    persistence:
+      size: 20Gi
+
+  oauth2-proxy:
+    config:
+      cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
+
+  prometheus-operator:
+    alertmanager:
+      slackUrl: https://hooks.slack.com/services/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
+      channelGroup: otomi
+      groupInterval: 5m
+      repeatInterval: 3h
+    grafana:
+      adminPassword: bladibla
+
+  sitespeed:
+    retention: "10m:7d,30m:14d"
+    schedule: "*/30 * * * *"
+    pvc:
+      results: 10Gi
+      graphite: 2Gi

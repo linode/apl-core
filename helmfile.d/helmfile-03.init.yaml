@@ -1,7 +1,8 @@
 bases:
-  - snippets/defaults.yaml
-
-{{ readFile "snippets/templates-skeleton.gotmpl" }}
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
 
 releases:
   # cert-manager can't be installed as skeleton because it needs --validate=false, which is not
@@ -16,7 +17,7 @@ releases:
   #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   - name: knative-init
     installed: true
-    namespace: default
+    namespace: knative
     labels:
       init: true
     <<: *skeleton
@@ -27,4 +28,4 @@ releases:
     labels:
       pkg: loki
     values:
-    - ../values/loki/loki-raw.gotmpl
+      - ../values/loki/loki-raw.gotmpl

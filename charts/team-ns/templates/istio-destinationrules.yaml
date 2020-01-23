@@ -1,0 +1,18 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- $services := concat $v.coreServices $v.services }}
+{{- range $s := $services }}
+{{- if (index $s "mtls.gatewayDisabled") }}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ $s.name }}-notls
+  labels: {{- template "chart-labels" . | nindent 4 }}
+spec:
+  host: {{ $v.name }}-{{ $s.svc}}.{{ $ns }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---      
+{{- end }}
+{{- end }}

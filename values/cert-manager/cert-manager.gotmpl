@@ -1,4 +1,5 @@
 {{- $v := .Environment.Values }}
+{{- $cm := index $v.charts "cert-manager" }}
 prometheus:
   servicemonitor:
     enabled: true
@@ -6,7 +7,7 @@ prometheus:
       release: prometheus-operator
 
 ingressShim:
-  defaultIssuerName: letsencrypt-{{ $v | getOrNil "cert-manager.stage" | default "staging" }}
+  defaultIssuerName: letsencrypt-{{ $cm.stage }}
   defaultIssuerKind: ClusterIssuer
 
 cainjector:

@@ -1,11 +1,10 @@
 {{- $v := .Environment.Values }}
-{{- $ret := $v.retention | default "10m:7d,30m:14d" }}
-{{- $schedule := $v.schedule | default "*/30 * * * *") }}
-sites:
-  {{ $v.sitespeed | toYaml | nindent 2 }}
-schedule: "{{ $schedule }}"
-persistentVolumeClaim:
-  create: {{ $v.persistentVolumeClaim.create | default "false" }} # we don't auto delete pvc on helm delete for prd
+{{- $s := $v.charts.sitespeed }}
+sites: {{- $v.sites | toYaml | nindent 2 }}
+schedule: {{- $s.schedule | toYaml | nindent 2 }}
+pvc:
+  results: {{ $s.pvc.results.size }}
+  graphite: {{ $s.pvc.graphite.size }}
 config:
   storageSchemas: |
     [carbon]

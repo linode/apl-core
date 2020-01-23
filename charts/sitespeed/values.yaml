@@ -1,10 +1,7 @@
-sites: []
-schedule: "*/15 * * * *"
-retention: "10m:30d,30m:60d"
-persistentVolumeClaim:
-  create: true # if false the below names are used
-  results: sitespeed-results
-  graphite: sitespeed-graphite
+host: www.essent.nl
+pvc:
+  results: 10Gi
+  graphite: 2Gi
 config:
   carbon:
   storageAggregation:

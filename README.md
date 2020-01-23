@@ -25,7 +25,7 @@ Before listing the hard requirements I would like to offer some really helpful t
 - [Visual Studio Code](https://code.visualstudio.com): The most used code editor, which asks to install the extensions delivered in this repo.
 - [kube_ps1 prompt](https://github.com/jonmosco/kube-ps1): I have it on the right with `RPROMPT='$(kube_ps1)'`
 
-### 1.1 Working k8s cluster
+### 1.1 Working k8s cluster with correct policies
 
 Admin accessible k8s cluster(s). For convenience we have added `bin/create-gke-cluster.sh` to create a k8s cluster in GKE.
 
@@ -54,9 +54,7 @@ After initial deployment, to enable Continuous Deployment of this repo (i.e. fro
 Create and retrieve a token:
 
 ```bash
-# to create the otomi-admin ServiceAccount:
-kubectl apply -f k8s/base --recursive
-# Get the token from the create sa:
+# get the otomi-admin serviceAccount token:
 SECRET_NAME=$(kubectl -n system get sa otomi-admin -o json | jq -r .secrets[].name)
 TOKEN=$(k -n system get secret $SECRET_NAME -o json | jq -r .data.token)
 # to copy to clipboard, on OSX:
@@ -115,18 +113,18 @@ hfd -f helmfile.d/helmfile-10.monitoring.yaml apply
 
 Lets work with the `dev` cluster for this example. Switch to it's context with `kcu dev.otomi`.
 
-As explained in the intro, the services are listed under the [index of the system services](https://index-dev.k8s.otomi.cloud).
+As explained in the intro, the services are listed under the [index of the admin services](https://index.admin.dev.gks.otomi.cloud).
 So far we have the following services (shown for `dev`):
 
-1. [Weave Scope](https://weave-dev.k8s.otomi.cloud): a graphical overview of all the components and their relationships.
-2. [Grafana](https://grafana-dev.k8s.otomi.cloud): the famous metrics dashboard that shows prometheus metrics.
-3. [Prometheus](https://prom-dev.k8s.otomi.cloud/targets): the prometheus environment showing what is being monitored.
-4. [Alertmanager](https://alerts-dev.k8s.otomi.cloud/): Alerts and their configuration.
-5. [Blackbox](https://blackbox-dev.k8s.otomi.cloud): shows the http probes that we test for.
+1. [Weave Scope](https://weave.dev.gks.otomi.cloud): a graphical overview of all the components and their relationships.
+2. [Grafana](https://grafana.admin.dev.gks.otomi.cloud): the famous metrics dashboard that shows prometheus metrics.
+3. [Prometheus](https://prom.admin.dev.gks.otomi.cloud/targets): the prometheus environment showing what is being monitored.
+4. [Alertmanager](https://alerts.admin.dev.gks.otomi.cloud/): Alerts and their configuration.
+5. [Blackbox](https://blackbox.admin.dev.gks.otomi.cloud): shows the http probes that we test for.
 
 It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
 
-# 4. Troubleshooting
+## 4. Troubleshooting
 
 ```bash
 # istio auth checks from gateway to service (here grafana):

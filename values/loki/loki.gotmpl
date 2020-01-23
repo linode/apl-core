@@ -1,9 +1,13 @@
+{{- $v := .Environment.Values -}}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $l :=  $v.charts.loki }}
+
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
 tracing:
   jaegerAgentHost:
 
 config:
-  auth_enabled: true
+  auth_enabled: false
   ingester:
     chunk_idle_period: 15m
     chunk_block_size: 262144
@@ -12,31 +16,34 @@ config:
         kvstore:
           store: inmemory
         replication_factor: 1
+
   limits_config:
     enforce_metric_name: false
     reject_old_samples: true
-    reject_old_samples_max_age: 168h
+    reject_old_samples_max_age: {{ $l.retention.duration }}
   schema_config:
     configs:
-    - from: 2018-04-15
+    - from: "2018-04-15"
       store: boltdb
-      object_store: filesystem
+      object_store: {{ $l.storageType }}
       schema: v9
       index:
         prefix: index_
-        period: 168h
-  server:
-    http_listen_port: 3100
+        period: {{ $l.retention.duration }}
   storage_config:
     boltdb:
       directory: /data/loki/index
     filesystem:
       directory: /data/loki/chunks
+    {{- if eq $l.storageType "aws" }}
+    aws: 
+      s3: s3://{{ $cluster.region }}/logs.{{ $v.stage }}.{{ $cluster.host }}
+    {{- end }}
   chunk_store_config:
     max_look_back_period: 0
   table_manager:
-    retention_deletes_enabled: false
-    retention_period: 0
+    retention_deletes_enabled: true
+    retention_period: {{ $l.retention.period }}
 
 networkPolicy:
   enabled: false
@@ -49,7 +56,7 @@ persistence:
   enabled: true
   accessModes:
   - ReadWriteOnce
-  size: 20Gi
+  size: {{ $l.persistence.size }}
   storageClassName: fast
 
 ## Assign a PriorityClassName to pods if set
@@ -68,26 +75,8 @@ fullnameOverride: loki
 promtail:
   serviceName: promtail
 
-# livenessProbe:
-#   httpGet: null
-#   exec:
-#     command:
-#       - /bin/sh
-#       - -c
-#       - cat /dev/null | nc 127.0.0.1 3100
-# readinessProbe:
-#   httpGet: null
-#   exec:
-#     command:
-#       - /bin/sh
-#       - -c
-#       - cat /dev/null | nc 127.0.0.1 3100
-#       # - /bin/sh
-#       # - -c
-#       # - wget -O- http://127.0.0.1:3100/ready  
-
 extraContainers:
-# Additional containers to be added to the loki pod.
+{{- if $v.isMultitenant }}
 - name: reverse-proxy
   image: angelbarrera92/basic-auth-reverse-proxy:dev
   args:
@@ -101,23 +90,24 @@ extraContainers:
   volumeMounts:
     - name: reverse-proxy-auth-config
       mountPath: /etc/reverse-proxy-conf
-
+{{- end }}
 
 extraVolumes:
-## Additional volumes to the loki pod.
+{{- if $v.isMultitenant }}
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
+{{- end }}
 
-## Extra volume mounts that will be added to the loki container
 extraVolumeMounts: []
 
 extraPorts:
-# Additional ports to the loki services. Useful to expose extra container ports.
+{{- if $v.isMultitenant }}
 - port: 11811
   protocol: TCP
   name: http
   targetPort: http
+{{- end }}
 
 serviceMonitor:
   enabled: true

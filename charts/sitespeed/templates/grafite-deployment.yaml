@@ -12,13 +12,11 @@ spec:
   template:
     metadata:
       labels:
-{{ toYaml .Values.customerLabels | indent 8 }}
         app: graphite
     spec:
-      serviceAccountName: graphite-sa
       containers:
       - name: graphite
-        image: sitespeedio/graphite:1.1.3
+        image: sitespeedio/graphite:1.1.5-12
         ports:
         - name: transport
           containerPort: 2003
@@ -51,4 +49,4 @@ spec:
           name: graphite-config
       - name: whisper
         persistentVolumeClaim:
-          claimName: {{ .Values.persistentVolumeClaim.graphite }}
+          claimName: sitespeed-graphite

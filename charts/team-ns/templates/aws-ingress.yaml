@@ -1,10 +1,11 @@
-{{ $ns := .Release.Namespace }}
+{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- if and (eq $v.provider "aws") ($v.hasCloudLB) }}
-{{- $domConnector := $v.ingress.domConnector }}
+{{- $services := concat $v.coreServices $v.services }}
+{{- if and (eq $v.provider "aws") ($v.hasCloudLB) (not (eq (len $services) 0)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+  labels: {{- template "chart-labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -22,9 +23,9 @@ metadata:
   namespace: ingress
 spec:
   rules:
-    {{- range $s := concat $v.coreServices $v.services  }}
-    {{- $host := $s.domain | default (printf "%s%s%s" ($s.host | default $s.name) $domConnector $v.domain) }}
-    - host: {{ $host }}
+    {{- range $s := $services }}
+    {{- $domain := printf "%s.%s" $s.name $v.domain }}
+    - host: {{ $domain }}
       http:
         paths:
           {{- if $v.ingress.forceSsl }}

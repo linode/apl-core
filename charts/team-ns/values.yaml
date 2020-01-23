@@ -1,3 +1,4 @@
+toolsVersion: 1.1.2
 provider: ""
 adminDomain: ""
 hasCloudLB: false
@@ -12,7 +13,14 @@ ingress:
   allowedCidrs: []
   certArns: []
   tags: ""
-  forceSsl: true
   disableHttp2: false
-  domConnector: "."
-services: []  
+services: []
+region: ""
+authAnnotations: {}
+ingressAnnotations: {}
+knative:
+  enabled: true
+  config: {}
+    # domain:
+    #   customdomain.com: |
+    #     app: prod

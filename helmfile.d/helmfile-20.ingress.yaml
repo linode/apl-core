@@ -1,7 +1,7 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 ---
-{{ readFile "snippets/templates.yaml" }}
+{{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
 
 releases:
@@ -27,10 +27,6 @@ releases:
     - ../values/cert-manager/cert-manager-raw.gotmpl
   - name: external-dns
     installed: true
-    namespace: ingress
-    <<: *default
-  - name: dex
-    installed: false
     namespace: ingress
     <<: *default
   - name: ingress-azure

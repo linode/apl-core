@@ -1,9 +1,9 @@
 {{- $v := .Environment.Values }}
+{{- $i := $v.charts.istio }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-templates:
-  - |
-    apiVersion: install.istio.io/v1alpha2
+{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+resources:
+  - apiVersion: install.istio.io/v1alpha2
     kind: IstioControlPlane
     metadata:
       namespace: istio-operator
@@ -17,7 +17,7 @@ templates:
               readinessProbe:
                 failureThreshold: 20
       {{- end }}
-      profile: {{ $v.istio | get "profile" "sds" }}
+      profile: {{ $i.profile }}
       # autoInjection:
       #   enabled: false
       # cni:
@@ -31,7 +31,7 @@ templates:
       values:
         global:
           mtls:
-            enabled: {{ $v.istio.mtls.enabled }}
+            enabled: {{ $i.mtls.enabled }}
           # tag: 1.2.2
           # logging:
           #   level: "default:info"
@@ -65,5 +65,5 @@ templates:
         gateways:
           istio-ingressgateway:
             sds:
-              enabled: {{ $v.istio | get "sds.enabled" "true" }}
+              enabled: {{ $i | get "sds.enabled" "true" }}
             type: ClusterIP

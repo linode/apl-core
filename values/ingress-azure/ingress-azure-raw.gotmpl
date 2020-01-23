@@ -1,15 +1,12 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "k8s-%s.%s" $v.stage $cluster.host }}
-{{- $cm := index $v "cert-manager" }}
-templates:
-  {{- range $s := $v.services }}
-  {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
-  - |
-    apiVersion: extensions/v1beta1
+{{- $domain := printf "admins.%s.%s" $v.stage $cluster.host }}
+{{- $cm := index $v.charts "cert-manager" }}
+resources:
+  - apiVersion: extensions/v1beta1
     kind: Ingress
     metadata:
-      name: appgw-ingress-{{ $s.name }}
+      name: appgw-admins
       namespace: ingress
       annotations:
         kubernetes.io/ingress.class: azure/application-gateway
@@ -18,15 +15,21 @@ templates:
         # appgw.ingress.kubernetes.io/backend-protocol: "https"
     spec:
       tls:
+        {{- range $s := $v.services }}
+        {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
         - hosts:
             - {{ $s.name }}.{{ $domain }}
           secretName: letsencrypt-{{ $cm.stage }}-k8s
+        {{- end }}
+        {{- end }}
       rules:
+        {{- range $s := $v.services }}
+        {{- if and (not ($s | getOrNil "private")) (not ($s | getOrNil "virtual")) }}
         - host: {{ $s.name }}.{{ $domain }}
           http:
             paths:
               - backend:
                   serviceName: nginx-ingress-controller
                   servicePort: 80
-  {{- end }}
-  {{- end }}
+        {{- end }}
+        {{- end }}

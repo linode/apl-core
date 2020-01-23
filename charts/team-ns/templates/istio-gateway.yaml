@@ -1,0 +1,20 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- $services := concat $v.coreServices $v.services }}
+{{- if not (eq (len $services) 0) }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ $v.name }}
+  labels: {{- template "chart-labels" . | nindent 4 }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+      - '*.{{ $v.domain }}'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+{{- end }}

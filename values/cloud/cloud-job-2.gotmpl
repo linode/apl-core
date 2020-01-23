@@ -1,0 +1,36 @@
+{{- $v := .Environment.Values }}
+resources:
+{{- if and $v.useCloudCA (eq $v.provider "aws") }}
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: certs-job-2
+    labels:
+      app.kubernetes.io/app: certs-job
+      app.kubernetes.io/managed-by: cloud-raw
+  spec:
+    template:
+      metadata:
+        name: certs-job-2
+        labels:
+          app.kubernetes.io/app: certs-job-2
+          app.kubernetes.io/managed-by: cloud-raw
+        annotations:
+          sidecar.istio.io/inject: "false"
+      spec:
+        restartPolicy: Never
+        serviceAccountName: admin
+        containers:
+        - name: certs-job-2
+          image: "otomi/tools:{{ $v.toolsVersion }}"
+          command:
+            - sh
+            - -c
+          args:
+            - |
+              sleep 5 # needed otherwise we get connection refused on the k8s api
+              set -e
+              certArns=$(kubectl get cm cert-arns -o json | jq -r '.data.certArns')
+              # patch the aws ingress
+              kubectl get ing alb-admins -o json | jq '.metadata.annotations["alb.ingress.kubernetes.io/certificate-arn"] = "$certArns"' | kubectl apply -f -
+{{- end }}

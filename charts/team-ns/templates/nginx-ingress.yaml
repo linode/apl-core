@@ -1,0 +1,38 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- $services := concat $v.coreServices $v.services }}
+{{- if not (eq (len $services) 0) }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- $v.authAnnotations | toYaml | nindent 4 }}
+    {{- $v.ingressAnnotations | toYaml | nindent 4 }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+  labels: {{- template "chart-labels" . | nindent 4 }}
+  name: nginx-ingress-{{ $ns }}
+  namespace: istio-system
+spec:
+  rules: 
+  {{- range $s := $services }}
+  {{- if and (ne $s.name "auth") (not (index $s "private")) (not (index $s "virtual")) (index $s "svc") }}
+  {{- $domain := printf "%s.%s" $s.name $v.domain }}
+  - host: {{ $domain }}
+    http:
+      paths:
+      - path: /oauth2/userinfo
+        backend:
+          serviceName: oauth2-proxy-{{ $ns }}
+          servicePort: 80
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+  {{- end }}
+  {{- end }}
+  {{- if not $v.hasCloudLB }}
+  tls: 
+    - secretName: letsencrypt-{{ $v.certStage }}-{{ $ns }}
+      hosts:
+        - '*.{{ $v.domain }}'
+  {{- end }}
+{{- end }}

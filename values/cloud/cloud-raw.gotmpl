@@ -1,5 +1,4 @@
-{{- $g := .Environment.Values }}
-{{- $provider := $g.provider }}
-{{- $azureDiskType := $g | get "azure.diskType" "" }}
-templates:
-{{ readFile (printf "pv-%s.yaml" $provider) | replace "__TYPE" ($azureDiskType | title) }}
+{{- $v := .Environment.Values }}
+{{- $azureDiskType := $v | get "azure.diskType" "" | title }}
+resources:
+{{ tpl (printf "pv-%s.yaml" $v.provider) ("type" $azureDiskType) }}

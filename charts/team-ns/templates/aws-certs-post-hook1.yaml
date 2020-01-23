@@ -1,0 +1,61 @@
+{{- $ns := .Release.Namespace }}
+{{- $v := .Values }}
+{{- if and (eq $v.provider "aws") ($v.hasCloudLB) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "aws-certs-post-hook-1"
+  labels: {{- template "chart-labels" . | nindent 4 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: certs-job
+        image: "otomi/tools:{{ $v.toolsVersion }}"
+        command:
+          - sh
+          - -c
+        args:
+          - |
+            sleep 5 # needed otherwise we get connection refused on the k8s api
+            set -e
+            # request team domain wildcard cert
+            certArn=$(aws acm request-certificate \
+              --region {{ $v.region }} \
+              --domain-name {{ $v.domain }} \
+              --validation-method DNS \
+              --idempotency-token '{{ $v.domain | replace "." "" }}' \
+              --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
+            certArns="$certArn"
+            {{- range $s := ($v.services | default list) }}
+            {{- if and (not $s.certArn) ($s.domain) }}
+            certArn=$(aws acm request-certificate \
+              --region {{ $v.region }} \
+              --domain-name {{ $s.domain }} \
+              --validation-method DNS \
+              --idempotency-token '{{ $s.domain | replace "." "" }}' \
+              --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ',')$certArn"
+            {{- else if $s.certArn }}
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ','){{ $s.certArn }}"
+            {{- end }}
+            {{- end }}
+            set +e
+            kubectl delete cm cert-arns
+            kubectl create cm cert-arns --from-literal=certArns=$certArns
+{{- end }}
