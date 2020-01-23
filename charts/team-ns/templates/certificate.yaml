@@ -8,7 +8,7 @@ metadata:
   namespace: {{ if $v.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 spec:
-  secretName: letsencrypt-{{ $v.certStage }}-{{ $v.name }}
+  secretName: letsencrypt-{{ $v.certStage }}-team-{{ $v.name }}
   commonName: "*.{{ $v.domain }}"
   dnsNames:
   - "*.{{ $v.domain }}"
