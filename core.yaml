@@ -1,4 +1,4 @@
-toolsVersion: 1.1.2
+toolsVersion: 1.1.4
 clusters:
   azure:
     host: aks.otomi.cloud

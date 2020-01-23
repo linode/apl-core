@@ -33,7 +33,7 @@ releases:
     {{- $promHost := printf "prometheus.%s" $domain }}
     {{- $alertsHost := printf "alertmanager.%s" $domain }}
     {{- $grafanaHost := printf "grafana.%s"  $domain }}
-    installed: false
+    installed: true
     namespace: team-{{ $team.name }}
     chart: ../charts/prometheus-operator
     labels:
@@ -77,6 +77,11 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $grafanaHost }}
+            {{- if hasKey $team "oidc" }}
+            "auth.generic_oauth":
+              client_id: {{ $team.oidc.clientID }}
+              client_secret: {{ $team.oidc.clientSecret }}
+            {{- end }}
           additionalDataSources:
             # - name: Graphite
             #   editable: false
@@ -121,9 +126,11 @@ releases:
       - ../values/oauth2-proxy/oauth2-proxy.gotmpl
       - ../values/default.gotmpl
       - fullnameOverride: oauth2-proxy-team-{{ $team.name }}
+        {{- if hasKey $team "oidc" }}
         config:
           clientID: {{ $team.oidc.clientID }}
           clientSecret: {{ $team.oidc.clientSecret }}
+        {{- end }}
         extraArgs:
           whitelist-domain: {{ $domain }}
           redirect-url: https://auth.{{ $domain }}/oauth2/callback

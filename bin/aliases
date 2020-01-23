@@ -96,6 +96,7 @@ if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
   kcu ${K8S_CONTEXT}
 fi
 
+function hf_() { hf -e ${CLOUD}-$STAGE $@; }
 function hfd() { hf -e ${CLOUD}-dev $@ --skip-deps; }
 
 echo "Aliases loaded for target '$CLOUD'"

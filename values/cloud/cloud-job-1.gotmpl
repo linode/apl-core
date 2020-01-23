@@ -37,7 +37,7 @@ resources:
               # request domain wildcard cert
               certArn=$(aws acm request-certificate \
                 --region {{ $cluster.region }} \
-                --domain-name {{ $domain }} \
+                --domain-name '*.{{ $domain }}' \
                 --validation-method DNS \
                 --idempotency-token '{{ $domain | replace "." "" }}' \
                 --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
