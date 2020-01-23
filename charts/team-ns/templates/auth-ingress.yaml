@@ -12,7 +12,7 @@ metadata:
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # rewrite auth redirects to original hosts
       rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
-  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
   name: auth-{{ $ns }}
   namespace: istio-system
 spec:

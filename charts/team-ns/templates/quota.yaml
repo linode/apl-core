@@ -1,8 +1,9 @@
+{{- $v := .Values }}
 apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: team-ns-quota
-  labels: {{- template "chart-labels" . | toYaml | nindent 4 }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
 spec:
   hard:
-    {{- toYaml .Values.resourceQuota | nindent 4 }}
+    {{- toYaml $v.resourceQuota | nindent 4 }}
