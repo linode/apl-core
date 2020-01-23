@@ -1,4 +1,4 @@
 {{- $v := .Environment.Values }}
-{{- $azureDiskType := $v | get "azure.diskType" "" | title }}
+{{- $azureDiskType := ($v | get "azure.diskType" "" | title) }}
 resources:
-{{ tpl (printf "pv-%s.yaml" $v.provider) ("type" $azureDiskType) }}
+{{ tpl (readFile (printf "pv-%s.gotmpl" $v.provider)) (dict "type" $azureDiskType) }}

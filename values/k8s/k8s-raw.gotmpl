@@ -28,7 +28,7 @@ resources:
       name: admin
       namespace: {{ $ns }}
   - apiVersion: rbac.authorization.k8s.io/v1beta1
-    kind: ClusterRoleBinding
+    kind: RoleBinding
     metadata:
       name: admin
       namespace: {{ $ns }}
@@ -41,9 +41,10 @@ resources:
       name: admin
       apiGroup: rbac.authorization.k8s.io
   - apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
+    kind: RoleBinding
     metadata:
       name: admin:psp:restricted
+      namespace: {{ $ns }}
     subjects:
       - kind: ServiceAccount
         name: admin

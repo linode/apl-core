@@ -5,4 +5,4 @@ shopt -s expand_aliases
 set -e
 
 kcu $K8S_CONTEXT
-hf -e $CLOUD-$STAGE destroy --concurrency=1
+kkc

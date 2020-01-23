@@ -4,7 +4,7 @@
     name: std
   parameters:
     kind: Managed
-    storageaccounttype: { { .type } }
+    storageaccounttype: {{ .type }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
@@ -15,7 +15,7 @@
     name: fast
   parameters:
     kind: Managed
-    storageaccounttype: { { .type } }
+    storageaccounttype: {{ .type }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
