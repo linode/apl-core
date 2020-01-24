@@ -5,8 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  registry: eu.gcr.io
+  repository: k8s-playground-256113/otomi-stack-api
+  tag: 0.1.1
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -15,10 +16,10 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name:
+  name: admin
 
 podSecurityContext: {}
   # fsGroup: 2000
