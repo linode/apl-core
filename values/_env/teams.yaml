@@ -42,6 +42,9 @@ teamConfig:
       #   services.loadbalancers: "1"
       # knative:
       #   enabled: false
+      cicd:
+        enabled: true
+        type: drone
       services:
         - name: hello # short name for urls
           image: morriz/helloworld-nodejs

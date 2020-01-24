@@ -7,7 +7,7 @@ kind: Ingress
 metadata:
   annotations:
     {{- include "auth-annotations" $v | nindent 4 }}
-    {{- include "ingress-annotations" . | nindent 4 }}
+    {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-ingress-team-{{ $v.name }}

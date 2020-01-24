@@ -6,7 +6,7 @@ bases:
 {{- $adminDomain := printf "admin.%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
-{{- $t := $v.teamConfig }}
+{{- $tc := $v.teamConfig }}
 releases:
   - name: team-ns-admin
     installed: true
@@ -27,7 +27,7 @@ releases:
           enabled: false
         ingress:
           allowedCidrs: {{- index $v "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
-  {{- range $team := $t.teams }}
+  {{- range $team := $tc.teams }}
   {{- $domain := printf "%s.%s.%s" $team.name $v.stage $cluster.host }}
   - name: team-ns-{{ $team.name }}
     installed: true
@@ -57,13 +57,14 @@ releases:
               logging:
                 loglevel.controller: "debug"
       - {{- $team | toYaml | nindent 8 }}
-      - services: {{- concat $t.services ($team | get "services" list) | toYaml | nindent 12 }}
+      - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
-        {{- if eq $cicdFlavour "drone "}}
-        - name: drone
-          svc: drone
+        {{- if eq $cicdFlavour "drone" }}
+        # @todo: fix this weirdness: the next two lines fook the yaml parser:
+        # - name: drone
+        #   svc: drone
         {{- end }}
         {{- end }}
         {{- if ne (len ($team | get "sites" list)) 0 }}
@@ -153,27 +154,27 @@ releases:
       - fullnameOverride: {{ $team.name }}-index
         group: {{ $team.name }}
         services:
-          {{- range $s := $t.services }}
-          {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+          {{- range $s := $tc.services }}
+          {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "private")) }}
           - {{ $s | toYaml | nindent 12 }}
           {{- end }}
           {{- end }}
   {{- if ($team | get "cicd.enabled" "false") }}
   {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
-  {{- if eq $cicdFlavour "drone "}}
-  - name: drone-{{ $team.name }}
-    installed: true # @todo: set up values and enable
-    namespace: team-{{ $team.name }}
-    chart: ../charts/drone
-    labels:
-      tag: teams
-      pkg: cicd
-    values:
-      - ../values/drone/drone.gotmpl
-      - ../values/default.gotmpl
-      - fullnameOverride: {{ $team.name }}-drone
-        env:
-          DRONE_RPC_HOST: drone.team-{{ $team.name }}
+  {{- if eq $cicdFlavour "drone" }}
+  # - name: drone-{{ $team.name }}
+  #   installed: true # @todo: set up values and enable
+  #   namespace: team-{{ $team.name }}
+  #   chart: ../charts/drone
+  #   labels:
+  #     tag: teams
+  #     pkg: cicd
+  #   values:
+  #     - ../values/drone/drone.gotmpl
+  #     - ../values/default.gotmpl
+  #     - fullnameOverride: {{ $team.name }}-drone
+  #       env:
+  #         DRONE_RPC_HOST: drone.team-{{ $team.name }}
   {{- end }}
   {{- end }}
   {{- end }}
