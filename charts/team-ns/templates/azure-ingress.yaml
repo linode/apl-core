@@ -1,11 +1,9 @@
-{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $services := concat $v.coreServices $v.services | default list }}
-{{- if and (eq $v.provider "azure") ($v.hasCloudLB) (not (eq (len $services) 0)) }}
+{{- if and (eq $v.provider "azure") ($v.hasCloudLB) (or (eq $v.name "admin") ($v.isMultitenant)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: appgw-{{ $ns }}
+  name: appgw-team-{{ $v.name }}
   namespace: ingress
   labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
@@ -15,20 +13,25 @@ metadata:
     provider: azure
 spec:
   tls:
-    {{- range $s := $services }}
-    {{- $domain := printf "%s.%s" $s.name $v.domain }}
+    {{- range $s := $v.services }}
+    {{- if (not $s.private) -}}
+    {{- $domain := (index $s "domain" | default printf "%s.%s" $s.name $v.domain) }}
+    {{- $name := (hasKey $s "domain" | ternary $s.name $v.name) }}
     - hosts:
         - {{ $domain }}
-      secretName: letsencrypt-{{ $v.certStage }}-{{ $v.name }}
+      secretName: cert-team-{{ $v.name }}-{{ $name }}
+    {{- end }}
     {{- end }}
   rules:
-    {{- range $s := $services }}
-    {{- $domain := printf "%s.%s" $s.name $v.domain }}
+    {{- range $s := $v.services }}
+    {{- if (not $s.private) -}}
+    {{- $domain := (index $s "domain" | default printf "%s.%s" $s.name $v.domain) }}
     - host: {{ $domain }}
       http:
         paths:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
+    {{- end }}
     {{- end }}
 {{- end }}

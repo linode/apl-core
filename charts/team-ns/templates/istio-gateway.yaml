@@ -1,10 +1,9 @@
 {{- $v := .Values }}
-{{- $services := concat $v.coreServices $v.services }}
-{{- if not (eq (len $services) 0) }}
+{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: {{ $v.name }}
+  name: team-{{ $v.name }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 spec:
   selector:
@@ -12,6 +11,11 @@ spec:
   servers:
   - hosts:
       - '*.{{ $v.domain }}'
+      {{- range $s := $v.services }}
+      {{- if and (hasKey $s "domain") (index $s "svc") }}
+      - {{ $s.domain }}
+      {{- end }}
+      {{- end }}
     port:
       name: http
       number: 80

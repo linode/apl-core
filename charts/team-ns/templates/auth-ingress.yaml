@@ -1,19 +1,18 @@
-{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $services := concat $v.coreServices $v.services }}
-{{- if not (eq (len $services) 0) }}
+{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- $svc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    {{- $v.ingressAnnotations | toYaml | nindent 4 }}
+    {{- include "ingress-annotations" . | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # rewrite auth redirects to original hosts
       rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: auth-{{ $ns }}
+  name: auth-team-{{ $v.name }}
   namespace: istio-system
 spec:
   rules:
@@ -21,12 +20,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: oauth2-proxy-{{ $ns }}
+          serviceName: {{ $svc }}
           servicePort: 80
         path: /oauth2
   {{- if not $v.hasCloudLB }}
   tls: 
-    - secretName: letsencrypt-{{ $v.certStage }}-{{ $ns }}
+    - secretName: cert-team-{{ $v.name }}
       hosts:
         - '*.{{ $v.domain }}'
   {{- end }}

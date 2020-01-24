@@ -8,6 +8,25 @@ bases:
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $t := $v.teamConfig }}
 releases:
+  - name: team-ns-admin
+    installed: true
+    namespace: team-admin
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+    values:
+      - name: admin
+        isMultitenant: {{ $v.isMultitenant }}
+        provider: {{ $v.provider }}
+        region: {{ $cluster.region }}
+        hasCloudLB: {{ $v.hasCloudLB }}
+        domain: {{ $adminDomain }}
+        certStage: {{ $cm.stage }}
+        services: {{- $v.services | toYaml | nindent 10 }}
+        knative:
+          enabled: false
+        ingress:
+          allowedCidrs: {{- index $v "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
   {{- range $team := $t.teams }}
   {{- $domain := printf "%s.%s.%s" $team.name $v.stage $cluster.host }}
   - name: team-ns-{{ $team.name }}
@@ -17,17 +36,42 @@ releases:
     labels:
       tag: teams
     values:
-      - provider: {{ $v.provider }}
+      - isMultitenant: {{ $v.isMultitenant }}
+        provider: {{ $v.provider }}
         region: {{ $cluster.region }}
         hasCloudLB: {{ $v.hasCloudLB }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
-        coreServices: {{- $t.services | toYaml | nindent 10 }}
-        authAnnotations: {{- tpl (readFile "../values/_snippets/auth-annotations.gotmpl") (dict "domain" $domain) | nindent 10 }}
-        ingressAnnotations: {{- tpl (readFile "../values/_snippets/ingress-annotations.gotmpl") (dict "group" $team.name) | nindent 10 }}
         ingress:
-          allowedCidrs: {{- index $v "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
+          allowedCidrs: {{- index $team "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
+        knative:
+          enabled: true
+          config:
+            serving:
+              defaults:
+                revision-timeout-seconds: "300"  # 5 minutes
+              autoscaler:
+                stable-window: "60s"
+              deployment:
+                registriesSkippingTagResolving: "ko.local,dev.local"
+              logging:
+                loglevel.controller: "debug"
       - {{- $team | toYaml | nindent 8 }}
+      - services: {{- concat $t.services ($team | get "services" list) | toYaml | nindent 12 }}
+        {{- if $v.isMultitenant }}
+        {{- if ($team | get "cicd.enabled" "false") }}
+        {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
+        {{- if eq $cicdFlavour "drone "}}
+        - name: drone
+          svc: drone
+        {{- end }}
+        {{- end }}
+        {{- if ne (len ($team | get "sites" list)) 0 }}
+        - name: blackbox
+          svc: prom-blackbox-exporter
+          port: 9115
+        {{- end }}
+        {{- end }}
   {{- if $v.isMultitenant }}        
   - name: prometheus-team-{{ $team.name }}
     {{- $promHost := printf "prometheus.%s" $domain }}
@@ -114,6 +158,24 @@ releases:
           - {{ $s | toYaml | nindent 12 }}
           {{- end }}
           {{- end }}
+  {{- if ($team | get "cicd.enabled" "false") }}
+  {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
+  {{- if eq $cicdFlavour "drone "}}
+  - name: drone-{{ $team.name }}
+    installed: true # @todo: set up values and enable
+    namespace: team-{{ $team.name }}
+    chart: ../charts/drone
+    labels:
+      tag: teams
+      pkg: cicd
+    values:
+      - ../values/drone/drone.gotmpl
+      - ../values/default.gotmpl
+      - fullnameOverride: {{ $team.name }}-drone
+        env:
+          DRONE_RPC_HOST: drone.team-{{ $team.name }}
+  {{- end }}
+  {{- end }}
   {{- end }}
   - name: oauth2-proxy-team-{{ $team.name }}
     installed: true

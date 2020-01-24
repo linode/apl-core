@@ -1,8 +1,9 @@
+{{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cluster-list-{{ $ns }}
+  name: cluster-list-team-{{ $v.name }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -16,7 +17,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: admin-{{ $ns }}
+  name: admin-team-{{ $v.name }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -30,7 +31,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unprivileged-{{ $ns }}
+  name: unprivileged-team-{{ $v.name }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io

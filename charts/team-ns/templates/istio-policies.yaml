@@ -1,19 +1,22 @@
-{{- $ := . }}
 {{- $v := .Values }}
-{{- $services := concat $v.coreServices $v.services }}
-{{- range $s := $services }}
+{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- $ := . }}
+{{- range $s := $v.services }}
 {{- if or (index $s "mtls.gatewayDisabled") (index $s "mtls.policyMode") }}
 {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
+{{- $ns := index $s "namespace" | default .Release.Namespace }}
+{{- $svc := (eq $v.name "admin") | ternary $s.svc (printf "%s-%s" $v.name $s.svc) }}
 apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
-  name: {{ $s.name }}-{{ $mode }}
+  name: team-{{ $v.name }}-{{ $s.name }}-{{ $mode }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   peers:
     - mtls:
         mode: {{ $mode | upper }}
   targets:
-    - name: {{ $s.svc }}
+    - name: {{ $svc }}.{{ $ns }}.svc.cluster.local
+{{- end }}
 {{- end }}
 {{- end }}
