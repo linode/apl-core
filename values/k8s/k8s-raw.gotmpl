@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "%s.%s" $v.stage $cluster.host }}
 {{- $t := $v.teamConfig }}
-{{- range $team := $t.teams }}
-{{- end }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
   - apiVersion: v1
@@ -14,6 +14,7 @@ resources:
   {{- end }}
   {{- range $team := $t.teams }}
   {{- $ns := printf "team-%s" $team.name }}
+  {{- $domain := printf "%s.%s.%s" $team.name $v.stage $cluster.host }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -34,11 +35,16 @@ resources:
         defaults:
           revision-timeout-seconds: "300"  # 5 minutes
         autoscaler:
-          stable-window: "60s"
+          stable-window: "600s"
         deployment:
           registriesSkippingTagResolving: "ko.local,dev.local"
         logging:
           loglevel.controller: "debug"
+        # @todo: figure out why overridden settings don't work:
+        network:
+          domainTemplate: "{{`{{.Name}}.{{.Domain}}`}}"
+        domain:
+          {{ $domain }}: ""
         {{- end }}
   {{- end }}
   {{- end }}
