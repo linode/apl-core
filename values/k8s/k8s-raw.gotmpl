@@ -20,37 +20,25 @@ resources:
       name: {{ $ns }}
       labels:
         name: {{ $ns }}
+  {{- if (index $team "knative.enabled" | default "true") }}
+  - apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: knative-serving
+      namespace: {{ $ns }}
+    spec:
+      config:
+        {{- if (index $team "knative.config.serving") }}
+        {{- $team.knative.config.serving | toYaml | nindent 8 }}
+        {{- else }}
+        defaults:
+          revision-timeout-seconds: "300"  # 5 minutes
+        autoscaler:
+          stable-window: "60s"
+        deployment:
+          registriesSkippingTagResolving: "ko.local,dev.local"
+        logging:
+          loglevel.controller: "debug"
+        {{- end }}
   {{- end }}
-  {{- range $ns := list "ingress" "system" }}
-  - apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: admin
-      namespace: {{ $ns }}
-  - apiVersion: rbac.authorization.k8s.io/v1beta1
-    kind: RoleBinding
-    metadata:
-      name: admin
-      namespace: {{ $ns }}
-    subjects:
-      - kind: ServiceAccount
-        name: admin
-        namespace: {{ $ns }}
-    roleRef:
-      kind: ClusterRole
-      name: admin
-      apiGroup: rbac.authorization.k8s.io
-  - apiVersion: rbac.authorization.k8s.io/v1
-    kind: RoleBinding
-    metadata:
-      name: admin:psp:restricted
-      namespace: {{ $ns }}
-    subjects:
-      - kind: ServiceAccount
-        name: admin
-        namespace: {{ $ns }}
-    roleRef:
-      apiGroup: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: psp:restricted
   {{- end }}

@@ -1,10 +1,11 @@
-{{- $ := . }}
-{{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $services := concat $v.coreServices $v.services }}
-{{- range $s := $services }}
+{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- $ := . }}
+{{- range $s := $v.services }}
+{{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not (index $s "private")) (not (index $s "virtual")) (index $s "svc") }}
-{{- $domain := printf "%s.%s" $s.name $v.domain }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+{{- $svc := (eq $v.name "admin") | ternary $s.svc (printf "%s-%s" $v.name $s.svc) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -12,16 +13,17 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   gateways:
-  - {{ $ns }}/{{ $v.name }}
+  - {{ $.Release.Namespace }}/team-{{ $v.name }}
   hosts:
   - {{ $domain }}
   http:
   - route:
     - destination:
-        host: {{ $v.name }}-{{ $s.svc }}.{{ $ns }}.svc.cluster.local
+        host: {{ $svc }}.{{ $ns }}.svc.cluster.local
         port:
           number: {{ index $s "port" | default 80 }}
       weight: 100
 ---      
+{{- end }}
 {{- end }}
 {{- end }}

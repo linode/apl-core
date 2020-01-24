@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- if and (eq $v.provider "aws") ($v.hasCloudLB) }}
+{{- if and ($v.useCloudCA) (or (eq $v.name "admin") ($v.isMultitenant)) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "aws-certs-post-hook-1"
+  name: certs-post-job-1-team-{{ $v.name }}
   labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
@@ -14,7 +14,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: "{{ .Release.Name }}"
+      name: certs-post-job-1-team-{{ $v.name }}
       labels:
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
@@ -33,6 +33,7 @@ spec:
           - |
             sleep 5 # needed otherwise we get connection refused on the k8s api
             set -e
+{{- if eq $v.provider "aws" }}
             # request team domain wildcard cert
             certArn=$(aws acm request-certificate \
               --region {{ $v.region }} \
@@ -41,7 +42,7 @@ spec:
               --idempotency-token '{{ $v.domain | replace "." "" }}' \
               --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
             certArns="$certArn"
-            {{- range $s := ($v.services | default list) }}
+            {{- range $s := $v.services }}
             {{- if and (not $s.certArn) ($s.domain) }}
             certArn=$(aws acm request-certificate \
               --region {{ $v.region }} \
@@ -55,6 +56,11 @@ spec:
             {{- end }}
             {{- end }}
             set +e
-            kubectl delete cm cert-arns
-            kubectl create cm cert-arns --from-literal=certArns=$certArns
+            kubectl delete cm cert-arns-team-{{ $v.name }}
+            kubectl create cm cert-arns-team-{{ $v.name }} --from-literal=certArns=$certArns
+{{- else if eq $v.provider "google" }}
+              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+{{- else if eq $v.provider "azure" }}
+              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+{{- end }}
 {{- end }}

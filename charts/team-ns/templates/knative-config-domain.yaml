@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if $v.knative.enabled -}}
+{{- if (index $v "knative.enabled" | default "true") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

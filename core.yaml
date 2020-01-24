@@ -21,6 +21,7 @@ k8s:
     - name: knative
     - name: monitoring
     - name: system
+    - name: team-admin
 
 services:
   - name: auth
