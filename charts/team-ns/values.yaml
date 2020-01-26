@@ -24,3 +24,8 @@ knative:
     # domain:
     #   customdomain.com: |
     #     app: prod
+
+secret:
+  gcr: {}
+    # name: secretName
+    # data: base64EncodedJSONData

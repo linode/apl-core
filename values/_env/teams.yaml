@@ -34,7 +34,9 @@ teamConfig:
     # - name: blackbox
     #   svc: prom-blackbox-exporter
     #   port: 9115
-
+    - name: otomi
+      svc: otomi
+      port: 8080
   # IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
   teams:
     - name: team1
