@@ -5,8 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  registry: eu.gcr.io
+  repository: k8s-playground-256113/otomi-stack-api
+  tag: 0.1.1
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
