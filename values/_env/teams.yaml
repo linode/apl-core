@@ -1,5 +1,14 @@
 teamConfig:
+  description: |
+    The services section specifies deafult services that are deployed for each team.
+    Define 'namespace' if a service should be deployed out of team namespace.
+    Define flag 'virtual' to deploy only a proxy to an existing service that is out of team namespace (see: Istio Virtual Service).
   services:
+    - name: otomi-api
+      namespace: shared
+      port: 8080
+      svc: otomi-api
+      virtual: true
     - name: auth
       svc: oauth2-proxy
       namespace: istio-system
@@ -34,9 +43,7 @@ teamConfig:
     # - name: blackbox
     #   svc: prom-blackbox-exporter
     #   port: 9115
-    - name: otomi
-      svc: otomi
-      port: 8080
+
   # IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
   teams:
     - name: team1
