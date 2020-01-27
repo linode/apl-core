@@ -1,6 +1,0 @@
-bases:
-  - snippets/defaults.gotmpl
-
-{{ readFile "snippets/templates.gotmpl" }}
-
-releases: []

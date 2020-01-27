@@ -1,0 +1,10 @@
+bases:
+  - snippets/defaults.gotmpl
+
+releases:
+  - name: knative-serving
+    installed: true
+    namespace: knative-serving
+    chart: ../charts/raw
+    values:
+      - ../values/knative/knative-serving-raw.gotmpl

@@ -1,0 +1,23 @@
+{{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
+{{- $domain := printf "%s.%s" $v.stage $cluster.host }}
+resources:  
+  - apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: knative-serving
+      namespace: knative-serving
+    spec:
+      config:
+        defaults:
+          revision-timeout-seconds: "300"  # 5 minutes
+        autoscaler:
+          stable-window: "600s"
+        deployment:
+          registriesSkippingTagResolving: "ko.local,dev.local"
+        logging:
+          loglevel.controller: "debug"
+        # network:
+        #   domainTemplate: "{{`{{.Name}}.{{.Namespace}}.{{.Domain}}`}}"
+        domain:
+          {{ $domain }}: ""

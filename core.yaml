@@ -18,9 +18,9 @@ k8s:
     - name: ingress
     - name: istio-operator
       disableIstioInjection: true
-    - name: knative
+    - name: knative-serving
     - name: monitoring
-    - name: system
+    - name: shared
     - name: team-admin
 
 services:
@@ -30,7 +30,7 @@ services:
     isAuthProxy: true
   - name: index
     svc: index
-    namespace: system
+    namespace: team-admin
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
@@ -102,4 +102,4 @@ services:
       gatewayDisabled: true
   - name: drone
     svc: drone
-    namespace: system
+    namespace: team-admin

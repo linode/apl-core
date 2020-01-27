@@ -3,7 +3,7 @@ bases:
 ---
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $adminDomain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $adminDomain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $tc := $v.teamConfig }}
@@ -28,7 +28,7 @@ releases:
         ingress:
           allowedCidrs: {{- index $v "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
   {{- range $team := $tc.teams }}
-  {{- $domain := printf "%s.%s.%s" $team.name $v.stage $cluster.host }}
+  {{- $domain := printf "team-%s.%s.%s" $team.name $v.stage $cluster.host }}
   - name: team-ns-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}
