@@ -1,0 +1,11 @@
+{{- $v := .Environment.Values }}
+{{- $gcr := $v.gcr }}
+
+resources:
+  - apiVersion: v1
+    data:
+      .dockerconfigjson: {{ $gcr.data }}
+    kind: Secret
+    metadata:
+      name: {{ $gcr.name }}
+    type: kubernetes.io/dockerconfigjson
