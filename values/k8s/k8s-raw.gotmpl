@@ -1,6 +1,4 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "%s.%s" $v.stage $cluster.host }}
 {{- $t := $v.teamConfig }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
@@ -14,37 +12,10 @@ resources:
   {{- end }}
   {{- range $team := $t.teams }}
   {{- $ns := printf "team-%s" $team.name }}
-  {{- $domain := printf "%s.%s.%s" $team.name $v.stage $cluster.host }}
   - apiVersion: v1
     kind: Namespace
     metadata:
       name: {{ $ns }}
       labels:
         name: {{ $ns }}
-  {{- if (index $team "knative.enabled" | default "true") }}
-  - apiVersion: operator.knative.dev/v1alpha1
-    kind: KnativeServing
-    metadata:
-      name: knative-serving
-      namespace: {{ $ns }}
-    spec:
-      config:
-        {{- if (index $team "knative.config.serving") }}
-        {{- $team.knative.config.serving | toYaml | nindent 8 }}
-        {{- else }}
-        defaults:
-          revision-timeout-seconds: "300"  # 5 minutes
-        autoscaler:
-          stable-window: "600s"
-        deployment:
-          registriesSkippingTagResolving: "ko.local,dev.local"
-        logging:
-          loglevel.controller: "debug"
-        # @todo: figure out why overridden settings don't work:
-        network:
-          domainTemplate: "{{`{{.Name}}.{{.Domain}}`}}"
-        domain:
-          {{ $domain }}: ""
-        {{- end }}
-  {{- end }}
   {{- end }}
