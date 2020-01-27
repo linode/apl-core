@@ -6,6 +6,10 @@ templates:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.yaml
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
       - ../values/default.gotmpl
+  raw: &raw
+    chart: ../charts/raw
+    values:
+      - ../values/{{ .Release.Name }}/{{ .Release.Name }}-raw.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:

@@ -6,13 +6,13 @@ bases:
 releases:
   - name: index
     installed: true
-    namespace: system
+    namespace: team-admin
     <<: *default
   - name: drone
     installed: true
-    namespace: system
+    namespace: team-admin
     <<: *default
   - name: gitlab
     installed: false
-    namespace: system
+    namespace: team-admin
     <<: *default
