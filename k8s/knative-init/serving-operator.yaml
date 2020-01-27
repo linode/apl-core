@@ -18,8 +18,6 @@ spec:
     kind: KnativeServing
     listKind: KnativeServingList
     plural: knativeservings
-    shortNames:
-    - ks
     singular: knativeserving
   scope: Namespaced
   subresources:
@@ -59,6 +57,21 @@ spec:
                 type: object
               description: A means to override the corresponding entries in the upstream
                 configmaps
+              type: object
+            controller-custom-certs:
+              description: Enabling the controller to trust registries with self-signed
+                certificates
+              properties:
+                name:
+                  description: The name of the ConfigMap or Secret
+                  type: string
+                type:
+                  description: One of ConfigMap or Secret
+                  enum:
+                  - ConfigMap
+                  - Secret
+                  - ""
+                  type: string
               type: object
             knative-ingress-gateway:
               description: A means to override the knative-ingress-gateway
@@ -307,9 +320,16 @@ spec:
               fieldPath: metadata.namespace
         - name: METRICS_DOMAIN
           value: knative.dev/serving-operator
-        image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager@sha256:7008dfe31aee9bc7c81ea44171f8ab54f8289e2377e378837bba5f44af6f92c9
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager@sha256:18778438707496893157a01d2641c07589837ee79e402fe462b07b81e9c36973
         imagePullPolicy: IfNotPresent
         name: knative-serving-operator
+        ports:
+        - containerPort: 9090
+          name: metrics
       serviceAccountName: knative-serving-operator
 
 ---

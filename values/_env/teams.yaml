@@ -38,11 +38,6 @@ teamConfig:
       mtls:
         # policyMode: permissive
         gatewayDisabled: true
-    # - name: drone
-    #   svc: drone
-    # - name: blackbox
-    #   svc: prom-blackbox-exporter
-    #   port: 9115
 
   # IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
   teams:
@@ -54,6 +49,11 @@ teamConfig:
       # slackUrl: https://hooks.slack.com/services/xxx
       # resourceQuota:
       #   services.loadbalancers: "1"
+      # knative:
+      #   enabled: false
+      cicd:
+        enabled: true
+        type: drone
       services:
         - name: hello # short name for urls
           image: morriz/helloworld-nodejs
@@ -64,3 +64,5 @@ teamConfig:
           # port: 80 # 80 is default
           # isPublic: true # does not need oauth2 sso
           # domain: override generated domain host with a custom one
+          # hasCert: false # create one on the fly, or provide one as secret in cert-team-$team-$name, or:
+          # certArn: arn:aws:acm:eu-central-1:829552880873:certificate/3a3da880-ab47-43d2-b216-aecf664314f5

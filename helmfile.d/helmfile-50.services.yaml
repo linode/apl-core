@@ -3,12 +3,4 @@ bases:
 
 {{ readFile "snippets/templates.gotmpl" }}
 
-releases:
-  - name: istio-artifacts
-    installed: true
-    namespace: ingress
-    chart: ../charts/raw
-    labels:
-      tag: ingress
-    values:
-    - ../values/istio-artifacts/istio-artifacts-raw.gotmpl
+releases: []

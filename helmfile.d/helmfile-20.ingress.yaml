@@ -6,7 +6,7 @@ bases:
 
 releases:
   - name: aws-alb-ingress-controller
-    installed: {{ if and (eq $v.provider "aws") ($v.hasCloudLB) }}true{{ else }}false {{ end }}
+    installed: {{ if and (eq $v.provider "aws") ($v.hasCloudLB) }}true{{ else }}false{{ end }}
     namespace: ingress
     labels:
       tag: ingress
@@ -30,33 +30,17 @@ releases:
     namespace: ingress
     <<: *default
   - name: ingress-azure
-    installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
+    installed: {{ if eq $v.provider "azure" }}true{{ else }}false{{ end }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
-  - name: ingress-azure-artifacts
-    installed: {{ if eq $v.provider "azure" }}true{{ else }}false {{ end }}
-    namespace: ingress
-    chart: ../charts/raw
-    labels:
-      tag: ingress
-    values:
-    - ../values/ingress-azure/ingress-azure-raw.gotmpl
   - name: nginx-ingress
     installed: true
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
-  - name: nginx-ingress-artifacts
-    installed: true
-    namespace: istio-system
-    chart: ../charts/raw
-    labels:
-      tag: ingress
-    values:
-    - ../values/nginx-ingress/nginx-ingress-raw.gotmpl
   - name: oauth2-proxy
     installed: true
     namespace: istio-system
