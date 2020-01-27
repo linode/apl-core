@@ -1,8 +1,8 @@
 teamConfig:
   description: |
     The services section specifies deafult services that are deployed for each team.
-    Define 'namespace' if a service should be deployed out of team namespace.
-    Define flag 'virtual' to deploy only a proxy to an existing service that is out of team namespace (see: Istio Virtual Service).
+    Use 'namespace' parameter to deploy service outside of the team namespace.
+    Use 'virtual' and 'namespace' parameters to configure proxy server to an existing service (see: Istio Virtual Service).
   services:
     - name: otomi-api
       namespace: shared
