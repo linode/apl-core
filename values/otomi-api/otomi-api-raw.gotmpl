@@ -9,10 +9,10 @@ resources:
     metadata:
       name: {{ $gcr.name }}
     type: kubernetes.io/dockerconfigjson
-  - apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: default
-      # namespace: shared
-    imagePullSecrets:
-    - name: {{ $gcr.name }}
+  # - apiVersion: v1
+  #   kind: ServiceAccount
+  #   metadata:
+  #     name: default
+  #     # namespace: shared
+  #   imagePullSecrets:
+  #   - name: {{ $gcr.name }}

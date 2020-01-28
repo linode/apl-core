@@ -1,4 +1,8 @@
 {{- $v := .Environment.Values }}
+{{- $gcr := $v.secret.gcr }}
+
 image:
   tag: "0.1.1"
 
+imagePullSecrets:
+- name: {{ $gcr.name }}
