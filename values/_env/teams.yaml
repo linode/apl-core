@@ -1,8 +1,11 @@
 teamConfig:
   description: |
-    The services section specifies deafult services that are deployed for each team.
+    The teamConfig values apply to all clouds.
+    The services section specifies deafult services exposed to a given team.
+    Some of the services are team wise whereas the other are cluster wise and are exposed via proxy (a.k.a istio VirtualService). 
     Use 'namespace' parameter to deploy service outside of the team namespace.
-    Use 'virtual' and 'namespace' parameters to configure proxy server to an existing service (see: Istio Virtual Service).
+    Use 'virtual' to configure proxy server (see: Istio Virtual Service).
+    Use 'virtual' and 'namespace' parameters to delegate requests to service that is already running in a different namespace
   services:
     - name: otomi-api
       namespace: shared
