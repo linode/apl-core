@@ -61,7 +61,7 @@
         {{- if eq $p $v.provider }}
         <a class="active">{{ $p | title }}</a>
         {{- else }}
-        <a href="https://index.{{ $v.group }}.{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
+        <a href="https://index.team-{{ $v.group }}.{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
         {{- end }}
         {{- end }}
         - Stage: 
@@ -70,7 +70,7 @@
         {{- if eq $stage $v.stage }}
         <a class="active">{{ $stage }}</a>
         {{- else }}
-        <a href="https://index.{{ $v.group }}.{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
+        <a href="https://index.team-{{ $v.group }}.{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
         {{- end }}
         {{- end }}
       </div>
@@ -88,16 +88,15 @@
       <h2>Apps <span>({{ $v.services | len }})</span></h2>
       <div class="grid">
         {{- range $s := $v.services }}
-        {{- if ne $s.name "index" }}
+        {{- $domain := (index $s "domain" | default (printf "%s.%s" (index $s "host" | default $s.name) $v.domain)) }}
         <div class="col-3">
-          <a href='https://{{ $s.host | default $s.name }}.{{ $v.group }}.{{ $v.stage }}.{{ $provider.host }}{{ $s.path | default "/" }}' target="_blank" class="tile">
+          <a href='https://{{ $domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
             <div class="img-wrapper">
               <img src="{{ $s.logo | default $s.name }}_logo.svg" alt="{{ $s.name | title }} logo" style="width: 65px;" />
             </div>
             <h4>{{ $s.name | title }}</h4>
           </a>
         </div>
-        {{- end }}
         {{- end }}
       </div>
     </main>

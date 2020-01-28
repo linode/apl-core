@@ -12,19 +12,9 @@ metadata:
     appgw.ingress.kubernetes.io/backend-protocol: "http"
     provider: azure
 spec:
-  tls:
-    {{- range $s := $v.services }}
-    {{- if (not $s.private) -}}
-    {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
-    {{- $name := (hasKey $s "domain" | ternary $s.name $v.name) }}
-    - hosts:
-        - {{ $domain }}
-      secretName: cert-team-{{ $v.name }}-{{ $name }}
-    {{- end }}
-    {{- end }}
   rules:
     {{- range $s := $v.services }}
-    {{- if (not $s.private) -}}
+    {{- if and (not $s.internal) (not $s.host) -}}
     {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
     - host: {{ $domain }}
       http:
@@ -34,4 +24,5 @@ spec:
               servicePort: 80
     {{- end }}
     {{- end }}
+  tls: {{- include "ingress-tls" $v | nindent 4 }}
 {{- end }}

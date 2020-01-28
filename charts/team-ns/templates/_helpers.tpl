@@ -30,16 +30,30 @@ ingress.kubernetes.io/rewrite-target: /
 # OWASP protection
 # nginx.ingress.kubernetes.io/enable-modsecurity: "true"
 # nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
-nginx.ingress.kubernetes.io/configuration-snippet: |
-  # set team header
-  add_header Auth-Group "{{ .name }}";
-  proxy_set_header Auth-Group "{{ .name }}";
-
-  # split cookie if needed:
-  auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-  access_by_lua_block {
-    if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-      ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-    end
-  }
 {{- end -}}
+
+{{- define "ingress-tls" -}}
+# also split list into domain used: custom vs team domain
+{{- $customDomainServices := list }}
+{{- $teamDomainServices := list }}
+{{- range $s := .services }}
+{{- if and (not $s.internal) (not $s.host) }}
+{{- if hasKey $s "domain" }}
+{{- $customDomainServices = (append $customDomainServices $s) }}
+{{- else }}
+{{- $teamDomainServices = (append $teamDomainServices $s) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $s := $customDomainServices }}
+- hosts:
+    - {{ $s.domain }}
+  secretName: cert-team-{{ $.name }}-{{ $s.name }}
+{{- end }}
+- hosts:
+    {{- range $s := $teamDomainServices }}
+    {{- $domain := (printf "%s.%s" $s.name $.domain) }}
+    - {{ $domain }}
+    {{- end }}
+  secretName: cert-team-{{ $.name }}
+{{- end }}

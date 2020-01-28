@@ -155,7 +155,7 @@ releases:
         group: {{ $team.name }}
         services:
           {{- range $s := $tc.services }}
-          {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "private")) }}
+          {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "internal")) }}
           - {{ $s | toYaml | nindent 12 }}
           {{- end }}
           {{- end }}

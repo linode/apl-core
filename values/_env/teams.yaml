@@ -8,8 +8,7 @@ teamConfig:
       svc: index
     - name: loki
       svc: po-grafana
-      host: grafana
-      virtual: true
+      host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
       path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
     - name: grafana
       svc: po-grafana
@@ -47,8 +46,8 @@ teamConfig:
         type: drone
       services:
         - name: hello # short name for urls
-          image: otomi/helloworld-nodejs:1.0.0
-          # image: otomi/helloworld-nodejs:1.0.1
+          image: otomi/helloworld-nodejs:1.0.2
+          # image: otomi/helloworld-nodejs:1.0.3
           imageTagFormat: semver # regex
           autoDeploy: true
           deployTag: 1.0.*
@@ -56,8 +55,10 @@ teamConfig:
           #   - name: TARGET
           #     value: Universe
           # svc: project1 # internal k8s service, can be left empty for knative service
-          # port: 80 # 80 is default
+          # port: 8080 # 80 is default
           isPublic: true # does not need oauth2 sso
-          domain: blabla.otomi.cloud # override generated domain host with a custom one
+          # override generated domain host with a custom one that can be set by this cloud's dns
+          # (google: otomi.cloud, aws: eks.otomi.cloud, azure: aks.otomi.cloud)
+          # domain: blabla.otomi.cloud
           # hasCert: false # create one on the fly, or provide one as secret in cert-team-$team-$name, or:
           # certArn: arn:aws:acm:eu-central-1:829552880873:certificate/3a3da880-ab47-43d2-b216-aecf664314f5
