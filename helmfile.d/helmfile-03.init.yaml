@@ -27,7 +27,7 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: otomi-api-artifacts
+  - name: otomi-api
     installed: true
     namespace: shared
     labels:
