@@ -2,6 +2,19 @@
 {{- $v := .Values }}
 {{- if or (eq $v.name "admin") ($v.isMultitenant) }}
 {{- $authSvc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
+{{- $public := list }}
+{{- $private := list }}
+{{- range $s := $v.services }}
+{{- if hasKey $s "isPublic" }}
+  {{- if $s.isPublic }}
+  {{- $public = (append $public $s) }}
+  {{- else }}
+  {{- $private = (append $private $s) }}
+{{- end }}
+{{- else }}
+{{- $private = (append $private $s) }}
+{{- end }}
+{{- end }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -10,11 +23,11 @@ metadata:
     {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.name }}
+  name: nginx-ingress-team-{{ $v.name }}-private
   namespace: istio-system
 spec:
   rules:
-  {{- range $s := $v.services }}
+  {{- range $s := $private }}
   {{- if and (ne $s.name "auth") (not $s.private) }}
   {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
   - host: {{ $domain }}
@@ -31,13 +44,53 @@ spec:
   {{- end }}
   {{- if not $v.hasCloudLB }}
   tls:
-    {{- range $s := $v.services }}
+    {{- range $s := $private }}
     {{- if hasKey $s "domain" }}
     - hosts:
         - '{{ $s.domain }}'
       secretName: cert-team-{{ $v.name }}-{{ $s.name }}
     {{- end }}
+    {{- end }}
+    - hosts:
+        - '*.{{ $v.domain }}'
+      secretName: cert-team-{{ $v.name }}
   {{- end }}
+{{- if ne (len $public) 0 }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- include "ingress-annotations" $v | nindent 4 }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  name: nginx-ingress-team-{{ $v.name }}-public
+  namespace: istio-system
+spec:
+  rules:
+  {{- range $s := $public }}
+  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+  - host: {{ $domain }}
+    http:
+      paths:
+      - path: /oauth2/userinfo
+        backend:
+          serviceName: {{ $authSvc }}
+          servicePort: 80
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+  {{- end }}
+  {{- end }}
+  {{- if not $v.hasCloudLB }}
+  tls:
+    {{- range $s := $public }}
+    {{- if hasKey $s "domain" }}
+    - hosts:
+        - '{{ $s.domain }}'
+      secretName: cert-team-{{ $v.name }}-{{ $s.name }}
+    {{- end }}
+    {{- end }}
     - hosts:
         - '*.{{ $v.domain }}'
       secretName: cert-team-{{ $v.name }}

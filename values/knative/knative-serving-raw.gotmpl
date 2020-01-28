@@ -17,7 +17,5 @@ resources:
           registriesSkippingTagResolving: "ko.local,dev.local"
         logging:
           loglevel.controller: "debug"
-        # network:
-        #   domainTemplate: "{{`{{.Name}}.{{.Namespace}}.{{.Domain}}`}}"
         domain:
           {{ $domain }}: ""

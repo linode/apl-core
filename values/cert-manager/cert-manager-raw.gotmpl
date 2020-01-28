@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $provider := $v.provider }}
 resources:
@@ -13,7 +13,7 @@ resources:
       labels:
         release: cert-manager
     data:
-      {{ $ap.clientSecretSecretRef.key }}: "{{ $ap.clientSecret | b64enc }}"
+      {{ $ap.clientSecretSecretRef.key }}: "{{ $v.azure.dnsClientSecret | b64enc }}"
   {{- end }}
   {{- if eq $v.provider "google" }}
   - apiVersion: v1
