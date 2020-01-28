@@ -21,7 +21,7 @@ oidc:
   # Azure
   # provider: azure
   clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
-  clientSecret: 3F]Eho:Nwo96e7RPQxDBBYdHHxeE:Tp=
+  clientSecret: "s-l0W.=WFx=8zAfcAKdbLBWj6NTXKDD0"
   authUrl: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/oauth2/authorize
   tokenUrl: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695/oauth2/token
 

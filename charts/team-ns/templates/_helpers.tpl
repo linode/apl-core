@@ -11,7 +11,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
 {{- define "auth-annotations" -}}
-nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
+nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne .name "admin"}}-team-{{ .name }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
 # the redirect part here is caught by the oauth2 ingress which will take care of the redirect
 nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end -}}

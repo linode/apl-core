@@ -15,7 +15,7 @@ spec:
   tls:
     {{- range $s := $v.services }}
     {{- if (not $s.private) -}}
-    {{- $domain := (index $s "domain" | default printf "%s.%s" $s.name $v.domain) }}
+    {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
     {{- $name := (hasKey $s "domain" | ternary $s.name $v.name) }}
     - hosts:
         - {{ $domain }}
@@ -25,7 +25,7 @@ spec:
   rules:
     {{- range $s := $v.services }}
     {{- if (not $s.private) -}}
-    {{- $domain := (index $s "domain" | default printf "%s.%s" $s.name $v.domain) }}
+    {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
     - host: {{ $domain }}
       http:
         paths:

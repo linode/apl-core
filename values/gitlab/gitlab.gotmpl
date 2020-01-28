@@ -1,6 +1,6 @@
 {{ $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 global:
   hosts:
     domain: {{ $domain }}
