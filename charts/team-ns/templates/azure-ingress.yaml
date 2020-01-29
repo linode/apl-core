@@ -24,5 +24,11 @@ spec:
               servicePort: 80
     {{- end }}
     {{- end }}
+    - host: {{ printf "proxy.%s" $v.domain }}
+      http:
+        paths:
+          - backend:
+              serviceName: nginx-ingress-controller
+              servicePort: 80
   tls: {{- include "ingress-tls" $v | nindent 4 }}
 {{- end }}

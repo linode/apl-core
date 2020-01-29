@@ -95,3 +95,36 @@ spec:
   {{- end }}
 {{- end }}
 {{- end }}
+{{- if ne (len $v.proxies) 0 }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- include "ingress-annotations" $v | nindent 4 }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: $2
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Host $1.{{ $v.domain }};
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  name: nginx-ingress-team-{{ $v.name }}-proxy
+  namespace: istio-system
+spec:
+  rules:
+  {{ range $p := $v.proxies }}
+  - host: {{ printf "proxy.%s" $v.domain }}
+    http:
+      paths:
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+        path: /({{ $p.name }})({{ $p.path }})
+  {{- end }}
+  {{- if not $v.hasCloudLB }}
+  tls:
+    - hosts:
+        - {{ printf "proxy.%s" $v.domain }}
+      secretName: cert-team-{{ $.name }}
+  {{- end }}
+{{- end }}

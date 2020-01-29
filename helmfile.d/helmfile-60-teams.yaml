@@ -23,6 +23,7 @@ releases:
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
         services: {{- $v.services | toYaml | nindent 10 }}
+        proxies: {{- $v.proxies | toYaml | nindent 10 }}
         knative:
           enabled: false
         ingress:

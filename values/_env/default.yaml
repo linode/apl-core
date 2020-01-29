@@ -41,7 +41,12 @@ charts:
     emailUser: admins # @ domain will be appended
 
   drone:
-    orgs: redkubes
+    sourceControl:
+      provider: github
+      github:
+        server: https://github.com
+    orgsFilter: redkubes
+    repoFilter: redkubes
     server:
       adminUser: Morriz
 
