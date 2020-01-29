@@ -7,7 +7,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-  auth_enabled: false
+  auth_enabled: {{ $v.isMultitenant }}
   ingester:
     chunk_idle_period: 15m
     chunk_block_size: 262144
