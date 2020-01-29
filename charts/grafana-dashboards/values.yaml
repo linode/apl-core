@@ -2,6 +2,7 @@ dashboards:
   default:
     kubernetes:
       file: "dashboards/deployment.json"
+      file: "dashboards/pods.json"
     sitespeed:
       file: "dashboards/sitespeed.json"
 

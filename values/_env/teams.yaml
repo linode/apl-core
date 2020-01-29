@@ -29,7 +29,6 @@ teamConfig:
         # policyMode: permissive
         gatewayDisabled: true
 
-  # IMPORTANT: adding a team with password? then also put password in default.yaml > loki.authconfig
   teams:
     - name: team1
       password: somepassworddd

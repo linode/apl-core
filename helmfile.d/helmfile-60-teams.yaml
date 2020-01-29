@@ -44,18 +44,6 @@ releases:
         certStage: {{ $cm.stage }}
         ingress:
           allowedCidrs: {{- index $team "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
-        knative:
-          enabled: true
-          config:
-            serving:
-              defaults:
-                revision-timeout-seconds: "300"  # 5 minutes
-              autoscaler:
-                stable-window: "60s"
-              deployment:
-                registriesSkippingTagResolving: "ko.local,dev.local"
-              logging:
-                loglevel.controller: "debug"
       - {{- $team | toYaml | nindent 8 }}
       - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.isMultitenant }}
@@ -141,6 +129,15 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $team.name }}
               basicAuthPassword: {{ $team.password }}
+  - name: grafana-dashboards-{{ $team.name }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/grafana-dashboards
+    labels:
+      tag: teams
+    values:
+      - ../values/grafana-dashboards/grafana-dashboards.gotmpl
+      - ../values/default.gotmpl
   - name: index-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}
@@ -152,6 +149,7 @@ releases:
       - ../values/index/index.gotmpl
       - ../values/default.gotmpl
       - fullnameOverride: {{ $team.name }}-index
+        domain: {{ $domain }}
         group: {{ $team.name }}
         services:
           {{- range $s := $tc.services }}
