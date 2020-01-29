@@ -691,7 +691,7 @@
   ],
   "schemaVersion": 18,
   "style": "dark",
-  "tags": [],
+  "tags": ["kubernetes-mixin"],
   "templating": {
     "list": [
       {
