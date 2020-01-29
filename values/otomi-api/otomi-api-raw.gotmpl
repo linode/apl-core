@@ -7,12 +7,5 @@ resources:
       .dockerconfigjson: {{ $gcr.data }}
     kind: Secret
     metadata:
-      name: {{ $gcr.name }}
+      name: {{ $gcr.secretName }}
     type: kubernetes.io/dockerconfigjson
-  # - apiVersion: v1
-  #   kind: ServiceAccount
-  #   metadata:
-  #     name: default
-  #     # namespace: shared
-  #   imagePullSecrets:
-  #   - name: {{ $gcr.name }}
