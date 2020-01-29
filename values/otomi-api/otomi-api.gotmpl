@@ -1,0 +1,16 @@
+{{- $v := .Environment.Values }}
+{{- $gcr := $v.secret.gcr }}
+{{- $o := $v.otomiStackApi }}
+
+image:
+  tag: "0.1.1"
+
+imagePullSecrets:
+  - name: {{ $gcr.secretName }}
+
+git:
+  repoUrl: {{ $o.git.repoUrl }}
+  localPath: "/tmp/otomi-stack"
+  user: {{ $o.git.user }}
+  email: {{ $o.git.email }}
+  password: {{ $o.git.password }}

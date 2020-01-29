@@ -102,9 +102,50 @@ services:
   - name: drone
     svc: drone
     namespace: team-admin
+  - name: otomi-api
+    namespace: shared
+    port: 8080
+    svc: otomi-api
+    virtual: true
 
 proxies:
   - name: drone
     svc: drone
     namespace: team-admin
     path: /hook
+
+teamConfig:
+  services:
+    - name: otomi-api
+      namespace: shared
+      port: 8080
+      svc: otomi-api
+      virtual: true
+    - name: auth
+      svc: oauth2-proxy
+      namespace: istio-system
+      isAuthProxy: true
+    - name: index
+      svc: index
+    - name: loki
+      svc: po-grafana
+      host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
+      path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
+    - name: grafana
+      svc: po-grafana
+      mtls:
+        policyMode: permissive
+        gatewayDisabled: true
+    - name: prometheus
+      svc: po-prometheus
+      port: 9090
+      mtls:
+        # policyMode: permissive
+        gatewayDisabled: true
+    - name: alertmanager
+      svc: po-alertmanager
+      port: 9093
+      logo: prometheus
+      mtls:
+        # policyMode: permissive
+        gatewayDisabled: true
