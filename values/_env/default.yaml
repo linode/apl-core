@@ -102,6 +102,3 @@ charts:
     pvc:
       results: 10Gi
       graphite: 2Gi
-  otomi:
-    imagePullSecrets:
-    - name:  gcr-json-key
