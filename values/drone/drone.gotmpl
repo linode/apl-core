@@ -8,17 +8,16 @@ sharedSecret: zumsecreetz
 images:
   server:
     tag: 1.0.1
-sourceControl:
-  provider: {{ $d.sourceControl | getOrNil "provider" | default "github" }}
-  github:
-    clientID: {{ $d.sourceControl.github.clientID }}
-    clientSecretValue: {{ $d.sourceControl.github.clientSecretValue }}
-    server: https://github.com        
+sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.server.adminUser }}
+  dind:
+    enabled: false
   env:
+    CLOUD: {{ $v.provider }}
+    STAGE: {{ $v.stage }}
     DRONE_OPEN: true
     DRONE_GITHUB_SKIP_VERIFY: true
     DRONE_LOGS_DEBUG: true
@@ -27,14 +26,15 @@ server:
     DRONE_RPC_PROTO: http
     DRONE_RPC_HOST: drone.team-admin
     DRONE_RPC_DEBUG: true
-    DRONE_ORGS: {{ $d.orgs }}
-    DRONE_REPOSITORY_FILTER: {{ $d.orgs }}
+    DRONE_ORGS: {{ $d.orgsFilter }}
+    {{- if $d.repoFilter }}
+    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
+    {{- end }}
 dind:
   enabled: false    
 persistence:
   enabled: true
   storageClass: fast
-  # existingClaim: fast-pvc
 rbac:
   create: true
 metrics:

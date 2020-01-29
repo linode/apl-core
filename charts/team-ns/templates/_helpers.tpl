@@ -55,5 +55,6 @@ ingress.kubernetes.io/rewrite-target: /
     {{- $domain := (printf "%s.%s" $s.name $.domain) }}
     - {{ $domain }}
     {{- end }}
+    - {{ printf "proxy.%s" $.domain }}
   secretName: cert-team-{{ $.name }}
 {{- end }}

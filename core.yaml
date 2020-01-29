@@ -102,3 +102,9 @@ services:
   - name: drone
     svc: drone
     namespace: team-admin
+
+proxies:
+  - name: drone
+    svc: drone
+    namespace: team-admin
+    path: /hook
