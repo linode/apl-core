@@ -1,0 +1,130 @@
+kind: pipeline
+type: docker
+name: default
+
+image_pull_secrets:
+  - regcred-api
+
+steps:
+  - name: build-ci
+    image: plugins/docker
+    settings:
+      registry: reg.dev.idiotz.nl
+      repo: reg.dev.idiotz.nl/api
+      username: drone
+      password: blabla
+      target: ci
+      tags:
+        - ${DRONE_BRANCH}-ci
+      cache_from:
+        - reg.dev.idiotz.nl/api:master
+        - reg.dev.idiotz.nl/api:${DRONE_BRANCH}-ci
+    when:
+      event:
+        - push
+        - pull_request
+
+  - name: ci-lint
+    image: reg.dev.idiotz.nl/api:${DRONE_BRANCH}-ci
+    pull: always
+    commands:
+      - cd /app
+      - npm run lint
+    depends_on:
+      - build-ci
+    when:
+      event:
+        - push
+        - pull_request
+
+  - name: ci-test
+    image: reg.dev.idiotz.nl/api:${DRONE_BRANCH}-ci
+    pull: always
+    commands:
+      - cd /app
+      - npm test
+    depends_on:
+      - build-ci
+    when:
+      event:
+        - push
+        - pull_request
+
+  - name: build-final
+    image: plugins/docker
+    settings:
+      registry: reg.dev.idiotz.nl
+      repo: reg.dev.idiotz.nl/api
+      username: drone
+      password: blabla
+      tags:
+        - ${DRONE_BRANCH}
+        - ${DRONE_BRANCH}-${DRONE_COMMIT}
+      cache_from:
+        - reg.dev.idiotz.nl/api:${DRONE_BRANCH}-ci
+    depends_on:
+      - ci-lint
+      - ci-test
+    when:
+      event:
+        - push
+
+  - name: deploy-tag
+    image: plugins/docker
+    settings:
+      autotag: true
+      registry: reg.dev.idiotz.nl
+      repo: reg.dev.idiotz.nl/api
+      username: drone
+      password: blabla
+      cache_from:
+        - reg.dev.idiotz.nl/api:master
+    when:
+      event:
+        - tag
+
+  - name: slack-pr
+    image: plugins/slack
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: drone-build
+      username: Drone
+    depends_on:
+      - ci-lint
+      - ci-test
+    when:
+      status:
+        - success
+        - failure
+      event:
+        - pull_request
+
+  - name: slack-build
+    image: plugins/slack
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: drone-build
+      username: Drone
+    depends_on:
+      - build-final
+    when:
+      status:
+        - success
+        - failure
+      event:
+        - push
+
+  - name: slack-promote
+    image: plugins/slack
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: drone-build
+      username: Drone
+    depends_on:
+      - deploy-tag
+    when:
+      status:
+        - success
+        - failure
+      event:
+        - tag
