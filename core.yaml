@@ -40,13 +40,12 @@ services:
   - name: loki-private
     svc: loki-headless
     namespace: monitoring
-    private: true
+    internal: true # this service is only specified to create an Istio Policy, so not exposed
     mtls:
       policyMode: permissive
   - name: loki
     svc: po-grafana
-    host: grafana
-    virtual: true
+    host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
     path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
   - name: scope

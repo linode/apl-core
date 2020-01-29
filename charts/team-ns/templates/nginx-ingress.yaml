@@ -2,20 +2,52 @@
 {{- $v := .Values }}
 {{- if or (eq $v.name "admin") ($v.isMultitenant) }}
 {{- $authSvc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
+# split list of services into public and private to create separate ingresses:
+# one for auth redirect and one passthrough
+{{- $public := list }}
+{{- $private := list }}
+{{- range $s := $v.services }}
+{{- if and (not $s.internal) (not $s.host) }}
+{{- if hasKey $s "isPublic" }}
+  {{- if $s.isPublic }}
+  {{- $public = (append $public $s) }}
+  {{- else }}
+  {{- $private = (append $private $s) }}
+  {{- end }}
+{{- else }}
+{{- $private = (append $private $s) }}
+{{- end }}
+{{- end }}
+{{- end }}
+# we always need an auth redirect ingress for private routes
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    {{- include "auth-annotations" $v | nindent 4 }}
+    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne $v.name "admin"}}-team-{{ $v.name }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
+    # the redirect part here is caught by the oauth2 ingress which will take care of the redirect
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # set team header
+      add_header Auth-Group "{{ $v.name }}";
+      proxy_set_header Auth-Group "{{ $v.name }}";
+
+      # split cookie if needed:
+      auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
+      access_by_lua_block {
+        if ngx.var._oauth2_proxy_upstream_1 ~= "" then
+          ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
+        end
+      }
     {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.name }}
+  name: nginx-ingress-team-{{ $v.name }}-private
   namespace: istio-system
 spec:
   rules:
-  {{- range $s := $v.services }}
-  {{- if and (ne $s.name "auth") (not $s.private) }}
+  {{- range $s := $private }}
+  {{- if and (ne $s.name "auth") (not $s.internal) }}
   {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
   - host: {{ $domain }}
     http:
@@ -29,17 +61,37 @@ spec:
           servicePort: 80
   {{- end }}
   {{- end }}
+  {{- if not $v.hasCloudLB }} # tls was already terminated by cloud LB
+  tls: {{- include "ingress-tls" $v | nindent 4 }}
+  {{- end }}
+{{- if ne (len $public) 0 }} # then we also have public routes without auth, so passthrough:
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- include "ingress-annotations" $v | nindent 4 }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  name: nginx-ingress-team-{{ $v.name }}-public
+  namespace: istio-system
+spec:
+  rules:
+  {{- range $s := $public }}
+  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+  - host: {{ $domain }}
+    http:
+      paths:
+      - path: /oauth2/userinfo
+        backend:
+          serviceName: {{ $authSvc }}
+          servicePort: 80
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+  {{- end }}
   {{- if not $v.hasCloudLB }}
-  tls:
-    {{- range $s := $v.services }}
-    {{- if hasKey $s "domain" }}
-    - hosts:
-        - '{{ $s.domain }}'
-      secretName: cert-team-{{ $v.name }}-{{ $s.name }}
-    {{- end }}
+  tls: {{- include "ingress-tls" $v | nindent 4 }}
   {{- end }}
-    - hosts:
-        - '*.{{ $v.domain }}'
-      secretName: cert-team-{{ $v.name }}
-  {{- end }}
+{{- end }}
 {{- end }}

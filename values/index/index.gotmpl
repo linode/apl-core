@@ -1,6 +1,6 @@
 {{ $v := .Environment.Values }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{ $v.charts.index | toYaml }}
 fullnameOverride: index
 service:
@@ -8,11 +8,11 @@ service:
 clusters: {{ $v.clusters | toYaml | nindent 2 }}  
 provider: {{ $v.provider }}  
 stage: {{ $v.stage }}
-prefix: k8s
 services:
   {{- range $s := $v.services }}
-  {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "private")) }}
+  {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "internal")) }}
   - {{ $s | toYaml | nindent 4 }}
   {{- end }}
   {{- end }}
 sites: {{ $v.sites | toYaml | nindent 2 }}
+group: "admin"

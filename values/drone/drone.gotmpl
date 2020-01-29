@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts.drone }}
 {{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{- $host := printf "drone.%s" $domain }}
 fullnameOverride: drone
 sharedSecret: zumsecreetz

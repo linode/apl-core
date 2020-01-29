@@ -11,7 +11,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
 {{- define "auth-annotations" -}}
-nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
+nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne .name "admin"}}-team-{{ .name }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
 # the redirect part here is caught by the oauth2 ingress which will take care of the redirect
 nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end -}}
@@ -30,16 +30,30 @@ ingress.kubernetes.io/rewrite-target: /
 # OWASP protection
 # nginx.ingress.kubernetes.io/enable-modsecurity: "true"
 # nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
-nginx.ingress.kubernetes.io/configuration-snippet: |
-  # set team header
-  add_header Auth-Group "{{ .name }}";
-  proxy_set_header Auth-Group "{{ .name }}";
-
-  # split cookie if needed:
-  auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-  access_by_lua_block {
-    if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-      ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-    end
-  }
 {{- end -}}
+
+{{- define "ingress-tls" -}}
+# also split list into domain used: custom vs team domain
+{{- $customDomainServices := list }}
+{{- $teamDomainServices := list }}
+{{- range $s := .services }}
+{{- if and (not $s.internal) (not $s.host) }}
+{{- if hasKey $s "domain" }}
+{{- $customDomainServices = (append $customDomainServices $s) }}
+{{- else }}
+{{- $teamDomainServices = (append $teamDomainServices $s) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $s := $customDomainServices }}
+- hosts:
+    - {{ $s.domain }}
+  secretName: cert-team-{{ $.name }}-{{ $s.name }}
+{{- end }}
+- hosts:
+    {{- range $s := $teamDomainServices }}
+    {{- $domain := (printf "%s.%s" $s.name $.domain) }}
+    - {{ $domain }}
+    {{- end }}
+  secretName: cert-team-{{ $.name }}
+{{- end }}

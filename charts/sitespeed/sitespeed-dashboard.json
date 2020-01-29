@@ -1,4 +1,45 @@
 {
+  "__inputs": [
+    {
+      "name": "VAR_BASE",
+      "type": "constant",
+      "label": "sitespeed_io",
+      "value": "sitespeed_io",
+      "description": ""
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "5.4.2"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": "5.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "graphite",
+      "name": "Graphite",
+      "version": "5.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "singlestat",
+      "name": "Singlestat",
+      "version": "5.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": "5.0.0"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -24,8 +65,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 13,
-  "iteration": 1558295092333,
+  "id": null,
+  "iteration": 1548165612002,
   "links": [
     {
       "asDropdown": true,
@@ -414,6 +455,7 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "SpeedIndex",
+      "transparent": false,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -493,6 +535,7 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Perceptual SpeedIndex",
+      "transparent": false,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -5419,35 +5462,32 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 18,
+  "schemaVersion": 16,
   "style": "dark",
   "tags": ["page"],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "sitespeed_io",
-          "value": "sitespeed_io"
+          "value": "${VAR_BASE}",
+          "text": "${VAR_BASE}"
         },
         "hide": 2,
         "label": "sitespeed_io",
         "name": "base",
         "options": [
           {
-            "text": "sitespeed_io",
-            "value": "sitespeed_io"
+            "value": "${VAR_BASE}",
+            "text": "${VAR_BASE}"
           }
         ],
-        "query": "sitespeed_io",
+        "query": "${VAR_BASE}",
         "skipUrlSync": false,
         "type": "constant"
       },
       {
         "allValue": null,
-        "current": {
-          "text": "default",
-          "value": "default"
-        },
+        "current": {},
         "datasource": "Graphite",
         "definition": "",
         "hide": 0,
@@ -5469,10 +5509,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "text": "www-tst_essent_nl",
-          "value": "www-tst_essent_nl"
-        },
+        "current": {},
         "datasource": "Graphite",
         "definition": "",
         "hide": 0,
@@ -5494,10 +5531,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "text": "_kennisbank",
-          "value": "_kennisbank"
-        },
+        "current": {},
         "datasource": "Graphite",
         "definition": "",
         "hide": 0,
@@ -5519,10 +5553,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "text": "chrome",
-          "value": "chrome"
-        },
+        "current": {},
         "datasource": "Graphite",
         "definition": "",
         "hide": 0,
@@ -5544,10 +5575,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "text": "native",
-          "value": "native"
-        },
+        "current": {},
         "datasource": "Graphite",
         "definition": "",
         "hide": 0,
@@ -5621,7 +5649,7 @@
     "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
-  "title": "Sitespeed Metrics",
+  "title": "Page summary",
   "uid": "000000043",
-  "version": 1
+  "version": 3
 }

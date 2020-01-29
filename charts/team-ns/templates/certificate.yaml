@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- if and (not $v.useCloudCA) (or (eq $v.name "admin") ($v.isMultitenant)) }}
+{{- $ := . }}
 {{ $name := printf "cert-team-%s" $v.name }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -23,7 +24,7 @@ kind: Certificate
 metadata:
   name: {{ $name }}-{{ $s.name }}
   namespace: {{ if $v.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
-  labels: {{- include "chart-labels" . | nindent 4 }}
+  labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   secretName: {{ $name }}-{{ $s.name }}
   commonName: "{{ $s.domain }}"
