@@ -24,8 +24,12 @@ releases:
   - name: loki-artifacts
     installed: true
     namespace: monitoring
-    chart: ../charts/raw
     labels:
       pkg: loki
-    values:
-      - ../values/loki/loki-raw.gotmpl
+    <<: *raw
+  - name: otomi-api-artifacts
+    installed: true
+    namespace: shared
+    labels:
+      pkg: otomi-api
+    <<: *raw

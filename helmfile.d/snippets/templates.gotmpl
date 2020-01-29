@@ -9,7 +9,7 @@ templates:
   raw: &raw
     chart: ../charts/raw
     values:
-      - ../values/{{ .Release.Name }}/{{ .Release.Name }}-raw.gotmpl
+      - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:

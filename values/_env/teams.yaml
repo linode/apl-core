@@ -1,34 +1,4 @@
 teamConfig:
-  services:
-    - name: auth
-      svc: oauth2-proxy
-      namespace: istio-system
-      isAuthProxy: true
-    - name: index
-      svc: index
-    - name: loki
-      svc: po-grafana
-      host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
-      path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
-    - name: grafana
-      svc: po-grafana
-      mtls:
-        policyMode: permissive
-        gatewayDisabled: true
-    - name: prometheus
-      svc: po-prometheus
-      port: 9090
-      mtls:
-        # policyMode: permissive
-        gatewayDisabled: true
-    - name: alertmanager
-      svc: po-alertmanager
-      port: 9093
-      logo: prometheus
-      mtls:
-        # policyMode: permissive
-        gatewayDisabled: true
-
   teams:
     - name: team1
       password: somepassworddd
