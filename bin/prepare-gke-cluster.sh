@@ -2,13 +2,13 @@
 
 # prerequites:
 # gcloud auth login
-. .env/google
+. .env/cloud
 
 # create a metering table that will store records for 10 years
-bq --location=EU mk -d --default_table_expiration 315360000 --description "Contains billing records based on labels." $METERING_SET
+bq --project=$PROJECT --location=EU mk -d --default_table_expiration 315360000 --description "Contains billing records based on labels." $METERING_SET
 
 # create the project
-gcloud projects create $PROJECT --organization=$ORG_ID --labels=customer=$CUSTOMER
+# gcloud projects create $PROJECT --organization=$ORG_ID --labels=customer=$CUSTOMER
 
 #create the dns zone
 gcloud dns --project=$PROJECT managed-zones create $DNS_ZONE --description= --dns-name=$DNS_NAME
@@ -24,7 +24,6 @@ if [ "$answer" != "${answer#[Yy]}" ]; then
 fi
 
 # set up dns manager
-mkdir letsencrypt >/dev/null
 gcloud iam service-accounts create dnsmanager --display-name "dnsmanager" --project "$PROJECT"
 gcloud projects add-iam-policy-binding $PROJECT \
   --member serviceAccount:dnsmanager@$PROJECT.iam.gserviceaccount.com --role roles/dns.admin
