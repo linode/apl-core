@@ -31,9 +31,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-              name: {{ include "otomi-api.fullname" . }}
+                name: {{ include "otomi-api.fullname" . }}
             - configMapRef:
-              name: {{ include "otomi-api.fullname" . }}
+                name: {{ include "otomi-api.fullname" . }}
           ports:
             - name: http
               containerPort: 8080
