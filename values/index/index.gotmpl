@@ -8,7 +8,6 @@ service:
 clusters: {{ $v.clusters | toYaml | nindent 2 }}  
 provider: {{ $v.provider }}  
 stage: {{ $v.stage }}
-prefix: k8s
 services:
   {{- range $s := $v.services }}
   {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "internal")) }}
@@ -16,3 +15,4 @@ services:
   {{- end }}
   {{- end }}
 sites: {{ $v.sites | toYaml | nindent 2 }}
+group: "admin"
