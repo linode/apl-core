@@ -102,6 +102,11 @@ services:
   - name: drone
     svc: drone
     namespace: team-admin
+  - name: otomi-api
+    namespace: shared
+    port: 8080
+    svc: otomi-api
+    virtual: true
 
 teamConfig:
   services:
