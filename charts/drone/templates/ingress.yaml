@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "drone.fullname" . }}
 {{- $httpPort := .Values.service.httpPort }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -9,7 +9,6 @@ metadata:
     {{ $key }}: {{ $value | quote }}
   {{- end }}
   labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "drone.name" . }}
     heritage: "{{ .Release.Service }}"
     release: "{{ .Release.Name }}"

@@ -15,6 +15,7 @@ ingress:
   tags: ""
   disableHttp2: false
 services: []
+proxies: []
 region: ""
 authAnnotations: {}
 ingressAnnotations: {}
