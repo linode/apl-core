@@ -1,6 +1,10 @@
 kind: pipeline
-type: docker
+type: kubernetes
 name: default
+
+metadata:
+  annotations:
+    sidecar.istio.io/inject: "false"
 
 steps:
   - name: test
