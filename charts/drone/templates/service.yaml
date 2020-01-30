@@ -7,7 +7,6 @@ metadata:
     {{ $key }}: {{ $value | quote }}
   {{- end }}
   labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "drone.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -20,7 +19,7 @@ spec:
   ports:
   - name: http
     port: {{ .Values.service.httpPort }}
-    targetPort: 80
+    targetPort: {{ .Values.server.httpPort }}
 {{- if hasKey .Values.service "nodePort" }}
     nodePort: {{ .Values.service.nodePort }}
 {{- end }}
