@@ -1,11 +1,11 @@
 {{- $v := .Environment.Values }}
-{{- $gcr := $v.secret.gcr }}
+{{- $o := $v.charts.otomiApi }}
 
 resources:
   - apiVersion: v1
     data:
-      .dockerconfigjson: {{ $gcr.data }}
+      .dockerconfigjson: {{ $o.secret.gcr.data }}
     kind: Secret
     metadata:
-      name: {{ $gcr.secretName }}
+      name: {{ $o.secret.gcr.secretName }}
     type: kubernetes.io/dockerconfigjson
