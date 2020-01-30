@@ -106,7 +106,6 @@ services:
     namespace: shared
     port: 8080
     svc: otomi-api
-    virtual: true
 
 proxies:
   - name: drone
@@ -119,7 +118,6 @@ teamConfig:
       namespace: shared
       port: 8080
       svc: otomi-api
-      virtual: true
     - name: auth
       svc: oauth2-proxy
       namespace: istio-system
