@@ -19,7 +19,6 @@ nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .domain }}/oauth2/star
 {{- define "ingress-annotations" -}}
 kubernetes.io/ingress.class: nginx
 # kubernetes.io/tls-acme: "true"
-ingress.kubernetes.io/rewrite-target: /
 # DDOS protection: see https://bobcares.com/blog/nginx-ddos-prevention/
 # nginx.ingress.kubernetes.io/limit-connections: "20" # per ip
 # nginx.ingress.kubernetes.io/limit-rps: "10" # per second per conn

@@ -30,6 +30,7 @@ server:
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
+    DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
 dind:
   enabled: false    
 persistence:
