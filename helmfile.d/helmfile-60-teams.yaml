@@ -24,6 +24,7 @@ releases:
         certStage: {{ $cm.stage }}
         services: {{- $v.services | toYaml | nindent 10 }}
         proxies: {{- $v.proxies | toYaml | nindent 10 }}
+        resourceQuota: {}
         knative:
           enabled: false
         ingress:
@@ -53,7 +54,7 @@ releases:
         {{- if eq $cicdFlavour "drone" }}
         # @todo: fix this weirdness: the next two lines fook the yaml parser:
         # - name: drone
-        #   svc: drone
+        #   svc: drone-{{ $team.name }}
         {{- end }}
         {{- end }}
         {{- if ne (len ($team | get "sites" list)) 0 }}
@@ -171,9 +172,8 @@ releases:
   #   values:
   #     - ../values/drone/drone.gotmpl
   #     - ../values/default.gotmpl
-  #     - fullnameOverride: {{ $team.name }}-drone
+  #     - nameOverride: {{ $team.name }}
   #       env:
-  #         DRONE_RPC_HOST: drone.team-{{ $team.name }}
   #         DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
 
   {{- end }}

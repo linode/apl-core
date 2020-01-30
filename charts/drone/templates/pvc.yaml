@@ -3,8 +3,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "drone.fullname" . }}
-  labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode | quote }}

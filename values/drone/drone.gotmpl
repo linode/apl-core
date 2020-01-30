@@ -3,11 +3,8 @@
 {{- $cluster := index $v.clusters $v.provider }}
 {{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{- $host := printf "drone.%s" $domain }}
-fullnameOverride: drone
+nameOverride: admin
 sharedSecret: zumsecreetz
-images:
-  server:
-    tag: 1.0.1
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   host: {{ $host }}
@@ -18,14 +15,12 @@ server:
   env:
     CLOUD: {{ $v.provider }}
     STAGE: {{ $v.stage }}
-    DRONE_OPEN: true
-    DRONE_GITHUB_SKIP_VERIFY: true
     DRONE_LOGS_DEBUG: true
     DRONE_LOGS_TRACE: true
-    DRONE_LOGS_COLOR: true
-    DRONE_RPC_PROTO: http
-    DRONE_RPC_HOST: drone.team-admin
+    DRONE_LOGS_PRETTY: true
     DRONE_RPC_DEBUG: true
+    DRONE_RPC_PROTO: http
+    DRONE_RPC_HOST: drone-admin.team-admin
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
