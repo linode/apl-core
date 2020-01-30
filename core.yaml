@@ -100,7 +100,7 @@ services:
     mtls:
       gatewayDisabled: true
   - name: drone
-    svc: drone
+    svc: drone-admin
     namespace: team-admin
   - name: otomi-api
     namespace: shared
@@ -110,7 +110,6 @@ services:
 
 proxies:
   - name: drone
-    svc: drone
     namespace: team-admin
     path: /hook
 
