@@ -3,12 +3,26 @@ type: docker
 name: default
 
 steps:
+  - name: test
+    image: otomi/tools:1.1.4
+    command:
+      - ./tests/lint.sh
+    environment:
+      STAGE: dev
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: deploy-dev
     image: otomi/tools:1.1.4
     command:
       - ./bin/deploy.sh
     environment:
       STAGE: dev
+    depends_on:
+      - test
+
     when:
       event:
         - push
