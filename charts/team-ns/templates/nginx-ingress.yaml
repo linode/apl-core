@@ -102,11 +102,11 @@ kind: Ingress
 metadata:
   annotations:
     {{- include "ingress-annotations" $v | nindent 4 }}
-    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header Host $1.{{ $v.domain }};
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   proxy_set_header Host $1.{{ $v.domain }};
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-ingress-team-{{ $v.name }}-proxy
   namespace: istio-system
