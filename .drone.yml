@@ -13,6 +13,7 @@ steps:
       - ./tests/lint.sh
     environment:
       STAGE: dev
+      CLOUD: ${CLOUD}
     when:
       event:
         - push
@@ -24,6 +25,7 @@ steps:
       - ./bin/deploy.sh
     environment:
       STAGE: dev
+      CLOUD: ${CLOUD}
     depends_on:
       - test
 
@@ -38,6 +40,7 @@ steps:
       - ./bin/deploy.sh
     environment:
       STAGE: demo
+      CLOUD: ${CLOUD}
     when:
       ref: [refs/tags/v*-DEMO]
       event:

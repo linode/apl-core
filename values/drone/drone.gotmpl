@@ -3,10 +3,20 @@
 {{- $cluster := index $v.clusters $v.provider }}
 {{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{- $host := printf "drone.%s" $domain }}
+# images:
+#   server:
+#     repository: "drone/drone-runner-kube"
+#     tag: latest
+images:
+  server:
+    tag: latest
+
 nameOverride: admin
 sharedSecret: zumsecreetz
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
+  kubernetes:
+    enabled: true
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.server.adminUser }}
@@ -19,13 +29,12 @@ server:
     DRONE_LOGS_TRACE: true
     DRONE_LOGS_PRETTY: true
     DRONE_RPC_DEBUG: true
-    DRONE_RPC_PROTO: http
-    DRONE_RPC_HOST: drone-admin.team-admin
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
+    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.provider }},STAGE:{{ $v.stage }}"
 dind:
   enabled: false    
 persistence:
