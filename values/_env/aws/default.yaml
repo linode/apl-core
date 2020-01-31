@@ -1,6 +1,5 @@
 hasCloudLB: true
 useCloudCA: true
-clusterName: otomi-eks-dev
 
 charts:
   cert-manager:
