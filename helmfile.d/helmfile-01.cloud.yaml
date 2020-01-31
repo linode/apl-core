@@ -1,6 +1,8 @@
 bases:
   - snippets/defaults.gotmpl
 
+{{ readFile "snippets/templates.gotmpl" }}
+
 releases:
   - name: cloud
     installed: true
@@ -8,3 +10,7 @@ releases:
     chart: ../charts/raw
     values:
     - ../values/cloud/cloud-raw.gotmpl
+  - name: cluster-autoscaler
+    installed: true
+    namespace: kube-system
+    <<: *default

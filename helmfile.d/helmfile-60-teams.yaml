@@ -26,7 +26,7 @@ releases:
         proxies: {{- $v.proxies | toYaml | nindent 10 }}
         resourceQuota: null
         knative:
-          enabled: false
+          enabled: {{ $v.hasKnative }}
         ingress:
           allowedCidrs: {{- index $v "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
   {{- range $team := $tc.teams }}
@@ -46,7 +46,11 @@ releases:
         certStage: {{ $cm.stage }}
         ingress:
           allowedCidrs: {{- index $team "ingress.allowedCidrs" | default list | toYaml | nindent 12 }}
+      # team values can be set for all clouds
       - {{- $team | toYaml | nindent 8 }}
+      # but we have some overrides that are final:
+      - knative:
+          enabled: {{ $v.hasKnative }}
       - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
