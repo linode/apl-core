@@ -9,4 +9,4 @@ data:
   GIT_REPO_URL: {{ .Values.git.repoUrl }}
   GIT_EMAIL:  {{ .Values.git.email }}
   DEBUG: 'express:*'
-  # NODE_OPTIONS: '--max-http-header-size=12 --trace-events-enabled'
+  # NODE_OPTIONS: '--max-http-header-size=12'
