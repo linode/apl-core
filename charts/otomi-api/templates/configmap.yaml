@@ -8,5 +8,5 @@ data:
   GIT_LOCAL_PATH: {{ .Values.git.localPath}}
   GIT_REPO_URL: {{ .Values.git.repoUrl }}
   GIT_EMAIL:  {{ .Values.git.email }}
-  DEBUG: '*'
-  # NODE_OPTIONS: '--max-http-header-size=12'
+  DEBUG: 'express:*'
+  # NODE_OPTIONS: '--max-http-header-size=12 --trace-events-enabled'
