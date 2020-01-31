@@ -1,11 +1,11 @@
 {{- $v := .Environment.Values }}
-{{- $o := $v.charts.otomiApi }}
+{{- $o := index $v.charts "otomi-api" }}
 
 image:
-  tag: "0.1.1"
+  tag: {{ $o.image.tag }}
 
 imagePullSecrets:
-  - name: {{ $o.secret.gcr.secretName }}
+  - name: {{ $o.pullSecret.secretName }}
 
 git:
   repoUrl: {{ $o.git.repoUrl }}
