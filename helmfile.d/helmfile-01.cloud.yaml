@@ -8,3 +8,7 @@ releases:
     chart: ../charts/raw
     values:
     - ../values/cloud/cloud-raw.gotmpl
+  - name: cluster-autoscaler
+    installed: true
+    namespace: kube-system
+    <<: *default
