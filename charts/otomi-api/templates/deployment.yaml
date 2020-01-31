@@ -34,6 +34,10 @@ spec:
                 name: {{ include "otomi-api.fullname" . }}
             - configMapRef:
                 name: {{ include "otomi-api.fullname" . }}
+          command:
+          - node
+          - --max-http-header-size=16384
+          - app.js
           ports:
             - name: http
               containerPort: 8080
