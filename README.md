@@ -4,7 +4,7 @@ Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box 
 
 All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which services will be synced.
 
-Click here to open the [index of the system services](https://index.k8s-dev.otomi.cloud).
+Click here to open the [index of the system services](https://index.team-admin.dev.gks.otomi.cloud).
 
 It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases](bin/aliases) to understand what the commands in this readme do.
 
@@ -113,14 +113,7 @@ hfd -f helmfile.d/helmfile-10.monitoring.yaml apply
 
 Lets work with the `dev` cluster for this example. Switch to it's context with `kcu dev.otomi`.
 
-As explained in the intro, the services are listed under the [index of the admin services](https://index.admin.dev.gks.otomi.cloud).
-So far we have the following services (shown for `dev`):
-
-1. [Weave Scope](https://weave.dev.gks.otomi.cloud): a graphical overview of all the components and their relationships.
-2. [Grafana](https://grafana.admin.dev.gks.otomi.cloud): the famous metrics dashboard that shows prometheus metrics.
-3. [Prometheus](https://prom.admin.dev.gks.otomi.cloud/targets): the prometheus environment showing what is being monitored.
-4. [Alertmanager](https://alerts.admin.dev.gks.otomi.cloud/): Alerts and their configuration.
-5. [Blackbox](https://blackbox.admin.dev.gks.otomi.cloud): shows the http probes that we test for.
+As explained in the intro, the services are listed under the [index of the admin services](https://index.team-admin.dev.gks.otomi.cloud).
 
 It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
 

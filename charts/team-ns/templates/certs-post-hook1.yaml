@@ -39,7 +39,7 @@ spec:
               --region {{ $v.region }} \
               --domain-name '*.{{ $v.domain }}' \
               --validation-method DNS \
-              --idempotency-token '{{ $v.domain | replace "." "" }}' \
+              --idempotency-token '{{ $v.domain | replace "." "" | replace "-" "" }}' \
               --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
             certArns="$certArn"
             {{- range $s := $v.services }}
@@ -48,7 +48,7 @@ spec:
               --region {{ $v.region }} \
               --domain-name {{ $s.domain }} \
               --validation-method DNS \
-              --idempotency-token '{{ $s.domain | replace "." "" }}' \
+              --idempotency-token '{{ $s.domain | replace "." "" | replace "-" "" }}' \
               --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
             certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ',')$certArn"
             {{- else if $s.certArn }}

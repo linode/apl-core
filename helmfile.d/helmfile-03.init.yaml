@@ -3,6 +3,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
+{{- $cluster := index $v.clusters $v.provider }}
 
 releases:
   # cert-manager can't be installed as skeleton because it needs --validate=false, which is not
@@ -16,7 +17,7 @@ releases:
   #     tag: cert-manager
   #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   - name: knative-init
-    installed: true
+    installed: {{ if ge $cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
     namespace: default
     labels:
       init: true
