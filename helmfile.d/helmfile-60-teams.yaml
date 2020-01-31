@@ -24,7 +24,7 @@ releases:
         certStage: {{ $cm.stage }}
         services: {{- $v.services | toYaml | nindent 10 }}
         proxies: {{- $v.proxies | toYaml | nindent 10 }}
-        resourceQuota: {}
+        resourceQuota: null
         knative:
           enabled: {{ $v.hasKnative }}
         ingress:
