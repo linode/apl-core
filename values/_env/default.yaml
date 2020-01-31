@@ -6,6 +6,7 @@ hasCloudLB: false
 useCloudCA: false
 emailDomain: redkubes.com
 sites: []
+hasKnative: true
 
 customerLabels:
   customer: redkubes
@@ -65,9 +66,9 @@ charts:
       adminUser: Morriz
 
   index:
-    isNS: true
+    isNS: false
     image:
-      tag: 1.0.5-ns
+      tag: 1.0.5 #-ns
 
   istio:
     gateway:

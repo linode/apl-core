@@ -3,11 +3,14 @@ hasCloudLB: true
 azure:
   tenantId: 57a3f6ea-7e70-4260-acb4-e06ce452f695
   subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
+  resourceGroup: otomi-aks-dev
   diskType: Standard_LRS # Premium_LRS
-  dnsClientSecret: f93a4a07-140d-4520-a5b2-e6ae9d2e4974
+  clientId:
+  clientSecret:
 
 charts:
   cert-manager:
+    azureClientSecret: f93a4a07-140d-4520-a5b2-e6ae9d2e4974
     provider:
       azure:
         azuredns:
@@ -19,6 +22,12 @@ charts:
           subscriptionID: 50c24abd-f872-4a3b-9f65-419800dda5eb
           resourceGroupName: external-dns
           hostedZoneName: aks.otomi.cloud
+
+  cluster-autoscaler:
+    autoscalingGroups:
+      - name: agentpool1
+        minSize: 3
+        maxSize: 7
 
   drone:
     sourceControl:

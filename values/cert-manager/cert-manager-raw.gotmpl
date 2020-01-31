@@ -13,7 +13,7 @@ resources:
       labels:
         release: cert-manager
     data:
-      {{ $ap.clientSecretSecretRef.key }}: "{{ $v.azure.dnsClientSecret | b64enc }}"
+      {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
   {{- end }}
   {{- if eq $v.provider "google" }}
   - apiVersion: v1
