@@ -1,14 +1,17 @@
 toolsVersion: 1.1.4
 clusters:
   azure:
+    k8sVersion: 1.15
     host: aks.otomi.cloud
     stages: [dev, demo, prd]
     region: westeurope
   aws:
+    k8sVersion: 1.14
     host: eks.otomi.cloud
     stages: [dev, demo, prd]
     region: eu-central-1
   google:
+    k8sVersion: 1.15
     host: gks.otomi.cloud
     stages: [dev, demo, prd]
     region: europe-west4

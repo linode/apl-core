@@ -1,7 +1,8 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
 
 releases:
   - name: cloud
@@ -11,6 +12,6 @@ releases:
     values:
     - ../values/cloud/cloud-raw.gotmpl
   - name: cluster-autoscaler
-    installed: true
+    installed: {{ if eq $v.provider "aws" }}true{{ else }}false{{ end }}
     namespace: kube-system
     <<: *default

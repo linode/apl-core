@@ -2,7 +2,6 @@
 
 alias d="docker"
 alias aw="aws"
-alias az="azure"
 alias gc="gcloud"
 alias k="kubectl"
 alias ksk="k -n kube-system"
@@ -54,12 +53,12 @@ if [ $hasDocker -eq 0 ]; then
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
-    unalias h hf hk aw az gc
+    unalias h hf hk aw gc
     alias h="drun helm"
     alias hf="drun helmfile"
     alias hk="drun helm delete"
     alias aw="drun aws"
-    alias az="drun azure"
+    alias az="drun az"
     alias gc="drun gcloud"
   else
     echo "No docker daemon running. Please start and source aliases again."
