@@ -29,11 +29,7 @@ d ps &>/dev/null
 dockerRunning=$?
 
 drun() {
-  KUBE=/tmp/kube.cfg
-  cp ~/.kube/config $KUBE
-  # Update path to google-cloud-sdk, so it can refresh tokens
-  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/home\/app\/google-cloud-sdk/' ~/.kube/config >$KUBE
-  d run -it --rm -v $PWD:$PWD -v $KUBE:/home/app/.kube/config -v /tmp:/tmp \
+  d run -it --rm -v $PWD:$PWD -v ~/.kube/config:/home/app/.kube/config -v /tmp:/tmp \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
     -v ~/.config/gcloud:/home/app/.config/gcloud \
@@ -41,7 +37,6 @@ drun() {
     -e K8S_CONTEXT=$K8S_CONTEXT \
     -e STAGE=$STAGE \
     -w $PWD $img $@
-  rm $KUBE
 }
 
 alias h="helm"

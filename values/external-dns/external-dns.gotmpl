@@ -26,7 +26,9 @@ azure:
 {{- end }}  
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" | toYaml | nindent 2 }}
-annotationFilter: "{{ if and (eq $v.provider "azure") $v.hasCloudLB }}provider=azure{{ end }}"
+{{- if $v.hasCloudLB }}
+annotationFilter: "provider={{ $v.provider }}"
+{{- end }}
 dryRun: false
 crd:
   create: false
