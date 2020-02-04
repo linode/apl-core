@@ -5,7 +5,8 @@ kind: Ingress
 metadata:
   labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/ingress.class: alb
+    provider: aws
+    kubernetes.io/ingress.class: merge
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{{ if not $v.ingress.forceSsl }}{"HTTP": 80}, {{ end }}{"HTTPS":443}]'
     alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
@@ -44,4 +45,24 @@ spec:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
+{{- end }}
+{{- if eq $v.name "admin" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: merged-ingress
+  namespace: ingress
+data:
+  annotations: |
+    provider: aws
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    alb.ingress.kubernetes.io/inbound-cidrs: {{ include "helm-toolkit.utils.joinListWithComma" $v.ingress.allowedCidrs  | quote }}
+    alb.ingress.kubernetes.io/success-codes: '200,302,404'
+    {{- if $v.ingress.disableHttp2 }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=false"
+    {{- end }}
 {{- end }}
