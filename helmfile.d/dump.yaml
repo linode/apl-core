@@ -1,0 +1,16 @@
+# Use this release file to show all environment values that are pupulated to charts
+# Running: hf_ -f helmfile.d/dump.yaml build
+
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+
+releases:
+  - name: dump
+    # Never change 'installed' flag to true as you do not want to see release being deployed
+    installed: false
+    chart: ../charts/raw
+    values:
+    - {{ toYaml $v | nindent 6 }}
