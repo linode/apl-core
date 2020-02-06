@@ -38,6 +38,12 @@ services:
   - name: index
     svc: index
     namespace: team-admin
+  - name: otomi-api
+    namespace: shared
+    port: 8080
+    svc: otomi-api
+    logo:
+      name: kubernetes
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
