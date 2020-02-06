@@ -33,3 +33,9 @@ releases:
     labels:
       pkg: gatekeeper-operator
     <<: *default
+  - name: otomi-api-artifacts
+    installed: true
+    namespace: shared
+    labels:
+      pkg: otomi-api
+    <<: *raw
