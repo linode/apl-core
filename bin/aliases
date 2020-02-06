@@ -29,7 +29,11 @@ d ps &>/dev/null
 dockerRunning=$?
 
 drun() {
-  d run -it --rm -v $PWD:$PWD -v ~/.kube/config:/home/app/.kube/config -v /tmp:/tmp \
+  # execute any kubectl command to refresh access token
+  k version >> /dev/null
+  d run -it --rm -v $PWD:$PWD \
+    -v ~/.kube/config:/home/app/.kube/config \
+    -v /tmp:/tmp \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
     -v ~/.config:/home/app/.config \
