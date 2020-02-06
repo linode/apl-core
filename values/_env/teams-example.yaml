@@ -1,0 +1,27 @@
+# EXAMPLE
+teamConfig:
+  teams:
+    otomi:
+      name: Otomi
+      password: somepassworddd # used for multitenancy proxy
+      services:
+        - name: hello # short name for urls, which by default end up as $name.$namespace.${cluster.domain}
+          svc: # when not specified, we expect "image:" to be set, see below
+            name: hello # internal k8s service, which needs the "$team-" prefix for pregenerated VirtualService (can be left empty for knative service)
+          # port: 8080 # 80 is default
+          logo:
+            name: kubernetes # one of the logo's available
+            # url: some.image.url
+          ksvc:
+            image:
+              repository: otomi/helloworld-nodejs
+              tag: 1.1.3
+            annotations:
+              # Disable scale to zero with a minScale of 1.
+              autoscaling.knative.dev/minScale: '1'
+          isPublic: true # does not need oauth2 sso
+          # override generated domain host with a custom one that can be set by this cloud's dns
+          # (don't forget to also configure external-dns to target the dns zone involved)
+          domain: custom.doma.in # defaults to hello.$teamDomain, which is hello.team-otomi.${cluster.domain}
+          hasCert: true # if false create one on the fly, else provide one as secret in cert-team-$team-$name, or, for AWS:
+          # certArn: arn:aws:acm:eu-central-1:xxx:certificate/xxx
