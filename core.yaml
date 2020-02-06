@@ -129,6 +129,8 @@ teamConfig:
       namespace: shared
       port: 8080
       svc: otomi-api
+      logo:
+        name: kubernetes
     - name: auth
       svc: oauth2-proxy
       namespace: istio-system

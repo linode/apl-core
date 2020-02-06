@@ -2,7 +2,7 @@ teamConfig:
   teams:
     team1:
       name: team1
-      password: somepassworddd # used for multitenancy proxy
+      password: somepassworddd
       cicd:
         enabled: true
         type: drone
