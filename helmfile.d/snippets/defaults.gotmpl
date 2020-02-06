@@ -11,13 +11,4 @@ environments:
   {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") (dict "clouds" $v.clouds "cluster" (dict "provider" $provider "name" $cluster "region" $c.region "k8sVersion" $c.k8sVersion "domain" (index $c "domain" | default (printf "%s.%s" $cluster $p.domain)))) | nindent 2 }}
   {{- end }}
   {{- end }}
-repositories:
-  - name: stable
-    url: https://kubernetes-charts.storage.googleapis.com/
-  - name: incubator
-    url: https://kubernetes-charts.storage.googleapis.com/
-  - name: stable-gitlab 
-    url: https://charts.gitlab.io/
-
-
     
