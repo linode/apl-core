@@ -12,5 +12,9 @@ if [ ! -d ~/.kube ]; then
 fi
 
 kcu $K8S_CONTEXT
+
+# install some stuff that we never want to end up as charts
+# (might get corrupted and we can then never pass that stage of deployment)
+hft | k apply -f -
 k apply --validate=false -f k8s/cert-manager-init
-hf -e $CLOUD-$CLUSTER apply --concurrency=1 --skip-deps
+hf apply

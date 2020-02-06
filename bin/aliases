@@ -45,16 +45,16 @@ drun() {
 
 alias h="helm"
 alias hk="h delete"
-alias hf="helmfile"
+alias hf_="helmfile"
 
 # if not has docker: ci
 if [ $hasDocker -eq 0 ]; then
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
-    unalias h hf hk aw gc
+    unalias h hf_ hk aw gc
     alias h="drun helm"
-    alias hf="drun helmfile"
+    alias hf_="drun helmfile"
     alias hk="drun helm delete"
     alias aw="drun aws"
     alias az="drun az"
@@ -86,7 +86,7 @@ function kkc() {
 
 kcu ${K8S_CONTEXT}
 
-function hf_() { hf -e ${CLOUD}-$CLUSTER $@; }
-function hfd() { hf -e ${CLOUD}-dev $@; }
+function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
+function hft() { hf -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-init.yaml $@ --quiet template | grep -vi skipping | tail -n +2 ; }
 
 echo "Aliases loaded for target '$CLOUD'"
