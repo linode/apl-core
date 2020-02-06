@@ -2,12 +2,11 @@
 {{- $d := $v.charts.drone }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $host := printf "drone.%s" $domain }}
-# images:
-#   server:
-#     repository: "drone/drone-runner-kube"
-#     tag: latest
 images:
   server:
+    tag: latest
+  agent:
+    repository: "docker.io/drone/drone-runner-kube"
     tag: latest
 
 nameOverride: admin

@@ -37,6 +37,19 @@ helm upgrade drone \
   stable/drone
 ```
 
+## Custom Registry
+If you need to implicitly run containers from your private registry you can set the default service account to use a custom image pull secret in the CI namespace.
+Create a docker login secret that we can optionally attach to the default service account in the pipelines namespace:
+```
+kubectl create secret generic dockerconfigjson -n cicd-drone \
+    --from-file=.dockerconfigjson=____~/.docker/config.json____  \
+    --type=kubernetes.io/dockerconfigjson
+
+# add the image pull secret to the default service account in the CICD namespace
+kubectl edit sa default -n cicd-drone
+```
+
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
@@ -72,8 +85,6 @@ The following table lists the configurable parameters of the drone charts and th
 | `ingress.hosts`             | Ingress accepted hostnames                                                                    | `nil`                       |
 | `ingress.tls`               | Ingress TLS configuration                                                                     | `[]`                        |
 | `ingress.path`              | Ingress path mapping                                                                          | ``                       |
-| `licenseKey`                | Enterprise License Key                                                                        | ``                       |
-| `licenseKeySecret`          | Enterprise License Key Secret Name                                                            | ``                       |
 | `sourceControl.provider`               | name of source control provider [github,gitlab,gitea,gogs,bitbucketCloud,bitbucketServer]              | ``       |
 | `sourceControl.secret`               | name of secret containing source control keys and passwords              | ``       |
 | `sourceControl.github`               | values to configure github    | see values.yaml       |
@@ -84,7 +95,6 @@ The following table lists the configurable parameters of the drone charts and th
 | `sourceControl.bitbucketServer`               | values to configure bitbucket server (stash)    | see values.yaml       |
 | `server.host`               | Drone **server** hostname (should match callback url in oauth config)              | `(internal hostname)`       |
 | `server.protocol`               | Drone **server** scheme/protocol [http,https]                                                         | `http`       |
-| `server.httpPort`           | Drone **server** http port                                                                    | `80`                        |
 | `server.env`                | Drone **server** environment variables                                                        | `(default values)`          |
 | `server.envSecrets`         | Drone **server** secret environment variables                                                 | `(default values)`          |
 | `server.adminUser`         | Initial user to create and set as admin                                                 | ``          |
@@ -98,7 +108,6 @@ The following table lists the configurable parameters of the drone charts and th
 | `server.affinity`           | Drone **server** scheduling preferences                                                       | `{}`                        |
 | `server.nodeSelector`       | Drone **server** node labels for pod assignment                                               | `{}`                        |
 | `server.tolerations`        | Drone **server** node taints to tolerate                                                      | `[]`                        |
-| `server.securityContext`    | Drone **server** securityContext                                                              | `{}`                        |
 | `server.extraContainers`    | Additional sidecar containers                                                                 | `""`                        |
 | `server.extraVolumes`       | Additional volumes for use in extraContainers                                                 | `""`                        |
 | `agent.env`                 | Drone **agent** environment variables                                                         | `(default values)`          |
@@ -113,7 +122,6 @@ The following table lists the configurable parameters of the drone charts and th
 | `agent.readinessProbe` | Not currently used  | `{}` |
 | `agent.volumes`             | Additional volumes to make available to agent (shared by dind if used)                        | `nil`                       |
 | `agent.volumeMounts`        | Mount points for volumes                                                                      | `nil`                       |
-| `agent.rpcServerOverride`   | Override rpc server url                                                                       | `nil`                       |
 | `dind.enabled`              | Enable or disable **DinD**                                                                    | `true`                      |
 | `dind.driver`               | **DinD** storage driver                                                                       | `overlay2`                  |
 | `dind.volumeMounts`         | Mount points for volumes (defined in agent.volumes)                                           | `nil`                       |
