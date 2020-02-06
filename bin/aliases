@@ -32,8 +32,7 @@ drun() {
   d run -it --rm -v $PWD:$PWD -v ~/.kube/config:/home/app/.kube/config -v /tmp:/tmp \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
-    -v ~/.config/gcloud:/home/app/.config/gcloud \
-    -v ~/.helm:/home/app/.helm \
+    -v ~/.config:/home/app/.config \
     -e K8S_CONTEXT=$K8S_CONTEXT \
     -e CLUSTER=$CLUSTER \
     -w $PWD $img $@
