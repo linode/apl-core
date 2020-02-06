@@ -22,7 +22,7 @@ charts:
           tenantID: 64458159-0d9a-4d84-966f-1a13c0ac7a34
           subscriptionID: 2e69a31a-6cef-4493-b895-3a0d8e16e58e
           resourceGroupName: dev-aks-dns
-          hostedZoneName: aks.sandbox.cla.ns.nl
+          hostedZoneName: aks.otomi.cloud
 
   cluster-autoscaler:
     image:
@@ -39,7 +39,7 @@ charts:
         clientSecretValue: 70a6d6a76034f3fb641c83bc189e99f02fc86c4d
 
   external-dns:
-    domainFilters: [aks.sandbox.cla.ns.nl]
+    domainFilters: [aks.otomi.cloud]
     zoneIdFilters:
     azure:
       resourceGroup: dev-aks-dns
