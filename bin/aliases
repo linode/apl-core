@@ -80,15 +80,26 @@ function kkns() {
 # erase entire stack but keep nodes
 function kkc() {
   k delete crd $(k get crd | egrep "cert-manager|istio|ory|coreos|knative|velero" | awk '{print $1}')
-  hf -e ${CLOUD}-$CLUSTER destroy
+  hf_ -e ${CLOUD}-$CLUSTER destroy
   k delete ns --all
 }
 
-kcu ${K8S_CONTEXT}
+export KUBE_CONFIG=~/.kube/config
+# make a tmp copy from our local KUBE_CONFIG to target only our env
+# tmpLocation="/tmp/otomi/kubecfg/$CLOUD"
+# k8sConfig="$tmpLocation/$CLUSTER.yaml"
+# mkdir -p $tmpLocation >/dev/null
+# kcv >$k8sConfig
+# export KUBE_CONFIG=$k8sConfig
+
+# now switch
+kcu $K8S_CONTEXT
 
 # environment scoped:
 function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
+# environment scoped, no deps, so faster:
+function hfd() { hf $@ --skip-deps; }
 # templates only without cruft:
-function hft() { hf --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
+function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
-echo "Aliases loaded targeting CLOUD '$CLOUD' and CLUSTER '$CLUSTER'"
+echo "Aliases loaded targeting CLOUD=$CLOUD and CLUSTER=$CLUSTER"
