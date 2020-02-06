@@ -1,12 +1,12 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
 {{- $svc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
     {{- include "ingress-annotations" . | nindent 4 }}
-    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # rewrite auth redirects to original hosts
@@ -23,7 +23,7 @@ spec:
           serviceName: {{ $svc }}
           servicePort: 80
         path: /oauth2
-  {{- if not $v.hasCloudLB }}
+  {{- if not $v.cluster.hasCloudLB }}
   tls: 
     - secretName: cert-team-{{ $v.name }}
       hosts:

@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}

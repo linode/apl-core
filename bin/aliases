@@ -29,19 +29,14 @@ d ps &>/dev/null
 dockerRunning=$?
 
 drun() {
-  KUBE=/tmp/kube.cfg
-  cp ~/.kube/config $KUBE
-  # Update path to google-cloud-sdk, so it can refresh tokens
-  sed 's/cmd-path: .*.google-cloud-sdk/cmd-path: \/home\/app\/google-cloud-sdk/' ~/.kube/config >$KUBE
-  d run -it --rm -v $PWD:$PWD -v $KUBE:/home/app/.kube/config -v /tmp:/tmp \
+  d run -it --rm -v $PWD:$PWD -v ~/.kube/config:/home/app/.kube/config -v /tmp:/tmp \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
     -v ~/.config/gcloud:/home/app/.config/gcloud \
     -v ~/.helm:/home/app/.helm \
     -e K8S_CONTEXT=$K8S_CONTEXT \
-    -e STAGE=$STAGE \
+    -e CLUSTER=$CLUSTER \
     -w $PWD $img $@
-  rm $KUBE
 }
 
 alias h="helm"
@@ -81,22 +76,13 @@ function kkns() {
 # erase entire stack but keep nodes
 function kkc() {
   k delete crd $(k get crd | egrep "cert-manager|istio|ory|coreos|knative|velero" | awk '{print $1}')
-  hf -e ${CLOUD}-$STAGE destroy
+  hf -e ${CLOUD}-$CLUSTER destroy
   k delete ns --all
 }
 
 kcu ${K8S_CONTEXT}
-if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
-  # check if we have a mismatching context for an aws cluster
-  chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $1}')
-  [ "$chek" = "*" ] && chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
-  aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
-  echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
-  k config rename-context $chek $K8S_CONTEXT
-  kcu ${K8S_CONTEXT}
-fi
 
-function hf_() { hf -e ${CLOUD}-$STAGE $@; }
-function hfd() { hf -e ${CLOUD}-dev $@ --skip-deps; }
+function hf_() { hf -e ${CLOUD}-$CLUSTER $@; }
+function hfd() { hf -e ${CLOUD}-dev $@; }
 
 echo "Aliases loaded for target '$CLOUD'"

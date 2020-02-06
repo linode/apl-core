@@ -1,10 +1,9 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
-{{- $provider := $v.provider }}
+{{- $provider := $v.cluster.provider }}
 resources:
-  {{- if eq $v.provider "azure" }}
+  {{- if eq $v.cluster.provider "azure" }}
   {{- $ap := $cm.provider.azure.azuredns }}
   - apiVersion: v1
     kind: Secret
@@ -15,7 +14,7 @@ resources:
     data:
       {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
   {{- end }}
-  {{- if eq $v.provider "google" }}
+  {{- if eq $v.cluster.provider "google" }}
   - apiVersion: v1
     kind: Secret
     metadata:

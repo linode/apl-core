@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts.drone }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $host := printf "drone.%s" $domain }}
 # images:
 #   server:
@@ -23,8 +22,8 @@ server:
   dind:
     enabled: false
   env:
-    CLOUD: {{ $v.provider }}
-    STAGE: {{ $v.stage }}
+    CLOUD: {{ $v.cluster.provider }}
+    CLUSTER: {{ $v.cluster.name }}
     DRONE_LOGS_DEBUG: true
     DRONE_LOGS_TRACE: true
     DRONE_LOGS_PRETTY: true
@@ -34,7 +33,7 @@ server:
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
-    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.provider }},STAGE:{{ $v.stage }}"
+    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
 dind:
   enabled: false    
 persistence:

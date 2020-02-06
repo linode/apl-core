@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and ($v.useCloudCA) (or (eq $v.name "admin") ($v.isMultitenant)) }}
+{{- if and ($v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -8,9 +8,9 @@ metadata:
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "-4"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    # "helm.sh/hook": post-install
+    # "helm.sh/hook-weight": "-4"
+    # "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
@@ -32,15 +32,15 @@ spec:
         args:
           - |
             sleep 2 # needed otherwise we get connection refused on the k8s api
-{{- if eq $v.provider "aws" }}
+{{- if eq $v.cluster.provider "aws" }}
             oldCertArns="{{ include "helm-toolkit.utils.joinListWithComma" $v.ingress.certArns }}"
             certArns=$(kubectl get cm cert-arns-team-{{ $v.name }} -o json | jq -r '.data.certArns')
             certArns="$oldCertArns$([ \"$oldCertArns\" != \"\" ] && echo ',')$certArns"
             # patch the aws ingress
-            kubectl get ing team-{{ $v.name }} -o json | jq '.metadata.annotations["alb.ingress.kubernetes.io/certificate-arn"] = "$certArns"' | kubectl apply -f -
-{{- else if eq $v.provider "google" }}
+            kubectl -n ingress get ing team-{{ $v.name }} -o json | jq ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"] = \"$certArns\"" | kubectl -n ingress apply -f -
+{{- else if eq $v.cluster.provider "google" }}
             # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
-{{- else if eq $v.provider "azure" }}
+{{- else if eq $v.cluster.provider "azure" }}
             # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
 {{- end }}
 {{- end }}

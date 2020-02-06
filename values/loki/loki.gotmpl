@@ -1,5 +1,4 @@
 {{- $v := .Environment.Values -}}
-{{- $cluster := index $v.clusters $v.provider }}
 {{- $l :=  $v.charts.loki }}
 
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
@@ -7,7 +6,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-  auth_enabled: {{ $v.isMultitenant }}
+  auth_enabled: {{ $v.cluster.isMultitenant }}
   ingester:
     chunk_idle_period: 15m
     chunk_block_size: 262144
@@ -37,7 +36,7 @@ config:
       directory: /data/loki/chunks
     {{- if eq $l.storageType "aws" }}
     aws: 
-      s3: s3://{{ $cluster.region }}/logs.{{ $v.stage }}.{{ $cluster.host }}
+      s3: s3://{{ $v.cluster.region }}/logs.{{ $v.cluster.domain }}
     {{- end }}
   chunk_store_config:
     max_look_back_period: 0
@@ -76,7 +75,7 @@ promtail:
   serviceName: promtail
 
 extraContainers:
-{{- if $v.isMultitenant }}
+{{- if $v.cluster.isMultitenant }}
 - name: reverse-proxy
   image: angelbarrera92/basic-auth-reverse-proxy:dev
   args:
@@ -93,7 +92,7 @@ extraContainers:
 {{- end }}
 
 extraVolumes:
-{{- if $v.isMultitenant }}
+{{- if $v.cluster.isMultitenant }}
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
@@ -102,7 +101,7 @@ extraVolumes:
 extraVolumeMounts: []
 
 extraPorts:
-{{- if $v.isMultitenant }}
+{{- if $v.cluster.isMultitenant }}
 - port: 11811
   protocol: TCP
   name: http

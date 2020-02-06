@@ -1,12 +1,10 @@
-dashboards:
-  default:
-    deployment:
-      file: "dashboards/deployment.json"
-    pods:
-      file: "dashboards/pods.json"
-    sitespeed:
-      file: "dashboards/sitespeed.json"
+folders:
+  - k8s
+  - istio
+  # - sitespeed
 
 sidecar:
   dashboards:
     label: grafana_dashboard
+
+team: admin    
