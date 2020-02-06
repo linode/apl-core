@@ -86,7 +86,9 @@ function kkc() {
 
 kcu ${K8S_CONTEXT}
 
+# environment scoped:
 function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
+# templates only without cruft:
 function hft() { hf --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
 echo "Aliases loaded for target '$CLOUD'"
