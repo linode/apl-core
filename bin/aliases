@@ -30,7 +30,7 @@ dockerRunning=$?
 
 drun() {
   # execute any kubectl command to refresh access token
-  k version >> /dev/null
+  k version >/dev/null
   d run -it --rm -v $PWD:$PWD \
     -v ~/.kube/config:/home/app/.kube/config \
     -v /tmp:/tmp \
@@ -87,6 +87,6 @@ function kkc() {
 kcu ${K8S_CONTEXT}
 
 function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
-function hft() { hf -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-init.yaml $@ --quiet template | grep -vi skipping | tail -n +2 ; }
+function hft() { hf -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-init.yaml $@ --quiet template | grep -vi skipping | tail -n +2; }
 
 echo "Aliases loaded for target '$CLOUD'"
