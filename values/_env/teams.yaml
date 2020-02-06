@@ -1,33 +1,8 @@
 teamConfig:
   teams:
-    - name: team1
-      password: somepassworddd
-      oidc: # optional: to bring up an oauth2-proxy for the namespace, usually for isMultitenant = true
-        clientID: ad7611c4-a726-4ec8-8ad3-a518441e728f
-        clientSecret: Qn/=aQ7x]A/9PgGJhbtAlHejq3fA0P4K
-      # slackUrl: https://hooks.slack.com/services/xxx
-      # resourceQuota:
-      #   services.loadbalancers: "1"
-      # knative:
-      #   enabled: false
+    team1:
+      name: team1
+      password: somepassworddd # used for multitenancy proxy
       cicd:
         enabled: true
         type: drone
-      services:
-        - name: hello # short name for urls
-          image: otomi/helloworld-nodejs:1.0.2
-          # image: otomi/helloworld-nodejs:1.0.3
-          imageTagFormat: semver # regex
-          autoDeploy: true
-          deployTag: 1.0.*
-          # env:
-          #   - name: TARGET
-          #     value: Universe
-          # svc: project1 # internal k8s service, can be left empty for knative service
-          # port: 8080 # 80 is default
-          isPublic: true # does not need oauth2 sso
-          # override generated domain host with a custom one that can be set by this cloud's dns
-          # (google: otomi.cloud, aws: eks.otomi.cloud, azure: aks.otomi.cloud)
-          # domain: blabla.otomi.cloud
-          # hasCert: false # create one on the fly, or provide one as secret in cert-team-$team-$name, or:
-          # certArn: arn:aws:acm:eu-central-1:829552880873:certificate/3a3da880-ab47-43d2-b216-aecf664314f5

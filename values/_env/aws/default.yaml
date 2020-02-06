@@ -1,5 +1,16 @@
-hasCloudLB: true
-useCloudCA: true
+cluster:
+  hasCloudLB: true
+  useCloudCA: true
+  hasKnative: false # only from k8s 1.15 up, and AWS has 1.14
+
+ingress:
+  certArns:
+    # *.team-admin
+    - arn:aws:acm:eu-west-1:956709229054:certificate/273c2338-061f-4de0-983a-595c09813758
+    # *.team-team1
+    - arn:aws:acm:eu-west-1:956709229054:certificate/766b3105-8079-4b04-a49a-4e89113cd62f
+    # hello.sandbox.cla.ns.nl
+    # - arn:aws:acm:eu-west-1:956709229054:certificate/c1888d3f-ae8b-45e6-81a5-ae97230a4c0c
 
 charts:
   cert-manager:
@@ -8,7 +19,11 @@ charts:
         # see: https://cert-manager.io/docs/configuration/acme/dns01/route53/
         # we use metadata inferred
         route53:
-          region: eu-central-1
+          region: eu-west-1
+
+  cluster-autoscaler:
+    image:
+      tag: v1.15.4
 
   drone:
     sourceControl:
@@ -17,10 +32,10 @@ charts:
         clientSecretValue: 08cdbdd613b2700c49f17e38dc077faf2e765344
 
   external-dns:
-    domainFilters: [eks.otomi.cloud]
+    domainFilters: [sandbox.cla.ns.nl]
     zoneIdFilters:
     aws:
-      region: eu-central-1
+      region: eu-west-1
 
   istio:
     # profile: default

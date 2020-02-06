@@ -1,0 +1,11 @@
+teamConfig:
+  teams:
+    team1:
+      services:
+        - name: hello
+          logo:
+            name: kubernetes
+          image:
+            repository: otomi/helloworld-nodejs
+            tag: 1.1.3
+          isPublic: true
