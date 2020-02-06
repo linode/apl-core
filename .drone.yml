@@ -15,8 +15,6 @@ steps:
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
-    depends_on:
-      - test
 
     when:
       event:
