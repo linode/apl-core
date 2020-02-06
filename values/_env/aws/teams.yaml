@@ -1,0 +1,14 @@
+teamConfig:
+  teams:
+    team1:
+      services:
+        - name: hello
+          svc: hello
+          logo:
+            name: kubernetes # one of the logo's available
+            # url: some.image.url
+          env:
+            - name: TARGET
+              value: AWS World
+          isPublic: true
+          domain: hello.sandbox.cla.ns.nl
