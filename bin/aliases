@@ -87,6 +87,6 @@ function kkc() {
 kcu ${K8S_CONTEXT}
 
 function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
-function hft() { hf -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-init.yaml $@ --quiet template | grep -vi skipping | tail -n +2; }
+function hft() { hf --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
 echo "Aliases loaded for target '$CLOUD'"
