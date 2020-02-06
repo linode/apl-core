@@ -1,6 +1,0 @@
-filesystem:
-  rootdirectory: '/tmp/registry'
-cache:
-  blobdescriptor: 'inmemory'
-delete:
-  enabled: true
