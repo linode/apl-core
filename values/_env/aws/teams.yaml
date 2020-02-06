@@ -11,4 +11,4 @@ teamConfig:
             - name: TARGET
               value: AWS World
           isPublic: true
-          domain: hello.sandbox.cla.ns.nl
+          domain: hello.otomi.cloud
