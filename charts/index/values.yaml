@@ -127,9 +127,9 @@ readinessProbe:
   httpGet:
     path: /
     port: http
-  initialDelaySeconds: 5
-  timeoutSeconds: 3
-  periodSeconds: 5
+  initialDelaySeconds: 3
+  timeoutSeconds: 2
+  periodSeconds: 3
 
 ## Pod annotations
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -166,9 +166,8 @@ metrics:
   # resources: {}
 
 group: admin
-providers: {}
-provider: ""
-stage: ""
-domain: ""
+clouds: {}
+cluster: {}
+coreServices: []
 services: []
 sites: []

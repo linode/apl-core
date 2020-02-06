@@ -1,6 +1,5 @@
 {{- define "html" -}}
 {{- $v := .Values -}}
-{{- $provider := index $v.clusters $v.provider }}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="msapplication-TileColor" content="#ffc40d" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="Dashboard for cluster {{ $v.group }}-{{ $v.stage }}.{{ $provider.host }}" />
+    <meta name="description" content="Dashboard for {{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $v.cluster.domain }}" />
     <meta name="application-name" content="Otomi" />
     <title>Otomi - All of your apps in the cloud.</title>
     <link type="text/css" rel="stylesheet" href="style.css" />
@@ -39,7 +38,7 @@
             if (xhr.status === 200) {
               var user = xhr.response
               var group = xhr.getResponseHeader('Auth-Group')
-              document.getElementsByClassName('admin')[0].innerHTML = `${user.email} (${group})`
+              document.getElementsByClassName('admin')[0].innerHTML = `${user.email} (${group.charAt(0).toUpperCase() + group.substring(1)})`
             }
           }
         }
@@ -56,21 +55,37 @@
       {{- end }}
       <div class="env-links">
         Cloud:
-        {{- range $p, $c := $v.clusters }}
-        {{- if ne $p "aws" }} | {{ end }}
-        {{- if eq $p $v.provider }}
-        <a class="active">{{ $p | title }}</a>
+        {{- range $provider, $p := $v.clouds }}
+        {{- $clusters := index $v.clouds $provider }}
+        {{- if ne $provider "aws" }} | {{ end }}
+        {{- if eq $provider $v.cluster.provider }}
+        <a class="active">{{ $provider | title }}</a>
         {{- else }}
-        <a href="https://index.team-{{ $v.group }}.{{ $v.stage }}.{{ $c.host }}">{{ $p | title }}</a>
+        {{- if hasKey $clusters $v.cluster.name }}
+        {{- $cluster := index $clusters $v.cluster.name }}
+        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $cluster.domain }}">{{ $provider | title }}</a>
+        {{- else }}
+        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $v.cluster.name }}.{{ $p.domain }}">{{ $provider | title }}</a>
         {{- end }}
         {{- end }}
-        - Stage: 
-        {{- range $i, $stage := $provider.stages }}
-        {{- if $i }} | {{ end }}
-        {{- if eq $stage $v.stage }}
-        <a class="active">{{ $stage }}</a>
+        {{- end }}
+        - Cluster: 
+        {{- $p := index $v.clouds $v.cluster.provider }}
+        {{- $i := 0 }}
+        {{- range $cluster, $c := $p.clusters }}
+        {{- if $i }} | {{ end }}{{ $i = add $i 1 }}
+        {{- if eq $cluster $v.cluster.name }}
+        <a class="active">{{ $cluster }}</a>
         {{- else }}
-        <a href="https://index.team-{{ $v.group }}.{{ $stage }}.{{ $provider.host }}">{{ $stage }}</a>
+        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $c.domain }}">{{ $cluster }}</a>
+        {{- end }}
+        {{- end }}
+        {{- if eq $v.group "admin" }}
+        - Teams: 
+        {{- $i := 0 }}
+        {{- range $team := $v.teams }}
+        {{- if $i }} | {{ end }}{{ $i = add $i 1 }}
+        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $team }}.{{ $v.cluster.domain }}">{{ $team | title }}</a>
         {{- end }}
         {{- end }}
       </div>
@@ -82,23 +97,31 @@
           Team Dashboard - {{ $v.group | title }}
         </h1>
         <p class="sub">
-          Domain <b>{{ $v.group }}.{{ $v.stage }}.{{ $provider.host }}</b>
+          Domain <b>{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $v.cluster.domain }}</b>
         </p>
       </div>
-      <h2>Apps <span>({{ $v.services | len }})</span></h2>
-      <div class="grid">
-        {{- range $s := $v.services }}
-        {{- $domain := (index $s "domain" | default (printf "%s.%s" (index $s "host" | default $s.name) $v.domain)) }}
-        <div class="col-3">
-          <a href='https://{{ $domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
-            <div class="img-wrapper">
-              <img src="{{ $s.logo | default $s.name }}_logo.svg" alt="{{ $s.name | title }} logo" style="width: 65px;" />
-            </div>
-            <h4>{{ $s.name | title }}</h4>
-          </a>
+      {{- $allServices := (dict "Core" $v.coreServices "Team" $v.services) }}
+      {{- range $type, $services := $allServices }}
+      {{- if ne (len $services) 0 }}
+      <h2>{{ $type }} Apps <span>({{ $services | len }})</span></h2>
+      <div style="overflow: auto;">
+        <div class="grid">
+          {{- range $s := $services }}
+          {{- $domain := (index $s "domain" | default (printf "%s.%s" (index $s "host" | default $s.name) $v.domain)) }}
+          <div class="col-3">
+            <a href='https://{{ $domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
+              <div class="img-wrapper">
+                {{- $img := (printf "%s_logo.svg" $s.name) }}{{ if $s.logo }}{{ $img = (hasKey $s.logo "name" | ternary (printf "%s_logo.svg" $s.logo.name) ($s.logo.url)) }}{{ end }}
+                <img src="{{ $img }}" alt="{{ $s.name | title }} logo" style="width: 65px;" />
+              </div>
+              <h4>{{ $s.name | title }}</h4>
+            </a>
+          </div>
+          {{- end }}
         </div>
-        {{- end }}
       </div>
+      {{- end }}
+      {{- end }}
     </main>
   </body>
 </html>

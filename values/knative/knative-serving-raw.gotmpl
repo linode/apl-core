@@ -1,6 +1,4 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "%s.%s" $v.stage $cluster.host }}
 resources:  
   - apiVersion: operator.knative.dev/v1alpha1
     kind: KnativeServing
@@ -18,4 +16,4 @@ resources:
         logging:
           loglevel.controller: "debug"
         domain:
-          {{ $domain }}: ""
+          {{ $v.cluster.domain }}: ""

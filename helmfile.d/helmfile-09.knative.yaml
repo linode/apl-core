@@ -2,11 +2,10 @@ bases:
   - snippets/defaults.gotmpl
 ---
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
 
 releases:
   - name: knative-serving
-    installed: {{ if ge $cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
+    installed: {{ if ge $v.cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
     namespace: knative-serving
     chart: ../charts/raw
     values:

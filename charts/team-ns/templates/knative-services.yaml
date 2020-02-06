@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- if (index $v "knative.enabled" | default "true") }}
+# knative: {{ index $v "knative.enabled" }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if and (not (index $s "internal")) (not (index $s "host")) (not (index $s "svc")) }}
@@ -12,7 +13,7 @@ spec:
   template:
     spec:
       containers:
-        - image: {{ $s.image }}
+        - image: {{ $s.image.repository }}:{{ $s.image.tag }}
           env:
             - name: TEAM_NAME
               value: {{ $s.name }}

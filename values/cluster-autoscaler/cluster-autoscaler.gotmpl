@@ -1,17 +1,16 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
 {{- $a := index $v.charts "cluster-autoscaler" }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 image:
-  tag: v1.15.4
+  tag: {{ $a.image.tag }}
 
 autoDiscovery:
   clusterName:  {{ $v.clusterName }}
 
-cloudProvider: {{ $v.provider }}
+cloudProvider: {{ $v.cluster.provider }}
 
-{{- if eq $v.provider "azure" }}
+{{- if eq $v.cluster.provider "azure" }}
 azureClientID: {{ $v.azure.clientId }}
 azureClientSecret: {{ $v.azure.clientSecret }}
 azureResourceGroup: {{ $v.azure.resourceGroup }}
@@ -25,8 +24,8 @@ azureClusterName: {{ $v.clusterName }}
 azureUseManagedIdentityExtension: false
 # only azure does not have autodiscovery, so list groups:
 autoscalingGroups: {{- $a.autoscalingGroups | toYaml | nindent 2 }}
-{{- else if eq $v.provider "aws" }}
-awsRegion: {{ $cluster.region }}
+{{- else if eq $v.cluster.provider "aws" }}
+awsRegion: {{ $v.cluster.region }}
 {{- end }}
 
 rbac:

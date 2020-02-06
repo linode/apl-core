@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}

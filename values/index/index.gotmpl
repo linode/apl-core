@@ -1,14 +1,12 @@
 {{ $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
 {{ $v.charts.index | toYaml }}
+{{- $teams := list }}{{ range $team, $t := $v.teamConfig.teams }}{{ $teams = append $teams $team }}{{ end }}
 fullnameOverride: index
 service:
   type: ClusterIP
-clusters: {{ $v.clusters | toYaml | nindent 2 }}  
-provider: {{ $v.provider }}  
-stage: {{ $v.stage }}
-services:
+clouds: {{ $v.clouds | toYaml | nindent 2 }}
+cluster: {{ $v.cluster | toYaml | nindent 2 }}
+coreServices:
   {{- range $s := $v.services }}
   {{- if and (not (eq $s.name "index")) (not ($s | getOrNil "isAuthProxy")) (not ($s | getOrNil "internal")) }}
   - {{ $s | toYaml | nindent 4 }}
@@ -16,3 +14,4 @@ services:
   {{- end }}
 sites: {{ $v.sites | toYaml | nindent 2 }}
 group: "admin"
+teams: {{- $teams | toYaml | nindent 2 }}

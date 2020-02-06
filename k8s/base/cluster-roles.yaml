@@ -4,11 +4,11 @@ metadata:
   name: list
 rules:
   - apiGroups:
-      - "*"
+      - '*'
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "list"
+      - 'list'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -26,7 +26,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - ""
+      - ''
     resources:
       - namespaces
       - configmaps
@@ -40,7 +40,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
+      - ''
     resources:
       - pods/log
     verbs:
@@ -73,3 +73,17 @@ rules:
       - podsecuritypolicies
     verbs:
       - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ingress-update
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - patch
+      - update

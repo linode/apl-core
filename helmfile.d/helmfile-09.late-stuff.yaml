@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.gotmpl
+
+{{ readFile "snippets/templates.gotmpl" }}
+
+releases:
+  - name: gatekeeper-operator-config
+    installed: true
+    namespace: gatekeeper-system
+    labels:
+      pkg: gatekeeper-operator
+    <<: *default
