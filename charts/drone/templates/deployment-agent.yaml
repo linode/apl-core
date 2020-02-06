@@ -29,7 +29,7 @@ spec:
         component: agent
     spec:
 {{- if .Values.kubernetes.schedulerName }}
-      schedulerName: "{{ .Values.agent.schedulerName }}"
+      schedulerName: "{{ .Values.kubernetes.schedulerName }}"
 {{- end }}
 {{- if .Values.kubernetes.affinity }}
       affinity:
