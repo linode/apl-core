@@ -7,24 +7,13 @@ metadata:
     sidecar.istio.io/inject: "false"
 
 steps:
-  - name: test
-    image: otomi/tools:1.1.4
-    command:
-      - ./tests/lint.sh
-    environment:
-      STAGE: dev
-      CLOUD: ${CLOUD}
-    when:
-      event:
-        - push
-        - pull_request
-
   - name: deploy-dev
     image: otomi/tools:1.1.4
     command:
+      - ./tests/lint.sh
       - ./bin/deploy.sh
     environment:
-      STAGE: dev
+      CLUSTER: dev
       CLOUD: ${CLOUD}
     depends_on:
       - test
@@ -37,9 +26,10 @@ steps:
   - name: deploy-demo
     image: otomi/tools:1.1.4
     command:
+      - ./tests/lint.sh
       - ./bin/deploy.sh
     environment:
-      STAGE: demo
+      CLUSTER: demo
       CLOUD: ${CLOUD}
     when:
       ref: [refs/tags/v*-DEMO]
@@ -49,9 +39,10 @@ steps:
   - name: deploy-prd
     image: otomi/tools:1.1.4
     command:
+      - ./tests/lint.sh
       - ./bin/deploy.sh
     environment:
-      STAGE: prd
+      CLUSTER: prd
     when:
       ref: [refs/tags/v*]
       event:

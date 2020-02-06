@@ -42,7 +42,7 @@ Please look at the `values/_env/**` files and configure as needed for your targe
 The first time install must be done for each configured cloud and cluster like this:
 
 ```bash
-export CLOUD=(azure|google|aws) && export STAGE=(dev|demo|prd) && bin/deploy.sh
+export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.sh
 ```
 
 It should install and start all the services in this repo.

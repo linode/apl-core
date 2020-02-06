@@ -84,7 +84,7 @@ function kkc() {
   k delete ns --all
 }
 
-export KUBE_CONFIG=~/.kube/config
+# export KUBE_CONFIG=~/.kube/config
 # make a tmp copy from our local KUBE_CONFIG to target only our env
 # tmpLocation="/tmp/otomi/kubecfg/$CLOUD"
 # k8sConfig="$tmpLocation/$CLUSTER.yaml"

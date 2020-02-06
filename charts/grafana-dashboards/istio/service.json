@@ -2502,9 +2502,9 @@
         "multi": false,
         "name": "datasource",
         "options": [],
-        "query": "Prometheus-Istio",
+        "query": "prometheus",
         "refresh": 1,
-        "regex": "",
+        "regex": "Prometheus-Istio",
         "skipUrlSync": false,
         "type": "datasource"
       },

@@ -11,7 +11,6 @@ if [ ! -d ~/.kube ]; then
   k config set-context $K8S_CONTEXT --context=$K8S_CONTEXT
 fi
 
-hf repos
 # install some stuff that we never want to end up as charts
 # (might get corrupted and we can then never pass that stage of deployment)
 hft -f helmfile.tpl/helmfile-init.yaml | k apply -f -

@@ -2227,7 +2227,7 @@
         "options": [],
         "query": "prometheus",
         "refresh": 1,
-        "regex": "",
+        "regex": "Prometheus-Istio",
         "skipUrlSync": false,
         "type": "datasource"
       },
