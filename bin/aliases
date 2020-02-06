@@ -36,7 +36,8 @@ drun() {
     -v /tmp:/tmp \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
-    -v ~/.config:/home/app/.config \
+    -v ~/.config/gcloud:/home/app/.config/gcloud \
+    -v ~/Library/Preferences/helm:/home/app/.config/helm \
     -e K8S_CONTEXT=$K8S_CONTEXT \
     -e CLUSTER=$CLUSTER \
     -w $PWD $img $@
