@@ -2,7 +2,8 @@
 apiVersion: rbac.authorization.k8s.io/{{ required "A valid .Values.rbac.apiVersion entry required!" .Values.rbac.apiVersion }}
 kind: Role
 metadata:
-  name: {{ template "drone.fullname" . }}
+  name: {{ template "drone.fullname" . }}-pipeline
+  namespace: {{ .Values.kubernetes.namespace }}
   labels:
     app: {{ template "drone.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -10,18 +11,22 @@ metadata:
     heritage: "{{ .Release.Service }}"
 rules:
   - apiGroups:
-      - batch
+      - ""
     resources:
-      - jobs
+      - secrets
     verbs:
-      - "*"
+      - create
+      - delete
   - apiGroups:
-      - extensions
+      - ""
     resources:
-      - deployments
+      - pods
+      - pods/log
     verbs:
       - get
+      - create
+      - delete
       - list
-      - patch
+      - watch
       - update
 {{ end }}

@@ -1,12 +1,12 @@
-{{- if hasKey .Values.server.kubernetes "namespace" -}}
+{{- if hasKey .Values.kubernetes "namespace" -}}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.server.kubernetes.namespace }}
+  name: {{ .Values.kubernetes.namespace }}
   labels:
     app: {{ template "drone.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-    component: server
+    component: pipelines
 {{- end -}}
