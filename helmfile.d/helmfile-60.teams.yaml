@@ -155,7 +155,7 @@ releases:
         coreServices:
           {{- range $s := $tc.services }}
           {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "internal")) }}
-          - {{ $s | toYaml | nindent 12 }}
+          - {{ $s | toYaml | replace "#NS#" (printf "%s%s" $v.cluster.teamPrefix $team.name) | nindent 12 }}
           {{- end }}
           {{- end }}
         services: {{- $team | get "services" list | toYaml | nindent 10 }}
