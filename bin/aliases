@@ -91,4 +91,4 @@ function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
 # templates only without cruft:
 function hft() { hf --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
-echo "Aliases loaded for target '$CLOUD'"
+echo "Aliases loaded targeting CLOUD '$CLOUD' and CLUSTER '$CLUSTER'"
