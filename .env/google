@@ -8,4 +8,4 @@ export METERING_SET="otomi_metering"
 
 # used for stack deployment:
 export CLUSTER_API_HOST="https://34.90.97.189"
-export K8S_CONTEXT="gke_${PROJECT}_${GOOGLE_REGION}_${CLUSTER_NAME}-${STAGE}"
+export K8S_CONTEXT="gke_${PROJECT}_${GOOGLE_REGION}_${CLUSTER_NAME}-${CLUSTER}"
