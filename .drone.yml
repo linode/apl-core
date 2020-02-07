@@ -11,7 +11,7 @@ steps:
     image: otomi/tools:1.1.4
     commands:
       - /bin/bash ./tests/lint.sh
-      - /bin/bash ./bin/deploy.sh 1
+      - /bin/bash -c "./bin/deploy.sh 1"
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
