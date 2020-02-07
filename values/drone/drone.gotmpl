@@ -28,10 +28,10 @@ server:
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
-    DRONE_LOGS_DEBUG: true
-    DRONE_LOGS_TRACE: true
+    # DRONE_LOGS_DEBUG: true
+    # DRONE_LOGS_TRACE: true
     # DRONE_LOGS_PRETTY: true
-    DRONE_RPC_DEBUG: true
+    # DRONE_RPC_DEBUG: true
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
@@ -46,16 +46,12 @@ kubernetes:
       memory: 2Gi
       cpu: 1
   env:
-    DRONE_TRACE: true
-    DRONE_DEBUG: true
+    # DRONE_TRACE: true
+    # DRONE_DEBUG: true
     DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
-dind:
-  enabled: false    
 persistence:
   enabled: true
   storageClass: fast
-rbac:
-  create: true
 
 metrics:
   prometheus:
