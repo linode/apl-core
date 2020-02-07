@@ -19,30 +19,26 @@ spec:
     openAPIV3Schema:
       properties:
         apiVersion:
-          description:
-            "APIVersion defines the versioned schema of this representation
+          description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
             internal value, and may reject unrecognized values.
-            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#resources"
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            "Kind is a string value representing the REST resource this
+          description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
             submits requests to. Cannot be updated. In CamelCase.
-            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         spec:
-          description:
-            "Specification of the desired state of the istio control plane resource.
-            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
+          description: 'Specification of the desired state of the istio control plane resource.
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
           type: object
         status:
-          description:
-            "Status describes each of istio control plane component status at the current time.
+          description: 'Status describes each of istio control plane component status at the current time.
             0 means NONE, 1 means UPDATING, 2 means HEALTHY, 3 means ERROR, 4 means RECONCILING.
             More info: https://github.com/istio/operator/blob/master/pkg/apis/istio/v1alpha2/v1alpha2.pb.html &
-            https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status"
+            https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
           type: object
   versions:
     - name: v1alpha2
@@ -65,39 +61,39 @@ rules:
   - apiGroups:
       - authentication.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - config.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - install.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - networking.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - rbac.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - security.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   # k8s groups
   - apiGroups:
       - admissionregistration.k8s.io
@@ -105,14 +101,14 @@ rules:
       - mutatingwebhookconfigurations
       - validatingwebhookconfigurations
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apiextensions.k8s.io
     resources:
       - customresourcedefinitions.apiextensions.k8s.io
       - customresourcedefinitions
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apps
       - extensions
@@ -124,13 +120,13 @@ rules:
       - replicasets
       - statefulsets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -143,7 +139,7 @@ rules:
     resources:
       - poddisruptionbudgets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
@@ -152,9 +148,9 @@ rules:
       - roles
       - rolebindings
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
-      - ""
+      - ''
     resources:
       - configmaps
       - endpoints
@@ -166,7 +162,7 @@ rules:
       - services
       - serviceaccounts
     verbs:
-      - "*"
+      - '*'
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -228,7 +224,7 @@ spec:
               memory: 128Mi
           env:
             - name: WATCH_NAMESPACE
-              value: ""
+              value: ''
             - name: LEADER_ELECTION_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -238,4 +234,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "istio-operator"
+              value: 'istio-operator'
