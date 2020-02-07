@@ -10,7 +10,7 @@ steps:
   - name: deploy-dev
     image: otomi/tools:1.1.4
     command:
-      - /bin/bash "pwd && ls"
+      - /bin/bash -c "pwd && ls"
       - /bin/bash ./tests/lint.sh
       - /bin/bash ./bin/deploy.sh
     environment:
