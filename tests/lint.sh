@@ -2,4 +2,5 @@
 shopt -s expand_aliases
 . bin/aliases
 
-hf lint
+hf repos
+hfd lint

@@ -9,14 +9,12 @@ metadata:
 steps:
   - name: deploy-dev
     image: otomi/tools:1.1.4
-    command:
-      - pwd && ls
-      # - /bin/bash ./tests/lint.sh
-      # - /bin/bash ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/deploy.sh
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
-
     when:
       event:
         - push
@@ -24,12 +22,14 @@ steps:
 
   - name: deploy-demo
     image: otomi/tools:1.1.4
-    command:
-      - ./tests/lint.sh
-      - ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/deploy.sh
     environment:
-      CLUSTER: demo
       CLOUD: ${CLOUD}
+      CLUSTER: demo
+    depends_on:
+      - deploy-dev
     when:
       ref: [refs/tags/v*-DEMO]
       event:
@@ -37,11 +37,14 @@ steps:
 
   - name: deploy-prd
     image: otomi/tools:1.1.4
-    command:
-      - ./tests/lint.sh
-      - ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/deploy.sh
     environment:
+      CLOUD: ${CLOUD}
       CLUSTER: prd
+    depends_on:
+      - deploy-demo
     when:
       ref: [refs/tags/v*]
       event:
