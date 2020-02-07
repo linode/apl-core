@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and (not $v.useCloudCA) (or (eq $v.name "admin") ($v.isMultitenant)) }}
+{{- if and (not $v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if (index $s "mtls.gatewayDisabled") }}

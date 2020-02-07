@@ -1,26 +1,13 @@
 teamConfig:
   teams:
-    - name: team1
-      password: somepassworddd
-      # oidc: # optional: to bring up an oauth2-proxy for the namespace, usually for isMultitenant = true
-      #   clientID:
-      #   clientSecret:
-      # slackUrl: https://hooks.slack.com/services/xxx
-      # resourceQuota:
-      #   services.loadbalancers: "1"
-      cicd:
-        enabled: false
-        type: drone
+    team1:
       services:
-        - name: hello # short name for urls
-          svc: hello # no knative for EKS yet (1.14) needs to be deployed from demo/hello.yaml
-          logo: kubernetes
-          # env:
-          #   - name: TARGET
-          #     value: Universe
-          isPublic: true # does not need oauth2 sso
-          # override generated domain host with a custom one that can be set by this cloud's dns
-          # (google: otomi.cloud, aws: eks.otomi.cloud, azure: aks.otomi.cloud)
-          domain: hello.sandbox.cla.ns.nl # defaults to hello.$teamDomain, which is hello.team-team1.dev.eks.sandbox.cla.ns.nl
-          # hasCert: false # create one on the fly, or provide one as secret in cert-team-$team-$name, or:
-          # certArn: arn:aws:acm:eu-central-1:829552880873:certificate/3a3da880-ab47-43d2-b216-aecf664314f5
+        - name: hello
+          svc: hello
+          logo:
+            name: kubernetes
+          env:
+            - name: TARGET
+              value: AWS World
+          isPublic: true
+          domain: hello.otomi.cloud

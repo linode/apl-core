@@ -1,11 +1,11 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not (index $s "internal")) (not (index $s "host")) (hasKey $s "svc") }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
-{{- $svc := (eq $v.name "admin") | ternary $s.svc (hasKey $s "svc" | ternary (printf "%s-%s" $v.name $s.svc) $s.name) }}
+{{- $svc := (or (eq $v.name "admin") (eq $ns "shared")) | ternary $s.svc (hasKey $s "svc" | ternary (printf "%s-%s" $v.name $s.svc) $s.name) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:

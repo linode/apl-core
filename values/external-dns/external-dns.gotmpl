@@ -9,16 +9,16 @@ sources:
 - ingress
 
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
-provider: {{ $v.provider }}
-{{- if eq $v.provider "google" }}
+provider: {{ $v.cluster.provider }}
+{{- if eq $v.cluster.provider "google" }}
 google:
   project: {{ $google.projectId }}
   serviceAccountKey: |
     {{- $google.cloudDnsKey | nindent 4 }}
-{{- else if eq $v.provider "aws" }}
+{{- else if eq $v.cluster.provider "aws" }}
 aws:
   {{- $dns.aws | toYaml | nindent 2 }}
-{{- else if eq $v.provider "azure" }}
+{{- else if eq $v.cluster.provider "azure" }}
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
   tenantId: {{ $azure.tenantId }}
@@ -26,8 +26,8 @@ azure:
 {{- end }}  
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" | toYaml | nindent 2 }}
-{{- if $v.hasCloudLB }}
-annotationFilter: "provider={{ $v.provider }}"
+{{- if $v.cluster.hasCloudLB }}
+annotationFilter: "provider={{ $v.cluster.provider }}"
 {{- end }}
 dryRun: false
 crd:

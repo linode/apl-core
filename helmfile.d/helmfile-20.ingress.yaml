@@ -6,7 +6,7 @@ bases:
 
 releases:
   - name: aws-alb-ingress-controller
-    installed: {{ if and (eq $v.provider "aws") ($v.hasCloudLB) }}true{{ else }}false{{ end }}
+    installed: {{ if and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) }}true{{ else }}false{{ end }}
     namespace: ingress
     labels:
       tag: ingress
@@ -30,7 +30,13 @@ releases:
     namespace: ingress
     <<: *default
   - name: ingress-azure
-    installed: {{ if eq $v.provider "azure" }}true{{ else }}false{{ end }}
+    installed: {{ if eq $v.cluster.provider "azure" }}true{{ else }}false{{ end }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    <<: *default
+  - name: ingress-merge
+    installed: {{ if eq $v.cluster.provider "aws" }}true{{ else }}false{{ end }}
     namespace: ingress
     labels:
       tag: ingress

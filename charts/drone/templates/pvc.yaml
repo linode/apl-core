@@ -3,6 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "drone.fullname" . }}
+  namespace: {{ template "drone.namespace" . }}
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode | quote }}

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:

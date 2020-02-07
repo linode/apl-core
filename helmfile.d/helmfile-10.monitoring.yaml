@@ -5,7 +5,7 @@ bases:
 
 releases:
   - name: grafana-dashboards
-    installed: true
+    installed: false
     namespace: monitoring
     <<: *default
   - name: loki

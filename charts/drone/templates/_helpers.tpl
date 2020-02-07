@@ -2,27 +2,33 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{ define "drone.name" }}{{ default "drone" .Values.nameOverride | trunc 63 }}{{ end }}
+{{- define "drone.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this
 (by the DNS naming spec).
 */}}
-{{ define "drone.fullname" }}
-{{- $name := default "drone" .Values.nameOverride -}}
-{{ printf "%s-%s" .Release.Name $name | trunc 63 -}}
-{{ end }}
+{{- define "drone.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
-Allow overwrite of rpc server.
+Define a namespace for the Drone Server
 */}}
-{{ define "drone.rpcServer" }}
-{{- if .Values.agent.rpcServerOverride -}}
-  {{ .Values.agent.rpcServerOverride }}
-{{- else -}}
-  {{ printf "http://%s" (include "drone.fullname" .) }}
-{{- end -}}
+{{- define "drone.namespace" -}}
+{{- default .Release.Namespace .Values.namespace -}}
 {{- end -}}
 
 {{/*
@@ -44,28 +50,5 @@ Create the name of the secret for source control
     {{ printf "%s" .Values.sourceControl.secret }}
 {{- else -}}
     {{ printf "%s-%s" (include "drone.fullname" .) "source-control" | trunc 63 -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create the name of the service account to use for kubernetes pipelines
-*/}}
-{{- define "drone.pipelineServiceAccount" -}}
-{{- if .Values.serviceAccount.create -}}
-  {{- $psa := printf "%s-%s" (include "drone.serviceAccountName" .) "pipeline" | trunc 63 -}}
-  {{ default $psa .Values.server.kubernetes.pipelineServiceAccount }}
-{{- else -}}
-  {{ default "default" .Values.server.kubernetes.pipelineServiceAccount }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create the name of the secret for an enterprise license key
-*/}}
-{{- define "drone.licenseKeySecret" -}}
-{{- if .Values.licenseKeySecret -}}
-  {{ printf "%s" .Values.licenseKeySecret }}
-{{- else -}}
-  {{ printf "%s-%s" (include "drone.fullname" .) "license-key" | trunc 63 }}
 {{- end -}}
 {{- end -}}

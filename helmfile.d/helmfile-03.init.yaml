@@ -3,7 +3,6 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
 
 releases:
   # cert-manager can't be installed as skeleton because it needs --validate=false, which is not
@@ -17,7 +16,7 @@ releases:
   #     tag: cert-manager
   #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   - name: knative-init
-    installed: {{ if ge $cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
+    installed: {{ if ge $v.cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
     namespace: default
     labels:
       init: true
@@ -28,6 +27,12 @@ releases:
     labels:
       pkg: loki
     <<: *raw
+  - name: gatekeeper-operator
+    installed: true
+    namespace: gatekeeper-system
+    labels:
+      pkg: gatekeeper-operator
+    <<: *default
   - name: otomi-api-artifacts
     installed: true
     namespace: shared

@@ -1,6 +1,6 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.isMultitenant) }}
+{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
 {{- $authSvc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
 # split list of services into public and private to create separate ingresses:
 # one for auth redirect and one passthrough
@@ -40,7 +40,7 @@ metadata:
         end
       }
     {{- include "ingress-annotations" $v | nindent 4 }}
-    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-ingress-team-{{ $v.name }}-private
   namespace: istio-system
@@ -61,7 +61,7 @@ spec:
           servicePort: 80
   {{- end }}
   {{- end }}
-  {{- if not $v.hasCloudLB }} # tls was already terminated by cloud LB
+  {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
   tls: {{- include "ingress-tls" $v | nindent 4 }}
   {{- end }}
 {{- if ne (len $public) 0 }} # then we also have public routes without auth, so passthrough:
@@ -71,7 +71,7 @@ kind: Ingress
 metadata:
   annotations:
     {{- include "ingress-annotations" $v | nindent 4 }}
-    ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-ingress-team-{{ $v.name }}-public
   namespace: istio-system
@@ -90,7 +90,7 @@ spec:
           serviceName: istio-ingressgateway
           servicePort: 80
   {{- end }}
-  {{- if not $v.hasCloudLB }}
+  {{- if not $v.cluster.hasCloudLB }}
   tls: {{- include "ingress-tls" $v | nindent 4 }}
   {{- end }}
 {{- end }}
@@ -102,7 +102,7 @@ kind: Ingress
 metadata:
   annotations:
     {{- include "ingress-annotations" $v | nindent 4 }}
-    nginx.ingress.kubernetes.io/ssl-redirect: {{ if $v.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
     # nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -121,7 +121,7 @@ spec:
           servicePort: 80
         path: /({{ $p.name }})({{ $p.path }})
   {{- end }}
-  {{- if not $v.hasCloudLB }}
+  {{- if not $v.cluster.hasCloudLB }}
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}

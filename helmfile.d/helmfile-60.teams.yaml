@@ -1,0 +1,202 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{- $v := .Environment.Values }}
+{{- $adminDomain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $cm := index $v.charts "cert-manager" }}
+{{- $po := index $v.charts "prometheus-operator" }}
+{{- $tc := $v.teamConfig }}
+releases:
+  - name: team-ns-admin
+    installed: true
+    namespace: team-admin
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+    values:
+      - name: admin
+        cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        domain: {{ $adminDomain }}
+        certStage: {{ $cm.stage }}
+        services: {{- $v.services | toYaml | nindent 10 }}
+        proxies: {{- $v.proxies | toYaml | nindent 10 }}
+        resourceQuota: null
+        knative:
+          enabled: {{ $v.cluster.hasKnative }}
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}
+  {{- range $t, $team := $tc.teams }}
+  {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $team.name $v.cluster.domain }}
+  - name: team-ns-{{ $team.name }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+    values:
+      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        domain: {{ $domain }}
+        certStage: {{ $cm.stage }}
+        knative:
+          enabled: {{ $v.cluster.hasKnative }}
+      - {{- $team | toYaml | nindent 8 }}
+      - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
+        {{- if $v.cluster.isMultitenant }}
+        {{- if ($team | get "cicd.enabled" "false") }}
+        {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
+        {{- if eq $cicdFlavour "drone" }}
+        # @todo: fix this weirdness: the next two lines fook the yaml parser:
+        # - name: drone
+        #   svc: drone-{{ $team.name }}
+        {{- end }}
+        {{- end }}
+        {{- if ne (len ($team | get "sites" list)) 0 }}
+        - name: blackbox
+          svc: prom-blackbox-exporter
+          port: 9115
+        {{- end }}
+        {{- end }}
+  {{- if $v.cluster.isMultitenant }}        
+  - name: prometheus-team-{{ $team.name }}
+    {{- $promHost := printf "prometheus.%s" $domain }}
+    {{- $alertsHost := printf "alertmanager.%s" $domain }}
+    {{- $grafanaHost := printf "grafana.%s"  $domain }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/prometheus-operator
+    labels:
+      tag: teams
+    values:
+      - ../values/prometheus-operator/prometheus-operator.gotmpl
+      - ../values/prometheus-operator/prometheus-operator-team.gotmpl
+      - nameOverride: {{ $team.name }}-po
+        fullnameOverride: {{ $team.name }}-po
+        alertmanager:
+          alertmanagerSpec:
+            externalUrl: https://{{ $alertsHost }}
+          config:
+            global:
+              slack_api_url: {{ $team | get "slackUrl" $po.alertmanager.slackUrl }}
+          receivers:
+            - name: "null"
+            - name: default
+              slack_configs:
+                - channel: "#mon-{{ $team.name }}"
+                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 }}
+            - name: critical
+              slack_configs:
+                - channel: "#mon-{{ $team.name }}-crit"
+                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 }}
+        prometheus:
+          prometheusSpec:
+            externalUrl: https://{{ $promHost }}
+            ruleNamespaceSelector:
+              matchLabels:
+                name: team-{{ $team.name }}
+            podMonitorNamespaceSelector:
+              matchLabels:
+                name: team-{{ $team.name }}
+            serviceMonitorNamespaceSelector:
+              matchLabels:
+                name: team-{{ $team.name }}
+        grafana:
+          nameOverride: {{ $team.name }}-po-grafana
+          fullnameOverride: {{ $team.name }}-po-grafana
+          grafana.ini:
+            server:
+              root_url: https://{{ $grafanaHost }}
+            {{- if hasKey $team "oidc" }}
+            "auth.generic_oauth":
+              client_id: {{ $team.oidc.clientID }}
+              client_secret: {{ $team.oidc.clientSecret }}
+            {{- end }}
+          additionalDataSources:
+            - name: Prometheus-Istio
+              editable: false
+              type: prometheus
+              access: proxy
+              url: http://prometheus.istio-system:9090
+            - name: Loki
+              editable: false
+              type: loki
+              access: proxy
+              url: http://loki.monitoring:11811
+              basicAuth: true
+              basicAuthUser: {{ $team.name }}
+              basicAuthPassword: {{ $team.password }}
+            # - name: Graphite
+            #   editable: false
+            #   type: graphite
+            #   access: proxy
+            #   url: http://graphite:80
+  - name: grafana-dashboards-{{ $team.name }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/grafana-dashboards
+    labels:
+      tag: teams
+    values:
+      - ../values/grafana-dashboards/grafana-dashboards.gotmpl
+      - ../values/default.gotmpl
+      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        team: {{ $team.name }}
+  - name: index-{{ $team.name }}
+    installed: true
+    namespace: team-{{ $team.name }}
+    chart: ../charts/index
+    labels:
+      tag: teams
+      pkg: index
+    values:
+      - ../values/index/index.gotmpl
+      - ../values/default.gotmpl
+      - fullnameOverride: {{ $team.name }}-index
+        domain: {{ $domain }}
+        group: {{ $team.name }}
+        coreServices:
+          {{- range $s := $tc.services }}
+          {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "internal")) }}
+          - {{ $s | toYaml | replace "#NS#" (printf "%s%s" $v.cluster.teamPrefix $team.name) | nindent 12 }}
+          {{- end }}
+          {{- end }}
+        services: {{- $team | get "services" list | toYaml | nindent 10 }}
+  {{- if ($team | get "cicd.enabled" "false") }}
+  {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
+  {{- if eq $cicdFlavour "drone" }}
+  # - name: drone-{{ $team.name }}
+  #   installed: true # @todo: set up values and enable
+  #   namespace: team-{{ $team.name }}
+  #   chart: ../charts/drone
+  #   labels:
+  #     tag: teams
+  #     pkg: cicd
+  #   values:
+  #     - ../values/drone/drone.gotmpl
+  #     - ../values/default.gotmpl
+  #     - nameOverride: {{ $team.name }}
+  #       env:
+  #         DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
+
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  - name: oauth2-proxy-team-{{ $team.name }}
+    installed: true
+    namespace: istio-system
+    chart: ../charts/oauth2-proxy
+    labels:
+      tag: teams
+      pkg: oauth2-proxy
+    values:
+      - ../values/oauth2-proxy/oauth2-proxy.gotmpl
+      - ../values/default.gotmpl
+      - fullnameOverride: oauth2-proxy-team-{{ $team.name }}
+        {{- if hasKey $team "oidc" }}
+        config:
+          clientID: {{ $team.oidc.clientID }}
+          clientSecret: {{ $team.oidc.clientSecret }}
+        {{- end }}
+        extraArgs:
+          whitelist-domain: {{ $domain }}
+          redirect-url: https://auth.{{ $domain }}/oauth2/callback
+          cookie-domain: {{ $domain }}
+  {{- end }}

@@ -29,28 +29,33 @@ d ps &>/dev/null
 dockerRunning=$?
 
 drun() {
-  d run -it --rm -v $PWD:$PWD -v ~/.kube/config:/home/app/.kube/config -v /tmp:/tmp \
+  # execute any kubectl command to refresh access token
+  k version >/dev/null
+  d run -it --rm -v $PWD:$PWD \
+    -v /tmp:/tmp \
+    -v ~/.kube/config:/home/app/.kube/config \
+    -v ~/Library/Preferences/helm:/home/app/.config/helm \
+    -v ~/.config/gcloud:/home/app/.config/gcloud \
     -v ~/.aws:/home/app/.aws \
     -v ~/.azure:/home/app/.azure \
-    -v ~/.config/gcloud:/home/app/.config/gcloud \
-    -v ~/.helm:/home/app/.helm \
     -e K8S_CONTEXT=$K8S_CONTEXT \
-    -e STAGE=$STAGE \
+    -e CLOUD=$CLOUD \
+    -e CLUSTER=$CLUSTER \
     -w $PWD $img $@
 }
 
 alias h="helm"
 alias hk="h delete"
-alias hf="helmfile"
+alias hf_="helmfile"
 
 # if not has docker: ci
 if [ $hasDocker -eq 0 ]; then
   echo "Found docker client, assuming developer context."
   if [ $dockerRunning -eq 0 ]; then
     echo "Found docker running, will use $img instead of local tooling"
-    unalias h hf hk aw gc
+    unalias h hf_ hk aw gc
     alias h="drun helm"
-    alias hf="drun helmfile"
+    alias hf_="drun helmfile"
     alias hk="drun helm delete"
     alias aw="drun aws"
     alias az="drun az"
@@ -76,22 +81,26 @@ function kkns() {
 # erase entire stack but keep nodes
 function kkc() {
   k delete crd $(k get crd | egrep "cert-manager|istio|ory|coreos|knative|velero" | awk '{print $1}')
-  hf -e ${CLOUD}-$STAGE destroy
+  hf_ -e ${CLOUD}-$CLUSTER destroy
   k delete ns --all
 }
 
-kcu ${K8S_CONTEXT}
-if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
-  # check if we have a mismatching context for an aws cluster
-  chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $1}')
-  [ "$chek" = "*" ] && chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
-  aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
-  echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
-  k config rename-context $chek $K8S_CONTEXT
-  kcu ${K8S_CONTEXT}
-fi
+# export KUBE_CONFIG=~/.kube/config
+# make a tmp copy from our local KUBE_CONFIG to target only our env
+# tmpLocation="/tmp/otomi/kubecfg/$CLOUD"
+# k8sConfig="$tmpLocation/$CLUSTER.yaml"
+# mkdir -p $tmpLocation >/dev/null
+# kcv >$k8sConfig
+# export KUBE_CONFIG=$k8sConfig
 
-function hf_() { hf -e ${CLOUD}-$STAGE $@; }
-function hfd() { hf -e ${CLOUD}-dev $@ --skip-deps; }
+# now switch
+kcu $K8S_CONTEXT >/dev/null
 
-echo "Aliases loaded for target '$CLOUD'"
+# environment scoped:
+function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
+# environment scoped, no deps, so faster:
+function hfd() { hf $@ --skip-deps; }
+# templates only without cruft:
+function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
+
+echo "Aliases loaded targeting CLOUD=$CLOUD and CLUSTER=$CLUSTER"

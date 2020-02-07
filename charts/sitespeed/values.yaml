@@ -1,4 +1,4 @@
-host: www.essent.nl
+host: ""
 pvc:
   results: 10Gi
   graphite: 2Gi

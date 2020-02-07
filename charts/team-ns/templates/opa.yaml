@@ -1,0 +1,43 @@
+{{- $ns := .Release.Namespace }}
+# apiVersion: constraints.gatekeeper.sh/v1beta1
+# kind: K8sPSPPrivilegedContainer
+# metadata:
+#   name: {{ $ns }}-psp-privileged-container
+# spec:
+#   match:
+#     kinds:
+#     - apiGroups: [""]
+#       kinds: ["Pod"]
+#     namespaces:
+#     - {{ $ns }}
+# ---
+# apiVersion: constraints.gatekeeper.sh/v1beta1
+# kind: K8sBannedImageTags
+# metadata:
+#   name: {{ $ns }}-ban-latest-tag
+# spec:
+#   match:
+#     kinds:
+#     - apiGroups: [""]
+#       kinds: ["Pod"]
+#     namespaces:
+#     - {{ $ns }}
+#   parameters:
+#     tags:
+#       - "latest"
+# ---
+# apiVersion: constraints.gatekeeper.sh/v1beta1
+# kind: K8sContainerLimits
+# metadata:
+#   name: {{ $ns }}-container-must-have-limits
+# spec:
+#   match:
+#     kinds:
+#     - apiGroups: [""]
+#       kinds: ["Pod"]
+#     namespaces:
+#     - {{ $ns }}
+#   parameters:
+#     cpu: "1"
+#     memory: "2Gi"
+# ---

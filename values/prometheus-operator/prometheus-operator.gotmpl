@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{ $promHost := printf "prometheus.%s" $domain }}
 {{ $alertsHost := printf "alertmanager.%s" $domain }}
@@ -12,10 +11,10 @@ coreDns:
 global:
   rbac:
     pspEnabled: false
-{{- if $v.isManaged }}
+{{- if $v.cluster.isManaged }}
 kubeEtcd:
   enabled: false
-{{- if eq $v.provider "azure" }}
+{{- if eq $v.cluster.provider "azure" }}
 defaultRules:
   rules:
     kubernetesAbsent: false
@@ -104,11 +103,11 @@ alertmanager:
       - name: "null"
       - name: default
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.provider }}-{{ $v.stage }}"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster }}"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
       - name: critical
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.provider }}-{{ $v.stage }}-crit"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
 grafana:
   nameOverride: po-grafana
@@ -124,16 +123,11 @@ grafana:
   plugins:
     - grafana-piechart-panel
   additionalDataSources:
-    - name: Graphite
-      editable: false
-      type: graphite
-      access: proxy
-      url: http://graphite:80
     - name: Loki
       editable: false
       type: loki
       access: proxy
-      {{- if $v.isMultitenant }}
+      {{- if $v.cluster.isMultitenant }}
       url: http://loki:11811
       basicAuth: true
       basicAuthUser: admins
@@ -141,6 +135,11 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
+    # - name: Graphite
+    #   editable: false
+    #   type: graphite
+    #   access: proxy
+    #   url: http://graphite:80
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: {{ $p.grafana.adminPassword }}
   service:

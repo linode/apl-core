@@ -14,6 +14,7 @@ metadata:
     release: "{{ .Release.Name }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   name: {{ template "drone.fullname" . }}
+  namespace: {{ template "drone.namespace" . }}
 spec:
   rules:
   {{- range .Values.ingress.hosts }}
