@@ -10,8 +10,9 @@ steps:
   - name: deploy-dev
     image: otomi/tools:1.1.4
     command:
-      - ./tests/lint.sh
-      - ./bin/deploy.sh
+      - pwd && ls
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/deploy.sh
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
