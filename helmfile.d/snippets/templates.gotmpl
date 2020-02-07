@@ -13,10 +13,6 @@ templates:
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
-      # - events: ["prepare"]
-      #   showlogs: true
-      #   command: "../bin/skeleton-chart.sh"
-      #   args: ["{{ .Release.Name }}", "create"]
       - events: ["prepare"]
         showlogs: false
         command: "../bin/skeleton-chart.sh"

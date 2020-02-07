@@ -1,47 +1,58 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts.drone }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $host := printf "drone.%s" $domain }}
-# images:
-#   server:
-#     repository: "drone/drone-runner-kube"
-#     tag: latest
 images:
   server:
+    tag: latest
+  agent:
+    repository: "docker.io/drone/drone-runner-kube"
     tag: latest
 
 nameOverride: admin
 sharedSecret: zumsecreetz
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
-  kubernetes:
-    enabled: true
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.server.adminUser }}
   dind:
     enabled: false
+  resources:
+    requests:
+      memory: 32Mi
+      cpu: 40m
+    limits:
+      memory: 2Gi
+      cpu: 1
   env:
-    CLOUD: {{ $v.provider }}
-    STAGE: {{ $v.stage }}
-    DRONE_LOGS_DEBUG: true
-    DRONE_LOGS_TRACE: true
-    DRONE_LOGS_PRETTY: true
-    DRONE_RPC_DEBUG: true
+    CLOUD: {{ $v.cluster.provider }}
+    CLUSTER: {{ $v.cluster.name }}
+    # DRONE_LOGS_DEBUG: true
+    # DRONE_LOGS_TRACE: true
+    # DRONE_LOGS_PRETTY: true
+    # DRONE_RPC_DEBUG: true
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
-    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.provider }},STAGE:{{ $v.stage }}"
-dind:
-  enabled: false    
+kubernetes:
+  resources:
+    requests:
+      memory: 32Mi
+      cpu: 40m
+    limits:
+      memory: 2Gi
+      cpu: 1
+  env:
+    # DRONE_TRACE: true
+    # DRONE_DEBUG: true
+    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
 persistence:
   enabled: true
   storageClass: fast
-rbac:
-  create: true
+
 metrics:
   prometheus:
     enabled: true

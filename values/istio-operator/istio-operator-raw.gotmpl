@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts.istio }}
-{{- $cluster := index $v.clusters $v.provider }}
-{{- $domain := printf "team-admin.%s.%s" $v.stage $cluster.host }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 resources:
   - apiVersion: install.istio.io/v1alpha2
     kind: IstioControlPlane
@@ -9,7 +8,7 @@ resources:
       namespace: istio-operator
       name: istiocontrolplane
     spec:
-      {{- if eq $v.provider "azure" }}
+      {{- if eq $v.cluster.provider "azure" }}
       gateways:
         components:
           ingressGateway:
@@ -67,3 +66,13 @@ resources:
             sds:
               enabled: {{ $i | get "sds.enabled" "true" }}
             type: ClusterIP
+  - apiVersion: v1
+    kind: Secret
+    data:
+      passphrase: YmxhZGlibGE= # bladibla
+      username: YWRtaW4=
+    metadata:
+      name: kiali
+      namespace: istio-system
+    type: Opaque
+                

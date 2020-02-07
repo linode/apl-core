@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and ($v.useCloudCA) (or (eq $v.name "admin") ($v.isMultitenant)) }}
+{{- if and ($v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -33,7 +33,7 @@ spec:
           - |
             sleep 5 # needed otherwise we get connection refused on the k8s api
             set -e
-{{- if eq $v.provider "aws" }}
+{{- if eq $v.cluster.provider "aws" }}
             # request team domain wildcard cert
             certArn=$(aws acm request-certificate \
               --region {{ $v.region }} \
@@ -58,9 +58,9 @@ spec:
             set +e
             kubectl delete cm cert-arns-team-{{ $v.name }}
             kubectl create cm cert-arns-team-{{ $v.name }} --from-literal=certArns=$certArns
-{{- else if eq $v.provider "google" }}
+{{- else if eq $v.cluster.provider "google" }}
               # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
-{{- else if eq $v.provider "azure" }}
+{{- else if eq $v.cluster.provider "azure" }}
               # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
 {{- end }}
 {{- end }}

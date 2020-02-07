@@ -4,7 +4,7 @@ Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box 
 
 All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which services will be synced.
 
-Click here to open the [index of the system services](https://index.team-admin.dev.gks.otomi.cloud).
+Click here to open the [index of the system services](https://index.team-admin.dev.aks.otomi.cloud/).
 
 It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases](bin/aliases) to understand what the commands in this readme do.
 
@@ -42,7 +42,7 @@ Please look at the `values/_env/**` files and configure as needed for your targe
 The first time install must be done for each configured cloud and cluster like this:
 
 ```bash
-export CLOUD=(azure|google|aws) && export STAGE=(dev|demo|prd) && bin/deploy.sh
+export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.sh
 ```
 
 It should install and start all the services in this repo.
@@ -111,9 +111,7 @@ hfd -f helmfile.d/helmfile-10.monitoring.yaml apply
 
 ## 3. Operation
 
-Lets work with the `dev` cluster for this example. Switch to it's context with `kcu dev.otomi`.
-
-As explained in the intro, the services are listed under the [index of the admin services](https://index.team-admin.dev.gks.otomi.cloud).
+As explained in the intro, the services are listed under the [index of the admin services](https://index.team-admin.dev.aks.otomi.cloud/).
 
 It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
 

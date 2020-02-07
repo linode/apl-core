@@ -1,0 +1,16 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+
+releases:
+  - name: hello
+    installed: {{ if eq $v.cluster.provider "aws" }}true{{ else }}false{{ end }}
+    namespace: team-team1
+    chart: ../charts/hello
+    values:
+      - nameOverride: team1-hello
+        fullnameOverride: team1-hello
+        image:
+          tag: 1.1.3

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and (eq $v.provider "azure") ($v.hasCloudLB) (or (eq $v.name "admin") ($v.isMultitenant)) }}
+{{- if and (eq $v.cluster.provider "azure") ($v.cluster.hasCloudLB) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:

@@ -1,3 +1,0 @@
-{{- if and .Values.enabled (not .Values.global.operator.enabled) }}
-{{ include (print $.Template.BasePath "/_self-signed-cert-job.yml") . }}
-{{- end }}

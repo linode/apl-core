@@ -1,26 +1,34 @@
+## Specify namespace for the drone server
+## Will use the Helm release namespace / or context namespace by default
+## This is required by some tools such as Spinnaker and FluxCD
+# namespace: drone
+
 images:
   ## The official drone (server) image, change tag to use a different version.
   ## ref: https://hub.docker.com/r/drone/drone/tags/
   ##
   server:
     repository: "docker.io/drone/drone"
-    tag: 1.6.1
+    tag: 1.6.5
     pullPolicy: IfNotPresent
 
-  ## The official drone (agent) image, change tag to use a different version.
+  ## The drone runner image, change tag to use a different version.
+  ## Uses the new drone-runner-kube
+  ## ref: https://hub.docker.com/r/drone/drone-runner-kube
+  ## Alternatively, choose an agent image
   ## ref: https://hub.docker.com/r/drone/agent/tags/
   ##
   agent:
-    repository: "docker.io/drone/agent"
-    tag: 1.6.1
-    pullPolicy: IfNotPresent
+    repository: "docker.io/drone/drone-runner-kube"
+    tag: latest
+    pullPolicy: Always
 
   ## The official docker (dind) image, change tag to use a different version.
   ## ref: https://hub.docker.com/r/library/docker/tags/
   ##
   dind:
     repository: "docker.io/library/docker"
-    tag: 18.06.1-ce-dind
+    tag: 18.06.3-ce-dind
     pullPolicy: IfNotPresent
 
 service:
@@ -58,10 +66,12 @@ ingress:
   # annotations:
   #   kubernetes.io/ingress.class: nginx
   #   kubernetes.io/tls-acme: 'true'
+
   ## Drone hostnames must be provided if Ingress is enabled
   ##
   # hosts:
   #   - drone.domain.io
+
   ## Drone Ingress TLS configuration secrets
   ## Must be manually created in the namespace
   ##
@@ -92,9 +102,6 @@ sourceControl:
     clientSecretValue:
     server:
   gitea:
-    clientID:
-    clientSecretKey: clientSecret
-    clientSecretValue:
     server:
   gogs:
     server:
@@ -118,10 +125,6 @@ server:
   ## protocol should be http or https
   protocol: http
 
-  ## http port
-  ## Set to > 1024 if you want to run the pod as non-root user
-  httpPort: 80
-
   ## rpcProtocol for rpc connection to the server should be http or https
   rpcProtocol: http
 
@@ -135,18 +138,6 @@ server:
   ## when your source code management system (e.g. GitHub Enterprise) has private mode enabled.
   alwaysAuth: false
 
-  ## Configures drone to use kubernetes to run pipelines rather than agents, if enabled
-  ## will not deploy any agents.
-  kubernetes:
-    ## set to true if you want drone to use kubernetes to run pipelines
-    enabled: true
-    ## you can run pipeline jobs in another namespace, if you choose to do this
-    ## you'll need to create that namespace manually.
-    # namespace:
-    ## alternative service account to create to create drone pipelines. this account
-    ## will be given cluster-admin rights.
-    ## if not set the rights will be given to the default drone service account name.
-    # pipelineServiceAccount:
 
   ## Drone server configuration.
   ## Values in here get injected as environment variables.
@@ -204,10 +195,6 @@ server:
   ##
   tolerations: []
 
-  ## securityContext for drone server
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  securityContext: {}
-
   ## additional siecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy.
   ## ex: https://github.com/kubernetes/charts/tree/master/stable/keycloak
   ##
@@ -217,15 +204,33 @@ server:
   ##
   extraVolumes: |
 
-agent:
-  ## Drone agent configuration.
-  ## Values in here get injected as environment variables.
-  ## ref: https://docs.drone.io/reference/agent/
+## Configures drone to use kubernetes to run pipelines using drone-kube-runner agent
+## Each drone pipeline build will create its own pod to run in
+kubernetes:
+  ## Drone kube-runner configuration.
+  ## Values in here get injected as environment variables to the kube-runner
+  ## Ref: https://kube-runner.docs.drone.io/installation/reference/
   ##
+  # env:
+  #   DRONE_NAMESPACE_RULES_FILE:
+  #   DRONE_NAMESPACE_RULES:
   env:
-    DRONE_LOGS_DEBUG: "false"
+    DRONE_DEBUG: "false"
 
-  ## Number of drone agent replicas
+  ## Specify the namespace to run drone pipelines
+  ## Maps to DRONE_NAMESPACE_DEFAULT as the default namespace used by Pipeline runs
+  namespace: drone-pipelines
+
+  ## The kube-runner UI dashboard
+  ## If no username and password are provided, the dashboard is disabled
+  ## realm sets the basic authentication realm used to authenticate and access the dashboard
+  dashboard:
+    enabled: true
+    username:
+    password:
+    realm:
+
+  ## Number of drone kube-runner agent replicas
   replicas: 1
 
   ## Additional agent annotations.
@@ -302,7 +307,7 @@ dind:
   ## If disabled, the drone agent will spawn docker containers on the host. Pay
   ## attention to the fact that we can't enforce resource constraints in that case.
   ##
-  enabled: true
+  enabled: false
 
   ## Values in here get injected as environment variables to DinD.
   ## ref: http://readme.drone.io/admin/installation-reference
@@ -385,3 +390,8 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
+
+  ## If any default image pull secrets should be defined within the service account
+  ## These imagePullSecrets are automatically attached to pods in the Service Account namespace
+  ## imagePullSecrets:
+  ## - dockerconfig

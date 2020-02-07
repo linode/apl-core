@@ -2,33 +2,19 @@ kind: pipeline
 type: kubernetes
 name: default
 
-metadata:
-  annotations:
-    sidecar.istio.io/inject: "false"
+# metadata:
+#   annotations:
+#     sidecar.istio.io/inject: "false"
 
 steps:
-  - name: test
-    image: otomi/tools:1.1.4
-    command:
-      - ./tests/lint.sh
-    environment:
-      STAGE: dev
-      CLOUD: ${CLOUD}
-    when:
-      event:
-        - push
-        - pull_request
-
   - name: deploy-dev
     image: otomi/tools:1.1.4
-    command:
-      - ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     environment:
-      STAGE: dev
+      CLUSTER: dev
       CLOUD: ${CLOUD}
-    depends_on:
-      - test
-
     when:
       event:
         - push
@@ -36,11 +22,14 @@ steps:
 
   - name: deploy-demo
     image: otomi/tools:1.1.4
-    command:
-      - ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     environment:
-      STAGE: demo
       CLOUD: ${CLOUD}
+      CLUSTER: demo
+    depends_on:
+      - deploy-dev
     when:
       ref: [refs/tags/v*-DEMO]
       event:
@@ -48,10 +37,14 @@ steps:
 
   - name: deploy-prd
     image: otomi/tools:1.1.4
-    command:
-      - ./bin/deploy.sh
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     environment:
-      STAGE: prd
+      CLOUD: ${CLOUD}
+      CLUSTER: prd
+    depends_on:
+      - deploy-demo
     when:
       ref: [refs/tags/v*]
       event:

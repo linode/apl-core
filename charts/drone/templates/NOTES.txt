@@ -29,7 +29,7 @@ Get the Drone URL by running:
 Get the Drone URL by running:
   export POD_NAME=$(kubectl get pods -n {{ .Release.Namespace }} -l "component=server,app={{ template "drone.name" . }},release={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   echo http://127.0.0.1:8000/
-  kubectl -n {{ .Release.Namespace }} port-forward $POD_NAME 8000:{{ .Values.server.httpPort }}
+  kubectl -n {{ .Release.Namespace }} port-forward $POD_NAME 8000:80
 {{- end }}
 {{- else -}}
 ##############################################################################
@@ -67,13 +67,11 @@ the official documentation:
     http://docs.drone.io/installation/
 {{- end }}
 
-{{ if not .Values.server.kubernetes.enabled }}
-##############################################################################
-####  WARNING: running drone in kubernetes with legacy pipeline execution ####
-##############################################################################
+DRONE_NAMESPACE_RULES is a map[string]string where as the file is a map[string][]string
+default:
+- octocat/*
+- spaceghost/hello-world
 
-By setting `server.kubernetes.enabled=false` you've disabled kubernetes
-pipelines and are instead using the legacy agent method which utilizes
-either docker-in-docker or host mounting in the docker socket. This is
-not recommended due to the additional security concerns.
-{{- end }}
+workspace-foo:
+- bar/*
+- baz/qux
