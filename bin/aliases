@@ -94,7 +94,7 @@ function kkc() {
 # export KUBE_CONFIG=$k8sConfig
 
 # now switch
-kcu $K8S_CONTEXT
+kcu $K8S_CONTEXT >/dev/null
 
 # environment scoped:
 function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
