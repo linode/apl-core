@@ -55,7 +55,11 @@ persistence:
   enabled: true
   storageClass: fast
 rbac:
-  create: true
+  create: false
+serviceAccount:
+  create: false
+  name: default # bound in "k8s" release
+
 metrics:
   prometheus:
     enabled: true
