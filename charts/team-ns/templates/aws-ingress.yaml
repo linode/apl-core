@@ -1,4 +1,4 @@
- .{{- $v := .Values }}
+{{- $v := .Values }}
 {{- if and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
