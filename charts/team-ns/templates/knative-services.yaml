@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- if (index $v "knative.enabled" | default "true") }}
-# knative: {{ index $v "knative.enabled" }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if and (not (index $s "internal")) (not (index $s "host")) (index $s "ksvc") }}
