@@ -21,6 +21,8 @@ clouds:
         region: europe-west4
 k8s:
   namespaces:
+    - name: drone-pipelines
+      disableIstioInjection: true
     - name: gatekeeper-system
       disableIstioInjection: true
     - name: ingress
