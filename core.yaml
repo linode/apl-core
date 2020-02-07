@@ -28,6 +28,8 @@ k8s:
     - name: ingress
     - name: istio-operator
       disableIstioInjection: true
+    - name: istio-system
+      disableIstioInjection: true
     - name: knative-serving
     - name: monitoring
     - name: shared

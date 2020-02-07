@@ -91,4 +91,5 @@ rm ${TARGET_FOLDER}/ca.crt
 echo -e "\\nAll done! Test with:"
 echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods"
 echo "You will probably have nothing running yet, but if you see no errors you have access."
+echo ""
 echo "TOKEN: $USER_TOKEN"

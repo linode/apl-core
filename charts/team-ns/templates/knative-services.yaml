@@ -3,17 +3,20 @@
 # knative: {{ index $v "knative.enabled" }}
 {{- $ := . }}
 {{- range $s := $v.services }}
-{{- if and (not (index $s "internal")) (not (index $s "host")) (not (index $s "svc")) }}
+{{- if and (not (index $s "internal")) (not (index $s "host")) (index $s "ksvc") }}
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: {{ $s.name }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
+  {{- with $s.ksvc.annotations }}
+  annotations: {{- . | toYaml | nindent 4 }}
+  {{- end }}
 spec:
   template:
     spec:
       containers:
-        - image: {{ $s.image.repository }}:{{ $s.image.tag }}
+        - image: {{ $s.ksvc.image.repository }}:{{ $s.ksvc.image.tag }}
           env:
             - name: TEAM_NAME
               value: {{ $s.name }}
