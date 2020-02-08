@@ -6,11 +6,11 @@ cluster:
 ingress:
   certArns:
     # *.team-admin
-    - arn:aws:acm:eu-west-1:956709229054:certificate/273c2338-061f-4de0-983a-595c09813758
+    - arn:aws:acm:eu-central-1:059522483251:certificate/92e0cd2b-364a-4bf1-9af5-83b8d930048a
     # *.team-team1
-    - arn:aws:acm:eu-west-1:956709229054:certificate/766b3105-8079-4b04-a49a-4e89113cd62f
-    # hello.otomi.cloud
-    # - arn:aws:acm:eu-west-1:956709229054:certificate/c1888d3f-ae8b-45e6-81a5-ae97230a4c0c
+    - arn:aws:acm:eu-central-1:059522483251:certificate/c90e0f89-da3f-4c3d-9476-b9895710ba21
+    # hello.eks.otomi.cloud
+    - arn:aws:acm:eu-central-1:059522483251:certificate/f88093bd-5482-4a11-b71c-eb8afb62e2de
 
 charts:
   cert-manager:

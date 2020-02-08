@@ -12,7 +12,7 @@ clouds:
     clusters:
       dev:
         k8sVersion: 1.14
-        region: eu-west-1
+        region: eu-central-1
   google:
     domain: gks.otomi.cloud
     clusters:

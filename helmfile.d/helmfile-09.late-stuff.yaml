@@ -1,7 +1,8 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
 
 releases:
   - name: gatekeeper-operator-config
@@ -9,4 +10,8 @@ releases:
     namespace: gatekeeper-system
     labels:
       pkg: gatekeeper-operator
+    <<: *default
+  - name: cluster-autoscaler
+    installed: {{ if eq $v.cluster.provider "aws" }}true{{ else }}false{{ end }}
+    namespace: kube-system
     <<: *default
