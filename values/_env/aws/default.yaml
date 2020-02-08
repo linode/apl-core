@@ -10,7 +10,7 @@ ingress:
     # *.team-team1
     - arn:aws:acm:eu-central-1:059522483251:certificate/c90e0f89-da3f-4c3d-9476-b9895710ba21
     # hello.eks.otomi.cloud
-    - arn:aws:acm:eu-central-1:059522483251:certificate/f88093bd-5482-4a11-b71c-eb8afb62e2de
+    - arn:aws:acm:eu-central-1:059522483251:certificate/1bfbe1f6-0799-4cbd-a857-f57fa73f404d
 
 charts:
   cert-manager:
