@@ -11,7 +11,3 @@ releases:
     chart: ../charts/raw
     values:
     - ../values/cloud/cloud-raw.gotmpl
-  - name: cluster-autoscaler
-    installed: {{ if eq $v.cluster.provider "aws" }}true{{ else }}false{{ end }}
-    namespace: kube-system
-    <<: *default

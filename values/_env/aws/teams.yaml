@@ -10,4 +10,4 @@ teamConfig:
             - name: TARGET
               value: AWS World
           isPublic: true
-          domain: hello.otomi.cloud
+          domain: hello.eks.otomi.cloud

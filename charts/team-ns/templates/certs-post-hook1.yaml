@@ -36,8 +36,9 @@ spec:
 {{- if eq $v.cluster.provider "aws" }}
             # request team domain wildcard cert
             certArn=$(aws acm request-certificate \
-              --region {{ $v.region }} \
+              --region {{ $v.cluster.region }} \
               --domain-name '*.{{ $v.domain }}' \
+              --subject-alternative-names {{ $v.domain }} www.{{ $v.domain }} \
               --validation-method DNS \
               --idempotency-token '{{ $v.domain | replace "." "" | replace "-" "" }}' \
               --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
@@ -45,7 +46,7 @@ spec:
             {{- range $s := $v.services }}
             {{- if and (not $s.certArn) ($s.domain) }}
             certArn=$(aws acm request-certificate \
-              --region {{ $v.region }} \
+              --region {{ $v.cluster.region }} \
               --domain-name {{ $s.domain }} \
               --validation-method DNS \
               --idempotency-token '{{ $s.domain | replace "." "" | replace "-" "" }}' \
