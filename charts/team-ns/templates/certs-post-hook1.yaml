@@ -48,6 +48,7 @@ spec:
             certArn=$(aws acm request-certificate \
               --region {{ $v.cluster.region }} \
               --domain-name {{ $s.domain }} \
+              --subject-alternative-names www.{{ $s.domain }} \
               --validation-method DNS \
               --idempotency-token '{{ $s.domain | replace "." "" | replace "-" "" }}' \
               --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')

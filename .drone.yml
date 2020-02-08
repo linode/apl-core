@@ -20,6 +20,24 @@ steps:
         - push
         - pull_request
 
+  - name: slack-dev
+    image: plugins/slack
+    environment:
+      CLUSTER: dev
+      CLOUD: ${CLOUD}
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: mon-otomi-dev
+      username: Drone
+    depends_on:
+      - deploy-dev
+    when:
+      status:
+        - success
+        - failure
+      event:
+        - push        
+
   - name: deploy-demo
     image: otomi/tools:1.1.4
     commands:
