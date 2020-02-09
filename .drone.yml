@@ -6,6 +6,20 @@ name: default
 #   annotations:
 #     sidecar.istio.io/inject: "false"
 
+clone:
+  disable: true
+
+steps:
+  - name: clone
+    image: alpine/git
+    environment:
+      CLUSTER: dev
+      CLOUD: ${CLOUD}
+    commands:
+      - git clone $DRONE_REPO .
+      - git checkout $DRONE_COMMIT
+      - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yml
+
 steps:
   - name: deploy-dev
     image: otomi/tools:1.1.4
@@ -19,24 +33,6 @@ steps:
       event:
         - push
         - pull_request
-
-  - name: slack-dev
-    image: plugins/slack
-    environment:
-      CLUSTER: dev
-      CLOUD: ${CLOUD}
-    settings:
-      webhook: https://hooks.slack.com/services/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
-      channel: mon-otomi-dev
-      username: Drone
-    depends_on:
-      - deploy-dev
-    when:
-      status:
-        - success
-        - failure
-      event:
-        - push        
 
   - name: deploy-demo
     image: otomi/tools:1.1.4
@@ -67,3 +63,26 @@ steps:
       ref: [refs/tags/v*]
       event:
         - tag
+
+  - name: slack
+    image: plugins/slack
+    environment:
+      CLUSTER: ${CLUSTER}
+      CLOUD: ${CLOUD}
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: mon-otomi-#CLOUD#-#CLUSTER#
+      username: Drone
+      template: >
+        {{#success build.status}}
+          Deployment to cluster "#CLOUD#-#CLUSTER#"" succeeded.
+        {{else}}
+          Deployment to cluster "#CLOUD#-#CLUSTER#"" failed. Please take a look.
+        {{/success}}
+    depends_on:
+      - deploy-#CLUSTER#
+    when:
+      status:
+        - success
+        - failure
+
