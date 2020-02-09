@@ -10,9 +10,10 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   template:
-    {{- with $s.ksvc.annotations }}
     metadata:
-      annotations: {{- . | toYaml | nindent 8 }}
+    {{- with $s.ksvc.annotations }}
+      annotations:
+        bla: dida
     {{- end }}
     spec:
       containers:
