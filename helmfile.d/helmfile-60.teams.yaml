@@ -80,11 +80,11 @@ releases:
             - name: "null"
             - name: default
               slack_configs:
-                - channel: "#mon-{{ $team.name }}"
+                - channel: "#mon-{{ $team.name }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}"
                   {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 }}
             - name: critical
               slack_configs:
-                - channel: "#mon-{{ $team.name }}-crit"
+                - channel: "#mon-{{ $team.name }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
                   {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 }}
         prometheus:
           prometheusSpec:
