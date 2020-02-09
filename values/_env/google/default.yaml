@@ -36,4 +36,4 @@ charts:
 
   istio:
     mtls:
-      enabled: true
+      enabled: false
