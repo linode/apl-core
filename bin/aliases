@@ -1,4 +1,4 @@
-. .env/cloud
+. .env/cloud.sh
 
 alias d="docker"
 alias aw="aws"

@@ -56,16 +56,16 @@ steps:
       CLOUD: ${CLOUD}
     settings:
       webhook: https://hooks.slack.com/services/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
-      channel: mon-otomi-CCCLOUD-CCCLUSTER
+      channel: mon-otomi-aws-dev
       username: Drone
       template: >
         {{#success build.status}}
-          Deployment to cluster 'CCCLOUD-CCCLUSTER' succeeded.
+          Deployment to cluster 'aws-dev' succeeded.
         {{else}}
-          Deployment to cluster 'CCCLOUD-CCCLUSTER' failed. Please take a look.
+          Deployment to cluster 'aws-dev' failed. Please take a look.
         {{/success}}
     depends_on:
-      - deploy-CCCLUSTER
+      - deploy-dev
     when:
       status:
         - success

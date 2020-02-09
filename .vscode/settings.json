@@ -3,10 +3,6 @@
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
     "*.gotmpl": "helm",
-    "aws": "shellscript",
-    "azure": "shellscript",
-    "cloud": "shellscript",
-    "google": "shellscript",
     "aliases": "shellscript",
     "helmfile.yaml": "helm",
     "helmfile-*.yaml": "helm"

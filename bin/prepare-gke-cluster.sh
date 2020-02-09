@@ -2,7 +2,7 @@
 
 # prerequites:
 # gcloud auth login
-. .env/cloud
+. .env/cloud.sh
 
 # create a metering table that will store records for 10 years
 bq --project=$PROJECT --location=EU mk -d --default_table_expiration 315360000 --description "Contains billing records based on labels." $METERING_SET
