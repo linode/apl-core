@@ -6,8 +6,8 @@ name: default
 #   annotations:
 #     sidecar.istio.io/inject: "false"
 
-clone:
-  disable: true
+# clone:
+#   disable: true
 
 steps:
   - name: clone
