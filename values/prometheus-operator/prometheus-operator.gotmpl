@@ -103,11 +103,11 @@ alertmanager:
       - name: "null"
       - name: default
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster }}"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
       - name: critical
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster }}-crit"
+          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
 grafana:
   nameOverride: po-grafana
