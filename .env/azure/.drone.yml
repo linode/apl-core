@@ -60,9 +60,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Syncing cluster 'azure-dev' complete :)
+          Completed syncing cluster 'azure-dev' :)
         {{else}}
-          Syncing cluster 'azure-dev' failed ;( Please take a look.
+          Failed syncing cluster 'azure-dev' ;( Please take a look.
         {{/success}}
     depends_on:
       - deploy-dev
