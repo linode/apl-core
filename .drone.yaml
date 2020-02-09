@@ -60,9 +60,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Syncing cluster 'CCCLOUD-CCCLUSTER' complete :)
+          Completed syncing cluster 'CCCLOUD-CCCLUSTER' :)
         {{else}}
-          Syncing cluster 'CCCLOUD-CCCLUSTER' failed ;( Please take a look.
+          Failed syncing cluster 'CCCLOUD-CCCLUSTER' ;( Please take a look.
         {{/success}}
     depends_on:
       - deploy-CCCLUSTER
