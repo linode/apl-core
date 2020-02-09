@@ -16,10 +16,11 @@ steps:
       CLUSTER: dev
       CLOUD: ${CLOUD}
     commands:
-      - echo "Cloning $DRONE_REPO ..."
-      - git clone https://github.com/$DRONE_REPO .
+      - echo "Cloning ${DRONE_REPO} ..."
+      - git clone https://github.com/${DRONE_REPO} .
       - git checkout $DRONE_COMMIT
       - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yaml
+      - cat .drone.yaml
     # when:
     #   event:
     #     - push
@@ -34,6 +35,7 @@ steps:
       CLUSTER: dev
       CLOUD: ${CLOUD}
     commands:
+      - cat .drone.yaml
       - /bin/bash ./tests/lint.sh
       - /bin/bash ./bin/sync.sh
     when:
