@@ -75,9 +75,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Deployment to cluster "#CLOUD#-#CLUSTER#"" succeeded.
+          Deployment to cluster '#CLOUD#-#CLUSTER#' succeeded.
         {{else}}
-          Deployment to cluster "#CLOUD#-#CLUSTER#"" failed. Please take a look.
+          Deployment to cluster '#CLOUD#-#CLUSTER#' failed. Please take a look.
         {{/success}}
     depends_on:
       - deploy-#CLUSTER#
