@@ -87,7 +87,7 @@ steps:
           Deployment to cluster '#CLOUD#-#CLUSTER#' failed. Please take a look.
         {{/success}}
     depends_on:
-      - deploy-#CLUSTER#
+      - deploy-dev
     when:
       status:
         - success
