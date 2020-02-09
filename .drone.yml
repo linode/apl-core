@@ -19,7 +19,7 @@ steps:
       - echo "Cloning..."
       - git clone $DRONE_REPO .
       - git checkout $DRONE_COMMIT
-      - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yml
+      - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yaml
 
   - name: deploy-dev
     image: otomi/tools:1.1.4
@@ -29,6 +29,8 @@ steps:
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
+    depends_on:
+      - clone
     when:
       event:
         - push
