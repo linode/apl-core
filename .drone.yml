@@ -27,7 +27,7 @@ steps:
       CLOUD: ${CLOUD}
     settings:
       webhook: https://hooks.slack.com/services/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
-      channel: mon-otomi-dev
+      channel: mon-otomi-${CLOUD}-dev
       username: Drone
     depends_on:
       - deploy-dev
