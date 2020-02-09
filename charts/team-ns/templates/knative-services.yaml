@@ -2,7 +2,7 @@
 {{- if (index $v "knative.enabled" | default "true") }}
 {{- $ := . }}
 {{- range $s := $v.services }}
-{{- if and (not (index $s "internal")) (not (index $s "host")) (index $s "ksvc") }}
+{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") }}
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -22,8 +22,8 @@ spec:
           env:
             - name: TEAM_NAME
               value: {{ $s.name }}
-            {{- if hasKey $s "env" }}
-            {{- $s.env | toYaml | nindent 12 }}
+            {{- with $s.env }}
+            {{- . | toYaml | nindent 12 }}
             {{- end }}
 ---      
 {{- end }}

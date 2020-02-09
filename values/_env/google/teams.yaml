@@ -12,3 +12,4 @@ teamConfig:
             annotations:
               autoscaling.knative.dev/minScale: '1'
           isPublic: true
+          domain: hello.otomi.cloud

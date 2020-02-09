@@ -3,9 +3,9 @@
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-{{- if and (not (index $s "internal")) (not (index $s "host")) (hasKey $s "svc") }}
+{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (or (hasKey $s "svc") (hasKey $s "domain")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
-{{- $svc := (or (eq $v.name "admin") (eq $ns "shared")) | ternary $s.svc (hasKey $s "svc" | ternary (printf "%s-%s" $v.name $s.svc) $s.name) }}
+{{- $svc := (or (eq $v.name "admin") (eq $ns "shared")) | ternary $s.svc (hasKey $s "ksvc" | ternary $s.name (printf "%s-%s" $v.name $s.svc)) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
