@@ -82,14 +82,14 @@ steps:
       webhook: https://hooks.slack.com/services/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
       channel: mon-otomi-#CLOUD#-#CLUSTER#
       username: Drone
-      template: >
-        {{#success build.status}}
-          Deployment to cluster '#CLOUD#-#CLUSTER#' succeeded.
-        {{else}}
-          Deployment to cluster '#CLOUD#-#CLUSTER#' failed. Please take a look.
-        {{/success}}
+      # template: >
+      #   {{#success build.status}}
+      #     Deployment to cluster '#CLOUD#-#CLUSTER#' succeeded.
+      #   {{else}}
+      #     Deployment to cluster '#CLOUD#-#CLUSTER#' failed. Please take a look.
+      #   {{/success}}
     depends_on:
-      - deploy-dev
+      - deploy-#CLUSTER#
     when:
       status:
         - success
