@@ -10,7 +10,7 @@ clone:
   disable: true
 
 steps:
-  - name: clone
+  - name: cloner
     image: alpine/git
     environment:
       CLUSTER: dev
@@ -30,7 +30,7 @@ steps:
       CLUSTER: dev
       CLOUD: ${CLOUD}
     depends_on:
-      - clone
+      - cloner
     when:
       event:
         - push
