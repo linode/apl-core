@@ -85,23 +85,16 @@ function kkc() {
   k delete ns --all
 }
 
-# export KUBE_CONFIG=~/.kube/config
-# make a tmp copy from our local KUBE_CONFIG to target only our env
-# tmpLocation="/tmp/otomi/kubecfg/$CLOUD"
-# k8sConfig="$tmpLocation/$CLUSTER.yaml"
-# mkdir -p $tmpLocation >/dev/null
-# kcv >$k8sConfig
-# export KUBE_CONFIG=$k8sConfig
-
-# now switch
-kcu $K8S_CONTEXT >/dev/null
-if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
-  # check if we have a mismatching context for an aws cluster
-  chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
-  aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
-  echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
-  k config rename-context $chek $K8S_CONTEXT
-  kcu $K8S_CONTEXT
+if [ $hasDocker -eq 0 ]; then
+  kcu $K8S_CONTEXT >/dev/null
+  if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
+    # check if we have a mismatching context for an aws cluster
+    chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
+    aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
+    echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
+    k config rename-context $chek $K8S_CONTEXT
+    kcu $K8S_CONTEXT
+  fi
 fi
 
 # environment scoped:
