@@ -6,8 +6,8 @@ name: default
 #   annotations:
 #     sidecar.istio.io/inject: "false"
 
-# clone:
-#   disable: true
+clone:
+  disable: true
 
 steps:
   - name: clone
@@ -17,14 +17,14 @@ steps:
       CLOUD: ${CLOUD}
     commands:
       - echo "Cloning $DRONE_REPO ..."
-      - git clone $DRONE_REPO .
+      - git clone https://github.com/$DRONE_REPO .
       - git checkout $DRONE_COMMIT
       - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yaml
-    when:
-      event:
-        - push
-        - pull_request
-        - tag
+    # when:
+    #   event:
+    #     - push
+    #     - pull_request
+    #     - tag
 
   - name: deploy-dev
     image: otomi/tools:1.1.4
