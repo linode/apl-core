@@ -3,16 +3,24 @@ type: kubernetes
 name: default
 
 steps:
+  - name: test
+    image: otomi/tools:1.1.4
+    environment:
+      CLUSTER: ${CLUSTER}
+      CLOUD: ${CLOUD}
+    commands:
+      - /bin/bash ./tests/lint.sh
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: deploy-dev
     image: otomi/tools:1.1.4
-    depends_on:
-      - clone
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
     commands:
-      - cat .drone.yaml
-      - /bin/bash ./tests/lint.sh
       - /bin/bash ./bin/sync.sh
     when:
       event:
@@ -27,7 +35,6 @@ steps:
       CLOUD: ${CLOUD}
       CLUSTER: demo
     commands:
-      - /bin/bash ./tests/lint.sh
       - /bin/bash ./bin/sync.sh
     when:
       ref: [refs/tags/v*-DEMO]
@@ -42,7 +49,6 @@ steps:
       CLOUD: ${CLOUD}
       CLUSTER: prd
     commands:
-      - /bin/bash ./tests/lint.sh
       - /bin/bash ./bin/sync.sh
     when:
       ref: [refs/tags/v*]
