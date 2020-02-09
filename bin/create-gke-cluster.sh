@@ -1,6 +1,6 @@
 #/usr/bin/env bash
 
-. .env/cloud
+. .env/cloud.sh
 
 # create the cluster
 gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME-$CLUSTER" --region "$GOOGLE_REGION" \
