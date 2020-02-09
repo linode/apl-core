@@ -60,9 +60,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Deployment to cluster 'google-dev' succeeded.
+          Deployment to cluster 'google-dev' succeeded :)
         {{else}}
-          Deployment to cluster 'google-dev' failed. Please take a look.
+          Deployment to cluster 'google-dev' failed ;( Please take a look.
         {{/success}}
     depends_on:
       - deploy-dev
