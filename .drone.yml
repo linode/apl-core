@@ -6,8 +6,8 @@ name: default
 #   annotations:
 #     sidecar.istio.io/inject: "false"
 
-# clone:
-#   disable: true
+clone:
+  disable: true
 
 steps:
   - name: clone
@@ -16,21 +16,26 @@ steps:
       CLUSTER: dev
       CLOUD: ${CLOUD}
     commands:
-      - echo "Cloning..."
+      - echo "Cloning $DRONE_REPO ..."
       - git clone $DRONE_REPO .
       - git checkout $DRONE_COMMIT
       - sed -e "s/#CLOUD#/${CLOUD}/g" -e "s/#CLUSTER#/${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yaml
+    when:
+      event:
+        - push
+        - pull_request
+        - tag
 
   - name: deploy-dev
     image: otomi/tools:1.1.4
-    commands:
-      - /bin/bash ./tests/lint.sh
-      - /bin/bash ./bin/sync.sh
+    depends_on:
+      - clone
     environment:
       CLUSTER: dev
       CLOUD: ${CLOUD}
-    depends_on:
-      - clone
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     when:
       event:
         - push
@@ -38,14 +43,14 @@ steps:
 
   - name: deploy-demo
     image: otomi/tools:1.1.4
-    commands:
-      - /bin/bash ./tests/lint.sh
-      - /bin/bash ./bin/sync.sh
+    depends_on:
+      - deploy-dev
     environment:
       CLOUD: ${CLOUD}
       CLUSTER: demo
-    depends_on:
-      - deploy-dev
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     when:
       ref: [refs/tags/v*-DEMO]
       event:
@@ -53,14 +58,14 @@ steps:
 
   - name: deploy-prd
     image: otomi/tools:1.1.4
-    commands:
-      - /bin/bash ./tests/lint.sh
-      - /bin/bash ./bin/sync.sh
+    depends_on:
+      - deploy-demo
     environment:
       CLOUD: ${CLOUD}
       CLUSTER: prd
-    depends_on:
-      - deploy-demo
+    commands:
+      - /bin/bash ./tests/lint.sh
+      - /bin/bash ./bin/sync.sh
     when:
       ref: [refs/tags/v*]
       event:
