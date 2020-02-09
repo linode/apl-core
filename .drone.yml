@@ -21,11 +21,11 @@ steps:
       - git checkout $DRONE_COMMIT
       - sed -e "s/#CLOUD#/$${CLOUD}/g" -e "s/#CLUSTER#/$${CLUSTER}/g" .drone.yml > /tmp/.drone.yml && cat /tmp/.drone.yml > .drone.yml
       - cat .drone.yml
-    # when:
-    #   event:
-    #     - push
-    #     - pull_request
-    #     - tag
+    when:
+      event:
+        - push
+        - pull_request
+        - tag
 
   - name: deploy-dev
     image: otomi/tools:1.1.4
