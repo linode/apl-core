@@ -13,7 +13,8 @@ spec:
     metadata:
     {{- with $s.ksvc.annotations }}
       annotations:
-        bla: dida
+        dumb: dummy
+        {{- . | toYaml | nindent 8 }}
     {{- end }}
     spec:
       containers:
