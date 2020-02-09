@@ -60,9 +60,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Syncing cluster 'google-dev' complete :)
+          Completed syncing cluster 'google-dev' :)
         {{else}}
-          Syncing cluster 'google-dev' failed ;( Please take a look.
+          Failed syncing cluster 'google-dev' ;( Please take a look.
         {{/success}}
     depends_on:
       - deploy-dev
