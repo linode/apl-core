@@ -8,11 +8,12 @@ kind: Service
 metadata:
   name: {{ $s.name }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-  {{- with $s.ksvc.annotations }}
-  annotations: {{- . | toYaml | nindent 4 }}
-  {{- end }}
 spec:
   template:
+    {{- with $s.ksvc.annotations }}
+    metadata:
+      annotations: {{- . | toYaml | nindent 4 }}
+    {{- end }}
     spec:
       containers:
         - image: {{ $s.ksvc.image.repository }}:{{ $s.ksvc.image.tag }}
