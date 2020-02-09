@@ -11,6 +11,7 @@ resources:
           revision-timeout-seconds: "300"  # 5 minutes
         autoscaler:
           stable-window: "600s"
+          scale-to-zero-grace-period: "60s"
         deployment:
           registriesSkippingTagResolving: "ko.local,dev.local"
         logging:
