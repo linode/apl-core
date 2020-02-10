@@ -6,8 +6,5 @@ teamConfig:
           svc: hello
           logo:
             name: kubernetes
-          env:
-            - name: TARGET
-              value: AWS World
           isPublic: true
           domain: hello.eks.otomi.cloud
