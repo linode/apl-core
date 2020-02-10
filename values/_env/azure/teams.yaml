@@ -11,4 +11,7 @@ teamConfig:
               tag: 1.1.3
             annotations:
               autoscaling.knative.dev/minScale: '1'
+          env:
+            - name: TARGET
+              value: Azure's Knative World
           isPublic: true
