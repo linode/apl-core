@@ -20,7 +20,7 @@ data:
   {{- if (eq $v.team "admin") }}
   {{- $file | nindent 4 }}
   {{- else }}
-  {{- $file | replace "#TEAMPREFIX#" ($v.cluster.teamPrefix | replace "-" "\\\\-") | replace "#TEAM#" ($v.team | replace "-" "\\\\-") | nindent 4 }}
+  {{- $file | replace "#TEAM#" ($v.team | replace "-" "\\\\-") | nindent 4 }}
   {{- end }}
   {{- end }}
 {{- end }}
