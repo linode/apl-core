@@ -85,8 +85,8 @@ function kkc() {
   k delete ns --all
 }
 
-kcu $K8S_CONTEXT >/dev/null
 if [ $hasDocker -eq 0 ]; then
+  kcu $K8S_CONTEXT >/dev/null
   if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
     # check if we have a mismatching context for an aws cluster
     chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
@@ -98,7 +98,10 @@ if [ $hasDocker -eq 0 ]; then
 fi
 
 # environment scoped:
-function hf() { hf_ -e ${CLOUD}-$CLUSTER $@; }
+function hf() {
+  kcu $K8S_CONTEXT >/dev/null
+  hf_ -e ${CLOUD}-$CLUSTER $@
+}
 # environment scoped, no deps, so faster:
 function hfd() { hf $@ --skip-deps; }
 # templates only without cruft:
