@@ -2244,7 +2244,7 @@
         "options": [],
         "query": "query_result(sum(istio_requests_total) by (destination_workload_namespace) or sum(istio_tcp_sent_bytes_total) by (destination_workload_namespace))",
         "refresh": 1,
-        "regex": "/.*_namespace=\"(#TEAMPREFIX##TEAM#).*/",
+        "regex": "/.*_namespace=\"(team\\-#TEAM#).*/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",

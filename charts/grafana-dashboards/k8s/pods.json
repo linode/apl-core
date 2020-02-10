@@ -487,7 +487,7 @@
         "options": [],
         "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
         "refresh": 2,
-        "regex": "/(.*#TEAMPREFIX##TEAM#.*)/",
+        "regex": "/(.*team\\-#TEAM#.*)/",
         "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
