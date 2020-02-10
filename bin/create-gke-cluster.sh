@@ -3,21 +3,21 @@
 . .env/cloud.sh
 
 # create the cluster
-gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME-$CLUSTER" --region "$GOOGLE_REGION" \
+gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME" --region "$GOOGLE_REGION" \
   --no-enable-basic-auth --cluster-version "1.15.7-gke.23" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
   --max-pods-per-node "110" --num-nodes "1" --no-enable-cloud-logging --no-enable-cloud-monitoring \
   --enable-ip-alias --network "projects/$PROJECT/global/networks/default" \
   --subnetwork "projects/$PROJECT/regions/$GOOGLE_REGION/subnetworks/default" \
-  --default-max-pods-per-node "110" --enable-autoscaling --min-nodes "3" --max-nodes "7" \
+  --default-max-pods-per-node "110" --enable-autoscaling --min-nodes "1" --max-nodes "7" \
   --enable-network-policy --addons HorizontalPodAutoscaling,HttpLoadBalancing --enable-autoupgrade --enable-autorepair \
   --maintenance-window "01:00" --labels customer=$CUSTOMER --enable-tpu \
   --enable-autoprovisioning --min-cpu 4 --max-cpu 8 --min-memory 8 --max-memory 32 \
   --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
 # --enable-pod-security-policy
 
-gcloud container clusters get-credentials $CLUSTER_NAME-$CLUSTER --region $GOOGLE_REGION --project $PROJECT
+gcloud container clusters get-credentials $CLUSTER_NAME --region $GOOGLE_REGION --project $PROJECT
 
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 

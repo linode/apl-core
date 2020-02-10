@@ -14,7 +14,7 @@ clouds:
         k8sVersion: 1.14
         region: eu-central-1
   google:
-    domain: gks.otomi.cloud
+    domain: gke.otomi.cloud
     clusters:
       dev:
         k8sVersion: 1.15
