@@ -85,8 +85,8 @@ function kkc() {
   k delete ns --all
 }
 
+kcu $K8S_CONTEXT >/dev/null
 if [ $hasDocker -eq 0 ]; then
-  kcu $K8S_CONTEXT >/dev/null
   if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
     # check if we have a mismatching context for an aws cluster
     chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
