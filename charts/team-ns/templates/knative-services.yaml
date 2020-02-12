@@ -3,6 +3,7 @@
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") }}
+{{- $k := $s.ksvc }}
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -11,20 +12,25 @@ metadata:
 spec:
   template:
     metadata:
-    {{- with $s.ksvc.annotations }}
+    {{- with $k.annotations }}
       annotations:
         dumb: dummy
         {{- . | toYaml | nindent 8 }}
     {{- end }}
     spec:
       containers:
-        - image: {{ $s.ksvc.image.repository }}:{{ $s.ksvc.image.tag }}
+        - image: {{ $k.image.repository }}:{{ $s.ksvc.image.tag }}
           env:
             - name: TEAM_NAME
               value: {{ $s.name }}
-            {{- with $s.env }}
+            {{- with $k.env }}
             {{- . | toYaml | nindent 12 }}
             {{- end }}
+          {{- with $k.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+
 ---      
 {{- end }}
 {{- end }}
