@@ -47,7 +47,7 @@ services:
     namespace: shared
     port: 8080
     svc: otomi-api
-    path: /api-docs
+    path: /
     logo:
       name: kubernetes
   # - name: dashboard
@@ -137,7 +137,7 @@ teamConfig:
       namespace: shared
       port: 8080
       svc: otomi-api
-      path: /api-docs
+      path: /
       logo:
         name: kubernetes
     - name: auth
