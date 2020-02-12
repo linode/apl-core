@@ -7,4 +7,4 @@ export DNS_ZONE="otomi"
 export METERING_SET="otomi_metering"
 
 # used for stack deployment:
-export K8S_CONTEXT="gks_${PROJECT}_${GOOGLE_REGION}_${CLUSTER_NAME}"
+export K8S_CONTEXT="gke_${PROJECT}_${GOOGLE_REGION}_${CLUSTER_NAME}"

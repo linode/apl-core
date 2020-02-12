@@ -77,15 +77,20 @@
         {{- if eq $cluster $v.cluster.name }}
         <a class="active">{{ $cluster }}</a>
         {{- else }}
-        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $c.domain }}">{{ $cluster }}</a>
+        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $cluster }}.{{ $p.domain }}">{{ $cluster }}</a>
         {{- end }}
         {{- end }}
-        {{- if eq $v.group "admin" }}
         - Teams: 
-        {{- $i := 0 }}
+        {{- if eq $v.group "admin" }}
+        <a class="active">Admin</a>
+        {{- else }}
+        <a href="https://index.{{ $v.cluster.teamPrefix }}admin.{{ $v.cluster.domain }}">Admin</a>
+        {{- end }}
         {{- range $team := $v.teams }}
-        {{- if $i }} | {{ end }}{{ $i = add $i 1 }}
-        <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $team }}.{{ $v.cluster.domain }}">{{ $team | title }}</a>
+        {{- if eq $team $v.group }}
+        | <a class="active">{{ $team | title }}</a>
+        {{- else }}
+        | <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $team }}.{{ $v.cluster.domain }}">{{ $team | title }}</a>
         {{- end }}
         {{- end }}
       </div>

@@ -19,7 +19,7 @@ spec:
     {{- end }}
     spec:
       containers:
-        - image: {{ $k.image.repository }}:{{ $s.ksvc.image.tag }}
+        - image: {{ $k.image.repository }}:{{ $k.image.tag }}
           env:
             - name: TEAM_NAME
               value: {{ $s.name }}
