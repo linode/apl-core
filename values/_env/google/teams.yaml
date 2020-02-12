@@ -11,8 +11,8 @@ teamConfig:
               tag: 1.1.3
             annotations:
               autoscaling.knative.dev/minScale: '1'
-          env:
-            - name: TARGET
-              value: Google's Knative Universe
+            env:
+              - name: TARGET
+                value: Google's Knative Universe
           isPublic: true
           domain: hello.otomi.cloud
