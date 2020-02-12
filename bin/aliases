@@ -1,28 +1,31 @@
 . .env/cloud.sh
 
-if [ $? -eq 0 ]; then
-  alias d="docker"
-  alias aw="aws"
-  alias gc="gcloud"
-  alias k="kubectl"
-  alias ksk="k -n kube-system"
-  alias ki="k -n ingress"
-  alias kis="k -n istio-system"
-  alias ks="k -n system"
-  alias ksh="k -n shared"
-  alias km="k -n monitoring"
-  alias kta="k -n team-admin"
-  alias ka="k --all-namespaces=true"
-  alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
-  alias kap="ka get po"
-  alias kdel="k delete"
-  alias kcv="k config view"
-  alias kce="$EDITOR ~/.kube/config"
-  alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
-  alias kcu="k config use-context"
-  alias kp="k proxy &"
-  alias kp="killall kubectl"
+alias d="docker"
+alias aw="aws"
+alias gc="gcloud"
+alias k="kubectl"
+alias ksk="k -n kube-system"
+alias ki="k -n ingress"
+alias kis="k -n istio-system"
+alias ks="k -n system"
+alias ksh="k -n shared"
+alias km="k -n monitoring"
+alias kta="k -n team-admin"
+alias ka="k --all-namespaces=true"
+alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
+alias kap="ka get po"
+alias kdel="k delete"
+alias kcv="k config view"
+alias kce="$EDITOR ~/.kube/config"
+alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-context: //p'"
+alias kcu="k config use-context"
+alias kp="k proxy &"
+alias kp="killall kubectl"
+alias h="helm"
+alias hk="h delete"
+alias hf_="helmfile"
 
+if [ $? -eq 0 ]; then
   img=otomi/tools:1.1.4
   d --version &>/dev/null
   hasDocker=$?
@@ -45,10 +48,7 @@ if [ $? -eq 0 ]; then
       -w $PWD $img $@
   }
 
-  alias h="helm"
-  alias hk="h delete"
-  alias hf_="helmfile"
-
+  # echo $hasDocker
   # if not has docker: ci
   if [ $hasDocker -eq 0 ]; then
     echo "Found docker client, assuming developer context."
@@ -113,5 +113,5 @@ if [ $? -eq 0 ]; then
   # templates only without cruft:
   function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
-  echo "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_CYAN}CLOUD=${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_CYAN}CLUSTER=${COLOR_YELLOW}$CLUSTER${COLOR_NC}"
+  printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_CYAN}CLOUD=${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_CYAN}CLUSTER=${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
 fi
