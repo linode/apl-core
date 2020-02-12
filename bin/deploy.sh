@@ -1,7 +1,7 @@
 # /bin/bash
 shopt -s expand_aliases
-set -e
 . bin/aliases
+set -e
 
 # install some stuff that we never want to end up as charts
 # (might get corrupted and we can then never pass that stage of deployment)
