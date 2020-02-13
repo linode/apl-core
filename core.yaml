@@ -31,6 +31,10 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
     - name: knative-serving
+    - name: kube-system
+      disableIstioInjection: true
+    - name: maintenance
+      disableIstioInjection: true
     - name: monitoring
     - name: shared
     - name: team-admin

@@ -25,3 +25,11 @@ knative:
     # domain:
     #   customdomain.com: |
     #     app: prod
+limitRange:
+  default:
+    cpu: 100m
+    memory: 128Mi
+  defaultRequest:
+    cpu: 50m
+    memory: 64Mi
+
