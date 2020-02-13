@@ -29,9 +29,21 @@ Before listing the hard requirements I would like to offer some really helpful t
 
 Admin accessible k8s cluster(s). For convenience we have added `bin/create-gke-cluster.sh` to create a k8s cluster in GKE.
 
+If you don't have access with kubectl immediately, you have to pull the credentials from the cloud:
+
+- Azure: `az aks get-credentials --resource-group otomi-aks-dev --name otomi-aks-dev --admin`
+- AWS: `aws eks update-kubeconfig --name otomi-eks-dev`
+- Google: `gcloud container clusters get-credentials otomi-gke-dev --region europe-west4 --project otomi-cloud`
+
+If you are not logged in with the correct credentials because you were logged in for a customer, then re-login first:
+
+- Azure: `az login`
+- AWS: `aws login eks`
+- Google: `gcloud auth login`
+
 ### 1.2 Configured .env
 
-This monorepo is tergeting the cluster(s) as described in the `.(azure|google|aws)` files. Please register your target clusters there.
+This monorepo is tergeting the cluster(s) as described in the `.env/(azure|google|aws)/*` files. Please register your target clusters there.
 
 ### 1.3 Configured values
 
@@ -47,25 +59,14 @@ export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.s
 
 It should install and start all the services in this repo.
 
-### 2.1 (Optional) CI/CD deployment
+### 2.1 GitOps syncing
 
-After initial deployment, to enable Continuous Deployment of this repo (i.e. from within GitLab), for each cluster (DEV|TST|ACC|PRD):
+After initial deployment, to enable Continuous Deployment of this repo from within Drone, for each cluster (DEV|DEMO|PRD):
 
-Create and retrieve a token:
+1. Login to Drone and activate the repo to sync with.
+2. Choose the drone pipeline file to use: `.env/(azure|google|aws)/.drone.yml` and press save.
 
-```bash
-# get the otomi-admin serviceAccount token:
-SECRET_NAME=$(kubectl -n system get sa otomi-admin -o json | jq -r .secrets[].name)
-TOKEN=$(k -n system get secret $SECRET_NAME -o json | jq -r .data.token)
-# to copy to clipboard, on OSX:
-echo $TOKEN | pbcopy
-```
-
-Create an environment variable `KUBE_TOKEN_(DEV|TST|ACC|PRD)` in GitLab Settings > CI/CD with the \$TOKEN content.
-
-This should only happen when we need to create a cluster from scratch.
-
-Please look at `.gitlab-ci.yml` to see how simple the pipelines are.
+Sync is now live, and every git change is applied by each cluster's Drone by calling `bin/sync.sh` from the updated code.
 
 ### 2.2 Manual Deployment
 
@@ -75,7 +76,7 @@ Deployment is preferably done by using the aliases:
 
 ```bash
 # target the cloud you wish you deploy to and load the aliases
-export CLOUD=(azure|google|aws) && . bin/aliases
+export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && . bin/aliases
 # use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see `bin/aliases`)
 hfd apply|diff|template
 # or target a single chart:
@@ -86,7 +87,8 @@ hfd --log-level=debug -f helmfile.d/helmfile-30.system.yaml -l name=index apply
 
 ## 2. Development
 
-The helmfiles are found in `helmfile.d/` and their values under `values/**`.
+The helmfiles are found in `helmfile.d/` and `helmfile.tpl`, and their values under `values/**`. The `helmfile.tpl` dir only contains charts that are used for basic k8s manifest generation to be deployed with kubectl apply, so we don't get chart conflicts. (See `bin/deploy.sh` and `bin/sync.sh`.)
+
 The charts are found in the `charts/custom` folder. These charts can be exact copies from their online counterparts (see their `Chart.yaml`), or contain slight modifications/adaptations. The only real explicit one is `chart/index` which is an adaption of `bitnami/nginx` to hold our custom index page listing all the accessible services in this repo.
 
 ### Helm charts & helmfiles
