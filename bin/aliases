@@ -22,6 +22,9 @@ alias kcg="k config view | grep 'current-context:' | sed -n -e 's/^.*current-con
 alias kcu="k config use-context"
 alias kp="k proxy &"
 alias kp="killall kubectl"
+alias h="helm"
+alias hk="h delete"
+alias hf_="helmfile"
 
 if [ $noEnvError -eq 0 ]; then
   img=otomi/tools:1.1.4
@@ -122,8 +125,4 @@ if [ $noEnvError -eq 0 ]; then
   function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
   printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_CYAN}CLOUD=${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_CYAN}CLUSTER=${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
-else
-  alias h="helm"
-  alias hk="h delete"
-  alias hf_="helmfile"
 fi
