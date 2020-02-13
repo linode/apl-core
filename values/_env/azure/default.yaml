@@ -2,35 +2,25 @@ cluster:
   hasCloudLB: true
 
 azure:
-  tenantId: 64458159-0d9a-4d84-966f-1a13c0ac7a34
-  subscriptionId: 2e69a31a-6cef-4493-b895-3a0d8e16e58e
-  resourceGroup: AKS20-sandbox
+  tenantId: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+  subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
+  resourceGroup: otomi-aks-dev
   diskType: Standard_LRS # Premium_LRS
-  clientId: 4795daf6-f95f-4170-8b75-f58396550ddc
-  clientSecret: Ss[KSDDDYtoOz/_DaT:wDSUZK3vV4E59
 
 charts:
   cert-manager:
-    azureClientSecret: 3b4d0dc8-7342-4709-b1b0-fd70921dab48
+    azureClientSecret: f93a4a07-140d-4520-a5b2-e6ae9d2e4974
     provider:
       azure:
         azuredns:
-          clientID: 3909ceec-7ea0-46f8-b602-96886b876417
+          clientID: ecc942ee-4f40-4612-8b30-465b5306cd31
           clientSecretSecretRef:
             name: cert-manager-sp
             key: CLIENT_SECRET
-          tenantID: 64458159-0d9a-4d84-966f-1a13c0ac7a34
-          subscriptionID: 2e69a31a-6cef-4493-b895-3a0d8e16e58e
-          resourceGroupName: dev-aks-dns
+          tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+          subscriptionID: 50c24abd-f872-4a3b-9f65-419800dda5eb
+          resourceGroupName: external-dns
           hostedZoneName: aks.otomi.cloud
-
-  cluster-autoscaler:
-    image:
-      tag: v1.16.3
-    autoscalingGroups:
-      - name: agentpool1
-        minSize: 3
-        maxSize: 7
 
   drone:
     sourceControl:
@@ -42,17 +32,17 @@ charts:
     domainFilters: [aks.otomi.cloud]
     zoneIdFilters:
     azure:
-      resourceGroup: dev-aks-dns
-      aadClientId: 2f851cd5-a494-4a72-b17d-2eb3e6ad6214
-      aadClientSecret: 25084581-8eec-4eeb-9c59-9bb9c7cd6097
+      resourceGroup: external-dns
+      aadClientId: c328754d-b436-4828-aa72-a46a0d554670
+      aadClientSecret: b864c0d5-116f-4f20-86d9-2021e8ea4113
 
   ingress-azure:
     armAuth:
-      secretJSON: ewogICJjbGllbnRJZCI6ICI1MzI4M2IxYy04MDRkLTQ1OWMtYWM5My03YWQyNzVlNmJhMjEiLAogICJjbGllbnRTZWNyZXQiOiAiMTRmMzgyOGYtM2Y5Zi00ZTljLTk3YjYtM2FlZTEyNGFlNmE1IiwKICAic3Vic2NyaXB0aW9uSWQiOiAiMmU2OWEzMWEtNmNlZi00NDkzLWI4OTUtM2EwZDhlMTZlNThlIiwKICAidGVuYW50SWQiOiAiNjQ0NTgxNTktMGQ5YS00ZDg0LTk2NmYtMWExM2MwYWM3YTM0IiwKICAiYWN0aXZlRGlyZWN0b3J5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tIiwKICAicmVzb3VyY2VNYW5hZ2VyRW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmF6dXJlLmNvbS8iLAogICJhY3RpdmVEaXJlY3RvcnlHcmFwaFJlc291cmNlSWQiOiAiaHR0cHM6Ly9ncmFwaC53aW5kb3dzLm5ldC8iLAogICJzcWxNYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQ6ODQ0My8iLAogICJnYWxsZXJ5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9nYWxsZXJ5LmF6dXJlLmNvbS8iLAogICJtYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQvIgp9Cg==
+      secretJSON: ewogICJjbGllbnRJZCI6ICJmOGYyYjQwNS05NTM3LTQ0MWItOGU4Ni00YWRhOWY4YmM2ODgiLAogICJjbGllbnRTZWNyZXQiOiAiZWY4ODQ3NzctMmM1Ny00N2U3LThlNjUtMzVhOThkZjIxNWY1IiwKICAic3Vic2NyaXB0aW9uSWQiOiAiNTBjMjRhYmQtZjg3Mi00YTNiLTlmNjUtNDE5ODAwZGRhNWViIiwKICAidGVuYW50SWQiOiAiNTdhM2Y2ZWEtN2U3MC00MjYwLWFjYjQtZTA2Y2U0NTJmNjk1IiwKICAiYWN0aXZlRGlyZWN0b3J5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tIiwKICAicmVzb3VyY2VNYW5hZ2VyRW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmF6dXJlLmNvbS8iLAogICJhY3RpdmVEaXJlY3RvcnlHcmFwaFJlc291cmNlSWQiOiAiaHR0cHM6Ly9ncmFwaC53aW5kb3dzLm5ldC8iLAogICJzcWxNYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQ6ODQ0My8iLAogICJnYWxsZXJ5RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9nYWxsZXJ5LmF6dXJlLmNvbS8iLAogICJtYW5hZ2VtZW50RW5kcG9pbnRVcmwiOiAiaHR0cHM6Ly9tYW5hZ2VtZW50LmNvcmUud2luZG93cy5uZXQvIgp9Cg==
     appgw:
-      subscriptionId: 2e69a31a-6cef-4493-b895-3a0d8e16e58e
-      resourceGroup: AKS20-sandbox
-      name: AKS20-sandbox
+      subscriptionId: 50c24abd-f872-4a3b-9f65-419800dda5eb
+      resourceGroup: otomi-aks-dev
+      name: appgw-otomi-aks-dev
       usePrivateIP: false
       subnetName: appgw-subnet
       subnetPrefix: 10.1.0.0/16
