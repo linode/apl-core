@@ -10,6 +10,11 @@ templates:
     chart: ../charts/raw
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
+  maintenance: &maintenance
+    namespace: maintenance
+    chart: ../charts/maintenance
+    labels:
+      tag: maintenance
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:

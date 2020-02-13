@@ -2,7 +2,11 @@
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 domain: {{ $domain }}
 customerLabels: {{ toYaml $v.customerLabels | nindent 2 }}
-istioEnabled: true
-global:
-  istioEnabled: true
 toolsVersion: {{ $v.toolsVersion }}
+toolsResources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi

@@ -1,4 +1,5 @@
 . .env/cloud.sh
+noEnvError=$?
 
 alias d="docker"
 alias aw="aws"
@@ -22,7 +23,7 @@ alias kcu="k config use-context"
 alias kp="k proxy &"
 alias kp="killall kubectl"
 
-if [ $? -eq 0 ]; then
+if [ $noEnvError -eq 0 ]; then
   img=otomi/tools:1.1.4
   d --version &>/dev/null
   hasDocker=$?
@@ -51,7 +52,7 @@ if [ $? -eq 0 ]; then
     echo "Found docker client, assuming developer context."
     if [ $dockerRunning -eq 0 ]; then
       echo "Found docker running, will use $img instead of local tooling"
-      unalias h hf_ hk aw gc
+      unalias h hf_ hk aw gc &>/dev/null
       alias h="drun helm"
       alias hf_="drun helmfile"
       alias hk="drun helm delete"
@@ -63,6 +64,12 @@ if [ $? -eq 0 ]; then
     fi
   fi
 
+  function kpo() {
+    labels=$1
+    shift
+    pod=$(k get po -l "$labels" $@ -ojsonpath='{.items[0].metadata.name}')
+    k delete po $pod $@
+  }
   function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
   function kad() { k delete "$@" --all; }
   function kdnp() {
@@ -73,7 +80,7 @@ if [ $? -eq 0 ]; then
   # force erase all namespaces
   function kkns() {
     k proxy &
-    k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize" '
+    k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize"; rm  "$0.json"'
     kk
   }
   # erase entire stack but keep nodes
@@ -100,7 +107,7 @@ if [ $? -eq 0 ]; then
       if [ $? -ne 0 ]; then
         echo $err
       else
-        hf_ -e ${CLOUD}-$CLUSTER $@
+        drun helmfile -e ${CLOUD}-$CLUSTER $@
       fi
     }
   else
