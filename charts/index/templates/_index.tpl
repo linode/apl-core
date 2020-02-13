@@ -54,7 +54,7 @@
       </a>
       {{- end }}
       <div class="env-links">
-        Cloud:
+        <a class="active">Cloud:</a>
         {{- range $provider, $p := $v.clouds }}
         {{- $clusters := index $v.clouds $provider }}
         {{- if ne $provider "aws" }} | {{ end }}
@@ -69,7 +69,7 @@
         {{- end }}
         {{- end }}
         {{- end }}
-        - Cluster: 
+        - <a class="active">Cluster: </a>
         {{- $p := index $v.clouds $v.cluster.provider }}
         {{- $i := 0 }}
         {{- range $cluster, $c := $p.clusters }}
@@ -80,7 +80,7 @@
         <a href="https://index.{{ $v.cluster.teamPrefix }}{{ $v.group }}.{{ $cluster }}.{{ $p.domain }}">{{ $cluster }}</a>
         {{- end }}
         {{- end }}
-        - Teams: 
+        - <a class="active">Team:</a> 
         {{- if eq $v.group "admin" }}
         <a class="active">Admin</a>
         {{- else }}
