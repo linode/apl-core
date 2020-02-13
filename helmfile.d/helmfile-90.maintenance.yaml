@@ -1,0 +1,22 @@
+bases:
+  - snippets/defaults.gotmpl
+
+{{ readFile "snippets/templates.gotmpl" }}
+
+releases:
+  - name: maintenance-istio-pilot
+    installed: false
+    <<: *maintenance
+    values:
+      - namespace: istio-system
+        labels: istio=pilot,app=pilot
+        schedule: "0 0 * * *" # once a day at 00:00h
+      - ../values/default.gotmpl
+  - name: maintenance-ingress-azure
+    installed: true
+    <<: *maintenance
+    values:
+      - namespace: istio-system
+        labels: app=ingress-azure
+        schedule: "0 * * * *" # once an hour!
+      - ../values/default.gotmpl
