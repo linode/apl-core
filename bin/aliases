@@ -96,18 +96,22 @@ if [ $? -eq 0 ]; then
       k config rename-context $chek $K8S_CONTEXT
       kcu $K8S_CONTEXT
     fi
+
+    function hf() {
+      err=$(kcu $K8S_CONTEXT)
+      # first test still in right context, else bork
+      if [ $? -ne 0 ]; then
+        echo $err
+      else
+        hf_ -e ${CLOUD}-$CLUSTER $@
+      fi
+    }
+  else
+    function hf() {
+      hf_ -e ${CLOUD}-$CLUSTER $@
+    }
   fi
 
-  # environment scoped:
-  function hf() {
-    err=$(kcu $K8S_CONTEXT)
-    # first test still in right context, else bork
-    if [ $? -ne 0 ]; then
-      echo $err
-    else
-      hf_ -e ${CLOUD}-$CLUSTER $@
-    fi
-  }
   # environment scoped, no deps, so faster:
   function hfd() { hf $@ --skip-deps; }
   # templates only without cruft:
