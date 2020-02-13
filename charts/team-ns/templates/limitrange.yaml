@@ -1,0 +1,11 @@
+{{- $v := .Values }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: team-ns-limitrange
+  labels: {{- include "chart-labels" . | nindent 4 }}
+spec:
+  limits:
+  - default: {{- $v.limitRange.default | toYaml | nindent 6 }}
+    defaultRequest: {{- $v.limitRange.defaultRequest | toYaml | nindent 6 }}
+    type: Container
