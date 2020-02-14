@@ -55,6 +55,21 @@ steps:
       event:
         - tag
 
+  - name: maintenance
+    image: otomi/tools:1.1.4
+    environment:
+      CLUSTER: ${CLUSTER}
+      CLOUD: ${CLOUD}
+    commands:
+      - echo "Killing istio-pilot pod..."
+      - kubectl -n istio-system delete po $(kubectl -n istio-system get po -l "istio=pilot,app=pilot" -ojsonpath='{.items[0].metadata.name}')
+    depends_on:
+      - deploy-CCCLUSTER
+    when:
+      branch: master
+      event:
+        - push
+
   - name: slack
     image: plugins/slack
     environment:
