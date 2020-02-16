@@ -16,7 +16,7 @@ releases:
     installed: true
     <<: *maintenance
     values:
-      - namespace: istio-system
+      - namespace: ingress
         labels: app=ingress-azure
         schedule: "0 * * * *" # once an hour!
       - ../values/default.gotmpl
