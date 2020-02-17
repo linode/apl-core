@@ -1,19 +1,12 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
 
 releases:
-  - name: maintenance-istio-pilot
-    installed: false
-    <<: *maintenance
-    values:
-      - namespace: istio-system
-        labels: istio=pilot,app=pilot
-        schedule: "0 0 * * *" # once a day at 00:00h
-      - ../values/default.gotmpl
   - name: maintenance-ingress-azure
-    installed: true
+    installed: {{ if eq $v.cluster.provider "azure" }}true{{ else }}false{{ end }}
     <<: *maintenance
     values:
       - namespace: ingress
