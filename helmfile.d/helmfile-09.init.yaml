@@ -1,0 +1,23 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+
+releases:
+  - name: cluster-autoscaler
+    installed: {{ if eq $v.cluster.provider "aws" }}true{{ else }}false{{ end }}
+    namespace: kube-system
+    <<: *default
+  - name: knative-serving
+    installed: {{ if ge $v.cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
+    namespace: knative-serving
+    chart: ../charts/raw
+    values:
+      - ../values/knative/knative-serving-raw.gotmpl
+  - name: gatekeeper-operator-config
+    installed: true
+    namespace: gatekeeper-system
+    labels:
+      pkg: gatekeeper-operator
+    <<: *default

@@ -27,6 +27,10 @@ releases:
     labels:
       pkg: loki
     <<: *raw
+  - name: flux
+    installed: false # not ready yet
+    namespace: maintenance
+    <<: *default
   - name: gatekeeper-operator
     installed: true
     namespace: gatekeeper-system

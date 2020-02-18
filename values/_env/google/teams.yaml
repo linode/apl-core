@@ -6,6 +6,10 @@ teamConfig:
           logo:
             name: kubernetes
           ksvc:
+            autoCD:
+              tagMatcher: glob # glob, regexp @see https://docs.fluxcd.io/en/1.18.0/references/fluxctl.html#using-annotations
+              semver: ~1.1
+              glob: '1.*'
             image:
               repository: otomi/helloworld-nodejs
               tag: 1.1.3

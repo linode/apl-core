@@ -10,7 +10,7 @@ releases:
     namespace: team-team1
     chart: ../charts/hello
     values:
-      - nameOverride: team1-hello
-        fullnameOverride: team1-hello
+      - nameOverride: hello
+        fullnameOverride: hello
         image:
           tag: 1.1.3
