@@ -1,0 +1,91 @@
+{{- if and (eq .Values.memcached.enabled true) (eq .Values.registry.disableScanning false)  }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "flux.fullname" . }}-memcached
+  labels:
+    app: {{ template "flux.name" . }}-memcached
+    chart: {{ template "flux.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ template "flux.name" . }}-memcached
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      {{- if .Values.memcached.annotations }}
+      annotations:
+      {{- .Values.memcached.annotations | toYaml | trimSuffix "\n" | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ template "flux.name" . }}-memcached
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.memcached.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.memcached.pullSecret }}
+      {{- end }}
+      {{- if .Values.rbac.pspEnabled }}
+      serviceAccountName: {{ template "flux.serviceAccountName" . }}
+      {{- end }}
+      containers:
+      - name: memcached
+        image: {{ .Values.memcached.repository }}:{{ .Values.memcached.tag }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - -m {{ .Values.memcached.maxMemory }}    # Maximum memory to use, in megabytes. 64MB is default.
+        - -p 11211    # Default port, but being explicit is nice.
+        - -I {{ .Values.memcached.maxItemSize }} #  Maximum size for one item
+        {{- if .Values.memcached.verbose }}
+        - -vv    # This gets us to the level of request logs.
+        {{- end }}
+        ports:
+        - name: memcached
+          containerPort: 11211
+        resources:
+{{ toYaml .Values.memcached.resources | indent 10 }}
+        {{- if .Values.memcached.addSecurityContext }}
+        securityContext:
+{{ toYaml .Values.memcached.securityContext | indent 10 }}
+        {{- end }}
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      {{- with .Values.memcached.nodeSelector }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.memcached.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.memcached.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "flux.fullname" . }}-memcached
+  labels:
+    app: {{ template "flux.name" . }}-memcached
+    chart: {{ template "flux.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if eq .Values.memcached.createClusterIP false }}
+  clusterIP: None
+  {{- end }}
+  ports:
+    - port: 11211
+      targetPort: memcached
+      protocol: TCP
+      name: memcached
+  selector:
+    app: {{ template "flux.name" . }}-memcached
+    release: {{ .Release.Name }}
+{{- end }}

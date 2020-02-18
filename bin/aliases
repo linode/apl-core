@@ -1,3 +1,4 @@
+printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
 . .env/cloud.sh
 noEnvError=$?
 
@@ -124,5 +125,8 @@ if [ $noEnvError -eq 0 ]; then
   # templates only without cruft:
   function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
-  printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_CYAN}CLOUD=${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_CYAN}CLUSTER=${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
+  printf "${COLOR_LIGHT_PURPLE}DONE!${COLOR_NC}\n"
+  printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_LIGHT_GREEN}CLOUD ${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_LIGHT_GREEN}CLUSTER ${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
+else
+  printf "${COLOR_RED}ERROR!${COLOR_NC}\n"
 fi

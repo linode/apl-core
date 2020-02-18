@@ -1,8 +1,8 @@
 {{- $v := .Values }}
-{{- if (index $v "knative.enabled" | default "true") }}
+{{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
-{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") }}
+{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") (not (get $s "ksvc.predeployed" | default false)) }}
 {{- $k := $s.ksvc }}
 apiVersion: serving.knative.dev/v1
 kind: Service
@@ -12,11 +12,12 @@ metadata:
 spec:
   template:
     metadata:
-    {{- with $k.annotations }}
       annotations:
-        dumb: dummy
-        {{- . | toYaml | nindent 8 }}
-    {{- end }}
+        {{- if (index $k "autoCD") }}
+        fluxcd.io/automated: "true"
+        fluxcd.io/tag.user-container: "{{ $k.autoCD.tagMatcher | default "semver" }}:{{ index $k.autoCD $k.autoCD.tagMatcher }}"
+        {{- end }}
+        {{- $k.annotations | toYaml | nindent 8 }}
     spec:
       containers:
         - image: {{ $k.image.repository }}:{{ $k.image.tag }}
@@ -30,7 +31,6 @@ spec:
           resources:
             {{- . | toYaml | nindent 12 }}
           {{- end }}
-
 ---      
 {{- end }}
 {{- end }}
