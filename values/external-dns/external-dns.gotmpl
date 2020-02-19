@@ -25,7 +25,7 @@ azure:
   subscriptionId: {{ $azure.subscriptionId }}
 {{- end }}  
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
-zoneIdFilters: {{ $dns | get "zoneIdFilters" | toYaml | nindent 2 }}
+zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 {{- if $v.cluster.hasCloudLB }}
 annotationFilter: "provider={{ $v.cluster.provider }}"
 {{- end }}

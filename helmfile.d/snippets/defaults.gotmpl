@@ -4,7 +4,7 @@ helmDefaults:
   timeout: 1200
   force: false
 
-{{ $v := (readFile "../core.yaml" | fromYaml) }}
+{{ $v := (readFile "../env/clusters.yaml" | fromYaml) }}
 environments:
   {{- range $provider, $p := $v.clouds }}
   {{- range $cluster, $c := $p.clusters }}

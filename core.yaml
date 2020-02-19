@@ -1,24 +1,6 @@
 appVersion: 1.4.0
 toolsVersion: 1.1.4
-clouds:
-  azure:
-    domain: aks.otomi.cloud
-    clusters:
-      dev:
-        k8sVersion: 1.15
-        region: westeurope
-  aws:
-    domain: eks.otomi.cloud
-    clusters:
-      dev:
-        k8sVersion: 1.14
-        region: eu-central-1
-  google:
-    domain: gke.otomi.cloud
-    clusters:
-      dev:
-        k8sVersion: 1.15
-        region: europe-west4
+
 k8s:
   namespaces:
     - name: drone-pipelines
