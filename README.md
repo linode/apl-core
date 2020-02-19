@@ -41,20 +41,22 @@ If you are not logged in with the correct credentials because you were logged in
 - AWS: `aws login eks`
 - Google: `gcloud auth login`
 
-### 1.2 Configured .env
+### 1.2 Configured values
 
-This monorepo is tergeting the cluster(s) as described in the `.env/(azure|google|aws)/*` files. Please register your target clusters there.
+The values reside in another repo (otomi-values), and \$ENV_DIR should be an absolute path to the root of this checked out repo.
+
+This monorepo is tergeting the cluster(s) as described in the `$ENV_DIR/(azure|google|aws)/*` files, which reside in the mounted values repo. Please register your target clusters there.
 
 ### 1.3 Configured values
 
-Please look at the `values/_env/**` files and configure as needed for your target clusters.
+Please look at the `$ENV_DIR/**` files and configure as needed for your target clusters.
 
 ## 2. Installation
 
 The first time install must be done for each configured cloud and cluster like this:
 
 ```bash
-export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.sh
+export ENV_DIR=$PWD/../otomi-values CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.sh
 ```
 
 It should install and start all the services in this repo.

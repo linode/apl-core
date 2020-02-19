@@ -1,8 +1,0 @@
-teamConfig:
-  teams:
-    team1:
-      name: team1
-      password: somepassworddd
-      cicd:
-        enabled: true
-        type: drone

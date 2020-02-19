@@ -1,6 +1,6 @@
-# /bin/bash
+#!/bbin/env bash
 shopt -s expand_aliases
 . bin/aliases
 
-hf repos
 hfd lint
+hfd diff

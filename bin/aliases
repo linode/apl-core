@@ -1,5 +1,5 @@
 printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
-. .env/cloud.sh
+. bin/env.sh
 noEnvError=$?
 
 alias d="docker"
@@ -28,7 +28,8 @@ alias hk="h delete"
 alias hf_="helmfile"
 
 if [ $noEnvError -eq 0 ]; then
-  img=otomi/tools:1.1.4
+  # img=otomi/tools:1.1.4
+  img=eu.gcr.io/otomi-cloud/otomi-stack:1.0.0
   d --version &>/dev/null
   hasDocker=$?
   d ps &>/dev/null
@@ -44,6 +45,8 @@ if [ $noEnvError -eq 0 ]; then
       -v ~/.config/gcloud:/home/app/.config/gcloud \
       -v ~/.aws:/home/app/.aws \
       -v ~/.azure:/home/app/.azure \
+      -v $ENV_DIR:$PWD/env \
+      -e ENV_DIR=$PWD/env \
       -e K8S_CONTEXT=$K8S_CONTEXT \
       -e CLOUD=$CLOUD \
       -e CLUSTER=$CLUSTER \
@@ -116,7 +119,7 @@ if [ $noEnvError -eq 0 ]; then
     }
   else
     function hf() {
-      hf_ -e ${CLOUD}-$CLUSTER $@
+      helmfile -e ${CLOUD}-$CLUSTER $@
     }
   fi
 
