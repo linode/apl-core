@@ -1,14 +1,15 @@
 export CLUSTER=${CLUSTER:-dev}
+export ENV_DIR=${ENV_DIR:-$PWD/env}
 . bin/colors.sh
 
-cd .env >/dev/null
+cd $ENV_DIR >/dev/null
 c=(*/)
 cd - >/dev/null
 clouds="${c[@]%/}"
 if [[ ! $clouds == *$CLOUD* ]]; then
   printf "${COLOR_RED}ERROR: The value of CLOUD env must be one of the following: ${COLOR_YELLOW}$clouds${COLOR_NC}\n"
 else
-  cd .env/$CLOUD >/dev/null
+  cd $ENV_DIR/$CLOUD >/dev/null
   c=(*.sh)
   cd - >/dev/null
   clusters="${c[@]%.sh}"
@@ -17,4 +18,4 @@ else
   fi
 fi
 # source dependent env vars
-. $PWD/.env/$CLOUD/$CLUSTER.sh
+. $ENV_DIR/$CLOUD/$CLUSTER.sh

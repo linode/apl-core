@@ -1,0 +1,6 @@
+.github
+.vscode
+env
+tools
+*.md
+*.json
