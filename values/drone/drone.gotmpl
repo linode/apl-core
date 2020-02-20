@@ -9,7 +9,8 @@ images:
     repository: "docker.io/drone/drone-runner-kube"
     tag: latest
 
-nameOverride: admin
+nameOverride: drone
+fullnameOverride: drone
 sharedSecret: zumsecreetz
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 shopt -s expand_aliases
-. bin/aliases
+. bin/utils.sh
 set -e
 
 # install some stuff that we never want to end up as charts

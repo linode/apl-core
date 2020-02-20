@@ -16,11 +16,12 @@ gcloud iam service-accounts keys create $FILE --iam-account=$SA_EMAIL
 # add the IAM policy binding for the defined project and service account
 gcloud projects add-iam-policy-binding $PROJECT --member serviceAccount:$SA_EMAIL --role roles/storage.objectViewer
 # apply to the cluster:
-kubectl -n drone-pipelines create secret docker-registry gcr-json-key \
+secret=$(kubectl -n drone-pipelines create secret docker-registry gcr-json-key --dry-run \
   --docker-server=eu.gcr.io \
   --docker-username=_json_key \
   --docker-password="$(cat ./$FILE)" \
-  --docker-email=not@val.id
+  --docker-email=not@val.id \
+  -ojsonpath='{.data.\.dockerconfigjson}')
 # patch service account "default" in namespace drone-pipelines
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -31,4 +32,6 @@ metadata:
 imagePullSecrets:
 - name: gcr-json-key
 EOF
-rm $FILE
+echo "Now set the following string in the stack's env/cluster.yaml pullSecret:"
+echo $secret
+# rm $FILE

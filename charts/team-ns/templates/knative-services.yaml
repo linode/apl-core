@@ -2,8 +2,9 @@
 {{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
-{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") (not (get $s "ksvc.predeployed" | default false)) }}
+{{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (hasKey $s "ksvc") }}
 {{- $k := $s.ksvc }}
+{{- if not $k.predeployed }}
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -32,6 +33,7 @@ spec:
             {{- . | toYaml | nindent 12 }}
           {{- end }}
 ---      
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

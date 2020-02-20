@@ -78,7 +78,7 @@ Deployment is preferably done by using the aliases:
 
 ```bash
 # target the cloud you wish you deploy to and load the aliases
-export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && . bin/aliases
+export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && . bin/utils.sh
 # use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see `bin/aliases`)
 hfd apply|diff|template
 # or target a single chart:
@@ -104,7 +104,7 @@ watch -n1 "kubectl --all-namespaces=true get po | grep -Fv kube-system"
 You can test modifications to helm charts and helmfiles:
 
 ```bash
-. bin/aliases
+. bin/utils.sh
 # diff one chart with the one deployed on dev:
 hfd -l name=index diff
 # deploy the whole prometheus-operator stack:

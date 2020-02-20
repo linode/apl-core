@@ -5,7 +5,6 @@
 {{- if or (index $s "mtls.gatewayDisabled") (index $s "mtls.policyMode") }}
 {{- $mode := ($s | get "mtls.policyMode" "permissive") }}
 {{- $ns := index $s "namespace" | default .Release.Namespace }}
-{{- $svc := (eq $v.name "admin") | ternary $s.svc (printf "%s-%s" $v.name $s.svc) }}
 apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
@@ -16,7 +15,7 @@ spec:
     - mtls:
         mode: {{ $mode | upper }}
   targets:
-    - name: {{ $svc }}.{{ $ns }}.svc.cluster.local
+    - name: {{ $s.svc }}.{{ $ns }}.svc.cluster.local
 {{- end }}
 {{- end }}
 {{- end }}
