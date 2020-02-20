@@ -4,11 +4,11 @@ helmDefaults:
   timeout: 1200
   force: false
 
-{{ $v := (readFile "../env/clusters.yaml" | fromYaml) }}
+{{ $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
 environments:
   {{- range $provider, $p := $v.clouds }}
   {{- range $cluster, $c := $p.clusters }}
-  {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") (dict "clouds" $v.clouds "cluster" (dict "provider" $provider "name" $cluster "region" $c.region "k8sVersion" $c.k8sVersion "domain" (index $c "domain" | default (printf "%s.%s" $cluster $p.domain)))) | nindent 2 }}
+  {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") (set $v "cluster" (dict "provider" $provider "name" $cluster "region" $c.region "k8sVersion" $c.k8sVersion "domain" (index $c "domain" | default (printf "%s.%s" $cluster $p.domain)))) | nindent 2 }}
   {{- end }}
   {{- end }}
 repositories: 

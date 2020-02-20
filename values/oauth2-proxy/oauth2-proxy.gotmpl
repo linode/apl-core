@@ -37,6 +37,6 @@ extraArgs:
   ###
   # Provider specifics:
   ###
-  github-org: {{ $o | get "github.org" "" }}
+  github-org: {{ $o | getOrNil "github.org" }}
   azure-tenant: {{ $o.azure.tenantID }}
 
