@@ -8,6 +8,8 @@ Click here to open the [index of the system services](https://index.team-admin.d
 
 It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases](bin/aliases) to understand what the commands in this readme do.
 
+This stack is published as a private docker image here: `eu.gcr.io/otomi-cloud/otomi-stack`, and the rest of this readme is for developers only.
+
 This readme has the following index:
 
 1. [Prerequisites for installation](#1-prerequisites-for-installation)
@@ -16,7 +18,7 @@ This readme has the following index:
 4. [Operation](#3-operation)
 5. [Troubleshooting](#4-troubleshooting)
 
-## 1. Prerequisites for installation
+## 1. Prerequisites for development
 
 It is imperative to know the functioning of [helm](https://helm.sh) and [helmfile](https://github.com/roboll/helmfile). Please read about both beforehand. They both use Go templating and make use of the [Sprig template functions](http://masterminds.github.io/sprig/).
 
@@ -45,11 +47,11 @@ If you are not logged in with the correct credentials because you were logged in
 
 The values reside in another repo (otomi-values), and \$ENV_DIR should be an absolute path to the root of this checked out repo.
 
-This monorepo is tergeting the cluster(s) as described in the `$ENV_DIR/(azure|google|aws)/*` files, which reside in the mounted values repo. Please register your target clusters there.
+This monorepo is tergeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml` file in the `redkubes/otomi-values` repo. Please register your target clusters there.
 
 ### 1.3 Configured values
 
-Please look at the `$ENV_DIR/**` files and configure as needed for your target clusters.
+Please look at the `$ENV_DIR/env/**` files and configure as needed for your target clusters.
 
 ## 2. Installation
 
@@ -72,11 +74,13 @@ Sync is now live, and every git change is applied by each cluster's Drone by cal
 
 ### 2.2 Manual Deployment
 
-After initial deployment, it is possible to deploy (parts of) the stack to any cluster directly through helmfile, but this is meant for dev clusters only.
+After initial deployment, it is possible to deploy (parts of) the stack to any cluster directly through helmfile, but this is meant for development and dev clusters only.
 To be able to deploy manually, you should have the right credentials and access rights in .kube/config.
-Deployment is preferably done by using the aliases:
+Deployment is ONLY ALLOWED BY USING THE ALIASES:
 
 ```bash
+# target the customer values you wish to deploy with
+export ENV_DIR=~/Documents/Workspace/redkubes/otomi/otomi-values
 # target the cloud you wish you deploy to and load the aliases
 export CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && . bin/utils.sh
 # use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see `bin/aliases`)

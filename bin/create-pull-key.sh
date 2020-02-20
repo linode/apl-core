@@ -33,5 +33,5 @@ imagePullSecrets:
 - name: gcr-json-key
 EOF
 echo "Now set the following string in the stack's env/cluster.yaml pullSecret:"
+echo ""
 echo $secret
-# rm $FILE
