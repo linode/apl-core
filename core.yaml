@@ -108,7 +108,7 @@ services:
     mtls:
       gatewayDisabled: true
   - name: drone
-    svc: drone-admin
+    svc: drone
     namespace: team-admin
 
 proxies:
