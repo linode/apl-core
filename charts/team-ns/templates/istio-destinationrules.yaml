@@ -4,13 +4,14 @@
 {{- range $s := $v.services }}
 {{- if (index $s "mtls.gatewayDisabled") }}
 {{- $ns := index $s "namespace" | default .Release.Namespace }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.svc) $s.svc) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: {{ $s.name }}-notls
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
-  host: {{ $s.svc }}.{{ $ns }}.svc.cluster.local
+  host: {{ $svc }}.{{ $ns }}.svc.cluster.local
   trafficPolicy:
     tls:
       mode: DISABLE
