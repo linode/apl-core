@@ -69,7 +69,7 @@ releases:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $team.name }}-po
-        # fullnameOverride: {{ $team.name }}-po
+        fullnameOverride: {{ $team.name }}-po
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $alertsHost }}
@@ -100,7 +100,7 @@ releases:
                 name: team-{{ $team.name }}
         grafana:
           nameOverride: {{ $team.name }}-po-grafana
-          # fullnameOverride: {{ $team.name }}-po-grafana
+          fullnameOverride: {{ $team.name }}-po-grafana
           grafana.ini:
             server:
               root_url: https://{{ $grafanaHost }}

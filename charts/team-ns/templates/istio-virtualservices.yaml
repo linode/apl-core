@@ -4,6 +4,7 @@
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (or (hasKey $s "svc") (hasKey $s "domain")) }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.svc) $s.svc) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -22,14 +23,14 @@ spec:
   http: 
   {{- if hasKey $s "ksvc" }}
     - rewrite:
-        authority: {{ $s.svc }}.{{ $v.domain }}
+        authority: {{ $s.name }}.{{ $v.domain }}
       route:
         - destination:
             host: istio-ingressgateway.istio-system.svc.cluster.local
   {{- else }}
     - route:
         - destination:
-            host: {{ $s.svc }}.{{ $ns }}.svc.cluster.local
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
   {{- end }}
             port:
               number: {{ index $s "port" | default 80 }}

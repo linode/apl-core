@@ -28,13 +28,13 @@ services:
   - name: index
     svc: index
     namespace: team-admin
-  - name: otomi-api
-    namespace: shared
-    port: 8080
-    svc: otomi-api
-    path: /
-    logo:
-      name: kubernetes
+  # - name: otomi-api
+  #   namespace: shared
+  #   port: 8080
+  #   svc: otomi-api
+  #   path: /
+  #   logo:
+  #     name: kubernetes
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
@@ -118,13 +118,13 @@ proxies:
 
 teamConfig:
   services:
-    - name: otomi-api
-      namespace: shared
-      port: 8080
-      svc: otomi-api
-      path: /
-      logo:
-        name: kubernetes
+    # - name: otomi-api
+    #   namespace: shared
+    #   port: 8080
+    #   svc: otomi-api
+    #   path: /
+    #   logo:
+    #     name: kubernetes
     - name: auth
       svc: oauth2-proxy
       namespace: istio-system
@@ -137,17 +137,20 @@ teamConfig:
       path: /explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
     - name: grafana
       svc: po-grafana
+      hasPrefix: true
       mtls:
         policyMode: permissive
         gatewayDisabled: true
     - name: prometheus
       svc: po-prometheus
+      hasPrefix: true
       port: 9090
       mtls:
         # policyMode: permissive
         gatewayDisabled: true
     - name: alertmanager
       svc: po-alertmanager
+      hasPrefix: true
       port: 9093
       logo:
         name: prometheus
