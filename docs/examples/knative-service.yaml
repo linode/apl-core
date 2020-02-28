@@ -1,0 +1,15 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: hello
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '1'
+    spec:
+      containers:
+        - env:
+            - name: TARGET
+              value: Knative World
+          image: otomi/helloworld-nodejs:1.1.3
