@@ -35,6 +35,8 @@ prometheusOperator:
   tlsProxy:
     enabled: false
   createCustomResource: true
+  kubeletService:
+    enabled: {{ if $v.cluster.isManaged }}false{{ else }}true{{ end }}
 prometheus:
   prometheusSpec:
     podMetadata:

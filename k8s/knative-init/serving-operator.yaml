@@ -10,7 +10,7 @@ spec:
   - JSONPath: .status.conditions[?(@.type=="Ready")].status
     name: Ready
     type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+  - JSONPath: ".status.conditions[?(@.type==\"Ready\")].reason"
     name: Reason
     type: string
   group: operator.knative.dev
@@ -41,15 +41,6 @@ spec:
         spec:
           description: Spec defines the desired state of KnativeServing
           properties:
-            cluster-local-gateway:
-              description: A means to override the cluster-local-gateway
-              properties:
-                selector:
-                  additionalProperties:
-                    type: string
-                  description: The selector for the ingress-gateway.
-                  type: object
-              type: object
             config:
               additionalProperties:
                 additionalProperties:
@@ -58,56 +49,65 @@ spec:
               description: A means to override the corresponding entries in the upstream
                 configmaps
               type: object
-            controller-custom-certs:
-              description: Enabling the controller to trust registries with self-signed
-                certificates
-              properties:
-                name:
-                  description: The name of the ConfigMap or Secret
-                  type: string
-                type:
-                  description: One of ConfigMap or Secret
-                  enum:
-                  - ConfigMap
-                  - Secret
-                  - ""
-                  type: string
-              type: object
             knative-ingress-gateway:
               description: A means to override the knative-ingress-gateway
+              type: object
               properties:
                 selector:
-                  additionalProperties:
-                    type: string
                   description: The selector for the ingress-gateway.
                   type: object
+                  additionalProperties:
+                    type: string
+            cluster-local-gateway:
+              description: A means to override the cluster-local-gateway
               type: object
+              properties:
+                selector:
+                  description: The selector for the ingress-gateway.
+                  type: object
+                  additionalProperties:
+                    type: string
             registry:
               description: A means to override the corresponding deployment images
                 in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              type: object
               properties:
                 default:
                   description: The default image reference template to use for all
                     knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
                   type: string
+                override:
+                  description: A map of a container name or image name to the full
+                    image location of the individual knative image.
+                  type: object
+                  additionalProperties:
+                    type: string
                 imagePullSecrets:
                   description: A list of secrets to be used when pulling the knative
                     images. The secret must be created in the same namespace as the
                     knative-serving deployments, and not the namespace of this resource.
+                  type: array
                   items:
+                    type: object
                     properties:
                       name:
                         description: The name of the secret.
                         type: string
-                    type: object
-                  type: array
-                override:
-                  additionalProperties:
-                    type: string
-                  description: A map of a container name or image name to the full
-                    image location of the individual knative image.
-                  type: object
+            controller-custom-certs:
+              description: Enabling the controller to trust registries with self-signed
+                certificates
               type: object
+              properties:
+                type:
+                  description: One of ConfigMap or Secret
+                  type: string
+                  enum:
+                  - ConfigMap
+                  - Secret
+                  - ""
+                name:
+                  description: The name of the ConfigMap or Secret
+                  type: string
           type: object
         status:
           description: Status defines the observed state of KnativeServing
@@ -156,7 +156,26 @@ spec:
     storage: true
 
 ---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  labels:
+    serving.knative.dev/release: devel
 data:
   _example: |
     ################################
@@ -196,14 +215,28 @@ data:
           "callerEncoder": ""
         }
       }
-kind: ConfigMap
-metadata:
-  labels:
-    serving.knative.dev/release: devel
-  name: config-logging
 
 ---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  labels:
+    serving.knative.dev/release: devel
 data:
   _example: |
     ################################
@@ -283,11 +316,6 @@ data:
     # flag to "true" could cause extra Stackdriver charge.
     # If metrics.backend-destination is not Stackdriver, this is ignored.
     metrics.allow-stackdriver-custom-metrics: "false"
-kind: ConfigMap
-metadata:
-  labels:
-    serving.knative.dev/release: devel
-  name: config-observability
 
 ---
 apiVersion: apps/v1
@@ -306,14 +334,18 @@ spec:
       labels:
         name: knative-serving-operator
     spec:
+      serviceAccountName: knative-serving-operator
       containers:
-      - env:
+      - name: knative-serving-operator
+        image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager@sha256:c6aa3c14284ac9673760c865afe6d66a97c3a15f6ac092ce46fd022a525c5a95
+        imagePullPolicy: IfNotPresent
+        env:
         - name: POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
         - name: OPERATOR_NAME
-          value: knative-serving-operator
+          value: "knative-serving-operator"
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
@@ -324,13 +356,9 @@ spec:
           value: config-logging
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
-        image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager@sha256:3443757596db481b558eecb2085e4eb9a64653f20117fe80ccbb322c9eb75414
-        imagePullPolicy: IfNotPresent
-        name: knative-serving-operator
         ports:
-        - containerPort: 9090
-          name: metrics
-      serviceAccountName: knative-serving-operator
+        - name: metrics
+          containerPort: 9090
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -388,30 +416,27 @@ rules:
   verbs:
   - '*'
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
 rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-serving-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
   name: knative-serving-operator
 subjects:
 - kind: ServiceAccount
   name: knative-serving-operator
+roleRef:
+  kind: Role
+  name: knative-serving-operator
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
