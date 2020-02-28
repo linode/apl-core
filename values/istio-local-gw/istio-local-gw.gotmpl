@@ -1,0 +1,20 @@
+
+gateways:
+  cluster-local-gateway:
+    autoscaleMin: 1
+    autoscaleMax: 2
+    cpu:
+      targetAverageUtilization: 60
+    labels:
+      app: cluster-local-gateway
+      istio: cluster-local-gateway
+    type: ClusterIP
+  istio-ingressgateway:
+    enabled: false
+  istio-egressgateway:
+    enabled: false
+  istio-ilbgateway:
+    enabled: false
+global:
+  mtls:
+    auto: false
