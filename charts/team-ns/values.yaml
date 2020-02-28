@@ -6,9 +6,9 @@ certStage: staging
 namespace: ""
 resourceQuota:
   pods: "50"
-  persistentvolumeclaims: "1"
+  # persistentvolumeclaims: "1"
   services.loadbalancers: "0"
-  resourcequotas: "1"  
+  # resourcequotas: "1"  
 ingress:
   allowedCidrs: []
   certArns: []
