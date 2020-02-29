@@ -43,11 +43,20 @@ resources:
     - kind: ServiceAccount
       name: default
       namespace: drone-pipelines
+  {{- range $ns := list "drone-pipelines" "shared" }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: gcr-json-key
-      namespace: drone-pipelines
+      namespace: {{ $ns }}
     type: kubernetes.io/dockerconfigjson
     data:
       .dockerconfigjson: {{ $v.pullSecret }}
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: default
+      namespace: {{ $ns }}
+    imagePullSecrets:
+    - name: gcr-json-key
+  {{- end }}
