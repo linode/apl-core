@@ -22,16 +22,6 @@ secret=$(kubectl -n drone-pipelines create secret docker-registry gcr-json-key -
   --docker-password="$(cat ./$FILE)" \
   --docker-email=not@val.id \
   -ojsonpath='{.data.\.dockerconfigjson}')
-# patch service account "default" in namespace drone-pipelines
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: default
-  namespace: drone-pipelines
-imagePullSecrets:
-- name: gcr-json-key
-EOF
 echo "Now set the following string in the stack's env/cluster.yaml pullSecret:"
 echo ""
 echo $secret
