@@ -13,6 +13,6 @@ releases:
     namespace: kube-system
     <<: *default
   - name: otomi-api
-    installed: true
+    installed: false
     namespace: shared
     <<: *default
