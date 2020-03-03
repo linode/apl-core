@@ -19,7 +19,8 @@ defaultRules:
   rules:
     kubernetesAbsent: false
 kubelet:
-  enabled: false
+  serviceMonitor:
+    https: false
 kubeControllerManager:
   enabled: false
 kubeProxy:
@@ -52,7 +53,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 5Gi
+              storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
     externalUrl: https://{{ $promHost }}
     # additionalScrapeConfigs:
