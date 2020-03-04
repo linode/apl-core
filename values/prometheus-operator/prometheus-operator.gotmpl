@@ -110,11 +110,11 @@ alertmanager:
       - name: default
         slack_configs:
           - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       - name: critical
         slack_configs:
           - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
 grafana:
   image:
     tag: 6.6.2
