@@ -47,7 +47,7 @@ If you are not logged in with the correct credentials because you were logged in
 
 The values reside in another repo (otomi-values), and \$ENV_DIR should be an absolute path to the root of this checked out repo.
 
-This monorepo is tergeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml` file in the `redkubes/otomi-values` repo. Please register your target clusters there.
+This monorepo is targeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml` file in the `redkubes/otomi-values` repo. Please register your target clusters there.
 
 ### 1.3 Configured values
 
