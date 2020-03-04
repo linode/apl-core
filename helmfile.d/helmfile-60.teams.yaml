@@ -81,11 +81,11 @@ releases:
             - name: default
               slack_configs:
                 - channel: "#mon-{{ $team.name }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}"
-                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
             - name: critical
               slack_configs:
                 - channel: "#mon-{{ $team.name }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
-                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
         prometheus:
           prometheusSpec:
             externalUrl: https://{{ $promHost }}
