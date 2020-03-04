@@ -100,6 +100,9 @@ alertmanager:
             alertname: Watchdog
           receiver: "null"
         - match:
+            alertname: CPUThrottlingHigh
+          receiver: "null"
+        - match:
             severity: critical
           receiver: critical
     receivers:
@@ -113,6 +116,8 @@ alertmanager:
           - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 }}
 grafana:
+  image:
+    tag: 6.6.2
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
