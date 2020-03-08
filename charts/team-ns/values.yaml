@@ -21,10 +21,6 @@ authAnnotations: {}
 ingressAnnotations: {}
 knative:
   enabled: true
-  config: {}
-    # domain:
-    #   customdomain.com: |
-    #     app: prod
 limitRange:
   default:
     cpu: 100m

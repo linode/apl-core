@@ -14,19 +14,16 @@ global:
 {{- if $v.cluster.isManaged }}
 kubeEtcd:
   enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
 {{- if eq $v.cluster.provider "azure" }}
-defaultRules:
-  rules:
-    kubernetesAbsent: false
 kubelet:
   serviceMonitor:
     https: false
-kubeControllerManager:
-  enabled: false
-kubeProxy:
-  enabled: false    
-kubeScheduler:
-  enabled: false
 {{- end }}
 {{- end }}
 prometheusOperator:
@@ -185,8 +182,3 @@ prometheus-node-exporter:
   rbac:
     pspEnabled: false
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
-
-kubeControllerManager:
-  enabled: false
-kubeScheduler:
-  enabled: false
