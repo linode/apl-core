@@ -10,6 +10,9 @@ kind: Service
 metadata:
   name: {{ $s.name }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
+    {{- with $k.labels }}
+    {{- . | toYaml | nindent 4 }}
+    {{- end }}
 spec:
   template:
     metadata:
@@ -18,7 +21,9 @@ spec:
         fluxcd.io/automated: "true"
         fluxcd.io/tag.user-container: "{{ $k.autoCD.tagMatcher | default "semver" }}:{{ index $k.autoCD $k.autoCD.tagMatcher }}"
         {{- end }}
-        {{- $k.annotations | toYaml | nindent 8 }}
+        {{- with $k.annotations }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - image: {{ $k.image.repository }}:{{ $k.image.tag }}
@@ -28,9 +33,17 @@ spec:
             {{- with $k.env }}
             {{- . | toYaml | nindent 12 }}
             {{- end }}
+          {{- with $k.envFrom }}
+          envFrom: {{- . | toYaml | nindent 12 }}
+          {{- end }}
           {{- with $k.resources }}
-          resources:
-            {{- . | toYaml | nindent 12 }}
+          resources: {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with $k.command }}
+          command: {{ . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with $k.args }}
+          args: {{ . | toYaml | nindent 12 }}
           {{- end }}
 ---      
 {{- end }}

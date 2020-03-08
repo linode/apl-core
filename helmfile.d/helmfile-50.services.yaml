@@ -7,7 +7,7 @@ bases:
 releases:
   - name: hello
     # set 'installed' to true and set correct namespace for other customer demo on aws:
-    installed: {{ if and (eq $v.cluster.provider "aws") (eq $v.customerLabels.customer "redkubes") }}true{{ else }}false{{ end }}
+    installed: {{ if and (eq $v.cluster.provider "aws") (eq $v.customerLabels.customer "otomi") }}true{{ else }}false{{ end }}
     namespace: team-otomi
     chart: ../charts/hello
     values:
