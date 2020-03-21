@@ -28,13 +28,17 @@ services:
   - name: index
     svc: index
     namespace: team-admin
-  # - name: otomi-api
-  #   namespace: shared
-  #   port: 8080
-  #   svc: otomi-api
-  #   path: /
-  #   logo:
-  #     name: kubernetes
+  - name: otomi-web
+    namespace: shared
+    svc: otomi-api
+    path: /api
+    logo:
+      name: kubernetes
+  - name: otomi-web
+    namespace: shared
+    svc: otomi-web
+    logo:
+      name: kubernetes
   # - name: dashboard
   #   svc: kubernetes-dashboard
   #   namespace: kube-system
@@ -118,13 +122,20 @@ proxies:
 
 teamConfig:
   services:
-    # - name: otomi-api
-    #   namespace: shared
-    #   port: 8080
-    #   svc: otomi-api
-    #   path: /
-    #   logo:
-    #     name: kubernetes
+    - name: otomi-web
+      namespace: shared
+      port: 8080
+      svc: otomi-api
+      path: /api
+      hide: true
+      logo:
+        name: kubernetes
+    - name: otomi-web
+      namespace: shared
+      port: 8080
+      svc: otomi-web
+      logo:
+        name: kubernetes
     - name: auth
       svc: oauth2-proxy
       namespace: istio-system

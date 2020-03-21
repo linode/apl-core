@@ -2,10 +2,9 @@
 {{- $o := index $v.charts "otomi-api" }}
 
 image:
+  registry: eu.gcr.io
+  repository: otomi-cloud/otomi-stack-api
   tag: {{ $o.image.tag }}
-
-imagePullSecrets:
-  - name: {{ $o.pullSecret.secretName }}
 
 git:
   repoUrl: {{ $o.git.repoUrl }}

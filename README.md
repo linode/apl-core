@@ -68,7 +68,7 @@ It should install and start all the services in this repo.
 After initial deployment, to enable Continuous Deployment of this repo from within Drone, for each cluster (DEV|DEMO|PRD):
 
 1. Login to Drone and activate the repo to sync with.
-2. Choose the drone pipeline file to use: `.env/(azure|google|aws)/.drone.yml` and press save.
+2. Choose the drone pipeline file to use: `.env/(azure|google|aws)/.drone.($CLUSTER).yml` and press save.
 
 Sync is now live, and every git change is applied by each cluster's Drone by calling `bin/sync.sh` from the updated code.
 

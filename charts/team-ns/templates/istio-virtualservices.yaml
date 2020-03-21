@@ -9,7 +9,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: {{ $s.name }}-{{ $domain | replace "." "-" }}
+  name: {{ $s.name }}-{{ $domain | replace "." "-" }}-{{ $s.path | default "x" | replace "/" "" }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   gateways:
@@ -20,15 +20,23 @@ spec:
   {{- end }}
   hosts:
   - {{ $domain }}
-  http: 
+  http:
+    - name: {{ $s.name }}-{{ $domain | replace "." "-" }}-{{ $s.path | default "x" | replace "/" "" }}
   {{- if hasKey $s "ksvc" }}
-    - rewrite:
+      rewrite:
         authority: {{ $s.name }}.{{ $v.domain }}
       route:
         - destination:
             host: istio-ingressgateway.istio-system.svc.cluster.local
   {{- else }}
-    - route:
+      {{- if hasKey $s "path" }}
+      match:
+        - uri:
+            prefix: "{{ $s.path }}/"
+      rewrite:
+        uri: "/"
+      {{- end }}
+      route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
   {{- end }}
