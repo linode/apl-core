@@ -1,0 +1,12 @@
+{{- $v := .Environment.Values }}
+{{- $o := index $v.charts "otomi-web" }}
+{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+
+image:
+  registry: eu.gcr.io
+  repository: otomi-cloud/otomi-stack-web
+  tag: {{ $o.image.tag }}
+
+env:
+  - name: BASE_URL
+    value: '/api'

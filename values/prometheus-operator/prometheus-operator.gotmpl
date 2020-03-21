@@ -106,11 +106,11 @@ alertmanager:
       - name: "null"
       - name: default
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}"
+          - channel: "#{{ $p.alertmanager | get "channel" "mon-otomi" }}"
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       - name: critical
         slack_configs:
-          - channel: "#mon-{{ $p.alertmanager.channelGroup }}-{{ $v.cluster.provider }}-{{ $v.cluster.name }}-crit"
+          - channel: "#{{ $p.alertmanager | get "channel" "mon-otomi" }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
 grafana:
   image:

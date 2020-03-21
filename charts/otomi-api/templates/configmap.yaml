@@ -7,5 +7,6 @@ metadata:
 data:
   GIT_LOCAL_PATH: {{ .Values.git.localPath}}
   GIT_REPO_URL: {{ .Values.git.repoUrl }}
-  GIT_EMAIL:  {{ .Values.git.email }}
+  GIT_EMAIL: {{ .Values.git.email }}
+  GIT_BRANCH: {{ .Values.git.branch | default "master" }}
   # DEBUG: 'express:*'

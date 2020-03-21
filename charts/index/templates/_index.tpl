@@ -112,6 +112,7 @@
       <div style="overflow: auto;">
         <div class="grid">
           {{- range $s := $services }}
+          {{- if not $s.hide }}
           {{- $domain := (index $s "domain" | default (printf "%s.%s" (index $s "host" | default $s.name) $v.domain)) }}
           <div class="col-3">
             <a href='https://{{ $domain }}{{ $s.path | default "/" }}' target="_blank" class="tile">
@@ -122,6 +123,7 @@
               <h4>{{ $s.name | title }}</h4>
             </a>
           </div>
+          {{- end }}
           {{- end }}
         </div>
       </div>
