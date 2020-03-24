@@ -1,0 +1,44 @@
+{{ define "teams.card" }}
+{
+  "@type": "MessageCard",
+  "@context": "http://schema.org/extensions",
+  "themeColor": "{{- if eq .Status "resolved" -}}2DC72D
+                 {{- else if eq .Status "firing" -}}
+                    {{- if eq .CommonLabels.severity "critical" -}}8C1A1A
+                    {{- else if eq .CommonLabels.severity "warning" -}}FFA500
+                    {{- else -}}808080{{- end -}}
+                 {{- else -}}808080{{- end -}}",
+  "summary": "{{- if eq .CommonAnnotations.summary "" -}}
+                  {{- if eq .CommonAnnotations.message "" -}}
+                    {{- .CommonLabels.alertname -}}
+                  {{- else -}}
+                    {{- .CommonAnnotations.message -}}
+                  {{- end -}}
+              {{- else -}}
+                  {{- .CommonAnnotations.summary -}}
+              {{- end -}}",
+  "title": "Prometheus Alert ({{ .Status }})",
+  "sections": [ {{$externalUrl := .ExternalURL}}
+  {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
+    {
+      "activityTitle": "[{{ $alert.Annotations.description }}]({{ $externalUrl }})",
+      "facts": [
+        {{- range $key, $value := $alert.Annotations }}
+        {
+          "name": "{{ $key }}",
+          "value": "{{ $value }}"
+        },
+        {{- end -}}
+        {{$c := counter}}{{ range $key, $value := $alert.Labels }}{{if call $c}},{{ end }}
+        {
+          "name": "{{ $key }}",
+          "value": "{{ $value }}"
+        }
+        {{- end }}
+      ],
+      "markdown": true
+    }
+    {{- end }}
+  ]
+}
+{{ end }}

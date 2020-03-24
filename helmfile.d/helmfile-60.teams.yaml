@@ -73,19 +73,28 @@ releases:
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $alertsHost }}
+          {{- if hasKey $team "receiver" }} # team has own receiver
           config:
             global:
-              slack_api_url: {{ $team | get "slackUrl" $po.alertmanager.slackUrl }}
+              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
           receivers:
             - name: "null"
-            - name: default
-              slack_configs:
-                - channel: "#{{ $team | get "channel" "mon-otomi" }}"
-                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{- $channel := $v.cluster.isRedkubesMonitored | ternary "mon-otomi" ($team | get "slack.channel" "mon-otomi") }}
             - name: critical
               slack_configs:
-                - channel: "#{{ $team | get "channel" "mon-otomi" }}-crit"
+                - channel: "#{{ $channel }}-crit"
                   {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            - name: default
+            {{- if eq $team.receiver "slack" }}
+              slack_configs:
+                - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
+                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{- else }}
+              webhook_configs:
+                - url: "http://prometheus-msteams.team-{{ $team.name }}:2000/alertmanager"
+                  send_resolved: true
+            {{- end }}
+          {{- end }}
         prometheus:
           prometheusSpec:
             externalUrl: https://{{ $promHost }}
@@ -128,6 +137,25 @@ releases:
             #   type: graphite
             #   access: proxy
             #   url: http://graphite:80
+  - name: prometheus-msteams-{{ $team.name }}
+    installed: {{ if eq ($team | get "receiver" "slack") "msteams" }}true{{ else }}false{{ end }}
+    namespace: team-{{ $team.name }}
+    chart: ../charts/prometheus-msteams
+    labels:
+      tag: teams
+    values:
+      - ../values/prometheus-msteams/prometheus-msteams.gotmpl
+      - ../values/default.gotmpl
+      - commonLabels:
+          team: {{ $team.name }}
+        metrics:
+          serviceMonitor:
+            additionalLabels:
+              release: prometheus-{{ $team.name }}
+        connectors:
+          - high_priority_channel: {{ $team | get "msteams.highPrio" ($v | get "charts.prometheus-operator.alertmanager.msteams.highPrio") }}
+          - low_priority_channel: {{ $team | get "msteams.lowPrio" ($v | get "charts.prometheus-operator.alertmanager.msteams.lowPrio") }}
+
   - name: grafana-dashboards-{{ $team.name }}
     installed: true
     namespace: team-{{ $team.name }}

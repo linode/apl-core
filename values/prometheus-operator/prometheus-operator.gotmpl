@@ -37,6 +37,8 @@ prometheusOperator:
     enabled: {{ if $v.cluster.isManaged }}false{{ else }}true{{ end }}
 prometheus:
   prometheusSpec:
+    externalLabels:
+      cluster: {{ printf "%s/%s/%s" $v.customerLabels.customer $v.cluster.provider $v.cluster.name | lower | quote }}
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "false"
@@ -85,11 +87,12 @@ alertmanager:
     externalUrl: https://{{ $alertsHost }}
     # logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
   config:
+    {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
     global:
-      slack_api_url: {{ $p.alertmanager.slackUrl }}
+      slack_api_url: {{ $v.cluster.isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
     route:
       receiver: default
-      group_by: [alertname] #alertname
+      group_by: [cluster, alertname] #alertname
       group_interval: {{ $p.alertmanager.groupInterval }}
       repeat_interval: {{ $p.alertmanager.repeatInterval }}
       routes:
@@ -99,19 +102,32 @@ alertmanager:
         - match:
             alertname: CPUThrottlingHigh
           receiver: "null"
+        # - match:
+        #     labels:
+        #       otomistack: 'true'
+        #   receiver: default
+        {{- if or ($hasSlack) ($v.cluster.isRedkubesMonitored) }}
         - match:
             severity: critical
           receiver: critical
+        {{- end }}
     receivers:
       - name: "null"
-      - name: default
-        slack_configs:
-          - channel: "#{{ $p.alertmanager | get "channel" "mon-otomi" }}"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+      {{- $channel := $v.cluster.isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
       - name: critical
         slack_configs:
-          - channel: "#{{ $p.alertmanager | get "channel" "mon-otomi" }}-crit"
+          - channel: "#{{ $channel }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+      - name: default
+      {{- if $hasSlack }}
+        slack_configs:
+          - channel: "#{{ $channel }}"
+            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+      {{- else }}
+        webhook_configs:
+          - url: "http://prometheus-msteams.monitoring:2000/alertmanager"
+            send_resolved: true
+      {{- end }}
 grafana:
   image:
     tag: 6.6.2
@@ -173,12 +189,14 @@ grafana:
       auto_assign_org: true
       auto_assign_org_role: Admin
 
-commonLabels: {{ toYaml $v.customerLabels | nindent 2 }}
+commonLabels: {{- toYaml $v.customerLabels | nindent 2 }}
+  otomistack: 'true'
+
 kube-state-metrics:
   podSecurityPolicy:
     enabled: false
-  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
+  customerLabels: {{- toYaml $v.customerLabels | nindent 4 }}
 prometheus-node-exporter:
   rbac:
     pspEnabled: false
-  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
+  customerLabels: {{- toYaml $v.customerLabels | nindent 4 }}

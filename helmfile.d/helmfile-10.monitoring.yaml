@@ -1,7 +1,8 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
 
 releases:
   - name: grafana-dashboards
@@ -18,6 +19,10 @@ releases:
     <<: *default
   - name: promtail
     installed: true
+    namespace: monitoring
+    <<: *default
+  - name: prometheus-msteams
+    installed: {{ if eq ($v | get "charts.prometheus-operator.alertmanager.receiver") "msteams" }}true{{ else }}false{{ end }}
     namespace: monitoring
     <<: *default
   - name: sitespeed
