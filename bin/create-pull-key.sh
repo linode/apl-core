@@ -6,10 +6,10 @@
 set -e
 # expects $CUSTOMER to be set !!
 PROJECT="otomi-cloud"
-# ROLE="objectViewer"
-ROLE="admin"
-# NAME="gcr-auth-ro-$CUSTOMER"
-NAME="gcr-auth-rw-$CUSTOMER"
+ROLE="objectViewer"
+NAME="gcr-auth-ro-$CUSTOMER"
+# ROLE="admin"
+# NAME="gcr-auth-rw-$CUSTOMER"
 FILE="$NAME.json"
 
 # create a GCP service account; format of account is email address

@@ -106,27 +106,44 @@ alertmanager:
         #     labels:
         #       otomistack: 'true'
         #   receiver: default
-        {{- if or ($hasSlack) ($v.cluster.isRedkubesMonitored) }}
+        # redkubes monitoring: only alerts that are for teams AND non-critical should go to the configured receiver
+        # > so NO config here for admins
         - match:
             severity: critical
           receiver: critical
-        {{- end }}
+          continue: true
+        - match:
+            severity: critical
+          receiver: critical-redkubes
     receivers:
       - name: "null"
+      {{- if or ($v.cluster.isRedkubesMonitored) $hasSlack }}
       {{- $channel := $v.cluster.isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
+      - name: default
+        slack_configs:
+          - channel: "#{{ $channel }}"
+            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       - name: critical
         slack_configs:
           - channel: "#{{ $channel }}-crit"
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
-      - name: default
-      {{- if $hasSlack }}
-        slack_configs:
-          - channel: "#{{ $channel }}"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       {{- else }}
+      - name: default
         webhook_configs:
-          - url: "http://prometheus-msteams.monitoring:2000/alertmanager"
+          - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/low_priority_channel"
             send_resolved: true
+      - name: critical
+        webhook_configs:
+          - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
+            send_resolved: true
+      {{- end }}
+      - name: critical-redkubes
+      {{- if not $v.cluster.isRedkubesMonitored }}
+        # sending criticals also to redkubes to be aware of customer issues
+        slack_configs:
+          - channel: "#mon-otomi-crit"
+            api_url: {{ $v.redkubesSlackUrl }}
+            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       {{- end }}
 grafana:
   image:
