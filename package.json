@@ -1,0 +1,61 @@
+{
+  "name": "otomi-stack",
+  "version": "1.0.0",
+  "description": "Opinionated Stack of Kubernetes apps and configurations",
+  "scripts": {
+    "lint": "tests/lint.sh",
+    "cz": "git-cz",
+    "cz:retry": "git-cz --retry",
+    "format": "prettier --check \"**/*.{js,json,md,ts,yml,yaml}\"",
+    "format:fix": "prettier --write \"**/*.{js,json,md,ts,yml,yaml}\"",
+    "husky:lint-staged": "lint-staged",
+    "husky:pre-commit": "lint-staged"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "npm run husky:pre-commit",
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "postmerge": "./bin/post-merge-hook.sh"
+    }
+  },
+  "lint-staged": {
+    "*.{jts}": [
+      "tslint --project ./tsconfig.tslint.json",
+      "git add"
+    ],
+    "*.{js}": [
+      "eslint --project ./eslintrc.yml",
+      "git add"
+    ],
+    "*.{js,json,md,ts,yml,yaml}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redkubes/otomi-stack.git"
+  },
+  "author": "RedKubes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/redkubes/otomi-stack/issues"
+  },
+  "homepage": "https://github.com/redkubes/otomi-stack#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "commitizen": "^4.0.3",
+    "cz-conventional-changelog": "^3.1.0",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.9",
+    "prettier": "^2.0.2"
+  }
+}
