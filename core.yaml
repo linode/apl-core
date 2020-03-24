@@ -1,4 +1,5 @@
 toolsVersion: 1.1.4
+redkubesSlackUrl: https://hooks.slack.com/services/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
 
 k8s:
   namespaces:
@@ -31,12 +32,14 @@ services:
   - name: otomi-web
     namespace: shared
     svc: otomi-api
+    hide: true
     path: /api
     logo:
       name: kubernetes
   - name: otomi-web
     namespace: shared
     svc: otomi-web
+    hide: true
     logo:
       name: kubernetes
   # - name: dashboard
@@ -134,6 +137,7 @@ teamConfig:
       namespace: shared
       port: 8080
       svc: otomi-web
+      hide: true
       logo:
         name: kubernetes
     - name: auth

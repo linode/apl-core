@@ -1,0 +1,22 @@
+{{- $v := .Environment.Values }}
+{{- $ms := $v | get "charts.prometheus-operator.alertmanager.msteams" }}
+replicaCount: 1
+image:
+  repository: quay.io/prometheusmsteams/prometheus-msteams
+  tag: v1.3.3
+connectors:
+- high_priority_channel: {{ $ms.highPrio }}
+- low_priority_channel: {{ $ms.lowPrio }}
+
+# container:
+#   additionalArgs:
+#     - -debug
+
+# customCardTemplate: ''
+# Enable metrics for prometheus operator
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus # change this accordingly
+    scrapeInterval: 30s

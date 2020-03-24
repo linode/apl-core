@@ -1,0 +1,114 @@
+## Installing the Chart
+
+<!-- vim-markdown-toc GFM -->
+
+* [Download the chart](#download-the-chart)
+* [Prepare the Deployment configuration](#prepare-the-deployment-configuration)
+* [Deploy to Kubernetes cluster](#deploy-to-kubernetes-cluster)
+* [When using with Prometheus Operator](#when-using-with-prometheus-operator)
+* [Customise messages to MS Teams](#customise-messages-to-ms-teams)
+* [Helm Configuration](#helm-configuration)
+
+<!-- vim-markdown-toc -->
+
+
+### Download the chart
+
+Clone this repository.
+
+```bash
+helm repo add prometheus-msteams https://prometheus-msteams.github.io/helm-chart/
+```
+
+### Prepare the Deployment configuration
+
+Create a helm values file to configure your Microsoft Teams channel connectors and customise the Kubernetes deployment.
+
+```yaml
+# config.yaml
+---
+replicaCount: 1
+image:
+  repository: quay.io/prometheusmsteams/prometheus-msteams
+  tag: v1.3.3
+connectors:
+- high_priority_channel: https://outlook.office.com/webhook/xxxx/xxxx 
+- low_priority_channel: https://outlook.office.com/webhook/xxxx/xxxx
+
+# extraEnvs is useful for adding extra environment variables such as proxy settings
+extraEnvs:
+  HTTP_PROXY: http://corporateproxy:8080
+  HTTPS_PROXY: http://corporateproxy:8080
+container:
+  additionalArgs:
+    - -debug
+
+# Enable metrics for prometheus operator
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus # change this accordingly
+    scrapeInterval: 30s
+```
+
+See [Helm Configuration](#helm-configuration) and [App Configuration](https://github.com/prometheus-msteams/prometheus-msteams#configuration) for reference.
+
+
+### Deploy to Kubernetes cluster
+
+```bash
+helm upgrade --install prometheus-msteams \
+  --namespace default -f config.yaml
+  charts/prometheus-msteams
+```
+
+### When using with Prometheus Operator
+
+Please see [Prometheus Operator alerting docs](https://github.com/coreos/prometheus-operator/blob/master/Documentation/user-guides/alerting.md).
+
+### Customise messages to MS Teams
+
+This application uses a [Default Teams Message Card Template](./prometheus-msteams/card.tmpl) to convert incoming Prometheus alerts to teams message cards. 
+This template can be customised by specifying the value of `customCardTemplate` parameter. 
+Simply create a new file that you want to use as your custom template (for example, `custom-card.tmpl`).
+You can use the `--set-file` flag to set the value from this file:
+
+```bash
+helm install --name prometheus-msteams \
+  ./prometheus-msteams --namespace monitoring \
+  --set-file customCardTemplate=custom-card.tmpl \
+  -f config.yaml
+```
+
+Otherwise you can also set the value by specifying the template data directly via values file.
+
+
+### Helm Configuration
+
+| Parameter                                  | Description                                                                                                                                                   | Default                                         |
+| ---                                        | ---                                                                                                                                                           | ---                                             |
+| `image.repository`                         | Image repository                                                                                                                                              | `quay.io/prometheusmsteams/prometheus-msteams`                       |
+| `image.tag`                                | Image tag                                                                                                                                                     | `v1.3.3`                                        |
+| `image.pullPolicy`                         | Image pull policy                                                                                                                                             | `Always`                                        |
+| `extraEnvs`                                | Extra environment variables                                                                                                                                   | `{}`                                            |
+| `connectors`                               | Add your own Microsoft Teams connectors.                                                                                                                      | `{}`                                            |
+| `connectors_with_custom_templates`         | Add your own Microsoft Teams connectors with custom template file.                                                                                            | `{}`                                            |
+| `service.port`                             | Service port                                                                                                                                                  | `2000`                                          |
+| `service.type`                             | Service type                                                                                                                                                  | `ClusterIP`                                     |
+| `container.port`                           | Container port                                                                                                                                                | `2000`                                          |
+| `container.additionalArgs`                 | additional prometheus-msteams flags to use                                                                                                                    | `{}`                                            |
+| `resources`                                | Pod resources                                                                                                                                                 | See [default](./prometheus-msteams/values.yaml) |
+| `nodeSelector`                             | Pod nodeSelector                                                                                                                                              | `{}`                                            |
+| `affinity`                                 | Pod affinity                                                                                                                                                  | `{}`                                            |
+| `tolerations`                              | Pod tolerations                                                                                                                                               | `{}`                                            |
+| `podAnnotations`                           | Pod annotations                                                                                                                                               | `{}`                                            |
+| `customCardTemplate`                       | Custom message card template for MS teams                                                                                                                     | `""`                                            |
+| `metrics.serviceMonitor.enabled`           | Set this to `true` to create ServiceMonitor for Prometheus operator                                                                                           | `false`                                         |
+| `metrics.serviceMonitor.additionalLabels`  | Additional labels that can be used so ServiceMonitor will be discovered by Prometheus                                                                         | `{}`                                            |
+| `metrics.serviceMonitor.honorLabels`       | honorLabels chooses the metric's labels on collisions with target labels.                                                                                     | `false`                                         |
+| `metrics.serviceMonitor.namespace`         | namespace where servicemonitor resource should be created                                                                                                     | `release namespace`                             |
+| `metrics.serviceMonitor.namespaceSelector` | [namespaceSelector](https://github.com/coreos/prometheus-operator/blob/v0.34.0/Documentation/api.md#namespaceselector) to configure what namespaces to scrape | `release namespace`                             |
+| `metrics.serviceMonitor.scrapeInterval`    | interval between Prometheus scraping                                                                                                                          | `30s`                                           |
+
+

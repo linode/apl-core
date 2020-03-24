@@ -6,15 +6,19 @@
 set -e
 # expects $CUSTOMER to be set !!
 PROJECT="otomi-cloud"
-FILE="gcr-auth-ro-$CUSTOMER.json"
+# ROLE="objectViewer"
+ROLE="admin"
+# NAME="gcr-auth-ro-$CUSTOMER"
+NAME="gcr-auth-rw-$CUSTOMER"
+FILE="$NAME.json"
 
 # create a GCP service account; format of account is email address
-SA_EMAIL=$(gcloud iam service-accounts --format='value(email)' create gcr-auth-ro-$CUSTOMER)
+SA_EMAIL=$(gcloud iam service-accounts --format='value(email)' create $NAME)
 # create the json key file and associate it with the service account
 gcloud iam service-accounts keys create $FILE --iam-account=$SA_EMAIL
 # get the project id
 # add the IAM policy binding for the defined project and service account
-gcloud projects add-iam-policy-binding $PROJECT --member serviceAccount:$SA_EMAIL --role roles/storage.objectViewer
+gcloud projects add-iam-policy-binding $PROJECT --member serviceAccount:$SA_EMAIL --role roles/storage.$ROLE
 # apply to the cluster:
 secret=$(kubectl -n drone-pipelines create secret docker-registry gcr-json-key --dry-run \
   --docker-server=eu.gcr.io \

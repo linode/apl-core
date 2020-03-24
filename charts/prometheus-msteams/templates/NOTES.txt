@@ -1,0 +1,6 @@
+** Please be patient while the chart is being deployed **
+
+To monitor the deployment, execute the following command:
+
+	kubectl get pods -l app={{ template "app.name" . }}  --namespace {{ .Release.Namespace }} -w
+
