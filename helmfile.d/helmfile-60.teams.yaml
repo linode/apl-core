@@ -73,28 +73,43 @@ releases:
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $alertsHost }}
-          {{- if hasKey $team "receiver" }} # team has own receiver
           config:
+            {{- $receiver := $team | get "receiver" ($po.alertmanager | get "receiver" "slack") }}
+            {{- if eq $receiver "slack" }}
             global:
-              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
-          receivers:
-            - name: "null"
-            {{- $channel := $v.cluster.isRedkubesMonitored | ternary "mon-otomi" ($team | get "slack.channel" "mon-otomi") }}
-            - name: critical
-              slack_configs:
-                - channel: "#{{ $channel }}-crit"
-                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
-            - name: default
-            {{- if eq $team.receiver "slack" }}
-              slack_configs:
-                - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
-                  {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 18 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
-            {{- else }}
-              webhook_configs:
-                - url: "http://prometheus-msteams.team-{{ $team.name }}:2000/alertmanager"
-                  send_resolved: true
+              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url") $v.redkubesSlackUrl }}
             {{- end }}
-          {{- end }}
+            receivers:
+              - name: "null"
+              {{- if eq $receiver "slack" }}
+              {{- $channel := $team | get "slack.channel" "mon-otomi" }}
+              - name: default
+                slack_configs:
+                  - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+              - name: critical
+                slack_configs:
+                  - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}-crit"
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+              {{- else }}
+              {{ $suffix := (hasKey $team "receiver") | ternary "" ".monitoring.svc.cluster.local" }}
+              - name: default
+                webhook_configs:
+                  - url: "http://prometheus-msteams{{ $suffix }}:2000/low_priority_channel"
+                    send_resolved: true
+              - name: critical
+                webhook_configs:
+                  - url: "http://prometheus-msteams{{ $suffix }}:2000/high_priority_channel"
+                    send_resolved: true
+              {{- end }}
+              - name: critical-redkubes
+              {{- if $v.cluster.isRedkubesMonitored }}
+                # sending team criticals also to redkubes to be aware of team issues
+                slack_configs:
+                  - channel: "#mon-otomi-crit"
+                    api_url: {{ $v.redkubesSlackUrl }}
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 20 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+              {{- end }}
         prometheus:
           prometheusSpec:
             externalUrl: https://{{ $promHost }}
