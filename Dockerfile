@@ -6,4 +6,6 @@ WORKDIR $APP_HOME
 
 COPY . .
 
+RUN tests/lint.sh
+
 CMD ["bin/deploy.sh"]
