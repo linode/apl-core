@@ -103,7 +103,7 @@ releases:
                     send_resolved: true
               {{- end }}
               - name: critical-redkubes
-              {{- if $v.cluster.isRedkubesMonitored }}
+              {{- if and $v.cluster.isRedkubesMonitored (hasKey $team "receiver") }}
                 # sending team criticals also to redkubes to be aware of team issues
                 slack_configs:
                   - channel: "#mon-otomi-crit"

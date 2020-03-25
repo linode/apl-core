@@ -92,7 +92,7 @@ alertmanager:
       slack_api_url: {{ $v.cluster.isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
     route:
       receiver: default
-      group_by: [cluster, alertname] #alertname
+      group_by: [alertname]
       group_interval: {{ $p.alertmanager.groupInterval }}
       repeat_interval: {{ $p.alertmanager.repeatInterval }}
       routes:
