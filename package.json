@@ -1,6 +1,6 @@
 {
   "name": "otomi-stack",
-  "version": "1.0.0",
+  "version": "0.8.35",
   "description": "Opinionated Stack of Kubernetes apps and configurations",
   "scripts": {
     "lint": "tests/lint.sh",
@@ -19,7 +19,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm run husky:pre-commit",
+      "pre-commit": "npm run bump && npm run husky:pre-commit",
       "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
       "postmerge": "./bin/post-merge-hook.sh"
     }
@@ -56,6 +56,7 @@
     "cz-conventional-changelog": "^3.1.0",
     "husky": "^4.2.3",
     "lint-staged": "^10.0.9",
-    "prettier": "^2.0.2"
+    "prettier": "^2.0.2",
+    "standard-version": "^7.1.0"
   }
 }
