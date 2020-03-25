@@ -1,6 +1,6 @@
 {
   "name": "otomi-stack",
-  "version": "0.8.35",
+  "version": "0.8.36",
   "description": "Opinionated Stack of Kubernetes apps and configurations",
   "scripts": {
     "lint": "tests/lint.sh",
@@ -9,7 +9,8 @@
     "format": "prettier --check \"**/*.{js,json,md,ts,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{js,json,md,ts,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
-    "husky:pre-commit": "lint-staged"
+    "husky:pre-commit": "lint-staged",
+    "release": "standard-version"
   },
   "config": {
     "commitizen": {
