@@ -74,10 +74,10 @@ releases:
           alertmanagerSpec:
             externalUrl: https://{{ $alertsHost }}
           config:
-            {{- $receiver := $team | get "receiver" ($po.alertmanager | get "receiver" "slack") }}
+            {{- $receiver := ($team | get "receiver" ($po.alertmanager | get "receiver" "slack")) }}
             {{- if eq $receiver "slack" }}
             global:
-              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url") $v.redkubesSlackUrl }}
+              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
             {{- end }}
             receivers:
               - name: "null"
