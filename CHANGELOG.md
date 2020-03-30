@@ -1,24 +1,26 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ### [0.9.1](https://github.com/redkubes/otomi-stack/compare/v0.9.0...v0.9.1) (2020-03-30)
 
-
 ### Bug Fixes
 
-* added secrets props to azure monitor datasource ([5519a27](https://github.com/redkubes/otomi-stack/commit/5519a271cb332b247a8b6d0d4c8bf7c6dd9bd0e8))
-* missing react-redux after refactor, removed versions.ini ([856ed8c](https://github.com/redkubes/otomi-stack/commit/856ed8c7c8bba46143d4d2e4c575793b62e13a49))
-
+- added secrets props to azure monitor datasource
+  ([5519a27](https://github.com/redkubes/otomi-stack/commit/5519a271cb332b247a8b6d0d4c8bf7c6dd9bd0e8))
+- missing react-redux after refactor, removed versions.ini
+  ([856ed8c](https://github.com/redkubes/otomi-stack/commit/856ed8c7c8bba46143d4d2e4c575793b62e13a49))
 
 ### Build System
 
-* added settings for prettier auto save [ci-skip] ([c6f357b](https://github.com/redkubes/otomi-stack/commit/c6f357b2d84938fdf7c9df2a6167b24740110d46))
-
+- added settings for prettier auto save
+  [ci-skip](<[c6f357b](https://github.com/redkubes/otomi-stack/commit/c6f357b2d84938fdf7c9df2a6167b24740110d46)>)
 
 ### Others
 
-* **release:** 0.9.1 ([ba2827d](https://github.com/redkubes/otomi-stack/commit/ba2827d988ab697a5c5098e1794798c4921b5ec5))
+- **release:** 0.9.1
+  ([ba2827d](https://github.com/redkubes/otomi-stack/commit/ba2827d988ab697a5c5098e1794798c4921b5ec5))
 
 ## [0.9.0](https://github.com/redkubes/otomi-stack/compare/v0.8.36...v0.9.0) (2020-03-30)
 
