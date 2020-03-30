@@ -50,12 +50,12 @@
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
+    "@hkdobrev/run-if-changed": "^0.3.1",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "^3.1.0",
     "husky": "^4.2.3",
     "lint-staged": "^10.0.9",
     "prettier": "^2.0.2",
-    "run-if-changed": "0.0.9",
     "standard-version": "^7.1.0"
   }
 }
