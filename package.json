@@ -6,8 +6,8 @@
     "lint": "tests/lint.sh",
     "cz": "git-cz",
     "cz:retry": "git-cz --retry",
-    "format": "prettier --check \"**/*.{js,json,md,ts,yml,yaml}\"",
-    "format:fix": "prettier --write \"**/*.{js,json,md,ts,yml,yaml}\"",
+    "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
+    "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-commit": "lint-staged",
     "release": "standard-version"
@@ -26,15 +26,7 @@
     }
   },
   "lint-staged": {
-    "*.{ts}": [
-      "tslint --project ./tsconfig.tslint.json",
-      "git add"
-    ],
-    "*.{js}": [
-      "eslint --project ./eslintrc.yml",
-      "git add"
-    ],
-    "*.{js,json,md,ts,yml,yaml}": [
+    "*.{json,md,yml,yaml}": [
       "prettier --write",
       "git add"
     ]
