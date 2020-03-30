@@ -10,7 +10,8 @@
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-commit": "lint-staged",
-    "release": "standard-version"
+    "release": "standard-version --skip.commit --skip.tag",
+    "release:ok": "standard-version --sign --commit-all --skip.bump --skip.changelog"
   },
   "config": {
     "commitizen": {
