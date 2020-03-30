@@ -6,7 +6,7 @@ bases:
 
 releases:
   - name: maintenance-ingress-azure
-    installed: {{ if eq $v.cluster.provider "azure" }}true{{ else }}false{{ end }}
+    installed: {{ eq $v.cluster.provider "azure" }}
     <<: *maintenance
     values:
       - namespace: ingress

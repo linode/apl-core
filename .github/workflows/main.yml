@@ -1,22 +1,28 @@
 name: Build and publish Docker
 on: [push]
+env:
+  REG: eu.gcr.io
+  REPO: otomi-cloud/otomi-stack
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # skip also when release chore gets pushed to master, as we expect it to be built upon the tag release
+    if: "!contains(github.event.head_commit.message, 'ci skip') && !(github.ref == 'master' &&
+      contains(github.event.head_commit.message, 'chore(release)'))"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Docker login
-        run: docker login -u _json_key -p '${{ secrets.DOCKER_PASSWORD }}' eu.gcr.io
+        run: docker login -u _json_key -p '${{ secrets.DOCKER_PASSWORD }}' $REG
       - name: Pull from registry as cache
-        run: 'docker pull eu.gcr.io/otomi-cloud/otomi-stack:latest | true'
+        run: 'docker pull $REG/$REPO:latest || true'
       - name: CI tests and image build
         run: 'docker build .'
       - name: Publish latest
         uses: docker/build-push-action@v1
         with:
-          registry: eu.gcr.io
-          repository: otomi-cloud/otomi-stack
+          registry: ${{ env.REG }}
+          repository: ${{ env.REPO }}
           username: _json_key
           password: ${{ secrets.DOCKER_PASSWORD }}
           tag_with_ref: true

@@ -5,6 +5,9 @@
 {{- $provider := index $o $o.provider }}
 image:
   tag: "v4.1.0"
+  # repository: eu.gcr.io/otomi-cloud/oauth2_proxy
+  # tag: latest
+  # pullPolicy: Always
 
 config:
   # clientID: oidc-auth-client
@@ -39,4 +42,7 @@ extraArgs:
   ###
   github-org: {{ $o | getOrNil "github.org" }}
   azure-tenant: {{ $o.azure.tenantID }}
+  {{- if eq $o.provider "azure-oidc" }}
+  azure-permitted-groups: {{ $o | getOrNil "azure-oidc.permittedGroups" }}
+  {{- end }}
 

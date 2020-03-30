@@ -16,7 +16,7 @@ releases:
   #     tag: cert-manager
   #   <<: *skeleton # just install the stuff in k8s/apps/cert-manager
   - name: knative-init
-    installed: {{ if ge $v.cluster.k8sVersion 1.15 }}true{{ else }}false{{ end }}
+    installed: {{ ge $v.cluster.k8sVersion 1.15 }}
     namespace: default
     labels:
       init: true

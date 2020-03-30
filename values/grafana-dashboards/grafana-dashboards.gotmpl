@@ -1,0 +1,10 @@
+{{- $v := .Environment.Values }}
+{{- $stack := $v | get "stack" dict }}
+{{- $cluster := $v.cluster }}
+folders:
+  - k8s
+  - istio
+  {{- if and (eq $cluster.provider "azure") (hasKey $cluster "azure.monitor") }}
+  - azure{{ end }}
+  {{- if $stack | get "enabled.sitespeed" false }}
+  - sitespeed{{ end }}

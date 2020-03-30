@@ -42,7 +42,7 @@ config:
       s3: s3://{{ $v.cluster.region }}/logs.{{ $v.cluster.domain }}
     {{- end }}
   chunk_store_config:
-    max_look_back_period: 0
+    max_look_back_period: {{ $l.retention.period }}
   table_manager:
     retention_deletes_enabled: true
     retention_period: {{ $l.retention.period }}

@@ -33,6 +33,10 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ $v.certStage }}
+  usages:
+    - digital signature
+    - key encipherment
+    - ocsp signing
 ---
 {{- end }}
 {{- end }}
