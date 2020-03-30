@@ -1,4 +1,5 @@
 {{- $v := .Environment.Values }}
+{{- $stack := $v | get "stack" dict }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{ $promHost := printf "prometheus.%s" $domain }}
@@ -102,6 +103,11 @@ alertmanager:
         - match:
             alertname: CPUThrottlingHigh
           receiver: "null"
+        {{- if eq $v.cluster.provider "azure" }}
+        - match:
+            alertname: KubeAPILatencyHigh
+          receiver: "null"
+        {{- end }}
         # - match:
         #     labels:
         #       otomistack: 'true'
@@ -147,7 +153,7 @@ alertmanager:
       {{- end }}
 grafana:
   image:
-    tag: 6.6.2
+    tag: 6.7.1
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -173,11 +179,33 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
-    # - name: Graphite
-    #   editable: false
-    #   type: graphite
-    #   access: proxy
-    #   url: http://graphite:80
+    {{- with $v.azure.monitor }}
+    - name: Azure Monitor
+      type: grafana-azure-monitor-datasource
+      # orgId: 1
+      # typeLogoUrl: public/plugins/grafana-azure-monitor-datasource/img/logo.jpg
+      access: proxy
+      # url: /api/datasources/proxy/2
+      # isDefault: true
+      jsonData:
+        cloudName: azuremonitor
+        subscriptionId: {{ $v.azure.subscriptionId }}
+        tenantId: {{ $v.azure.tenantId }}
+        logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
+        logAnalyticsClientId: {{ .logAnalyticsClientId }}
+        logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
+        appInsightsAppId: {{ . | getOrNil "appInsightsAppId" }}
+        azureLogAnalyticsSameAs: true
+        keepCookies: []
+      editable: false
+    {{- end }}
+    {{- if $stack | get "enabled.sitespeed" false }}
+    - name: Graphite
+      editable: false
+      type: graphite
+      access: proxy
+      url: http://graphite:80
+    {{- end }}
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
   adminPassword: {{ $p.grafana.adminPassword }}
   service:

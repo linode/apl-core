@@ -3,6 +3,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
+{{- $stack := $v | get "stack" dict }}
 
 releases:
   - name: grafana-dashboards
@@ -22,11 +23,11 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ if eq ($v | get "charts.prometheus-operator.alertmanager.receiver") "msteams" }}true{{ else }}false{{ end }}
+    installed: {{ eq ($v | get "charts.prometheus-operator.alertmanager.receiver") "msteams" }}
     namespace: monitoring
     <<: *default
   - name: sitespeed
-    installed: false
+    installed: {{ $stack | get "sitespeed" false }}
     namespace: monitoring
     <<: *default
   - name: weave-scope

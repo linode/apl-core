@@ -1,7 +1,8 @@
 folders:
   - k8s
   - istio
-  # - sitespeed
+  - azure
+  - sitespeed
 
 sidecar:
   dashboards:
