@@ -1,5 +1,7 @@
 color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
-title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Notification for cluster "__CUSTOMER/__CLOUD/__CLUSTER"'
+title:
+  '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Notification for cluster
+  "__CUSTOMER/__CLOUD/__CLUSTER"'
 pretext: '{{ .CommonAnnotations.summary }}'
 text: |-
   {{ range .Alerts }}
