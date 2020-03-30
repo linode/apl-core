@@ -1,0 +1,4 @@
+.history/
+charts/
+!charts/*.{yaml|md}
+helmfile*/

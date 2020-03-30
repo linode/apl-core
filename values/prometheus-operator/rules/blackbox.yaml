@@ -7,5 +7,5 @@ groups:
         labels:
           severity: critical
         annotations:
-          description: "Could not reach {{ $labels.instance }} during last minute"
-          summary: "{{ $labels.instance }} is down"
+          description: 'Could not reach {{ $labels.instance }} during last minute'
+          summary: '{{ $labels.instance }} is down'

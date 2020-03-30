@@ -9,6 +9,5 @@
     "aliases": "shellscript",
     "helmfile.yaml": "helm",
     "helmfile-*.yaml": "helm"
-  },
-  "yaml.format.singleQuote": true
+  }
 }
