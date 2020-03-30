@@ -21,8 +21,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "prepare-commit-msg": "exec < /dev/tty && npx run git cz --hook || true",
-      "pre-commit": "npm run bump && npm run husky:pre-commit",
+      "pre-commit": "npm run husky:pre-commit",
       "post-commit": "run-if-changed",
       "post-checkout": "run-if-changed",
       "post-merge": "run-if-changed",
