@@ -21,9 +21,14 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
       "pre-commit": "npm run bump && npm run husky:pre-commit",
-      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
-      "postmerge": "./bin/post-merge-hook.sh"
+      "post-commit": "run-if-changed",
+      "post-checkout": "run-if-changed",
+      "post-merge": "run-if-changed",
+      "post-rewrite": "run-if-changed"
     }
+  },
+  "run-if-changed": {
+    "package-lock.json": "npm install --prefer-offline --no-audit"
   },
   "lint-staged": {
     "*.{json,md,yml,yaml}": [
@@ -50,6 +55,7 @@
     "husky": "^4.2.3",
     "lint-staged": "^10.0.9",
     "prettier": "^2.0.2",
+    "run-if-changed": "0.0.9",
     "standard-version": "^7.1.0"
   }
 }

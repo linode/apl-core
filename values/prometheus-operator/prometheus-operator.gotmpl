@@ -182,22 +182,23 @@ grafana:
     {{- with $v.azure.monitor }}
     - name: Azure Monitor
       type: grafana-azure-monitor-datasource
-      # orgId: 1
-      # typeLogoUrl: public/plugins/grafana-azure-monitor-datasource/img/logo.jpg
       access: proxy
-      # url: /api/datasources/proxy/2
-      # isDefault: true
       jsonData:
         cloudName: azuremonitor
         subscriptionId: {{ $v.azure.subscriptionId }}
         tenantId: {{ $v.azure.tenantId }}
+        clientId: {{ .clientId }}
         logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
         logAnalyticsClientId: {{ .logAnalyticsClientId }}
         logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
         appInsightsAppId: {{ . | getOrNil "appInsightsAppId" }}
         azureLogAnalyticsSameAs: true
         keepCookies: []
-      editable: false
+      secureJsonData:
+        clientSecret: {{ .clientSecret }}
+        logAnalyticsClientSecret: {{ .logAnalyticsClientSecret }}
+      version: 4
+      editable: true
     {{- end }}
     {{- if $stack | get "enabled.sitespeed" false }}
     - name: Graphite
