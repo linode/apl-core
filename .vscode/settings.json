@@ -1,4 +1,7 @@
 {
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
   "files.associations": {
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
@@ -7,5 +10,5 @@
     "helmfile.yaml": "helm",
     "helmfile-*.yaml": "helm"
   },
-  "cSpell.enabled": false
+  "yaml.format.singleQuote": true
 }
