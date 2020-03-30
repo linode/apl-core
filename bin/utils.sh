@@ -1,5 +1,10 @@
 printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
-source <(grep stack versions.ini)
+PACKAGE_VERSION=$(cat package.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g' \
+  | tr -d '[[:space:]]')
 
 . bin/env.sh
 noEnvError=$?
@@ -7,7 +12,7 @@ noEnvError=$?
 . bin/aliases
 
 if [ $noEnvError -eq 0 ]; then
-  img=eu.gcr.io/otomi-cloud/otomi-stack:$stack
+  img=eu.gcr.io/otomi-cloud/otomi-stack:v$PACKAGE_VERSION
   d --version &>/dev/null
   hasDocker=$?
   d ps &>/dev/null

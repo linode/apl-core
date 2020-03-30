@@ -1,6 +1,6 @@
 {
   "name": "otomi-stack",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Opinionated Stack of Kubernetes apps and configurations",
   "scripts": {
     "lint": "tests/lint.sh",
