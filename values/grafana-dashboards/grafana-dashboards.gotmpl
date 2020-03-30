@@ -2,9 +2,9 @@
 {{- $stack := $v | get "stack" dict }}
 {{- $cluster := $v.cluster }}
 folders:
-  - k8s
-  - istio
-  {{- if and (eq $cluster.provider "azure") (hasKey $cluster "azure.monitor") }}
+  # - k8s
+  # - istio
+  {{- if and (eq $cluster.provider "azure") (hasKey $v.azure "monitor") }}
   - azure{{ end }}
   {{- if $stack | get "enabled.sitespeed" false }}
   - sitespeed{{ end }}

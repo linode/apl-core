@@ -171,12 +171,16 @@ releases:
                 cloudName: azuremonitor
                 subscriptionId: {{ $v.azure.subscriptionId }}
                 tenantId: {{ $v.azure.tenantId }}
+                clientId: {{ .clientId }}
                 logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
-                logAnalyticsClientId: {{ .logAnalyticsClientId }}
+                logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
                 logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
                 appInsightsAppId: {{ . | getOrNil "appInsightsAppId" }}
                 azureLogAnalyticsSameAs: true
-                keepCookies: []
+              secureJsonData:
+                clientSecret: {{ .clientSecret }}
+                logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" .clientSecret }}
+                appInsightsAppSecret: {{ . | get "appInsightsAppSecret" .clientSecret }}
               editable: false
             {{- end }}
             {{- end }}

@@ -7,13 +7,13 @@ bases:
 
 releases:
   - name: grafana-dashboards
-    installed: false
-    namespace: monitoring
-    <<: *default
-  - name: loki
     installed: true
     namespace: monitoring
     <<: *default
+  # - name: loki
+  #   installed: true
+  #   namespace: monitoring
+  #   <<: *default
   - name: prom-blackbox-exporter
     installed: true 
     namespace: monitoring
