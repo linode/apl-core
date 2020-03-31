@@ -162,11 +162,7 @@ releases:
             {{- with $monitor }}
             - name: Azure Monitor
               type: grafana-azure-monitor-datasource
-              # orgId: 1
-              # typeLogoUrl: public/plugins/grafana-azure-monitor-datasource/img/logo.jpg
               access: proxy
-              # url: /api/datasources/proxy/2
-              # isDefault: true
               jsonData:
                 cloudName: azuremonitor
                 subscriptionId: {{ $v.azure.subscriptionId }}
@@ -175,12 +171,14 @@ releases:
                 logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
                 logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
                 logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
-                appInsightsAppId: {{ . | getOrNil "appInsightsAppId" }}
+                appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
                 azureLogAnalyticsSameAs: true
+                keepCookies: []
               secureJsonData:
                 clientSecret: {{ .clientSecret }}
                 logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" .clientSecret }}
-                appInsightsAppSecret: {{ . | get "appInsightsAppSecret" .clientSecret }}
+                appInsightsAppSecret : {{ . | get "appInsightsAppSecret" .clientSecret }}
+              version: 4
               editable: false
             {{- end }}
             {{- end }}
