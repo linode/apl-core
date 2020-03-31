@@ -10,10 +10,10 @@ releases:
     installed: true
     namespace: monitoring
     <<: *default
-  # - name: loki
-  #   installed: true
-  #   namespace: monitoring
-  #   <<: *default
+  - name: loki
+    installed: true
+    namespace: monitoring
+    <<: *default
   - name: prom-blackbox-exporter
     installed: true 
     namespace: monitoring
