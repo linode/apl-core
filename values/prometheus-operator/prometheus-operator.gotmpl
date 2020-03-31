@@ -189,16 +189,17 @@ grafana:
         tenantId: {{ $v.azure.tenantId }}
         clientId: {{ .clientId }}
         logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
-        logAnalyticsClientId: {{ .logAnalyticsClientId }}
+        logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
         logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
-        appInsightsAppId: {{ . | getOrNil "appInsightsAppId" }}
+        appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
         azureLogAnalyticsSameAs: true
         keepCookies: []
       secureJsonData:
         clientSecret: {{ .clientSecret }}
-        logAnalyticsClientSecret: {{ .logAnalyticsClientSecret }}
+        logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" .clientSecret }}
+        appInsightsAppSecret : {{ . | get "appInsightsAppSecret" .clientSecret }}
       version: 4
-      editable: true
+      editable: false
     {{- end }}
     {{- if $stack | get "enabled.sitespeed" false }}
     - name: Graphite

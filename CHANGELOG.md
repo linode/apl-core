@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.2](https://github.com/redkubes/otomi-stack/compare/v0.9.1...v0.9.2) (2020-03-31)
+
+### Bug Fixes
+
+- corrected run-if-changed package
+  [ci skip](<[eb94611](https://github.com/redkubes/otomi-stack/commit/eb94611c1a9265f7cebd03fc19b683095249cca4)>)
+- husky hook removed to avoid circular dep
+  [ci skip](<[a4e6624](https://github.com/redkubes/otomi-stack/commit/a4e6624ffe17a866fdadfa3466ea941d9e31f09a)>)
+- lint-staged now without git add
+  [ci skip](<[4afc276](https://github.com/redkubes/otomi-stack/commit/4afc2769d5a5530c746aa3e5e18e7827c6876bb1)>)
+- reenabled loki ([5a8d744](https://github.com/redkubes/otomi-stack/commit/5a8d744f0852b155cc28bb1715cd758d0a976296))
+- trying cz hook ([1fbca66](https://github.com/redkubes/otomi-stack/commit/1fbca66e4113117ebfd851af8b5917134042fa70))
+
+### Build System
+
+- adding hook to force cz
+  [ci skip](<[815e6ef](https://github.com/redkubes/otomi-stack/commit/815e6ef36e7447dae47077f154f19eb1895e64bc)>)
+- automatic prettier formatting
+  ([35db7c2](https://github.com/redkubes/otomi-stack/commit/35db7c232e14816bd8dd0b215936a882b79a60ba))
+- split up npm run release to have :ok step
+  [ci skip](<[842b2cf](https://github.com/redkubes/otomi-stack/commit/842b2cf7c4236cf2a7a73acfb1d27249ef873949)>)
+
+### Others
+
+- removed suggested nginx extension
+  [ci skip](<[9cdd56a](https://github.com/redkubes/otomi-stack/commit/9cdd56a67fe0c73c48eb370e957d3d3ec34fdd14)>)
+
 ### [0.9.1](https://github.com/redkubes/otomi-stack/compare/v0.9.0...v0.9.1) (2020-03-30)
 
 ### Bug Fixes
