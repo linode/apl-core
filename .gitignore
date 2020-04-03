@@ -1,5 +1,6 @@
+# we don't allow json files in the root except package.json
 .history
-node_modules
-env
+node_modules/
+env/
 *.json
 !package*.json

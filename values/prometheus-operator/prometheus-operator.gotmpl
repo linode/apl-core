@@ -179,7 +179,7 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
-    {{- with $v.azure.monitor }}
+    {{- with $v | getOrNil "azure.monitor" }}
     - name: Azure Monitor
       type: grafana-azure-monitor-datasource
       access: proxy
