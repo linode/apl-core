@@ -9,10 +9,10 @@ releases:
     installed: {{ eq $v.cluster.provider "aws" }}
     namespace: kube-system
     <<: *default
-  - name: istio-local-gw
-    installed: {{ ge $v.cluster.k8sVersion 1.15 }}
-    namespace: istio-system
-    <<: *default
+  # - name: istio-local-gw
+  #   installed: {{ ge $v.cluster.k8sVersion 1.15 }}
+  #   namespace: istio-system
+  #   <<: *default
   - name: knative-serving
     installed: {{ ge $v.cluster.k8sVersion 1.15 }}
     namespace: knative-serving
