@@ -182,8 +182,9 @@ releases:
               editable: false
             {{- end }}
             {{- end }}
+  {{ if eq ($team | get "receiver" "slack") "msteams" }}
   - name: prometheus-msteams-{{ $team.name }}
-    installed: {{ eq ($team | get "receiver" "slack") "msteams" }}
+    installed: true
     namespace: team-{{ $team.name }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -200,6 +201,7 @@ releases:
         connectors:
           - high_priority_channel: {{ $team | get "msteams.highPrio" ($po | get "alertmanager.msteams.highPrio") }}
           - low_priority_channel: {{ $team | get "msteams.lowPrio" ($po | get "alertmanager.msteams.lowPrio") }}
+  {{- end }}
 
   - name: grafana-dashboards-{{ $team.name }}
     installed: true
