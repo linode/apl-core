@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.4](https://github.com/redkubes/otomi-stack/compare/v0.9.3...v0.9.4) (2020-04-03)
+
+### Bug Fixes
+
+- azure config missing
+  ([7ebcbf5](https://github.com/redkubes/otomi-stack/commit/7ebcbf5e62f64e7109f919f02b8b44526c163969))
+
 ### [0.9.3](https://github.com/redkubes/otomi-stack/compare/v0.9.2...v0.9.3) (2020-03-31)
 
 ### Bug Fixes
