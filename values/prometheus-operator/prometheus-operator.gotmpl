@@ -2,9 +2,10 @@
 {{- $stack := $v | get "stack" dict }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
-{{ $promHost := printf "prometheus.%s" $domain }}
-{{ $alertsHost := printf "alertmanager.%s" $domain }}
-{{ $grafanaHost := printf "grafana.%s" $domain }}
+{{- $promHost := printf "prometheus.%s" $domain }}
+{{- $alertsHost := printf "alertmanager.%s" $domain }}
+{{- $grafanaHost := printf "grafana.%s" $domain }}
+{{- $isRedkubesMonitored := ($v.cluster | get ".isRedkubesMonitored" false) }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -90,7 +91,7 @@ alertmanager:
   config:
     {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
     global:
-      slack_api_url: {{ $v.cluster.isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
+      slack_api_url: {{ $isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
     route:
       receiver: default
       group_by: [alertname]
@@ -123,8 +124,8 @@ alertmanager:
           receiver: critical-redkubes
     receivers:
       - name: "null"
-      {{- if or ($v.cluster.isRedkubesMonitored) $hasSlack }}
-      {{- $channel := $v.cluster.isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
+      {{- if or ($v.cluster | getOrNil ".isRedkubesMonitored") $hasSlack }}
+      {{- $channel := $isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
       - name: default
         slack_configs:
           - channel: "#{{ $channel }}"
@@ -144,7 +145,7 @@ alertmanager:
             send_resolved: true
       {{- end }}
       - name: critical-redkubes
-      {{- if not $v.cluster.isRedkubesMonitored }}
+      {{- if not $isRedkubesMonitored }}
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
           - channel: "#mon-otomi-crit"
