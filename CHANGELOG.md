@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.6](https://github.com/redkubes/otomi-stack/compare/v0.9.5...v0.9.6) (2020-04-13)
+
+### Features
+
+- added hasKnative flag
+  [ci skip](<[b78090f](https://github.com/redkubes/otomi-stack/commit/b78090f4453d16ddbe5a58dbc065e64f555d628c)>)
+
 ### [0.9.5](https://github.com/redkubes/otomi-stack/compare/v0.9.4...v0.9.5) (2020-04-10)
 
 ### Bug Fixes
