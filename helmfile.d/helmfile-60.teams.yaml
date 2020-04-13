@@ -3,8 +3,7 @@ bases:
 ---
 {{- $v := .Environment.Values }}
 {{- $stack := $v | get "stack" dict }}
-{{- $cluster := $v.cluster }}
-{{- $adminDomain := printf "%s%s.%s" $cluster.teamPrefix "admin" $cluster.domain }}
+{{- $adminDomain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $tc := $v.teamConfig }}
@@ -17,17 +16,17 @@ releases:
       tag: teams
     values:
       - name: admin
-        cluster: {{- $cluster | toYaml | nindent 10 }}
+        cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
         services: {{- $v.services | toYaml | nindent 10 }}
         proxies: {{- $v.proxies | toYaml | nindent 10 }}
         resourceQuota: null
         knative:
-          enabled: {{ ge $v.cluster.k8sVersion 1.15 | toYaml }}
+          enabled: {{ $v.cluster.hasKnative }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
   {{- range $t, $team := $tc.teams }}
-  {{- $domain := printf "%s%s.%s" $cluster.teamPrefix $team.name $cluster.domain }}
+  {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $team.name $v.cluster.domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $team.name }}
     installed: true
@@ -36,14 +35,14 @@ releases:
     labels:
       tag: teams
     values:
-      - cluster: {{- $cluster | toYaml | nindent 10 }}
+      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
         knative:
-          enabled: {{ $cluster.hasKnative }}
+          enabled: {{ $v.cluster.hasKnative }}
       - {{- $team | toYaml | nindent 8 }}
       - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
-        {{- if $cluster.isMultitenant }}
+        {{- if $v.cluster.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
         {{- if eq $cicdFlavour "drone" }}
@@ -58,7 +57,7 @@ releases:
           port: 9115
         {{- end }}
         {{- end }}
-  {{- if $cluster.isMultitenant }}        
+  {{- if $v.cluster.isMultitenant }}        
   - name: prometheus-{{ $team.name }}
     {{- $promHost := printf "prometheus.%s" $domain }}
     {{- $alertsHost := printf "alertmanager.%s" $domain }}
@@ -89,11 +88,11 @@ releases:
               - name: default
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $cluster.provider | replace "__CLUSTER" $cluster.name }}
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
               - name: critical
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}-crit"
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $cluster.provider | replace "__CLUSTER" $cluster.name }}
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
               {{- else }}
               {{ $suffix := (hasKey $team "receiver") | ternary "" ".monitoring.svc.cluster.local" }}
               - name: default
@@ -106,12 +105,12 @@ releases:
                     send_resolved: true
               {{- end }}
               - name: critical-redkubes
-              {{- if and $cluster.isRedkubesMonitored (hasKey $team "receiver") }}
+              {{- if and $v.cluster.isRedkubesMonitored (hasKey $team "receiver") }}
                 # sending team criticals also to redkubes to be aware of team issues
                 slack_configs:
                   - channel: "#mon-otomi-crit"
                     api_url: {{ $v.redkubesSlackUrl }}
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 20 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $cluster.provider | replace "__CLUSTER" $cluster.name }}
+                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 20 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
               {{- end }}
         prometheus:
           prometheusSpec:
@@ -157,7 +156,7 @@ releases:
               access: proxy
               url: http://graphite.monitoring:80
             {{- end }}
-            {{- if and (eq $cluster.provider "azure") ($team | get "azure.monitor" false) }}
+            {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" false) }}
             {{- $monitor := (($team | get "azure.monitor.useAdmin" false) | ternary ($v.azure | getOrNil "monitor") ($team | getOrNil "azure.monitor")) }}
             {{- with $monitor }}
             - name: Azure Monitor
@@ -212,12 +211,12 @@ releases:
     values:
       - ../values/grafana-dashboards/grafana-dashboards.gotmpl
       - ../values/default.gotmpl
-      - cluster: {{- $cluster | toYaml | nindent 10 }}
+      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         team: {{ $team.name }}
         folders:
           - k8s
           - istio
-          {{- if and (eq $cluster.provider "azure") (hasKey $azure "monitor") }}
+          {{- if and (eq $v.cluster.provider "azure") (hasKey $azure "monitor") }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}

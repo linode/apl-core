@@ -10,11 +10,11 @@ releases:
     namespace: kube-system
     <<: *default
   # - name: istio-local-gw
-  #   installed: {{ ge $v.cluster.k8sVersion 1.15 }}
+  #   installed: {{ $v.cluster.hasKnative }}
   #   namespace: istio-system
   #   <<: *default
   - name: knative-serving
-    installed: {{ ge $v.cluster.k8sVersion 1.15 }}
+    installed: {{ $v.cluster.hasKnative }}
     namespace: knative-serving
     chart: ../charts/raw
     values:
