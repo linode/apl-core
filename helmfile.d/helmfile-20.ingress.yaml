@@ -52,4 +52,5 @@ releases:
     namespace: istio-system
     labels:
       tag: ingress
+      pkg: oauth2-proxy
     <<: *default
