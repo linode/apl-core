@@ -264,7 +264,8 @@ releases:
     namespace: istio-system
     chart: ../charts/oauth2-proxy
     labels:
-      tag: teams
+      team: {{ $team.name }}
+      tag: ingress
       pkg: oauth2-proxy
     values:
       - ../values/oauth2-proxy/oauth2-proxy.gotmpl

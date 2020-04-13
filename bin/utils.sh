@@ -1,6 +1,6 @@
 printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
 PACKAGE_VERSION=$(cat package.json \
-  | grep version \
+  | grep '"version"' \
   | head -1 \
   | awk -F: '{ print $2 }' \
   | sed 's/[",]//g' \
