@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.9](https://github.com/redkubes/otomi-stack/compare/v0.9.8...v0.9.9) (2020-04-14)
+
+### Bug Fixes
+
+- ports to default for api and web
+  [ci skip](<[7989faf](https://github.com/redkubes/otomi-stack/commit/7989faf82cf310845a14e633521f3c9052ddcef7)>)
+
 ### [0.9.8](https://github.com/redkubes/otomi-stack/compare/v0.9.7...v0.9.8) (2020-04-14)
 
 ### Bug Fixes
