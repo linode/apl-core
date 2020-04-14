@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.7](https://github.com/redkubes/otomi-stack/compare/v0.9.6...v0.9.7) (2020-04-14)
+
+### Bug Fixes
+
+- corrected version grep
+  [ci skip](<[b43f92c](https://github.com/redkubes/otomi-stack/commit/b43f92c7aa316ed0c0af5e75378e4c8ed219132d)>)
+
+### Code Refactoring
+
+- removed teams files to favor default layering
+  [ci skip](<[b46857d](https://github.com/redkubes/otomi-stack/commit/b46857dc219a66fd535488656ed81f1b272c4538)>)
+
 ### [0.9.6](https://github.com/redkubes/otomi-stack/compare/v0.9.5...v0.9.6) (2020-04-13)
 
 ### Features
