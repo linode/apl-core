@@ -34,12 +34,12 @@ pipelineStages:
         namespace:
   - labels:
       namespace:
-  {{- range $team := $t.teams }}
+  {{- range $id, $team := $t.teams }}
   - match:
-      selector: '{namespace="team-{{ $team.name }}"}'
+      selector: '{namespace="team-{{ $id }}"}'
       stages:
         - tenant:
-            value: {{ $team.name }}
+            value: {{ $id }}
   {{- end }}
   {{- end }}
 

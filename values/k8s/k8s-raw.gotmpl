@@ -10,8 +10,8 @@ resources:
         name: {{ $ns.name }}
         istio-injection: {{ if $ns | getOrNil "disableIstioInjection" }}disabled{{ else }}enabled{{ end }}
   {{- end }}
-  {{- range $team := $t.teams }}
-  {{- $ns := printf "team-%s" $team.name }}
+  {{- range $id, $team := $t.teams }}
+  {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
     kind: Namespace
     metadata:
