@@ -127,7 +127,6 @@ teamConfig:
   services:
     - name: otomi-web
       namespace: shared
-      port: 8080
       svc: otomi-api
       path: /api
       hide: true
@@ -135,7 +134,6 @@ teamConfig:
         name: kubernetes
     - name: otomi-web
       namespace: shared
-      port: 8080
       svc: otomi-web
       hide: true
       logo:
