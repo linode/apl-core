@@ -56,11 +56,5 @@
     "lint": "tests/lint.sh",
     "release": "standard-version"
   },
-  "standard-version": {
-    "scripts": {
-      "prerelease": "if [[ \"$(git rev-parse --abbrev-ref HEAD)\" != \"master\" ]]; then exit -1; fi",
-      "precommit": "prettier --write CHANGELOG.md && git add package.json package-lock.json CHANGELOG.md"
-    }
-  },
-  "version": "0.9.10"
+  "version": "0.9.11"
 }
