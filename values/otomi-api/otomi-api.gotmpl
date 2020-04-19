@@ -1,4 +1,5 @@
 {{- $v := .Environment.Values }}
+{{- $c := $v.cluster }}
 {{- $o := index $v.charts "otomi-api" }}
 
 image:
@@ -12,3 +13,6 @@ git:
   user: {{ $o.git.user }}
   email: {{ $o.git.email }}
   password: {{ $o.git.password }}
+
+env:
+  CLUSTER: {{ printf "%s/%s" $c.provider $c.name }}
