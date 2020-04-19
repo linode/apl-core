@@ -4,7 +4,7 @@
 {{- range $s := $v.services }}
 {{- if (index $s "mtls.gatewayDisabled") }}
 {{- $ns := index $s "namespace" | default .Release.Namespace }}
-{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.name) $s.name) }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.svc) $s.svc) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
