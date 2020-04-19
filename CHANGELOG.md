@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.10](https://github.com/redkubes/otomi-stack/compare/v0.9.9...v0.9.10) (2020-04-19)
+
+### Code Refactoring
+
+- removed unneeded 'svc' prop
+  ([584dacf](https://github.com/redkubes/otomi-stack/commit/584dacf7a02ef4cc27e135ac4c2c6b7511188e10))
+
 ### [0.9.9](https://github.com/redkubes/otomi-stack/compare/v0.9.8...v0.9.9) (2020-04-14)
 
 ### Bug Fixes
