@@ -1,4 +1,5 @@
 toolsVersion: 1.1.4
+redkubesSlackUrl: https://hooks.slack.com/services/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
 
 k8s:
   namespaces:
@@ -24,9 +25,11 @@ services:
   - name: auth
     svc: oauth2-proxy
     namespace: istio-system
+    hide: true
     isAuthProxy: true
   - name: index
     svc: index
+    hide: true
     namespace: team-admin
   - name: otomi-web
     namespace: shared
@@ -51,6 +54,7 @@ services:
     svc: loki-headless
     namespace: monitoring
     internal: true # this service is only specified to create an Istio Policy, so not exposed
+    hide: true
     mtls:
       policyMode: permissive
   - name: loki
@@ -143,6 +147,7 @@ teamConfig:
       isAuthProxy: true
     - name: index
       svc: index
+      hide: true
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
