@@ -68,3 +68,5 @@ tolerations: []
 affinity: {}
 
 env: {}
+
+core: {}

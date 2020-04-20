@@ -16,3 +16,5 @@ git:
 
 env:
   CLUSTER: {{ printf "%s/%s" $c.provider $c.name }}
+
+core: {{- toYaml $v.core | nindent 2 }}
