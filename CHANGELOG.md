@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.15](https://github.com/redkubes/otomi-stack/compare/v0.9.14...v0.9.15) (2020-04-20)
+
+### Bug Fixes
+
+- added hide flag to some services for api
+  [ci skip](<[e1a16c8](https://github.com/redkubes/otomi-stack/commit/e1a16c8b448c0fc8e5c4f3e6f642d91c93c96892)>)
+
 ### [0.9.14](https://github.com/redkubes/otomi-stack/compare/v0.9.13...v0.9.14) (2020-04-20)
 
 ### Others
