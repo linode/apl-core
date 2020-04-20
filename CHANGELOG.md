@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.14](https://github.com/redkubes/otomi-stack/compare/v0.9.13...v0.9.14) (2020-04-20)
+
+### Others
+
+- added core.yaml as mount in api deployment
+  ([d690cb8](https://github.com/redkubes/otomi-stack/commit/d690cb8d76e6ac8029b0a12db21890170583fe76))
+- added core.yaml as mount in api deployment: fix
+  [ci skip](<[bdc91d2](https://github.com/redkubes/otomi-stack/commit/bdc91d2cd1b4754518caa8489c54230deeda33a9)>)
+- split up core values into secrets as well for api
+  [ci skip](<[ee901a8](https://github.com/redkubes/otomi-stack/commit/ee901a8eafbcdcc7afe97df8a4d500468a92b6c6)>)
+
 ### [0.9.13](https://github.com/redkubes/otomi-stack/compare/v0.9.12...v0.9.13) (2020-04-19)
 
 ### Bug Fixes
