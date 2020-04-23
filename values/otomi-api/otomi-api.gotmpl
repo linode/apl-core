@@ -20,3 +20,4 @@ env:
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   services: {{- toYaml $v.services | nindent 4 }}
+  teamConfig: {{- toYaml $v.teamConfig | nindent 4 }}
