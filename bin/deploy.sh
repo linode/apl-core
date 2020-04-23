@@ -4,7 +4,6 @@ shopt -s expand_aliases
 set -e
 
 # install some stuff that we never want to end up as charts
-# (might get corrupted and we can then never pass that stage of deployment)
 hft -f helmfile.tpl/helmfile-init.yaml | k apply -f -
 # not ready yet:
 # set +e
