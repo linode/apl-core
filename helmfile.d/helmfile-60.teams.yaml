@@ -16,6 +16,7 @@ releases:
       tag: teams
     values:
       - name: admin
+        teamId: admin
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
