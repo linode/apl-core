@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.16](https://github.com/redkubes/otomi-stack/compare/v0.9.15...v0.9.16) (2020-04-23)
+
+### Bug Fixes
+
+- hiding auth app ([864a7fc](https://github.com/redkubes/otomi-stack/commit/864a7fca69d53a35f2082146aee44691b85ba5f7))
+
 ### [0.9.15](https://github.com/redkubes/otomi-stack/compare/v0.9.14...v0.9.15) (2020-04-20)
 
 ### Bug Fixes
