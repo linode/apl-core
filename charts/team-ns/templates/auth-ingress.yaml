@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
-{{- $svc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
+{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- $svc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -12,7 +12,7 @@ metadata:
       # rewrite auth redirects to original hosts
       rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: auth-team-{{ $v.name }}
+  name: auth-team-{{ $v.teamId }}
   namespace: istio-system
 spec:
   rules:
@@ -25,7 +25,7 @@ spec:
         path: /oauth2
   {{- if not $v.cluster.hasCloudLB }}
   tls: 
-    - secretName: cert-team-{{ $v.name }}
+    - secretName: cert-team-{{ $v.teamId }}
       hosts:
         - '*.{{ $v.domain }}'
   {{- end }}

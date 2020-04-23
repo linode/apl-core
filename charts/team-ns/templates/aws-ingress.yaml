@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
+{{- if and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -7,8 +7,8 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
-    alb.ingress.kubernetes.io/tags: "team=team-{{ $v.name }} {{ $v.ingress.tags }}"
-  name: team-{{ $v.name }}
+    alb.ingress.kubernetes.io/tags: "team=team-{{ $v.teamId }} {{ $v.ingress.tags }}"
+  name: team-{{ $v.teamId }}
   namespace: ingress
 spec:
   rules:
@@ -34,7 +34,7 @@ spec:
               serviceName: nginx-ingress-controller
               servicePort: 80
 {{- end }}
-{{- if eq $v.name "admin" }}
+{{- if eq $v.teamId "admin" }}
 ---
 apiVersion: v1
 kind: ConfigMap

@@ -1,10 +1,10 @@
 {{- $v := .Values }}
-{{- if and (not $v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
+{{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if (index $s "mtls.gatewayDisabled") }}
 {{- $ns := index $s "namespace" | default .Release.Namespace }}
-{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.svc) $s.svc) }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.svc) $s.svc) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
