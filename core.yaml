@@ -145,6 +145,7 @@ teamConfig:
       svc: oauth2-proxy
       namespace: istio-system
       isAuthProxy: true
+      hide: true
     - name: index
       svc: index
       hide: true
