@@ -3,8 +3,8 @@
 . bin/env.sh
 
 # create the cluster
-gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME" --region "$GOOGLE_REGION" \
-  --no-enable-basic-auth --cluster-version "1.15.9-gke.24" --machine-type "n1-standard-4" \
+gcloud container --project "$PROJECT" clusters create "otomi-gke-$CLUSTER" --region "$GOOGLE_REGION" \
+  --no-enable-basic-auth --cluster-version "1.15.11-gke.9" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
   --max-pods-per-node "110" --num-nodes "1" --no-enable-stackdriver-kubernetes \
@@ -17,12 +17,12 @@ gcloud container --project "$PROJECT" clusters create "$CLUSTER_NAME" --region "
   --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
 # --enable-pod-security-policy
 
-gcloud container clusters get-credentials $CLUSTER_NAME --region $GOOGLE_REGION --project $PROJECT
+gcloud container clusters get-credentials $CLUSTER --region $GOOGLE_REGION --project $PROJECT
 
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
 # # ADDITIONAL FIREWALL RULES FOR PRIVATE CLUSTER:
-# SOURCE=$(gcloud container clusters describe $CLUSTER_NAME --region $GOOGLE_REGION | grep clusterIpv4CidrBlock | cut -d ':' -f 2 | tr -d ' ')
+# SOURCE=$(gcloud container clusters describe $CLUSTER --region $GOOGLE_REGION | grep clusterIpv4CidrBlock | cut -d ':' -f 2 | tr -d ' ')
 # # 1) Retrieve the network tag automatically given to the worker nodes
 # # NOTE: this only works if you have only one cluster in your GCP project. You will have to manually inspect the result of this command to find the tag for the cluster you want to target
 # WORKER_NODES_TAG=$(gcloud compute instances list --format='text(tags.items[0])' --filter='metadata.kubelet-config:*' | grep tags | awk '{print $2}' | sort | uniq)

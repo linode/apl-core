@@ -31,14 +31,14 @@ services:
     svc: index
     hide: true
     namespace: team-admin
-  - name: otomi-web
+  - name: otomi
     namespace: shared
     svc: otomi-api
     hide: true
     path: /api
     logo:
       name: kubernetes
-  - name: otomi-web
+  - name: otomi
     namespace: shared
     svc: otomi-web
     hide: true
@@ -128,14 +128,14 @@ proxies:
 
 teamConfig:
   services:
-    - name: otomi-web
+    - name: otomi
       namespace: shared
       svc: otomi-api
       path: /api
       hide: true
       logo:
         name: kubernetes
-    - name: otomi-web
+    - name: otomi
       namespace: shared
       svc: otomi-web
       hide: true

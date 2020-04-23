@@ -33,10 +33,10 @@ global:
 gateways:
   enabled: true
 
-  cluster-local-gateway:
+  custom-gateway:
     enabled: true
     labels:
-      app: cluster-local-gateway
+      app: custom-gateway
     replicaCount: 1
     autoscaleMin: 1
     autoscaleMax: 5
@@ -93,12 +93,12 @@ gateways:
       targetPort: 15032
       name: http2-tracing
     secretVolumes:
-    - name: clusterlocalgateway-certs
-      secretName: istio-clusterlocalgateway-certs
-      mountPath: /etc/istio/clusterlocalgateway-certs
-    - name: clusterlocalgateway-ca-certs
-      secretName: istio-clusterlocalgateway-ca-certs
-      mountPath: /etc/istio/clusterlocalgateway-ca-certs
+    - name: customgateway-certs
+      secretName: istio-customgateway-certs
+      mountPath: /etc/istio/customgateway-certs
+    - name: customgateway-ca-certs
+      secretName: istio-customgateway-ca-certs
+      mountPath: /etc/istio/customgateway-ca-certs
 
 # all other components are disabled except the gateways
 security:
