@@ -41,6 +41,7 @@ releases:
         knative:
           enabled: {{ $v.cluster.hasKnative }}
       - {{- $team | toYaml | nindent 8 }}
+        teamId: {{ $teamId }}
       - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.cluster.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
