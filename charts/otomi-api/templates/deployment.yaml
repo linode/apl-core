@@ -17,6 +17,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
+        checksum/core: {{ include (print .Template.BasePath "/core-config.yaml") . | sha256sum | trunc 63 }}
     spec:
       serviceAccountName: {{ template "otomi-api.serviceAccountName" . }}
       securityContext:
