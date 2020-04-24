@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.22](https://github.com/redkubes/otomi-stack/compare/v0.9.21...v0.9.22) (2020-04-24)
+
+### Feature Improvements
+
+- nginx upgrade
+  [ci skip](<[501885c](https://github.com/redkubes/otomi-stack/commit/501885c76f1cee8b3032808c7a027569c52a56da)>)
+
 ### [0.9.21](https://github.com/redkubes/otomi-stack/compare/v0.9.20...v0.9.21) (2020-04-23)
 
 ### Bug Fixes
