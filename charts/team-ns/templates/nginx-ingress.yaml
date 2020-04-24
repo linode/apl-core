@@ -31,14 +31,6 @@ metadata:
       # set team header
       add_header Auth-Group "{{ $v.teamId }}";
       proxy_set_header Auth-Group "{{ $v.teamId }}";
-
-      # split cookie if needed:
-      auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-      access_by_lua_block {
-        if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-          ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-        end
-      }
     {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
