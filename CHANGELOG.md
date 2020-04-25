@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.23](https://github.com/redkubes/otomi-stack/compare/v0.9.22...v0.9.23) (2020-04-25)
+
+### Bug Fixes
+
+- internal ksvc that is not predeployed now gets deployed
+  [ci skip](<[c1aeb01](https://github.com/redkubes/otomi-stack/commit/c1aeb01a4d0a037f3a7f0d5b557bd8fe2e3da7cb)>)
+
 ### [0.9.22](https://github.com/redkubes/otomi-stack/compare/v0.9.21...v0.9.22) (2020-04-24)
 
 ### Feature Improvements
