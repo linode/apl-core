@@ -2,6 +2,8 @@
 {{- $o := index $v.charts "otomi-web" }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 
+replicaCount: 2
+
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-web

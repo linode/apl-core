@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- if and (eq $v.cluster.provider "azure") ($v.cluster.hasCloudLB) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
+{{- if and (eq $v.cluster.provider "azure") ($v.cluster.hasCloudLB) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: appgw-team-{{ $v.name }}
+  name: appgw-team-{{ $v.teamId }}
   namespace: ingress
   labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:

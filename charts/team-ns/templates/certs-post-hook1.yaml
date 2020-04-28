@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- if and ($v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
+{{- if and ($v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: certs-post-job-1-team-{{ $v.name }}
+  name: certs-post-job-1-team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
@@ -14,7 +14,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: certs-post-job-1-team-{{ $v.name }}
+      name: certs-post-job-1-team-{{ $v.teamId }}
       labels:
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
@@ -58,11 +58,11 @@ spec:
             {{- end }}
             {{- end }}
             set +e
-            kubectl delete cm cert-arns-team-{{ $v.name }}
-            kubectl create cm cert-arns-team-{{ $v.name }} --from-literal=certArns=$certArns
+            kubectl delete cm cert-arns-team-{{ $v.teamId }}
+            kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
 {{- else if eq $v.cluster.provider "google" }}
-              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
 {{- else if eq $v.cluster.provider "azure" }}
-              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
 {{- end }}
 {{- end }}

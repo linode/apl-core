@@ -1,10 +1,10 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) (or (hasKey $s "svc") (hasKey $s "domain")) }}
-{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.name $s.svc) $s.svc) }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.svc) $s.svc) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -16,7 +16,7 @@ spec:
   {{- if hasKey $s "ksvc" }}
   - knative-serving/knative-ingress-gateway
   {{- else }}
-  - {{ $.Release.Namespace }}/team-{{ $v.name }}
+  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}
   {{- end }}
   hosts:
   - {{ $domain }}

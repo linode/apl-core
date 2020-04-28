@@ -16,6 +16,7 @@ releases:
       tag: teams
     values:
       - name: admin
+        teamId: admin
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
@@ -25,12 +26,12 @@ releases:
         knative:
           enabled: {{ $v.cluster.hasKnative }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
-  {{- range $t, $team := $tc.teams }}
-  {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $team.name $v.cluster.domain }}
+  {{- range $teamId, $team := $tc.teams }}
+  {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $teamId $v.cluster.domain }}
   {{- $azure := $team | get "azure" dict }}
-  - name: team-ns-{{ $team.name }}
+  - name: team-ns-{{ $teamId }}
     installed: true
-    namespace: team-{{ $team.name }}
+    namespace: team-{{ $teamId }}
     chart: ../charts/team-ns
     labels:
       tag: teams
@@ -41,6 +42,7 @@ releases:
         knative:
           enabled: {{ $v.cluster.hasKnative }}
       - {{- $team | toYaml | nindent 8 }}
+        teamId: {{ $teamId }}
       - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.cluster.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
@@ -48,7 +50,7 @@ releases:
         {{- if eq $cicdFlavour "drone" }}
         # @todo: fix this weirdness: the next two lines fook the yaml parser:
         # - name: drone
-        #   svc: drone-{{ $team.name }}
+        #   svc: drone-{{ $teamId }}
         {{- end }}
         {{- end }}
         {{- if ne (len ($team | get "sites" list)) 0 }}
@@ -58,20 +60,20 @@ releases:
         {{- end }}
         {{- end }}
   {{- if $v.cluster.isMultitenant }}        
-  - name: prometheus-{{ $team.name }}
+  - name: prometheus-{{ $teamId }}
     {{- $promHost := printf "prometheus.%s" $domain }}
     {{- $alertsHost := printf "alertmanager.%s" $domain }}
     {{- $grafanaHost := printf "grafana.%s"  $domain }}
     installed: true
-    namespace: team-{{ $team.name }}
+    namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-operator
     labels:
       tag: teams
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
-      - nameOverride: {{ $team.name }}-po
-        fullnameOverride: {{ $team.name }}-po
+      - nameOverride: {{ $teamId }}-po
+        fullnameOverride: {{ $teamId }}-po
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $alertsHost }}
@@ -117,16 +119,16 @@ releases:
             externalUrl: https://{{ $promHost }}
             ruleNamespaceSelector:
               matchLabels:
-                name: team-{{ $team.name }}
+                name: team-{{ $teamId }}
             podMonitorNamespaceSelector:
               matchLabels:
-                name: team-{{ $team.name }}
+                name: team-{{ $teamId }}
             serviceMonitorNamespaceSelector:
               matchLabels:
-                name: team-{{ $team.name }}
+                name: team-{{ $teamId }}
         grafana:
-          nameOverride: {{ $team.name }}-po-grafana
-          fullnameOverride: {{ $team.name }}-po-grafana
+          nameOverride: {{ $teamId }}-po-grafana
+          fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:
             server:
               root_url: https://{{ $grafanaHost }}
@@ -147,7 +149,7 @@ releases:
               access: proxy
               url: http://loki.monitoring:11811
               basicAuth: true
-              basicAuthUser: {{ $team.name }}
+              basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
             {{- if $stack | get "enabled.sitespeed" false }}
             - name: Graphite
@@ -182,9 +184,9 @@ releases:
             {{- end }}
             {{- end }}
   {{ if eq ($team | get "receiver" "slack") "msteams" }}
-  - name: prometheus-msteams-{{ $team.name }}
+  - name: prometheus-msteams-{{ $teamId }}
     installed: true
-    namespace: team-{{ $team.name }}
+    namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
       tag: teams
@@ -192,19 +194,19 @@ releases:
       - ../values/prometheus-msteams/prometheus-msteams.gotmpl
       - ../values/default.gotmpl
       - commonLabels:
-          team: {{ $team.name }}
+          team: {{ $teamId }}
         metrics:
           serviceMonitor:
             additionalLabels:
-              release: prometheus-{{ $team.name }}
+              release: prometheus-{{ $teamId }}
         connectors:
           - high_priority_channel: {{ $team | get "msteams.highPrio" ($po | get "alertmanager.msteams.highPrio") }}
           - low_priority_channel: {{ $team | get "msteams.lowPrio" ($po | get "alertmanager.msteams.lowPrio") }}
   {{- end }}
 
-  - name: grafana-dashboards-{{ $team.name }}
+  - name: grafana-dashboards-{{ $teamId }}
     installed: true
-    namespace: team-{{ $team.name }}
+    namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
       tag: teams
@@ -212,7 +214,7 @@ releases:
       - ../values/grafana-dashboards/grafana-dashboards.gotmpl
       - ../values/default.gotmpl
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        team: {{ $team.name }}
+        team: {{ $teamId }}
         folders:
           - k8s
           - istio
@@ -221,9 +223,9 @@ releases:
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
 
-  - name: index-{{ $team.name }}
+  - name: index-{{ $teamId }}
     installed: true
-    namespace: team-{{ $team.name }}
+    namespace: team-{{ $teamId }}
     chart: ../charts/index
     labels:
       tag: teams
@@ -232,20 +234,20 @@ releases:
       - ../values/index/index.gotmpl
       - ../values/default.gotmpl
       - domain: {{ $domain }}
-        group: {{ $team.name }}
+        group: {{ $teamId }}
         coreServices:
           {{- range $s := $tc.services }}
           {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "internal")) }}
-          - {{ $s | toYaml | replace "#NS#" (printf "team-%s" $team.name) | nindent 12 }}
+          - {{ $s | toYaml | replace "#NS#" (printf "team-%s" $teamId) | nindent 12 }}
           {{- end }}
           {{- end }}
         services: {{- $team | get "services" list | toYaml | nindent 10 }}
   {{- if ($team | get "cicd.enabled" "false") }}
   {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
   {{- if eq $cicdFlavour "drone" }}
-  # - name: drone-{{ $team.name }}
+  # - name: drone-{{ $teamId }}
   #   installed: true # @todo: set up values and enable
-  #   namespace: team-{{ $team.name }}
+  #   namespace: team-{{ $teamId }}
   #   chart: ../charts/drone
   #   labels:
   #     tag: teams
@@ -259,18 +261,18 @@ releases:
   {{- end }}
   {{- end }}
   {{- end }}
-  - name: oauth2-proxy-team-{{ $team.name }}
+  - name: oauth2-proxy-team-{{ $teamId }}
     installed: true
     namespace: istio-system
     chart: ../charts/oauth2-proxy
     labels:
-      team: {{ $team.name }}
+      team: {{ $teamId }}
       tag: ingress
       pkg: oauth2-proxy
     values:
       - ../values/oauth2-proxy/oauth2-proxy.gotmpl
       - ../values/default.gotmpl
-      - fullnameOverride: oauth2-proxy-team-{{ $team.name }}
+      - fullnameOverride: oauth2-proxy-team-{{ $teamId }}
         {{- if hasKey $team "oidc" }}
         config:
           clientID: {{ $team.oidc.clientID }}

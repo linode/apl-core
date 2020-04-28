@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: team-{{ $v.name }}
+  name: team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 spec:
   selector:

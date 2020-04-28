@@ -1,7 +1,7 @@
 {{- $v := .Values }}
-{{- if and (not $v.cluster.useCloudCA) (or (eq $v.name "admin") ($v.cluster.isMultitenant)) }}
+{{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
-{{ $name := printf "cert-team-%s" $v.name }}
+{{ $name := printf "cert-team-%s" $v.teamId }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
