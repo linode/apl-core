@@ -1,3 +1,4 @@
+{{- if .Values.cainjector.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,15 +9,19 @@ metadata:
     app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "cainjector"
     helm.sh/chart: {{ include "cainjector.chart" . }}
+  {{- if .Values.cainjector.deploymentAnnotations }}
+  annotations:
+{{ toYaml .Values.cainjector.deploymentAnnotations | indent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.cainjector.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "cainjector.name" . }}
       app.kubernetes.io/name: {{ include "cainjector.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: "cainjector"
   {{- with .Values.cainjector.strategy }}
   strategy:
     {{- . | toYaml | nindent 4 }}
@@ -28,15 +33,20 @@ spec:
         app.kubernetes.io/name: {{ include "cainjector.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: "cainjector"
         helm.sh/chart: {{ include "cainjector.chart" . }}
-      annotations:
       {{- if .Values.cainjector.podAnnotations }}
+      annotations:
 {{ toYaml .Values.cainjector.podAnnotations | indent 8 }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "cainjector.fullname" . }}
       {{- if .Values.global.priorityClassName }}
       priorityClassName: {{ .Values.global.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.cainjector.securityContext}}
+      securityContext:
+{{ toYaml .Values.cainjector.securityContext | indent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -69,3 +79,4 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+{{- end -}}

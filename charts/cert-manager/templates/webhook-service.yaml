@@ -1,14 +1,14 @@
-{{- if .Values.webhook.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "webhook.fullname" . }}
+  name: {{ template "webhook.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "webhook"
     helm.sh/chart: {{ include "webhook.chart" . }}
 spec:
   type: ClusterIP
@@ -17,8 +17,6 @@ spec:
     port: 443
     targetPort: {{ .Values.webhook.securePort }}
   selector:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end -}}
+    app.kubernetes.io/component: "webhook"

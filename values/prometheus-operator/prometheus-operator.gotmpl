@@ -2,9 +2,7 @@
 {{- $stack := $v | get "stack" dict }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
-{{- $promHost := printf "prometheus.%s" $domain }}
-{{- $alertsHost := printf "alertmanager.%s" $domain }}
-{{- $grafanaHost := printf "grafana.%s" $domain }}
+{{- $appsDomain := printf "apps.%s" $domain }}
 {{- $isRedkubesMonitored := ($v.cluster | get ".isRedkubesMonitored" false) }}
 nameOverride: po
 fullnameOverride: po
@@ -56,7 +54,7 @@ prometheus:
             requests:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
-    externalUrl: https://{{ $promHost }}
+    externalUrl: https://{{ $appsDomain }}/prometheus
     # additionalScrapeConfigs:
     #   - job_name: 'probe-sites'
     #     metrics_path: /probe
@@ -86,7 +84,7 @@ alertmanager:
       annotations:
         sidecar.istio.io/inject: "false"
     portName: http-web
-    externalUrl: https://{{ $alertsHost }}
+    externalUrl: https://{{ $appsDomain }}/alertmanager
     # logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
   config:
     {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
@@ -231,7 +229,7 @@ grafana:
     log:
       level: debug
     server:
-      root_url: https://{{ $grafanaHost }}
+      root_url: https://{{ $appsDomain }}/grafana
     users:
       allow_sign_up: false
       auto_assign_org: true
