@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.23](https://github.com/redkubes/otomi-stack/compare/v0.9.22...v0.9.23) (2020-04-25)
+
+### Bug Fixes
+
+- internal ksvc that is not predeployed now gets deployed
+  [ci skip](<[c1aeb01](https://github.com/redkubes/otomi-stack/commit/c1aeb01a4d0a037f3a7f0d5b557bd8fe2e3da7cb)>)
+
+### [0.9.22](https://github.com/redkubes/otomi-stack/compare/v0.9.21...v0.9.22) (2020-04-24)
+
+### Feature Improvements
+
+- nginx upgrade
+  [ci skip](<[501885c](https://github.com/redkubes/otomi-stack/commit/501885c76f1cee8b3032808c7a027569c52a56da)>)
+
+### [0.9.21](https://github.com/redkubes/otomi-stack/compare/v0.9.20...v0.9.21) (2020-04-23)
+
+### Bug Fixes
+
+- teamId in team-ns [#3](https://github.com/redkubes/otomi-stack/issues/3)
+  [ci skip](<[922eeba](https://github.com/redkubes/otomi-stack/commit/922eeba3f343744b070752abf28b47247cf3bdf3)>)
+
+### [0.9.20](https://github.com/redkubes/otomi-stack/compare/v0.9.19...v0.9.20) (2020-04-23)
+
+### Bug Fixes
+
+- teamId in team-ns [#2](https://github.com/redkubes/otomi-stack/issues/2)
+  [ci skip](<[a7f2c8e](https://github.com/redkubes/otomi-stack/commit/a7f2c8ef1841421d6797a89edae6f54536c8c5e6)>)
+
+### [0.9.19](https://github.com/redkubes/otomi-stack/compare/v0.9.18...v0.9.19) (2020-04-23)
+
+### Bug Fixes
+
+- teamId in team-ns
+  [ci skip](<[2b77e89](https://github.com/redkubes/otomi-stack/commit/2b77e89f4e3b6d8167173fa5cf809cfa8fe7c94a)>)
+
+### [0.9.18](https://github.com/redkubes/otomi-stack/compare/v0.9.17...v0.9.18) (2020-04-23)
+
+### Bug Fixes
+
+- teamId now used instead of name
+  [ci skip](<[aabd54d](https://github.com/redkubes/otomi-stack/commit/aabd54db0d352976bfdc06f0190e40175831b199)>)
+
+### Feature Improvements
+
+- checksum on new config for api
+  [ci skip](<[c5315c7](https://github.com/redkubes/otomi-stack/commit/c5315c70f0fd84d2a8e9b10db7c3da9d01475ed8)>)
+
 ### [0.9.17](https://github.com/redkubes/otomi-stack/compare/v0.9.16...v0.9.17) (2020-04-23)
 
 ### Bug Fixes

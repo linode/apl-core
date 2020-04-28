@@ -3,7 +3,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cluster-list-team-{{ $v.name }}
+  name: cluster-list-team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -17,7 +17,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: admin-team-{{ $v.name }}
+  name: admin-team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -31,7 +31,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: unprivileged-team-{{ $v.name }}
+  name: unprivileged-team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -45,7 +45,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ingress-update-team-{{ $v.name }}
+  name: ingress-update-team-{{ $v.teamId }}
   labels: {{- include "chart-labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io

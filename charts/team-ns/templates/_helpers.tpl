@@ -47,7 +47,7 @@ kubernetes.io/ingress.class: nginx
 {{- range $s := $customDomainServices }}
 - hosts:
     - {{ $s.domain }}
-  secretName: cert-team-{{ $.name }}-{{ $s.name }}
+  secretName: cert-team-{{ $.teamId }}-{{ $s.name }}
 {{- end }}
 - hosts:
     {{- range $s := $teamDomainServices }}
@@ -55,5 +55,5 @@ kubernetes.io/ingress.class: nginx
     - {{ $domain }}
     {{- end }}
     - {{ printf "proxy.%s" $.domain }}
-  secretName: cert-team-{{ $.name }}
+  secretName: cert-team-{{ $.teamId }}
 {{- end }}

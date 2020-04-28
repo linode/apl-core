@@ -1,6 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.cluster }}
 {{- $o := index $v.charts "otomi-api" }}
+{{- $teamConfig := dict "services" $v.teamConfig.services }}
+
+replicaCount: 1
 
 image:
   registry: eu.gcr.io
@@ -20,4 +23,4 @@ env:
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   services: {{- toYaml $v.services | nindent 4 }}
-  teamConfig: {{- toYaml $v.teamConfig | nindent 4 }}
+  teamConfig: {{- toYaml $teamConfig | nindent 4 }}

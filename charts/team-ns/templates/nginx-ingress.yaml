@@ -1,7 +1,7 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- if or (eq $v.name "admin") ($v.cluster.isMultitenant) }}
-{{- $authSvc := (eq $v.name "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.name)) }}
+{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- $authSvc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}
 # split list of services into public and private to create separate ingresses:
 # one for auth redirect and one passthrough
 {{- $public := list }}
@@ -24,25 +24,17 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne $v.name "admin"}}-team-{{ $v.name }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne $v.teamId "admin"}}-team-{{ $v.teamId }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
     # the redirect part here is caught by the oauth2 ingress which will take care of the redirect
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       # set team header
-      add_header Auth-Group "{{ $v.name }}";
-      proxy_set_header Auth-Group "{{ $v.name }}";
-
-      # split cookie if needed:
-      auth_request_set $_oauth2_proxy_upstream_1 $upstream_cookie__oauth2_proxy_1;
-      access_by_lua_block {
-        if ngx.var._oauth2_proxy_upstream_1 ~= "" then
-          ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var._oauth2_proxy_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
-        end
-      }
+      add_header Auth-Group "{{ $v.teamId }}";
+      proxy_set_header Auth-Group "{{ $v.teamId }}";
     {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.name }}-private
+  name: nginx-ingress-team-{{ $v.teamId }}-private
   namespace: istio-system
 spec:
   rules:
@@ -73,7 +65,7 @@ metadata:
     {{- include "ingress-annotations" $v | nindent 4 }}
     ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.name }}-public
+  name: nginx-ingress-team-{{ $v.teamId }}-public
   namespace: istio-system
 spec:
   rules:
@@ -106,7 +98,7 @@ metadata:
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.name }}-proxy
+  name: nginx-ingress-team-{{ $v.teamId }}-proxy
   namespace: istio-system
 spec:
   rules:
@@ -123,6 +115,6 @@ spec:
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}
-      secretName: cert-team-{{ $v.name }}
+      secretName: cert-team-{{ $v.teamId }}
   {{- end }}
 {{- end }}

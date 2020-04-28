@@ -4,7 +4,7 @@
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
 image:
-  tag: "v4.1.0"
+  tag: "v5.1.0"
   # repository: eu.gcr.io/otomi-cloud/oauth2_proxy
   # tag: latest
   # pullPolicy: Always
@@ -27,8 +27,10 @@ extraArgs:
   redirect-url: https://auth.{{ $domain }}/oauth2/callback
   # email-domain: "*"
   cookie-domain: {{ $domain }}
+  cookie-samesite: none
   cookie-secure: true
-  cookie-httponly: "false"
+  cookie-httponly: true
+  reverse-proxy: true
   cookie-refresh: 0h60m0s
   pass-authorization-header: true
   pass-basic-auth: true
