@@ -1,22 +1,30 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
-{{ $name := printf "cert-team-%s" $v.teamId }}
+{{- range $app := list "auth" "apps" "proxy" }}
+{{ $name := printf "cert-team-%s-%s" $v.name $app }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: {{ $name }}
   namespace: {{ if $v.cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
-  labels: {{- include "chart-labels" . | nindent 4 }}
+  labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   secretName: {{ $name }}
-  commonName: "*.{{ $v.domain }}"
+  commonName: "{{ $app }}.{{ $v.domain }}"
   dnsNames:
-  - "*.{{ $v.domain }}"
+  - "{{ $app }}.{{ $v.domain }}"
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ $v.certStage }}
+  usages:
+    - digital signature
+    - key encipherment
+    - ocsp signing
 ---
+{{- end }}
+---
+{{ $name := printf "cert-team-%s" $v.name }}
 {{- range $s := $v.services }}
 {{- if and (not $s.hasCert) (hasKey $s "domain") }}
 apiVersion: cert-manager.io/v1alpha2

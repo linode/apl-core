@@ -9,10 +9,10 @@ releases:
     installed: {{ eq $v.cluster.provider "aws" }}
     namespace: kube-system
     <<: *default
-  # - name: istio-local-gw
-  #   installed: {{ $v.cluster.hasKnative }}
-  #   namespace: istio-system
-  #   <<: *default
+  - name: istio-local-gw
+    installed: false #{{ $v.cluster.hasKnative }}
+    namespace: istio-system
+    <<: *default
   - name: knative-serving
     installed: {{ $v.cluster.hasKnative }}
     namespace: knative-serving

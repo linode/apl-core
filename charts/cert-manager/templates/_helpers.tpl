@@ -64,31 +64,15 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-webhook" $trimmedName | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "webhook.caRef" -}}
+{{ .Release.Namespace}}/{{ template "webhook.fullname" . }}-ca
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "webhook.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "webhook.selfSignedIssuer" -}}
-{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 46 | trimSuffix "-" -}}
-{{ printf "%s-webhook-selfsign" $trimmedName }}
-{{- end -}}
-
-{{- define "webhook.rootCAIssuer" -}}
-{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 52 | trimSuffix "-" -}}
-{{ printf "%s-webhook-ca" $trimmedName }}
-{{- end -}}
-
-{{- define "webhook.rootCACertificate" -}}
-{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 52 | trimSuffix "-" -}}
-{{ printf "%s-webhook-ca" $trimmedName }}
-{{- end -}}
-
-{{- define "webhook.servingCertificate" -}}
-{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 51 | trimSuffix "-" -}}
-{{ printf "%s-webhook-tls" $trimmedName }}
 {{- end -}}
 
 {{/*

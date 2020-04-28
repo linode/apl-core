@@ -224,7 +224,7 @@ releases:
           - sitespeed{{ end }}
 
   - name: index-{{ $teamId }}
-    installed: true
+    installed: false
     namespace: team-{{ $teamId }}
     chart: ../charts/index
     labels:
@@ -242,24 +242,6 @@ releases:
           {{- end }}
           {{- end }}
         services: {{- $team | get "services" list | toYaml | nindent 10 }}
-  {{- if ($team | get "cicd.enabled" "false") }}
-  {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
-  {{- if eq $cicdFlavour "drone" }}
-  # - name: drone-{{ $teamId }}
-  #   installed: true # @todo: set up values and enable
-  #   namespace: team-{{ $teamId }}
-  #   chart: ../charts/drone
-  #   labels:
-  #     tag: teams
-  #     pkg: cicd
-  #   values:
-  #     - ../values/drone/drone.gotmpl
-  #     - ../values/default.gotmpl
-  #     - env:
-  #         DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
-
-  {{- end }}
-  {{- end }}
   {{- end }}
   - name: oauth2-proxy-team-{{ $teamId }}
     installed: true
