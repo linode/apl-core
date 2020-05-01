@@ -10,10 +10,20 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
+{{- define "helm-toolkit.utils.joinListWithPipe" -}}
+{{- $local := dict "first" true -}}
+{{- range $k, $v := . -}}{{- if not $local.first -}}|{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- end -}}
+
 {{- define "auth-annotations" -}}
-nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne .name "admin"}}-team-{{ .name }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
+nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy{{ if ne .teamId "admin"}}-team-{{ .teamId }}{{ end }}.istio-system.svc.cluster.local/oauth2/auth"
 # the redirect part here is caught by the oauth2 ingress which will take care of the redirect
 nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+ingress.kubernetes.io/ssl-redirect: {{ if $.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+nginx.ingress.kubernetes.io/configuration-snippet: |
+  # set team header
+  add_header Auth-Group "{{ .teamId }}";
+  proxy_set_header Auth-Group "{{ .teamId }}";
 {{- end -}}
 
 {{- define "ingress-annotations" -}}
@@ -34,13 +44,10 @@ kubernetes.io/ingress.class: nginx
 {{- define "ingress-tls" -}}
 # also split list into domain used: custom vs team domain
 {{- $customDomainServices := list }}
-{{- $teamDomainServices := list }}
 {{- range $s := .services }}
-{{- if and (not $s.internal) (not $s.host) }}
+{{- if and (not $s.internal) (not $s.host) (not $.isAuthProxy) }}
 {{- if hasKey $s "domain" }}
 {{- $customDomainServices = (append $customDomainServices $s) }}
-{{- else }}
-{{- $teamDomainServices = (append $teamDomainServices $s) }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -49,11 +56,14 @@ kubernetes.io/ingress.class: nginx
     - {{ $s.domain }}
   secretName: cert-team-{{ $.teamId }}-{{ $s.name }}
 {{- end }}
+{{- range $app := list "auth" "apps" "proxy" }}
 - hosts:
-    {{- range $s := $teamDomainServices }}
-    {{- $domain := (printf "%s.%s" $s.name $.domain) }}
-    - {{ $domain }}
-    {{- end }}
-    - {{ printf "proxy.%s" $.domain }}
-  secretName: cert-team-{{ $.teamId }}
+    - {{ $app }}.{{ $.domain }}
+  secretName: cert-team-{{ $.teamId }}-{{ $app }}
+{{- end }}
+{{- if eq $.teamId "admin" }}
+- hosts:
+    - drone.{{ $.domain }}
+  secretName: cert-team-{{ $.teamId }}-drone
+{{- end }}
 {{- end }}

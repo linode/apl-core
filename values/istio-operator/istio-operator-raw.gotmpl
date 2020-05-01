@@ -2,44 +2,28 @@
 {{- $i := $v.charts.istio }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 resources:
-  - apiVersion: install.istio.io/v1alpha2
-    kind: IstioControlPlane
+  - apiVersion: install.istio.io/v1alpha1
+    kind: IstioOperator
     metadata:
-      namespace: istio-operator
+      namespace: istio-system
       name: istiocontrolplane
     spec:
-      {{- if eq $v.cluster.provider "azure" }}
-      gateways:
-        components:
-          ingressGateway:
+      profile: default
+      components:
+        ingressGateways:
+          - name: istio-ingressgateway
+            enabled: true
+            {{- if eq $v.cluster.provider "azure" }}
             k8s:
               readinessProbe:
                 failureThreshold: 20
-      {{- end }}
-      profile: {{ $i.profile }}
-      # autoInjection:
-      #   enabled: false
-      # cni:
-      #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
-      # security:
-      #   components:
-      #     certManager:
-      #       enabled: true
-      #     citadel:
-      #       enabled: false
-      values:
-        global:
-          mtls:
-            enabled: {{ $i.mtls.enabled }}
-          # tag: 1.2.2
-          # logging:
-          #   level: "default:info"
-          proxy:
-            accessLogFile: /dev/stdout
-            # autoInject: disabled
-          # controlPlaneSecurityEnabled: false
-          # disablePolicyChecks: false
-          # enableTracing: false
+            {{- end }}
+        egressGateways:
+          - name: istio-egressgateway
+            enabled: false
+        # cni:
+        #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
+      addonComponents:
         grafana:
           enabled: true
         prometheus:
@@ -48,24 +32,35 @@ resources:
           enabled: true
         kiali:
           enabled: true
-          contextPath: "/"
+      values:
+        # gateways:
+        #   istio-ingressgateway:
+        #     sds:
+        #       enabled: true
+        global:
+          mtls:
+            auto: false #{{ $i.mtls.enabled }}
+        #   controlPlaneSecurityEnabled: true
+          logging:
+            level: "default:info"
+        grafana:
+          env:
+            GF_SERVER_ROOT_URL: /grafana-istio/
+          contextPath: '/grafana-istio'
+        prometheus:
+          contextPath: '/prometheus-istio'
+        kiali:
+          contextPath: '/kiali'
           dashboard:
-            # auth:
-            #   strategy: anonymous
-            jaegerURL: https://tracing.{{ $domain }}
-            grafanaURL: https://grafana-istio.{{ $domain }}
+            auth:
+              strategy: anonymous
+            jaegerURL: https://apps.{{ $domain }}/tracing
+            grafanaURL: https://apps.{{ $domain }}/grafana-istio
         sidecarInjectorWebhook:
           enabled: true
-          enableNamespacesByDefault: true
-          # If true, webhook or istioctl injector will rewrite PodSpec for liveness
-          # health check to redirect request to sidecar. This makes liveness check work
-          # even when mTLS is enabled.
-          rewriteAppHTTPProbe: true
-        gateways:
-          istio-ingressgateway:
-            sds:
-              enabled: {{ $i | get "sds.enabled" "true" }}
-            type: ClusterIP
+          enableNamespacesByDefault: false
+        tracing:
+          contextPath: '/tracing'
   - apiVersion: v1
     kind: Secret
     data:

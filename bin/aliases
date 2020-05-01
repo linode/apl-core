@@ -22,3 +22,6 @@ alias kp="killall kubectl"
 alias h="helm"
 alias hk="h delete"
 alias hf_="helmfile"
+
+alias -g A1="| awk '{print \$1}'"
+alias -g X="| xargs"

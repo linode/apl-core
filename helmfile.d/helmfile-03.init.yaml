@@ -20,6 +20,7 @@ releases:
     namespace: default
     labels:
       init: true
+      pkg: knative
     <<: *skeleton
   - name: loki-artifacts
     installed: true
@@ -33,7 +34,7 @@ releases:
     <<: *default
   - name: gatekeeper-operator
     installed: true
-    namespace: gatekeeper-system
+    namespace: default
     labels:
       pkg: gatekeeper-operator
     <<: *default
