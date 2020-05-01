@@ -5,7 +5,7 @@ bases:
 
 releases:
   - name: index
-    installed: true
+    installed: false # TODO: remove in next minor
     namespace: team-admin
     <<: *default
   - name: drone

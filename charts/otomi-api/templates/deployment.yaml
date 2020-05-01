@@ -49,12 +49,12 @@ spec:
               containerPort: 8080
               protocol: TCP
           livenessProbe:
-            initialDelaySeconds: 60
+            # initialDelaySeconds: 20
             httpGet:
               path: /v1/readiness
               port: http
           readinessProbe:
-            initialDelaySeconds: 45
+            # initialDelaySeconds: 10
             httpGet:
               path: /v1/readiness
               port: http
