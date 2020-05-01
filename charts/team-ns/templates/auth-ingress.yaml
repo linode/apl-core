@@ -16,6 +16,13 @@ metadata:
   namespace: istio-system
 spec:
   rules:
+  - host: 'apps.{{ $v.domain }}'
+    http:
+      paths:
+      - backend:
+          serviceName: {{ $svc }}
+          servicePort: 80
+        path: /oauth2/userinfo
   - host: 'auth.{{ $v.domain }}'
     http:
       paths:
@@ -25,8 +32,11 @@ spec:
         path: /oauth2
   {{- if not $v.cluster.hasCloudLB }}
   tls: 
-    - secretName: cert-team-{{ $v.teamId }}
+    - secretName: cert-team-{{ $v.teamId }}-apps
       hosts:
-        - '*.{{ $v.domain }}'
+        - 'apps.{{ $v.domain }}'
+    - secretName: cert-team-{{ $v.teamId }}-auth
+      hosts:
+        - 'auth.{{ $v.domain }}'
   {{- end }}
 {{- end }}

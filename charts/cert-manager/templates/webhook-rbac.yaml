@@ -1,76 +1,49 @@
-{{- if .Values.webhook.enabled -}}
 {{- if .Values.global.rbac.create -}}
-### Webhook ###
----
-# apiserver gets the auth-delegator role to delegate auth decisions to
-# the core apiserver
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
+kind: Role
 metadata:
-  name: {{ include "webhook.fullname" . }}:auth-delegator
+  name: {{ template "webhook.fullname" . }}:dynamic-serving
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "webhook"
     helm.sh/chart: {{ include "webhook.chart" . }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
-subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: {{ include "webhook.fullname" . }}
-  namespace: {{ .Release.Namespace }}
-
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames:
+  - '{{ template "webhook.fullname" . }}-ca'
+  verbs: ["get", "list", "watch", "update"]
+# It's not possible to grant CREATE permission on a single resourceName.
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
 ---
 
-# apiserver gets the ability to read authentication. This allows it to
-# read the specific configmap that has the requestheader-* entries to
-# api agg
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
-  name: {{ include "webhook.fullname" . }}:webhook-authentication-reader
-  namespace: kube-system
+  name: {{ template "webhook.fullname" . }}:dynamic-serving
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "webhook"
     helm.sh/chart: {{ include "webhook.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: extension-apiserver-authentication-reader
+  name: {{ template "webhook.fullname" . }}:dynamic-serving
 subjects:
 - apiGroup: ""
   kind: ServiceAccount
   name: {{ include "webhook.fullname" . }}
   namespace: {{ .Release.Namespace }}
 
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ include "webhook.fullname" . }}:webhook-requester
-  labels:
-    app: {{ include "webhook.name" . }}
-    app.kubernetes.io/name: {{ include "webhook.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    helm.sh/chart: {{ include "webhook.chart" . }}
-rules:
-- apiGroups:
-  - admission.cert-manager.io
-  resources:
-  - certificates
-  - certificaterequests
-  - issuers
-  - clusterissuers
-  verbs:
-  - create
-{{- end -}}
 {{- end -}}

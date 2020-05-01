@@ -18,10 +18,10 @@ is for developers only.
 This readme has the following index:
 
 1. [Prerequisites for installation](#1-prerequisites-for-installation)
-2. [Installation](#3-intallation)
-3. [Development](#2-development)
-4. [Operation](#3-operation)
-5. [Troubleshooting](#4-troubleshooting)
+2. [Installation](#2-installation)
+3. [Development](#3-development)
+4. [Operation](#4-operation)
+5. [Troubleshooting](#4-5roubleshooting)
 
 ## 1. Prerequisites for development
 
@@ -69,10 +69,11 @@ Please look at the `$ENV_DIR/env/**` files and configure as needed for your targ
 The first time install must be done for each configured cloud and cluster like this:
 
 ```bash
-export ENV_DIR=$PWD/../otomi-values CLOUD=(azure|google|aws) && export CLUSTER=(dev|demo|prd) && bin/deploy.sh
+export ENV_DIR=$PWD/../otomi-values CLOUD=(azure|google|aws) CLUSTER=(dev|demo|prd) && bin/deploy.sh
 ```
 
-It should install and start all the services in this repo.
+It should install and start all the services in this repo. In case of errors see [troubleshooting](#5-troubleshooting)
+below.
 
 ### 2.1 GitOps syncing
 
@@ -104,7 +105,12 @@ hfd -l name=index apply
 hfd --log-level=debug -f helmfile.d/helmfile-30.system.yaml -l name=index apply
 ```
 
-## 2. Development
+### 2.3 Upgrades
+
+The `bin/upgrades` folder should have an upgrade script for all minor and major changes. Please run successively and
+make sure no errors occur.
+
+## 3. Development
 
 The helmfiles are found in `helmfile.d/` and `helmfile.tpl`, and their values under `values/**`. The `helmfile.tpl` dir
 only contains charts that are used for basic k8s manifest generation to be deployed with kubectl apply, so we don't get
@@ -134,7 +140,7 @@ hfd -l name=prometheus-operator apply
 hfd -f helmfile.d/helmfile-10.monitoring.yaml apply
 ```
 
-## 3. Operation
+## 4. Operation
 
 As explained in the intro, the services are listed under the
 [index of the admin services](https://index.team-admin.dev.aks.otomi.cloud/).
@@ -143,7 +149,13 @@ It is possible to change settings through any of these UIs, but to make them per
 scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is
 injected.
 
-## 4. Troubleshooting
+## 5. Troubleshooting
+
+### Deployment
+
+It might be needed to run the deployment twice because of race conditions in the `gatekeeper-operator-artifacts` chart.
+
+### Istio
 
 ```bash
 # istio auth checks from gateway to service (here grafana):

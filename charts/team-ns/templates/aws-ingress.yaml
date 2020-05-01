@@ -13,8 +13,8 @@ metadata:
 spec:
   rules:
     {{- range $s := $v.services }}
-    {{- if and (not $s.internal) (not $s.host) -}}
-    {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+    {{- if and (not $s.internal) (not $s.host) (hasKey $s "domain") }}
+    {{- $domain := index $s "domain" }}
     - host: {{ $domain }}
       http:
         paths:
@@ -27,12 +27,31 @@ spec:
               servicePort: 80
     {{- end }}
     {{- end }}
-    - host: {{ printf "proxy.%s" $v.domain }}
+    {{- range $app := list "auth" "apps" "proxy" }}
+    - host: {{ $app }}.{{ $v.domain }}
       http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+          - backend:
+              serviceName: nginx-ingress-controller
+              servicePort: 80
+    {{- end }}
+    {{- if (eq $v.teamId "admin") }}
+    - host: drone.{{ $v.domain }}
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
         paths:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
+    {{- end }}
 {{- end }}
 {{- if eq $v.teamId "admin" }}
 ---

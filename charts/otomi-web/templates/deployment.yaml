@@ -24,11 +24,6 @@ spec:
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          # command:
-          # - sh
-          # args:
-          # - -c
-          # - node --max-http-header-size=16384 node_modules/serve/bin/serve.js build
           {{- with .Values.env }}
           env: {{- toYaml . | nindent 12 }}
           {{- end }}

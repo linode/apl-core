@@ -18,3 +18,7 @@ webhook:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
+
+installCRDs: true
+extraArgs:
+  - --feature-gates=ValidateCAA=false
