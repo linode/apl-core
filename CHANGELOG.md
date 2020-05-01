@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.2](https://github.com/redkubes/otomi-stack/compare/v0.10.1...v0.10.2) (2020-05-01)
+
+### Bug Fixes
+
+- made package private
+  [ci skip](<[1275723](https://github.com/redkubes/otomi-stack/commit/1275723175656296bf17a05f1c866d6e9e001782)>)
+- removed faulty stack maintenance task
+  [ci skip](<[ea05cea](https://github.com/redkubes/otomi-stack/commit/ea05cea1dc69d92dd476b25d5e2916103542f24c)>)
+
 ### [0.10.1](https://github.com/redkubes/otomi-stack/compare/v0.10.0...v0.10.1) (2020-05-01)
 
 ### Bug Fixes
