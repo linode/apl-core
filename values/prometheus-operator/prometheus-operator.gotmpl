@@ -85,7 +85,7 @@ alertmanager:
         sidecar.istio.io/inject: "false"
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
-    # logFormat: logfmt # @todo: remove if in master: https://github.com/helm/charts/pull/15330
+    # logFormat: logfmt # TODO: remove if in master: https://github.com/helm/charts/pull/15330
   config:
     {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
     global:

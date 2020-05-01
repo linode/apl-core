@@ -61,8 +61,8 @@ spec:
             kubectl delete cm cert-arns-team-{{ $v.teamId }}
             kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
 {{- else if eq $v.cluster.provider "google" }}
-              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
+              # TODO: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
 {{- else if eq $v.cluster.provider "azure" }}
-              # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
+              # TODO: request domain wildcard cert and add to secret cert-team-{{ $v.teamId }}
 {{- end }}
 {{- end }}

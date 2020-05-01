@@ -39,8 +39,8 @@ spec:
             # patch the aws ingress
             kubectl -n ingress get ing team-{{ $v.name }} -o json | jq ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"] = \"$certArns\"" | kubectl -n ingress apply -f -
 {{- else if eq $v.cluster.provider "google" }}
-            # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+            # TODO: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
 {{- else if eq $v.cluster.provider "azure" }}
-            # @todo: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
+            # TODO: request domain wildcard cert and add to secret cert-team-{{ $v.name }}
 {{- end }}
 {{- end }}
