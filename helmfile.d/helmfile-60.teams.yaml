@@ -49,7 +49,7 @@ releases:
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
         {{- if eq $cicdFlavour "drone" }}
-        # @todo: fix this weirdness: the next two lines fook the yaml parser:
+        # TODO: fix this weirdness: the next two lines fook the yaml parser:
         # - name: drone
         #   svc: drone-{{ $teamId }}
         {{- end }}

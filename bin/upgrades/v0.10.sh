@@ -1,25 +1,45 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 shopt -s expand_aliases
-. ../bin/utils.sh
+. bin/utils.sh
 set -e
 
 # pre update steps:
 
-# remove everything related to cert-manager
-# charts
-h -n ingress delete cert-manager
-# delete all cert-manager stuff that was done outside of charts
-k get crd G cert-manager A1 X kubectl delete
+# Now able to tag old resources to be adopted by helm 3.20, yay!
+# https://github.com/helm/helm/issues/7697#issuecomment-613535044
 
-# remove everything related to cert-manager
-# charts
-h -n ingress delete cert-manager
-# delete all cert-manager stuff that was done outside of charts
-k get crd G cert-manager A1 X kubectl delete
+# istio-operator
+KIND=namespace
+NAME=istio-operator
+RELEASE=istio-operator
+NAMESPACE=default
+. bin/upgrades/adopt-by-helm.sh
 
-# remove roles and bindings related to nginx-ingress
-k delete clusterrolebinding nginx-ingress
-k delete clusterrole nginx-ingress
-ki delete rolebinding nginx-ingress
-ki delete role nginx-ingress
+# gatekeeper
+KIND=namespace
+NAME=gatekeeper-system
+RELEASE=gatekeeper-operator
+NAMESPACE=default
+. bin/upgrades/adopt-by-helm.sh
+
+KIND=crd
+for NAME in $(k get crd | grep gatekeeper | awk '{print $1}'); do
+  . bin/upgrades/adopt-by-helm.sh
+done
+
+# cert-manager
+KIND=crd
+RELEASE=cert-manager
+NAMESPACE=ingress
+for NAME in $(k get crd | grep cert-manager | awk '{print $1}'); do
+  . bin/upgrades/adopt-by-helm.sh
+done
+
+# nginx-ingress
+RELEASE=nginx-ingress
+NAME=nginx-ingress
+NAMESPACE=ingress
+for KIND in "rolebinding" "role"; do
+  . bin/upgrades/adopt-by-helm.sh
+done
 
