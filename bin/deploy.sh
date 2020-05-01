@@ -9,7 +9,7 @@ hft -f helmfile.tpl/helmfile-init.yaml | k apply -f -
 # set +e
 # k -n maintenance create secret generic flux-ssh --from-file=identity=.ssh/id_rsa &>/dev/null
 # set -e
-k apply --validate=false -f k8s/cert-manager-init
+# k apply --validate=false -f k8s/cert-manager-init
 
 # now sync
 bin/sync.sh

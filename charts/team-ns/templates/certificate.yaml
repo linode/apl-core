@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
-{{- range $app := list "auth" "apps" "proxy" }}
-{{ $name := printf "cert-team-%s-%s" $v.name $app }}
+{{- range $app := list "auth" "apps" "proxy" "drone" }}
+{{ $name := printf "cert-team-%s-%s" $v.teamId $app }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -24,7 +24,7 @@ spec:
 ---
 {{- end }}
 ---
-{{ $name := printf "cert-team-%s" $v.name }}
+{{ $name := printf "cert-team-%s" $v.teamId }}
 {{- range $s := $v.services }}
 {{- if and (not $s.hasCert) (hasKey $s "domain") }}
 apiVersion: cert-manager.io/v1alpha2

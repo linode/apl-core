@@ -32,7 +32,10 @@ spec:
         path: /oauth2
   {{- if not $v.cluster.hasCloudLB }}
   tls: 
-    - secretName: cert-team-{{ $v.name }}-auth
+    - secretName: cert-team-{{ $v.teamId }}-apps
+      hosts:
+        - 'apps.{{ $v.domain }}'
+    - secretName: cert-team-{{ $v.teamId }}-auth
       hosts:
         - 'auth.{{ $v.domain }}'
   {{- end }}

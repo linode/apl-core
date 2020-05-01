@@ -10,7 +10,7 @@ releases:
     namespace: kube-system
     <<: *default
   - name: istio-local-gw
-    installed: false #{{ $v.cluster.hasKnative }}
+    installed: {{ $v.cluster.hasKnative }}
     namespace: istio-system
     <<: *default
   - name: knative-serving

@@ -9,6 +9,7 @@ image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-api
   tag: {{ $o.image.tag }}
+  pullPolicy: {{ $o.image.pullPolicy }}
 
 git:
   repoUrl: {{ $o.git.repoUrl }}
