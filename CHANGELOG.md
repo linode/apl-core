@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/redkubes/otomi-stack/compare/v0.9.23...v0.10.0) (2020-05-01)
+
+### ⚠ BREAKING CHANGES
+
+- **moved wildcard domains under apps host:** istio upgraded, path mapping added
+
+### Bug Fixes
+
+- missing autoscaler
+  ([7b9a936](https://github.com/redkubes/otomi-stack/commit/7b9a936aa81d6a52b590db376377a7369966d346))
+- tmp commit ([9ceddae](https://github.com/redkubes/otomi-stack/commit/9ceddaed91d8c5d36670b84114d2c8b245eac3cd))
+
+### Code Refactoring
+
+- **moved wildcard domains under apps host:** apps behind paths
+  ([faddf7a](https://github.com/redkubes/otomi-stack/commit/faddf7ae107a3a36fc03523dbe4b91a2819fb910))
+
+### Feature Improvements
+
+- using new helm adoption feature
+  ([a021714](https://github.com/redkubes/otomi-stack/commit/a021714dfd6d5aa05652c4d004feb87df865a27f))
+
 ### [0.9.23](https://github.com/redkubes/otomi-stack/compare/v0.9.22...v0.9.23) (2020-04-25)
 
 ### Bug Fixes
