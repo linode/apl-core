@@ -8,8 +8,8 @@ image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-web
   tag: {{ $o.image.tag }}
-  pullPolicy: {{ $o.image.pullPolicy }}
+  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
 env:
-  - name: BASE_URL
-    value: '/api'
+  BASE_URL: /api
+  CONTEXT_PATH: otomi

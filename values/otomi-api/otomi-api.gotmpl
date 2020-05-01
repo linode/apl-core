@@ -9,11 +9,11 @@ image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-api
   tag: {{ $o.image.tag }}
-  pullPolicy: {{ $o.image.pullPolicy }}
+  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
 git:
   repoUrl: {{ $o.git.repoUrl }}
-  localPath: "/tmp/otomi-stack"
+  localPath: /tmp/otomi-stack
   user: {{ $o.git.user }}
   email: {{ $o.git.email }}
   password: {{ $o.git.password }}

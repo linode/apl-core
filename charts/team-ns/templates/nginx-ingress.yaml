@@ -7,6 +7,7 @@
 # one for auth redirect and one passthrough
 {{- $public := list }}
 {{- $private := list }}
+{{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
   {{- if not $s.isAuthProxy }}
@@ -17,7 +18,11 @@
         {{- if hasKey $s "domain" }}
         {{- $privateCustom = (append $privateCustom $s) }}
         {{- else }}
-        {{- $private = (append $private $s) }}
+          {{- if $s.forwardPath -}}
+          {{- $privateForward = (append $privateForward $s) }}
+          {{- else }}
+          {{- $private = (append $private $s) }}
+          {{- end }}
         {{- end }}
       {{- end }}
     {{- else }}
@@ -29,31 +34,15 @@
 # private default routes
 {{- if gt (len $private) 0 }}
 ---
-{{ $apps := include "helm-toolkit.utils.joinListWithComma" $private }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    # nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
-    # nginx.ingress.kubernetes.io/rewrite-target: $2
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      # set team header
-      add_header Auth-Group "{{ $v.teamId }}";
-      proxy_set_header Auth-Group "{{ $v.teamId }}";
-      set $h otomi;
-      if ($1) {
-        set $h $1;
-      }
-      proxy_set_header Host $h.{{ $v.domain }};
-      location ^/ {
-        rewrite ^/ /otomi/ last;
-      }
-      location ^/tracing {
-        rewrite ^/tracing/(.*) /tracing/$1 last;
-      }
-      rewrite ^/([^/]+)/(.*) /$2 last;
+    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     {{- include "ingress-annotations" $v | nindent 4 }}
+    {{- include "auth-annotations" $v | nindent 4 }}
+      rewrite ^/$ /otomi/ permanent;
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-ingress-team-{{ $v.teamId }}-apps
   namespace: istio-system
@@ -65,14 +54,41 @@ spec:
       - backend:
           serviceName: istio-ingressgateway
           servicePort: 80
-        path: /([^/]+)(.*)
+        path: /
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+        path: /({{ range $i, $s := $private }}{{ if gt $i 0 }}|{{ end }}{{ $s.name }}{{ end }})/(.*)
+  {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
+  tls:
+    - hosts:
+        - {{ $appsDomain }}
+      secretName: cert-team-{{ $v.teamId }}-apps
+  {{- end }}
+{{- end }}
+
+{{- if gt (len $privateForward) 0 }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
+    nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
+    {{- include "ingress-annotations" $v | nindent 4 }}
+    {{- include "auth-annotations" $v | nindent 4 }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  name: nginx-ingress-team-{{ $v.teamId }}-apps-forward
+  namespace: istio-system
+spec:
+  rules:
   - host: {{ $appsDomain }}
     http:
       paths:
       - backend:
           serviceName: istio-ingressgateway
           servicePort: 80
-        path: /(.*)
+        path: /({{ range $i, $s := $privateForward }}{{ if gt $i 0 }}|{{ end }}{{ $s.name }}{{ end }})/(.*)
   {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
   tls:
     - hosts:
@@ -105,8 +121,14 @@ spec:
           servicePort: 80
   {{- end }}
   {{- if eq $v.teamId "admin" }}
-  # exception for drone
+  # exception for drone and prometheus
   - host: drone.{{ $v.domain }}
+    http:
+      paths:
+      - backend:
+          serviceName: istio-ingressgateway
+          servicePort: 80
+  - host: prometheus-istio.{{ $v.domain }}
     http:
       paths:
       - backend:
@@ -124,6 +146,9 @@ spec:
     - hosts:
         - drone.{{ $v.domain }}
       secretName: cert-team-{{ $v.teamId }}-drone
+    - hosts:
+        - prometheus-istio.{{ $v.domain }}
+      secretName: cert-team-{{ $v.teamId }}-prometheus-istio
   {{- end }}
   {{- end }}
 {{- end }}

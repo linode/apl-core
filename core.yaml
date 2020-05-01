@@ -72,6 +72,8 @@ services:
       gatewayDisabled: true
   - name: prometheus-istio
     svc: prometheus
+    # forwardPath: true
+    ownHost: true
     port: 9090
     logo:
       name: prometheus
@@ -88,12 +90,14 @@ services:
       gatewayDisabled: true
   - name: kiali
     svc: kiali
+    forwardPath: true
     port: 20001
     namespace: istio-system
     mtls:
       gatewayDisabled: true
   - name: tracing
     svc: tracing
+    forwardPath: true
     logo:
       name: jaeger
     namespace: istio-system

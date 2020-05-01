@@ -213,10 +213,11 @@ grafana:
     portName: http-service
   grafana.ini:
     "auth.anonymous":
-      enabled: false
-      org_role: Admin
-    "auth.generic_oauth":
       enabled: true
+      org_role: Admin
+      org_name: Main Org.
+    "auth.generic_oauth":
+      enabled: false
       name: OAuth
       org_role: Admin
       allow_sign_up: true

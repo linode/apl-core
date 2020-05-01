@@ -2,7 +2,7 @@ helmDefaults:
   atomic: false
   wait: true
   timeout: 1200
-  force: true
+  force: false
 
 {{ $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
 environments:
