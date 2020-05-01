@@ -41,7 +41,8 @@
   "name": "otomi-stack",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redkubes/otomi-stack.git"
+    "url": "git+https://github.com/redkubes/otomi-stack.git",
+    "private": true
   },
   "run-if-changed": {
     "package-lock.json": "npm install --prefer-offline --no-audit"
