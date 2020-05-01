@@ -28,6 +28,7 @@ releases:
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
   {{- range $teamId, $team := $tc.teams }}
   {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $teamId $v.cluster.domain }}
+  {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}
     installed: true
@@ -61,9 +62,6 @@ releases:
         {{- end }}
   {{- if $v.cluster.isMultitenant }}        
   - name: prometheus-{{ $teamId }}
-    {{- $promHost := printf "prometheus.%s" $domain }}
-    {{- $alertsHost := printf "alertmanager.%s" $domain }}
-    {{- $grafanaHost := printf "grafana.%s"  $domain }}
     installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-operator
@@ -76,7 +74,7 @@ releases:
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
           alertmanagerSpec:
-            externalUrl: https://{{ $alertsHost }}
+            externalUrl: https://{{ $appsDomain }}/alertmanager
           config:
             {{- $receiver := ($team | get "receiver" ($po.alertmanager | get "receiver" "slack")) }}
             {{- if eq $receiver "slack" }}
@@ -116,7 +114,7 @@ releases:
               {{- end }}
         prometheus:
           prometheusSpec:
-            externalUrl: https://{{ $promHost }}
+            externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
@@ -131,7 +129,7 @@ releases:
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:
             server:
-              root_url: https://{{ $grafanaHost }}
+              root_url: https://{{ $appsDomain }}/grafana
             {{- if hasKey $team "oidc" }}
             "auth.generic_oauth":
               client_id: {{ $team.oidc.clientID }}

@@ -34,7 +34,7 @@ releases:
     <<: *default
   - name: gatekeeper-operator
     installed: true
-    namespace: gatekeeper-system
+    namespace: default
     labels:
       pkg: gatekeeper-operator
     <<: *default

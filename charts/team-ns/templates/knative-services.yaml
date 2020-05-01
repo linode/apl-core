@@ -2,7 +2,7 @@
 {{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
-{{- if and (not (hasKey $s "host")) (hasKey $s "ksvc") }}
+{{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}
 apiVersion: serving.knative.dev/v1

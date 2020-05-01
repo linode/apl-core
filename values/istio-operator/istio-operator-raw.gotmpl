@@ -21,46 +21,8 @@ resources:
         egressGateways:
           - name: istio-egressgateway
             enabled: false
-            k8s:
-              env:
-                - name: ISTIO_META_ROUTER_MODE
-                  value: "sni-dnat"
-              service:
-                ports:
-                  - port: 80
-                    name: http2
-                  - port: 443
-                    name: https
-                  - port: 15443
-                    targetPort: 15443
-                    name: tls
-              hpaSpec:
-                maxReplicas: 5
-                minReplicas: 1
-                scaleTargetRef:
-                  apiVersion: apps/v1
-                  kind: Deployment
-                  name: istio-egressgateway
-                metrics:
-                  - type: Resource
-                    resource:
-                      name: cpu
-                      targetAverageUtilization: 80
-              resources:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 2000m
-                  memory: 1024Mi
-              strategy:
-                rollingUpdate:
-                  maxSurge: "100%"
-                  maxUnavailable: "25%"
-        citadel:
-          enabled: false
-        cni:
-          enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
+        # cni:
+        #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
       addonComponents:
         grafana:
           enabled: true
@@ -71,27 +33,34 @@ resources:
         kiali:
           enabled: true
       values:
+        # gateways:
+        #   istio-ingressgateway:
+        #     sds:
+        #       enabled: true
         global:
           mtls:
-            auto: {{ $i.mtls.enabled }}
+            auto: false #{{ $i.mtls.enabled }}
         #   controlPlaneSecurityEnabled: true
-        #   # tag: 1.2.2
           logging:
             level: "default:info"
         grafana:
-          contextPath: /grafana
+          env:
+            GF_SERVER_ROOT_URL: /grafana-istio/
+          contextPath: '/grafana-istio'
+        prometheus:
+          contextPath: '/prometheus-istio'
         kiali:
-          contextPath: /kiali
+          contextPath: '/kiali'
           dashboard:
             auth:
               strategy: anonymous
-            jaegerURL: https://apps.{{ $domain }}/tracing/
-            grafanaURL: https://apps.{{ $domain }}/grafana-istio/
+            jaegerURL: https://apps.{{ $domain }}/tracing
+            grafanaURL: https://apps.{{ $domain }}/grafana-istio
         sidecarInjectorWebhook:
           enabled: true
-          enableNamespacesByDefault: true
+          enableNamespacesByDefault: false
         tracing:
-          contextPath: /tracing
+          contextPath: '/tracing'
   - apiVersion: v1
     kind: Secret
     data:
