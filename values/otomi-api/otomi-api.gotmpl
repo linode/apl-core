@@ -20,7 +20,7 @@ git:
 
 env:
   CLUSTER: {{ printf "%s/%s" $c.provider $c.name }}
-  DISABLE_SYNC: {{ $o | get "syncEnabled" | default true }}
+  DISABLE_SYNC: {{ $o | get "syncEnabled" true }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
