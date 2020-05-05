@@ -51,6 +51,17 @@ spec:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
+    - host: prometheus-istio.{{ $v.domain }}
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+        paths:
+          - backend:
+              serviceName: nginx-ingress-controller
+              servicePort: 80
     {{- end }}
 {{- end }}
 {{- if eq $v.teamId "admin" }}

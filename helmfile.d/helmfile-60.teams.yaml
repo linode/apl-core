@@ -14,6 +14,7 @@ releases:
     chart: ../charts/team-ns
     labels:
       tag: teams
+      team: admin
     values:
       - name: admin
         teamId: admin
@@ -37,6 +38,7 @@ releases:
     chart: ../charts/team-ns
     labels:
       tag: teams
+      team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $domain }}
@@ -68,6 +70,7 @@ releases:
     chart: ../charts/prometheus-operator
     labels:
       tag: teams
+      team: {{ $teamId }}
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
@@ -189,6 +192,7 @@ releases:
     chart: ../charts/prometheus-msteams
     labels:
       tag: teams
+      team: {{ $teamId }}
     values:
       - ../values/prometheus-msteams/prometheus-msteams.gotmpl
       - ../values/default.gotmpl
@@ -209,6 +213,7 @@ releases:
     chart: ../charts/grafana-dashboards
     labels:
       tag: teams
+      team: {{ $teamId }}
     values:
       - ../values/grafana-dashboards/grafana-dashboards.gotmpl
       - ../values/default.gotmpl
@@ -228,6 +233,7 @@ releases:
     chart: ../charts/index
     labels:
       tag: teams
+      team: {{ $teamId }}
       pkg: index
     values:
       - ../values/index/index.gotmpl

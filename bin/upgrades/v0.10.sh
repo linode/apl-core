@@ -64,7 +64,13 @@ for KIND in "clusterrolebinding" "clusterrole" "rolebinding" "role"; do
   . bin/upgrades/adopt-by-helm.sh 1
 done
 
+# post steps
 
-# Now force some charts
-hfd -l name=nginx-ingress apply --args=force=true
-hfd -l name=cert-manager apply --args=force=true
+# 1. delete resources that are blocking and safe to delete
+# 1.1 delete all po-grafana deploy and svc for each team and sync their team chart
+
+
+# 2. Alternating deployments
+# Some charts need defaults.yaml/helmDefaults.force=true (resulting in kubectl replace) while others need force=false
+# so now deploy with defaults.yaml/helmDefaults.force=true and set back to false afterwards
+# then deploy again keep and keep alternating until all charts pass

@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 {{- $ := . }}
-{{- range $app := list "auth" "apps" "proxy" "drone" }}
+{{- range $app := list "auth" "apps" "proxy" "drone" "prometheus-istio" }}
+{{- if or (eq $v.teamId "admin") (ne $app "prometheus-istio") }}
 {{ $name := printf "cert-team-%s-%s" $v.teamId $app }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -22,6 +23,7 @@ spec:
     - key encipherment
     - ocsp signing
 ---
+{{- end }}
 {{- end }}
 ---
 {{ $name := printf "cert-team-%s" $v.teamId }}

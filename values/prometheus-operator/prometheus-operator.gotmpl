@@ -32,16 +32,16 @@ prometheusOperator:
     enabled: false
   tlsProxy:
     enabled: false
-  createCustomResource: true
+  manageCrds: true
   kubeletService:
     enabled: true
 prometheus:
   prometheusSpec:
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.customerLabels.customer $v.cluster.provider $v.cluster.name | lower | quote }}
-    podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
+    # podMetadata:
+    #   annotations:
+    #     sidecar.istio.io/inject: "false"
     portName: http-web
     storageSpec:
       volumeClaimTemplate:
@@ -80,9 +80,9 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
-    podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
+    # podMetadata:
+    #   annotations:
+    #     sidecar.istio.io/inject: "false"
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
     # logFormat: logfmt # TODO: remove if in master: https://github.com/helm/charts/pull/15330
@@ -151,18 +151,13 @@ alertmanager:
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       {{- end }}
 grafana:
-  image:
-    tag: 6.7.1
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
-  # sidecar:
-  #   dashboards:
-  #     enabled: false
-  podAnnotations:
-    sidecar.istio.io/inject: "false"
+  # podAnnotations:
+  #   sidecar.istio.io/inject: "false"
   plugins:
     - grafana-piechart-panel
   additionalDataSources:
@@ -240,6 +235,16 @@ commonLabels: {{- toYaml $v.customerLabels | nindent 2 }}
   otomistack: 'true'
 
 kube-state-metrics:
+  image:
+    tag: v1.8.0
+  collectors:
+    networkpolicies: false
+    mutatingwebhookconfigurations: false
+    validatingwebhookconfigurations: false
+    volumeattachments: false
+    verticalpodautoscalers: false
+  # podAnnotations:
+  #   sidecar.istio.io/inject: "false"
   podSecurityPolicy:
     enabled: false
   customerLabels: {{- toYaml $v.customerLabels | nindent 4 }}

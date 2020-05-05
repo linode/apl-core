@@ -13,7 +13,7 @@ ingressShim:
 cainjector:
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 webhook:
-  enabled: false
+  # enabled: false
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 
 podAnnotations:
