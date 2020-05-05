@@ -65,5 +65,8 @@ kubernetes.io/ingress.class: nginx
 - hosts:
     - drone.{{ $.domain }}
   secretName: cert-team-{{ $.teamId }}-drone
+- hosts:
+    - prometheus-istio.{{ $.domain }}
+  secretName: cert-team-{{ $.teamId }}-prometheus-istio
 {{- end }}
 {{- end }}

@@ -39,6 +39,12 @@ spec:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
+    - host: prometheus-istio.{{ $v.domain }}
+      http:
+        paths:
+          - backend:
+              serviceName: nginx-ingress-controller
+              servicePort: 80
     {{- end }}
   tls: {{- include "ingress-tls" $v | nindent 4 }}
 {{- end }}
