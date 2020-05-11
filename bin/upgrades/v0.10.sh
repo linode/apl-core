@@ -48,6 +48,14 @@ for NAME in k8sallowedrepos k8sbannedimagetags k8scontainerlimits k8spspallowedu
   . bin/upgrades/adopt-by-helm.sh 1
 done
 
+# prometheus-operator
+KIND=crd
+RELEASE=prometheus-operator-crds
+NAMESPACE=monitoring
+for NAME in $(k get crd | grep coreos | awk '{print $1}'); do
+  . bin/upgrades/adopt-by-helm.sh 1
+done
+
 # cert-manager
 KIND=crd
 RELEASE=cert-manager
