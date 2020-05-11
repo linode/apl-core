@@ -8,6 +8,8 @@ releases:
   - name: prometheus-operator
     installed: true
     namespace: monitoring
+    labels:
+      pkg: prometheus-operator
     <<: *default
   - name: promitor-agent-scraper
     installed: false # {{ eq $v.cluster.provider "azure" }}

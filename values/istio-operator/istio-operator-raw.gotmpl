@@ -40,7 +40,7 @@ resources:
         global:
           mtls:
             auto: false #{{ $i.mtls.enabled }}
-        #   controlPlaneSecurityEnabled: true
+          # controlPlaneSecurityEnabled: true
           logging:
             level: "default:info"
         grafana:
@@ -61,13 +61,4 @@ resources:
           enableNamespacesByDefault: false
         tracing:
           contextPath: '/tracing'
-  - apiVersion: v1
-    kind: Secret
-    data:
-      passphrase: YmxhZGlibGE= # bladibla
-      username: YWRtaW4=
-    metadata:
-      name: kiali
-      namespace: istio-system
-    type: Opaque
                 

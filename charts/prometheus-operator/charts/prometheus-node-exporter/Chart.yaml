@@ -13,4 +13,4 @@ maintainers:
 name: prometheus-node-exporter
 sources:
 - https://github.com/prometheus/node_exporter/
-version: 1.9.1
+version: 1.7.3

@@ -50,7 +50,7 @@ livenessProbe:
 
 image:
   repository: grafana/grafana
-  tag: 6.7.3
+  tag: 6.4.2
   pullPolicy: IfNotPresent
 
   ## Optionally specify an array of imagePullSecrets.
@@ -62,9 +62,8 @@ image:
 
 testFramework:
   enabled: true
-  image: "bats/bats"
-  tag: "v1.1.0"
-  imagePullPolicy: IfNotPresent
+  image: "dduportal/bats"
+  tag: "0.4.0"
   securityContext: {}
 
 securityContext:
@@ -89,13 +88,12 @@ extraEmptyDirMounts: []
 # priorityClassName:
 
 downloadDashboardsImage:
-  repository: curlimages/curl
-  tag: 7.68.0
+  repository: appropriate/curl
+  tag: latest
   pullPolicy: IfNotPresent
 
 downloadDashboards:
   env: {}
-  resources: {}
 
 ## Pod Annotations
 # podAnnotations: {}
@@ -121,15 +119,8 @@ service:
   labels: {}
   portName: service
 
-extraExposePorts: []
- # - name: keycloak
- #   port: 8080
- #   targetPort: 8080
- #   type: ClusterIP
-
 ingress:
   enabled: false
-  # Values can be templated
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -216,7 +207,7 @@ initChownData:
   ##
   image:
     repository: busybox
-    tag: "1.31.1"
+    tag: "1.30"
     pullPolicy: IfNotPresent
 
   ## initChownData resource requests and limits
@@ -256,18 +247,8 @@ admin:
 ## Extra environment variables that will be pass onto deployment pods
 env: {}
 
-## "valueFrom" environment variable references that will be added to deployment pods
-## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core
-## Renders in container spec as:
-##   env:
-##     ...
-##     - name: <key>
-##       valueFrom:
-##         <value rendered as YAML>
-envValueFrom: {}
-
 ## The name of a secret in the same kubernetes namespace which contain values to be added to the environment
-## This can be useful for auth tokens, etc. Value is templated.
+## This can be useful for auth tokens, etc
 envFromSecret: ""
 
 ## Sensible environment variables that will be rendered as new secret object
@@ -281,7 +262,6 @@ extraSecretMounts: []
   #   mountPath: /etc/secrets
   #   secretName: grafana-secret-files
   #   readOnly: true
-  #   subPath: ""
 
 ## Additional grafana server volume mounts
 # Defines additional volume mounts.
@@ -396,22 +376,6 @@ grafana.ini:
     mode: console
   grafana_net:
     url: https://grafana.net
-## grafana Authentication can be enabled with the following values on grafana.ini
- # server:
-      # The full public facing url you use in browser, used for redirects and emails
- #    root_url:
- # https://grafana.com/docs/grafana/latest/auth/github/#enable-github-in-grafana
- # auth.github:
- #    enabled: false
- #    allow_sign_up: false
- #    scopes: user:email,read:org
- #    auth_url: https://github.com/login/oauth/authorize
- #    token_url: https://github.com/login/oauth/access_token
- #    api_url: https://github.com/user
- #    team_ids:
- #    allowed_organizations:
- #    client_id:
- #    client_secret:
 ## LDAP Authentication can be enabled with the following values on grafana.ini
 ## NOTE: Grafana will fail to start if the value for ldap.toml is invalid
   # auth.ldap:
@@ -455,7 +419,7 @@ smtp:
 ## Sidecars that collect the configmaps with specified label and stores the included files them into the respective folders
 ## Requires at least Grafana 5 to work and can't be used together with parameters dashboardProviders, datasources and dashboards
 sidecar:
-  image: kiwigrid/k8s-sidecar:0.1.99
+  image: kiwigrid/k8s-sidecar:0.1.20
   imagePullPolicy: IfNotPresent
   resources: {}
 #   limits:
@@ -468,7 +432,6 @@ sidecar:
   # skipTlsVerify: true
   dashboards:
     enabled: false
-    SCProvider: true
     # label that the configmaps with dashboards are marked with
     label: grafana_dashboard
     # folder in the pod that should hold the collected dashboards (unless `defaultFolderName` is set)
@@ -491,8 +454,6 @@ sidecar:
       type: file
       # disableDelete to activate a import-only behaviour
       disableDelete: false
-      # allow updating provisioned dashboards from the UI
-      allowUiUpdates: false
   datasources:
     enabled: false
     # label that the configmaps with datasources are marked with
@@ -501,7 +462,3 @@ sidecar:
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
     searchNamespace: null
-
-## Override the deployment namespace
-##
-namespaceOverride: ""

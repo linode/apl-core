@@ -10,6 +10,8 @@ cainjector:
   replicaCount: 1
   resources: {}
   securityContext: {}
+  serviceAccount:
+    create: true
   strategy: {}
   tolerations: []
 clusterResourceNamespace: ""
@@ -64,5 +66,7 @@ webhook:
   resources: {}
   securePort: 10250
   securityContext: {}
+  serviceAccount:
+    create: true
   strategy: {}
   tolerations: []

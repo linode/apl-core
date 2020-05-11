@@ -3,9 +3,8 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ template "prometheus-node-exporter.fullname" . }}
-  namespace: {{ template "prometheus-node-exporter.namespace" . }}
   labels: {{ include "prometheus-node-exporter.labels" . | indent 4 }}
+  name: {{ template "prometheus-node-exporter.fullname" . }}
 spec:
   privileged: false
   # Required to prevent escalations to root.
