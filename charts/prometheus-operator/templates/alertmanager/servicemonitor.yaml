@@ -12,12 +12,11 @@ spec:
     matchLabels:
       app: {{ template "prometheus-operator.name" . }}-alertmanager
       release: {{ $.Release.Name | quote }}
-      self-monitor: "true"
   namespaceSelector:
     matchNames:
       - {{ $.Release.Namespace | quote }}
   endpoints:
-  - port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
+  - port: web
     {{- if .Values.alertmanager.serviceMonitor.interval }}
     interval: {{ .Values.alertmanager.serviceMonitor.interval }}
     {{- end }}

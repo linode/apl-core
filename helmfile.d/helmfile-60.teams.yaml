@@ -140,6 +140,11 @@ releases:
               client_secret: {{ $team.oidc.clientSecret }}
             {{- end }}
           additionalDataSources:
+            - name: Prometheus-admin
+              editable: false
+              type: prometheus
+              access: proxy
+              url: http://po-prometheus.monitoring:9090
             - name: Prometheus-Istio
               editable: false
               type: prometheus
@@ -228,25 +233,9 @@ releases:
           - sitespeed{{ end }}
 
   - name: index-{{ $teamId }}
-    installed: false
+    installed: false  # leave it for deletion !!
     namespace: team-{{ $teamId }}
     chart: ../charts/index
-    labels:
-      tag: teams
-      team: {{ $teamId }}
-      pkg: index
-    values:
-      - ../values/index/index.gotmpl
-      - ../values/default.gotmpl
-      - domain: {{ $domain }}
-        group: {{ $teamId }}
-        coreServices:
-          {{- range $s := $tc.services }}
-          {{- if and (not (eq $s.name "index")) (not (index $s "isAuthProxy")) (not (index $s "internal")) }}
-          - {{ $s | toYaml | replace "#NS#" (printf "team-%s" $teamId) | nindent 12 }}
-          {{- end }}
-          {{- end }}
-        services: {{- $team | get "services" list | toYaml | nindent 10 }}
   {{- end }}
   - name: oauth2-proxy-team-{{ $teamId }}
     installed: true

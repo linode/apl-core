@@ -32,7 +32,8 @@ prometheusOperator:
     enabled: false
   tlsProxy:
     enabled: false
-  manageCrds: true
+  createCustomResource: false # chart 8.2.0 version
+  manageCrds: false # chart > 8.2.0
   kubeletService:
     enabled: true
 prometheus:
@@ -151,6 +152,8 @@ alertmanager:
             {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
       {{- end }}
 grafana:
+  image:
+    tag: 6.7.3
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -235,14 +238,14 @@ commonLabels: {{- toYaml $v.customerLabels | nindent 2 }}
   otomistack: 'true'
 
 kube-state-metrics:
-  image:
-    tag: v1.8.0
-  collectors:
-    networkpolicies: false
-    mutatingwebhookconfigurations: false
-    validatingwebhookconfigurations: false
-    volumeattachments: false
-    verticalpodautoscalers: false
+  # image:
+  #   tag: v1.8.0
+  # collectors:
+  #   networkpolicies: false
+  #   mutatingwebhookconfigurations: false
+  #   validatingwebhookconfigurations: false
+  #   volumeattachments: false
+  #   verticalpodautoscalers: false
   # podAnnotations:
   #   sidecar.istio.io/inject: "false"
   podSecurityPolicy:

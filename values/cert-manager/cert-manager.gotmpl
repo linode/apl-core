@@ -6,19 +6,12 @@ prometheus:
     labels:
       release: prometheus-operator
 
-ingressShim:
-  defaultIssuerName: letsencrypt-{{ $cm.stage }}
-  defaultIssuerKind: ClusterIssuer
-
 cainjector:
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 webhook:
-  # enabled: false
   customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
 
 installCRDs: true
-extraArgs:
-  - --feature-gates=ValidateCAA=false

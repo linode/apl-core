@@ -3,9 +3,12 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
   name: {{ template "grafana.fullname" . }}
-  namespace: {{ template "grafana.namespace" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "grafana.labels" . | nindent 4 }}
+    app: {{ template "grafana.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
 {{- with .Values.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}

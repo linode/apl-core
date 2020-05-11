@@ -43,6 +43,11 @@ spec:
             port:
               number: {{ index $s "port" | default 80 }}
           weight: 100
+      # fix for istio (=envoy) incorrectly setting proto to http
+      # (@see https://github.com/istio/istio/issues/7964):
+      appendHeaders:
+        'x-forwarded-proto': 'https'
+        'x-forwarded-port': '443'          
 ---      
 {{- end }}
 {{- end }}

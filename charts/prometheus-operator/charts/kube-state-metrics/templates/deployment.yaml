@@ -1,12 +1,7 @@
 apiVersion: apps/v1
-{{- if .Values.autosharding.enabled }}
-kind: StatefulSet
-{{- else }}
 kind: Deployment
-{{- end }}
 metadata:
   name: {{ template "kube-state-metrics.fullname" . }}
-  namespace: {{ template "kube-state-metrics.namespace" . }}
   labels:
     app.kubernetes.io/name: {{ template "kube-state-metrics.name" . }}
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -20,10 +15,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ template "kube-state-metrics.name" . }}
   replicas: {{ .Values.replicas }}
-{{- if .Values.autosharding.enabled }}
-  serviceName: {{ template "kube-state-metrics.fullname" . }}
-  volumeClaimTemplates: []
-{{- end }}
   template:
     metadata:
       labels:
@@ -49,17 +40,6 @@ spec:
     {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-{{- if .Values.autosharding.enabled }}
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-{{- end }}
         args:
 {{  if .Values.collectors.certificatesigningrequests  }}
         - --collectors=certificatesigningrequests
@@ -91,14 +71,8 @@ spec:
 {{  if .Values.collectors.limitranges  }}
         - --collectors=limitranges
 {{  end  }}
-{{  if .Values.collectors.mutatingwebhookconfigurations  }}
-        - --collectors=mutatingwebhookconfigurations
-{{  end  }}
 {{  if .Values.collectors.namespaces  }}
         - --collectors=namespaces
-{{  end  }}
-{{  if .Values.collectors.networkpolicies  }}
-        - --collectors=networkpolicies
 {{  end  }}
 {{  if .Values.collectors.nodes  }}
         - --collectors=nodes
@@ -136,21 +110,11 @@ spec:
 {{  if .Values.collectors.storageclasses  }}
         - --collectors=storageclasses
 {{  end  }}
-{{  if .Values.collectors.validatingwebhookconfigurations  }}
-        - --collectors=validatingwebhookconfigurations
-{{  end  }}
 {{  if .Values.collectors.verticalpodautoscalers  }}
         - --collectors=verticalpodautoscalers
 {{  end  }}
-{{  if .Values.collectors.volumeattachments  }}
-        - --collectors=volumeattachments
-{{  end  }}
 {{ if .Values.namespace }}
         - --namespace={{ .Values.namespace }}
-{{ end }}
-{{ if .Values.autosharding.enabled }}
-        - --pod=$(POD_NAME)
-        - --pod-namespace=$(POD_NAMESPACE)
 {{ end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

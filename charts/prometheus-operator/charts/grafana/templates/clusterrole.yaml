@@ -3,7 +3,10 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   labels:
-    {{- include "grafana.labels" . | nindent 4 }}
+    app: {{ template "grafana.name" . }}
+    chart: {{ template "grafana.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 {{- with .Values.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}

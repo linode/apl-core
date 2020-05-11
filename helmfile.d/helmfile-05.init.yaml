@@ -6,7 +6,6 @@ bases:
 releases:
   - name: istio-operator
     installed: true
-    # namespace: istio-operator
     namespace: default
     labels:
       pkg: istio-operator

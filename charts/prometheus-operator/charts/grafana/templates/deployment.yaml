@@ -3,9 +3,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "grafana.fullname" . }}
-  namespace: {{ template "grafana.namespace" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "grafana.labels" . | nindent 4 }}
+    app: {{ template "grafana.name" . }}
+    chart: {{ template "grafana.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 {{- if .Values.labels }}
 {{ toYaml .Values.labels | indent 4 }}
 {{- end }}
@@ -17,7 +20,8 @@ spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "grafana.selectorLabels" . | nindent 6 }}
+      app: {{ template "grafana.name" . }}
+      release: {{ .Release.Name }}
 {{- with .Values.deploymentStrategy }}
   strategy:
 {{ toYaml . | trim | indent 4 }}
@@ -25,7 +29,8 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "grafana.selectorLabels" . | nindent 8 }}
+        app: {{ template "grafana.name" . }}
+        release: {{ .Release.Name }}
 {{- with .Values.podLabels }}
 {{ toYaml . | indent 8 }}
 {{- end }}
@@ -33,7 +38,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/dashboards-json-config: {{ include (print $.Template.BasePath "/dashboards-json-configmap.yaml") . | sha256sum }}
         checksum/sc-dashboard-provider-config: {{ include (print $.Template.BasePath "/configmap-dashboard-provider.yaml") . | sha256sum }}
-{{- if and (not .Values.admin.existingSecret) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD__FILE) }}
+{{- if not .Values.admin.existingSecret }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
 {{- end }}
 {{- with .Values.podAnnotations }}

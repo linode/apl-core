@@ -8,7 +8,9 @@ defaultBackend:
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
-{{- end }}    
+{{- end }}
+  service:
+    omitClusterIP: true
 controller:
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
@@ -49,5 +51,6 @@ controller:
         release: prometheus-operator
   service:
     type: {{ if $v.cluster.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
+    omitClusterIP: true
   publishService:
     enabled: true

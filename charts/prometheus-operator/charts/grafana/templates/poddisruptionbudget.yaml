@@ -2,10 +2,12 @@
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "grafana.name" . }}
-  namespace: {{ template "grafana.namespace" . }}
+  name: {{ template "grafana.name" . }} 
   labels:
-    {{- include "grafana.labels" . | nindent 4 }}
+    app: {{ template "grafana.name" . }}
+    chart: {{ template "grafana.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 {{- if .Values.labels }}
 {{ toYaml .Values.labels | indent 4 }}
 {{- end }}
@@ -18,5 +20,6 @@ spec:
 {{- end }}
   selector:
     matchLabels:
-      {{- include "grafana.selectorLabels" . | nindent 6 }}
+      app: {{ template "grafana.name" . }}
+      release: {{ .Release.Name }}
 {{- end }}
