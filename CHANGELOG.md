@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.3](https://github.com/redkubes/otomi-stack/compare/v0.10.2...v0.10.3) (2020-05-11)
+
+### Bug Fixes
+
+- crd loading for cert-manager
+  ([056ba2c](https://github.com/redkubes/otomi-stack/commit/056ba2c542487dabaf4446614651731401d71ae3))
+- many bugfixes and cleanups
+  ([3bef9c7](https://github.com/redkubes/otomi-stack/commit/3bef9c70416ef2fdaee0d150a18c69ab49801fbd))
+- missing kubelet data, upgraded prometheus-operator
+  ([ea98611](https://github.com/redkubes/otomi-stack/commit/ea98611143d548b4711ab65f59ac78bb3ad58740))
+- otomi-api value fix
+  [ci skip](<[5c70827](https://github.com/redkubes/otomi-stack/commit/5c708275847293ba844605b14b00454e8b376f63)>)
+
+### Feature Improvements
+
+- added disable sync flag for api
+  [ci skip](<[95f4a8e](https://github.com/redkubes/otomi-stack/commit/95f4a8efac45a0276e5814ea20c901b4f8ba80f8)>)
+
 ### [0.10.2](https://github.com/redkubes/otomi-stack/compare/v0.10.1...v0.10.2) (2020-05-01)
 
 ### Bug Fixes
