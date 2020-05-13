@@ -21,6 +21,6 @@ releases:
     namespace: shared
     <<: *default
   - name: redis-ha
-    installed: true
+    installed: false
     namespace: shared
     <<: *default
