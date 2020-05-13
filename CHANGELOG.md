@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.6](https://github.com/redkubes/otomi-stack/compare/v0.10.5...v0.10.6) (2020-05-13)
+
+### Bug Fixes
+
+- api back to using image cmd
+  [ci skip](<[fe61deb](https://github.com/redkubes/otomi-stack/commit/fe61deb0e5d5513af6a1f54ba79ce9ed9f324bf4)>)
+- loading order cert-manager
+  [ci skip](<[a8d6dff](https://github.com/redkubes/otomi-stack/commit/a8d6dff4cfddbe59c2bb2fe172c217b01d7f8e8f)>)
+
 ### [0.10.5](https://github.com/redkubes/otomi-stack/compare/v0.10.4...v0.10.5) (2020-05-13)
 
 ### Bug Fixes
