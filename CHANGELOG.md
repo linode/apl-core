@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.8](https://github.com/redkubes/otomi-stack/compare/v0.10.7...v0.10.8) (2020-05-13)
+
+### Bug Fixes
+
+- redis-ha disabled
+  [ci skip](<[ff2b054](https://github.com/redkubes/otomi-stack/commit/ff2b054ff5ee4ffcfc7e91874858f193cef59766)>)
+
 ### [0.10.7](https://github.com/redkubes/otomi-stack/compare/v0.10.6...v0.10.7) (2020-05-13)
 
 ### Bug Fixes
