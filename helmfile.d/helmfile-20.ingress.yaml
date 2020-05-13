@@ -11,12 +11,6 @@ releases:
     labels:
       tag: ingress
     <<: *default
-  - name: cert-manager
-    installed: true
-    namespace: ingress
-    labels:
-      tag: cert-manager
-    <<: *default
   - name: cert-manager-artifacts
     installed: true
     namespace: ingress
