@@ -15,10 +15,14 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: false
+  create: true
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+
+rbac:
+  # Specifies whether rbac should be set up
+  create: true
 
 podSecurityContext: {}
   # fsGroup: 2000
