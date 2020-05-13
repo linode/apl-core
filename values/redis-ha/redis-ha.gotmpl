@@ -1,0 +1,25 @@
+{{- $v := .Environment.Values }}
+{{- $r := $v | get "charts.redis-ha" }}
+redis:
+  resources: 
+   requests:
+     memory: 200Mi
+     cpu: 100m
+   limits:
+     memory: 700Mi
+     cpu: 200m
+sentinel:
+  resources: 
+   requests:
+     memory: 200Mi
+     cpu: 100m
+   limits:
+     memory: 200Mi
+     cpu: 200m
+podDisruptionBudget: 
+  maxUnavailable: 1
+  minAvailable: 1
+
+## Configures redis with AUTH (requirepass & masterauth conf params)
+auth: true
+redisPassword: {{ $r | get "password" "aut0m3try" }}
