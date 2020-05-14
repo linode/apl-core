@@ -9,7 +9,7 @@ helmDefaults:
 environments:
   {{- range $provider, $p := $v.clouds }}
   {{- range $cluster, $c := $p.clusters }}
-  {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") (set $v "cluster" (dict "provider" $provider "name" $cluster "region" $c.region "k8sVersion" $c.k8sVersion "hasKnative" (ge $c.k8sVersion 1.14) "domain" (index $c "domain" | default (printf "%s.%s" $cluster $p.domain)))) | nindent 2 }}
+  {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") (set $v "cluster" (dict "provider" $provider "name" $cluster "region" $c.region "k8sVersion" $c.k8sVersion "apiServer" ($c | getOrNil "apiServer") "hasKnative" (ge $c.k8sVersion 1.14) "domain" (index $c "domain" | default (printf "%s.%s" $cluster $p.domain)))) | nindent 2 }}
   {{- end }}
   {{- end }}
 repositories: 
