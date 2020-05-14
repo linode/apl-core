@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.11](https://github.com/redkubes/otomi-stack/compare/v0.10.10...v0.10.11) (2020-05-14)
+
+### Bug Fixes
+
+- added needed cluster info for kubecfg
+  [ci skip](<[5db3cca](https://github.com/redkubes/otomi-stack/commit/5db3cca3f6aa130bd47fa4bb02c1a5c6d440185a)>)
+
 ### [0.10.10](https://github.com/redkubes/otomi-stack/compare/v0.10.9...v0.10.10) (2020-05-14)
 
 ### Bug Fixes
