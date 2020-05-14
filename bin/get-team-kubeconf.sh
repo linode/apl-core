@@ -10,7 +10,7 @@ fi
 
 NAMESPACE="$1"
 SERVICE_ACCOUNT_NAME=${2:-default}
-KUBECFG_FILE_NAME="/tmp/kube/k8s-${SERVICE_ACCOUNT_NAME}-${NAMESPACE}-conf"
+KUBECFG_FILE_NAME="/tmp/kube/${SERVICE_ACCOUNT_NAME}-${NAMESPACE}.yaml"
 TARGET_FOLDER="/tmp/kube"
 
 create_target_folder() {
