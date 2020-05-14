@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.14](https://github.com/redkubes/otomi-stack/compare/v0.10.13...v0.10.14) (2020-05-14)
+
+### Bug Fixes
+
+- gave team-admin clusterrole cluster-admin
+  [ci skip](<[7e9daf8](https://github.com/redkubes/otomi-stack/commit/7e9daf889b92f3869380a2d182ccaa8943a5dd9d)>)
+
 ### [0.10.13](https://github.com/redkubes/otomi-stack/compare/v0.10.12...v0.10.13) (2020-05-14)
 
 ### Bug Fixes
