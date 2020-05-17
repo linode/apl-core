@@ -22,20 +22,23 @@ spec:
   - {{ $domain }}
   http:
     - name: {{ $domain | replace "." "-" }}-{{ $s.path | default "x" | replace "/" "" }}
+  {{- if hasKey $s "path" }}
+      match:
+        - uri:
+            prefix: "{{ $s.path }}"
+      rewrite:
+        uri: "/"
+  {{- end }}
   {{- if hasKey $s "ksvc" }}
       rewrite:
         authority: {{ $s.name }}.{{ $v.domain }}
+    {{- if hasKey $s "path" }}
+        uri: "/"
+    {{- end }}
       route:
         - destination:
             host: istio-ingressgateway.istio-system.svc.cluster.local
   {{- else }}
-      {{- if hasKey $s "path" }}
-      match:
-        - uri:
-            prefix: "{{ $s.path }}/"
-      rewrite:
-        uri: "/"
-      {{- end }}
       route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local

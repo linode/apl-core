@@ -22,7 +22,7 @@ env:
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
-  DISABLE_SYNC: {{ hasKey $o "syncEnabled" | ternary ($o | get "syncEnabled" false) true }}
+  DISABLE_SYNC: {{ hasKey $o "syncEnabled" | ternary ($o | get "syncEnabled" false) false }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
