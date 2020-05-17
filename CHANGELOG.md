@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.15](https://github.com/redkubes/otomi-stack/compare/v0.10.14...v0.10.15) (2020-05-17)
+
+### Bug Fixes
+
+- microsvc approach with path working
+  [ci skip](<[8f3d3c8](https://github.com/redkubes/otomi-stack/commit/8f3d3c8ed78e3e1d3ae3fd4842511a4073c4fbb4)>)
+
 ### [0.10.14](https://github.com/redkubes/otomi-stack/compare/v0.10.13...v0.10.14) (2020-05-14)
 
 ### Bug Fixes
