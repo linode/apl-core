@@ -13,16 +13,22 @@ metadata:
     {{- with $k.labels }}
     {{- . | toYaml | nindent 4 }}
     {{- end }}
+    {{- if $s.internal }}
+    serving.knative.dev/visibility: cluster-local
+    {{- end }}
 spec:
   template:
     metadata:
       annotations:
         {{- if (index $k "autoCD") }}
-        fluxcd.io/automated: "true"
+        fluxcd.io/automated: 'true'
         fluxcd.io/tag.user-container: "{{ $k.autoCD.tagMatcher | default "semver" }}:{{ index $k.autoCD $k.autoCD.tagMatcher }}"
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        {{- if not (hasKey $k "scaleToZero") }}
+        autoscaling.knative.dev/minScale: '1'
         {{- end }}
     spec:
       containers:

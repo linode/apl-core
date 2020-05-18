@@ -39,7 +39,7 @@ resources:
         #       enabled: true
         global:
           mtls:
-            auto: false #{{ $i.mtls.enabled }}
+            auto: {{ $i.mtls.enabled }}
           # controlPlaneSecurityEnabled: true
           logging:
             level: "default:info"

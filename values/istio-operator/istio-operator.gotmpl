@@ -1,2 +1,4 @@
+{{- $v := .Environment.Values }}
+{{- $i := $v.charts.istio }}
 hub: istio
-tag: 1.5.4
+tag: {{ $i | get "version" "1.5.4" }}
