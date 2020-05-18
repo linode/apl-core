@@ -20,15 +20,15 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if not $k.scaleToZero }}
+        autoscaling.knative.dev/minScale: '1'
+        {{- end }}
         {{- if (index $k "autoCD") }}
         fluxcd.io/automated: 'true'
         fluxcd.io/tag.user-container: "{{ $k.autoCD.tagMatcher | default "semver" }}:{{ index $k.autoCD $k.autoCD.tagMatcher }}"
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}
-        {{- end }}
-        {{- if not $k.scaleToZero }}
-        autoscaling.knative.dev/minScale: '1'
         {{- end }}
     spec:
       containers:
