@@ -1,4 +1,5 @@
-
+{{- $v := .Environment.Values }}
+{{- $i := $v.charts.istio }}
 gateways:
   cluster-local-gateway:
     autoscaleMin: 1
@@ -16,5 +17,6 @@ gateways:
   istio-ilbgateway:
     enabled: false
 global:
+  tag: {{ $i | get "version" "1.5.4" }}
   mtls:
-    auto: false
+    auto: {{ $i | get "mtls.enabled" false }}
