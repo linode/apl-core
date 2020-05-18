@@ -33,7 +33,7 @@ spec:
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: {{ $certName }}
+  name: {{ $certName }}-{{ $s.name }}
   namespace: {{ if $v.cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
