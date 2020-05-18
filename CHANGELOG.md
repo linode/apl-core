@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.20](https://github.com/redkubes/otomi-stack/compare/v0.10.19...v0.10.20) (2020-05-18)
+
+### Bug Fixes
+
+- tls secret naming ([bee81a8](https://github.com/redkubes/otomi-stack/commit/bee81a852b14fd918391d74199f7930b1f654f01))
+
 ### [0.10.19](https://github.com/redkubes/otomi-stack/compare/v0.10.18...v0.10.19) (2020-05-18)
 
 ### Bug Fixes
