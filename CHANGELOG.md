@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.18](https://github.com/redkubes/otomi-stack/compare/v0.10.17...v0.10.18) (2020-05-18)
+
+### Bug Fixes
+
+- scaleToZero booolean check
+  [ci skip](<[1a8d07f](https://github.com/redkubes/otomi-stack/commit/1a8d07f8aa348ca2a63d143f64eb25665f643bb5)>)
+
 ### [0.10.17](https://github.com/redkubes/otomi-stack/compare/v0.10.16...v0.10.17) (2020-05-18)
 
 ### Bug Fixes
