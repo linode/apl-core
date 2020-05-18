@@ -29,14 +29,15 @@ spec:
 {{ $name := printf "cert-team-%s" $v.teamId }}
 {{- range $s := $v.services }}
 {{- if and (not $s.hasCert) (hasKey $s "domain") }}
+{{- $certName := printf "%s-%s" $name ($s.domain | replace "." "-") }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: {{ $name }}-{{ $s.name }}
+  name: {{ $certName }}
   namespace: {{ if $v.cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
-  secretName: {{ $name }}-{{ $s.name }}
+  secretName: {{ $certName }}
   commonName: "{{ $s.domain }}"
   dnsNames:
   - "{{ $s.domain }}"
