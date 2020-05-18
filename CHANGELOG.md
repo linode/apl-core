@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. See
 
 ### [0.10.16](https://github.com/redkubes/otomi-stack/compare/v0.10.15...v0.10.16) (2020-05-18)
 
+### Feature Improvements
+
+- scaleToZero, path validation, internal ksvc
+  [ci skip](<[c74bce9](https://github.com/redkubes/otomi-stack/commit/c74bce930dbd74e67f54c5e6187cff2668c2c421)>)
+
+### [0.10.16](https://github.com/redkubes/otomi-stack/compare/v0.10.15...v0.10.16) (2020-05-18)
+
 ### Bug Fixes
 
 - downgraded istio to 1.5.4, added scaleToZero
