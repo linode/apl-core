@@ -27,7 +27,7 @@ spec:
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}
         {{- end }}
-        {{- if not (hasKey $k "scaleToZero") }}
+        {{- if not $k.scaleToZero }}
         autoscaling.knative.dev/minScale: '1'
         {{- end }}
     spec:
