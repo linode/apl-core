@@ -27,7 +27,7 @@ services:
     namespace: shared
     svc: otomi-api
     hide: true
-    path: /api
+    path: /api/
   - name: otomi
     namespace: shared
     svc: otomi-web
@@ -118,7 +118,7 @@ teamConfig:
     - name: otomi
       namespace: shared
       svc: otomi-api
-      path: /api
+      path: /api/
       hide: true
     - name: otomi
       namespace: shared
