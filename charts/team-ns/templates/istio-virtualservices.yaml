@@ -4,7 +4,7 @@
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not $s.internal) (not (hasKey $s "host")) }}
-{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.name) $s.name) }}
+{{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
