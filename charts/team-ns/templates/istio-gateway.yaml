@@ -12,7 +12,7 @@ spec:
   - hosts:
       - '*.{{ $v.domain }}'
       {{- range $s := $v.services }}
-      {{- if and (hasKey $s "domain") (hasKey $s "svc") }}
+      {{- if and (hasKey $s "domain") (not (hasKey $s "ksvc")) }}
       - {{ $s.domain }}
       {{- end }}
       {{- end }}
