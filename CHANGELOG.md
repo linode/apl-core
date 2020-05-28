@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.23](https://github.com/redkubes/otomi-stack/compare/v0.10.22...v0.10.23) (2020-05-28)
+
+### Bug Fixes
+
+- public domain certs now created outside of team charts
+  [ci skip](<[c0a6845](https://github.com/redkubes/otomi-stack/commit/c0a68458c80c6a61cd2bd81be7faf61dc4e81eaf)>)
+
 ### [0.10.21](https://github.com/redkubes/otomi-stack/compare/v0.10.20...v0.10.21) (2020-05-27)
 
 ### [0.10.20](https://github.com/redkubes/otomi-stack/compare/v0.10.19...v0.10.20) (2020-05-18)
