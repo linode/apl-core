@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts.istio }}
+{{- $ia := $i | get "addonComponents" dict }}
+{{- $ig := $i | get "global" dict }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
@@ -25,30 +27,14 @@ resources:
         #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
       addonComponents:
         grafana:
-          enabled: true
+          enabled: {{ $ia | get "grafana.enabled" true }}
         prometheus:
-          enabled: true
+          enabled: {{ $ia | get "prometheus.enabled" true }}
         tracing:
-          enabled: true
+          enabled: {{ $ia | get "tracing.enabled" true }}
         kiali:
-          enabled: true
+          enabled: {{ $ia | get "kiali.enabled" true }}
       values:
-        # gateways:
-        #   istio-ingressgateway:
-        #     sds:
-        #       enabled: true
-        global:
-          mtls:
-            auto: {{ $i.mtls.enabled }}
-          # controlPlaneSecurityEnabled: true
-          logging:
-            level: "default:info"
-        grafana:
-          env:
-            GF_SERVER_ROOT_URL: /grafana-istio/
-          contextPath: '/grafana-istio'
-        prometheus:
-          contextPath: '/prometheus-istio'
         kiali:
           contextPath: '/kiali'
           dashboard:
@@ -56,6 +42,43 @@ resources:
               strategy: anonymous
             jaegerURL: https://apps.{{ $domain }}/tracing
             grafanaURL: https://apps.{{ $domain }}/grafana-istio
+        gateways:
+          istio-ingressgateway:
+            sds:
+              enabled: {{ $ig | get "sds.enabled" false }}
+          #   resources:
+          #     requests:
+          #       cpu: 10m
+          #       memory: 40Mi
+          #     limits:
+          #       cpu: 100m
+          #       memory: 128Mi
+          # istio-egressgateway:
+          #   resources:
+          #     requests:
+          #       cpu: 10m
+          #       memory: 40Mi
+          #     limits:
+          #       cpu: 100m
+          #       memory: 128Mi          
+        global:
+          sds:
+            enabled: {{ $ig | get "sds.enabled" false }}
+          mtls:
+            auto: {{ $ig | get "mtls.enabled" false }}
+          # controlPlaneSecurityEnabled: true
+          logging:
+            level: {{ $ig | get "logging.level" "default:info" }}
+          proxy:
+            {{- with ($ig | getOrNil "proxy.resources") }}
+            resources: {{- $ig.proxy.resources | toYaml | nindent 14 }}
+            {{- end }}
+        grafana:
+          env:
+            GF_SERVER_ROOT_URL: /grafana-istio/
+          contextPath: '/grafana-istio'
+        prometheus:
+          contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enabled: true
           enableNamespacesByDefault: false
