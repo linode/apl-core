@@ -52,7 +52,7 @@ kubernetes.io/ingress.class: nginx
 {{- end }}
 {{- end }}
 {{- range $s := $customDomainServices }}
-{{- $certName := printf "%s-%s" (printf "cert-team-%s" $.teamId) ($s.domain | replace "." "-") }}
+{{- $certName := ($s.domain | replace "." "-") }}
 - hosts:
     - {{ $s.domain }}
   secretName: {{ $certName }}

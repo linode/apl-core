@@ -40,3 +40,38 @@ resources:
             dns01:
               {{- index $cm.provider $provider | toYaml | nindent 14 }}
   {{- end }}
+  # Create all the public certs that the teams requested
+  # We do this here so that teams can share domains (e.g. for micro service collaboration)
+  {{ $registry := list }}
+  {{- $cm := index $v.charts "cert-manager" }}
+  {{- $tc := $v.teamConfig }}
+  {{- range $teamId, $team := $tc.teams }}
+  {{- if hasKey $team "services" }}
+  {{- range $s := $team.services }}
+  {{- if and (not (hasKey $s "hasCert")) (hasKey $s "domain") }}
+  {{- $certName := ($s.domain | replace "." "-") }}
+  {{- if not (has $certName $registry) }}
+  {{- $registry = append $registry $certName }}
+  - apiVersion: cert-manager.io/v1alpha2
+    kind: Certificate
+    metadata:
+      name: {{ $certName }}
+      namespace: {{ if $v.cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+    spec:
+      secretName: {{ $certName }}
+      commonName: "{{ $s.domain }}"
+      dnsNames:
+      - "{{ $s.domain }}"
+      issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-{{ $cm.stage }}
+      usages:
+        - digital signature
+        - key encipherment
+        - ocsp signing
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+

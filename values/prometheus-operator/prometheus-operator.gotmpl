@@ -3,7 +3,7 @@
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $domain }}
-{{- $isRedkubesMonitored := ($v.cluster | get ".isRedkubesMonitored" false) }}
+{{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -117,10 +117,12 @@ alertmanager:
         - match:
             severity: critical
           receiver: critical
+        {{- if not $isRedkubesMonitored }}
           continue: true
         - match:
             severity: critical
           receiver: critical-redkubes
+        {{- end }}
     receivers:
       - name: "null"
       {{- if or ($v.cluster | getOrNil ".isRedkubesMonitored") $hasSlack }}
@@ -143,8 +145,8 @@ alertmanager:
           - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
             send_resolved: true
       {{- end }}
-      - name: critical-redkubes
       {{- if not $isRedkubesMonitored }}
+      - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
           - channel: "#mon-otomi-crit"
