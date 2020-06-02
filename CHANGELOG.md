@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.26](https://github.com/redkubes/otomi-stack/compare/v0.10.25...v0.10.26) (2020-06-02)
+
+### Features
+
+- **prometheus:** added blackbox-exporter
+  [ci skip](<[88e7bde](https://github.com/redkubes/otomi-stack/commit/88e7bdef1b05f50d9d2faa3648b70150f8fa409b)>)
+
 ### [0.10.25](https://github.com/redkubes/otomi-stack/compare/v0.10.24...v0.10.25) (2020-05-28)
 
 ### Feature Improvements
