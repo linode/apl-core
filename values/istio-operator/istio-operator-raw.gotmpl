@@ -2,6 +2,7 @@
 {{- $i := $v.charts.istio }}
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
+{{- $iga := $i | get "gateways" dict }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
@@ -46,21 +47,13 @@ resources:
           istio-ingressgateway:
             sds:
               enabled: {{ $ig | get "sds.enabled" false }}
-          #   resources:
-          #     requests:
-          #       cpu: 10m
-          #       memory: 40Mi
-          #     limits:
-          #       cpu: 100m
-          #       memory: 128Mi
+             {{- with ($iga | getOrNil "istio-ingressgateway.resources") }}
+            resources: {{- $iga | get "istio-ingressgateway.resources" | toYaml | nindent 14 }}
+            {{- end }}
           # istio-egressgateway:
-          #   resources:
-          #     requests:
-          #       cpu: 10m
-          #       memory: 40Mi
-          #     limits:
-          #       cpu: 100m
-          #       memory: 128Mi          
+          #   {{/*- with ($iga | getOrNil "istio-egressgateway.resources") */}}
+          #   resources: {{/*- $iga | get "istio-egressgateway.resources" | toYaml | nindent 14 */}}
+          #   {{/*- end */}}
         global:
           sds:
             enabled: {{ $ig | get "sds.enabled" false }}
