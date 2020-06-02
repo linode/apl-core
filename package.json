@@ -57,5 +57,10 @@
     "lint": "tests/lint.sh",
     "release": "standard-version"
   },
+  "standard-version": {
+    "skip": {
+      "tag": true
+    }
+  },
   "version": "0.10.26"
 }
