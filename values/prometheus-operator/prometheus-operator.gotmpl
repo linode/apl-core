@@ -56,27 +56,40 @@ prometheus:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
-    # additionalScrapeConfigs:
-    #   - job_name: 'probe-sites'
-    #     metrics_path: /probe
-    #     params:
-    #       module: [http_2xx]  # Look for a HTTP 200 response.
-    #     static_configs:
-    #       - targets:
-    #         {{ range $site := $v.sites }}
-    #         - https://{{ $site }}
-    #         {{- end }}
-    #     relabel_configs:
-    #       - source_labels: [__address__]
-    #         target_label: __param_target
-    #       - source_labels: [__param_target]
-    #         target_label: instance
-    #       - target_label: __address__
-    #         replacement: prom-blackbox-exporter:9115
+    additionalScrapeConfigs:
+      - job_name: 'probe-sites'
+        metrics_path: /probe
+        scrape_interval: 10m
+        params:
+          module: [http_2xx]  # Look for a HTTP 200 response.
+        static_configs:
+          - targets:
+            {{ $registry := list }}
+            {{- $tc := $v.teamConfig }}
+            {{- range $teamId, $team := $tc.teams }}
+            {{- if hasKey $team "services" }}
+            {{- range $s := $team.services }}
+            {{- if hasKey $s "isPublic" }}
+            {{- $url := printf "%s%s" ($s | get "domain" (printf "%s.%s%s.%s" $s.name $v.cluster.teamPrefix $teamId $v.cluster.domain)) ($s | get "path" "/") }}
+            {{- if and (not (has $url $registry)) }}
+            {{- $registry = append $registry $url }}
+            - https://{{ $url }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prom-blackbox-exporter:9115
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}      
 additionalPrometheusRules:
-  # - name: blackbox
-  #   {{/*- readFile "rules/blackbox.yaml" | nindent 4 */}}
+  - name: blackbox
+    {{- readFile "rules/blackbox.yaml" | nindent 4 }}
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:

@@ -103,6 +103,12 @@ services:
     namespace: istio-system
     # mtls:
     #   gatewayDisabled: true
+  # - name: blackbox-exporter
+  #   svc: prom-blackbox-exporter
+  #   port: 9115
+  #   namespace: monitoring
+  #   logo:
+  #     name: prometheus
   - name: drone
     svc: drone
     namespace: team-admin

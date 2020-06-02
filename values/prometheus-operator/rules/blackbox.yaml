@@ -3,9 +3,9 @@ groups:
     rules:
       - alert: ProbeFailing
         expr: probe_success{job="probe-sites"} == 0
-        for: 1m
+        for: 10m
         labels:
           severity: critical
         annotations:
-          description: 'Could not reach {{ $labels.instance }} during last minute'
+          description: 'Could not reach {{ $labels.instance }} during last 10 minutes'
           summary: '{{ $labels.instance }} is down'
