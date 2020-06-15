@@ -13,13 +13,13 @@ NAME=istio-operator
 RELEASE=istio-operator
 NAMESPACE=default
 RUNNING_NS=istio-operator
-# for KIND in namespace clusterrolebinding clusterrole sa deployment; do
-#   . bin/upgrades/adopt-by-helm.sh
-# done
-# KIND=crd
-# for NAME in $(k get crd | grep istio-operator | awk '{print $1}'); do
-#   . bin/upgrades/adopt-by-helm.sh
-# done
+for KIND in namespace clusterrolebinding clusterrole sa deployment; do
+  . bin/upgrades/adopt-by-helm.sh
+done
+KIND=crd
+for NAME in $(k get crd | grep istio-operator | awk '{print $1}'); do
+  . bin/upgrades/adopt-by-helm.sh
+done
 
 # gatekeeper-operator
 NAME=gatekeeper-system
@@ -76,7 +76,6 @@ done
 
 # 1. delete resources that are blocking and safe to delete
 # 1.1 delete all po-grafana deploy and svc for each team and sync their team chart
-
 
 # 2. Alternating deployments
 # Some charts need defaults.yaml/helmDefaults.force=true (resulting in kubectl replace) while others need force=false

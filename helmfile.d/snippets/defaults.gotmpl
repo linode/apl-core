@@ -9,7 +9,8 @@ helmDefaults:
 environments:
   {{- range $provider, $p := $v.clouds }}
   {{- range $cluster, $c := $p.clusters }}
-  {{- $c_ := dict "provider" $provider "name" $cluster "hasKnative" (ge $c.k8sVersion 1.15) }}
+  {{{- $hasCloudLB := eq $provider "aws" | ternary (index $c "hasCloudLB" | default true) false }}}
+  {{- $c_ := dict "provider" $provider "name" $cluster "hasKnative" (ge $c.k8sVersion 1.15) "isManaged" (has (list "aws" "azure" "google") $provider) "useCloudCA" (and (eq $provider "aws") $hasCloudLB }}
   # there is a type bug that does not let us do a merge in a simple way: https://github.com/roboll/helmfile/issues/1275
   {{/*- $c_ = merge (dict "provider" $provider "name" $cluster) $c_ */}}
   # so now we need to add the props by plucking

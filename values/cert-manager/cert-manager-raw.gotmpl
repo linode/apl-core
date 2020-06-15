@@ -32,7 +32,7 @@ resources:
     spec:
       acme:
         server: https://acme{{ (eq $stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
-        email: {{ $cm.emailUser }}@{{ $v.emailDomain }}
+        email: {{ $cm.email }}
         privateKeySecretRef:
           name: letsencrypt-{{ $stage }}
         solvers:
