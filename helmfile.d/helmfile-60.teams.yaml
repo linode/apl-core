@@ -7,6 +7,7 @@ bases:
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $tc := $v.teamConfig }}
+{{- $slackTpl := readFile "../values/prometheus-operator/slack-configs.yaml" }}
 releases:
   - name: team-ns-admin
     installed: true
@@ -92,11 +93,11 @@ releases:
               - name: default
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
               - name: critical
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}-crit"
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | replace "__CUSTOMER" $v.customerLabels.customer | nindent 20 | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
               {{- else }}
               {{ $suffix := (hasKey $team "receiver") | ternary "" ".monitoring.svc.cluster.local" }}
               - name: default
@@ -114,7 +115,7 @@ releases:
                 slack_configs:
                   - channel: "#mon-otomi-crit"
                     api_url: {{ $v.redkubesSlackUrl }}
-                    {{- readFile "../values/prometheus-operator/slack-configs.yaml" | nindent 20 | replace "__CUSTOMER" $v.customerLabels.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
               {{- end }}
         prometheus:
           prometheusSpec:

@@ -21,7 +21,6 @@ spec:
   template:
     metadata:
       labels:
-{{ toYaml .Values.customerLabels | indent 8 }}
         app: {{ template "prometheus-blackbox-exporter.name" . }}
         release: "{{ .Release.Name }}"
       annotations:
