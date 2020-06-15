@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.27](https://github.com/redkubes/otomi-stack/compare/v0.10.26...v0.10.27) (2020-06-15)
+
+### Bug Fixes
+
+- skipping tag building on release
+  [ci skip](<[b0fdcb4](https://github.com/redkubes/otomi-stack/commit/b0fdcb46b075a69299e07e64b8c85e951af54210)>)
+- templating issues ([571b36d](https://github.com/redkubes/otomi-stack/commit/571b36de9efb27c27767f240754ab85f906fe649))
+
+### Code Refactoring
+
+- moved alb ingress to raw
+  ([f5b3e67](https://github.com/redkubes/otomi-stack/commit/f5b3e677f59ca715816d5cbeeb41ed5e38e56cf2))
+
 ### [0.10.26](https://github.com/redkubes/otomi-stack/compare/v0.10.25...v0.10.26) (2020-06-02)
 
 ### Features
