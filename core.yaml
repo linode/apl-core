@@ -23,6 +23,9 @@ services:
     namespace: istio-system
     hide: true
     isAuthProxy: true
+  - name: harbor
+    namespace: shared
+    svc: harbor
   - name: otomi
     namespace: shared
     svc: otomi-api

@@ -5,7 +5,7 @@ bases:
 
 releases:
   - name: harbor
-    installed: false
+    installed: true
     namespace: shared
     <<: *default
   - name: kubernetes-dashboard
