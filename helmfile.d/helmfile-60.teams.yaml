@@ -7,7 +7,7 @@ bases:
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $tc := $v.teamConfig }}
-{{- $slackTpl := readFile "../values/prometheus-operator/slack-configs.yaml" }}
+{{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v.cluster | toString }}
 releases:
   - name: team-ns-admin
     installed: true
@@ -27,7 +27,6 @@ releases:
         resourceQuota: null
         knative:
           enabled: {{ $v.cluster.hasKnative }}
-        ingress: {{- $v.ingress | toYaml | nindent 10 }}
   {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix $teamId $v.cluster.domain }}
@@ -93,11 +92,11 @@ releases:
               - name: default
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
-                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
+                    {{- $slackTpl | nindent 20 }}
               - name: critical
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}-crit"
-                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
+                    {{- $slackTpl | nindent 20 }}
               {{- else }}
               {{ $suffix := (hasKey $team "receiver") | ternary "" ".monitoring.svc.cluster.local" }}
               - name: default
@@ -115,7 +114,7 @@ releases:
                 slack_configs:
                   - channel: "#mon-otomi-crit"
                     api_url: {{ $v.redkubesSlackUrl }}
-                    {{- tpl $slackTpl $v.cluster | nindent 20 }}
+                    {{- $slackTpl | nindent 20 }}
               {{- end }}
         prometheus:
           prometheusSpec:
