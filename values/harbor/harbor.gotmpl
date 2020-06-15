@@ -1,0 +1,168 @@
+{{- $v := .Environment.Values }}
+{{- $c := $v.cluster }}
+{{- $o := index $v.charts "otomi-api" }}
+{{- $teamConfig := dict "services" $v.teamConfig.services }}
+{{- $externalUrl := "https://harbor.team-admin.demo.gke.otomi.cloud" }}
+expose:
+  # Set the way how to expose the service. Set the type as "ingress",
+  # "clusterIP", "nodePort" or "loadBalancer" and fill the information
+  # in the corresponding section
+  type: clusterIP
+  tls:
+    # Enable the tls or not. Note: if the type is "ingress" and the tls
+    # is disabled, the port must be included in the command when pull/push
+    # images. Refer to https://github.com/goharbor/harbor/issues/5291
+    # for the detail.
+    enabled: false
+
+  clusterIP:
+    # The name of ClusterIP service
+    name: harbor
+    ports:
+      # The service port Harbor listens on when serving with HTTP
+      httpPort: 80
+      # The service port Harbor listens on when serving with HTTPS
+      httpsPort: 443
+      # The service port Notary listens on. Only needed when notary.enabled
+      # is set to true
+      notaryPort: 4443
+  
+
+# The external URL for Harbor core service. It is used to
+# 1) populate the docker/helm commands showed on portal
+# 2) populate the token service URL returned to docker/notary client
+#
+# If Harbor is deployed behind the proxy, set it as the URL of proxy
+externalURL: {{ $externalUrl }}
+
+
+internalTLS:
+  # If internal TLS enabled
+  enabled: false
+persistence:
+  enabled: true
+  # Setting it to "keep" to avoid removing PVCs during a helm delete
+  # operation. Leaving it empty will delete PVCs after the chart deleted
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      # Use the existing PVC which must be created manually before bound,
+      # and specify the "subPath" if the PVC is shared with other components
+      existingClaim: ""
+      # Specify the "storageClass" used to provision the volume. Or the default
+      # StorageClass will be used(the default).
+      # Set it to "-" to disable dynamic provisioning
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    chartmuseum:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    # If external database is used, the following settings for database will
+    # be ignored
+    database:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    # If external Redis is used, the following settings for Redis will
+    # be ignored
+    redis:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+  # Define which storage backend is used for registry and chartmuseum to store
+  # images and charts. Refer to
+  # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
+  # for the detail.
+  imageChartStorage:
+    type: filesystem
+    filesystem:
+      rootdirectory: /storage
+      #maxthreads: 100
+    azure:
+      accountname: accountname
+      accountkey: base64encodedaccountkey
+      container: containername
+      #realm: core.windows.net
+    gcs:
+      bucket: bucketname
+      # The base64 encoded json file which contains the key
+      encodedkey: base64-encoded-json-key-file
+      rootdirectory: /gcs/object/name/prefix
+      #chunksize: "5242880"
+    s3:
+      region: us-west-1
+      bucket: bucketname
+      #accesskey: awsaccesskey
+      #secretkey: awssecretkey
+      #regionendpoint: http://myobjects.local
+      #encrypt: false
+      #keyid: mykeyid
+      #secure: true
+      #v4auth: true
+      #chunksize: "5242880"
+      #rootdirectory: /s3/object/name/prefix
+      #storageclass: STANDARD
+ 
+ # debug, info, warning, error or fatal
+logLevel: info
+
+# The initial password of Harbor admin. Change it from portal after launching Harbor
+harborAdminPassword: "otomi1234"
+# The secret key used for encryption. Must be a string of 16 chars.
+secretKey: "DEOa1HG\#!1N\Pw6"
+
+# The proxy settings for updating clair vulnerabilities from the Internet and replicating
+# artifacts from/to the registries that cannot be reached directly
+proxy:
+  httpProxy:
+  httpsProxy:
+  noProxy: 127.0.0.1,localhost,.local,.internal
+  components:
+    - core
+    - jobservice
+    - clair
+
+registry:
+  registry:
+    image:
+      repository: goharbor/registry-photon
+      tag: v2.0.0
+  controller:
+    image:
+      repository: goharbor/harbor-registryctl
+      tag: v2.0.0
+  # Secret is used to secure the upload state from client
+  # and registry storage backend.
+  # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
+  # If a secret key is not specified, Helm will generate one.
+  # Must be a string of 16 chars.
+  secret: ""
+  # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
+  relativeurls: false
+  credentials:
+    username: "harbor_registry_user"
+    password: "harbor_registry_password"
+    # If you update the username or password of registry, make sure use cli tool htpasswd to generate the bcrypt hash
+    # e.g. "htpasswd -nbBC10 $username $password"
+    htpasswd: "harbor_registry_user:$2y$10$9L4Tc0DJbFFMB6RdSCunrOpTHdwhid4ktBJmLD00bYgqkkGOvll3m"
