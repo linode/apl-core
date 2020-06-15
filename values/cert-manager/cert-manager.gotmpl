@@ -6,11 +6,6 @@ prometheus:
     labels:
       release: prometheus-operator
 
-cainjector:
-  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
-webhook:
-  customerLabels: {{ toYaml $v.customerLabels | nindent 4 }}
-
 podAnnotations:
   sidecar.istio.io/inject: "false"  
 

@@ -7,7 +7,6 @@ kind: Ingress
 metadata:
   name: {{ template "prometheus-blackbox-exporter.fullname" . }}
   labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
     app: {{ template "prometheus-blackbox-exporter.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
