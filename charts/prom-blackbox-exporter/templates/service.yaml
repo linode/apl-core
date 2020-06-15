@@ -7,7 +7,6 @@ metadata:
 {{ toYaml .Values.service.annotations | indent 4 }}
 {{- end }}
   labels:
-{{ toYaml .Values.customerLabels | indent 4 }}
     chart: {{ template "prometheus-blackbox-exporter.chart" . }}
     app: {{ template "prometheus-blackbox-exporter.name" . }}
     release: "{{ .Release.Name }}"

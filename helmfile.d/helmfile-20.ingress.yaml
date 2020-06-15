@@ -11,6 +11,12 @@ releases:
     labels:
       tag: ingress
     <<: *default
+  - name: aws-alb-ingress-controller-artifacts
+    installed: {{ and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    <<: *raw
   - name: cert-manager-artifacts
     installed: true
     namespace: ingress
