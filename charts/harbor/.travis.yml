@@ -1,0 +1,15 @@
+dist: xenial
+language: minimal
+matrix:
+  include:
+  - name: "helm v2"
+    env: HELM_VERSION=2
+  - name: "helm v3"
+    env: HELM_VERSION=3
+before_install:
+  - test/install_helm.sh
+before_script:
+  # rename the "harbor-helm" folder to "harbor" to avoid the helm lint failure 
+  - cd ..; mv harbor-helm harbor; cd harbor
+script:
+  - test/verify.sh
