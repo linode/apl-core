@@ -4,7 +4,7 @@
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $domain }}
 {{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
-{{- $slackTpl := readFile "slack-configs.yaml" }}
+{{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v.cluster | toString }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -40,7 +40,7 @@ prometheusOperator:
 prometheus:
   prometheusSpec:
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.cluster.customer.customer $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: {{ printf "%s/%s/%s" $v.cluster.customer $v.cluster.provider $v.cluster.name | lower | quote }}
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -144,11 +144,11 @@ alertmanager:
       - name: default
         slack_configs:
           - channel: "#{{ $channel }}"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.cluster.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{ $slackTpl | nindent 12 }}
       - name: critical
         slack_configs:
           - channel: "#{{ $channel }}-crit"
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.cluster.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{ $slackTpl | nindent 12  }}
       {{- else }}
       - name: default
         webhook_configs:
@@ -165,7 +165,7 @@ alertmanager:
         slack_configs:
           - channel: "#mon-otomi-crit"
             api_url: {{ $v.redkubesSlackUrl }}
-            {{- readFile "slack-configs.yaml" | nindent 12 | replace "__CUSTOMER" $v.cluster.customer.customer | replace "__CLOUD" $v.cluster.provider | replace "__CLUSTER" $v.cluster.name }}
+            {{ $slackTpl | nindent 12  }}
       {{- end }}
 grafana:
   image:
