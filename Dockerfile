@@ -1,4 +1,4 @@
-FROM otomi/tools:1.2.0
+FROM otomi/tools:1.3.0
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir $APP_HOME
