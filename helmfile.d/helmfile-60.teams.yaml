@@ -231,11 +231,6 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
-
-  - name: index-{{ $teamId }}
-    installed: false  # leave it for deletion !!
-    namespace: team-{{ $teamId }}
-    chart: ../charts/index
   {{- end }}
   - name: oauth2-proxy-team-{{ $teamId }}
     installed: true
