@@ -4,14 +4,6 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 
 releases:
-  - name: harbor
-    installed: false
-    namespace: shared
-    <<: *default
-  - name: kubernetes-dashboard
-    installed: false
-    namespace: kube-system
-    <<: *default
   - name: otomi-api
     installed: true
     namespace: shared
