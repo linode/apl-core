@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.30](https://github.com/redkubes/otomi-stack/compare/v0.10.29...v0.10.30) (2020-06-17)
+
+
+### Bug Fixes
+
+* removed missing chart release ref for dashboard + harbor [ci skip] ([cd389ff](https://github.com/redkubes/otomi-stack/commit/cd389ff7480135cfd5a3e206bbae106d40168d20))
+
 ### [0.10.29](https://github.com/redkubes/otomi-stack/compare/v0.10.28...v0.10.29) (2020-06-17)
 
 
