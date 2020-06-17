@@ -4,10 +4,6 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 
 releases:
-  - name: index
-    installed: false # TODO: remove in next minor
-    namespace: team-admin
-    <<: *default
   - name: drone
     installed: true
     namespace: team-admin
