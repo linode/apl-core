@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.28](https://github.com/redkubes/otomi-stack/compare/v0.10.27...v0.10.28) (2020-06-17)
+
+### Bug Fixes
+
+- change missingFileHandler name
+  ([117e90a](https://github.com/redkubes/otomi-stack/commit/117e90a76eb385fa928d9bb11bfbc12d1ede40f4))
+- missing files ([c987497](https://github.com/redkubes/otomi-stack/commit/c98749721736dd311b21ef9b9e51c5f1cd1b598b))
+
+### Feature Improvements
+
+- added helm secrets to tools, added missing file
+  ([0c3ce44](https://github.com/redkubes/otomi-stack/commit/0c3ce44b84f6bd248527cd4e4137cc4c6a4d9531))
+
 ### [0.10.27](https://github.com/redkubes/otomi-stack/compare/v0.10.26...v0.10.27) (2020-06-15)
 
 ### Bug Fixes
