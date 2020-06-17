@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.31](https://github.com/redkubes/otomi-stack/compare/v0.10.30...v0.10.31) (2020-06-17)
+
+
+### Bug Fixes
+
+* removed missing chart release ref for team index [ci skip] ([8795adb](https://github.com/redkubes/otomi-stack/commit/8795adb7110a80fd7d2f4730073d99aa17a30c60))
+
 ### [0.10.30](https://github.com/redkubes/otomi-stack/compare/v0.10.29...v0.10.30) (2020-06-17)
 
 
