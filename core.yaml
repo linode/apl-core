@@ -23,9 +23,46 @@ services:
     namespace: istio-system
     hide: true
     isAuthProxy: true
+    ownHost: true
   - name: harbor
     namespace: shared
-    svc: harbor
+    svc: harbor-portal
+  - name: harbor
+    namespace: shared
+    hide: true
+    svc: harbor-core
+    path: /api/
+  - name: harbor
+    namespace: shared
+    hide: true
+    svc: harbor-core
+    path: /c/
+  - name: harbor
+    namespace: shared
+    hide: true
+    svc: harbor-core
+    path: /service/
+  - name: harbor
+    namespace: shared
+    hide: true
+    svc: harbor-core
+    path: /chartrepo/
+  - name: reg
+    isPublic: true
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-registry
+    port: 5000
+    path: /v1/
+  - name: reg
+    isPublic: true
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-registry
+    port: 5000
+    path: /v2/
   - name: otomi
     namespace: shared
     svc: otomi-api
