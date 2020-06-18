@@ -20,11 +20,9 @@ releases:
   - name: cert-manager-artifacts
     installed: true
     namespace: ingress
-    chart: ../charts/raw
     labels:
       tag: cert-manager
-    values:
-    - ../values/cert-manager/cert-manager-raw.gotmpl
+    <<: *raw
   - name: external-dns
     installed: true
     namespace: ingress
