@@ -5,13 +5,13 @@ bases:
 
 releases:
   - name: harbor
-    installed: false
+    installed: true
     namespace: shared
     <<: *default
-  - name: kubernetes-dashboard
-    installed: false
-    namespace: kube-system
-    <<: *default
+  - name: harbor-artifacts
+    installed: true
+    namespace: shared
+    <<: *raw
   - name: otomi-api
     installed: true
     namespace: shared

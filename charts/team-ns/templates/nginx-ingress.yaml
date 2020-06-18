@@ -153,7 +153,7 @@ spec:
   {{- end }}
 {{- end }}
 
-{{- if ne (len $public) 0 }} # then we also have public routes without auth, so passthrough:
+{{- if gt (len $public) 0 }} # then we also have public routes without auth, so passthrough:
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -167,20 +167,47 @@ metadata:
 spec:
   rules:
   {{- range $s := $public }}
-  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+  # 'domain' - team service, 'ownHost' - core service, 
+  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name (hasKey $s "ownHost" | ternary $v.cluster.domain $v.domain))) }}
   - host: {{ $domain }}
     http:
       paths:
-      - path: /oauth2/userinfo
-        backend:
-          serviceName: {{ $authSvc }}
-          servicePort: 80
       - backend:
           serviceName: istio-ingressgateway
           servicePort: 80
   {{- end }}
   {{- if not $v.cluster.hasCloudLB }}
-  tls: {{- include "ingress-tls" $v | nindent 4 }}
+  tls:
+  {{- $customDomainServices := list }}
+  {{- range $s := $public }}
+  # if has domain or ownHost then it needs own cert thus own secret name
+  # otherwise group on wildcard
+  {{- if or (hasKey $s "domain") (hasKey $s "ownHost") }}
+  {{- $customDomainServices = (append $customDomainServices $s) }}
+  {{- end }}
+  {{- end }}
+  {{- range $s := $customDomainServices }}
+  {{- $certName := ($s.domain | replace "." "-") }}
+  - hosts:
+      - {{ $s.domain }}
+    secretName: {{ $certName }}
+  {{- end }}
+  {{- range $app := list "auth" "apps" "proxy" "reg" }} # wildcard grouping
+  - hosts:
+      - {{ $app }}.{{ $.domain }}
+    secretName: cert-team-{{ $.teamId }}-{{ $app }}
+  {{- end }}
+  {{- if eq $.teamId "admin" }}
+  - hosts:
+      - drone.{{ $.domain }}
+    secretName: cert-team-{{ $.teamId }}-drone
+  - hosts:
+      - prometheus-istio.{{ $.domain }}
+    secretName: cert-team-{{ $.teamId }}-prometheus-istio
+  {{- end }}
+  {{- end }}
+
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}

@@ -46,7 +46,7 @@ kubernetes.io/ingress.class: nginx
 {{- $customDomainServices := list }}
 {{- range $s := .services }}
 {{- if and (not $s.internal) (not $s.host) (not $.isAuthProxy) }}
-{{- if hasKey $s "domain" }}
+{{- if or (hasKey $s "domain") (hasKey $s "ownHost") }}
 {{- $customDomainServices = (append $customDomainServices $s) }}
 {{- end }}
 {{- end }}
@@ -57,7 +57,7 @@ kubernetes.io/ingress.class: nginx
     - {{ $s.domain }}
   secretName: {{ $certName }}
 {{- end }}
-{{- range $app := list "auth" "apps" "proxy" }}
+{{- range $app := list "auth" "apps" "proxy" "reg" }} # wildcard grouping
 - hosts:
     - {{ $app }}.{{ $.domain }}
   secretName: cert-team-{{ $.teamId }}-{{ $app }}
