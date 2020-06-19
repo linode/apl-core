@@ -54,7 +54,8 @@ kubernetes.io/ingress.class: nginx
 {{- if and (not $.isApps) (not (has $domain $domains)) }}
   {{- $domains = (append $domains $domain) }}
 {{- end }}
-{{- if not (or (has $s.name $names) ($s.internal) (eq "shared" ($s.namespace | default ""))) }}
+{{/*- if not (or (has $s.name $names) ($s.internal) (eq "shared" ($s.namespace | default ""))) */}}
+{{- if not (or (has $s.name $names) ($s.internal)) }}
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
