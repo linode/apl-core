@@ -2,5 +2,5 @@
 .history
 node_modules/
 env/
-*.json
+/*.json
 !package*.json

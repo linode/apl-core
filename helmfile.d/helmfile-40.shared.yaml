@@ -9,7 +9,7 @@ releases:
     namespace: shared
     <<: *default
   - name: harbor-artifacts
-    installed: true
+    installed: false
     namespace: shared
     <<: *raw
   - name: otomi-api
