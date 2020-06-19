@@ -1,84 +1,8 @@
-{{- $v := .Values }}
-{{- $domain := printf "harbor.team-admin.%s" $v.cluster.domain }}
-
 resources:
-  - apiVersion: networking.istio.io/v1beta1
-    kind: Gateway
-    metadata:
-      # labels: {{- $v.labels | nindent 8 }}
-      name: harbor
-    spec:
-      selector:
-        istio: ingressgateway
-      servers:
-      - hosts:
-        - {{ $domain }}
-        port:
-          name: http
-          number: 80
-          protocol: HTTP
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: harbor
-      # labels: {{- $v.labels | nindent 8 }}
-    spec:
-      gateways:
-        - shared/harbor
-      hosts:
-        - {{ $domain }}
-      http:
-        - match:
-            - uri:
-                prefix: '/c/'
-          route:
-            - destination:
-                host: harbor-core
-        - match:
-            - uri:
-                prefix: '/api/'
-          route:
-            - destination:
-                host: harbor-core
-        - match:
-            - uri:
-                prefix: '/v2/'
-          route:
-            - destination:
-                host: harbor-registry
-                port:
-                  number: 5000
-        - match:
-            - uri:
-                prefix: '/v1/'
-          route:
-            - destination:
-                host: harbor-registry
-                port:
-                  number: 5000
-          fault:
-            abort:
-              httpStatus: 404
-        - match:
-            - uri:
-                prefix: '/service/'
-          route:
-            - destination:
-                host: harbor-core
-        - match:
-            - uri:
-                prefix: '/chartrepo/'
-          route:
-            - destination:
-                host: harbor-core
-        - route:
-            - destination:
-                host: harbor-portal
   # - apiVersion: networking.istio.io/v1alpha3
   #   kind: VirtualService
   #   metadata:
   #     name: harbor-core
-  #     # labels: {{- $v.labels | nindent 8 }}
   #   spec:
   #     hosts:
   #       - harbor-core

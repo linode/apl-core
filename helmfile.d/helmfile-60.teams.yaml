@@ -2,11 +2,13 @@ bases:
   - snippets/defaults.gotmpl
 ---
 {{- $v := .Environment.Values }}
+{{- $tc := $v.teamConfig }}
+{{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $stack := $v | get "stack" dict }}
 {{- $adminDomain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
-{{- $tc := $v.teamConfig }}
 {{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v.cluster | toString }}
 releases:
   - name: team-ns-admin
@@ -22,7 +24,7 @@ releases:
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
-        services: {{- $v.services | toYaml | nindent 10 }}
+        services: {{- $coreAdminServices | toYaml | nindent 10 }}
         proxies: {{- $v.proxies | toYaml | nindent 10 }}
         resourceQuota: null
         knative:
@@ -47,7 +49,7 @@ releases:
           enabled: {{ $v.cluster.hasKnative }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
-      - services: {{- concat $tc.services ($team | get "services" list) | toYaml | nindent 12 }}
+      - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 12 }}
         {{- if $v.cluster.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
@@ -231,32 +233,6 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
-
-  - name: index-{{ $teamId }}
-    installed: false  # leave it for deletion !!
-    namespace: team-{{ $teamId }}
-    chart: ../charts/index
   {{- end }}
-  - name: oauth2-proxy-team-{{ $teamId }}
-    installed: true
-    namespace: istio-system
-    chart: ../charts/oauth2-proxy
-    labels:
-      team: {{ $teamId }}
-      tag: ingress
-      pkg: oauth2-proxy
-    values:
-      - ../values/oauth2-proxy/oauth2-proxy.gotmpl
-      - ../values/default.gotmpl
-      - fullnameOverride: oauth2-proxy-team-{{ $teamId }}
-        {{- if hasKey $team "oidc" }}
-        config:
-          clientID: {{ $team.oidc.clientID }}
-          clientSecret: {{ $team.oidc.clientSecret }}
-        {{- end }}
-        extraArgs:
-          whitelist-domain: {{ $domain }}
-          redirect-url: https://auth.{{ $domain }}/oauth2/callback
-          cookie-domain: {{ $domain }}
   {{- end }}
   {{- end }}
