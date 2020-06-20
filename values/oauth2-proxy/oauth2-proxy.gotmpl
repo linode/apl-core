@@ -1,6 +1,4 @@
 {{- $v := .Environment.Values }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
-{{- $cm := index $v.charts "cert-manager" }}
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
 image:
@@ -22,11 +20,11 @@ extraArgs:
   # provider: oidc
   provider: {{ $o.provider }}
   oidc-issuer-url: {{ $provider | get "issuer" }}
-  whitelist-domain: {{ $domain }}
+  whitelist-domain: {{ $v.cluster.domain }}
   scope: {{ $o.scope }}
-  redirect-url: https://auth.{{ $domain }}/oauth2/callback
+  redirect-url: https://auth.{{ $v.cluster.domain }}/oauth2/callback
   # email-domain: "*"
-  cookie-domain: {{ $domain }}
+  cookie-domain: '.{{ $v.cluster.domain }}'
   cookie-samesite: none
   cookie-secure: true
   cookie-httponly: true

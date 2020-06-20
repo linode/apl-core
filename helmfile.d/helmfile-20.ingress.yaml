@@ -20,11 +20,9 @@ releases:
   - name: cert-manager-artifacts
     installed: true
     namespace: ingress
-    chart: ../charts/raw
     labels:
       tag: cert-manager
-    values:
-    - ../values/cert-manager/cert-manager-raw.gotmpl
+    <<: *raw
   - name: external-dns
     installed: true
     namespace: ingress
@@ -54,3 +52,10 @@ releases:
       tag: ingress
       pkg: oauth2-proxy
     <<: *default
+  - name: oauth2-proxy-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *raw
