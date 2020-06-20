@@ -49,12 +49,13 @@ kubernetes.io/ingress.class: nginx
 {{- $domains := list }}
 {{- $names := list }}
 {{- range $s := .services }}
-{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name (eq "shared" ($s.namespace | default "") | ternary $.cluster.domain $.domain))) */}}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) }}
+{{- $shared := eq "shared" ($s.namespace | default "") }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $.cluster.domain $.domain))) }}
+{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) */}}
 {{- if and (not $.isApps) (not (has $domain $domains)) }}
   {{- $domains = (append $domains $domain) }}
 {{- end }}
-{{/*- if not (or (has $s.name $names) ($s.internal) (eq "shared" ($s.namespace | default ""))) */}}
+{{/*- if not (or (has $s.name $names) ($s.internal) ($shared)) */}}
 {{- if not (or (has $s.name $names) ($s.internal)) }}
   {{- $names = (append $names $s.name) }}
 {{- end }}
@@ -116,6 +117,10 @@ spec:
       - backend:
           serviceName: istio-ingressgateway
           servicePort: 80
+      - backend:
+          serviceName: oauth2-proxy
+          servicePort: 80
+        path: /oauth2/userinfo
   {{- end }}
   {{- if not .cluster.hasCloudLB }}
   tls:
