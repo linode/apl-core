@@ -5,7 +5,9 @@
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not $s.internal) (not (hasKey $s "host")) }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
+{{- $shared := eq "shared" ($s.namespace | default "") }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ((and (hasKey $s "ownHost") $shared) | ternary $v.cluster.domain $v.domain))) }}
+{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -26,8 +28,10 @@ spec:
       match:
         - uri:
             prefix: "{{ $s.path }}"
+      {{- if not (hasKey $s "forwardPath") }}
       rewrite:
         uri: "/"
+      {{- end }}
   {{- end }}
   {{- if hasKey $s "ksvc" }}
       rewrite:

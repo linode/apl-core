@@ -23,13 +23,64 @@ services:
     namespace: istio-system
     hide: true
     isAuthProxy: true
+    ownHost: true
+  - name: harbor
+    ownHost: true
+    namespace: shared
+    svc: harbor-harbor-portal
+  - name: harbor
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-core
+    path: /api/
+    forwardPath: true
+  - name: harbor
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-core
+    path: /c/
+    forwardPath: true
+  - name: harbor
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-core
+    path: /service/
+    forwardPath: true
+  - name: harbor
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-core
+    path: /chartrepo/
+    forwardPath: true
+  - name: reg
+    isPublic: true
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-registry
+    port: 5000
+    path: /v1/
+  - name: reg
+    isPublic: true
+    ownHost: true
+    namespace: shared
+    hide: true
+    svc: harbor-harbor-registry
+    port: 5000
+    path: /v2/
   - name: otomi
     namespace: shared
+    # ownHost: true
     svc: otomi-api
     hide: true
     path: /api/
   - name: otomi
     namespace: shared
+    # ownHost: true
     svc: otomi-web
   - name: loki-private
     svc: loki-headless

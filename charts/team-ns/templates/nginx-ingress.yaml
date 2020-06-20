@@ -3,189 +3,68 @@
 {{- $appsDomain := printf "apps.%s" $v.domain }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 {{- $authSvc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}
-# split list of services into public and private to create separate ingresses:
-# one for auth redirect and one passthrough
+# split list of services into separate ingress types:
+# - auth: public vs private
+# - forward path: forwarded (only exists to massage some core 'apps.*')
+# - custom domain (not 'apps.*'): custom
 {{- $public := list }}
+{{- $publicCustom := list }}
 {{- $private := list }}
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
   {{- if not $s.isAuthProxy }}
-    {{- if and (not $s.internal) (not $s.host) }}
+    {{- if not (or $s.internal $s.host) }}
       {{- if $s.isPublic }}
-      {{- $public = (append $public $s) }}
+        {{- if or $s.domain $s.ownHost }}
+          {{- $publicCustom = (append $publicCustom $s) }}
+        {{- else }}
+          {{- $public = (append $public $s) }}
+        {{- end }}
       {{- else }}
-        {{- if hasKey $s "domain" }}
-        {{- $privateCustom = (append $privateCustom $s) }}
+        {{- if or $s.domain $s.ownHost }}
+          {{- $privateCustom = (append $privateCustom $s) }}
         {{- else }}
           {{- if $s.forwardPath -}}
-          {{- $privateForward = (append $privateForward $s) }}
+            {{- $privateForward = (append $privateForward $s) }}
           {{- else }}
-          {{- $private = (append $private $s) }}
+            {{- $private = (append $private $s) }}
           {{- end }}
         {{- end }}
       {{- end }}
     {{- else }}
-    {{- $private = (append $private $s) }}
+      {{- $private = (append $private $s) }}
     {{- end }}
   {{- end }}
 {{- end }}
 
-# private default routes
-{{- if gt (len $private) 0 }}
+# apps.* that need their path rewritten to /
+{{ include "ingress" (dict "dot" . "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    {{- include "ingress-annotations" $v | nindent 4 }}
-    {{- include "auth-annotations" $v | nindent 4 }}
-      rewrite ^/$ /otomi/ permanent;
-  labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.teamId }}-apps
-  namespace: istio-system
-spec:
-  rules:
-  - host: {{ $appsDomain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-        path: /
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-        path: /({{ range $i, $s := $private }}{{ if gt $i 0 }}|{{ end }}{{ $s.name }}{{ end }})/(.*)
-  {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
-  tls:
-    - hosts:
-        - {{ $appsDomain }}
-      secretName: cert-team-{{ $v.teamId }}-apps
-  {{- end }}
+
+# apps.* that need their path forwarded instead of rewritten to /
+{{ include "ingress" (dict "dot" . "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
+---
+
+# apps with custom domains
+{{- if gt (len $privateCustom) 0 }}
+{{ include "ingress" (dict "dot" . "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
+---
 {{- end }}
 
-{{- if gt (len $privateForward) 0 }}
+# public services
+{{- if gt (len $public) 0 }}
+{{ include "ingress" (dict "dot" . "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
-    nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
-    {{- include "ingress-annotations" $v | nindent 4 }}
-    {{- include "auth-annotations" $v | nindent 4 }}
-  labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.teamId }}-apps-forward
-  namespace: istio-system
-spec:
-  rules:
-  - host: {{ $appsDomain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-        path: /({{ range $i, $s := $privateForward }}{{ if gt $i 0 }}|{{ end }}{{ $s.name }}{{ end }})/(.*)
-  {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
-  tls:
-    - hosts:
-        - {{ $appsDomain }}
-      secretName: cert-team-{{ $v.teamId }}-apps
-  {{- end }}
 {{- end }}
 
-# also for custom
-{{- if or (gt (len $privateCustom) 0) (eq $v.teamId "admin") }}
+# public services with custom domains
+{{- if gt (len $publicCustom) 0 }}
+{{ include "ingress" (dict "dot" . "name" "public-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $publicCustom) }}
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    {{- include "ingress-annotations" $v | nindent 4 }}
-    {{- include "auth-annotations" $v | nindent 4 }}
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.teamId }}-private
-  namespace: istio-system
-spec:
-  rules:
-  {{- range $s := $privateCustom }}
-  - host: {{ $s.domain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-  {{- end }}
-  {{- if eq $v.teamId "admin" }}
-  # exception for drone and prometheus
-  - host: drone.{{ $v.domain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-  - host: prometheus-istio.{{ $v.domain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-  {{- end }}
-  {{- if not $v.cluster.hasCloudLB }} # tls was already terminated by cloud LB
-  tls:
-    {{- range $s := $privateCustom }}
-    - hosts:
-        - {{ $s.domain }}
-      secretName: cert-team-{{ $v.teamId }}-{{ $s.name }}
-    {{- end }}
-    {{- if eq $v.teamId "admin" }}
-    - hosts:
-        - drone.{{ $v.domain }}
-      secretName: cert-team-{{ $v.teamId }}-drone
-    - hosts:
-        - prometheus-istio.{{ $v.domain }}
-      secretName: cert-team-{{ $v.teamId }}-prometheus-istio
-  {{- end }}
-  {{- end }}
 {{- end }}
 
-{{- if ne (len $public) 0 }} # then we also have public routes without auth, so passthrough:
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    {{- include "ingress-annotations" $v | nindent 4 }}
-    ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
-  labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.teamId }}-public
-  namespace: istio-system
-spec:
-  rules:
-  {{- range $s := $public }}
-  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) }}
-  - host: {{ $domain }}
-    http:
-      paths:
-      - path: /oauth2/userinfo
-        backend:
-          serviceName: {{ $authSvc }}
-          servicePort: 80
-      - backend:
-          serviceName: istio-ingressgateway
-          servicePort: 80
-  {{- end }}
-  {{- if not $v.cluster.hasCloudLB }}
-  tls: {{- include "ingress-tls" $v | nindent 4 }}
-  {{- end }}
-{{- end }}
-{{- end }}
-{{- if ne (len $v.proxies) 0 }}
----
+{{- if gt (len $v.proxies) 0 }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -212,6 +91,7 @@ spec:
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}
-      secretName: cert-team-{{ $v.teamId }}-proxy
+      secretName: proxy-{{ $v.teamId }}
   {{- end }}
+{{- end }}
 {{- end }}

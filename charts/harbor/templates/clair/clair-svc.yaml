@@ -1,0 +1,15 @@
+{{ if .Values.clair.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.clair" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: adapter
+      port: {{ include "harbor.clairAdapter.servicePort" . }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: clair
+{{ end }}

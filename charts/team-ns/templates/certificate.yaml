@@ -1,9 +1,19 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
-{{- $ := . }}
-{{- range $app := list "auth" "apps" "proxy" "drone" "prometheus-istio" }}
-{{- if or (eq $v.teamId "admin") (ne $app "prometheus-istio") }}
-{{ $name := printf "cert-team-%s-%s" $v.teamId $app }}
+# collect unique host names
+{{- $hosts := list }}
+{{- range $s := $v.services }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") (hasKey $s "isShared")) }}
+{{- $domain := printf "%s.%s" $s.name (eq $s.namespace "shared" | ternary $v.cluster.domain $v.domain) }}
+{{- if not (has $domain $hosts) }}
+  {{- $hosts = (append $hosts $domain) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $appsDomain := printf "apps.%s" $v.domain }}
+{{- $hosts := (append $hosts $appsDomain) }}
+{{- range $host := $hosts }}
+{{ $name := $host | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -12,9 +22,9 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   secretName: {{ $name }}
-  commonName: "{{ $app }}.{{ $v.domain }}"
+  commonName: "{{ $host }}"
   dnsNames:
-  - "{{ $app }}.{{ $v.domain }}"
+  - "{{ $host }}"
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ $v.certStage }}
@@ -23,6 +33,5 @@ spec:
     - key encipherment
     - ocsp signing
 ---
-{{- end }}
 {{- end }}
 {{- end }}

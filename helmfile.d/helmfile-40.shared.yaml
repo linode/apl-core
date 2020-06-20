@@ -4,6 +4,13 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 
 releases:
+  - name: harbor
+    installed: true
+    namespace: shared
+    <<: *default
+  - name: harbor-artifacts
+    installed: false
+    namespace: shared
   - name: otomi-api
     installed: true
     namespace: shared
