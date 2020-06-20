@@ -34,7 +34,7 @@ spec:
         image: {{ .Values.database.internal.initContainerImage.repository }}:{{ .Values.database.internal.initContainerImage.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
-        args: ["-c", "chown -R 999:999 /var/lib/postgresql/data"]
+        args: ["-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
         volumeMounts:
         - name: database-data
           mountPath: /var/lib/postgresql/data

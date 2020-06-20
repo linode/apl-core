@@ -3,12 +3,15 @@
 {{- $externalUrl := printf "https://harbor.%s" $domain }}
 nameOverride: harbor
 fullnameOverride: harbor
+notary:
+  enabled: false
 expose:
   type: clusterIP
   tls:
     enabled: false
-    commonName: harbor-{{ $domain }}
-    # secretName: harbor-{{ $domain | replace "." "-" }}
+    secretName: harbor-{{ $domain | replace "." "-" }}
+core:
+  secretName: harbor-{{ $domain | replace "." "-" }}
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -109,7 +112,7 @@ registry:
   # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
   # If a secret key is not specified, Helm will generate one.
   # Must be a string of 16 chars.
-  secret: ''
+  secret: '4j8sdf75dfd8sdfd'
   # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
   relativeurls: false
   credentials:
@@ -118,3 +121,11 @@ registry:
     # If you update the username or password of registry, make sure use cli tool htpasswd to generate the bcrypt hash
     # e.g. 'htpasswd -nbBC10 $username $password'
     htpasswd: 'admin:$2y$10$WfCM9Hs6dxe/HXloj.xOruwKZb.U18hwhCSGymZ40Z0Is5e/KMteS'
+
+database:
+  type: internal
+  internal:
+    image:
+      repository: goharbor/harbor-db
+      tag: v2.0.0
+    # password: "sd83jf7s"

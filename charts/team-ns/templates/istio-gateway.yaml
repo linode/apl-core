@@ -1,5 +1,16 @@
 {{- $v := .Values }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+# collect unique domains for this GW
+{{- $domains := list }}
+{{- range $s := $v.services }}
+{{- $shared := eq "shared" ($s.namespace | default "") }}
+{{- if and (or (hasKey $s "domain") (and (hasKey $s "ownHost") $shared (eq $v.teamId "admin"))) (not (hasKey $s "ksvc")) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.cluster.domain)) }}
+{{- if not (has $domain $domains) }}
+  {{- $domains = (append $domains $domain) }}
+{{- end }}
+{{- end }}
+{{- end }}
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -11,10 +22,8 @@ spec:
   servers:
   - hosts:
       - '*.{{ $v.domain }}'
-      {{- range $s := $v.services }}
-      {{- if and (hasKey $s "domain") (not (hasKey $s "ksvc")) }}
-      - {{ $s.domain }}
-      {{- end }}
+      {{- range $domain := $domains }}
+      - {{ $domain }}
       {{- end }}
     port:
       name: http

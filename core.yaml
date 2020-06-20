@@ -24,7 +24,6 @@ services:
     hide: true
     isAuthProxy: true
     ownHost: true
-
   - name: harbor
     ownHost: true
     namespace: shared
@@ -35,24 +34,28 @@ services:
     hide: true
     svc: harbor-harbor-core
     path: /api/
+    forwardPath: true
   - name: harbor
     ownHost: true
     namespace: shared
     hide: true
     svc: harbor-harbor-core
     path: /c/
+    forwardPath: true
   - name: harbor
     ownHost: true
     namespace: shared
     hide: true
     svc: harbor-harbor-core
     path: /service/
+    forwardPath: true
   - name: harbor
     ownHost: true
     namespace: shared
     hide: true
     svc: harbor-harbor-core
     path: /chartrepo/
+    forwardPath: true
   - name: reg
     isPublic: true
     ownHost: true
