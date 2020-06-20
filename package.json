@@ -34,7 +34,7 @@
   },
   "license": "ISC",
   "lint-staged": {
-    "*.{json,md,yml,yaml}": [
+    "*.{json,yml,yaml}": [
       "prettier --write"
     ]
   },
@@ -62,5 +62,5 @@
       "tag": true
     }
   },
-  "version": "0.10.27"
+  "version": "0.10.31"
 }
