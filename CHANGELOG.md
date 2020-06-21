@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.34](https://github.com/redkubes/otomi-stack/compare/v0.10.33...v0.10.34) (2020-06-21)
+
+
+### Bug Fixes
+
+* proxy cert [ci skip] ([7616603](https://github.com/redkubes/otomi-stack/commit/7616603abd49814a25d435b105d44c24c6ff15c0))
+
 ### [0.10.33](https://github.com/redkubes/otomi-stack/compare/v0.10.32...v0.10.33) (2020-06-21)
 
 
