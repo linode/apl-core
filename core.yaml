@@ -18,12 +18,6 @@ k8s:
     - name: team-admin
 
 services:
-  - name: auth
-    svc: oauth2-proxy
-    namespace: istio-system
-    hide: true
-    isAuthProxy: true
-    ownHost: true
   - name: harbor
     ownHost: true
     namespace: shared
@@ -180,11 +174,6 @@ teamConfig:
     - name: otomi
       namespace: shared
       svc: otomi-web
-    - name: auth
-      svc: oauth2-proxy
-      namespace: istio-system
-      isAuthProxy: true
-      hide: true
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
