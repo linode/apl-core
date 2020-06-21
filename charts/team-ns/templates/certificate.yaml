@@ -3,8 +3,9 @@
 # collect unique host names
 {{- $hosts := list }}
 {{- range $s := $v.services }}
-{{- if and ($s.isCore) (or (hasKey $s "ownHost") (hasKey $s "isShared")) }}
-{{- $domain := printf "%s.%s" $s.name (eq $s.namespace "shared" | ternary $v.cluster.domain $v.domain) }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "ownHost") (eq ($s.namespace | default "") "shared")) }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) }}
+{{- $domain := printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain) }}
 {{- if not (has $domain $hosts) }}
   {{- $hosts = (append $hosts $domain) }}
 {{- end }}

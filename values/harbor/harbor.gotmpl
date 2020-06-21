@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
-{{- $externalUrl := printf "https://harbor.%s" $domain }}
+{{- $domain := printf "harbor.%s" $v.cluster.domain }}
+{{- $externalUrl := printf "https://%s" $v.cluster.domain }}
 nameOverride: harbor
 fullnameOverride: harbor
 notary:
@@ -9,9 +9,9 @@ expose:
   type: clusterIP
   tls:
     enabled: false
-    secretName: harbor-{{ $domain | replace "." "-" }}
+    secretName: {{ $domain | replace "." "-" }}
 core:
-  secretName: harbor-{{ $domain | replace "." "-" }}
+  secretName: {{ $domain | replace "." "-" }}
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
