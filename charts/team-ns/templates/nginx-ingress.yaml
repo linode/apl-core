@@ -79,7 +79,7 @@ metadata:
 spec:
   rules:
   {{ range $p := $v.proxies }}
-  - host: {{ printf "proxy.%s" $v.domain }}
+  - host: proxy.{{ $v.domain }}
     http:
       paths:
       - backend:
@@ -91,7 +91,7 @@ spec:
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}
-      secretName: proxy-{{ $v.teamId }}
+      secretName: proxy-{{ $v.domain | replace "." "-" }}
   {{- end }}
 {{- end }}
 {{- end }}
