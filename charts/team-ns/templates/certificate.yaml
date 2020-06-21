@@ -11,7 +11,9 @@
 {{- end }}
 {{- end }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
+{{- $proxyDomain := printf "proxy.%s" $v.domain }}
 {{- $hosts := (append $hosts $appsDomain) }}
+{{- $hosts := (append $hosts $proxyDomain) }}
 {{- range $host := $hosts }}
 {{ $name := $host | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2
