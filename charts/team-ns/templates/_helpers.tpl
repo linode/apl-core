@@ -70,6 +70,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
+    externaldns: "true" # register hosts with dns
     {{- if .isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ .domain }}
       {{- if .hasForward }}

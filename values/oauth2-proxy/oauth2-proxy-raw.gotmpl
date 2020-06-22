@@ -1,5 +1,8 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domain }}
+{{- $cm := index $v.charts "cert-manager" }}
+{{- $name := $domain | replace "." "-" }}
+{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
   - apiVersion: extensions/v1beta1
     kind: Ingress
@@ -27,3 +30,4 @@ resources:
           hosts:
             - '{{ $domain }}'
       {{- end }}
+  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $name "stage" $cm.stage) $v) | nindent 4 }}

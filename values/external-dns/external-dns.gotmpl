@@ -7,7 +7,7 @@ image:
   tag: 0.5.15-debian-9-r1
 sources:
 - ingress
-
+- istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 provider: {{ $v.cluster.provider }}
 {{- if eq $v.cluster.provider "google" }}
@@ -28,6 +28,8 @@ domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 {{- if $v.cluster.hasCloudLB }}
 annotationFilter: "provider={{ $v.cluster.provider }}"
+{{- else }}
+annotationFilter: "externaldns=true"
 {{- end }}
 dryRun: false
 crd:
