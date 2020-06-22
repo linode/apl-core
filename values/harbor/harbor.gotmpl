@@ -1,17 +1,26 @@
 {{- $v := .Environment.Values }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
-{{- $externalUrl := printf "https://harbor.%s" $domain }}
+{{- $h := $v.charts.harbor }}
+{{- $hp := $v.charts.harbor.persistence }}
+{{- $domain := printf "harbor.%s" $v.cluster.domain }}
+{{- $notaryDomain := printf "notary.%s" $v.cluster.domain }}
+{{- $secretName := ($domain | replace "." "-") }}
+{{- $notarySecretName := ($notaryDomain | replace "." "-") }}
+{{- $externalUrl := printf "https://%s" $v.cluster.domain }}
 nameOverride: harbor
 fullnameOverride: harbor
 notary:
-  enabled: false
+  enabled: true
 expose:
   type: clusterIP
   tls:
-    enabled: false
-    secretName: harbor-{{ $domain | replace "." "-" }}
+    enabled: true
+    secretName: {{ $secretName }}
+    notarySecretName: {{ $notarySecretName }}
+nginx:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"    
 core:
-  secretName: harbor-{{ $domain | replace "." "-" }}
+  secretName: {{ $secretName }}
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -68,24 +77,17 @@ persistence:
   # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
   # for the detail.
   imageChartStorage:
-    type: gcs
-    filesystem:
-      rootdirectory: /storage
-      #maxthreads: 100
-    gcs:
-      bucket: gcs-auth-rw-otomi-harbor@otomi-cloud.iam.gserviceaccount.com
-      # The base64 encoded json file which contains the key
-      encodedkey: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAib3RvbWktY2xvdWQiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMjI1ZjQ5ZWRmMjBmOTg5OWFjOWVmODlmYTYyZWJhY2IyNzFiN2YwIiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdndJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLa3dnZ1NsQWdFQUFvSUJBUURjbG1nVGk5b2hRYmVzXG5mT3N4QWE3T1dwcGVYVlpLK21mZi90YzNNc2NYT1locFBNdlp1Rm90aXo5czMxbnJ3dFo1cTdyWnlwQmlZV05iXG42QmxNTlRGOFQ3YmJGeldabUl3OFpKdHc2Vnd0UTkvODdYdDQvb3IxeXVtUmVBdUFyMlozSXQ5dGxQckZPRlFTXG5TNkRqQi9VMy9GOHRIcG1YZHJMYjBpVEVRczZFSGRQaSs1V2Q3Nmk5cldaWktwZ3U5ZEtOSzN4SzB2cTRpVHVBXG5OVFVnRlZDRytBUWYyWS9qLzhsT2hQb1JEMERvSTZXcS90NGZPaEZmN3UxZWUrdVRrc1hEb0ZuNzJxVElNSXhjXG5hQkQyb1FGb1A0NHNxL1RaaFB1d00weUZITG54enV2MTJvNkZiS0hCTVFwbmQvVW5CWk53Myt5QlRtRkFxZVZHXG53aGcrTjloUEFnTUJBQUVDZ2dFQUVSSisrWmtaN2lyK2dzazkzUktFZUYxSExhdXhwS2E0VHZ2NkM4QTI3QWFpXG40NFBQcUx4S2ZOUkpocE5sSlR2YThUUW43Y1U3Rmt2QWUzbmp3MWNweXh2U3NWblA1eTN2ZmpLd3dyVDg2Ky90XG40Mmh3UzhKbCtBN0tHaW5xSHNxT0VEaHFoZ2JhdjFSdHVJREZpNFpKSmJPRUF3bkJERE5ZTmFIMm1ockZqakJjXG56QjB3ZG1ad1lsQ3JpcnRpMUhWQy84QlFTaHZVSU43VjVNejJiM2NZREdkenVsMS9SQXNGYlhEK29aQlh6Lyt5XG52Zi9teDRuR0hSYS9oenRxTDJNWWkvTTF6VnAxNDJkTUxGY2ZvRFhlbVBIYld4dFE1SjZoU3Nid3crT29HS0hLXG5ZelIvWlRpaFY1aHNKalZhOGcxd0sreEUwU05UL3phb1BLT0srcnA5QVFLQmdRRDBWRXlpUWJvYXpZNEZ0cUR2XG5vclVPU3J2alZrNlQwNVlNTlpUOFFRWlhWWU5Lek9wWVBzQ3pscHRuTnIyczdJWVlBUFRRVXM1SmRSRWEwM0NjXG5IRSszN3ZSa3B2M2h0dDRCbDg2NjFtQXhWTFowYVQ5b25vUm0wMTBiNm9WZmpnZ2F2QnYrNnpLd0lHczNIUVY1XG5PZWR1Y2Y0bWNUT0h1UDkyZXdmMExkczdnUUtCZ1FEbkg4bnNjamc0V2VybEIrWEtXZXNpWXp5TWdnQ1BKNzdPXG51bXF1TkpJQzFwemgyZmxSOUQvb3RIMUUxaWFyTEJwQ3RhVTcwNFVHSlRBWmh0NDM5TTliY1dyUUFUMFBGWXJqXG5wK3FXTC9jUVd3K0NyTFZXWEZ1R1l4dk5laGpGcFl2YkdSTTdQU2Y2VzdXeWt1WDhGUkpTckkwZ1habmpsalYxXG5UVDlRTVR3N3p3S0JnUUNSdUlGb09JazFtU2srVVJrVk0xYUc2cDI2emV2WmtOVXAvUDhabi9LWFBlSXJSNkh3XG45YVJhdDlXQnJvMWJ5RW1Gb1hSaGx6Ri9jRG0rWlNNQmlJVW5MM1pGWGErSDRsZndYVWtuOTlteE1sUUxoQVlVXG5jSTZKQVVERCtKQ0pXQjJQVEdmcUZ2N0pPdHlYSjFEdloxQ1hkNWRiK0NJQ3JaeDNYcE4wMTdDc2dRS0JnUUNiXG5pTm56QTE1d0ZacXNiQ2NvaUdCaThOTkRYdzBQU1ZqdmQ2WG8rN215clVnLytOYitYdGRQTzM3OWZ2dmd2em9nXG40R3FFbXpCdTFVSE1PK1Y1VkliaWE2M01zcmlyV1B6eGZRT3g5QzlZVTE5WnVlNENZdjY0cmlOOG9JamhJU20vXG4xTjBMUlhtTTBvQ3czb2hrbnEySTgxTzVqeVBMY3o4Z1pFNlNJYi8rSXdLQmdRRHJFWlhsZG5ZcHY4dFJCekZ2XG5QOVpLVTdQVWRwNVh2d0psOWtXRnQrNDlnbXg4MWlkUmI2ajl0dEc0N0FXK09xc2x3ZjA5N2ZrdzJQQ1VlVDhFXG5OYi80NEdNRENhcnRrUWR6enpJVC9XUzFWZlRIcWxDWUtjZzJsamFsQnZXWks0UjZUbXRzaGZOMG9xSnNIbC83XG5RSVBxV2FpZ00rNmVzMWJlM3drTERSQmlyZz09XG4tLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tXG4iLAogICJjbGllbnRfZW1haWwiOiAiZ2NzLWF1dGgtcnctb3RvbWktaGFyYm9yQG90b21pLWNsb3VkLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwKICAiY2xpZW50X2lkIjogIjEwMjIyNjY3MjcyMDMxNDk2MzI5MSIsCiAgImF1dGhfdXJpIjogImh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbS9vL29hdXRoMi9hdXRoIiwKICAidG9rZW5fdXJpIjogImh0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuIiwKICAiYXV0aF9wcm92aWRlcl94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsCiAgImNsaWVudF94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL3JvYm90L3YxL21ldGFkYXRhL3g1MDkvZ2NzLWF1dGgtcnctb3RvbWktaGFyYm9yJTQwb3RvbWktY2xvdWQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iCn0K
-      rootdirectory: /
-      #chunksize: '5242880'
+    {{ $imageChartStorageType := $hp.imageChartStorage | get "type" "filesystem" }}
+    type: {{ $imageChartStorageType }}
+    {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
  
  # debug, info, warning, error or fatal
 logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: 'bladibla'
+harborAdminPassword: '{{ $h.adminPassword }}'
 # The secret key used for encryption. Must be a string of 16 chars.
-secretKey: 'fEkJ8WIRb9TTjqhl'
+secretKey: '{{ $h.secretKey }}'
 
 # The proxy settings for updating clair vulnerabilities from the Internet and replicating
 # artifacts from/to the registries that cannot be reached directly

@@ -5,13 +5,14 @@
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- if and (not $s.internal) (not (hasKey $s "host")) }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
-{{- $shared := eq "shared" ($s.namespace | default "") }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ((and (hasKey $s "ownHost") $shared) | ternary $v.cluster.domain $v.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
+{{- $vsName := printf "%s%s" ($domain | replace "." "-") (hasKey $s "path" | ternary (printf "-%s" (($s.path | default "") | replace "/" "")) "") -}}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: {{ $domain | replace "." "-" }}-{{ $s.path | default "x" | replace "/" "" }}
+  name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   gateways:
@@ -22,34 +23,43 @@ spec:
   {{- end }}
   hosts:
   - {{ $domain }}
+  {{- if $s.tlsPass }}
+  tls:
+  {{- else }}
   http:
-    - name: {{ $domain | replace "." "-" }}-{{ $s.path | default "x" | replace "/" "" }}
-  {{- if hasKey $s "path" }}
-      match:
-        - uri:
+  {{- end }}
+    - match:
+    {{- if $s.tlsPass }}
+        - port: 443
+          sniHosts:
+            - {{ $domain }}
+    {{- else }}
+        - port: 80
+      {{- if and (hasKey $s "path") (not $s.tlsPass) }}
+          uri:
             prefix: "{{ $s.path }}"
-      {{- if not (hasKey $s "forwardPath") }}
+        {{- if not (hasKey $s "forwardPath") }}
       rewrite:
         uri: "/"
+        {{- end }}
       {{- end }}
-  {{- end }}
-  {{- if hasKey $s "ksvc" }}
+    {{- end }}
+    {{- if hasKey $s "ksvc" }}
       rewrite:
         authority: {{ $s.name }}.{{ $v.domain }}
-    {{- if hasKey $s "path" }}
+      {{- if hasKey $s "path" }}
         uri: "/"
-    {{- end }}
+      {{- end }}
       route:
         - destination:
             host: istio-ingressgateway.istio-system.svc.cluster.local
-  {{- else }}
+    {{- else }}
       route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
-  {{- end }}
+    {{- end }}
             port:
-              number: {{ index $s "port" | default 80 }}
-          weight: 100
+              number: {{ $s.port | default (hasKey $s "tlsPass" | ternary 443 80) }}
       # fix for istio (=envoy) incorrectly setting proto to http
       # (@see https://github.com/istio/istio/issues/7964):
       appendHeaders:
