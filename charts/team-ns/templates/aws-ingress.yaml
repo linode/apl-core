@@ -1,5 +1,21 @@
 {{- $v := .Values }}
 {{- if and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
+{{- $domains := list }}
+{{- range $s := $v.services }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) (not (hasKey $s "hasCert")) (not (hasKey $s "host")) }}
+{{- $domain := printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain) }}
+{{- if not (has $domain $domains) }}
+  {{- $domains = (append $domains $domain) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if eq $v.teamId "admin" -}}
+  {{- $proxyDomain := printf "proxy.%s" $v.domain }}
+  {{- $domains = (append $domains $proxyDomain) }}
+{{- end }}
+{{- $appsDomain := printf "apps.%s" $v.domain }}
+{{- $domains = (append $domains $appsDomain) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -12,9 +28,7 @@ metadata:
   namespace: ingress
 spec:
   rules:
-    {{- range $s := $v.services }}
-    {{- if and (not $s.internal) (not $s.host) (hasKey $s "domain") }}
-    {{- $domain := index $s "domain" }}
+    {{- range $domain := $domains }}
     - host: {{ $domain }}
       http:
         paths:
@@ -22,43 +36,6 @@ spec:
             backend:
               serviceName: ssl-redirect
               servicePort: use-annotation
-          - backend:
-              serviceName: nginx-ingress-controller
-              servicePort: 80
-    {{- end }}
-    {{- end }}
-    {{- range $app := list "auth" "apps" "proxy" }}
-    - host: {{ $app }}.{{ $v.domain }}
-      http:
-        paths:
-          - path: /*
-            backend:
-              serviceName: ssl-redirect
-              servicePort: use-annotation
-          - backend:
-              serviceName: nginx-ingress-controller
-              servicePort: 80
-    {{- end }}
-    {{- if (eq $v.teamId "admin") }}
-    - host: drone.{{ $v.domain }}
-      http:
-        paths:
-          - path: /*
-            backend:
-              serviceName: ssl-redirect
-              servicePort: use-annotation
-        paths:
-          - backend:
-              serviceName: nginx-ingress-controller
-              servicePort: 80
-    - host: prometheus-istio.{{ $v.domain }}
-      http:
-        paths:
-          - path: /*
-            backend:
-              serviceName: ssl-redirect
-              servicePort: use-annotation
-        paths:
           - backend:
               serviceName: nginx-ingress-controller
               servicePort: 80
