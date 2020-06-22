@@ -74,7 +74,7 @@ metadata:
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-ingress-team-{{ $v.teamId }}-proxy
+  name: team-{{ $v.teamId }}-proxy
   namespace: istio-system
 spec:
   rules:

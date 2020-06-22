@@ -46,14 +46,20 @@ kubernetes.io/ingress.class: nginx
 {{- $appsDomain := printf "apps.%s" .domain }}
 {{- $ := . }}
 # collect unique host and service names
-{{- $domains := list }}
+{{- $routes := dict }}
 {{- $names := list }}
 {{- range $s := .services }}
-{{- $shared := eq "shared" ($s.namespace | default "") }}
+{{- $shared := $s.isShared | default false }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $.cluster.domain $.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) */}}
-{{- if and (not $.isApps) (not (has $domain $domains)) }}
-  {{- $domains = (append $domains $domain) }}
+{{- if not $.isApps  }}
+  {{- if (not (hasKey $routes $domain)) }}
+    {{- $routes = (merge $routes (dict $domain (list ($s.path | default "/")))) }}
+  {{- else }}
+    {{- $paths := index $routes $domain }}
+    {{- $paths = append $paths ($s.path | default "/") }}
+    {{- $routes = (merge (dict $domain $paths) $routes) }}
+  {{- end }}
 {{- end }}
 {{/*- if not (or (has $s.name $names) ($s.internal) ($shared)) */}}
 {{- if not (or (has $s.name $names) ($s.internal)) }}
@@ -85,7 +91,7 @@ metadata:
       proxy_set_header Auth-Group "{{ .teamId }}";
     {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
-  name: nginx-ingress-team-{{ .teamId }}-{{ .name }}
+  name: team-{{ .teamId }}-{{ .name }}
   namespace: istio-system
 spec:
   rules:
@@ -110,13 +116,16 @@ spec:
           servicePort: 80
         path: /oauth2/userinfo
   {{- end }}
-  {{- range $domain := $domains }}
+  {{- range $domain, $paths := $routes }}
   - host: {{ $domain }}
     http:
       paths:
+      {{- range $path := $paths }}
       - backend:
           serviceName: istio-ingressgateway
           servicePort: 80
+        path: {{ $path }}
+      {{- end }}
       - backend:
           serviceName: oauth2-proxy
           servicePort: 80
@@ -124,12 +133,10 @@ spec:
   {{- end }}
   {{- if not .cluster.hasCloudLB }}
   tls:
-    {{- if .isApps }}
     - hosts:
         - {{ $appsDomain }}
       secretName: {{ $appsDomain | replace "." "-" }}
-    {{- end }}
-    {{- range $domain := $domains }}
+    {{- range $domain, $paths := $routes }}
     {{- $certName := ($domain | replace "." "-") }}
     - hosts:
         - {{ $domain }}

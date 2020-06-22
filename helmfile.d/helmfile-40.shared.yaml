@@ -6,11 +6,11 @@ bases:
 releases:
   - name: harbor
     installed: true
-    namespace: shared
+    namespace: harbor
     <<: *default
   - name: harbor-artifacts
     installed: false
-    namespace: shared
+    namespace: harbor
     <<: *raw
   - name: otomi-api
     installed: true
