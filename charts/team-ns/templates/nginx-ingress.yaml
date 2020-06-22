@@ -13,17 +13,6 @@
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-<<<<<<< HEAD
-  {{- if not (or $s.internal $s.host) }}
-    {{- if $s.isPublic }}
-      {{- if or $s.domain $s.ownHost }}
-        {{- $publicCustom = (append $publicCustom $s) }}
-||||||| merged common ancestors
-  {{- if not $s.isAuthProxy }}
-    {{- if and (not $s.internal) (not $s.host) }}
-      {{- if $s.isPublic }}
-      {{- $public = (append $public $s) }}
-=======
   {{- if not $s.isAuthProxy }}
     {{- if not (or $s.internal $s.host) }}
       {{- if $s.isPublic }}
@@ -32,29 +21,7 @@
         {{- else }}
           {{- $public = (append $public $s) }}
         {{- end }}
->>>>>>> add_harbor
       {{- else }}
-<<<<<<< HEAD
-        {{- $public = (append $public $s) }}
-      {{- end }}
-    {{- else }}
-      {{- if or $s.domain $s.ownHost }}
-        {{- $privateCustom = (append $privateCustom $s) }}
-      {{- else }}
-        {{- if $s.forwardPath -}}
-          {{- $privateForward = (append $privateForward $s) }}
-        {{- else }}
-          {{- $private = (append $private $s) }}
-||||||| merged common ancestors
-        {{- if hasKey $s "domain" }}
-        {{- $privateCustom = (append $privateCustom $s) }}
-        {{- else }}
-          {{- if $s.forwardPath -}}
-          {{- $privateForward = (append $privateForward $s) }}
-          {{- else }}
-          {{- $private = (append $private $s) }}
-          {{- end }}
-=======
         {{- if or $s.domain $s.ownHost }}
           {{- $privateCustom = (append $privateCustom $s) }}
         {{- else }}
@@ -63,17 +30,10 @@
           {{- else }}
             {{- $private = (append $private $s) }}
           {{- end }}
->>>>>>> add_harbor
         {{- end }}
       {{- end }}
-<<<<<<< HEAD
-||||||| merged common ancestors
-    {{- else }}
-    {{- $private = (append $private $s) }}
-=======
     {{- else }}
       {{- $private = (append $private $s) }}
->>>>>>> add_harbor
     {{- end }}
   {{- else }}
     {{- $private = (append $private $s) }}
@@ -133,13 +93,7 @@ spec:
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}
-<<<<<<< HEAD
-      secretName: proxy-{{ $v.domain | replace "." "-" }}
-||||||| merged common ancestors
-      secretName: cert-team-{{ $v.teamId }}-proxy
-=======
       secretName: proxy-{{ $v.teamId }}
->>>>>>> add_harbor
   {{- end }}
 {{- end }}
 {{- end }}
