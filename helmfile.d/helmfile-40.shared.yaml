@@ -5,6 +5,7 @@ bases:
 
 releases:
   - name: harbor
+<<<<<<< HEAD
     installed: true
     namespace: shared
     <<: *default
@@ -12,6 +13,23 @@ releases:
     installed: false
     namespace: shared
     <<: *raw
+||||||| merged common ancestors
+    installed: false
+    namespace: shared
+    <<: *default
+  - name: kubernetes-dashboard
+    installed: false
+    namespace: kube-system
+    <<: *default
+=======
+    installed: true
+    namespace: harbor
+    <<: *default
+  - name: harbor-artifacts
+    installed: true
+    namespace: harbor
+    <<: *raw
+>>>>>>> add_harbor
   - name: otomi-api
     installed: true
     namespace: shared

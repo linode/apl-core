@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
+<<<<<<< HEAD
 # collect unique host names
 {{- $hosts := list }}
 {{- range $s := $v.services }}
@@ -17,6 +18,28 @@
 {{- $hosts := (append $hosts $proxyDomain) }}
 {{- range $host := $hosts }}
 {{ $name := $host | replace "." "-" }}
+||||||| merged common ancestors
+{{- $ := . }}
+{{- range $app := list "auth" "apps" "proxy" "drone" "prometheus-istio" }}
+{{- if or (eq $v.teamId "admin") (ne $app "prometheus-istio") }}
+{{ $name := printf "cert-team-%s-%s" $v.teamId $app }}
+=======
+# collect unique domain names
+{{- $domains := list }}
+{{- range $s := $v.services }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) (not (hasKey $s "hasCert")) (not (hasKey $s "host")) }}
+{{- $domain := printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain) }}
+{{- if not (has $domain $domains) }}
+  {{- $domains = (append $domains $domain) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $appsDomain := printf "apps.%s" $v.domain }}
+{{- $domains := (append $domains $appsDomain) }}
+{{- range $domain := $domains }}
+{{ $name := $domain | replace "." "-" }}
+>>>>>>> add_harbor
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -25,9 +48,21 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   secretName: {{ $name }}
+<<<<<<< HEAD
   commonName: "{{ $host }}"
+||||||| merged common ancestors
+  commonName: "{{ $app }}.{{ $v.domain }}"
+=======
+  commonName: "{{ $domain }}"
+>>>>>>> add_harbor
   dnsNames:
+<<<<<<< HEAD
   - "{{ $host }}"
+||||||| merged common ancestors
+  - "{{ $app }}.{{ $v.domain }}"
+=======
+  - "{{ $domain }}"
+>>>>>>> add_harbor
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ $v.certStage }}

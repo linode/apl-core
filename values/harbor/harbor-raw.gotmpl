@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {{- $v := .Environment.Values }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 resources:
@@ -103,3 +104,76 @@ resources:
   #       - route:
   #           - destination:
   #               host: harbor-core
+||||||| merged common ancestors
+=======
+{{- $v := .Environment.Values }}
+{{- $domain := $v.cluster.domain }}
+{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
+resources:
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+    metadata:
+      name: harbor-gateway
+      namespace: harbor
+      annotations:
+        externaldns: "true" # will register hosts
+    spec:
+      selector:
+        istio: ingressgateway
+      servers:
+      - port:
+          number: 80
+          name: http-harbor
+          protocol: HTTP
+        hosts:
+        - harbor.{{ $domain }}
+      - port:
+          number: 443
+          name: https-harbor
+          protocol: HTTPS
+        hosts:
+        - harbor.{{ $domain }}
+        - notary.{{ $domain }}
+        tls:
+          mode: PASSTHROUGH
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: harbor-https-virtual-service
+      namespace: harbor
+    spec:
+      hosts:
+      - harbor.{{ $domain }}
+      gateways:
+      - harbor-gateway
+      tls:
+      - match:
+        - port: 443
+          sniHosts:
+          - harbor.{{ $domain }}
+        route:
+        - destination:
+            host: harbor.harbor.svc.cluster.local
+            port:
+              number: 443
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: harbor-notary-virtual-service
+      namespace: harbor
+    spec:
+      hosts:
+      - notary.{{ $domain }}
+      gateways:
+      - harbor-gateway
+      tls:
+      - match:
+        - port: 443
+          sniHosts:
+          - notary.{{ $domain }}
+        route:
+        - destination:
+            host: harbor.harbor.svc.cluster.local
+            port:
+              number: 4443
+>>>>>>> add_harbor
