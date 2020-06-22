@@ -1,11 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $h := $v.charts.harbor }}
 {{- $hp := $v.charts.harbor.persistence }}
-{{- $domain := printf "harbor.%s" $v.cluster.domain }}
-{{- $notaryDomain := printf "notary.%s" $v.cluster.domain }}
-{{- $secretName := ($domain | replace "." "-") }}
-{{- $notarySecretName := ($notaryDomain | replace "." "-") }}
-{{- $externalUrl := printf "https://%s" $v.cluster.domain }}
+{{- $domain := printf "*.%s" $v.cluster.domain }}
+{{- $secretName := ($v.cluster.domain | replace "." "-") }}
+{{- $externalUrl := printf "https://harbor.%s" $v.cluster.domain }}
 nameOverride: harbor
 fullnameOverride: harbor
 notary:
@@ -15,7 +13,6 @@ expose:
   tls:
     enabled: true
     secretName: {{ $secretName }}
-    notarySecretName: {{ $notarySecretName }}
 nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"    

@@ -20,19 +20,8 @@ k8s:
     - name: team-admin
 
 services:
-  - name: auth
-    svc: oauth2-proxy
-    namespace: istio-system
-    hide: true
-    isAuthProxy: true
-    ownHost: true
   - name: harbor
     host: harbor
-    ownHost: true
-    namespace: harbor
-    isShared: true
-  - name: notary
-    host: notary
     ownHost: true
     namespace: harbor
     isShared: true
@@ -118,12 +107,6 @@ services:
     namespace: istio-system
     # mtls:
     #   gatewayDisabled: true
-  # - name: blackbox-exporter
-  #   svc: prom-blackbox-exporter
-  #   port: 9115
-  #   namespace: monitoring
-  #   logo:
-  #     name: prometheus
   - name: drone
     svc: drone
     namespace: team-admin

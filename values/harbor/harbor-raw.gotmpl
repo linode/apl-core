@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $domain := $v.cluster.domain }}
+{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
   - apiVersion: networking.istio.io/v1alpha3
     kind: Gateway
@@ -27,24 +28,6 @@ resources:
         - notary.{{ $domain }}
         tls:
           mode: PASSTHROUGH
-  -  apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: harbor-http-virtual-service
-      namespace: harbor
-    spec:
-      hosts:
-      - harbor.{{ $domain }}
-      gateways:
-      - harbor-gateway
-      http:
-      - match:
-        - port: 80
-        route:
-        - destination:
-            host: harbor.harbor.svc.cluster.local
-            port:
-              number: 80
   - apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:

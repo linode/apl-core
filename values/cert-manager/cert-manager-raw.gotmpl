@@ -59,4 +59,6 @@ resources:
   {{- end }}
   {{- end }}
   {{- end }}
+  # add wildcard cert for harbor
+  - {{ tpl $certTpl (merge (dict "domain" (printf "*.%s" $v.cluster.domain) "name" ($v.cluster.domain | replace "." "-") "stage" $cm.stage) $v) | nindent 4 }}
 

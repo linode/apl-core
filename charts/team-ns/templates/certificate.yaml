@@ -4,7 +4,7 @@
 {{- $domains := list }}
 {{- range $s := $v.services }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
-{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) (not (hasKey $s "hasCert")) }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) (not (hasKey $s "hasCert")) (not (hasKey $s "host")) }}
 {{- $domain := printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain) }}
 {{- if not (has $domain $domains) }}
   {{- $domains = (append $domains $domain) }}
