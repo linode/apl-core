@@ -1,19 +1,20 @@
 {{- $v := .Values }}
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
-# collect unique host names
-{{- $hosts := list }}
+# collect unique domain names
+{{- $domains := list }}
 {{- range $s := $v.services }}
-{{- if and ($s.isCore) (or (hasKey $s "ownHost") (hasKey $s "isShared")) }}
-{{- $domain := printf "%s.%s" $s.name (eq $s.namespace "shared" | ternary $v.cluster.domain $v.domain) }}
-{{- if not (has $domain $hosts) }}
-  {{- $hosts = (append $hosts $domain) }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
+{{- if and ($s.isCore) (or (hasKey $s "ownHost") $shared) (not (hasKey $s "hasCert")) }}
+{{- $domain := printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain) }}
+{{- if not (has $domain $domains) }}
+  {{- $domains = (append $domains $domain) }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
-{{- $hosts := (append $hosts $appsDomain) }}
-{{- range $host := $hosts }}
-{{ $name := $host | replace "." "-" }}
+{{- $domains := (append $domains $appsDomain) }}
+{{- range $domain := $domains }}
+{{ $name := $domain | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -22,9 +23,9 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   secretName: {{ $name }}
-  commonName: "{{ $host }}"
+  commonName: "{{ $domain }}"
   dnsNames:
-  - "{{ $host }}"
+  - "{{ $domain }}"
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-{{ $v.certStage }}

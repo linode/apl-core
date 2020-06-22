@@ -6,7 +6,7 @@
 {{- if and (not $s.internal) (not (hasKey $s "host")) }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ((and (hasKey $s "ownHost") $shared) | ternary $v.cluster.domain $v.domain))) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name (($shared | default false) | ternary $v.cluster.domain $v.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
 {{- $vsName := printf "%s%s" ($domain | replace "." "-") (hasKey $s "path" | ternary (printf "-%s" (($s.path | default "") | replace "/" "")) "") -}}
 apiVersion: networking.istio.io/v1alpha3
