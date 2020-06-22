@@ -11,8 +11,12 @@
 {{- end }}
 {{- end }}
 {{- end }}
+{{- if eq $v.teamId "admin" -}}
+  {{- $proxyDomain := printf "proxy.%s" $v.domain }}
+  {{- $domains = (append $domains $proxyDomain) }}
+{{- end }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
-{{- $domains := (append $domains $appsDomain) }}
+{{- $domains = (append $domains $appsDomain) }}
 {{- range $domain := $domains }}
 {{ $name := $domain | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2

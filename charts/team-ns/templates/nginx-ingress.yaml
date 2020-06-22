@@ -13,27 +13,23 @@
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-  {{- if not $s.isAuthProxy }}
-    {{- if not (or $s.internal $s.host) }}
-      {{- if $s.isPublic }}
-        {{- if or $s.domain $s.ownHost }}
-          {{- $publicCustom = (append $publicCustom $s) }}
-        {{- else }}
-          {{- $public = (append $public $s) }}
-        {{- end }}
+  {{- if not (or $s.internal $s.host) }}
+    {{- if $s.isPublic }}
+      {{- if or $s.domain $s.ownHost }}
+        {{- $publicCustom = (append $publicCustom $s) }}
       {{- else }}
-        {{- if or $s.domain $s.ownHost }}
-          {{- $privateCustom = (append $privateCustom $s) }}
-        {{- else }}
-          {{- if $s.forwardPath -}}
-            {{- $privateForward = (append $privateForward $s) }}
-          {{- else }}
-            {{- $private = (append $private $s) }}
-          {{- end }}
-        {{- end }}
+        {{- $public = (append $public $s) }}
       {{- end }}
     {{- else }}
-      {{- $private = (append $private $s) }}
+      {{- if or $s.domain $s.ownHost }}
+        {{- $privateCustom = (append $privateCustom $s) }}
+      {{- else }}
+        {{- if $s.forwardPath -}}
+          {{- $privateForward = (append $privateForward $s) }}
+        {{- else }}
+          {{- $private = (append $private $s) }}
+        {{- end }}
+      {{- end }}
     {{- end }}
   {{- else }}
     {{- $private = (append $private $s) }}
@@ -93,7 +89,7 @@ spec:
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}
-      secretName: proxy-{{ $v.teamId }}
+      secretName: proxy-{{ $v.domain | replace "." "-" }}
   {{- end }}
 {{- end }}
 {{- end }}
