@@ -1,19 +1,5 @@
 {{- $v := .Values }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
-<<<<<<< HEAD
-# collect unique domains for this GW
-{{- $domains := list }}
-{{- range $s := $v.services }}
-{{- $shared := eq "shared" ($s.namespace | default "") }}
-{{- if and (or (hasKey $s "domain") (and (hasKey $s "ownHost") $shared (eq $v.teamId "admin"))) (not (hasKey $s "ksvc")) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.cluster.domain)) }}
-{{- if not (has $domain $domains) }}
-  {{- $domains = (append $domains $domain) }}
-{{- end }}
-{{- end }}
-{{- end }}
-||||||| merged common ancestors
-=======
 # collect unique domains for this GW
 {{- $domains := list }}
 {{- $tlsDomains := list }}
@@ -32,7 +18,6 @@
 {{- end }}
 {{- end }}
 {{- end }}
->>>>>>> add_harbor
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
