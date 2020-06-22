@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.37](https://github.com/redkubes/otomi-stack/compare/v0.10.36...v0.10.37) (2020-06-22)
+
+
+### Features
+
+* add harbor chart ([2dc4c3b](https://github.com/redkubes/otomi-stack/commit/2dc4c3b487484317430fc56aae1ea877e7ba3943))
+* add harbor raw template ([2d455e5](https://github.com/redkubes/otomi-stack/commit/2d455e54df998d99126c1203492e919c1e5d05b2))
+* expose harbor ([2166db7](https://github.com/redkubes/otomi-stack/commit/2166db7ecb527ae1d252cdb5ebe2ba723c104a90))
+* install harbor chart ([057362b](https://github.com/redkubes/otomi-stack/commit/057362b5af91a317622ed2fe694d7657340f79f0))
+* remove nginx form harbor chart ([2664dca](https://github.com/redkubes/otomi-stack/commit/2664dca6b7cce91420625fb58d2efe63a2deefe6))
+* use GCS bucket as a harbor registry stroge ([0c703c1](https://github.com/redkubes/otomi-stack/commit/0c703c1bca272d36c534b966c9f3fdb4e57098b9))
+
+
+### Bug Fixes
+
+* certs, took harbor out of normal routing setup ([29e1090](https://github.com/redkubes/otomi-stack/commit/29e1090de50d7269f5a65730301f16fb46f9900f))
+* harbor now bypassing external LB, istio creates LB for harbor ([14227e8](https://github.com/redkubes/otomi-stack/commit/14227e8c237fd36ef7c42a15fde715ad322722d0))
+* harbor now on it's own [ci skip] ([50647c9](https://github.com/redkubes/otomi-stack/commit/50647c9a5447d4bedd0bbaffb8ded14105c9d5a4))
+* harbor vs ([ce8c6dd](https://github.com/redkubes/otomi-stack/commit/ce8c6ddb729f85b6f915883c73b8656d91880881))
+* put back commented code ([da7bf95](https://github.com/redkubes/otomi-stack/commit/da7bf953b1f5e38e3fad730ac8e50e7fcb444922))
+* remove old template ([b3b19de](https://github.com/redkubes/otomi-stack/commit/b3b19de57d74eaa727a01979e11b821ef8e7e2fc))
+* stashing [ci skip] ([cfaf1f4](https://github.com/redkubes/otomi-stack/commit/cfaf1f46435309a0e47b45983d420f40ec6bbf9e))
+
+
+### Code Refactoring
+
+* **ingress:** rewrote the ingress, certs generation ([6b266e4](https://github.com/redkubes/otomi-stack/commit/6b266e44a05f429c8fde06c0034319c4b1878c78))
+
 ### [0.10.36](https://github.com/redkubes/otomi-stack/compare/v0.10.35...v0.10.36) (2020-06-21)
 
 
