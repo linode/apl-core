@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {{- $v := .Environment.Values }}
 {{- $domain := printf "harbor.%s" $v.cluster.domain }}
 {{- $externalUrl := printf "https://%s" $v.cluster.domain }}
@@ -129,3 +130,136 @@ database:
       repository: goharbor/harbor-db
       tag: v2.0.0
     # password: "sd83jf7s"
+||||||| merged common ancestors
+=======
+{{- $v := .Environment.Values }}
+{{- $h := $v.charts.harbor }}
+{{- $hp := $v.charts.harbor.persistence }}
+{{- $domain := printf "*.%s" $v.cluster.domain }}
+{{- $secretName := ($v.cluster.domain | replace "." "-") }}
+{{- $externalUrl := printf "https://harbor.%s" $v.cluster.domain }}
+nameOverride: harbor
+fullnameOverride: harbor
+notary:
+  enabled: true
+expose:
+  type: clusterIP
+  tls:
+    enabled: true
+    secretName: {{ $secretName }}
+nginx:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"    
+core:
+  secretName: {{ $secretName }}
+# If Harbor is deployed behind the proxy, set it as the URL of proxy
+externalURL: {{ $externalUrl }}
+persistence:
+  enabled: true
+  # resourcePolicy: 'keep'
+  persistentVolumeClaim:
+    registry:
+      # Use the existing PVC which must be created manually before bound,
+      # and specify the 'subPath' if the PVC is shared with other components
+      existingClaim: ''
+      # Specify the 'storageClass' used to provision the volume. Or the default
+      # StorageClass will be used(the default).
+      # Set it to '-' to disable dynamic provisioning
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    chartmuseum:
+      existingClaim: ''
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      existingClaim: ''
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    # If external database is used, the following settings for database will
+    # be ignored
+    database:
+      existingClaim: ''
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    # If external Redis is used, the following settings for Redis will
+    # be ignored
+    redis:
+      existingClaim: ''
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      existingClaim: ''
+      storageClass: ''
+      subPath: ''
+      accessMode: ReadWriteOnce
+      size: 5Gi
+  # Define which storage backend is used for registry and chartmuseum to store
+  # images and charts. Refer to
+  # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
+  # for the detail.
+  imageChartStorage:
+    {{ $imageChartStorageType := $hp.imageChartStorage | get "type" "filesystem" }}
+    type: {{ $imageChartStorageType }}
+    {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
+ 
+ # debug, info, warning, error or fatal
+logLevel: info
+
+# The initial password of Harbor admin. Change it from portal after launching Harbor
+harborAdminPassword: '{{ $h.adminPassword }}'
+# The secret key used for encryption. Must be a string of 16 chars.
+secretKey: '{{ $h.secretKey }}'
+
+# The proxy settings for updating clair vulnerabilities from the Internet and replicating
+# artifacts from/to the registries that cannot be reached directly
+proxy:
+  httpProxy:
+  httpsProxy:
+  noProxy: 127.0.0.1,localhost,.local,.internal
+  components:
+    - core
+    - jobservice
+    - clair
+
+registry:
+  registry:
+    image:
+      repository: goharbor/registry-photon
+      tag: v2.0.0
+  controller:
+    image:
+      repository: goharbor/harbor-registryctl
+      tag: v2.0.0
+  # Secret is used to secure the upload state from client
+  # and registry storage backend.
+  # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
+  # If a secret key is not specified, Helm will generate one.
+  # Must be a string of 16 chars.
+  secret: '4j8sdf75dfd8sdfd'
+  # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
+  relativeurls: false
+  credentials:
+    username: 'admin'
+    password: 'bladibla'
+    # If you update the username or password of registry, make sure use cli tool htpasswd to generate the bcrypt hash
+    # e.g. 'htpasswd -nbBC10 $username $password'
+    htpasswd: 'admin:$2y$10$WfCM9Hs6dxe/HXloj.xOruwKZb.U18hwhCSGymZ40Z0Is5e/KMteS'
+
+database:
+  type: internal
+  internal:
+    image:
+      repository: goharbor/harbor-db
+      tag: v2.0.0
+    # password: "sd83jf7s"
+>>>>>>> add_harbor

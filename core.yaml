@@ -6,6 +6,8 @@ k8s:
     - name: drone-pipelines
       disableIstioInjection: true
     - name: ingress
+    - name: harbor
+      disableIstioInjection: true
     - name: istio-system
       disableIstioInjection: true
     - name: knative-serving
@@ -19,53 +21,10 @@ k8s:
 
 services:
   - name: harbor
+    host: harbor
     ownHost: true
-    namespace: shared
-    svc: harbor-harbor-portal
-  - name: harbor
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-core
-    path: /api/
-    forwardPath: true
-  - name: harbor
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-core
-    path: /c/
-    forwardPath: true
-  - name: harbor
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-core
-    path: /service/
-    forwardPath: true
-  - name: harbor
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-core
-    path: /chartrepo/
-    forwardPath: true
-  - name: reg
-    isPublic: true
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-registry
-    port: 5000
-    path: /v1/
-  - name: reg
-    isPublic: true
-    ownHost: true
-    namespace: shared
-    hide: true
-    svc: harbor-harbor-registry
-    port: 5000
-    path: /v2/
+    namespace: harbor
+    isShared: true
   - name: otomi
     namespace: shared
     # ownHost: true
@@ -148,12 +107,6 @@ services:
     namespace: istio-system
     # mtls:
     #   gatewayDisabled: true
-  # - name: blackbox-exporter
-  #   svc: prom-blackbox-exporter
-  #   port: 9115
-  #   namespace: monitoring
-  #   logo:
-  #     name: prometheus
   - name: drone
     svc: drone
     namespace: team-admin

@@ -2,6 +2,7 @@
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $provider := $v.cluster.provider }}
+{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
   {{- if eq $v.cluster.provider "azure" }}
   {{- $ap := $cm.provider.azure.azuredns }}
@@ -40,16 +41,27 @@ resources:
             dns01:
               {{- index $cm.provider $provider | toYaml | nindent 14 }}
   {{- end }}
+<<<<<<< HEAD
   # Create all the shared public certs here:
   # - auth.*
   # - that the teams requested
   {{ $domains := list }}
+||||||| merged common ancestors
+  # Create all the public certs that the teams requested here (outside of team charts)
+  # We do this so that teams can share domains (e.g. for micro service collaboration)
+  {{ $registry := list }}
+=======
+  # Create all the public certs that the teams requested here (outside of team charts)
+  # We do this so that teams can share domains (e.g. for micro service collaboration)
+  {{ $domains := list }}
+>>>>>>> add_harbor
   {{- $cm := index $v.charts "cert-manager" }}
   {{- $tc := $v.teamConfig }}
   {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
   {{- range $s := $team.services }}
   {{- if and (not (hasKey $s "hasCert")) (hasKey $s "domain") }}
+<<<<<<< HEAD
   {{- if not (has $s.domain $domains) }}
   {{- $domains = append $domains $s.domain }}
   {{- end }}
@@ -78,5 +90,46 @@ resources:
         - digital signature
         - key encipherment
         - ocsp signing
+||||||| merged common ancestors
+  {{- $certName := ($s.domain | replace "." "-") }}
+  {{- if not (has $certName $registry) }}
+  {{- $registry = append $registry $certName }}
+  - apiVersion: cert-manager.io/v1alpha2
+    kind: Certificate
+    metadata:
+      name: {{ $certName }}
+      namespace: {{ if $v.cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+    spec:
+      secretName: {{ $certName }}
+      commonName: "{{ $s.domain }}"
+      dnsNames:
+      - "{{ $s.domain }}"
+      issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-{{ $cm.stage }}
+      usages:
+        - digital signature
+        - key encipherment
+        - ocsp signing
+=======
+  {{- $certName := ($s.domain | replace "." "-") }}
+  {{- if not (has $certName $domains) }}
+  {{- $domains = append $domains $certName }}
+  - {{ tpl $certTpl (merge (dict "domain" $s.domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
+>>>>>>> add_harbor
   {{- end }}
+<<<<<<< HEAD
+||||||| merged common ancestors
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+=======
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  # add wildcard cert for harbor
+  - {{ tpl $certTpl (merge (dict "domain" (printf "*.%s" $v.cluster.domain) "name" ($v.cluster.domain | replace "." "-") "stage" $cm.stage) $v) | nindent 4 }}
+>>>>>>> add_harbor
 

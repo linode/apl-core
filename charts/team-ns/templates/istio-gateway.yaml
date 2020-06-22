@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+<<<<<<< HEAD
 # collect unique domains for this GW
 {{- $domains := list }}
 {{- range $s := $v.services }}
@@ -11,6 +12,27 @@
 {{- end }}
 {{- end }}
 {{- end }}
+||||||| merged common ancestors
+=======
+# collect unique domains for this GW
+{{- $domains := list }}
+{{- $tlsDomains := list }}
+{{- range $s := $v.services }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
+{{- if and (or (hasKey $s "domain") (and (hasKey $s "ownHost") $shared (eq $v.teamId "admin"))) (not (hasKey $s "ksvc")) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.cluster.domain)) }}
+{{- if $s.tlsPass }}
+  {{- if not (has $domain $tlsDomains) }}
+    {{- $tlsDomains = (append $tlsDomains $domain) }}
+  {{- end }}
+{{- else }}
+  {{- if not (has $domain $domains) }}
+    {{- $domains = (append $domains $domain) }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+>>>>>>> add_harbor
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -29,4 +51,17 @@ spec:
       name: http
       number: 80
       protocol: HTTP
+  {{- range $domain := $tlsDomains }}
+  - hosts:
+      - {{ $domain }}
+    tls:
+      credentialName: {{ $domain | replace "." "-" }}
+      mode: SIMPLE
+      privateKey: sds
+      serverCertificate: sds
+    port:
+      number: 443
+      name: https-{{ $domain | replace "." "-" }}
+      protocol: HTTPS
+  {{- end }}
 {{- end }}
