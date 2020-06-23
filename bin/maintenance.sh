@@ -8,4 +8,5 @@ if [ "$CLOUD" = "azure" ]; then
   ki delete po $(ki get po -l "app=ingress-azure" -ojsonpath='{.items[0].metadata.name}')
 fi
 
-kis get secret | grep -E 'harbor|notary|dev' | awk '{print $1}' | xargs kubectl -n istio-system get secret --export -o yaml | k -n harbor apply -f -
+# move cluster wildcard secret to harbor namespace
+kis get secret | grep -E "^$CLUSTER-" | awk '{print $1}' | xargs kubectl -n istio-system get secret --export -o yaml | k -n harbor apply -f -
