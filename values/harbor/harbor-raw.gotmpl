@@ -3,68 +3,22 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
   - apiVersion: networking.istio.io/v1alpha3
-    kind: Gateway
-    metadata:
-      name: harbor-gateway
-      namespace: harbor
-      annotations:
-        externaldns: "true" # will register hosts
-    spec:
-      selector:
-        istio: ingressgateway
-      servers:
-      - port:
-          number: 80
-          name: http-harbor
-          protocol: HTTP
-        hosts:
-        - harbor.{{ $domain }}
-      - port:
-          number: 443
-          name: https-harbor
-          protocol: HTTPS
-        hosts:
-        - harbor.{{ $domain }}
-        - notary.{{ $domain }}
-        tls:
-          mode: PASSTHROUGH
-  - apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
-      name: harbor-https-virtual-service
-      namespace: harbor
+      name: harbor-dev-gke-otomi-cloud-v1-v2-core-to-registry
     spec:
       hosts:
-      - harbor.{{ $domain }}
-      gateways:
-      - harbor-gateway
-      tls:
-      - match:
-        - port: 443
-          sniHosts:
-          - harbor.{{ $domain }}
-        route:
-        - destination:
-            host: harbor.harbor.svc.cluster.local
-            port:
-              number: 443
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: harbor-notary-virtual-service
-      namespace: harbor
-    spec:
-      hosts:
-      - notary.{{ $domain }}
-      gateways:
-      - harbor-gateway
-      tls:
-      - match:
-        - port: 443
-          sniHosts:
-          - notary.{{ $domain }}
-        route:
-        - destination:
-            host: harbor.harbor.svc.cluster.local
-            port:
-              number: 4443
+        - harbor-harbor-core
+        - harbor-harbor-core.harbor.svc.cluster.local
+      http:
+        - match:
+            - uri:
+                prefix: '/v2/'
+          route:
+            - destination:
+                host: harbor-harbor-registry
+                port:
+                  number: 5000
+        - route:
+            - destination:
+                host: harbor-core
