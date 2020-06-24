@@ -7,7 +7,7 @@ k8s:
       disableIstioInjection: true
     - name: ingress
     - name: harbor
-      disableIstioInjection: true
+      # disableIstioInjection: true
     - name: istio-system
       disableIstioInjection: true
     - name: knative-serving
@@ -21,19 +21,38 @@ k8s:
 
 services:
   - name: harbor
-    host: harbor
-    ownHost: true
+    svc: harbor-harbor-portal
     namespace: harbor
     isShared: true
+    paths: [/]
+  - name: harbor
+    svc: harbor-harbor-core
+    namespace: harbor
+    isShared: true
+    paths: [api, c, chartrepo, service]
+    forwardPath: true
+    hide: true
+  - name: harbor
+    svc: harbor-harbor-registry
+    namespace: harbor
+    isShared: true
+    paths: [v1, v2]
+    port: 5000
+    forwardPath: true
+    hide: true
+    isPublic: true
+  - name: notary
+    svc: harbor-harbor-notary-server
+    namespace: harbor
+    isShared: true
+    hide: true
   - name: otomi
     namespace: shared
-    # ownHost: true
     svc: otomi-api
     hide: true
-    path: /api/
+    paths: [api]
   - name: otomi
     namespace: shared
-    # ownHost: true
     svc: otomi-web
   - name: loki-private
     svc: loki-headless
@@ -46,7 +65,8 @@ services:
     svc: po-grafana
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
-    path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
+    paths:
+      - 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
     dummy: true
   - name: scope
     svc: weave-scope

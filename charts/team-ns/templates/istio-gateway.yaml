@@ -5,8 +5,8 @@
 {{- $tlsDomains := list }}
 {{- range $s := $v.services }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
-{{- if and (or (hasKey $s "domain") (and (hasKey $s "ownHost") $shared (eq $v.teamId "admin"))) (not (hasKey $s "ksvc")) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.cluster.domain)) }}
+{{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
 {{- if $s.tlsPass }}
   {{- if not (has $domain $tlsDomains) }}
     {{- $tlsDomains = (append $tlsDomains $domain) }}
