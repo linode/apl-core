@@ -142,7 +142,7 @@ teamConfig:
     - name: otomi
       namespace: shared
       svc: otomi-api
-      path: /api/
+      paths: [api]
       hide: true
     - name: otomi
       namespace: shared
