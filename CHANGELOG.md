@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.39](https://github.com/redkubes/otomi-stack/compare/v0.10.38...v0.10.39) (2020-06-24)
+
+
+### Bug Fixes
+
+* order of things, dns registration [ci skip] ([3e967d0](https://github.com/redkubes/otomi-stack/commit/3e967d0e67eba77db625d688e7029cbd414795c2))
+
 ### [0.10.38](https://github.com/redkubes/otomi-stack/compare/v0.10.37...v0.10.38) (2020-06-22)
 
 
