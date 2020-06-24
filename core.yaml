@@ -43,6 +43,7 @@ services:
     isPublic: true
   - name: notary
     svc: harbor-harbor-notary-server
+    port: 4443
     namespace: harbor
     isShared: true
     hide: true
