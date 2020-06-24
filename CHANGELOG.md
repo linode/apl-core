@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.41](https://github.com/redkubes/otomi-stack/compare/v0.10.40...v0.10.41) (2020-06-24)
+
+
+### Bug Fixes
+
+* notary port [ci skip] ([7653588](https://github.com/redkubes/otomi-stack/commit/76535882c9ffdf936eaef103abd35ef82c2f20e4))
+* scanning [ci skip] ([226048c](https://github.com/redkubes/otomi-stack/commit/226048c1d40e0311c817e2869de1e609d704fb2e))
+
 ### [0.10.40](https://github.com/redkubes/otomi-stack/compare/v0.10.39...v0.10.40) (2020-06-24)
 
 
