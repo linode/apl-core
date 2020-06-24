@@ -21,7 +21,7 @@
         {{- $public = (append $public $s) }}
       {{- end }}
     {{- else }}
-      {{- if or $s.domain $s.ownHost }}
+      {{- if or $s.domain $s.ownHost $s.isShared }}
         {{- $privateCustom = (append $privateCustom $s) }}
       {{- else }}
         {{- if $s.forwardPath -}}
@@ -37,28 +37,32 @@
 {{- end }}
 
 # apps.* that need their path rewritten to /
-{{ include "ingress" (dict "dot" . "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
 ---
 
 # apps.* that need their path forwarded instead of rewritten to /
-{{ include "ingress" (dict "dot" . "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
 ---
 
 # apps with custom domains
 {{- if gt (len $privateCustom) 0 }}
-{{ include "ingress" (dict "dot" . "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
 ---
 {{- end }}
 
 # public services
-{{- if gt (len $public) 0 }}
-{{ include "ingress" (dict "dot" . "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
-{{- end }}
 
 # public services with custom domains
 {{- if gt (len $publicCustom) 0 }}
-{{ include "ingress" (dict "dot" . "name" "public-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $publicCustom) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $publicCustom) }}
+---
+{{- end }}
+
+{{- if $v.cluster.hasCloudLB }}
+# external LB ingress
+{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
 ---
 {{- end }}
 
@@ -67,12 +71,17 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    {{- include "ingress-annotations" $v | nindent 4 }}
-    nginx.ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
+    nginx.ingress.kubernetes.io/limit-connections: "20" # per ip
+    nginx.ingress.kubernetes.io/limit-rps: "5" # per second per conn
+    nginx.ingress.kubernetes.io/limit-rpm: "30" # per minute per conn
+    nginx.ingress.kubernetes.io/limit-rate-after: "50000000" # After 50Mb throughput rate limiting will start
+    # nginx.ingress.kubernetes.io/limit-rate: "0" # stop after
   labels: {{- include "chart-labels" . | nindent 4 }}
-  name: team-{{ $v.teamId }}-proxy
+  name: nginx-team-{{ $v.teamId }}-proxy
   namespace: istio-system
 spec:
   rules:

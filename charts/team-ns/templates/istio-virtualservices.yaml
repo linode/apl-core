@@ -8,7 +8,7 @@
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
-{{- $vsName := printf "%s%s" ($domain | replace "." "-") (hasKey $s "path" | ternary (printf "-%s" (($s.path | default "") | replace "/" "")) "") -}}
+{{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithPipe" $s.paths)) "")) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -28,26 +28,34 @@ spec:
   {{- else }}
   http:
   {{- end }}
-    - match:
+    -
     {{- if $s.tlsPass }}
+      match:
         - port: 443
           sniHosts:
             - {{ $domain }}
     {{- else }}
-        - port: 80
-      {{- if and (hasKey $s "path") (not $s.tlsPass) }}
-          uri:
-            prefix: "{{ $s.path }}"
+      {{- if and (hasKey $s "paths") (not $s.tlsPass) }}
+      match:
+        {{- range $path := $s.paths }}
+          {{- if eq $path "/" }}
+        - uri:
+            prefix: '/'
+          {{- else }}
+        - uri:
+            prefix: '/{{ $path }}/'        
+          {{- end }}
+        {{- end }}
         {{- if not (hasKey $s "forwardPath") }}
       rewrite:
-        uri: "/"
+        uri: /
         {{- end }}
       {{- end }}
     {{- end }}
     {{- if hasKey $s "ksvc" }}
       rewrite:
         authority: {{ $s.name }}.{{ $v.domain }}
-      {{- if hasKey $s "path" }}
+      {{- if and (hasKey $s "paths") (not (hasKey $s "forwardPath")) }}
         uri: "/"
       {{- end }}
       route:
