@@ -11,13 +11,10 @@ notary:
 expose:
   type: clusterIP
   tls:
-    enabled: true
-    secretName: {{ $secretName }}
-nginx:
-  podAnnotations:
-    sidecar.istio.io/inject: "false"    
-core:
-  secretName: {{ $secretName }}
+    enabled: false
+# nginx:
+#   podAnnotations:
+#     sidecar.istio.io/inject: "false"    
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:

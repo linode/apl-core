@@ -55,9 +55,9 @@ resources:
           #   resources: {{/*- $iga | get "istio-egressgateway.resources" | toYaml | nindent 14 */}}
           #   {{/*- end */}}
         global:
-          k8sIngress:
-            enabled: true
-            enableHttps: true
+          # k8sIngress:
+          #   enabled: true
+          #   enableHttps: true
           sds:
             enabled: {{ $ig | get "sds.enabled" false }}
           mtls:

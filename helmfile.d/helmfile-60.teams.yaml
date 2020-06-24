@@ -49,7 +49,7 @@ releases:
           enabled: {{ $v.cluster.hasKnative }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
-      - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 12 }}
+      - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}
         {{- if $v.cluster.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}

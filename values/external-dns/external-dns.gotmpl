@@ -26,11 +26,7 @@ azure:
 {{- end }}  
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
-{{- if $v.cluster.hasCloudLB }}
-annotationFilter: "provider={{ $v.cluster.provider }}"
-{{- else }}
 annotationFilter: "externaldns=true"
-{{- end }}
 dryRun: false
 crd:
   create: false
