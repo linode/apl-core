@@ -70,9 +70,10 @@ spec:
               number: {{ $s.port | default (hasKey $s "tlsPass" | ternary 443 80) }}
       # fix for istio (=envoy) incorrectly setting proto to http
       # (@see https://github.com/istio/istio/issues/7964):
-      appendHeaders:
-        'x-forwarded-proto': 'https'
-        'x-forwarded-port': '443'          
+          headers:
+            request:
+              set:
+                X-Forwarded-Proto: https
 ---      
 {{- end }}
 {{- end }}

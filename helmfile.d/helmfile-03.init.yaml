@@ -3,6 +3,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: knative-init
@@ -23,7 +24,7 @@ releases:
     namespace: maintenance
     <<: *default
   - name: gatekeeper-operator
-    installed: true
+    installed: {{ index (index $c "gatekeeper-operator") "enabled" | default false }}
     namespace: default
     labels:
       pkg: gatekeeper-operator

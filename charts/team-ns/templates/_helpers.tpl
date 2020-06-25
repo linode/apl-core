@@ -69,6 +69,9 @@ metadata:
 {{- end }}
 {{- if eq .provider "nginx" }}
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    # nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
   {{- if not .hasCloudLB }}
     ingress.kubernetes.io/ssl-redirect: "true"
   {{- end }}
