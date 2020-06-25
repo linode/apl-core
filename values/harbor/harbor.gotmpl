@@ -1,20 +1,25 @@
 {{- $v := .Environment.Values }}
 {{- $h := $v.charts.harbor }}
 {{- $hp := $v.charts.harbor.persistence }}
-{{- $domain := printf "*.%s" $v.cluster.domain }}
-{{- $secretName := ($v.cluster.domain | replace "." "-") }}
-{{- $externalUrl := printf "https://harbor.%s" $v.cluster.domain }}
+{{- $harborDomain := printf "harbor.%s" $v.cluster.domain }}
+{{- $notaryDomain := printf "notary.%s" $v.cluster.domain }}
+{{- $harborSecretName := ($harborDomain | replace "." "-") }}
+{{- $notarySecretName := ($notaryDomain | replace "." "-") }}
+{{- $externalUrl := printf "https://%s" $harborDomain }}
+logLevel: debug
 nameOverride: harbor
 fullnameOverride: harbor
 notary:
-  enabled: true
+  enabled: false
 expose:
   type: clusterIP
   tls:
     enabled: false
-# nginx:
-#   podAnnotations:
-#     sidecar.istio.io/inject: "false"    
+nginx:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+core:
+  secretName: {{ $harborSecretName }}
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:

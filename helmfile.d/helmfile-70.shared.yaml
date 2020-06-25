@@ -1,15 +1,18 @@
 bases:
   - snippets/defaults.gotmpl
 
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: harbor
-    installed: true
+    installed: {{ index $c.harbor "enabled" | default false }}
     namespace: harbor
     <<: *default
   - name: harbor-artifacts
-    installed: true
+    installed: {{ index $c.harbor "enabled" | default false }}
     namespace: harbor
     <<: *raw
   - name: otomi-api
@@ -21,6 +24,6 @@ releases:
     namespace: shared
     <<: *default
   - name: redis-ha
-    installed: false
+    installed: {{ index (index $c "redis-ha") "enabled" | default false }}
     namespace: shared
     <<: *default

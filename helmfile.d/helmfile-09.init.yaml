@@ -28,7 +28,7 @@ releases:
     values:
       - ../values/knative/knative-serving-raw.gotmpl
   - name: gatekeeper-operator-config
-    installed: true
+    installed: false
     namespace: gatekeeper-system
     labels:
       pkg: gatekeeper-operator

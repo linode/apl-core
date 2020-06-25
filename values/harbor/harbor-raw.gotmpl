@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
 {{- $domain := $v.cluster.domain }}
-{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
   - apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
@@ -11,7 +10,10 @@ resources:
         - harbor-harbor-core
         - harbor-harbor-core.harbor.svc.cluster.local
       http:
-        - match:
+        - appendHeaders:
+            x-forwarded-port: "443"
+            x-forwarded-proto: https
+          match:
             - uri:
                 prefix: '/v2/'
           route:
@@ -19,6 +21,9 @@ resources:
                 host: harbor-harbor-registry
                 port:
                   number: 5000
-        - route:
+        - appendHeaders:
+            X-Forwarded-Proto: https
+            X-Forwarded-Port: '443'         
+          route:
             - destination:
-                host: harbor-core
+                host: harbor-harbor-core
