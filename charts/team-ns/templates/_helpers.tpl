@@ -113,7 +113,7 @@ metadata:
   namespace: {{ if ne .provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
   rules:
-{{- if and .isApps }}
+{{- if .isApps }}
     - host: {{ $appsDomain }}
       http:
         paths:
@@ -126,6 +126,15 @@ spec:
             servicePort: 80
           path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
 {{- else }}
+  {{- if and (not .hasAuth) (eq .provider "nginx") }}
+    - host: {{ $appsDomain }}
+      http:
+        paths:
+        - backend:
+            serviceName: oauth2-proxy
+            servicePort: 80
+          path: /oauth2/userinfo
+  {{- end }}
   {{- range $domain, $paths := $routes }}
     - host: {{ $domain }}
       http:

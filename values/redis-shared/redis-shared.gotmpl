@@ -1,0 +1,6 @@
+{{- $v := .Environment.Values }}
+{{- $r := $v.charts | get "redis-shared" dict }}
+
+## Configures redis with AUTH (requirepass & masterauth conf params)
+usePassword: true
+password: {{ $r | get "password" "aut0m3try" }}

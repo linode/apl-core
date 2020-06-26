@@ -1,0 +1,8 @@
+{{- $v := .Environment.Values }}
+{{- $r := $v.charts | get "redis" dict }}
+cluster:
+  enabled: false
+persistence:
+  size: 1Gi
+usePassword: false
+# password: bla

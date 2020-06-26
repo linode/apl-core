@@ -33,3 +33,7 @@ releases:
     labels:
       pkg: gatekeeper-operator
     <<: *default
+  - name: redis # for oauth2-proxy
+    installed: true
+    namespace: istio-system
+    <<: *default

@@ -3,8 +3,8 @@
 sites: {{- $v.sites | toYaml | nindent 2 }}
 schedule: {{- $s.schedule | toYaml | nindent 2 }}
 pvc:
-  results: {{ $s.pvc.results.size }}
-  graphite: {{ $s.pvc.graphite.size }}
+  results: {{ $s.pvc.results }}
+  graphite: {{ $s.pvc.graphite }}
 config:
   storageSchemas: |
     [carbon]
@@ -13,8 +13,8 @@ config:
 
     [sitespeed]
     pattern = ^sitespeed_io\.
-    retentions = {{ $ret }}
+    retentions = {{ $s.retention }}
 
     [catch_them_all]
     pattern = .*
-    retentions = {{ $ret }}
+    retentions = {{ $s.retention }}

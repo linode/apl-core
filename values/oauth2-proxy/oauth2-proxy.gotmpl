@@ -2,7 +2,7 @@
 {{- $o := $v.oidc }}
 {{- $provider := index $o $o.provider }}
 image:
-  tag: "v5.1.0"
+  tag: "v5.1.1"
   # repository: eu.gcr.io/otomi-cloud/oauth2_proxy
   # tag: latest
   # pullPolicy: Always
@@ -22,12 +22,14 @@ extraArgs:
   oidc-issuer-url: {{ $provider | get "issuer" }}
   whitelist-domain: {{ $v.cluster.domain }}
   scope: {{ $o.scope }}
+  session-store-type: redis
+  redis-connection-url: redis://redis-master
   redirect-url: https://auth.{{ $v.cluster.domain }}/oauth2/callback
   # email-domain: "*"
-  cookie-domain: '.{{ $v.cluster.domain }}'
+  cookie-domain: '{{ $v.cluster.domain }}'
   cookie-samesite: none
   cookie-secure: true
-  cookie-httponly: true
+  # cookie-httponly: true
   reverse-proxy: true
   cookie-refresh: 0h60m0s
   pass-authorization-header: true
