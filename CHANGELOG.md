@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.42](https://github.com/redkubes/otomi-stack/compare/v0.10.41...v0.10.42) (2020-06-26)
+
+
+### Bug Fixes
+
+* added flags for harbor,redis,gatekeeper, revert harbor [ci skip] ([5005080](https://github.com/redkubes/otomi-stack/commit/5005080bf5c33fe074cf9d548f459717a8751872))
+* added redis for oauth2 sessions [ci skip] ([b9d0a0b](https://github.com/redkubes/otomi-stack/commit/b9d0a0bed817e3289467058ad9d35089af9b2970))
+* cleanup [ci skip] ([2951a53](https://github.com/redkubes/otomi-stack/commit/2951a536e56688d2278c6348dd5cc986a3751c4c))
+* external ingress [ci skip] ([db16e71](https://github.com/redkubes/otomi-stack/commit/db16e71f45b274fbd02251350c02f13f9355825f))
+* external ingress [ci skip] ([88ec1d0](https://github.com/redkubes/otomi-stack/commit/88ec1d0976b72c5ccad36cd2567d138940b6aa9d))
+
+
+### Others
+
+* **release:** 0.10.41 ([3e0509e](https://github.com/redkubes/otomi-stack/commit/3e0509e6c1374d90188830b5a2752d3026a2c096))
+
 ### [0.10.41](https://github.com/redkubes/otomi-stack/compare/v0.10.40...v0.10.41) (2020-06-24)
 
 
