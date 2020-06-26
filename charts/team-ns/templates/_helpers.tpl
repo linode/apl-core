@@ -23,7 +23,6 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- define "ingress" -}}
 
 {{- $appsDomain := printf "apps.%s" .domain }}
-{{- $authDomain := printf "auth.%s" .cluster.domain }}
 {{- $ := . }}
 # collect unique host and service names
 {{- $routes := dict }}
@@ -49,10 +48,13 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end }}
 {{- $internetFacing := or (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
-# always add apps for userinfo
-{{- $routes = (merge $routes (dict $appsDomain list)) }}
-{{- if and (eq .teamId "admin") .cluster.hasCloudLB }}
-  {{- $routes = (merge $routes (dict $authDomain list)) }}
+{{- if $internetFacing }}
+  # also add apps on cloud lb
+  {{- $routes = (merge $routes (dict $appsDomain list)) }}
+{{- end }}
+{{- if and (eq .teamId "admin") .cluster.hasCloudLB (not (eq .provider "nginx")) }}
+  {{- $routes = (merge $routes (dict (printf "auth.%s" .cluster.domain) list)) }}
+  {{- $routes = (merge $routes (dict (printf "proxy.%s" .domain) list)) }}
 {{- end }}
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -111,7 +113,7 @@ metadata:
   namespace: {{ if ne .provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
   rules:
-{{- if .isApps }}
+{{- if and .isApps }}
     - host: {{ $appsDomain }}
       http:
         paths:
@@ -158,24 +160,18 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
-  {{- if not .hasAuth }}
-    # we want the user info publically available for any app that has the correct auth cookie, as it goes to auth anyway
-    - host: {{ $appsDomain }}
-      http:
-        paths:
-        - backend:
-            serviceName: oauth2-proxy
-            servicePort: 80
-          path: /oauth2/userinfo
-  {{- end }}
 {{- end }}
 {{- if $internetFacing }}
   tls:
+  {{- if .isApps }}
+    - hosts:
+      - {{ $appsDomain }}
+      secretName: {{ $appsDomain | replace "." "-" }}
+  {{- end }}
   {{- range $domain, $paths := $routes }}
-  {{- $certName := ($domain | replace "." "-") }}
     - hosts:
         - {{ $domain }}
-      secretName: {{ $certName }}
+      secretName: {{ $domain | replace "." "-" }}
   {{- end }}
 {{- end }}
 
