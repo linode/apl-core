@@ -48,6 +48,7 @@ services:
     isShared: true
     hide: true
   - name: otomi
+    host: apps
     namespace: shared
     svc: otomi-api
     hide: true

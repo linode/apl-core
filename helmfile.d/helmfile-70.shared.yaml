@@ -8,11 +8,11 @@ bases:
 
 releases:
   - name: harbor
-    installed: {{ index $c.harbor "enabled" | default false }}
+    installed: {{ $c.harbor.enabled | default false }}
     namespace: harbor
     <<: *default
   - name: harbor-artifacts
-    installed: {{ index $c.harbor "enabled" | default false }}
+    installed: {{ $c.harbor.enabled | default false }}
     namespace: harbor
     <<: *raw
   - name: otomi-api
@@ -24,6 +24,6 @@ releases:
     namespace: shared
     <<: *default
   - name: redis-ha
-    installed: {{ index (index $c "redis-ha") "enabled" | default false }}
+    installed: {{ (index $c "redis-ha").enabled | default false }}
     namespace: shared
     <<: *default
