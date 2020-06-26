@@ -23,15 +23,17 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- define "ingress" -}}
 
 {{- $appsDomain := printf "apps.%s" .domain }}
+{{- $authDomain := printf "auth.%s" .cluster.domain }}
 {{- $ := . }}
 # collect unique host and service names
 {{- $routes := dict }}
 {{- $names := list }}
 {{- range $s := .services }}
-{{- $shared := $s.isShared | default false }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $.cluster.domain $.domain))) }}
+{{- $isShared := $s.isShared | default false }}
+{{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.cluster.domain $.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) */}}
-{{- if not $.isApps  }}
+{{- if not $isApps }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = (merge $routes (dict $domain (hasKey $s "paths" | ternary $s.paths list))) }}
   {{- else }}
@@ -42,12 +44,16 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     {{- end }}
   {{- end }}
 {{- end }}
-{{/*- if not (or (has $s.name $names) ($s.internal) ($shared)) */}}
 {{- if not (or (has $s.name $names) ($s.internal) $s.ownHost $s.isShared) }}
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
 {{- $internetFacing := or (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
+# always add apps for userinfo
+{{- $routes = (merge $routes (dict $appsDomain list)) }}
+{{- if and (eq .teamId "admin") .cluster.hasCloudLB }}
+  {{- $routes = (merge $routes (dict $authDomain list)) }}
+{{- end }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -165,11 +171,6 @@ spec:
 {{- end }}
 {{- if $internetFacing }}
   tls:
-  {{- if .isApps }}
-    - hosts:
-        - {{ $appsDomain }}
-      secretName: {{ $appsDomain | replace "." "-" }}
-  {{- end }}
   {{- range $domain, $paths := $routes }}
   {{- $certName := ($domain | replace "." "-") }}
     - hosts:

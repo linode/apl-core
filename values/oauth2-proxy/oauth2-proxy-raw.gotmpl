@@ -8,7 +8,9 @@ resources:
     kind: Ingress
     metadata:
       annotations:
+        {{ if not $v.cluster.hasCloudLB }}
         externaldns: "true"
+        {{- end }}
         kubernetes.io/ingress.class: nginx
         ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization

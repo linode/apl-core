@@ -24,7 +24,7 @@ releases:
     namespace: maintenance
     <<: *default
   - name: gatekeeper-operator
-    installed: {{ index (index $c "gatekeeper-operator") "enabled" | default false }}
+    installed: {{ (index $c "gatekeeper-operator").enabled | default false }}
     namespace: default
     labels:
       pkg: gatekeeper-operator
