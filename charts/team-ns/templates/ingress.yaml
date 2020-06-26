@@ -8,18 +8,13 @@
 # - forward path: forwarded (only exists to massage some core 'apps.*')
 # - custom domain (not 'apps.*'): custom
 {{- $public := list }}
-{{- $publicCustom := list }}
 {{- $private := list }}
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
   {{- if not (or $s.internal $s.host) }}
     {{- if $s.isPublic }}
-      {{- if or $s.domain $s.ownHost }}
-        {{- $publicCustom = (append $publicCustom $s) }}
-      {{- else }}
-        {{- $public = (append $public $s) }}
-      {{- end }}
+      {{- $public = (append $public $s) }}
     {{- else }}
       {{- if or $s.domain $s.ownHost $s.isShared }}
         {{- $privateCustom = (append $privateCustom $s) }}
@@ -41,8 +36,10 @@
 ---
 
 # apps.* that need their path forwarded instead of rewritten to /
+{{- if gt (len $privateForward) 0 }}
 {{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
 ---
+{{- end }}
 
 # apps with custom domains
 {{- if gt (len $privateCustom) 0 }}
@@ -51,12 +48,8 @@
 {{- end }}
 
 # public services
+{{- if gt (len $public) 0 }}
 {{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
----
-
-# public services with custom domains
-{{- if gt (len $publicCustom) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $publicCustom) }}
 ---
 {{- end }}
 
