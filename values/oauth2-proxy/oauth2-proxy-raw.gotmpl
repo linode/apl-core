@@ -12,7 +12,6 @@ resources:
         externaldns: "true"
         {{- end }}
         kubernetes.io/ingress.class: nginx
-        nginx.ingress.kubernetes.io/upstream-vhost: {{ $domain }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/configuration-snippet: |
