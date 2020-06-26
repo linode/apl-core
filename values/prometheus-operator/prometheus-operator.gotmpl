@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $stack := $v | get "stack" dict }}
+{{- $c := $v.charts }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $domain }}
@@ -214,7 +214,7 @@ grafana:
       version: 4
       editable: false
     {{- end }}
-    {{- if $stack | get "enabled.sitespeed" false }}
+    {{- if $c.sitespeed.enabled }}
     - name: Graphite
       editable: false
       type: graphite

@@ -23,7 +23,7 @@ releases:
     installed: true
     namespace: shared
     <<: *default
-  - name: redis-ha
-    installed: {{ (index $c "redis-ha").enabled | default false }}
+  - name: redis-shared
+    installed: {{ (index $c "redis-shared").enabled | default false }}
     namespace: shared
     <<: *default

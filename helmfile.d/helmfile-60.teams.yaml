@@ -5,7 +5,7 @@ bases:
 {{- $tc := $v.teamConfig }}
 {{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $stack := $v | get "stack" dict }}
+{{- $c := $v.charts }}
 {{- $adminDomain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
@@ -160,7 +160,7 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if $stack | get "enabled.sitespeed" false }}
+            {{- if $c.sitespeed.enabled }}
             - name: Graphite
               editable: false
               type: graphite
