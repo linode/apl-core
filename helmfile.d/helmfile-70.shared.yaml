@@ -27,3 +27,4 @@ releases:
     installed: {{ (index $c "redis-shared").enabled | default false }}
     namespace: shared
     <<: *default
+    chart: ../charts/redis
