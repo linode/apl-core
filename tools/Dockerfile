@@ -1,5 +1,3 @@
-# FROM alpine:3.10
-# FROM microsoft/azure-cli
 FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -8,6 +6,7 @@ ARG KUBECTL_VERSION=1.15.7
 ARG HELM_VERSION=3.2.0
 ARG HELM_DIFF_VERSION=v3.1.1
 ARG HELM_SECRETS_VERSION=v2.0.2
+ARG SOPS_VERSION=3.5.0
 ARG HELMFILE_VERSION=0.114.0
 ARG EKSCTL_VERSION=0.18.0
 
@@ -54,6 +53,10 @@ RUN apt-get update -qq &&  apt-get install -qqy azure-cli \
 ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl $APP_HOME/kubectl
 RUN chmod +x $APP_HOME/kubectl
 
+# sops
+ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux $APP_HOME/sops
+RUN chmod +x $APP_HOME/sops
+
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp \
@@ -65,7 +68,7 @@ RUN helm plugin install https://github.com/futuresimple/helm-secrets --version $
 
 # helmfile
 ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 $APP_HOME/helmfile
-RUN chmod 0755 $APP_HOME/helmfile
+RUN chmod +x $APP_HOME/helmfile
 
 # eksctl
 ADD https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz /tmp
