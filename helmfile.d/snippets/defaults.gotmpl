@@ -5,7 +5,7 @@ helmDefaults:
   force: false
   cleanupOnFail: true
 
-{{ $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
+{{ $v := (readFile "../env/env/clusters.yaml.dec" | fromYaml) }}
 environments:
   {{- range $provider, $p := $v.clouds }}
   {{- range $cluster, $c := $p.clusters }}

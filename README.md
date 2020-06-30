@@ -3,13 +3,11 @@
 Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage
 clusters.
 
-All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which
-services will be synced.
+All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which services will be synced.
 
 Click here to open the [index of the system services](https://index.team-admin.dev.aks.otomi.cloud/).
 
-It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid
-manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see
+It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see
 [bin/aliases](bin/aliases) to understand what the commands in this readme do.
 
 This stack is published as a private docker image here: `eu.gcr.io/otomi-cloud/otomi-stack`, and the rest of this readme
@@ -25,14 +23,11 @@ This readme has the following index:
 
 ## 1. Prerequisites for development
 
-It is imperative to know the functioning of [helm](https://helm.sh) and [helmfile](https://github.com/roboll/helmfile).
-Please read about both beforehand. They both use Go templating and make use of the
-[Sprig template functions](http://masterminds.github.io/sprig/).
+It is imperative to know the functioning of [helm](https://helm.sh) and [helmfile](https://github.com/roboll/helmfile). Please read about both beforehand. They both use Go templating and make use of the [Sprig template functions](http://masterminds.github.io/sprig/).
 
 Before listing the hard requirements I would like to offer some really helpful tools:
 
-- [Visual Studio Code](https://code.visualstudio.com): The most used code editor, which asks to install the extensions
-  delivered in this repo.
+- [Visual Studio Code](https://code.visualstudio.com): The most used code editor, which asks to install the extensions delivered in this repo.
 - [kube_ps1 prompt](https://github.com/jonmosco/kube-ps1): I have it on the right with `RPROMPT='$(kube_ps1)'`
 
 ### 1.1 Working k8s cluster with correct policies

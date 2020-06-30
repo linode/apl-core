@@ -1,4 +1,4 @@
-export CLUSTER=${CLUSTER:-dev}
+#!/usr/bin/env bash
 export ENV_DIR=${ENV_DIR:-$PWD/env}
 . bin/colors.sh
 
