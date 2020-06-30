@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
+* helmfile regression, removed crypt step [ci skip] ([b87c885](https://github.com/redkubes/otomi-stack/commit/b87c885a4e4745259de3fa96829f6b8f54ae6d70))
+* helmfile regression, removed crypt step [ci skip] ([a4c15de](https://github.com/redkubes/otomi-stack/commit/a4c15de36934a025ecb45631fa8948b524255622))
+
+
+### Others
+
+* **release:** 0.10.46 ([b4c4b83](https://github.com/redkubes/otomi-stack/commit/b4c4b8351e74dbfae42ff6fce06a3f61ca626eef))
+
+### [0.10.46](https://github.com/redkubes/otomi-stack/compare/v0.10.44...v0.10.46) (2020-06-30)
+
+
+### Bug Fixes
+
 * helmfile regression, removed crypt step [ci skip] ([a4c15de](https://github.com/redkubes/otomi-stack/commit/a4c15de36934a025ecb45631fa8948b524255622))
 
 ### [0.10.44](https://github.com/redkubes/otomi-stack/compare/v0.10.43...v0.10.44) (2020-06-29)
