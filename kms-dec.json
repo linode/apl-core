@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "otomi-cloud",
+  "private_key_id": "38c2894c483ce15bb97084cd285dd93e7a573f4d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCtdmuYK8Pf8i33\nmbgJfCaYFF8l4TEn+7LUSipLrT9kNsTCN32LusC7cpPcS4AELgGuStlicHVKuWxD\nRxKs5VehqLePgS/pMYqR8NmCsOy06n8yw2dVcuBYW0B9jcqeQqtyoS1h04/U43q+\nUJ0hX4odEqpZJZb2XV+xww3zfpytTgNHUah0lkG9Ehuz+gRGVQWrWzJt3ci0BE1k\nggc8bvtsjVBx7lswX5HrlU5CCnOJzQpIbvfw664ygMZtCtXqM9GTYMk5A/FHhDOe\nTeiLXDUAfyxhWARB75t1LYLeFTtiFV8XBovUTtvSzkaGueJRKARRRYG+KRDyqZsF\nSWzB1wBfAgMBAAECggEAAwrLitm3vXoPI6gBgZBRObkZvbX/HHceUUKHWAkYC2BS\nVOOPxihjgo20lnCg6zr9bHYb4TsXA4YNdWdE42N4NdUsSXKihm0snx3DDXoNuy5Z\ndx9a3IrUzCQX2EN7cVJxiI445xq+bRMPrzgGDUPVcoCbcaVH7taqAeLph613ZnQA\nmahYVUXPaDtjwf4qrswO3hMxLiKpfzb9neDzvAli5kfFOxyMXkJoCVI7XDS1e/qp\nXDuXAsHXikP8uN5Gp0KQJiYnpwg3HesmNfa+JRcKmwvTdos/nPbCZkAso+kbL3wz\nncEIUgZ/eQJXTgKLeJJlVRzLLWqjCJQ0YFn+ASilIQKBgQDtbnl/Wpvrm8xmsVkb\ni/8txFsCFvVw5h7ScH9jRs8o827HHFGuQunSNc7gnySbe3M8Rm/hpl/QM9rQ+Vdw\nasjuWkpzvOg+X6lRTdDbp0MnFyy7snYn+pLaCMmNFt6thIizeYSuoPtryUMvrmSk\nPzawoGzYElJOJk1Sj6PihHhjjwKBgQC7Bz9sgPEowhiEQ6ELg26epxXoBzoia1TG\nquRsxz+mQZW7GnqhCdw+g48ae3WgPespCCi5un62hs8U22hpYzBYnK9vYr8gkzOI\ndJH73O3WqnK/6c98zCyQtQ1wOmjektattDVYc7QAY+2B/qpKuqGEFFMsVZQIdCOE\nt2Lar3PuMQKBgQCufsOyUkBHTzBQxMRNV31KAIY2KfNmbul2FZG5v5+eZBIlKW3q\nWWkIwdzx/mPkFT1irg2p1CGUnZeSf73Ac+qKKjePieVRefKxOzRlSi8zOnf41ja6\nORDWRyEBnS44bjAdXxChWtSMqdTD5TI39/FUrAJyZjyxDLtFEyYJ4vurhwKBgH/I\npuvSeXK4kpmjv1+ncCgTzuLWNUEZBjYqwqETzYghXVUV9V0b6JAJwPd+DNLsG0TQ\nn0qugi7hkpEUi5UdwQV6IF9BH4b5LAd6ZdeojhPSJ066SBpjQbupCEJ6lfYka2sJ\nKj2B6CUwITFlNyKRuxML8/vhiJ/yAeaGiZMSt2mxAoGBANTgBqbGyRPMYdZ+wjyM\nx7m7zU3w2nu9yibVVGEbUZKx00S6PZYXybaKHWWojI+Xr4BO3bUDpdWlQBUnZn+V\nGgs7TwqCXdQqrMPu7ymQQP5GlER69uo/70X4GAHvXcb0xyZbgVT4Y+jWZiexi1PJ\n42J1HmMklnT4Uy9pPugd2v2r\n-----END PRIVATE KEY-----\n",
+  "client_email": "gks-vault@otomi-cloud.iam.gserviceaccount.com",
+  "client_id": "109902196389004112963",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gks-vault%40otomi-cloud.iam.gserviceaccount.com"
+}
