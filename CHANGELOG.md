@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.46](https://github.com/redkubes/otomi-stack/compare/v0.10.44...v0.10.46) (2020-06-30)
+
+
+### Bug Fixes
+
+* helmfile regression, removed crypt step [ci skip] ([a4c15de](https://github.com/redkubes/otomi-stack/commit/a4c15de36934a025ecb45631fa8948b524255622))
+
 ### [0.10.44](https://github.com/redkubes/otomi-stack/compare/v0.10.43...v0.10.44) (2020-06-29)
 
 
