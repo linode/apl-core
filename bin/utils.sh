@@ -1,15 +1,16 @@
+#!/usr/bin/env bash
 printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
-PACKAGE_VERSION=$(cat package.json \
-  | grep '"version"' \
-  | head -1 \
-  | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g' \
-  | tr -d '[[:space:]]')
+PACKAGE_VERSION=$(cat package.json |
+  grep '"version"' |
+  head -1 |
+  awk -F: '{ print $2 }' |
+  sed 's/[",]//g' |
+  tr -d '[[:space:]]')
 
 . bin/env.sh
 noEnvError=$?
 
-. bin/aliases
+. bin/aliases.sh
 
 if [ $noEnvError -eq 0 ]; then
   img=eu.gcr.io/otomi-cloud/otomi-stack:v$PACKAGE_VERSION
@@ -18,35 +19,42 @@ if [ $noEnvError -eq 0 ]; then
   d ps &>/dev/null
   dockerRunning=$?
 
-  # echo $hasDocker
   # if not has docker: ci
   if [ $hasDocker -eq 0 ]; then
     echo "Found docker client, assuming developer context."
+    uname -a | grep -i darwin >/dev/null
+    if [ $? -eq 0 ]; then
+      HELM_CONFIG="$HOME/Library/Preferences/helm"
+    else
+      HELM_CONFIG="$HOME/.config/helm"
+    fi
     if [ $dockerRunning -eq 0 ]; then
       echo "Found docker running, will use $img instead of local tooling"
-      drun() {
+      function drun() {
         # execute any kubectl command to refresh access token
         k version >/dev/null
         d run -it --rm -v $PWD:$PWD \
           -v /tmp:/tmp \
           -v ~/.kube/config:/home/app/.kube/config \
-          -v ~/Library/Preferences/helm:/home/app/.config/helm \
+          -v $HELM_CONFIG:/home/app/.config/helm \
           -v ~/.config/gcloud:/home/app/.config/gcloud \
           -v ~/.aws:/home/app/.aws \
           -v ~/.azure:/home/app/.azure \
           -v $ENV_DIR:$PWD/env \
           -e K8S_CONTEXT=$K8S_CONTEXT \
           -e CLOUD=$CLOUD \
+          -e GCLOUD_SERVICE_KEY=$GCLOUD_SERVICE_KEY \
           -e CLUSTER=$CLUSTER \
           -w $PWD $img $@
       }
-      unalias h hf_ hk aw gc &>/dev/null
-      alias h="drun helm"
-      alias hf_="drun helmfile"
-      alias hk="drun helm delete"
-      alias aw="drun aws"
-      alias az="drun az"
-      alias gc="drun gcloud"
+      # unalias h hf_ hk aw gc &>/dev/null
+      function h() { drun helm $@; }
+      function hf_() { drun helmfile $@; }
+      function hk() { drun helm delete $@; }
+      function aw() { drun aws $@; }
+      function az() { drun az $@; }
+      function gc() { drun gcloud $@; }
+      export drun h hf_ hk
     else
       echo "No docker daemon running. Please start and source aliases again."
     fi

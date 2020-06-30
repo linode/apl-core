@@ -2,9 +2,10 @@
   "recommendations": [
     "christian-kohler.path-intellisense",
     "codezombiech.gitignore",
+    "donjayamanne.githistory",
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
-    "donjayamanne.githistory",
+    "foxundermoon.shell-format",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "pascalreitermann93.vscode-yaml-sort",

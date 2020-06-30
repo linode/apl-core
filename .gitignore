@@ -1,6 +1,9 @@
 # we don't allow json files in the root except package.json
 .history
+.tmp
 node_modules/
 env/
 /*.json
 !package*.json
+# next one is only for demo purposes, and should not be in docker image
+!kms-dec.json

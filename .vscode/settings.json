@@ -1,13 +1,18 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
+  "[docker,shell]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[js,json,md,yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
   "files.associations": {
-    "*.tmpl": "nginx",
-    "*.tpl": "yaml",
     "*.gotmpl": "helm",
-    "aliases": "shellscript",
-    "helmfile.yaml": "helm",
-    "helmfile-*.yaml": "helm"
+    "*.tmpl": "nginx",
+    "*.yml": "yaml",
+    "*.tpl": "yaml",
+    "helmfile-*.yaml": "helm",
+    "helmfile.yaml": "helm"
   }
 }
