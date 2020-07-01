@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.48](https://github.com/redkubes/otomi-stack/compare/v0.10.47...v0.10.48) (2020-07-01)
+
+
+### Bug Fixes
+
+* removed vs appendHeaders as it is deprecated [ci skip] ([827b48e](https://github.com/redkubes/otomi-stack/commit/827b48e57a25932a00b4aa06c8a44b86f2744711))
+
 ### [0.10.47](https://github.com/redkubes/otomi-stack/compare/v0.10.44...v0.10.47) (2020-06-30)
 
 
