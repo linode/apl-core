@@ -10,9 +10,10 @@ resources:
         - harbor-harbor-core
         - harbor-harbor-core.harbor.svc.cluster.local
       http:
-        - appendHeaders:
-            x-forwarded-port: "443"
-            x-forwarded-proto: https
+        - headers:
+            request:
+              set:
+                X-Forwarded-Proto: https
           match:
             - uri:
                 prefix: '/v2/'
@@ -21,9 +22,10 @@ resources:
                 host: harbor-harbor-registry
                 port:
                   number: 5000
-        - appendHeaders:
-            X-Forwarded-Proto: https
-            X-Forwarded-Port: '443'         
+        - headers:
+            request:
+              set:
+                X-Forwarded-Proto: https
           route:
             - destination:
                 host: harbor-harbor-core
