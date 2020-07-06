@@ -11,6 +11,7 @@ PACKAGE_VERSION=$(cat package.json |
 noEnvError=$?
 
 . bin/aliases.sh
+function drun() { $@; }
 
 if [ $noEnvError -eq 0 ]; then
   img=eu.gcr.io/otomi-cloud/otomi-stack:v$PACKAGE_VERSION

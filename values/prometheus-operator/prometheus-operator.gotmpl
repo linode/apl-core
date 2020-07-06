@@ -234,7 +234,7 @@ grafana:
       name: OAuth
       org_role: Admin
       allow_sign_up: true
-      oauth_auto_login: true # so we can login with admin / bladibla
+      oauth_auto_login: true # false = so we can login with admin / bladibla
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
       scopes: openid email name

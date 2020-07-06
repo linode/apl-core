@@ -57,9 +57,40 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - name: repo
+              mountPath: /tmp/otomi-stack
             - name: core-values
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
+        - name: {{ .Chart.Name }}-tools
+          securityContext:
+            {{- toYaml .Values.tools.securityContext | nindent 12 }}
+          image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+          imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+          {{- with .Values.tools.env }}
+          env:
+            {{- range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 17771
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.tools.resources | nindent 12 }}
+          volumeMounts:
+            - name: repo
+              mountPath: /tmp/otomi-stack
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -73,6 +104,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+        - name: repo
+          emptyDir: {}
         - name: core-values
           configMap:
             name: {{ include "otomi-api.fullname" . }}-core

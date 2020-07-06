@@ -6,4 +6,4 @@ env/
 /*.json
 !package*.json
 # next one is only for demo purposes, and should not be in docker image
-!kms-dec.json
+!kms.json
