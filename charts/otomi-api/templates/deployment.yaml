@@ -58,7 +58,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: repo
-              mountPath: /tmp/otomi-stack
+              mountPath: /tmp
             - name: core-values
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
@@ -70,6 +70,8 @@ spec:
           command: ['sh', '-c', 'bin/server.sh']
           {{- with .Values.tools.env }}
           env:
+            - name: ENV_DIR
+              value: /tmp/otomi-stack
             {{- range $key, $value := . }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -91,7 +93,7 @@ spec:
             {{- toYaml .Values.tools.resources | nindent 12 }}
           volumeMounts:
             - name: repo
-              mountPath: /tmp/otomi-stack
+              mountPath: /tmp
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

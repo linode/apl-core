@@ -31,6 +31,7 @@ core:
 
 tools:
   image:
+    pullPolicy: {{ $o.tools.image.pullPolicy | default "IfNotPresent" }}
     tag: {{ $o.tools.image.tag }}
   env:
     GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
