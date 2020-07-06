@@ -67,6 +67,7 @@ spec:
             {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+          command: ['sh', '-c', 'bin/server.sh']
           {{- with .Values.tools.env }}
           env:
             {{- range $key, $value := . }}

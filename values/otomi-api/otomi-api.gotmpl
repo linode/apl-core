@@ -30,6 +30,8 @@ core:
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:
+  image:
+    tag: {{ $o.tools.image.tag }}
   env:
-    GCLOUD_SERVICE_KEY: '{{- $o.tools.gcloudServiceKey }}'
+    GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
   
