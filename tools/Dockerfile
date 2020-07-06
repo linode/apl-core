@@ -28,6 +28,7 @@ RUN apt-get update -qq && \
   gnupg \
   gettext \
   lsb-release \
+  netcat \
   python3 \
   python3-pip \
   python3-setuptools \

@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-shopt -s expand_aliases
-. bin/utils.sh
 set -e
 
-source $ENV_DIR/env.ini
 ENV_DIR=${ENV_DIR:-./env}
-mode=dec
-[ "$1" != "" ] && mode=enc
-# .kms-dec should of course not exist in value repo but is used for otomi demo
-[ -f $ENV_DIR/.kms-${mode}.json ] && GCLOUD_SERVICE_KEY=$(cat $ENV_DIR/.kms-${mode}.json)
+source $ENV_DIR/env.ini
+mode=$1
+if [ "$mode" != "dec" ] && [ "$mode" != "enc" ]; then
+  echo "Invalid mode: $1. Should be one of: dec|enc"
+  exit 1
+fi
 
 auth_google() {
   echo "Authenticating with Google KMS with: GCLOUD_SERVICE_KEY > GOOGLE_APPLICATION_CREDENTIALS"
@@ -26,12 +25,9 @@ auth_azure() {
 
 crypt() {
   cd $ENV_DIR >/dev/null
-  find ./env -name '*.yaml' -exec bash -c "h secrets $mode {}" \;
+  find ./env -name '*.yaml' -exec bash -c "helm secrets $mode {}" \;
   cd - >/dev/null
 }
-
-# access to functions needed in child processes:
-export -f h
 
 printf "${COLOR_LIGHT_PURPLE}${mode}rypting secrets...${COLOR_NC}\n"
 auth_${kmsProvider}

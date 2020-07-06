@@ -22,9 +22,14 @@ env:
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
-  DISABLE_SYNC: {{ hasKey $o "syncEnabled" | ternary ($o | get "syncEnabled" false) false }}
+  DISABLE_SYNC: {{ hasKey $o "disableSync" | ternary ($o | get "disableSync" false) false }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   services: {{- toYaml $v.services | nindent 4 }}
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
+
+tools:
+  env:
+    GCLOUD_SERVICE_KEY: '{{- $o.tools.gcloudServiceKey }}'
+  

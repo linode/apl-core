@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export ENV_DIR=${ENV_DIR:-$PWD/env}
+ENV_DIR=${ENV_DIR:-'./env'}
 . bin/colors.sh
 
 cd $ENV_DIR/env >/dev/null
