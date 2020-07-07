@@ -38,8 +38,13 @@ spec:
       {{- if and (hasKey $s "paths") (not $s.tlsPass) }}
       match:
         {{- range $path := $s.paths }}
+          {{- if eq $path "/" }}
         - uri:
-            prefix: '/{{ $path }}'        
+            prefix: '/'
+          {{- else }}
+        - uri:
+            prefix: '{{ $path }}'        
+          {{- end }}
         {{- end }}
         {{- if not (hasKey $s "forwardPath") }}
       rewrite:

@@ -156,11 +156,7 @@ spec:
           - backend:
               serviceName: istio-ingressgateway
               servicePort: 80
-          {{- if eq $path "/" }}
-            path: /
-          {{- else }}
-            path: /{{ $path }}/
-          {{- end }}
+            path: {{ $path }}
         {{- end }}
       {{- else }}
           - backend:
