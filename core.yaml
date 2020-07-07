@@ -66,9 +66,7 @@ services:
     svc: po-grafana
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
-    paths:
-      - 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
-    dummy: true
+    path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
   - name: scope
     svc: weave-scope
     namespace: monitoring
@@ -152,7 +150,6 @@ teamConfig:
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
       path: explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
-      dummy: true
     - name: grafana
       svc: po-grafana
       hasPrefix: true
