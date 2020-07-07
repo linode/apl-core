@@ -40,7 +40,6 @@ spec:
         {{- range $path := $s.paths }}
         - uri:
             prefix: '/{{ $path }}'        
-          {{- end }}
         {{- end }}
         {{- if not (hasKey $s "forwardPath") }}
       rewrite:
