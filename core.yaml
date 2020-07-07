@@ -3,6 +3,7 @@ redkubesSlackUrl: https://hooks.slack.com/services/TLTE10F8V/BM1ECD7QV/qqmqTfuLr
 
 k8s:
   namespaces:
+    - name: keycloak
     - name: drone-pipelines
       disableIstioInjection: true
     - name: ingress
@@ -20,6 +21,14 @@ k8s:
     - name: team-admin
 
 services:
+  - name: keycloak
+    namespace: keycloak
+    forwardPath: true
+    logo:
+      name: kubernetes
+    ownHost: true
+    path: auth
+    svc: keycloak-http
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
