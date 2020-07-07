@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.49](https://github.com/redkubes/otomi-stack/compare/v0.10.48...v0.10.49) (2020-07-07)
+
+
+### Bug Fixes
+
+* disablesync [ci skip] ([8d401c5](https://github.com/redkubes/otomi-stack/commit/8d401c52145db90db9efc7413c56087f1134640e))
+* health check ([9465e9e](https://github.com/redkubes/otomi-stack/commit/9465e9e25d7ebdbcf2c3c2b42b3f0f7afb164d21))
+* missing files ([e1ec9fb](https://github.com/redkubes/otomi-stack/commit/e1ec9fb9b5fa47436a9bc5e73eb56fd06d6401a4))
+
+
+### Feature Improvements
+
+* added tools server for enc/dec ([3d55eff](https://github.com/redkubes/otomi-stack/commit/3d55eff98101f4ebac5ffb7a632e956e1f7ba376))
+
 ### [0.10.48](https://github.com/redkubes/otomi-stack/compare/v0.10.47...v0.10.48) (2020-07-01)
 
 
