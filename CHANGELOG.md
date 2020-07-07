@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.50](https://github.com/redkubes/otomi-stack/compare/v0.10.49...v0.10.50) (2020-07-07)
+
+
+### Bug Fixes
+
+* core loki path [ci skip] ([5b10522](https://github.com/redkubes/otomi-stack/commit/5b10522f5ca2ed2348162397e27d86898cc261fe))
+
 ### [0.10.49](https://github.com/redkubes/otomi-stack/compare/v0.10.48...v0.10.49) (2020-07-07)
 
 
