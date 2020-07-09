@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts.keycloak }}
-{{- $p := $v.charts.keycloak.persistence }}
+{{- $p := $k | get "persistence" dict }}
 {{- $keycloakFullname := $k.fullnameOverride }}
 {{- $keycloakNamespace := $k.namespace }}
 
