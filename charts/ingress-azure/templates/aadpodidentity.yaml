@@ -12,8 +12,8 @@ metadata:
   {{- end }}
 spec:
   type: 0
-  ResourceID: {{ required "armAuth.identityResourceID is required if using AAD-Pod-Identity" .Values.armAuth.identityResourceID }}
-  ClientID: {{ required "armAuth.identityClientID is required if using AAD-Pod-Identity" .Values.armAuth.identityClientID }}
+  resourceID: {{ required "armAuth.identityResourceID is required if using AAD-Pod-Identity" .Values.armAuth.identityResourceID }}
+  clientID: {{ required "armAuth.identityClientID is required if using AAD-Pod-Identity" .Values.armAuth.identityClientID }}
 
 {{- end}}
 {{- end}}
