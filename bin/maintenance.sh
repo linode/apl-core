@@ -9,4 +9,4 @@ if [ "$CLOUD" = "azure" ]; then
 fi
 
 # move cluster wildcard secret to harbor namespace
-kis get secret | grep -E "^$CLUSTER-" | awk '{print $1}' | xargs kubectl -n istio-system get secret --export -o yaml | k -n harbor apply -f -
+kis get secret | grep -E "harbor-$CLUSTER-" | awk '{print $1}' | xargs kubectl -n istio-system get secret --export -o yaml | k -n harbor apply -f -
