@@ -1,27 +1,28 @@
-# The values.yaml file is important to templates.
-# This file contains the default values for a chart.
-# These values may be overridden during helm install or helm upgrade.
-
-replicaCount: 1
-
 # Verbosity level of the App Gateway Ingress Controller
 verbosityLevel: 3
 
+# Reconcile period is time period after which AGIC will re-configure Application Gateway if the current state differs from the expected state.
+# If not specified, periodic reconcile is turned off. Range: 30 - 300 (seconds)
+# reconcilePeriodSeconds: 30
+
 image:
   repository: mcr.microsoft.com/azure-application-gateway/kubernetes-ingress
-  tag: 1.0.0
+  tag: 1.2.0
   pullPolicy: Always
 
 
 kubernetes:
 
-    # Namespace(s) AGIC watches; Leaving this blank watches all namespaces;
-    # Accepts one or many comma-separated values
-    watchNamespace:
+  # Namespace(s) AGIC watches; Leaving this blank watches all namespaces;
+  # Accepts one or many comma-separated values
+  watchNamespace:
 
-    # Port for AGIC's HTTP API endpoint
-    httpServicePort: 8123
+  # Port for AGIC's HTTP API endpoint
+  httpServicePort: 8123
 
+# Set this to override the default ingress class value. DEFAULT: azure/application-gateway
+# This can be used to segregate ingress controllers in the same namespace
+# ingressClass: agic-2
 
 ################################################################################
 # Specify which application gateway the ingress controller will manage
@@ -32,6 +33,7 @@ kubernetes:
 #   subscriptionId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 #   resourceGroup: myResourceGroup
 #   name: myApplicationGateway
+#   # Whether to force private IP for all the listeners on Application Gateway
 #   usePrivateIP: false
 
 ################################################################################
@@ -55,4 +57,4 @@ kubernetes:
 ################################################################################
 # Specify if the cluster is RBAC enabled or not
 rbac:
-    enabled: false # true/false
+  enabled: false # true/false

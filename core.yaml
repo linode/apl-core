@@ -39,14 +39,14 @@ services:
     svc: harbor-harbor-core
     namespace: harbor
     isShared: true
-    paths: [api, c, chartrepo, service]
+    paths: [/api/, /c/, /chartrepo/, /service/]
     forwardPath: true
     hide: true
   - name: harbor
     svc: harbor-harbor-registry
     namespace: harbor
     isShared: true
-    paths: [v1, v2]
+    paths: [/v1/, /v2/]
     port: 5000
     forwardPath: true
     hide: true
@@ -61,7 +61,7 @@ services:
     namespace: shared
     svc: otomi-api
     hide: true
-    paths: [api]
+    paths: [/api/]
   - name: otomi
     namespace: shared
     svc: otomi-web
@@ -151,7 +151,7 @@ teamConfig:
     - name: otomi
       namespace: shared
       svc: otomi-api
-      paths: [api]
+      paths: [/api/]
       hide: true
     - name: otomi
       namespace: shared

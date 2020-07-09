@@ -61,7 +61,7 @@ releases:
         {{- end }}
         {{- if ne (len ($team | get "sites" list)) 0 }}
         - name: blackbox
-          svc: prom-blackbox-exporter
+          svc: prometheus-blackbox-exporter
           port: 9115
         {{- end }}
         {{- end }}

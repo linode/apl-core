@@ -1,6 +1,5 @@
 function aw() { aws $@; }
 function gc() { gcloud $@; }
-function az() { az $@; }
 function h() { helm $@; }
 function hk() { helm delete $@; }
 function hf_() { helmfile $@; }

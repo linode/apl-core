@@ -7,8 +7,8 @@ kind: AzureIdentityBinding
 metadata:
   name: {{ template "application-gateway-kubernetes-ingress.azureidbinding" . }}
 spec: 
-  AzureIdentity: {{ template "application-gateway-kubernetes-ingress.azureidentity" . }}
-  Selector: {{ template "application-gateway-kubernetes-ingress.fullname" . }}
+  azureIdentity: {{ template "application-gateway-kubernetes-ingress.azureidentity" . }}
+  selector: {{ template "application-gateway-kubernetes-ingress.fullname" . }}
 
 {{- end}}
 {{- end}}
