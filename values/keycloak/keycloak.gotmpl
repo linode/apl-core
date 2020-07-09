@@ -1,8 +1,8 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts.keycloak }}
 {{- $p := $v.charts.keycloak.persistence }}
-{{- $keycloakFullname := $v.charts.keycloak.fullnameOverride }}
-{{- $keycloakNamespace := $v.charts.keycloak.namespace }}
+{{- $keycloakFullname := $k.fullnameOverride }}
+{{- $keycloakNamespace := $k.namespace }}
 
 clusterDomain: cluster.local
 
