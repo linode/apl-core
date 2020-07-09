@@ -8,7 +8,7 @@ bases:
 
 releases:
   - name: keycloak
-    installed: {{ $c.keycloak.enabled | default false }}
+    installed: {{ $c | get "keycloak.enabled" false }}
     namespace: keycloak
     <<: *default
   - name: harbor

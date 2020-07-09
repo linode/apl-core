@@ -27,8 +27,9 @@ services:
     logo:
       name: kubernetes
     ownHost: true
-    path: auth
+    paths: /auth/
     svc: keycloak-http
+    isShared: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
