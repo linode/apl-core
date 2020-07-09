@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.55](https://github.com/redkubes/otomi-stack/compare/v0.10.54...v0.10.55) (2020-07-09)
+
+
+### Bug Fixes
+
+* alias [ci skip] ([7470946](https://github.com/redkubes/otomi-stack/commit/74709464c33a13139b778d851bd269e594b63e8f))
+* charts upgraded for k8s 1.16 [ci skip] ([6018f60](https://github.com/redkubes/otomi-stack/commit/6018f602e5f755ec94a3fbe6ea85bd4a3c68f375))
+
 ### [0.10.54](https://github.com/redkubes/otomi-stack/compare/v0.10.53...v0.10.54) (2020-07-07)
 
 
