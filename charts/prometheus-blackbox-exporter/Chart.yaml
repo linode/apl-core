@@ -1,5 +1,5 @@
 apiVersion: v1
-appVersion: 0.14.0
+appVersion: 0.16.0
 description: Prometheus Blackbox Exporter
 home: https://github.com/prometheus/blackbox_exporter
 keywords:
@@ -7,9 +7,13 @@ keywords:
 - blackbox
 - monitoring
 maintainers:
+- email: cedric@desaintmartin.fr
+  name: desaintmartin
 - email: gianrubio@gmail.com
   name: gianrubio
-name: prom-blackbox-exporter
+- email: me@sota.sh
+  name: rsotnychenko
+name: prometheus-blackbox-exporter
 sources:
 - https://github.com/prometheus/blackbox_exporter
-version: 0.4.0
+version: 4.1.1

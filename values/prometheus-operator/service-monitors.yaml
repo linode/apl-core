@@ -6,7 +6,7 @@
       - monitoring
   selector:
     matchLabels:
-      app: prom-blackbox-exporter
+      app: prometheus-blackbox-exporter
   endpoints:
     - port: http
       interval: 30s

@@ -14,7 +14,7 @@ releases:
     installed: true
     namespace: monitoring
     <<: *default
-  - name: prom-blackbox-exporter
+  - name: prometheus-blackbox-exporter
     installed: true 
     namespace: monitoring
     <<: *default
