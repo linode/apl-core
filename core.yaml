@@ -34,6 +34,7 @@ services:
     svc: harbor-harbor-portal
     namespace: harbor
     isShared: true
+    ownHost: true
     paths: [/]
   - name: harbor
     svc: harbor-harbor-core
