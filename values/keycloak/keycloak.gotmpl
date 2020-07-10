@@ -1,23 +1,16 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts.keycloak }}
 {{- $p := $k | get "persistence" dict }}
-{{- $keycloakFullname := $k.fullnameOverride }}
-{{- $keycloakNamespace := $k.namespace }}
-
-clusterDomain: cluster.local
+{{- $keycloakFullname := "keycloak" }}
 
 ## Optionally override the fully qualified name
 fullnameOverride: {{ $keycloakFullname }}
-
-## Optionally override the name
-# nameOverride: keycloak
 
 keycloak:
   # required .gotmpl replacement definitions
   selectorLabels:
     app.kubernetes.io/name: {{  $keycloakFullname }}
   fullname: {{ $keycloakFullname }}
-  serviceAccountName: ""
 
   ## Username for the initial Keycloak admin user
   username: keycloak
