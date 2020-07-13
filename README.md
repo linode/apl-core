@@ -47,15 +47,17 @@ If you are not logged in with the correct credentials because you were logged in
 - AWS: `aws login eks`
 - Google: `gcloud auth login`
 
-### 1.2 Configured values
+### 1.2 Unencrypted values repo
 
-The values reside in another repo (otomi-values), and \$ENV_DIR should be an absolute path to the root of this checked
-out repo.
+The values reside in another repo (otomi-values), and `$ENV_DIR` should be an absolute path to the root of this checked
+out repo. The `*.yaml` files should be decrypted first, and for that the `GCLOUD_SERVICE_KEY` should be known to the environment. Please get the correct `.secrets` file from company storage and put it in the values repo, then source it and run `drun bin/crypt.sh dec` to decrypt.
 
-This monorepo is targeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml` file in the
-`redkubes/otomi-values` repo. Please register your target clusters there.
+Any changes made to the values repo should be committed from that repo, and the readme in that repo explains how. Most important part is the `bin/install-pre-commit.sh` script to automatically encrypt the values before committing.
 
 ### 1.3 Configured values
+
+This monorepo is targeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml.dec` file in the
+`redkubes/otomi-values` repo. Please register your target clusters there.
 
 Please look at the `$ENV_DIR/env/**` files and configure as needed for your target clusters.
 
