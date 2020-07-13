@@ -2,7 +2,7 @@ groups:
   - name: sites.rules
     rules:
       - alert: ProbeFailing
-        expr: probe_success{job="probe-sites"} == 0
+        expr: probe_success{job="probe-services"} == 0
         for: 10m
         labels:
           severity: critical
