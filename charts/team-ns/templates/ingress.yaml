@@ -63,7 +63,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
-    {{- if not .cluster.hasCloudLB }}
+    {{- if not $v.cluster.hasCloudLB }}
     externaldns: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
