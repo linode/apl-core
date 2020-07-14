@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.58](https://github.com/redkubes/otomi-stack/compare/v0.10.57...v0.10.58) (2020-07-14)
+
+
+### Bug Fixes
+
+* exclusion for hasCloudLB [ci skip] ([5c6c32c](https://github.com/redkubes/otomi-stack/commit/5c6c32c4cf54bfc15d80e59e3b3963bcfbd219ee))
+
 ### [0.10.57](https://github.com/redkubes/otomi-stack/compare/v0.10.56...v0.10.57) (2020-07-14)
 
 
