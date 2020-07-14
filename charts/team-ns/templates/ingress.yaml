@@ -63,13 +63,15 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
+    externaldns: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
-    nginx.ingress.kubernetes.io/limit-connections: "20" # per ip
-    nginx.ingress.kubernetes.io/limit-rps: "5" # per second per conn
-    nginx.ingress.kubernetes.io/limit-rpm: "30" # per minute per conn
-    nginx.ingress.kubernetes.io/limit-rate-after: "50000000" # After 50Mb throughput rate limiting will start
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/limit-connections: "20" # per ip
+    # nginx.ingress.kubernetes.io/limit-rps: "5" # per second per conn
+    # nginx.ingress.kubernetes.io/limit-rpm: "30" # per minute per conn
+    # nginx.ingress.kubernetes.io/limit-rate-after: "50000000" # After 50Mb throughput rate limiting will start
     # nginx.ingress.kubernetes.io/limit-rate: "0" # stop after
   labels: {{- include "chart-labels" . | nindent 4 }}
   name: nginx-team-{{ $v.teamId }}-proxy
