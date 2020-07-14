@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.57](https://github.com/redkubes/otomi-stack/compare/v0.10.56...v0.10.57) (2020-07-14)
+
+
+### Bug Fixes
+
+* added dns label to proxy [ci skip] ([f7a30e3](https://github.com/redkubes/otomi-stack/commit/f7a30e302ee56e228d9d97da12029a4ea8b95210))
+* readme [ci skip] ([d1c2ba0](https://github.com/redkubes/otomi-stack/commit/d1c2ba09fe04bbe344aa116516e62a256b5d66aa))
+* service probes per team ([2db7f40](https://github.com/redkubes/otomi-stack/commit/2db7f4027f32eddf4ad39de4b4e0bc40f3eecc4c))
+
+
+### Feature Improvements
+
+* upgraded prom operator [ci skip] ([976263a](https://github.com/redkubes/otomi-stack/commit/976263af5afc733c1f93544d657c1b1a755027c6))
+
 ### [0.10.56](https://github.com/redkubes/otomi-stack/compare/v0.10.55...v0.10.56) (2020-07-09)
 
 
