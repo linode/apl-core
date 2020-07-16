@@ -29,8 +29,8 @@ services:
     ownHost: true
     paths: [/auth/]
     path: auth/
-    svc: keycloak
-    port: 8080
+    svc: keycloak-http
+    port: 80
     isShared: true
   - name: harbor
     svc: harbor-harbor-portal
