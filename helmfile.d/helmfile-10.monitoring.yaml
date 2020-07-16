@@ -23,11 +23,11 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ eq (index $c "prometheus-operator").alertmanager.receiver "msteams" }}
+    installed: {{ eq ($c | get "prometheus-operator.alertmanager.receiver" "") "msteams" }}
     namespace: monitoring
     <<: *default
   - name: sitespeed
-    installed: {{ $c.sitespeed.enabled | default false }}
+    installed: {{ $c | get "sitespeed.enabled" false }}
     namespace: monitoring
     <<: *default
   - name: weave-scope
