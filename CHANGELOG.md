@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.60](https://github.com/redkubes/otomi-stack/compare/v0.10.59...v0.10.60) (2020-07-16)
+
+
+### Bug Fixes
+
+* filtered out internal services from ingress [ci skip] ([773bfe4](https://github.com/redkubes/otomi-stack/commit/773bfe4e548a45b7c8e1acba142af5f94588e028))
+* upgrade issues, istio upgrade [ci skip] ([2e94275](https://github.com/redkubes/otomi-stack/commit/2e94275ea52279ee9d58721d3f1bf91d15b462d3))
+
 ### [0.10.59](https://github.com/redkubes/otomi-stack/compare/v0.10.58...v0.10.59) (2020-07-14)
 
 
