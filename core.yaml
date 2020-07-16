@@ -6,6 +6,7 @@ k8s:
     - name: drone-pipelines
       disableIstioInjection: true
     - name: ingress
+    - name: keycloak
     - name: harbor
       # disableIstioInjection: true
     - name: istio-system
@@ -20,6 +21,17 @@ k8s:
     - name: team-admin
 
 services:
+  - name: keycloak
+    namespace: keycloak
+    forwardPath: true
+    logo:
+      name: kubernetes
+    ownHost: true
+    paths: [/auth/]
+    path: auth/
+    svc: keycloak
+    port: 8080
+    isShared: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor

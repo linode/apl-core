@@ -1,0 +1,21 @@
+{{- $v := .Environment.Values }}
+{{- $k := $v.charts.keycloak }}
+{{- $p := $k | get "persistence" dict }}
+
+keycloak:
+  username: keycloak
+  password: "D33pLe@rn"
+  basepath: auth
+  persistence:
+    dbVendor: "postgres"
+    deployPostgres: true
+
+postgresql:
+  postgresqlUsername: keycloak
+  postgresqlPassword: ""
+  postgresqlDatabase: keycloak
+  persistence:
+    enabled: true 
+
+test:
+  enabled: false

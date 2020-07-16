@@ -1,0 +1,28 @@
+{{- $highAvailability := gt (int .Values.keycloak.replicas) 1 -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "keycloak.fullname" . }}-headless
+  labels:
+    {{- include "keycloak.commonLabels" . | nindent 4 }}
+    service: headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ .Values.keycloak.service.httpPort }}
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: {{ .Values.keycloak.service.httpsPort }}
+      targetPort: https
+      protocol: TCP
+  {{- if and $highAvailability .Values.keycloak.jgroups.exposePort }}
+    - name: jgroups
+      port: {{ .Values.keycloak.service.jgroupsPort }}
+      targetPort: jgroups
+      protocol: TCP
+  {{- end }}
+  selector:
+    {{- include "keycloak.selectorLabels" . | nindent 4 }}
