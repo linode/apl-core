@@ -43,7 +43,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if not (or (has $s.name $names) ($s.internal) $s.ownHost $s.isShared) }}
+{{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
