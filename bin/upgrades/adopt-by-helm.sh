@@ -5,6 +5,7 @@ echo KIND=$KIND
 echo NAME=$NAME
 echo RELEASE=$RELEASE
 echo NAMESPACE=$NAMESPACE
+echo RUNNING_NS=$RUNNING_NS
 
 useNS="-n $RUNNING_NS"
 [ "$1" != "" ] && useNS=''

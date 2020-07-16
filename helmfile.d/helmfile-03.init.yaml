@@ -24,15 +24,8 @@ releases:
     namespace: maintenance
     <<: *default
   - name: gatekeeper-operator
-    installed: {{ (index $c "gatekeeper-operator").enabled | default false }}
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
     labels:
       pkg: gatekeeper-operator
     <<: *default
-  - name: prometheus-operator-crds
-    installed: true
-    namespace: monitoring
-    labels:
-      init: true
-      pkg: prometheus-operator
-    <<: *skeleton

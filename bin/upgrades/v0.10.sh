@@ -40,7 +40,9 @@ for KIND in namespace clusterrolebinding clusterrole ValidatingWebhookConfigurat
   [ "$KIND" = "rolebinding" ] && NAME=gatekeeper-manager-rolebinding && RUNNING_NS=gatekeeper-system
   . bin/upgrades/adopt-by-helm.sh
 done
-# gatekeeper-operator-config
+
+# # gatekeeper-operator-config
+RUNNING_NS=gatekeeper-system
 RELEASE=gatekeeper-operator-config
 NAMESPACE=gatekeeper-system
 KIND=constrainttemplates.templates.gatekeeper.sh
@@ -49,6 +51,7 @@ for NAME in k8sallowedrepos k8sbannedimagetags k8scontainerlimits k8spspallowedu
 done
 
 # prometheus-operator
+RUNNING_NS=ingress
 KIND=crd
 RELEASE=prometheus-operator-crds
 NAMESPACE=monitoring
@@ -57,6 +60,7 @@ for NAME in $(k get crd | grep coreos | awk '{print $1}'); do
 done
 
 # cert-manager
+RUNNING_NS=ingress
 KIND=crd
 RELEASE=cert-manager
 NAMESPACE=ingress
@@ -65,17 +69,22 @@ for NAME in $(k get crd | grep cert-manager | awk '{print $1}'); do
 done
 
 # nginx-ingress
+RUNNING_NS=ingress
 RELEASE=nginx-ingress
 NAME=nginx-ingress
 NAMESPACE=ingress
 for KIND in "clusterrolebinding" "clusterrole" "rolebinding" "role"; do
-  . bin/upgrades/adopt-by-helm.sh 1
+  . bin/upgrades/adopt-by-helm.sh
 done
 
 # post steps
 
-# 1. delete resources that are blocking and safe to delete
-# 1.1 delete all po-grafana deploy and svc for each team and sync their team chart
+# 1. delete resources that are blocking (immutability errors) and safe to delete
+# 1.1 delete all po-grafana deployments for monitoring and each team and sync their prometheus charts
+km delete deploy po-grafana
+for team in "dev" "acc" "test"; do
+  k -n team-$team delete deploy ${team}-po-grafana
+done
 
 # 2. Alternating deployments
 # Some charts need defaults.yaml/helmDefaults.force=true (resulting in kubectl replace) while others need force=false
