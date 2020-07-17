@@ -3,6 +3,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: cert-manager
@@ -16,7 +17,7 @@ releases:
     namespace: kube-system
     <<: *default
   - name: istio-local-gw
-    installed: {{ $v.cluster.hasKnative }}
+    installed: false
     namespace: istio-system
     <<: *default
   - name: knative-serving
@@ -28,7 +29,7 @@ releases:
     values:
       - ../values/knative/knative-serving-raw.gotmpl
   - name: gatekeeper-operator-config
-    installed: false
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
     labels:
       pkg: gatekeeper-operator

@@ -10,6 +10,7 @@ hft -f helmfile.tpl/helmfile-init.yaml | k apply -f -
 # k -n maintenance create secret generic flux-ssh --from-file=identity=.ssh/id_rsa &>/dev/null
 # set -e
 k apply -f charts/gatekeeper-operator/crds
+k apply -f charts/prometheus-operator/crds
 
 # now sync
 bin/sync.sh

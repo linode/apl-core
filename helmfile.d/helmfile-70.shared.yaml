@@ -12,11 +12,11 @@ releases:
     namespace: keycloak
     <<: *default
   - name: harbor
-    installed: {{ $c.harbor.enabled | default false }}
+    installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
     <<: *default
   - name: harbor-artifacts
-    installed: {{ $c.harbor.enabled | default false }}
+    installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
     <<: *raw
   - name: otomi-api
@@ -28,7 +28,7 @@ releases:
     namespace: shared
     <<: *default
   - name: redis-shared
-    installed: {{ (index $c "redis-shared").enabled | default false }}
+    installed: {{ $c | get "redis-shared.enabled" false }}
     namespace: shared
     <<: *default
     chart: ../charts/redis
