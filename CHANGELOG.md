@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.62](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.62) (2020-07-20)
+
+
+### Bug Fixes
+
+* istio-operator chart missing ns, worklfow latest only on release [ci skip] ([743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393))
+
 ### [0.10.61](https://github.com/redkubes/otomi-stack/compare/v0.10.60...v0.10.61) (2020-07-16)
 
 
