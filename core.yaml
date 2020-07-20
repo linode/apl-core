@@ -32,6 +32,7 @@ services:
     svc: keycloak-http
     port: 80
     isShared: true
+    isPublic: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor

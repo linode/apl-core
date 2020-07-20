@@ -7,15 +7,14 @@ keycloak:
   password: "D33pLe@rn"
   basepath: auth
   persistence:
-    dbVendor: "postgres"
+    dbVendor: postgres
     deployPostgres: true
 
 postgresql:
   postgresqlUsername: keycloak
-  postgresqlPassword: ""
+  postgresqlPassword: keycloak
   postgresqlDatabase: keycloak
   persistence:
     enabled: true 
-
 test:
   enabled: false
