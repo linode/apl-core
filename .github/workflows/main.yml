@@ -34,13 +34,11 @@ jobs:
           image_tag: ${{ env.TAG }}
       - name: Docker login
         run: docker login -u _json_key -p '${{ secrets.DOCKER_PASSWORD }}' $REG
-      - name: Push tag 'latest'
-        run: |
-          docker tag $REG/$REPO:$TAG $REG/$REPO:latest
-          docker push $REG/$REPO:latest
       - if: "contains(github.event.head_commit.message, 'chore(release)')"
         name: Tag and release
         run: |
+          docker tag $REG/$REPO:$TAG $REG/$REPO:latest
+          docker push $REG/$REPO:latest
           RELEASE_TAG=v${COMMIT_MSG#* }
           echo "Releasing $REG/$REPO:$RELEASE_TAG"
           docker tag $REG/$REPO:$TAG $REG/$REPO:$RELEASE_TAG
