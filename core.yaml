@@ -1,4 +1,4 @@
-toolsVersion: 1.3.4
+toolsVersion: 1.3.5
 redkubesSlackUrl: https://hooks.slack.com/services/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
 
 k8s:
