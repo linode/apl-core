@@ -2,15 +2,21 @@ FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG KUBECTL_VERSION=1.15.7
+ARG KUBECTL_VERSION=1.16.9
+# https://cloud.google.com/sdk/docs/downloads-versioned-archives
 ARG GOOGLE_SDK_VERSION=298.0.0
-ARG HELM_VERSION=3.2.0
+# https://github.com/helm/helm/tags
+ARG HELM_VERSION=3.2.4
+# https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=v3.1.1
+# https://github.com/zendesk/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=v2.0.2
-ARG SOPS_VERSION=3.5.0
+# https://github.com/mozilla/sops/releases
+ARG SOPS_VERSION=3.6.0
 ARG HELMFILE_VERSION=0.114.0
-# ARG HELMFILE_VERSION=0.119.1
-ARG EKSCTL_VERSION=0.22.0
+# ARG HELMFILE_VERSION=0.123.0
+# https://github.com/weaveworks/eksctl/releases
+ARG EKSCTL_VERSION=0.24.0
 ARG YAML2JSON_VERSION=0.4.0
 
 ENV HELM_FILE_NAME helm-v${HELM_VERSION}-linux-amd64.tar.gz

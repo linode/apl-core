@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $n := $v | get "charts.nginx-ingress" dict }}
 rbac:
   create: true
 defaultBackend:
@@ -11,13 +12,15 @@ defaultBackend:
 {{- end }}
   service:
     omitClusterIP: true
+
 controller:
+  resources: {{- $n.resources | toYaml | nindent 4 }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-  minAvailable: 1
+  minAvailable: 2
   autoscaling:
-    enabled: false
-    minReplicas: 2
+    enabled: {{ $n | get "autoscaling.enabled" (ne $v.cluster.provider "azure") }}
+    minReplicas: 1
     maxReplicas: 12
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
@@ -27,18 +30,17 @@ controller:
 {{- end }}    
   extraArgs:
     v: 3
-    # enable-ssl-passthrough: "true"
   config:
     ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     hsts: "true"
     disable-ipv6: "true"
-    client-body-timeout: 5s
-    client-header-timeout: 5s
+    client-body-timeout: "5"
+    client-header-timeout: "5"
     # enable-modsecurity: "true"
     # enable-owasp-modsecurity-crs: "true"
     http2-max-field-size: 64k
     http2-max-header-size: 128k
-    proxy-buffers-number: 8 16k
+    proxy-buffers-number: "8"
     proxy-buffer-size: 16k
     large-client-header-buffers: 8 16k
     client-max-body-size: 1024m

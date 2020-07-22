@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.65](https://github.com/redkubes/otomi-stack/compare/v0.10.64...v0.10.65) (2020-07-22)
+
+
+### Bug Fixes
+
+* helmfile regression still exists [ci skip] ([795072d](https://github.com/redkubes/otomi-stack/commit/795072dbb7ded3b3f6d4ffb5d2e96b75703b5503))
+
+### [0.10.64](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.64) (2020-07-22)
+
+
+### Bug Fixes
+
+* istio-operator chart missing ns, worklfow latest only on release [ci skip] ([743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393))
+* minAvailable now 2 for nginx [ci skip] ([f2ed6c4](https://github.com/redkubes/otomi-stack/commit/f2ed6c4a227ec747c6bf879488cdd5295cc1e41d))
+* missing files [ci skip] ([e07b7e7](https://github.com/redkubes/otomi-stack/commit/e07b7e7416e0ef882b006e83ae56dd1d3cef0bd4))
+
+
+### Others
+
+* **release:** 0.10.62 ([8cde246](https://github.com/redkubes/otomi-stack/commit/8cde246ce81214036bf8275ed9921f509fb14ca6))
+
+
+### CI
+
+* workflow simplification [ci skip] ([74e78b7](https://github.com/redkubes/otomi-stack/commit/74e78b797bf88854213dab9bca0a7867e1f40bec))
+
 ### [0.10.62](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.62) (2020-07-20)
 
 

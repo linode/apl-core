@@ -24,11 +24,11 @@ environments:
   {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") $v_ | nindent 2 }}
   {{- end }}
   {{- end }}
-repositories: 
-  - name: stable
-    url: https://kubernetes-charts.storage.googleapis.com/
-  - name: incubator
-    url: https://kubernetes-charts.storage.googleapis.com/
-  - name: stable-gitlab 
-    url: https://charts.gitlab.io/
+# repositories: 
+#   - name: stable
+#     url: https://kubernetes-charts.storage.googleapis.com/
+#   - name: incubator
+#     url: https://kubernetes-charts.storage.googleapis.com/
+#   - name: stable-gitlab 
+#     url: https://charts.gitlab.io/
     
