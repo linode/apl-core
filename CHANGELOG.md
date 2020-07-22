@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.65](https://github.com/redkubes/otomi-stack/compare/v0.10.64...v0.10.65) (2020-07-22)
+
+
+### Bug Fixes
+
+* helmfile regression still exists [ci skip] ([795072d](https://github.com/redkubes/otomi-stack/commit/795072dbb7ded3b3f6d4ffb5d2e96b75703b5503))
+
 ### [0.10.64](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.64) (2020-07-22)
 
 
