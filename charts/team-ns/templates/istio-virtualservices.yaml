@@ -14,6 +14,9 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
+    {{- if not (hasKey $s "isPublic") }}
+    auth: "true"
+    {{- end }}
 spec:
   gateways:
   {{- if hasKey $s "ksvc" }}
@@ -74,7 +77,33 @@ spec:
             request:
               set:
                 X-Forwarded-Proto: https
----      
+---
+{{- if not (hasKey $s "isPublic") }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ $vsName }}
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ['*']
+      to:
+        - operation:
+            {{- with $s.paths }}
+            paths:
+              {{- range $path := $s.paths }}
+              - {{ $path }}
+              {{- end }}
+            {{- end }}
+            hosts: [{{ $s.name }}.{{ $v.domain }}]
+      when:
+        - key: request.auth.claims[groups]
+          values: [team-{{ $v.teamId }},team-admin]
+---
+{{- end }}
+
 {{- end }}
 {{- end }}
 {{- end }}

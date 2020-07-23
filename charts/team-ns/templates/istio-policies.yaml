@@ -1,6 +1,22 @@
 {{- $v := .Values }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 {{- $ := . }}
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: keycloak-jwt
+spec:
+  selector:
+    matchLabels:
+      auth: "true"
+  jwtRules:
+    - issuer: https://keycloak.{{ $v.cluster.domain }}/auth/realms/master
+      jwksUri: https://keycloak{{ $v.cluster.domain }}/auth/realms/master/protocol/openid-connect/certs
+      audiences:
+        - account
+        - istio-realm
+        - otomi-stack-api
+---
 {{- range $s := $v.services }}
 {{- if hasKey $s "mtls" }}
 {{- if or (hasKey $s.mtls "gatewayDisabled") (hasKey $s.mtls "policyMode") }}
@@ -19,7 +35,7 @@ spec:
         mode: {{ $mode | upper }}
   targets:
     - name: {{ $svc }}.{{ $ns }}.svc.cluster.local
----    
+---
 {{- end }}
 {{- end }}
 {{- end }}

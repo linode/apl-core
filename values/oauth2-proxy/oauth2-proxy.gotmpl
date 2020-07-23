@@ -1,9 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $o := $v.oidc }}
+{{- $k := $v | get "charts.keycloak" dict }}
 {{- $provider := index $o $o.provider }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 image:
-  tag: "v5.1.1"
-  # repository: eu.gcr.io/otomi-cloud/oauth2_proxy
+  tag: "v6.0.0"
+  repository: quay.io/oauth2-proxy/oauth2-proxy
   # tag: latest
   # pullPolicy: Always
 
@@ -11,22 +13,42 @@ config:
   # clientID: oidc-auth-client
   # clientSecret: bladibladi
   # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
+  {{- if eq $o.provider "keycloak" }}
+  clientID: {{ $k.oidc.clientID }}
+  clientSecret: {{ $k.oidc.clientSecret }}
+  {{- else }}
   clientID: {{ $o.clientID }}
   clientSecret: {{ $o.clientSecret }}
+  {{- end }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
+
+# get all public domains that don't have the cluster domain as root
+{{ $domains := list }}
+{{- $tc := $v.teamConfig }}
+{{- range $teamId, $team := $tc.teams }}
+{{- if hasKey $team "services" }}
+{{- range $s := $team.services }}
+{{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
+{{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
+{{- $domains = append $domains $s.domain }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $domainList := tpl $joinTpl (append $domains $v.cluster.domain) }}
 
 extraArgs:
   # oidc, google, azure, github
   # provider: oidc
   provider: {{ $o.provider }}
-  oidc-issuer-url: {{ $provider | get "issuer" }}
-  whitelist-domain: {{ $v.cluster.domain }}
+  whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
   redis-connection-url: redis://redis-master
   redirect-url: https://auth.{{ $v.cluster.domain }}/oauth2/callback
-  # email-domain: "*"
-  cookie-domain: '{{ $v.cluster.domain }}'
+  email-domain: "*"
+  cookie-domain: {{ $domainList }}
   cookie-samesite: none
   cookie-secure: true
   # cookie-httponly: true
@@ -34,7 +56,7 @@ extraArgs:
   cookie-refresh: 0h60m0s
   pass-authorization-header: true
   pass-basic-auth: true
-  skip-auth-regex: ^/metrics,/api/datasources,/api/dashboards,/api/topology,/api/authenticate,/hook
+  skip-auth-regex: /healthz,/metrics,/api/datasources,/api/dashboards,/api/topology,/api/authenticate,/hook
   silence-ping-logging: true
   # exclude-logging-paths: /ping
   set-authorization-header: true
@@ -42,9 +64,16 @@ extraArgs:
   ###
   # Provider specifics:
   ###
-  github-org: {{ $o | getOrNil "github.org" }}
+  {{- if eq $o.provider "oidc" }}
+  oidc-issuer-url: {{ $provider | get "issuer" }}
+  {{- else if eq $o.provider "azure" }}
   azure-tenant: {{ $o.azure.tenantID }}
-  {{- if eq $o.provider "azure-oidc" }}
-  azure-permitted-groups: {{ $o | getOrNil "azure-oidc.permittedGroups" }}
+  {{- else if eq $o.provider "keycloak" }}
+  {{- $realm := $k | get "realm" "master" }}
+  login-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
+  redeem-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
+  validate-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+  {{- else if eq $o.provider "github" }}
+  github-org: {{ $o | getOrNil "github.org" }}
   {{- end }}
 

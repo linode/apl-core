@@ -23,14 +23,8 @@ k8s:
 services:
   - name: keycloak
     namespace: keycloak
-    forwardPath: true
-    logo:
-      name: kubernetes
     ownHost: true
-    paths: [/auth/]
-    path: auth/
     svc: keycloak-http
-    port: 80
     isShared: true
     isPublic: true
   - name: harbor
