@@ -1,0 +1,35 @@
+{{ range .jobs }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .name }}
+  labels: {{ .labels }}
+spec:
+  template:
+    metadata:
+      labels: {{ .labels }}
+    spec:
+      containers:
+      - image: {{ .image }}
+        name: job-{{ .name }}
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          envFrom:
+          - secretRef:
+              name: {{ .name }}
+          - configMapRef:
+              name: {{ .name }}
+      restartPolicy: OnFailure
+  backoffLimit: 3
+  {{ if .onlyOnce }}
+  successfulJobsHistoryLimit: 1
+  {{ else  }}
+  successfulJobsHistoryLimit: 0
+  {{ end }}
+{{ end }}

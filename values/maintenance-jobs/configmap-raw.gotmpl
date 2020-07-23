@@ -1,0 +1,12 @@
+
+{{ range .jobs }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels: 
+    {{ toYaml .labels }}    
+  name: {{ .name }}
+data:
+  {{ toYaml .configmap}}
+{{ end }}

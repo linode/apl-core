@@ -13,3 +13,12 @@ releases:
         labels: app=ingress-azure
         schedule: "0 * * * *" # once an hour!
       - ../values/default.gotmpl
+  - name: maintenance-jobs-artifacts
+    namespace: shared
+    installed: true
+    labels: 
+      app: maintenance-jobs
+    <<: *raw
+    values:
+      - namespace: shared
+        labels: app=maintenance-jobs
