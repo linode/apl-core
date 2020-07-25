@@ -9,7 +9,7 @@
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
 {{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithPipe" $s.paths)) "")) }}
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: {{ $vsName }}
@@ -22,7 +22,7 @@ spec:
   {{- if hasKey $s "ksvc" }}
   - knative-serving/knative-ingress-gateway
   {{- else }}
-  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}
+  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ hasKey $s "isPublic" | ternary "public" "auth" }}
   {{- end }}
   hosts:
   - {{ $domain }}
@@ -83,27 +83,37 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: {{ $vsName }}
+  namespace: istio-system
 spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway-auth
   action: ALLOW
   rules:
-    - from:
-        - source:
-            principals: ['*']
-      to:
-        - operation:
-            {{- with $s.paths }}
-            paths:
-              {{- range $path := $s.paths }}
-              - {{ $path }}
-              {{- end }}
-            {{- end }}
-            hosts: [{{ $s.name }}.{{ $v.domain }}]
-      when:
-        - key: request.auth.claims[groups]
-          values: [team-{{ $v.teamId }},team-admin]
+    - {}
+    # - from:
+    #     - source:
+    #         principals: ['*']
+      # when:
+      #   - key: request.auth.claims[groups]
+      #     values: [{{ if not (eq $v.teamId "team-admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
+    #   to:
+    #     - operation:
+    #         {{- with $s.paths }}
+    #         paths:
+    #           {{- range $path := $s.paths }}
+    #           - {{ $path }}
+    #           {{- end }}
+    #         {{- end }}
+    #         hosts: [{{ $s.name }}.{{ $v.domain }}]
+    # - to:
+    #   - operation:
+    #       notPaths: [/healthz,/metrics]
+    #   from:
+    #     - source:
+    #         requestPrincipals: ['*']
 ---
 {{- end }}
-
 {{- end }}
 {{- end }}
 {{- end }}

@@ -100,6 +100,7 @@ metadata:
     nginx.ingress.kubernetes.io/configuration-snippet: |
   {{- if .isApps }}
       rewrite ^/$ /otomi/ permanent;
+      rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
   {{- if .hasAuth }}
       # set team header
@@ -118,13 +119,17 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: istio-ingressgateway
+            serviceName: istio-ingressgateway-auth
             servicePort: 80
           path: /
         - backend:
-            serviceName: istio-ingressgateway
+            serviceName: istio-ingressgateway-auth
             servicePort: 80
           path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
+        - backend:
+            serviceName: istio-ingressgateway-auth
+            servicePort: 80
+          path: /tracing
 {{- else }}
   {{- if and (not .hasAuth) (eq .provider "nginx") }}
     - host: {{ $appsDomain }}
@@ -154,13 +159,13 @@ spec:
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}
           - backend:
-              serviceName: istio-ingressgateway
+              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
               servicePort: 80
             path: {{ $path }}
         {{- end }}
       {{- else }}
           - backend:
-              serviceName: istio-ingressgateway
+              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
               servicePort: 80
       {{- end }}
     {{- end }}
@@ -168,11 +173,6 @@ spec:
 {{- end }}
 {{- if $internetFacing }}
   tls:
-  {{- if .isApps }}
-    - hosts:
-      - {{ $appsDomain }}
-      secretName: {{ $appsDomain | replace "." "-" }}
-  {{- end }}
   {{- range $domain, $paths := $routes }}
     - hosts:
         - {{ $domain }}

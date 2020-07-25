@@ -19,4 +19,4 @@ sources:
 - https://github.com/coreos/prometheus-operator
 - https://coreos.com/operators/prometheus
 tillerVersion: '>=2.12.0'
-version: 8.15.14
+version: 9.2.1

@@ -16,6 +16,35 @@ resources:
         ingressGateways:
           - name: istio-ingressgateway
             enabled: true
+            k8s:
+              service:
+                type: ClusterIP
+                ports:
+                - port: 15020
+                  name: status-port
+                - port: 80
+                  name: http2
+                - port: 443
+                  name: https
+            {{- if eq $v.cluster.provider "azure" }}
+              readinessProbe:
+                failureThreshold: 20
+            {{- end }}
+          - name: istio-ingressgateway-auth
+            enabled: true
+            label:
+              istio: ingressgateway-auth
+              app: ingressgateway-auth
+            k8s:
+              service:
+                type: ClusterIP
+                ports:
+                - port: 15020
+                  name: status-port
+                - port: 80
+                  name: http2
+                - port: 443
+                  name: https
             {{- if eq $v.cluster.provider "azure" }}
             k8s:
               readinessProbe:
@@ -56,8 +85,8 @@ resources:
           dashboard:
             auth:
               strategy: anonymous
-            jaegerURL: https://apps.{{ $domain }}/tracing
-            grafanaURL: https://apps.{{ $domain }}/grafana-istio
+            jaegerURL: https://apps.{{ $domain }}/tracing/
+            grafanaURL: https://apps.{{ $domain }}/grafana-istio/
         gateways:
           istio-ingressgateway:
             sds:
@@ -81,10 +110,15 @@ resources:
             {{- with ($ig | getOrNil "proxy.resources") }}
             resources: {{- $ig.proxy.resources | toYaml | nindent 14 }}
             {{- end }}
+            autoInject: enabled
+          useMCP: false
         grafana:
           env:
             GF_SERVER_ROOT_URL: /grafana-istio/
           contextPath: '/grafana-istio'
+        meshConfig:
+          enableAutoMtls: true
+          accessLogFile: "/dev/stdout"
         prometheus:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:

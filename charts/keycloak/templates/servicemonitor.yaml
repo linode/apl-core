@@ -12,6 +12,9 @@ spec:
     matchLabels:
       {{- include "keycloak.selectorLabels" . | nindent 6 }}
       service: http
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
   endpoints:
     - port: http
       path: {{ .Values.prometheus.operator.serviceMonitor.path }}
