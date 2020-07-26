@@ -12,8 +12,9 @@ spec:
     matchLabels:
       istio: ingressgateway-auth
   jwtRules:
-    - issuer: http://keycloak-http.keycloak/realms/master
-      jwksUri: http://keycloak-http.keycloak/realms/master/protocol/openid-connect/certs
+    - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
+      jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
+      forwardOriginalToken: true
       # audiences:
       #   - otomi
 ---

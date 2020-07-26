@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $o := $v.oidc }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $realm := $k | get "realm" "master" }}
 {{- $provider := index $o $o.provider }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 image:
@@ -13,13 +14,8 @@ config:
   # clientID: oidc-auth-client
   # clientSecret: bladibladi
   # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
-  {{- if eq $o.provider "keycloak" }}
-  clientID: {{ $k.oidc.clientID }}
-  clientSecret: {{ $k.oidc.clientSecret }}
-  {{- else }}
   clientID: {{ $o.clientID }}
   clientSecret: {{ $o.clientSecret }}
-  {{- end }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
 # get all public domains that don't have the cluster domain as root
@@ -40,8 +36,8 @@ config:
 
 extraArgs:
   # oidc, google, azure, github
-  # provider: oidc
-  provider: {{ $o.provider }}
+  provider: oidc
+  # provider: {{ $o.provider }}
   whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
@@ -55,24 +51,26 @@ extraArgs:
   reverse-proxy: true
   cookie-refresh: 0h60m0s
   pass-authorization-header: true
-  pass-basic-auth: true
+  # pass-basic-auth: true
   skip-auth-regex: /healthz,/metrics,/api/datasources,/api/dashboards,/api/topology,/api/authenticate,/hook
   silence-ping-logging: true
   # exclude-logging-paths: /ping
   set-authorization-header: true
-  set-xauthrequest: true
+  # set-xauthrequest: true
   ###
   # Provider specifics:
   ###
   {{- if eq $o.provider "oidc" }}
-  oidc-issuer-url: {{ $provider | get "issuer" }}
+  oidc-issuer-url: {{ $provider | getOrNil "issuer" | default (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) }}
+  insecure-oidc-allow-unverified-email: true
   {{- else if eq $o.provider "azure" }}
   azure-tenant: {{ $o.azure.tenantID }}
   {{- else if eq $o.provider "keycloak" }}
-  {{- $realm := $k | get "realm" "master" }}
   login-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
   redeem-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
+  # redeem-url: http://keycloak-http.keycloak/realms/{{ $realm }}/protocol/openid-connect/token
   validate-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+  # validate-url: http://keycloak-http.keycloak/realms/{{ $realm }}/protocol/openid-connect/userinfo
   {{- else if eq $o.provider "github" }}
   github-org: {{ $o | getOrNil "github.org" }}
   {{- end }}

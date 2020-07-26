@@ -31,7 +31,6 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- $isShared := $s.isShared | default false }}
 {{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.cluster.domain $.domain))) }}
-{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) */}}
 {{- if not $isApps }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = (merge $routes (dict $domain (hasKey $s "paths" | ternary $s.paths list))) }}
@@ -107,6 +106,7 @@ metadata:
       # TODO: remove once we have groups support via oidc
       add_header Auth-Group "{{ .teamId }}";
       proxy_set_header Auth-Group "{{ .teamId }}";
+      proxy_set_header Authorization $http_authorization;      
   {{- end }}
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
@@ -126,6 +126,7 @@ spec:
             serviceName: istio-ingressgateway-auth
             servicePort: 80
           path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
+        # fix for tracing not having a trailing slash:
         - backend:
             serviceName: istio-ingressgateway-auth
             servicePort: 80

@@ -91,12 +91,13 @@ spec:
   action: ALLOW
   rules:
     - {}
-    # - from:
+    # - from: 
     #     - source:
-    #         principals: ['*']
-      # when:
-      #   - key: request.auth.claims[groups]
-      #     values: [{{ if not (eq $v.teamId "team-admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
+    #         requestPrincipals: ['*']
+    #         # requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
+    # - when:
+    #     - key: request.auth.claims[groups]
+    #       values: [{{ if not (eq $v.teamId "team-admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
     #   to:
     #     - operation:
     #         {{- with $s.paths }}
