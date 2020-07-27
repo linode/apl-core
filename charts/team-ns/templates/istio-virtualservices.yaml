@@ -78,41 +78,48 @@ spec:
               set:
                 X-Forwarded-Proto: https
 ---
-{{- if not (hasKey $s "isPublic") }}
+{{- if and (not (hasKey $s "isPublic")) (hasKey $s "authz") }}
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: {{ $vsName }}
+  namespace: {{ $ns }}
+spec:
+  selector:
+    matchLabels: {{- $s.authz.workload | toYaml | nindent 6 }}
+  jwtRules:
+    - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
+      jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
+      # forwardOriginalToken: true
+      # audiences:
+      #   - otomi
+---    
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: {{ $vsName }}
-  namespace: istio-system
+  namespace: {{ $ns }}
 spec:
   selector:
-    matchLabels:
-      istio: ingressgateway-auth
+    matchLabels: {{- $s.authz.workload | toYaml | nindent 6 }}
   action: ALLOW
   rules:
-    - {}
-    # - from: 
-    #     - source:
-    #         requestPrincipals: ['*']
-    #         # requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
-    # - when:
-    #     - key: request.auth.claims[groups]
-    #       values: [{{ if not (eq $v.teamId "team-admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
-    #   to:
-    #     - operation:
-    #         {{- with $s.paths }}
-    #         paths:
-    #           {{- range $path := $s.paths }}
-    #           - {{ $path }}
-    #           {{- end }}
-    #         {{- end }}
-    #         hosts: [{{ $s.name }}.{{ $v.domain }}]
-    # - to:
-    #   - operation:
-    #       notPaths: [/healthz,/metrics]
-    #   from:
-    #     - source:
-    #         requestPrincipals: ['*']
+    - from: 
+        - source:
+            requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
+      when:
+        - key: request.auth.claims[groups]
+          values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
+      to:
+        - operation:
+            {{- with $s.paths }}
+            paths:
+              {{- range $path := $s.paths }}
+              - {{ $path }}
+              {{- end }}
+            {{- end }}
+            hosts: [{{ $s.name }}.{{ $v.domain }}]
+            notPaths: [/healthz,/metrics{{ if $s.authz.excludePaths }},{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}{{ end }}]
 ---
 {{- end }}
 {{- end }}

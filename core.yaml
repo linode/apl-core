@@ -33,6 +33,10 @@ services:
     isShared: true
     ownHost: true
     paths: [/]
+    authz:
+      workload:
+        app: harbor
+        component: portal
   - name: harbor
     svc: harbor-harbor-core
     namespace: harbor
@@ -60,9 +64,20 @@ services:
     svc: otomi-api
     hide: true
     paths: [/api/]
+    authz:
+      workload:
+        app.kubernetes.io/name: otomi-api
+      excludePaths:
+        - /v1/readiness
   - name: otomi
     namespace: shared
     svc: otomi-web
+    authz:
+      workload:
+        app.kubernetes.io/name: otomi-web
+      excludePaths:
+        # todo: set to /healthz
+        - /
   - name: loki-private
     svc: loki-headless
     namespace: monitoring

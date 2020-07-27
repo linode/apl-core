@@ -210,12 +210,13 @@ grafana:
       oauth_auto_login: true # false = so we can login with admin / bladibla
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
-      scopes: openid
+      scopes: openid profile email
       # auth_url: {{ $v.oidc.authUrl }}
       auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
       # token_url: {{ $v.oidc.tokenUrl }}
       token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
-      role_attribute_path: contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+      api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+      role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
     log:
       level: debug
     server:
@@ -223,7 +224,7 @@ grafana:
     users:
       allow_sign_up: false
       auto_assign_org: true
-      auto_assign_org_role: Admin
+      auto_assign_org_role: Viewer
 
 kube-state-metrics:
   # image:

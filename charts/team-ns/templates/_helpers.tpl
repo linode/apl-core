@@ -92,6 +92,7 @@ metadata:
   {{- end }}
 {{- end }}
 {{- if .hasAuth }}
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .cluster.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end }}
@@ -102,11 +103,8 @@ metadata:
       rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
   {{- if .hasAuth }}
-      # set team header
       # TODO: remove once we have groups support via oidc
-      add_header Auth-Group "{{ .teamId }}";
       proxy_set_header Auth-Group "{{ .teamId }}";
-      proxy_set_header Authorization $http_authorization;      
   {{- end }}
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
