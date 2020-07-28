@@ -210,7 +210,7 @@ grafana:
       oauth_auto_login: true # false = so we can login with admin / bladibla
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
-      scopes: openid profile email
+      scopes: openid
       # auth_url: {{ $v.oidc.authUrl }}
       auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
       # token_url: {{ $v.oidc.tokenUrl }}

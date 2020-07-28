@@ -32,7 +32,7 @@ config:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- $domainList := tpl $joinTpl (append $domains $v.cluster.domain) }}
+{{- $domainList := tpl $joinTpl (append $domains (printf ".%s" $v.cluster.domain)) }}
 
 extraArgs:
   # oidc, google, azure, github

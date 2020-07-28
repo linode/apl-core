@@ -7,7 +7,6 @@
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
-{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $v.domain)) */}}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithPipe" $s.paths)) "")) }}
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -26,33 +25,31 @@ spec:
   {{- end }}
   hosts:
   - {{ $domain }}
-  {{- if $s.tlsPass }}
-  tls:
-  {{- else }}
   http:
-  {{- end }}
+    - match:
+      - uri:
+          prefix: /logout-otomi
+      redirect:
+        authority: auth.{{ $v.cluster.domain }}
+        uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "apps.%s/otomi/" $v.domain }}
+      # route:
+      #   - destination:
+      #       host: istio-ingressgateway.istio-system.svc.cluster.local
     -
-    {{- if $s.tlsPass }}
+    {{- if hasKey $s "paths" }}
       match:
-        - port: 443
-          sniHosts:
-            - {{ $domain }}
-    {{- else }}
-      {{- if and (hasKey $s "paths") (not $s.tlsPass) }}
-      match:
-        {{- range $path := $s.paths }}
-          {{- if eq $path "/" }}
+      {{- range $path := $s.paths }}
+        {{- if eq $path "/" }}
         - uri:
             prefix: '/'
-          {{- else }}
+        {{- else }}
         - uri:
             prefix: '{{ $path }}'        
-          {{- end }}
         {{- end }}
-        {{- if not (hasKey $s "forwardPath") }}
+      {{- end }}
+      {{- if not (hasKey $s "forwardPath") }}
       rewrite:
         uri: /
-        {{- end }}
       {{- end }}
     {{- end }}
     {{- if hasKey $s "ksvc" }}
@@ -70,7 +67,7 @@ spec:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
     {{- end }}
             port:
-              number: {{ $s.port | default (hasKey $s "tlsPass" | ternary 443 80) }}
+              number: {{ $s.port | default 80 }}
       # fix for istio (=envoy) incorrectly setting proto to http
       # (@see https://github.com/istio/istio/issues/7964):
           headers:
@@ -90,9 +87,9 @@ spec:
   jwtRules:
     - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
       jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
-      # forwardOriginalToken: true
-      # audiences:
-      #   - otomi
+      # forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default true }}
+      audiences:
+        - otomi
 ---    
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -104,7 +101,9 @@ spec:
     matchLabels: {{- $s.authz.workload | toYaml | nindent 6 }}
   action: ALLOW
   rules:
-    - from: 
+    -
+      # {}
+      from: 
         - source:
             requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
       when:
@@ -112,14 +111,19 @@ spec:
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
       to:
         - operation:
-            {{- with $s.paths }}
+            {{- with $s.authz.paths }}
             paths:
-              {{- range $path := $s.paths }}
+              {{- range $path := . }}
               - {{ $path }}
               {{- end }}
             {{- end }}
             hosts: [{{ $s.name }}.{{ $v.domain }}]
-            notPaths: [/healthz,/metrics{{ if $s.authz.excludePaths }},{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}{{ end }}]
+            {{- if $s.authz.excludePaths }}
+            notPaths: [{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}]
+            {{- end }}
+    - from:
+        - source:
+            notRequestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
 ---
 {{- end }}
 {{- end }}
