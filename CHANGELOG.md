@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.66](https://github.com/redkubes/otomi-stack/compare/v0.10.65...v0.10.66) (2020-07-28)
+
+
+### Features
+
+* **(add keycloak chart):** keycloak chart stack service ([7e4355b](https://github.com/redkubes/otomi-stack/commit/7e4355bef7a00d2b7c411c5bb4dc80af8700b988))
+
+
+### Bug Fixes
+
+* auth proxy [ci skip] ([27e4828](https://github.com/redkubes/otomi-stack/commit/27e4828874b964ff37e9de67f836757dffa7d120))
+* gateway domains ([c57df11](https://github.com/redkubes/otomi-stack/commit/c57df11e11fd53bd43aabc1242a17e25f684a59c))
+* harbor secret ([a71d925](https://github.com/redkubes/otomi-stack/commit/a71d925d4ddd79ac539851d07762efcf532933b6))
+* keycloak, groups, logout [ci skip] ([61e4422](https://github.com/redkubes/otomi-stack/commit/61e4422a5ae5702fd8c9c9098da989830f95d20e))
+* oauth proxy ([d778198](https://github.com/redkubes/otomi-stack/commit/d7781986b0e385cd009bd830a6eb843293dbae9f))
+
+
+### Code Refactoring
+
+* merge master ([3ea5f78](https://github.com/redkubes/otomi-stack/commit/3ea5f78db51309b6fab5c465dd70bc607c8a54e0))
+* **add kk alias:** add kk alias for keycloak ns commands ([ee50c44](https://github.com/redkubes/otomi-stack/commit/ee50c445fedc27d12e0415569a18485006c99661))
+* **expose keycloak through public ingress:** add isShared:true ([9b75288](https://github.com/redkubes/otomi-stack/commit/9b75288c51cde58565afe161a3d53297f15238c7))
+* **keycloak-http svc:** keycloak http service exposed on port 80 ([adeac7d](https://github.com/redkubes/otomi-stack/commit/adeac7de235661954ea04f95f0fd57987ae7ecd8))
+
+
+### Feature Improvements
+
+* upgraded prometheus-operator, knative ([42a6feb](https://github.com/redkubes/otomi-stack/commit/42a6feb420660601d891d1ff1b3ff04447ffe458))
+
 ### [0.10.65](https://github.com/redkubes/otomi-stack/compare/v0.10.64...v0.10.65) (2020-07-22)
 
 

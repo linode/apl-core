@@ -1,0 +1,15 @@
+keycloak:
+  replicas: 2
+  password: keycloak
+
+  persistence:
+    deployPostgres: true
+    dbVendor: postgres
+
+  jgroups:
+    exposePort: false
+
+postgresql:
+  postgresqlPassword: keycloak
+  persistence:
+    enabled: false

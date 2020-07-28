@@ -16,6 +16,35 @@ resources:
         ingressGateways:
           - name: istio-ingressgateway
             enabled: true
+            k8s:
+              service:
+                type: ClusterIP
+                ports:
+                - port: 15020
+                  name: status-port
+                - port: 80
+                  name: http2
+                - port: 443
+                  name: https
+            {{- if eq $v.cluster.provider "azure" }}
+              readinessProbe:
+                failureThreshold: 20
+            {{- end }}
+          - name: istio-ingressgateway-auth
+            enabled: true
+            label:
+              istio: ingressgateway-auth
+              app: ingressgateway-auth
+            k8s:
+              service:
+                type: ClusterIP
+                ports:
+                - port: 15020
+                  name: status-port
+                - port: 80
+                  name: http2
+                - port: 443
+                  name: https
             {{- if eq $v.cluster.provider "azure" }}
             k8s:
               readinessProbe:
@@ -56,8 +85,8 @@ resources:
           dashboard:
             auth:
               strategy: anonymous
-            jaegerURL: https://apps.{{ $domain }}/tracing
-            grafanaURL: https://apps.{{ $domain }}/grafana-istio
+            jaegerURL: https://apps.{{ $domain }}/tracing/
+            grafanaURL: https://apps.{{ $domain }}/grafana-istio/
         gateways:
           istio-ingressgateway:
             sds:
@@ -81,14 +110,55 @@ resources:
             {{- with ($ig | getOrNil "proxy.resources") }}
             resources: {{- $ig.proxy.resources | toYaml | nindent 14 }}
             {{- end }}
+            autoInject: enabled
+          useMCP: false
         grafana:
           env:
             GF_SERVER_ROOT_URL: /grafana-istio/
           contextPath: '/grafana-istio'
+        meshConfig:
+          enableAutoMtls: true
+          accessLogFile: "/dev/stdout"
         prometheus:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
         tracing:
           contextPath: '/tracing'
-                
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: EnvoyFilter
+    metadata:
+      name: authn-redirect-filter
+      namespace: istio-system
+    spec:
+      workloadSelectors:
+        labels:
+          istio: ingressgateway-auth
+      configPatches:
+        - applyTo: HTTP_FILTER
+          match:
+            context: SIDECAR_INBOUND
+            listener:
+              portNumber: 80
+              filterChain:
+                filter:
+                  name: 'envoy.http_connection_manager'
+                  subFilter:
+                    name: 'envoy.router'
+          patch:
+            operation: INSERT_BEFORE
+            value:
+              name: envoy.lua
+              typed_config:
+                '@type': 'type.googleapis.com/envoy.config.filter.http.lua.v2.Lua'
+                inlineCode: |
+                  function envoy_on_response(response_handle)
+                    local status = response_handle:headers():get(":status")
+                    if status == "403" then
+                      local oauth_host = "https://auth.{{ $v.cluster.domain }}/oauth2/start?rd=/oauth2/redirect/"
+                      local redirect_url = "https://auth.{{ $v.cluster.domain }}/oauth/sign_in"
+                      response_handle:logWarn("Caught 403 Unauthorized! Redirecting to: "..redirect_url)
+                      response_handle:headers():replace(":status", 302)
+                      response_handle:headers():replace("location", redirect_url)
+                    end
+                  end

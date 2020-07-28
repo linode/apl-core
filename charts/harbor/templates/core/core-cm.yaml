@@ -51,7 +51,6 @@ data:
   PORTAL_URL: "{{ template "harbor.portalURL" . }}"
   REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
-  CSRF_KEY: "{{ randAlphaNum 32 }}"
   {{- if .Values.uaaSecretName }}
   UAA_CA_ROOT: "/etc/core/auth-ca/auth-ca.crt"
   {{- end }}

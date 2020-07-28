@@ -14,7 +14,9 @@ defaultBackend:
     omitClusterIP: true
 
 controller:
+  {{- with ($n | get "resources" dict) }}
   resources: {{- $n.resources | toYaml | nindent 4 }}
+  {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   minAvailable: 2

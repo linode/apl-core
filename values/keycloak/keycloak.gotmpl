@@ -1,0 +1,37 @@
+{{- $v := .Environment.Values }}
+{{- $k := $v | get "charts.keycloak" dict }}
+{{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
+keycloak:
+  username: keycloak
+  password: "D33pLe@rn"
+  basepath: ""
+  persistence:
+    dbVendor: {{ $dbVendor }}
+    dbHost: {{ $k | getOrNil "persistence.dbHost" }}
+    deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
+
+postgresql:
+  postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
+  postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
+  postgresqlDatabase: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
+  persistence:
+    enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: po-prometheus
+prometheus:
+  operator:
+    enabled: true
+    serviceMonitor:
+      namespace: keycloak
+      # selector:
+      #   prometheus: po-prometheus
+      #   release: prometheus-operator
+      path: /realms/master/metrics
+      
+test:
+  enabled: false
+

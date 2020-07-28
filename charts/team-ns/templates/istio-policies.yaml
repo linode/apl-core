@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 {{- $ := . }}
+{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 {{- range $s := $v.services }}
 {{- if hasKey $s "mtls" }}
 {{- if or (hasKey $s.mtls "gatewayDisabled") (hasKey $s.mtls "policyMode") }}
@@ -8,18 +8,17 @@
 {{- $mode := (index $s.mtls "policyMode" | default "permissive") }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.name) $s.name) }}
-apiVersion: authentication.istio.io/v1alpha1
-kind: Policy
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
 metadata:
   name: team-{{ $v.teamId }}-{{ $s.name }}-{{ $mode }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
-  peers:
-    - mtls:
-        mode: {{ $mode | upper }}
-  targets:
-    - name: {{ $svc }}.{{ $ns }}.svc.cluster.local
----    
+  mtls:
+    mode: {{ $mode | upper }}
+  selector:
+    matchLabels: {{- toYaml $s.workloadSelector | nindent 6 }}
+---
 {{- end }}
 {{- end }}
 {{- end }}
