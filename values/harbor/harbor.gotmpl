@@ -11,6 +11,7 @@ nameOverride: harbor
 fullnameOverride: harbor
 notary:
   enabled: false
+  secretName: {{ $notarySecretName }}
 expose:
   type: clusterIP
   tls:
@@ -19,7 +20,11 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
+  xsrfKey: UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd 
+  secret: 9gfm2350fg3fg3m8
   secretName: {{ $harborSecretName }}
+jobservice:
+  secret: mnf9adfgjwr23m4d
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -100,6 +105,7 @@ proxy:
     - clair
 
 registry:
+  secret: q1g9gwm35g8k458b
   registry:
     image:
       repository: goharbor/registry-photon

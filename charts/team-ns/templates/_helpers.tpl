@@ -31,7 +31,6 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- $isShared := $s.isShared | default false }}
 {{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.cluster.domain $.domain))) }}
-{{/*- $domain := (index $s "domain" | default (printf "%s.%s" $s.name $.domain)) */}}
 {{- if not $isApps }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = (merge $routes (dict $domain (hasKey $s "paths" | ternary $s.paths list))) }}
@@ -93,6 +92,7 @@ metadata:
   {{- end }}
 {{- end }}
 {{- if .hasAuth }}
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .cluster.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end }}
@@ -100,11 +100,10 @@ metadata:
     nginx.ingress.kubernetes.io/configuration-snippet: |
   {{- if .isApps }}
       rewrite ^/$ /otomi/ permanent;
+      rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
   {{- if .hasAuth }}
-      # set team header
       # TODO: remove once we have groups support via oidc
-      add_header Auth-Group "{{ .teamId }}";
       proxy_set_header Auth-Group "{{ .teamId }}";
   {{- end }}
 {{- end }}
@@ -118,13 +117,18 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: istio-ingressgateway
+            serviceName: istio-ingressgateway-auth
             servicePort: 80
           path: /
         - backend:
-            serviceName: istio-ingressgateway
+            serviceName: istio-ingressgateway-auth
             servicePort: 80
           path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
+        # fix for tracing not having a trailing slash:
+        - backend:
+            serviceName: istio-ingressgateway-auth
+            servicePort: 80
+          path: /tracing
 {{- else }}
   {{- if and (not .hasAuth) (eq .provider "nginx") }}
     - host: {{ $appsDomain }}
@@ -154,13 +158,13 @@ spec:
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}
           - backend:
-              serviceName: istio-ingressgateway
+              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
               servicePort: 80
             path: {{ $path }}
         {{- end }}
       {{- else }}
           - backend:
-              serviceName: istio-ingressgateway
+              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
               servicePort: 80
       {{- end }}
     {{- end }}
@@ -168,11 +172,6 @@ spec:
 {{- end }}
 {{- if $internetFacing }}
   tls:
-  {{- if .isApps }}
-    - hosts:
-      - {{ $appsDomain }}
-      secretName: {{ $appsDomain | replace "." "-" }}
-  {{- end }}
   {{- range $domain, $paths := $routes }}
     - hosts:
         - {{ $domain }}
