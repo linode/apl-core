@@ -28,7 +28,7 @@ spec:
   http:
     - match:
       - uri:
-          prefix: /logout-otomi
+          prefix: /otomi/logout
       redirect:
         authority: auth.{{ $v.cluster.domain }}
         uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "apps.%s/otomi/" $v.domain }}
