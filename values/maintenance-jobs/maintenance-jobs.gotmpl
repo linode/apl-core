@@ -1,34 +1,40 @@
-{{- $teamNames := keys .Environment.Values.teamConfig }}
+{{- $v := .Environment.Values }}
+{{- $teamNames := keys $v.teamConfig }}
 {{- $c := $v.charts }}
+{{- $isHarbor := $c | get "harbor.enabled" false -}}
+{{- $oidc := $c.keycloak.oidc -}}
+{{- $imageTag := $c | get "otomi-api.image.tag" -}} 
+{{- $authUrl := "https://keycloak.{{ $v.cluster.domain }}/" -}}
 
-jobs:
-{{ if  $c | get "harbor.enabled" false }}
-  - name: harbor-init
-    description: Configure OIDC as a primary auhentication method 
+
+resources:
+{{ if $isHarbor }}
+  - name: "harborOidc"
+    description: Configure OIDC as a primary auhentication method
     cmd: "npm run tasks:harbor-init"
-    image: {{ $c.otomi-api.image.tag }}
+    image: {{ $imageTag }}
     secret:
-      HARBOR_PASSWORD:  {{ $c.harbor.adminPassowrd }}
+      HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
       HARBOR_USER: {{ $c.harbor.adminUser }}
-      OIDC_CLIENT_ID: {{ $c.oidc.clientSecret }}
-      OIDC_CLIENT_SECRET: {{ $c.oidc.clientID }}
+      OIDC_CLIENT_ID: {{ $oidc.clientSecret }}
+      OIDC_CLIENT_SECRET: {{ $oidc.clientID }}
     configmap:
-      OIDC_ENDPOINT: {{ $c.oidc.authUrl }}
+      OIDC_ENDPOINT: {{ $authUrl }}
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
-      OIDC_SCOPE: {{ $c.oidc.scope }}
+      OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: 'false'
   - name: harbor
     description: Populate teams to harbor projects
-    labels: {{ .labels }}
     cmd: "npm run ttasks:harbor"
-    labels: 
-    image: {{ $c.otomi-api.image.tag }}
+    image: {{ $imageTag }}
     secret:
-      HARBOR_PASSWORD:  {{ $c.harbor.adminPassowrd }}
+      HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
       HARBOR_USER: admin
     configmap:
       HARBOR_BASE_URL: 'harbor-harbor-core.harbor.cluster.local'
-      TEAM_NAMES: {{ mustToJson $teamNames }}
+      TEAM_NAMES: {{ $teamNames | toJson }}
       TEAM_ADMIN: "team-admin"
+{{ else }}
+  []
 {{ end }}

@@ -1,5 +1,6 @@
+{{- $v := .Environment.Values }}
 
-{{ range .jobs }}
+{{ range $v.jobs }}
 ---
 apiVersion: v1
 kind: ConfigMap
