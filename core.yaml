@@ -118,6 +118,10 @@ services:
     svc: drone
     namespace: team-admin
     ownHost: true
+    authz:
+      workload:
+        app: drone
+        component: server
 
 proxies:
   - name: drone

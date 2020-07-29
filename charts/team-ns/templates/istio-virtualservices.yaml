@@ -28,7 +28,7 @@ spec:
   http:
     - match:
       - uri:
-          prefix: /otomi/logout
+          prefix: /logout-otomi
       redirect:
         authority: auth.{{ $v.cluster.domain }}
         uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "apps.%s/otomi/" $v.domain }}
@@ -87,7 +87,7 @@ spec:
   jwtRules:
     - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
       jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
-      # forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default true }}
+      forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
       audiences:
         - otomi
 ---    
