@@ -150,8 +150,8 @@ teamConfig:
       hasPrefix: true
       authz:
         workload:
-          app.kubernetes.io/instance: prometheus-operator
-          app.kubernetes.io/name: po-grafana
+          app.kubernetes.io/instance: prometheus-__TEAM
+          app.kubernetes.io/name: __TEAM-po-grafana
     - name: prometheus
       svc: po-prometheus
       hasPrefix: true
