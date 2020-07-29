@@ -67,7 +67,21 @@ tolerations: []
 
 affinity: {}
 
-env: {}
+secrets:
+  GIT_USER: 
+  GIT_EMAIL:
+  GIT_PASSWORD:
+  OIDC_CLIENT_SECRET:
+
+env:
+  GIT_REPO_URL:
+  GIT_BRANCH:
+  GIT_LOCAL_PATH: /tmp/otomi-stack
+  CLUSTER_ID:
+  CLUSTER_NAME:
+  CLUSTER_APISERVER:
+  # DISABLE_SYNC: true
+  ENV_DIR: /tmp/otomi-stack
 
 core: {}
 
@@ -89,5 +103,5 @@ tools:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
-  env:
+  secrets:
     GCLOUD_SERVICE_KEY: ''
