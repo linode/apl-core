@@ -108,7 +108,7 @@ spec:
             requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
       when:
         - key: request.auth.claims[groups]
-          values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin]
+          values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
       to:
         - operation:
             {{- with $s.authz.paths }}
