@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.72](https://github.com/redkubes/otomi-stack/compare/v0.10.71...v0.10.72) (2020-07-29)
+
+
+### Bug Fixes
+
+* missing httpbin chart [ci skip] ([2b58a9c](https://github.com/redkubes/otomi-stack/commit/2b58a9cc89d3760c9d2925696442858ab5eb1c44))
+* missing httpbin chart [ci skip] ([c2a778b](https://github.com/redkubes/otomi-stack/commit/c2a778b0120537230789845ff563655781b0891d))
+
+
+### Feature Improvements
+
+* added OIDC_CLIENT_SECRET for api [ci skip] ([25d932a](https://github.com/redkubes/otomi-stack/commit/25d932a286f3fa858d42e21889f1097f36086cdc))
+
 ### [0.10.71](https://github.com/redkubes/otomi-stack/compare/v0.10.70...v0.10.71) (2020-07-29)
 
 
