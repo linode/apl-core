@@ -63,6 +63,7 @@ services:
     namespace: shared
     svc: otomi-web
     authz:
+      forwardOriginalToken: true
       workload:
         app.kubernetes.io/name: otomi-web
   - name: loki
@@ -139,6 +140,7 @@ teamConfig:
       namespace: shared
       svc: otomi-web
       authz:
+        forwardOriginalToken: true
         workload:
           app.kubernetes.io/name: otomi-web
     - name: loki
