@@ -47,7 +47,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end }}
 {{- $internetFacing := or (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
-{{- if $internetFacing }}
+{{- if and $internetFacing .isApps }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}

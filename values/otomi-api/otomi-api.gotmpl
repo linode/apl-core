@@ -11,14 +11,17 @@ image:
   tag: {{ $o.image.tag }}
   pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
-git:
-  repoUrl: {{ $o.git.repoUrl }}
-  localPath: /tmp/otomi-stack
-  user: {{ $o.git.user }}
-  email: {{ $o.git.email }}
-  password: {{ $o.git.password }}
+secrets:
+  GIT_USER: {{ $o.git.user }}
+  GIT_EMAIL: {{ $o.git.email }}
+  GIT_PASSWORD: {{ $o.git.password }}
+  GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
+  OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
+  GIT_REPO_URL: {{ $o.git.repoUrl }}
+  GIT_BRANCH: {{ $o.git.branch | default "master" }}
+  GIT_LOCAL_PATH: /tmp/otomi-stack
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
@@ -35,6 +38,4 @@ tools:
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
-  env:
-    GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
   

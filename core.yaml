@@ -26,6 +26,11 @@ services:
     svc: keycloak-http
     isShared: true
     isPublic: true
+  - name: httpbin
+    namespace: shared
+    ownHost: true
+    svc: httpbin
+    isShared: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
