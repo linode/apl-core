@@ -76,6 +76,7 @@ spec:
                 X-Forwarded-Proto: https
 ---
 {{- if and (not (hasKey $s "isPublic")) (hasKey $s "authz") }}
+{{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
@@ -83,7 +84,7 @@ metadata:
   namespace: {{ $ns }}
 spec:
   selector:
-    matchLabels: {{- $s.authz.workload | toYaml | nindent 6 }}
+    matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
     - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
       jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
@@ -98,7 +99,7 @@ metadata:
   namespace: {{ $ns }}
 spec:
   selector:
-    matchLabels: {{- $s.authz.workload | toYaml | nindent 6 }}
+    matchLabels: {{ $workload | nindent 6 }}
   action: ALLOW
   rules:
     -
