@@ -1,15 +1,18 @@
 
-{{ range .jobs }}
+{{- $v := .Values }}
+
+{{ range $v.jobs }}
+{{ if .enabled }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ .name }}
-  labels: {{ .labels }}
+  labels: {{- include "maintenance.labels" $ | nindent 4 }}
 spec:
   template:
     metadata:
-      labels: {{ .labels }}
+      labels: {{- include "maintenance.labels" $ | nindent 8 }}
     spec:
       containers:
       - image: {{ .image }}
@@ -22,15 +25,16 @@ spec:
             cpu: 100m
             memory: 128Mi
           envFrom:
+          {{ if .secret }}
           - secretRef:
               name: {{ .name }}
+          {{ end }}
+          {{ if .configmap }}
           - configMapRef:
               name: {{ .name }}
+          {{ end }}
       restartPolicy: OnFailure
   backoffLimit: 3
-  {{ if .onlyOnce }}
-  successfulJobsHistoryLimit: 1
-  {{ else  }}
   successfulJobsHistoryLimit: 0
-  {{ end }}
+{{ end }}
 {{ end }}

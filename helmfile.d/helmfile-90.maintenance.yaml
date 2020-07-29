@@ -5,24 +5,10 @@ bases:
 {{- $v := .Environment.Values }}
 
 releases:
-  - name: maintenance-ingress-azure
-    installed: {{ eq $v.cluster.provider "azure" }}
+  - name: maintenance
+    installed: true
     <<: *maintenance
     values:
-      - namespace: ingress
-        labels: app=ingress-azure
-        schedule: "0 * * * *" # once an hour!
+      - ../values/maintenance/maintenance.gotmpl
       - ../values/default.gotmpl
-  - name: maintenance-jobs
-    namespace: shared
-    installed: true
-    labels: 
-      app: maintenance-jobs
-    chart: ../charts/raw
-    values:
-      - ../values/maintenance-jobs/maintenance-jobs.gotmpl 
-      - ../values/maintenance-jobs/configmap-raw.gotmpl
-      - ../values/maintenance-jobs/secret-raw.gotmpl
-      - ../values/maintenance-jobs/maintenance-jobs-raw.gotmpl
-      - namespace: shared
-        labels: app=maintenance-jobs
+

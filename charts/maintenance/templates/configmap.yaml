@@ -1,0 +1,14 @@
+{{- $v := .Values }}
+
+{{ range $v.jobs }}
+{{ if .enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .name }}
+  labels: {{- include "maintenance.labels" $ | nindent 4 }}
+data:
+{{ toYaml .configmap | indent 2 }}
+{{ end }}
+{{ end }}
