@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 
-{{ range $v.jobs }}
+{{ range concat $v.jobs $v.cronjobs }}
 {{ if and .enabled .configmap }}
 ---
 apiVersion: v1

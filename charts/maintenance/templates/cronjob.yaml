@@ -26,11 +26,11 @@ spec:
                 - |
 {{ toString .script | indent 18 }}
           envFrom:
-          {{ if .secret }}
+          {{- if .secret }}
           - secretRef:
               name: {{ .name }}
           {{ end }}
-          {{ if .configmap }}
+          {{- if .configmap }}
           - configMapRef:
               name: {{ .name }}
           {{ end }}

@@ -24,6 +24,7 @@ jobs:
       HARBOR_USER: {{ $c.harbor.adminUser }}
       OIDC_CLIENT_ID: {{ $keycloak.oidc.clientID }}
       OIDC_CLIENT_SECRET: {{ $keycloak.oidc.clientSecret }}
+    configmap:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
       HARBOR_ADMIN_GROUP_NAME: "team-admin"
       TEAM_NAMES: '{{ $teamNames | toJson }}'

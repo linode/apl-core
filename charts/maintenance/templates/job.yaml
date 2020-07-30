@@ -29,11 +29,11 @@ spec:
             cpu: 100m
             memory: 128Mi
         envFrom:
-        {{ if .secret }}
+        {{- if .secret }}
         - secretRef:
             name: {{ .name }}
         {{ end }}
-        {{ if .configmap }}
+        {{- if .configmap }}
         - configMapRef:
             name: {{ .name }}
         {{ end }}
