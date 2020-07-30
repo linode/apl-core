@@ -81,7 +81,7 @@ persistence:
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
  
  # debug, info, warning, error or fatal
-logLevel: debug
+logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
 harborAdminPassword: '{{ $h.adminPassword }}'

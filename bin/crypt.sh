@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-[[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: Missing 'GCLOUD_SERVICE_KEY' env variable" && exit 2
-
 set -e
 
 ENV_DIR=${ENV_DIR:-./env}
