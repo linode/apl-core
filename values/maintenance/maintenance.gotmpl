@@ -6,18 +6,17 @@
 {{- $teamNames = print "team-" .  | append $teamNames -}}
 {{- end -}}
 
-
 {{- $c := $v.charts }}
 {{- $isHarbor := $c | get "harbor.enabled" false -}}
 {{- $oidc := $c.keycloak.oidc -}}
 {{- $imageTag := $c | get "otomi-api.image.tag" -}} 
 
-
 jobs:
-  - name: "harborOidc"
+  - name: "harbor"
     enabled: {{ $isHarbor }} 
-    description: Configure OIDC as a primary auhentication method
-    script: "npm run tasks:harbor-init"
+    description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+    script: |
+{{ readFile "scripts/harbor.sh" | indent 6 }}
     image: {{ $imageTag }}
     secret:
       HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
@@ -26,24 +25,13 @@ jobs:
       OIDC_CLIENT_SECRET: {{ $oidc.clientID }}
     configmap:
       HARBOR_BASE_URL: "harbor-harbor-core.harbor.cluster.local"
+      HARBOR_ADMIN_GROUP_NAME: "team-admin"
+      TEAM_NAMES: '{{ $teamNames | toJson }}'
       OIDC_ENDPOINT: "https://keycloak.{{ $v.cluster.domain }}/realms/master"
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: 'false'
-  - name: harbor
-    enabled: {{ $isHarbor }}
-    description: Populate teams to harbor projects
-    script: "npm run tasks:harbor"
-    image: {{ $imageTag }}
-    secret:
-      HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
-      HARBOR_USER: {{ $c.harbor.adminUser }}
-    configmap:
-      HARBOR_BASE_URL: "harbor-harbor-core.harbor.cluster.local"
-      HARBOR_ADMIN_GROUP_NAME: "team-admin"
-      TEAM_NAMES: '{{ $teamNames | toJson }}'
-
 
 cronjobs:
   - name: ingress-azure
