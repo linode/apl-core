@@ -17,7 +17,7 @@ jobs:
   - name: "harborOidc"
     enabled: {{ $isHarbor }} 
     description: Configure OIDC as a primary auhentication method
-    cmd: "npm run tasks:harbor-init"
+    script: "npm run tasks:harbor-init"
     image: {{ $imageTag }}
     secret:
       HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
@@ -25,6 +25,7 @@ jobs:
       OIDC_CLIENT_ID: {{ $oidc.clientSecret }}
       OIDC_CLIENT_SECRET: {{ $oidc.clientID }}
     configmap:
+      HARBOR_BASE_URL: "harbor-harbor-core.harbor.cluster.local"
       OIDC_ENDPOINT: "https://keycloak.{{ $v.cluster.domain }}/realms/master"
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
@@ -33,11 +34,11 @@ jobs:
   - name: harbor
     enabled: {{ $isHarbor }}
     description: Populate teams to harbor projects
-    cmd: "npm run ttasks:harbor"
+    script: "npm run tasks:harbor"
     image: {{ $imageTag }}
     secret:
       HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
-      HARBOR_USER: admin
+      HARBOR_USER: {{ $c.harbor.adminUser }}
     configmap:
       HARBOR_BASE_URL: "harbor-harbor-core.harbor.cluster.local"
       HARBOR_ADMIN_GROUP_NAME: "team-admin"
@@ -46,11 +47,10 @@ jobs:
 
 cronjobs:
   - name: ingress-azure
+    enabled: {{ eq $v.cluster.provider "azure" }}
     configmap:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!
-    # enabled: {{ eq $v.cluster.provider "azure" }}
-    enabled: true
     script: |
 {{ readFile "scripts/delete-pod.sh" | indent 6 }}

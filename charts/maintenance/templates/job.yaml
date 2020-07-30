@@ -17,6 +17,10 @@ spec:
       containers:
       - image: {{ .image }}
         name: job-{{ .name }}
+        command: ["bash", "-c"]
+        args:
+          - |
+{{ toString .script | indent 12 }}
         resources:
           limits:
             cpu: 200m
