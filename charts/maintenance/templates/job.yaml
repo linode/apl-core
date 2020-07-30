@@ -15,9 +15,9 @@ spec:
       labels: {{- include "maintenance.labels" $ | nindent 8 }}
     spec:
       containers:
-      - image: {{ .image }}
-        name: job-{{ .name }}
-        command: ["bash", "-c"]
+      - image: "{{ .image }}"
+        name: "{{ .name }}"
+        command: ["sh", "-c"]
         args:
           - |
 {{ toString .script | indent 12 }}
@@ -37,7 +37,7 @@ spec:
         - configMapRef:
             name: {{ .name }}
         {{ end }}
-      restartPolicy: OnFailure
+      restartPolicy: Never
   backoffLimit: 3
   ttlSecondsAfterFinished: 86400
 {{ end }}

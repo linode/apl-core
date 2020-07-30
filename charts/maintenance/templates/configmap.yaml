@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 
 {{ range $v.jobs }}
-{{ if .enabled }}
+{{ if and .enabled .configmap }}
 ---
 apiVersion: v1
 kind: ConfigMap
