@@ -7,7 +7,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .name }}
+  name: {{ join "-" (list .name  uuidv4) | trunc 63 }}
   labels: {{- include "maintenance.labels" $ | nindent 4 }}
 spec:
   template:
@@ -28,17 +28,17 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
-          envFrom:
-          {{ if .secret }}
-          - secretRef:
-              name: {{ .name }}
-          {{ end }}
-          {{ if .configmap }}
-          - configMapRef:
-              name: {{ .name }}
-          {{ end }}
+        envFrom:
+        {{ if .secret }}
+        - secretRef:
+            name: {{ .name }}
+        {{ end }}
+        {{ if .configmap }}
+        - configMapRef:
+            name: {{ .name }}
+        {{ end }}
       restartPolicy: OnFailure
   backoffLimit: 3
-  successfulJobsHistoryLimit: 0
+  ttlSecondsAfterFinished: 86400
 {{ end }}
 {{ end }}
