@@ -1,52 +1,43 @@
 {{- $v := .Values }}
+{{- $ns := .Release.Namespace }}
 {{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
 # collect unique domains for this GW
-{{- $domains := list }}
-{{- $tlsDomains := list }}
+{{- $publicDomains := list }}
+{{- $authDomains := list }}
 {{- range $s := $v.services }}
-{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) }}
+{{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
-{{- if $s.tlsPass }}
-  {{- if not (has $domain $tlsDomains) }}
-    {{- $tlsDomains = (append $tlsDomains $domain) }}
+{{- if $s.isPublic }}
+  {{- if not (has $domain $publicDomains) }}
+    {{- $publicDomains = (append $publicDomains $domain) }}
   {{- end }}
 {{- else }}
-  {{- if not (has $domain $domains) }}
-    {{- $domains = (append $domains $domain) }}
+  {{- if not (has $domain $authDomains) }}
+    {{- $authDomains = (append $authDomains $domain) }}
   {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
-apiVersion: networking.istio.io/v1alpha3
+{{- range $type := (list "public" "auth") }}
+apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: team-{{ $v.teamId }}
-  labels: {{- include "chart-labels" . | nindent 4 }}
+  name: team-{{ $v.teamId }}-{{ $type }}
+  labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   selector:
-    istio: ingressgateway
+    istio: ingressgateway{{ if eq $type "auth" }}-auth{{ end }}
   servers:
   - hosts:
-      - '*.{{ $v.domain }}'
-      {{- range $domain := $domains }}
-      - {{ $domain }}
+      - '{{ $ns }}/*.{{ $v.domain }}'
+      {{- range $domain := (eq $type "public") | ternary $publicDomains $authDomains }}
+      - {{ $ns }}/{{ $domain }}
       {{- end }}
     port:
       name: http
       number: 80
       protocol: HTTP
-  {{- range $domain := $tlsDomains }}
-  - hosts:
-      - {{ $domain }}
-    tls:
-      credentialName: {{ $domain | replace "." "-" }}
-      mode: SIMPLE
-      privateKey: sds
-      serverCertificate: sds
-    port:
-      number: 443
-      name: https-{{ $domain | replace "." "-" }}
-      protocol: HTTPS
-  {{- end }}
+---
+{{- end }}
 {{- end }}

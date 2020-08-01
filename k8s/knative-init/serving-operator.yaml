@@ -43,16 +43,14 @@ spec:
       description: Schema for the knativeservings API
       properties:
         apiVersion:
-          description:
-            'APIVersion defines the versioned schema of this representation of an object. Servers should convert
-            recognized schemas to the latest internal value, and may reject unrecognized values. More info:
-            https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            'Kind is a string value representing the REST resource this object represents. Servers may infer this from
-            the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
-            https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -64,7 +62,8 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
-              description: A means to override the corresponding entries in the upstream configmaps
+              description: A means to override the corresponding entries in the upstream
+                configmaps
               type: object
             knative-ingress-gateway:
               description: A means to override the knative-ingress-gateway
@@ -85,26 +84,24 @@ spec:
                   additionalProperties:
                     type: string
             registry:
-              description:
-                A means to override the corresponding deployment images in the upstream. This affects both
-                apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              description: A means to override the corresponding deployment images
+                in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
               type: object
               properties:
                 default:
-                  description:
-                    The default image reference template to use for all knative images. Takes the form of
-                    example-registry.io/custom/path/${NAME}:custom-tag
+                  description: The default image reference template to use for all
+                    knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
                   type: string
                 override:
-                  description:
-                    A map of a container name or image name to the full image location of the individual knative image.
+                  description: A map of a container name or image name to the full
+                    image location of the individual knative image.
                   type: object
                   additionalProperties:
                     type: string
                 imagePullSecrets:
-                  description:
-                    A list of secrets to be used when pulling the knative images. The secret must be created in the same
-                    namespace as the knative-serving deployments, and not the namespace of this resource.
+                  description: A list of secrets to be used when pulling the knative
+                    images. The secret must be created in the same namespace as the
+                    knative-serving deployments, and not the namespace of this resource.
                   type: array
                   items:
                     type: object
@@ -113,7 +110,8 @@ spec:
                         description: The name of the secret.
                         type: string
             controller-custom-certs:
-              description: Enabling the controller to trust registries with self-signed certificates
+              description: Enabling the controller to trust registries with self-signed
+                certificates
               type: object
               properties:
                 type:
@@ -131,7 +129,8 @@ spec:
               type: object
               properties:
                 replicas:
-                  description: The number of replicas that HA parts of the control plane will be scaled to
+                  description: The number of replicas that HA parts of the control
+                    plane will be scaled to
                   type: integer
                   minimum: 1
             resources:
@@ -178,25 +177,26 @@ spec:
           description: Status defines the observed state of KnativeServing
           properties:
             conditions:
-              description: The latest available observations of a resource's current state.
+              description: The latest available observations of a resource's current
+                state.
               items:
                 properties:
                   lastTransitionTime:
-                    description:
-                      LastTransitionTime is the last time the condition transitioned from one status to another. We use
-                      VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences
-                      (all other things held constant).
+                    description: LastTransitionTime is the last time the condition
+                      transitioned from one status to another. We use VolatileTime
+                      in place of metav1.Time to exclude this from creating equality.Semantic
+                      differences (all other things held constant).
                     type: string
                   message:
-                    description: A human readable message indicating details about the transition.
+                    description: A human readable message indicating details about
+                      the transition.
                     type: string
                   reason:
                     description: The reason for the condition's last transition.
                     type: string
                   severity:
-                    description:
-                      Severity with which to treat failures of this type of condition. When this is not specified, it
-                      defaults to Error.
+                    description: Severity with which to treat failures of this type
+                      of condition. When this is not specified, it defaults to Error.
                     type: string
                   status:
                     description: Status of the condition, one of True, False, Unknown.
@@ -708,3 +708,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: knative-serving-operator
+
+---
+

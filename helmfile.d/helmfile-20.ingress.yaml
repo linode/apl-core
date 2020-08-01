@@ -59,3 +59,4 @@ releases:
       tag: ingress
       pkg: oauth2-proxy
     <<: *raw
+

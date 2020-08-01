@@ -16,25 +16,17 @@ spec:
         app.kubernetes.io/name: {{ include "otomi-api.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
       annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum | trunc 63 }}
         checksum/config: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
         checksum/core: {{ include (print .Template.BasePath "/core-config.yaml") . | sha256sum | trunc 63 }}
     spec:
       serviceAccountName: {{ template "otomi-api.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.env }}
-          env:
-            {{- range $key, $value := . }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
-          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}
@@ -54,8 +46,7 @@ spec:
             httpGet:
               path: /v1/readiness
               port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: repo
               mountPath: /tmp
@@ -63,20 +54,15 @@ spec:
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
         - name: {{ .Chart.Name }}-tools
-          securityContext:
-            {{- toYaml .Values.tools.securityContext | nindent 12 }}
+          securityContext: {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           command: ['sh', '-c', 'bin/server.sh']
-          {{- with .Values.tools.env }}
-          env:
-            - name: ENV_DIR
-              value: /tmp/otomi-stack
-            {{- range $key, $value := . }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
-          {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "otomi-api.fullname" . }}
+            - configMapRef:
+                name: {{ include "otomi-api.fullname" . }}
           ports:
             - name: http
               containerPort: 17771
@@ -89,8 +75,7 @@ spec:
             httpGet:
               path: /
               port: http
-          resources:
-            {{- toYaml .Values.tools.resources | nindent 12 }}
+          resources: {{- toYaml .Values.tools.resources | nindent 12 }}
           volumeMounts:
             - name: repo
               mountPath: /tmp

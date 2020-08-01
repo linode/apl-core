@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
+{{- $k := $v | get "charts.keycloak" dict }}
+{{- $realm := $k | get "realm" "master" }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $domain }}
@@ -194,20 +196,27 @@ grafana:
     portName: http-service
   grafana.ini:
     "auth.anonymous":
-      enabled: true
+      enabled: false
+      # enabled: true
       org_role: Admin
       org_name: Main Org.
     "auth.generic_oauth":
-      enabled: false
+      # enabled: false
+      enabled: true
       name: OAuth
       org_role: Admin
       allow_sign_up: true
+      # allow_sign_up: false
       oauth_auto_login: true # false = so we can login with admin / bladibla
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
-      scopes: openid email name
-      auth_url: {{ $v.oidc.authUrl }}
-      token_url: {{ $v.oidc.tokenUrl }}
+      scopes: openid
+      # auth_url: {{ $v.oidc.authUrl }}
+      auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
+      # token_url: {{ $v.oidc.tokenUrl }}
+      token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
+      api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+      role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
     log:
       level: debug
     server:
@@ -215,7 +224,7 @@ grafana:
     users:
       allow_sign_up: false
       auto_assign_org: true
-      auto_assign_org_role: Admin
+      auto_assign_org_role: Viewer
 
 kube-state-metrics:
   # image:
