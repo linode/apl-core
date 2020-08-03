@@ -16,8 +16,7 @@ jobs:
   - name: "harbor"
     enabled: {{ $isHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    script: |
-{{ readFile "scripts/harbor.sh" | indent 6 }}
+    script: | {{ readFile "scripts/harbor.sh" | nindent 6 }}
     image: {{ $otomiApiImage }}
     secret:
       HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
@@ -41,5 +40,4 @@ cronjobs:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!
-    script: |
-{{ readFile "scripts/delete-pod.sh" | indent 6 }}
+    script: | {{ readFile "scripts/delete-pod.sh" | nindent 6 }}

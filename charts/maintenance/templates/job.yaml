@@ -19,8 +19,7 @@ spec:
         name: "{{ .name }}"
         command: ["sh", "-c"]
         args:
-          - |
-{{ toString .script | indent 12 }}
+          - | {{ toString .script | nindent 12 }}
         resources:
           limits:
             cpu: 200m
@@ -32,11 +31,11 @@ spec:
         {{- if .secret }}
         - secretRef:
             name: {{ .name }}
-        {{ end }}
+        {{- end }}
         {{- if .configmap }}
         - configMapRef:
             name: {{ .name }}
-        {{ end }}
+        {{- end }}
       restartPolicy: Never
   backoffLimit: 3
   ttlSecondsAfterFinished: 86400

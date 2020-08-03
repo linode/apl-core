@@ -23,17 +23,16 @@ spec:
               resources: {{- $v.resources | toYaml | nindent 16 }}
               command: ["bash", "-c"]
               args:
-                - |
-{{ toString .script | indent 18 }}
+                - | {{ toString .script | nindent 18 }}
           envFrom:
           {{- if .secret }}
           - secretRef:
               name: {{ .name }}
-          {{ end }}
+          {{- end }}
           {{- if .configmap }}
           - configMapRef:
               name: {{ .name }}
-          {{ end }}
+          {{- end }}
           restartPolicy: Never
 {{ end }}
 {{ end }}
