@@ -12,11 +12,11 @@
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
 
-jobs:
-  - name: "harbor"
+tasks:
+  harbor:
+    type: job
     enabled: {{ $isHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    script: | {{ readFile "scripts/harbor.sh" | nindent 6 }}
     image: {{ $otomiApiImage }}
     secret:
       HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
@@ -32,12 +32,4 @@ jobs:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: 'false'
-
-cronjobs:
-  - name: ingress-azure
-    enabled: {{ eq $v.cluster.provider "azure" }}
-    configmap:
-      LABELS: "app=ingress-azure"
-      NS: ingress
-    schedule: "0 * * * *" # once an hour!
-    script: | {{ readFile "scripts/delete-pod.sh" | nindent 6 }}
+    script: | {{ readFile "scripts/harbor.sh" | nindent 6 }}

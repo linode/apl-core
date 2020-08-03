@@ -1,13 +1,14 @@
 {{ $v := .Values }}
-{{ range $v.cronjobs }}
-{{ if .enabled }}
+
+{{- range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled (eq $spec.type "cronjob") }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{ .name }}
+  name: {{ $name }}
   labels: {{- include "maintenance.labels" $ | nindent 4 }}
 spec:
-  schedule: "{{ $v.schedule }}"
+  schedule: "{{ $spec.schedule }}"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
@@ -18,20 +19,26 @@ spec:
       template:
         spec:
           containers:
-            - image: otomi/tools:{{ $v.toolsVersion }}
-              name: {{ .name }}
-              resources: {{- $v.resources | toYaml | nindent 16 }}
+            - image: "{{ $spec.image }}"
+              name: {{ $name }}
               command: ["bash", "-c"]
               args:
-                - | {{ toString .script | nindent 18 }}
+                - | {{ toString $spec.script | nindent 18 }}
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
           envFrom:
-          {{- if .secret }}
+          {{- if $spec.secret }}
           - secretRef:
-              name: {{ .name }}
+              name: {{ $name }}
           {{- end }}
-          {{- if .configmap }}
+          {{- if $spec.configmap }}
           - configMapRef:
-              name: {{ .name }}
+              name: {{ $name }}
           {{- end }}
           restartPolicy: Never
 {{ end }}

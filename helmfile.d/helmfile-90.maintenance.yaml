@@ -9,6 +9,7 @@ releases:
     installed: true
     <<: *maintenance
     values:
-      - ../values/maintenance/maintenance.gotmpl
+      - ../values/maintenance/harbor.gotmpl
+      - ../values/maintenance/ingress-azure.gotmpl
       - ../values/default.gotmpl
 

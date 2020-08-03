@@ -1,14 +1,14 @@
 {{- $v := .Values }}
 
-{{ range concat $v.jobs $v.cronjobs }}
-{{ if and .enabled .configmap }}
+{{ range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled $spec.configmap }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .name }}
+  name: {{ $name }}
   labels: {{- include "maintenance.labels" $ | nindent 4 }}
 data:
-{{ toYaml .configmap | indent 2 }}
+{{ toYaml $spec.configmap | indent 2 }}
 {{ end }}
 {{ end }}

@@ -1,13 +1,13 @@
 
 {{- $v := .Values }}
 
-{{ range $v.jobs }}
-{{ if .enabled }}
+{{- range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled (eq $spec.type "job") }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ join "-" (list .name  uuidv4) | trunc 63 }}
+  name: {{ join "-" (list $name  uuidv4) | trunc 63 }}
   labels: {{- include "maintenance.labels" $ | nindent 4 }}
 spec:
   template:
@@ -15,11 +15,11 @@ spec:
       labels: {{- include "maintenance.labels" $ | nindent 8 }}
     spec:
       containers:
-      - image: "{{ .image }}"
-        name: "{{ .name }}"
+      - image: "{{ $spec.image }}"
+        name: "{{ $name }}"
         command: ["sh", "-c"]
         args:
-          - | {{ toString .script | nindent 12 }}
+          - | {{ toString $spec.script | nindent 12 }}
         resources:
           limits:
             cpu: 200m
@@ -28,13 +28,13 @@ spec:
             cpu: 100m
             memory: 128Mi
         envFrom:
-        {{- if .secret }}
+        {{- if $spec.secret }}
         - secretRef:
-            name: {{ .name }}
+            name: {{ $name }}
         {{- end }}
-        {{- if .configmap }}
+        {{- if $spec.configmap }}
         - configMapRef:
-            name: {{ .name }}
+            name: {{ $name }}
         {{- end }}
       restartPolicy: Never
   backoffLimit: 3
