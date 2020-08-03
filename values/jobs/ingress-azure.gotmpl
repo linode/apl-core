@@ -1,0 +1,14 @@
+{{- $v := .Environment.Values }}
+
+tasks:
+  ingress-azure:
+    type: cronjob
+    enabled: {{ eq $v.cluster.provider "azure" }}
+    # enabled: {{ eq $v.cluster.provider "azure" }}
+    image: otomi/tools:{{ $v.toolsVersion }}
+    configmap:
+      LABELS: "app=ingress-azure"
+      NS: ingress
+    schedule: "0 * * * *" # once an hour!
+    script: |
+      {{- readFile "scripts/delete-pod.sh" | nindent 6 }}
