@@ -1,0 +1,46 @@
+{{ $v := .Values }}
+
+{{- range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled (eq $spec.type "cronjob") }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ $name }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+spec:
+  schedule: "{{ $spec.schedule }}"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - image: "{{ $spec.image }}"
+              name: {{ $name }}
+              command: ["bash", "-c"]
+              args:
+                - |
+                  {{- toString $spec.script | nindent 18 }}
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+          envFrom:
+          {{- if $spec.secret }}
+          - secretRef:
+              name: {{ $name }}
+          {{- end }}
+          {{- if $spec.config }}
+          - configMapRef:
+              name: {{ $name }}
+          {{- end }}
+          restartPolicy: Never
+{{ end }}
+{{ end }}

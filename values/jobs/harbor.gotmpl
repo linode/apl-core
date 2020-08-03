@@ -1,0 +1,36 @@
+{{- $v := .Environment.Values }}
+
+{{- $teams := keys $v.teamConfig.teams }}
+{{- $teamNames := list -}}
+{{- range $teams -}}
+{{- $teamNames = print "team-" . | append $teamNames -}}
+{{- end -}}
+
+{{- $c := $v.charts }}
+{{- $isHarbor := $c | get "harbor.enabled" false -}}
+{{- $keycloak := $c.keycloak -}}
+{{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
+{{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
+
+tasks:
+  harbor:
+    type: job
+    enabled: {{ $isHarbor }} 
+    description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+    image: {{ $otomiApiImage }}
+    secret:
+      HARBOR_PASSWORD:  {{ $c.harbor.adminPassword }}
+      HARBOR_USER: admin
+      OIDC_CLIENT_ID: {{ $keycloak.oidc.clientID }}
+      OIDC_CLIENT_SECRET: {{ $keycloak.oidc.clientSecret }}
+    config:
+      HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
+      HARBOR_ADMIN_GROUP_NAME: "team-admin"
+      TEAM_NAMES: '{{ $teamNames | toJson }}'
+      OIDC_ENDPOINT: "https://keycloak.{{ $v.cluster.domain }}/realms/{{ $keycloak.realm }}"
+      OIDC_GROUPS_CLAIM: 'groups'
+      OIDC_NAME: 'keycloak'
+      OIDC_SCOPE: 'openid'
+      OIDC_VERIFY_CERT: 'false'
+    script: |
+      {{- readFile "scripts/harbor.sh" | nindent 6 }}

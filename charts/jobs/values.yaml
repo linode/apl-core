@@ -1,0 +1,19 @@
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+tasks: {}
+  # someTask:
+  #   enabled: true
+  #   config:
+  #     BLA: somebla
+  #   secret:
+  #     DIDA: somedida
+  #   type: job # cronjob
+  #   ttlSecondsAfterFinished: 86400
+  #   schedule: '1 * * * *'
+  #   script: echo "bla"

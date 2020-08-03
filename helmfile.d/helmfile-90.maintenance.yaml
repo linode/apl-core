@@ -5,11 +5,11 @@ bases:
 {{- $v := .Environment.Values }}
 
 releases:
-  - name: maintenance-ingress-azure
-    installed: {{ eq $v.cluster.provider "azure" }}
-    <<: *maintenance
+  - name: jobs
+    installed: true
+    <<: *jobs
     values:
-      - namespace: ingress
-        labels: app=ingress-azure
-        schedule: "0 * * * *" # once an hour!
+      - ../values/jobs/harbor.gotmpl
+      - ../values/jobs/ingress-azure.gotmpl
       - ../values/default.gotmpl
+

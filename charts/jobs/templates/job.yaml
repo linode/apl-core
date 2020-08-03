@@ -1,0 +1,37 @@
+{{- $v := .Values }}
+
+{{- range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled (eq $spec.type "job") }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ join "-" (list $name  uuidv4) | trunc 63 }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels: {{- include "jobs.labels" $ | nindent 8 }}
+    spec:
+      containers:
+      - image: "{{ $spec.image }}"
+        name: "{{ $name }}"
+        command: ["sh", "-c"]
+        args:
+          - |
+            {{- toString $spec.script | nindent 12 }}
+        resources: {{- if $spec.resources}}{{ toYaml $spec.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
+        envFrom:
+        {{- if $spec.secret }}
+        - secretRef:
+            name: {{ $name }}
+        {{- end }}
+        {{- if $spec.config }}
+        - configMapRef:
+            name: {{ $name }}
+        {{- end }}
+      restartPolicy: Never
+  backoffLimit: 3
+  ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
+{{ end }}
+{{ end }}

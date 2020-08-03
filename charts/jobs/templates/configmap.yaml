@@ -1,0 +1,13 @@
+{{- $v := .Values }}
+
+{{ range $name, $spec := $v.tasks }}
+{{ if and $spec.enabled $spec.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+data: {{- toYaml $spec.config | nindent 2 }}
+{{ end }}
+{{ end }}
