@@ -6,7 +6,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: {{ $name }}
-  labels: {{- include "maintenance.labels" $ | nindent 4 }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   schedule: "{{ $spec.schedule }}"
   successfulJobsHistoryLimit: 1
@@ -23,7 +23,8 @@ spec:
               name: {{ $name }}
               command: ["bash", "-c"]
               args:
-                - | {{ toString $spec.script | nindent 18 }}
+                - |
+                  {{- toString $spec.script | nindent 18 }}
               resources:
                 limits:
                   cpu: 200m
@@ -36,7 +37,7 @@ spec:
           - secretRef:
               name: {{ $name }}
           {{- end }}
-          {{- if $spec.configmap }}
+          {{- if $spec.config }}
           - configMapRef:
               name: {{ $name }}
           {{- end }}

@@ -5,11 +5,11 @@ bases:
 {{- $v := .Environment.Values }}
 
 releases:
-  - name: maintenance
+  - name: jobs
     installed: true
-    <<: *maintenance
+    <<: *jobs
     values:
-      - ../values/maintenance/harbor.gotmpl
-      - ../values/maintenance/ingress-azure.gotmpl
+      - ../values/jobs/harbor.gotmpl
+      - ../values/jobs/ingress-azure.gotmpl
       - ../values/default.gotmpl
 
