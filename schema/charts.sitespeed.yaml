@@ -1,0 +1,56 @@
+sitespeed:
+  $id: '#/properties/charts/properties/sitespeed'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    enabled:
+      $id: '#/properties/charts/properties/sitespeed/properties/enabled'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The enabled schema
+      type: boolean
+    pvc:
+      $id: '#/properties/charts/properties/sitespeed/properties/pvc'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        graphite:
+          $id: '#/properties/charts/properties/sitespeed/properties/pvc/properties/graphite'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The graphite schema
+          type: string
+        results:
+          $id: '#/properties/charts/properties/sitespeed/properties/pvc/properties/results'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The results schema
+          type: string
+      required:
+        - graphite
+        - results
+      title: The pvc schema
+      type: object
+    retention:
+      $id: '#/properties/charts/properties/sitespeed/properties/retention'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The retention schema
+      type: string
+    schedule:
+      $id: '#/properties/charts/properties/sitespeed/properties/schedule'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The schedule schema
+      type: string
+  required:
+    - enabled
+    - pvc
+    - retention
+    - schedule
+  title: The sitespeed schema
+  type: object

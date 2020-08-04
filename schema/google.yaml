@@ -1,0 +1,23 @@
+google:
+  $id: '#/properties/google'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    cloudDnsKey:
+      $id: '#/properties/google/properties/cloudDnsKey'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The cloudDnsKey schema
+      type: string
+    projectId:
+      $id: '#/properties/google/properties/projectId'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The projectId schema
+      type: string
+  required:
+    - cloudDnsKey
+    - projectId
+  title: The google schema
+  type: object

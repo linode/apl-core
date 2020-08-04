@@ -1,0 +1,7 @@
+sites:
+  $id: '#/properties/sites'
+  additionalItems: true
+  default: []
+  description: An explanation about the purpose of this instance.
+  title: The sites schema
+  type: array

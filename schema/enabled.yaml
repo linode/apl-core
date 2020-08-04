@@ -1,0 +1,16 @@
+enabled:
+  $id: '#/properties/enabled'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    sitespeed:
+      $id: '#/properties/enabled/properties/sitespeed'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The sitespeed schema
+      type: boolean
+  required:
+    - sitespeed
+  title: The enabled schema
+  type: object

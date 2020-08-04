@@ -1,0 +1,32 @@
+teamConfig:
+  $id: '#/properties/teamConfig'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    services:
+      $id: '#/properties/teamConfig/properties/services'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this instance.
+      items:
+        additionalProperties: true
+        default: {}
+        description: An explanation about the purpose of this instance.
+        $ref: 'file:coreService.yaml#coreService'
+      title: The services schema
+      type: array
+    teams:
+      $id: '#/properties/teamConfig/properties/teams'
+      default: {}
+      description: An explanation about the purpose of this instance.
+      additionalProperties:
+        type: object
+        $ref: 'file:team.yaml#team'
+      title: The teams schema
+      type: object
+  required:
+    - services
+    - teams
+  title: The teamConfig schema
+  type: object

@@ -1,0 +1,16 @@
+redis-shared:
+  $id: '#/properties/charts/properties/redis-shared'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    enabled:
+      $id: '#/properties/charts/properties/redis-shared/properties/enabled'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The enabled schema
+      type: boolean
+  required:
+    - enabled
+  title: The redis-shared schema
+  type: object

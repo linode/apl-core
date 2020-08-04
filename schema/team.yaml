@@ -1,0 +1,48 @@
+team:
+  additionalProperties: true
+  description: An explanation about the purpose of this instance.
+  properties:
+    azure:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/azure'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this
+        instance.
+      required: []
+      title: The azure schema
+      type: object
+    name:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/name'
+      default: ''
+      description: An explanation about the purpose of this
+        instance.
+      title: The name schema
+      type: string
+    password:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/password'
+      default: ''
+      description: An explanation about the purpose of this
+        instance.
+      title: The password schema
+      type: string
+    services:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this
+        instance.
+      items:
+        $ref: 'file:teamServices.yaml#teamServices'
+        $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items'
+        additionalProperties: true
+        default: {}
+        description: An explanation about the purpose of this instance.
+      title: The services schema
+      type: array
+  required:
+    - azure
+    - name
+    - password
+    - services
+  title: The demo schema
+  type: object

@@ -1,0 +1,94 @@
+drone:
+  $id: '#/properties/charts/properties/drone'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    orgsFilter:
+      $id: '#/properties/charts/properties/drone/properties/orgsFilter'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The orgsFilter schema
+      type: string
+    repoFilter:
+      $id: '#/properties/charts/properties/drone/properties/repoFilter'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The repoFilter schema
+      type: string
+    server:
+      $id: '#/properties/charts/properties/drone/properties/server'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        adminUser:
+          $id: '#/properties/charts/properties/drone/properties/server/properties/adminUser'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The adminUser schema
+          type: string
+      required:
+        - adminUser
+      title: The server schema
+      type: object
+    sourceControl:
+      $id: '#/properties/charts/properties/drone/properties/sourceControl'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        github:
+          $id: '#/properties/charts/properties/drone/properties/sourceControl/properties/github'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            clientID:
+              $id: '#/properties/charts/properties/drone/properties/sourceControl/properties/github/properties/clientID'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The clientID schema
+              type: string
+            clientSecretValue:
+              $id: '#/properties/charts/properties/drone/properties/sourceControl/properties/github/properties/clientSecretValue'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The clientSecretValue schema
+              type: string
+            server:
+              $id: '#/properties/charts/properties/drone/properties/sourceControl/properties/github/properties/server'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The server schema
+              type: string
+          required:
+            - clientID
+            - clientSecretValue
+            - server
+          title: The github schema
+          type: object
+        provider:
+          $id: '#/properties/charts/properties/drone/properties/sourceControl/properties/provider'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The provider schema
+          type: string
+      required:
+        - github
+        - provider
+      title: The sourceControl schema
+      type: object
+  required:
+    - orgsFilter
+    - repoFilter
+    - server
+    - sourceControl
+  title: The drone schema
+  type: object

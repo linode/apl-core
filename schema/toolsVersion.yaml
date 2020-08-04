@@ -1,0 +1,6 @@
+toolsVersion:
+  $id: '#/properties/toolsVersion'
+  default: ''
+  description: An explanation about the purpose of this instance.
+  title: The toolsVersion schema
+  type: string

@@ -1,0 +1,42 @@
+k8s:
+  $id: '#/properties/k8s'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    namespaces:
+      $id: '#/properties/k8s/properties/namespaces'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this instance.
+      items:
+        $id: '#/properties/k8s/properties/namespaces/items'
+        additionalProperties: true
+        default: {}
+        description: An explanation about the purpose of this instance.
+        properties:
+          disableIstioInjection:
+            $id: '#/properties/k8s/properties/namespaces/items/properties/disableIstioInjection'
+            default: false
+            description: An explanation about the purpose of this
+              instance.
+            title: The disableIstioInjection schema
+            type: boolean
+          name:
+            $id: '#/properties/k8s/properties/namespaces/items/properties/name'
+            default: ''
+            description: An explanation about the purpose of this
+              instance.
+            title: The name schema
+            type: string
+        required:
+          - disableIstioInjection
+          - name
+        title: The items schema
+        type: object
+      title: The namespaces schema
+      type: array
+  required:
+    - namespaces
+  title: The k8s schema
+  type: object

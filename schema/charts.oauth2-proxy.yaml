@@ -1,0 +1,27 @@
+oauth2-proxy:
+  $id: '#/properties/charts/properties/oauth2-proxy'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    config:
+      $id: '#/properties/charts/properties/oauth2-proxy/properties/config'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        cookieSecret:
+          $id: '#/properties/charts/properties/oauth2-proxy/properties/config/properties/cookieSecret'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The cookieSecret schema
+          type: string
+      required:
+        - cookieSecret
+      title: The config schema
+      type: object
+  required:
+    - config
+  title: The oauth2-proxy schema
+  type: object

@@ -1,0 +1,122 @@
+cluster:
+  $id: '#/properties/cluster'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    allowedCidrs:
+      $id: '#/properties/cluster/properties/allowedCidrs'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this instance.
+      title: The allowedCidrs schema
+      type: array
+    apiName:
+      $id: '#/properties/cluster/properties/apiName'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The apiName schema
+      type: string
+    apiServer:
+      $id: '#/properties/cluster/properties/apiServer'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The apiServer schema
+      type: string
+    customer:
+      $id: '#/properties/cluster/properties/customer'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The customer schema
+      type: string
+    domain:
+      $id: '#/properties/cluster/properties/domain'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The domain schema
+      type: string
+    hasCloudLB:
+      $id: '#/properties/cluster/properties/hasCloudLB'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The hasCloudLB schema
+      type: boolean
+    hasKnative:
+      $id: '#/properties/cluster/properties/hasKnative'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The hasKnative schema
+      type: boolean
+    isManaged:
+      $id: '#/properties/cluster/properties/isManaged'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The isManaged schema
+      type: boolean
+    isMultitenant:
+      $id: '#/properties/cluster/properties/isMultitenant'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The isMultitenant schema
+      type: boolean
+    isRedkubesMonitored:
+      $id: '#/properties/cluster/properties/isRedkubesMonitored'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The isRedkubesMonitored schema
+      type: boolean
+    k8sVersion:
+      $id: '#/properties/cluster/properties/k8sVersion'
+      default: 0.0
+      description: An explanation about the purpose of this instance.
+      title: The k8sVersion schema
+      type: number
+    name:
+      $id: '#/properties/cluster/properties/name'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The name schema
+      type: string
+    provider:
+      $id: '#/properties/cluster/properties/provider'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The provider schema
+      type: string
+    region:
+      $id: '#/properties/cluster/properties/region'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The region schema
+      type: string
+    teamPrefix:
+      $id: '#/properties/cluster/properties/teamPrefix'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The teamPrefix schema
+      type: string
+    useCloudCA:
+      $id: '#/properties/cluster/properties/useCloudCA'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The useCloudCA schema
+      type: boolean
+  required:
+    - allowedCidrs
+    - apiName
+    - apiServer
+    - customer
+    - domain
+    - hasCloudLB
+    - hasKnative
+    - isManaged
+    - isMultitenant
+    - isRedkubesMonitored
+    - k8sVersion
+    - name
+    - provider
+    - region
+    - teamPrefix
+    - useCloudCA
+  title: The cluster schema
+  type: object

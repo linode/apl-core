@@ -1,0 +1,139 @@
+cosreService:
+  $id: '#/definitions/cosreService'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    authz:
+      $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this
+        instance.
+      examples:
+        - forwardOriginalToken: true
+          workload:
+            app.kubernetes.io/name: otomi-web
+      properties:
+        forwardOriginalToken:
+          $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz/properties/forwardOriginalToken'
+          default: false
+          description: An explanation about the purpose
+            of this instance.
+          examples:
+            - true
+          title: The forwardOriginalToken schema
+          type: boolean
+        workload:
+          $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz/properties/workload'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose
+            of this instance.
+          examples:
+            - app.kubernetes.io/name: otomi-web
+          properties:
+            app.kubernetes.io/name:
+              $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz/properties/workload/properties/app.kubernetes.io/name'
+              default: ''
+              description: An explanation about
+                the purpose of this instance.
+              examples:
+                - otomi-web
+              title: The app.kubernetes.io/name
+                schema
+              type: string
+          required:
+            - app.kubernetes.io/name
+          title: The workload schema
+          type: object
+      required:
+        - forwardOriginalToken
+        - workload
+      title: The authz schema
+      type: object
+    forwardPath:
+      $id: '#/properties/services/items/3/properties/forwardPath'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The forwardPath schema
+      type: boolean
+    hasPrefix:
+      $id: '#/properties/teamConfig/properties/services/items/anyOf/3/properties/hasPrefix'
+      default: false
+      description: An explanation about the purpose of this
+        instance.
+      examples:
+        - true
+      title: The hasPrefix schema
+      type: boolean
+    host:
+      $id: '#/properties/teamConfig/properties/services/items/anyOf/2/properties/host'
+      default: ''
+      description: An explanation about the purpose of this
+        instance.
+      examples:
+        - grafana
+      title: The host schema
+      type: string
+    isPublic:
+      $id: '#/properties/services/items/properties/isPublic'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The isPublic schema
+      type: boolean
+    isShared:
+      $id: '#/properties/services/items/properties/isShared'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The isShared schema
+      type: boolean
+    name:
+      $id: '#/properties/services/items/properties/name'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The name schema
+      type: string
+    namespace:
+      $id: '#/properties/services/items/properties/namespace'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The namespace schema
+      type: string
+    ownHost:
+      $id: '#/properties/services/items/properties/ownHost'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The ownHost schema
+      type: boolean
+    paths:
+      $id: '#/properties/teamConfig/properties/services/items/anyOf/0/properties/paths'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this
+        instance.
+    port:
+      $id: '#/properties/teamConfig/properties/services/items/anyOf/4/properties/port'
+      default: 0
+      description: An explanation about the purpose of this
+        instance.
+      examples:
+        - 9090
+      title: The port schema
+      type: integer
+    svc:
+      $id: '#/properties/services/items/properties/svc'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The svc schema
+      type: string
+
+  required:
+    - isPublic
+    - isShared
+    - name
+    - namespace
+    - ownHost
+    - svc
+  title: The items schema
+  type: object

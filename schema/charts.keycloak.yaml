@@ -1,0 +1,49 @@
+keycloak:
+  $id: '#/properties/charts/properties/keycloak'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    enabled:
+      $id: '#/properties/charts/properties/keycloak/properties/enabled'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The enabled schema
+      type: boolean
+    oidc:
+      $id: '#/properties/charts/properties/keycloak/properties/oidc'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        clientID:
+          $id: '#/properties/charts/properties/keycloak/properties/oidc/properties/clientID'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The clientID schema
+          type: string
+        clientSecret:
+          $id: '#/properties/charts/properties/keycloak/properties/oidc/properties/clientSecret'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The clientSecret schema
+          type: string
+      required:
+        - clientID
+        - clientSecret
+      title: The oidc schema
+      type: object
+    realm:
+      $id: '#/properties/charts/properties/keycloak/properties/realm'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The realm schema
+      type: string
+  required:
+    - enabled
+    - oidc
+    - realm
+  title: The keycloak schema
+  type: object

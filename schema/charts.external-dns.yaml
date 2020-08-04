@@ -1,0 +1,39 @@
+external-dns:
+  $id: '#/properties/charts/properties/external-dns'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    domainFilters:
+      $id: '#/properties/charts/properties/external-dns/properties/domainFilters'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this instance.
+      items:
+        $id: '#/properties/charts/properties/external-dns/properties/domainFilters/items'
+        default: ''
+        description: An explanation about the purpose of this
+          instance.
+        title: The items schema
+        type: string
+      title: The domainFilters schema
+      type: array
+    zoneIdFilters:
+      $id: '#/properties/charts/properties/external-dns/properties/zoneIdFilters'
+      additionalItems: true
+      default: []
+      description: An explanation about the purpose of this instance.
+      items:
+        $id: '#/properties/charts/properties/external-dns/properties/zoneIdFilters/items'
+        default: ''
+        description: An explanation about the purpose of this
+          instance.
+        title: The items schema
+        type: string
+      title: The zoneIdFilters schema
+      type: array
+  required:
+    - domainFilters
+    - zoneIdFilters
+  title: The external-dns schema
+  type: object

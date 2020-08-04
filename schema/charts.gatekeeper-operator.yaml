@@ -1,0 +1,16 @@
+gatekeeper-operator:
+  $id: '#/properties/charts/properties/gatekeeper-operator'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    enabled:
+      $id: '#/properties/charts/properties/gatekeeper-operator/properties/enabled'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The enabled schema
+      type: boolean
+  required:
+    - enabled
+  title: The gatekeeper-operator schema
+  type: object

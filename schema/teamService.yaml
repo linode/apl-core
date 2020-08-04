@@ -1,0 +1,263 @@
+teamService:
+  $d: #/definitions/team_service
+  properties:
+    authz:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items/properties/authz'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the
+        purpose of this instance.
+      properties:
+        workload:
+          $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items/properties/authz/properties/workload'
+          additionalProperties: true
+          default: {}
+          description: An explanation about
+            the purpose of this instance.
+          properties:
+            app:
+              $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items/properties/authz/properties/workload/properties/app'
+              default: ''
+              description: An explanation
+                about the purpose
+                of this instance.
+              title: The app schema
+              type: string
+          required:
+            - app
+          title: The workload schema
+          type: object
+      required:
+        - workload
+      title: The authz schema
+      type: object
+    domain:
+      $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/domain'
+      default: ''
+      description: An explanation about the
+        purpose of this instance.
+      title: The domain schema
+      type: string
+    id:
+      $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items/properties/id'
+      default: ''
+      description: An explanation about the
+        purpose of this instance.
+      title: The id schema
+      type: string
+    isPublic:
+      $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/isPublic'
+      default: false
+      description: An explanation about the
+        purpose of this instance.
+      title: The isPublic schema
+      type: boolean
+    ksvc:
+      $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the
+        purpose of this instance.
+      properties:
+        annotations:
+          $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/annotations'
+          additionalProperties: true
+          default: {}
+          description: An explanation about
+            the purpose of this instance.
+          required: []
+          title: The annotations schema
+          type: object
+        env:
+          $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/env'
+          additionalItems: true
+          default: []
+          description: An explanation about
+            the purpose of this instance.
+          items:
+            $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/env/items'
+            additionalProperties: true
+            default: {}
+            description: An explanation
+              about the purpose of this
+              instance.
+            properties:
+              name:
+                $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/env/items/properties/name'
+                default: ''
+                description: An explanation
+                  about the purpose
+                  of this instance.
+                title: The name schema
+                type: string
+              value:
+                $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/env/items/properties/value'
+                default: ''
+                description: An explanation
+                  about the purpose
+                  of this instance.
+                title: The value schema
+                type: string
+            required:
+              - name
+              - value
+            title: The items schema
+            type: object
+          title: The env schema
+          type: array
+        image:
+          $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/image'
+          additionalProperties: true
+          default: {}
+          description: An explanation about
+            the purpose of this instance.
+          properties:
+            repository:
+              $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/image/properties/repository'
+              default: ''
+              description: An explanation
+                about the purpose
+                of this instance.
+              title: The repository
+                schema
+              type: string
+            tag:
+              $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/image/properties/tag'
+              default: ''
+              description: An explanation
+                about the purpose
+                of this instance.
+              title: The tag schema
+              type: string
+          required:
+            - repository
+            - tag
+          title: The image schema
+          type: object
+        resources:
+          $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources'
+          additionalProperties: true
+          default: {}
+          description: An explanation about
+            the purpose of this instance.
+          properties:
+            limits:
+              $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/limits'
+              additionalProperties: true
+              default: {}
+              description: An explanation
+                about the purpose
+                of this instance.
+              properties:
+                cpu:
+                  $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/limits/properties/cpu'
+                  default: ''
+                  description: An
+                    explanation
+                    about the
+                    purpose of
+                    this instance.
+                  title: The cpu
+                    schema
+                  type: string
+                memory:
+                  $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/limits/properties/memory'
+                  default: ''
+                  description: An
+                    explanation
+                    about the
+                    purpose of
+                    this instance.
+                  title: The memory
+                    schema
+                  type: string
+              required:
+                - cpu
+                - memory
+              title: The limits schema
+              type: object
+            requests:
+              $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/requests'
+              additionalProperties: true
+              default: {}
+              description: An explanation
+                about the purpose
+                of this instance.
+              properties:
+                cpu:
+                  $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/requests/properties/cpu'
+                  default: ''
+                  description: An
+                    explanation
+                    about the
+                    purpose of
+                    this instance.
+                  title: The cpu
+                    schema
+                  type: string
+                memory:
+                  $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/resources/properties/requests/properties/memory'
+                  default: ''
+                  description: An
+                    explanation
+                    about the
+                    purpose of
+                    this instance.
+                  title: The memory
+                    schema
+                  type: string
+              required:
+                - cpu
+                - memory
+              title: The requests schema
+              type: object
+          required:
+            - limits
+            - requests
+          title: The resources schema
+          type: object
+        scaleToZero:
+          $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/ksvc/properties/scaleToZero'
+          default: false
+          description: An explanation about
+            the purpose of this instance.
+          title: The scaleToZero schema
+          type: boolean
+      required:
+        - annotations
+        - env
+        - image
+        - resources
+        - scaleToZero
+      title: The ksvc schema
+      type: object
+    name:
+      $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/name'
+      default: ''
+      description: An explanation about the
+        purpose of this instance.
+      title: The name schema
+      type: string
+    paths:
+      $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/paths'
+      additionalItems: true
+      default: []
+      description: An explanation about the
+        purpose of this instance.
+      items:
+        $id: '#/properties/teamConfig/properties/teams/properties/otomi/properties/services/items/properties/paths/items'
+        default: ''
+        description: An explanation about
+          the purpose of this instance.
+        title: The items schema
+        type: string
+      title: The paths schema
+      type: array
+  required:
+    - domain
+    - isPublic
+    - ksvc
+    - name
+    - paths
+  title: The items schema
+  type: object

@@ -1,0 +1,101 @@
+harbor:
+  $id: '#/properties/charts/properties/harbor'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    adminPassword:
+      $id: '#/properties/charts/properties/harbor/properties/adminPassword'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The adminPassword schema
+      type: string
+    adminUser:
+      $id: '#/properties/charts/properties/harbor/properties/adminUser'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The adminUser schema
+      type: string
+    enabled:
+      $id: '#/properties/charts/properties/harbor/properties/enabled'
+      default: false
+      description: An explanation about the purpose of this instance.
+      title: The enabled schema
+      type: boolean
+    persistence:
+      $id: '#/properties/charts/properties/harbor/properties/persistence'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        imageChartStorage:
+          $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            gcs:
+              $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage/properties/gcs'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                bucket:
+                  $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage/properties/gcs/properties/bucket'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The bucket schema
+                  type: string
+                encodedkey:
+                  $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage/properties/gcs/properties/encodedkey'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The encodedkey schema
+                  type: string
+                rootdirectory:
+                  $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage/properties/gcs/properties/rootdirectory'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The rootdirectory schema
+                  type: string
+              required:
+                - bucket
+                - encodedkey
+                - rootdirectory
+              title: The gcs schema
+              type: object
+            type:
+              $id: '#/properties/charts/properties/harbor/properties/persistence/properties/imageChartStorage/properties/type'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The type schema
+              type: string
+          required:
+            - gcs
+            - type
+          title: The imageChartStorage schema
+          type: object
+      required:
+        - imageChartStorage
+      title: The persistence schema
+      type: object
+    secretKey:
+      $id: '#/properties/charts/properties/harbor/properties/secretKey'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The secretKey schema
+      type: string
+  required:
+    - adminPassword
+    - adminUser
+    - enabled
+    - persistence
+    - secretKey
+  title: The harbor schema
+  type: object

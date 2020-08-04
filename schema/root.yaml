@@ -1,0 +1,51 @@
+$id: http://example.com/example.json
+$schema: http://json-schema.org/draft-07/schema
+additionalProperties: true
+description: The root schema comprises the entire JSON document.
+properties:
+  charts:
+    $ref: 'file:charts.yaml#charts'
+  clouds:
+    $ref: 'file:clouds.yaml#clouds'
+  cluster:
+    $ref: 'file:cluster.yaml#cluster'
+  enabled:
+    $ref: 'file:enabled.yaml#enabled'
+  google:
+    $ref: 'file:google.yaml#google'
+  k8s:
+    $ref: 'file:k8s.yaml#k8s'
+  oidc:
+    $ref: 'file:oidc.yaml#oidc'
+  proxies:
+    $ref: 'file:proxies.yaml#proxies'
+  pullSecret:
+    $ref: 'file:pullSecret.yaml#pullSecret'
+  redkubesSlackUrl:
+    $ref: 'file:redkubesSlackUrl.yaml#redkubesSlackUrl'
+  services:
+    $ref: 'file:services.yaml#services'
+  sites:
+    $ref: 'file:sites.yaml#sites'
+  tenant:
+    $ref: 'file:tenant.yaml#tenant'
+  toolsVersion:
+    $ref: 'file:toolsVersion.yaml#toolsVersion'
+required:
+  - charts
+  - clouds
+  - cluster
+  - enabled
+  - google
+  - k8s
+  - oidc
+  - proxies
+  - pullSecret
+  - redkubesSlackUrl
+  - services
+  - sites
+  - teamConfig
+  - tenant
+  - toolsVersion
+title: The root schema
+type: object

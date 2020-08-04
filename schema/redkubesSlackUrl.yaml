@@ -1,0 +1,6 @@
+redkubesSlackUrl:
+  $id: '#/properties/redkubesSlackUrl'
+  default: ''
+  description: An explanation about the purpose of this instance.
+  title: The redkubesSlackUrl schema
+  type: string

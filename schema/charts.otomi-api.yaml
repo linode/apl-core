@@ -1,0 +1,138 @@
+otomi-api:
+  $id: '#/properties/charts/properties/otomi-api'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    git:
+      $id: '#/properties/charts/properties/otomi-api/properties/git'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        branch:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/branch'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The branch schema
+          type: string
+        email:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/email'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The email schema
+          type: string
+        localPath:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/localPath'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The localPath schema
+          type: string
+        password:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/password'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The password schema
+          type: string
+        repoUrl:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/repoUrl'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The repoUrl schema
+          type: string
+        user:
+          $id: '#/properties/charts/properties/otomi-api/properties/git/properties/user'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The user schema
+          type: string
+      required:
+        - branch
+        - email
+        - localPath
+        - password
+        - repoUrl
+        - user
+      title: The git schema
+      type: object
+    image:
+      $id: '#/properties/charts/properties/otomi-api/properties/image'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        registry:
+          $id: '#/properties/charts/properties/otomi-api/properties/image/properties/registry'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The registry schema
+          type: string
+        repository:
+          $id: '#/properties/charts/properties/otomi-api/properties/image/properties/repository'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The repository schema
+          type: string
+        tag:
+          $id: '#/properties/charts/properties/otomi-api/properties/image/properties/tag'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The tag schema
+          type: string
+      required:
+        - registry
+        - repository
+        - tag
+      title: The image schema
+      type: object
+    tools:
+      $id: '#/properties/charts/properties/otomi-api/properties/tools'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        gcloudServiceKey:
+          $id: '#/properties/charts/properties/otomi-api/properties/tools/properties/gcloudServiceKey'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The gcloudServiceKey schema
+          type: string
+        image:
+          $id: '#/properties/charts/properties/otomi-api/properties/tools/properties/image'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            tag:
+              $id: '#/properties/charts/properties/otomi-api/properties/tools/properties/image/properties/tag'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The tag schema
+              type: string
+          required:
+            - tag
+          title: The image schema
+          type: object
+      required:
+        - gcloudServiceKey
+        - image
+      title: The tools schema
+      type: object
+  required:
+    - git
+    - image
+    - tools
+  title: The otomi-api schema
+  type: object

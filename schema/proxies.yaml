@@ -1,0 +1,37 @@
+proxies:
+  $id: '#/properties/proxies'
+  additionalItems: true
+  default: []
+  description: An explanation about the purpose of this instance.
+  items:
+    $id: '#/properties/proxies/items'
+    additionalProperties: true
+    default: {}
+    description: An explanation about the purpose of this instance.
+    properties:
+      name:
+        $id: '#/properties/proxies/items/properties/name'
+        default: ''
+        description: An explanation about the purpose of this instance.
+        title: The name schema
+        type: string
+      namespace:
+        $id: '#/properties/proxies/items/properties/namespace'
+        default: ''
+        description: An explanation about the purpose of this instance.
+        title: The namespace schema
+        type: string
+      path:
+        $id: '#/properties/proxies/items/properties/path'
+        default: ''
+        description: An explanation about the purpose of this instance.
+        title: The path schema
+        type: string
+    required:
+      - name
+      - namespace
+      - path
+    title: The items schema
+    type: object
+  title: The proxies schema
+  type: array

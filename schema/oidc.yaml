@@ -1,0 +1,130 @@
+oidc:
+  $id: '#/properties/oidc'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    authUrl:
+      $id: '#/properties/oidc/properties/authUrl'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The authUrl schema
+      type: string
+    azure:
+      $id: '#/properties/oidc/properties/azure'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        clientID:
+          $id: '#/properties/oidc/properties/azure/properties/clientID'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The clientID schema
+          type: string
+        clientSecret:
+          $id: '#/properties/oidc/properties/azure/properties/clientSecret'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The clientSecret schema
+          type: string
+        issuer:
+          $id: '#/properties/oidc/properties/azure/properties/issuer'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The issuer schema
+          type: string
+        tenantID:
+          $id: '#/properties/oidc/properties/azure/properties/tenantID'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The tenantID schema
+          type: string
+      required:
+        - clientID
+        - clientSecret
+        - issuer
+        - tenantID
+      title: The azure schema
+      type: object
+    clientID:
+      $id: '#/properties/oidc/properties/clientID'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The clientID schema
+      type: string
+    clientSecret:
+      $id: '#/properties/oidc/properties/clientSecret'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The clientSecret schema
+      type: string
+    github:
+      $id: '#/properties/oidc/properties/github'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        org:
+          $id: '#/properties/oidc/properties/github/properties/org'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The org schema
+          type: string
+      required:
+        - org
+      title: The github schema
+      type: object
+    google:
+      $id: '#/properties/oidc/properties/google'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        issuer:
+          $id: '#/properties/oidc/properties/google/properties/issuer'
+          default: ''
+          description: An explanation about the purpose of this instance.
+          title: The issuer schema
+          type: string
+      required:
+        - issuer
+      title: The google schema
+      type: object
+    oidc:
+      $id: '#/properties/oidc/properties/oidc'
+      default: null
+      description: An explanation about the purpose of this instance.
+      title: The oidc schema
+      type: 'null'
+    provider:
+      $id: '#/properties/oidc/properties/provider'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The provider schema
+      type: string
+    scope:
+      $id: '#/properties/oidc/properties/scope'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The scope schema
+      type: string
+    tokenUrl:
+      $id: '#/properties/oidc/properties/tokenUrl'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The tokenUrl schema
+      type: string
+  required:
+    - authUrl
+    - azure
+    - clientID
+    - clientSecret
+    - github
+    - google
+    - oidc
+    - provider
+    - scope
+    - tokenUrl
+  title: The oidc schema
+  type: object

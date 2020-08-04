@@ -1,0 +1,106 @@
+prometheus-operator:
+  $id: '#/properties/charts/properties/prometheus-operator'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    alertmanager:
+      $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        groupInterval:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/groupInterval'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The groupInterval schema
+          type: string
+        receiver:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/receiver'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The receiver schema
+          type: string
+        repeatInterval:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/repeatInterval'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The repeatInterval schema
+          type: string
+        slack:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/slack'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            channel:
+              $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/slack/properties/channel'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The channel schema
+              type: string
+            url:
+              $id: '#/properties/charts/properties/prometheus-operator/properties/alertmanager/properties/slack/properties/url'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The url schema
+              type: string
+          required:
+            - channel
+            - url
+          title: The slack schema
+          type: object
+      required:
+        - groupInterval
+        - receiver
+        - repeatInterval
+        - slack
+      title: The alertmanager schema
+      type: object
+    grafana:
+      $id: '#/properties/charts/properties/prometheus-operator/properties/grafana'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        adminPassword:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/grafana/properties/adminPassword'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The adminPassword schema
+          type: string
+      required:
+        - adminPassword
+      title: The grafana schema
+      type: object
+    prometheus:
+      $id: '#/properties/charts/properties/prometheus-operator/properties/prometheus'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        storageSize:
+          $id: '#/properties/charts/properties/prometheus-operator/properties/prometheus/properties/storageSize'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The storageSize schema
+          type: string
+      required:
+        - storageSize
+      title: The prometheus schema
+      type: object
+  required:
+    - alertmanager
+    - grafana
+    - prometheus
+  title: The prometheus-operator schema
+  type: object

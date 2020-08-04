@@ -1,0 +1,93 @@
+cert-manager:
+  $id: '#/properties/charts/properties/cert-manager'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    email:
+      $id: '#/properties/charts/properties/cert-manager/properties/email'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The email schema
+      type: string
+    provider:
+      $id: '#/properties/charts/properties/cert-manager/properties/provider'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        google:
+          $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            clouddns:
+              $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google/properties/clouddns'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                project:
+                  $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google/properties/clouddns/properties/project'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The project schema
+                  type: string
+                serviceAccountSecretRef:
+                  $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google/properties/clouddns/properties/serviceAccountSecretRef'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    key:
+                      $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google/properties/clouddns/properties/serviceAccountSecretRef/properties/key'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The key schema
+                      type: string
+                    name:
+                      $id: '#/properties/charts/properties/cert-manager/properties/provider/properties/google/properties/clouddns/properties/serviceAccountSecretRef/properties/name'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The name schema
+                      type: string
+                  required:
+                    - key
+                    - name
+                  title: The serviceAccountSecretRef
+                    schema
+                  type: object
+              required:
+                - project
+                - serviceAccountSecretRef
+              title: The clouddns schema
+              type: object
+          required:
+            - clouddns
+          title: The google schema
+          type: object
+      required:
+        - google
+      title: The provider schema
+      type: object
+    stage:
+      $id: '#/properties/charts/properties/cert-manager/properties/stage'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The stage schema
+      type: string
+  required:
+    - email
+    - provider
+    - stage
+  title: The cert-manager schema
+  type: object

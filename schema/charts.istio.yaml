@@ -1,0 +1,681 @@
+istio:
+  $id: '#/properties/charts/properties/istio'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    addonComponents:
+      $id: '#/properties/charts/properties/istio/properties/addonComponents'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        grafana:
+          $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/grafana'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/grafana/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The grafana schema
+          type: object
+        kiali:
+          $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/kiali'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/kiali/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The kiali schema
+          type: object
+        prometheus:
+          $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/prometheus'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/prometheus/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The prometheus schema
+          type: object
+        tracing:
+          $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/tracing'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/addonComponents/properties/tracing/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The tracing schema
+          type: object
+      required:
+        - grafana
+        - kiali
+        - prometheus
+        - tracing
+      title: The addonComponents schema
+      type: object
+    gateways:
+      $id: '#/properties/charts/properties/istio/properties/gateways'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        istio-egressgateway:
+          $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            resources:
+              $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                limits:
+                  $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/limits'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/limits/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/limits/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The limits schema
+                  type: object
+                requests:
+                  $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/requests'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/requests/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-egressgateway/properties/resources/properties/requests/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The requests schema
+                  type: object
+              required:
+                - limits
+                - requests
+              title: The resources schema
+              type: object
+          required:
+            - resources
+          title: The istio-egressgateway schema
+          type: object
+        istio-ingressgateway:
+          $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            resources:
+              $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                limits:
+                  $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/limits'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/limits/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/limits/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The limits schema
+                  type: object
+                requests:
+                  $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/requests'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/requests/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/gateways/properties/istio-ingressgateway/properties/resources/properties/requests/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The requests schema
+                  type: object
+              required:
+                - limits
+                - requests
+              title: The resources schema
+              type: object
+          required:
+            - resources
+          title: The istio-ingressgateway schema
+          type: object
+      required:
+        - istio-egressgateway
+        - istio-ingressgateway
+      title: The gateways schema
+      type: object
+    global:
+      $id: '#/properties/charts/properties/istio/properties/global'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        logging:
+          $id: '#/properties/charts/properties/istio/properties/global/properties/logging'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            level:
+              $id: '#/properties/charts/properties/istio/properties/global/properties/logging/properties/level'
+              default: ''
+              description: An explanation about the purpose
+                of this instance.
+              title: The level schema
+              type: string
+          required:
+            - level
+          title: The logging schema
+          type: object
+        mtls:
+          $id: '#/properties/charts/properties/istio/properties/global/properties/mtls'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/global/properties/mtls/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The mtls schema
+          type: object
+        proxy:
+          $id: '#/properties/charts/properties/istio/properties/global/properties/proxy'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            resources:
+              $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                limits:
+                  $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/limits'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/limits/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/limits/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The limits schema
+                  type: object
+                requests:
+                  $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/requests'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/requests/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/global/properties/proxy/properties/resources/properties/requests/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The requests schema
+                  type: object
+              required:
+                - limits
+                - requests
+              title: The resources schema
+              type: object
+          required:
+            - resources
+          title: The proxy schema
+          type: object
+        sds:
+          $id: '#/properties/charts/properties/istio/properties/global/properties/sds'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/global/properties/sds/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+          required:
+            - enabled
+          title: The sds schema
+          type: object
+      required:
+        - logging
+        - mtls
+        - proxy
+        - sds
+      title: The global schema
+      type: object
+    mixer:
+      $id: '#/properties/charts/properties/istio/properties/mixer'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        policy:
+          $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+            resources:
+              $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                limits:
+                  $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/limits'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/limits/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/limits/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The limits schema
+                  type: object
+                requests:
+                  $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/requests'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/requests/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/policy/properties/resources/properties/requests/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The requests schema
+                  type: object
+              required:
+                - limits
+                - requests
+              title: The resources schema
+              type: object
+          required:
+            - enabled
+            - resources
+          title: The policy schema
+          type: object
+        telemetry:
+          $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            enabled:
+              $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/enabled'
+              default: false
+              description: An explanation about the purpose
+                of this instance.
+              title: The enabled schema
+              type: boolean
+            resources:
+              $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                limits:
+                  $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/limits'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/limits/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/limits/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The limits schema
+                  type: object
+                requests:
+                  $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/requests'
+                  additionalProperties: true
+                  default: {}
+                  description: An explanation about
+                    the purpose of this instance.
+                  properties:
+                    cpu:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/requests/properties/cpu'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The cpu schema
+                      type: string
+                    memory:
+                      $id: '#/properties/charts/properties/istio/properties/mixer/properties/telemetry/properties/resources/properties/requests/properties/memory'
+                      default: ''
+                      description: An explanation
+                        about the purpose of this
+                        instance.
+                      title: The memory schema
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                  title: The requests schema
+                  type: object
+              required:
+                - limits
+                - requests
+              title: The resources schema
+              type: object
+          required:
+            - enabled
+            - resources
+          title: The telemetry schema
+          type: object
+      required:
+        - policy
+        - telemetry
+      title: The mixer schema
+      type: object
+    pilot:
+      $id: '#/properties/charts/properties/istio/properties/pilot'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        resources:
+          $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources'
+          additionalProperties: true
+          default: {}
+          description: An explanation about the purpose of this
+            instance.
+          properties:
+            limits:
+              $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/limits'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                cpu:
+                  $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/limits/properties/cpu'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The cpu schema
+                  type: string
+                memory:
+                  $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/limits/properties/memory'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The memory schema
+                  type: string
+              required:
+                - cpu
+                - memory
+              title: The limits schema
+              type: object
+            requests:
+              $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/requests'
+              additionalProperties: true
+              default: {}
+              description: An explanation about the purpose
+                of this instance.
+              properties:
+                cpu:
+                  $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/requests/properties/cpu'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The cpu schema
+                  type: string
+                memory:
+                  $id: '#/properties/charts/properties/istio/properties/pilot/properties/resources/properties/requests/properties/memory'
+                  default: ''
+                  description: An explanation about
+                    the purpose of this instance.
+                  title: The memory schema
+                  type: string
+              required:
+                - cpu
+                - memory
+              title: The requests schema
+              type: object
+          required:
+            - limits
+            - requests
+          title: The resources schema
+          type: object
+        traceSampling:
+          $id: '#/properties/charts/properties/istio/properties/pilot/properties/traceSampling'
+          default: 0
+          description: An explanation about the purpose of this
+            instance.
+          title: The traceSampling schema
+          type: integer
+      required:
+        - resources
+        - traceSampling
+      title: The pilot schema
+      type: object
+  required:
+    - addonComponents
+    - gateways
+    - global
+    - mixer
+    - pilot
+  title: The istio schema
+  type: object

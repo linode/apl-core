@@ -1,0 +1,67 @@
+loki:
+  $id: '#/properties/charts/properties/loki'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    adminPassword:
+      $id: '#/properties/charts/properties/loki/properties/adminPassword'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The adminPassword schema
+      type: string
+    persistence:
+      $id: '#/properties/charts/properties/loki/properties/persistence'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        size:
+          $id: '#/properties/charts/properties/loki/properties/persistence/properties/size'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The size schema
+          type: string
+      required:
+        - size
+      title: The persistence schema
+      type: object
+    retention:
+      $id: '#/properties/charts/properties/loki/properties/retention'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        duration:
+          $id: '#/properties/charts/properties/loki/properties/retention/properties/duration'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The duration schema
+          type: string
+        period:
+          $id: '#/properties/charts/properties/loki/properties/retention/properties/period'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The period schema
+          type: string
+      required:
+        - duration
+        - period
+      title: The retention schema
+      type: object
+    storageType:
+      $id: '#/properties/charts/properties/loki/properties/storageType'
+      default: ''
+      description: An explanation about the purpose of this instance.
+      title: The storageType schema
+      type: string
+  required:
+    - adminPassword
+    - persistence
+    - retention
+    - storageType
+  title: The loki schema
+  type: object

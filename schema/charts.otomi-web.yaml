@@ -1,0 +1,35 @@
+otomi-web:
+  $id: '#/properties/charts/properties/otomi-web'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this instance.
+  properties:
+    image:
+      $id: '#/properties/charts/properties/otomi-web/properties/image'
+      additionalProperties: true
+      default: {}
+      description: An explanation about the purpose of this instance.
+      properties:
+        pullPolicy:
+          $id: '#/properties/charts/properties/otomi-web/properties/image/properties/pullPolicy'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The pullPolicy schema
+          type: string
+        tag:
+          $id: '#/properties/charts/properties/otomi-web/properties/image/properties/tag'
+          default: ''
+          description: An explanation about the purpose of this
+            instance.
+          title: The tag schema
+          type: string
+      required:
+        - pullPolicy
+        - tag
+      title: The image schema
+      type: object
+  required:
+    - image
+  title: The otomi-web schema
+  type: object
