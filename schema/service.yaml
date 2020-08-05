@@ -1,4 +1,4 @@
-cosreService:
+service:
   $id: '#/definitions/cosreService'
   additionalProperties: true
   default: {}

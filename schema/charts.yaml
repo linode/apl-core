@@ -1,37 +1,37 @@
 charts:
-  $id: '#/properties/charts'
+  # $id: '#/properties/charts'
   additionalProperties: true
   default: {}
   description: An explanation about the purpose of this instance.
   properties:
     cert-manager:
-      $ref: 'file:charts.cert-manager.yaml#cert-manager'
+      $ref: 'charts.cert-manager.yaml#/cert-manager'
     drone:
-      $ref: 'file:charts.drone.yaml#drone'
+      $ref: 'charts.drone.yaml#/drone'
     external-dns:
-      $ref: 'file:charts.external-dns.yaml#external-dns'
+      $ref: 'charts.external-dns.yaml#/external-dns'
     gatekeeper-operator:
-      $ref: 'file:charts.gatekeeper-operator.yaml#gatekeeper-operator'
+      $ref: 'charts.gatekeeper-operator.yaml#/gatekeeper-operator'
     harbor:
-      $ref: 'file:charts.harbor.yaml#harbor'
+      $ref: 'charts.harbor.yaml#/harbor'
     istio:
-      $ref: 'file:charts.istio.yaml#istio'
+      $ref: 'charts.istio.yaml#/istio'
     keycloak:
-      $ref: 'file:charts.keycloak.yaml#keycloak'
+      $ref: 'charts.keycloak.yaml#/keycloak'
     loki:
-      $ref: 'file:charts.loki.yaml#loki'
+      $ref: 'charts.loki.yaml#/loki'
     oauth2-proxy:
-      $ref: 'file:charts.oauth2-proxy.yaml#oauth2-proxy'
+      $ref: 'charts.oauth2-proxy.yaml#/oauth2-proxy'
     otomi-api:
-      $ref: 'file:charts.otomi-api.yaml#otomi-api'
+      $ref: 'charts.otomi-api.yaml#/otomi-api'
     otomi-web:
-      $ref: 'file:charts.otomi-web.yaml#otomi-web'
+      $ref: 'charts.otomi-web.yaml#/otomi-web'
     prometheus-operator:
-      $ref: 'file:charts.prometheus-operator.yaml#prometheus-operator'
+      $ref: 'charts.prometheus-operator.yaml#/prometheus-operator'
     redis-shared:
-      $ref: 'file:charts.redis-shared.yaml#redis-shared'
+      $ref: 'charts.redis-shared.yaml#/redis-shared'
     sitespeed:
-      $ref: 'file:charts.sitespeed.yaml#sitespeed'
+      $ref: 'charts.sitespeed.yaml#/sitespeed'
   required:
     - cert-manager
     - drone

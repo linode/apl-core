@@ -1,38 +1,38 @@
-$id: http://redkubes.com/otomi.json
+$id: 'root'
 $schema: http://json-schema.org/draft-07/schema
 additionalProperties: true
 description: The root schema comprises the entire JSON document.
 properties:
   charts:
-    $ref: 'file:charts.yaml#charts'
+    $ref: 'charts.yaml#/charts'
   clouds:
-    $ref: 'file:clouds.yaml#clouds'
+    $ref: 'clouds.yaml#/clouds'
   cluster:
-    $ref: 'file:cluster.yaml#cluster'
+    $ref: 'cluster.yaml#/cluster'
   enabled:
-    $ref: 'file:enabled.yaml#enabled'
+    $ref: 'enabled.yaml#/enabled'
   google:
-    $ref: 'file:google.yaml#google'
+    $ref: 'google.yaml#/google'
   k8s:
-    $ref: 'file:k8s.yaml#k8s'
+    $ref: 'k8s.yaml#/k8s'
   oidc:
-    $ref: 'file:oidc.yaml#oidc'
+    $ref: 'oidc.yaml#/oidc'
   proxies:
-    $ref: 'file:proxies.yaml#proxies'
+    $ref: 'proxies.yaml#/proxies'
   pullSecret:
-    $ref: 'file:pullSecret.yaml#pullSecret'
+    $ref: 'pullSecret.yaml#/pullSecret'
   redkubesSlackUrl:
-    $ref: 'file:redkubesSlackUrl.yaml#redkubesSlackUrl'
+    $ref: 'redkubesSlackUrl.yaml#/redkubesSlackUrl'
   services:
-    $ref: 'file:services.yaml#services'
+    $ref: 'services.yaml#/services'
   sites:
-    $ref: 'file:sites.yaml#sites'
+    $ref: 'sites.yaml#/sites'
   teamConfig:
-    $ref: 'file:teamConfig.yaml#teamConfig'
+    $ref: 'teamConfig.yaml#/teamConfig'
   tenant:
-    $ref: 'file:tenant.yaml#tenant'
+    $ref: 'tenant.yaml#/tenant'
   toolsVersion:
-    $ref: 'file:toolsVersion.yaml#toolsVersion'
+    $ref: 'toolsVersion.yaml#/toolsVersion'
 required:
   - charts
   - clouds

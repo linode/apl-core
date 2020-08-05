@@ -4,6 +4,6 @@ services:
   default: []
   description: An explanation about the purpose of this instance.
   items:
-    $ref: 'file:service.yaml#service'
+    $ref: 'service.yaml#/service'
   title: The services schema
   type: array

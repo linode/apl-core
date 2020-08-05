@@ -13,7 +13,7 @@ teamConfig:
         additionalProperties: true
         default: {}
         description: An explanation about the purpose of this instance.
-        $ref: 'file:coreService.yaml#coreService'
+        $ref: 'service.yaml#/service'
       title: The services schema
       type: array
     teams:
@@ -22,7 +22,7 @@ teamConfig:
       description: An explanation about the purpose of this instance.
       additionalProperties:
         type: object
-        $ref: 'file:team.yaml#team'
+        $ref: 'team.yaml#/team'
       title: The teams schema
       type: object
   required:

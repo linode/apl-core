@@ -32,7 +32,7 @@ team:
       description: An explanation about the purpose of this
         instance.
       items:
-        $ref: 'file:teamServices.yaml#teamServices'
+        $ref: 'teamService.yaml#/teamService'
         $id: '#/properties/teamConfig/properties/teams/properties/demo/properties/services/items'
         additionalProperties: true
         default: {}

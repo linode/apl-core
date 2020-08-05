@@ -13,7 +13,7 @@ clouds:
           $id: '#/properties/clouds/properties/aws/properties/clusters'
           additionalProperties:
             type: object
-            $ref: 'file:cluster.aws.yaml#aws'
+            $ref: 'cluster.aws.yaml#/aws'
           default: {}
           description: An explanation about the purpose of this instance.
           title: The clusters schema
@@ -39,10 +39,9 @@ clouds:
           $id: '#/properties/clouds/properties/azure/properties/clusters'
           additionalProperties:
             type: object
-            $ref: 'file:cluster.azure.yaml#azure'
+            $ref: 'cluster.azure.yaml#/azure'
           default: {}
           description: An explanation about the purpose of this instance.
-          properties:
           title: The clusters schema
           type: object
         domain:
