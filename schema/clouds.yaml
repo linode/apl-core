@@ -6,44 +6,16 @@ clouds:
   properties:
     aws:
       $id: '#/properties/clouds/properties/aws'
-      additionalProperties: true
       default: {}
       description: An explanation about the purpose of this instance.
       properties:
         clusters:
           $id: '#/properties/clouds/properties/aws/properties/clusters'
-          additionalProperties: true
+          additionalProperties:
+            type: object
+            $ref: 'file:cluster.aws.yaml#aws'
           default: {}
           description: An explanation about the purpose of this instance.
-          properties:
-            demo:
-              $id: '#/properties/clouds/properties/aws/properties/clusters/properties/demo'
-              additionalProperties: true
-              default: {}
-              description: An explanation about the purpose of this
-                instance.
-              properties:
-                k8sVersion:
-                  $id: '#/properties/clouds/properties/aws/properties/clusters/properties/demo/properties/k8sVersion'
-                  default: 0.0
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The k8sVersion schema
-                  type: number
-                region:
-                  $id: '#/properties/clouds/properties/aws/properties/clusters/properties/demo/properties/region'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The region schema
-                  type: string
-              required:
-                - k8sVersion
-                - region
-              title: The demo schema
-              type: object
-          required:
-            - demo
           title: The clusters schema
           type: object
         domain:
@@ -65,38 +37,12 @@ clouds:
       properties:
         clusters:
           $id: '#/properties/clouds/properties/azure/properties/clusters'
-          additionalProperties: true
+          additionalProperties:
+            type: object
+            $ref: 'file:cluster.azure.yaml#azure'
           default: {}
           description: An explanation about the purpose of this instance.
           properties:
-            demo:
-              $id: '#/properties/clouds/properties/azure/properties/clusters/properties/demo'
-              additionalProperties: true
-              default: {}
-              description: An explanation about the purpose of this
-                instance.
-              properties:
-                k8sVersion:
-                  $id: '#/properties/clouds/properties/azure/properties/clusters/properties/demo/properties/k8sVersion'
-                  default: 0.0
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The k8sVersion schema
-                  type: number
-                region:
-                  $id: '#/properties/clouds/properties/azure/properties/clusters/properties/demo/properties/region'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The region schema
-                  type: string
-              required:
-                - k8sVersion
-                - region
-              title: The demo schema
-              type: object
-          required:
-            - demo
           title: The clusters schema
           type: object
         domain:
@@ -116,85 +62,6 @@ clouds:
       default: {}
       description: An explanation about the purpose of this instance.
       properties:
-        clusters:
-          $id: '#/properties/clouds/properties/google/properties/clusters'
-          additionalProperties: true
-          default: {}
-          description: An explanation about the purpose of this instance.
-          properties:
-            demo:
-              $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo'
-              additionalProperties: true
-              default: {}
-              description: An explanation about the purpose of this
-                instance.
-              properties:
-                apiName:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/apiName'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The apiName schema
-                  type: string
-                apiServer:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/apiServer'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The apiServer schema
-                  type: string
-                k8sVersion:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/k8sVersion'
-                  default: 0.0
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The k8sVersion schema
-                  type: number
-                region:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/region'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The region schema
-                  type: string
-              required:
-                - apiName
-                - apiServer
-                - k8sVersion
-                - region
-              title: The demo schema
-              type: object
-            dev:
-              $id: '#/properties/clouds/properties/google/properties/clusters/properties/dev'
-              additionalProperties: true
-              default: {}
-              description: An explanation about the purpose of this
-                instance.
-              properties:
-                k8sVersion:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/dev/properties/k8sVersion'
-                  default: 0.0
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The k8sVersion schema
-                  type: number
-                region:
-                  $id: '#/properties/clouds/properties/google/properties/clusters/properties/dev/properties/region'
-                  default: ''
-                  description: An explanation about the purpose
-                    of this instance.
-                  title: The region schema
-                  type: string
-              required:
-                - k8sVersion
-                - region
-              title: The dev schema
-              type: object
-          required:
-            - demo
-            - dev
-          title: The clusters schema
-          type: object
         dnsZones:
           $id: '#/properties/clouds/properties/google/properties/dnsZones'
           additionalItems: true
