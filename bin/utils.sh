@@ -117,6 +117,8 @@ if [ $noEnvError -eq 0 ]; then
   function hfd() { hf $@ --skip-deps; }
   # templates only without cruft:
   function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
+  # print merged values 
+  function hfv() { hf -f helmfile.tpl/helmfile-dump.yaml build | yq r - 'releases[0].values[0]' }
 
   printf "${COLOR_LIGHT_PURPLE}DONE!${COLOR_NC}\n"
   printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_LIGHT_GREEN}CLOUD ${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_LIGHT_GREEN}CLUSTER ${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
