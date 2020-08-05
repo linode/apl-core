@@ -1,0 +1,25 @@
+aws:
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this
+    instance.
+  properties:
+    k8sVersion:
+      $id: '#/properties/clouds/properties/aws/properties/clusters/properties/demo/properties/k8sVersion'
+      default: 0.0
+      description: An explanation about the purpose
+        of this instance.
+      title: The k8sVersion schema
+      type: number
+    region:
+      $id: '#/properties/clouds/properties/aws/properties/clusters/properties/demo/properties/region'
+      default: ''
+      description: An explanation about the purpose
+        of this instance.
+      title: The region schema
+      type: string
+  required:
+    - k8sVersion
+    - region
+  title: The demo schema
+  type: object

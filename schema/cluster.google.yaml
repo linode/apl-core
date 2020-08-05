@@ -1,0 +1,42 @@
+google:
+  $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo'
+  additionalProperties: true
+  default: {}
+  description: An explanation about the purpose of this
+    instance.
+  properties:
+    apiName:
+      $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/apiName'
+      default: ''
+      description: An explanation about the purpose
+        of this instance.
+      title: The apiName schema
+      type: string
+    apiServer:
+      $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/apiServer'
+      default: ''
+      description: An explanation about the purpose
+        of this instance.
+      title: The apiServer schema
+      type: string
+    k8sVersion:
+      $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/k8sVersion'
+      default: 0.0
+      description: An explanation about the purpose
+        of this instance.
+      title: The k8sVersion schema
+      type: number
+    region:
+      $id: '#/properties/clouds/properties/google/properties/clusters/properties/demo/properties/region'
+      default: ''
+      description: An explanation about the purpose
+        of this instance.
+      title: The region schema
+      type: string
+  required:
+    - apiName
+    - apiServer
+    - k8sVersion
+    - region
+  title: The demo schema
+  type: object
