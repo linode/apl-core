@@ -30,7 +30,6 @@ k8s:
             title: The name schema
             type: string
         required:
-          - disableIstioInjection
           - name
         title: The items schema
         type: object

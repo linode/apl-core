@@ -1,5 +1,5 @@
 service:
-  $id: '#/definitions/cosreService'
+  $id: '#/definitions/coreService'
   additionalProperties: true
   default: {}
   description: An explanation about the purpose of this instance.
@@ -26,29 +26,15 @@ service:
           type: boolean
         workload:
           $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz/properties/workload'
-          additionalProperties: true
-          default: {}
-          description: An explanation about the purpose
-            of this instance.
+          additionalProperties:
+            type: string
+            default: {}
+          description: Labels
           examples:
             - app.kubernetes.io/name: otomi-web
-          properties:
-            app.kubernetes.io/name:
-              $id: '#/properties/teamConfig/properties/services/items/anyOf/1/properties/authz/properties/workload/properties/app.kubernetes.io/name'
-              default: ''
-              description: An explanation about
-                the purpose of this instance.
-              examples:
-                - otomi-web
-              title: The app.kubernetes.io/name
-                schema
-              type: string
-          required:
-            - app.kubernetes.io/name
           title: The workload schema
           type: object
       required:
-        - forwardOriginalToken
         - workload
       title: The authz schema
       type: object
@@ -129,11 +115,6 @@ service:
       type: string
 
   required:
-    - isPublic
-    - isShared
     - name
-    - namespace
-    - ownHost
-    - svc
   title: The items schema
   type: object

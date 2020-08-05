@@ -254,10 +254,6 @@ teamService:
       title: The paths schema
       type: array
   required:
-    - domain
-    - isPublic
-    - ksvc
     - name
-    - paths
   title: The items schema
   type: object
