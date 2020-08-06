@@ -123,9 +123,9 @@ registry:
   # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
   relativeurls: false
   credentials:
-    username: {{ $c | get "registry.credentials.username" "admin" }}
-    password: {{ $c | get "registry.credentials.password" "bladibla" }}
-    htpasswd: {{ $c | get "registry.credentials.htpasswd" "admin:$2y$10$WfCM9Hs6dxe/HXloj.xOruwKZb.U18hwhCSGymZ40Z0Is5e/KMteS" }}
+    username: {{ $h | get "registry.credentials.username" "admin" }}
+    password: {{ $h | get "registry.credentials.password" "bladibla" }}
+    htpasswd: {{ $h | get "registry.credentials.htpasswd" "admin:$2y$10$WfCM9Hs6dxe/HXloj.xOruwKZb.U18hwhCSGymZ40Z0Is5e/KMteS" }}
 
 database:
   type: internal
