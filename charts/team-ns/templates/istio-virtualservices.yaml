@@ -3,7 +3,7 @@
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-{{- if and (not $s.internal) (not (hasKey $s "host")) }}
+{{- if not (or $s.internal (hasKey $s "host")) }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
@@ -107,7 +107,7 @@ spec:
       from: 
         - source:
             requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
-      {{- if (not $s.isShared) }}
+      {{- if (and (not $s.isShared) (not (and $s.isCore (eq $v.teamId "admin")))) }}
       when:
         - key: request.auth.claims[groups]
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
