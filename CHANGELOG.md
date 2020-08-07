@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.80](https://github.com/redkubes/otomi-stack/compare/v0.10.79...v0.10.80) (2020-08-07)
+
+
+### Bug Fixes
+
+* blackbox exporter for teams [ci skip] ([4243a6c](https://github.com/redkubes/otomi-stack/commit/4243a6ccdac02b956763b601b2746ac702ff9469))
+* metrics for teams [ci skip] ([fed3992](https://github.com/redkubes/otomi-stack/commit/fed39923a37f6eee4b6a63434af8ce009aa782b6))
+
 ### [0.10.79](https://github.com/redkubes/otomi-stack/compare/v0.10.78...v0.10.79) (2020-08-07)
 
 
