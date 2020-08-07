@@ -6,7 +6,7 @@ bases:
 {{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
-{{- $adminDomain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $adminDomain := printf $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v.cluster | toString }}
@@ -164,7 +164,7 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $appsDomain }}/grafana
-            {{- if hasKey $team "oidc" }}
+            {{- if ($team | get "oidc.custom" false) }}
             "auth.generic_oauth":
               client_id: {{ $team.oidc.clientID }}
               client_secret: {{ $team.oidc.clientSecret }}

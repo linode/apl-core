@@ -2,9 +2,8 @@
 {{- $c := $v.charts }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $p := $v | get "charts.prometheus-operator" }}
-{{- $appsDomain := printf "apps.%s" $domain }}
+{{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
 {{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v.cluster | toString }}
 nameOverride: po

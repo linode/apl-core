@@ -107,9 +107,11 @@ spec:
       from: 
         - source:
             requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
+      {{- if (not $s.isShared) }}
       when:
         - key: request.auth.claims[groups]
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
+      {{- end }}
       to:
         - operation:
             {{- with $s.authz.paths }}
@@ -118,7 +120,7 @@ spec:
               - {{ $path }}
               {{- end }}
             {{- end }}
-            hosts: [{{ $s.name }}.{{ $v.domain }}]
+            hosts: [{{ $domain }}]
             {{- if $s.authz.excludePaths }}
             notPaths: [{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}]
             {{- end }}
