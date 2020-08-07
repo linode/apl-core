@@ -154,7 +154,7 @@ releases:
                   - source_labels: [__param_target]
                     target_label: instance
                   - target_label: __address__
-                    replacement: prometheus-blackbox-exporter:9115
+                    replacement: prometheus-blackbox-exporter.monitoring:9115
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
