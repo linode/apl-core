@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.78](https://github.com/redkubes/otomi-stack/compare/v0.10.77...v0.10.78) (2020-08-07)
+
+
+### Bug Fixes
+
+* httpbin path [ci skip] ([0769236](https://github.com/redkubes/otomi-stack/commit/076923670dd33bedc4a908c7bb31db4ceae502df))
+
 ### [0.10.77](https://github.com/redkubes/otomi-stack/compare/v0.10.76...v0.10.77) (2020-08-07)
 
 
