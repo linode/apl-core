@@ -28,6 +28,7 @@ services:
   - name: httpbin
     namespace: shared
     svc: httpbin
+    ownHost: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
