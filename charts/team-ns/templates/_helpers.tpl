@@ -99,7 +99,7 @@ metadata:
 {{- if or .isApps .hasAuth }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
   {{- if .isApps }}
-      rewrite ^/$ /otomi/ permanent;
+      rewrite ^/$ https://otomi.{{ .cluster.domain }}/ permanent;
       rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
   {{- if .hasAuth }}

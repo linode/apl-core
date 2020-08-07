@@ -3,7 +3,7 @@
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -85,8 +85,8 @@ resources:
           dashboard:
             auth:
               strategy: anonymous
-            jaegerURL: https://apps.{{ $domain }}/tracing/
-            grafanaURL: https://apps.{{ $domain }}/grafana-istio/
+            jaegerURL: https://{{ $appsDomain }}/tracing/
+            grafanaURL: https://{{ $appsDomain }}/grafana-istio/
         gateways:
           istio-ingressgateway:
             sds:

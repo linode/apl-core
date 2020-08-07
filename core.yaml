@@ -22,32 +22,28 @@ k8s:
 services:
   - name: keycloak
     namespace: keycloak
-    ownHost: true
     svc: keycloak-http
-    isShared: true
+    ownHost: true
     isPublic: true
   - name: httpbin
     namespace: shared
-    ownHost: true
     svc: httpbin
-    isShared: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
-    isShared: true
     ownHost: true
     paths: [/]
   - name: harbor
     svc: harbor-harbor-core
     namespace: harbor
-    isShared: true
+    ownHost: true
     paths: [/api/, /c/, /chartrepo/, /service/]
     forwardPath: true
     hide: true
   - name: harbor
     svc: harbor-harbor-registry
     namespace: harbor
-    isShared: true
+    ownHost: true
     paths: [/v1/, /v2/]
     port: 5000
     forwardPath: true
@@ -57,16 +53,19 @@ services:
     svc: harbor-harbor-notary-server
     port: 4443
     namespace: harbor
-    isShared: true
+    ownHost: true
     hide: true
   - name: otomi
     namespace: shared
+    ownHost: true
     svc: otomi-api
     hide: true
     paths: [/api/]
   - name: otomi
     namespace: shared
+    ownHost: true
     svc: otomi-web
+    paths: [/]
     authz:
       forwardOriginalToken: true
       workload:
@@ -136,18 +135,6 @@ proxies:
 
 teamConfig:
   services:
-    - name: otomi
-      namespace: shared
-      svc: otomi-api
-      paths: [/api/]
-      hide: true
-    - name: otomi
-      namespace: shared
-      svc: otomi-web
-      authz:
-        forwardOriginalToken: true
-        workload:
-          app.kubernetes.io/name: otomi-web
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
