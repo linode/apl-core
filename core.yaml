@@ -26,6 +26,7 @@ services:
     ownHost: true
     isPublic: true
   - name: httpbin
+    ownHost: true
     namespace: shared
     svc: httpbin
   - name: harbor

@@ -18,7 +18,7 @@ releases:
   - name: httpbin
     # set 'installed' to true and set correct namespace for other customer demo on aws:
     installed: true
-    namespace: team-{{ $v.cluster.name }}
+    namespace: shared
     chart: ../charts/httpbin
     values:
       - nameOverride: httpbin
