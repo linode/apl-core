@@ -27,8 +27,6 @@
           {{- end }}
         {{- end }}
       {{- end }}
-    {{- else }}
-      {{- $private = (append $private $s) }}
     {{- end }}
   {{- end }}
 {{- end }}
