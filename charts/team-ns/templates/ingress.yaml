@@ -12,19 +12,17 @@
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-  {{- if not $s.internal }}
-    {{- if not $s.host }}
-      {{- if $s.isPublic }}
-        {{- $public = (append $public $s) }}
+  {{- if and (not $s.internal) (not $s.host ) }}
+    {{- if $s.isPublic }}
+      {{- $public = (append $public $s) }}
+    {{- else }}
+      {{- if or $s.domain $s.ownHost $s.isShared }}
+        {{- $privateCustom = (append $privateCustom $s) }}
       {{- else }}
-        {{- if or $s.domain $s.ownHost $s.isShared }}
-          {{- $privateCustom = (append $privateCustom $s) }}
+        {{- if $s.forwardPath -}}
+          {{- $privateForward = (append $privateForward $s) }}
         {{- else }}
-          {{- if $s.forwardPath -}}
-            {{- $privateForward = (append $privateForward $s) }}
-          {{- else }}
-            {{- $private = (append $private $s) }}
-          {{- end }}
+          {{- $private = (append $private $s) }}
         {{- end }}
       {{- end }}
     {{- end }}

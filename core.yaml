@@ -29,11 +29,13 @@ services:
     namespace: shared
     svc: httpbin
     ownHost: true
+    isShared: true
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
     ownHost: true
     paths: [/]
+    isShared: true
   - name: harbor
     svc: harbor-harbor-core
     namespace: harbor
@@ -41,6 +43,7 @@ services:
     paths: [/api/, /c/, /chartrepo/, /service/]
     forwardPath: true
     hide: true
+    isShared: true
   - name: harbor
     svc: harbor-harbor-registry
     namespace: harbor
@@ -56,15 +59,18 @@ services:
     namespace: harbor
     ownHost: true
     hide: true
+    isShared: true
   - name: otomi
     namespace: shared
     ownHost: true
+    isShared: true
     svc: otomi-api
     hide: true
     paths: [/api/]
   - name: otomi
     namespace: shared
     ownHost: true
+    isShared: true
     svc: otomi-web
     paths: [/]
     authz:
@@ -140,6 +146,12 @@ teamConfig:
       svc: harbor-harbor-portal
       namespace: harbor
       isShared: true
+      host: harbor
+    - name: httpbin
+      namespace: shared
+      svc: httpbin
+      isShared: true
+      host: httpbin
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view

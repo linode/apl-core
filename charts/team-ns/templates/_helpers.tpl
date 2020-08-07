@@ -130,15 +130,6 @@ spec:
             servicePort: 80
           path: /tracing
 {{- else }}
-  {{- if and (not .hasAuth) (eq .provider "nginx") }}
-    - host: {{ $appsDomain }}
-      http:
-        paths:
-        - backend:
-            serviceName: oauth2-proxy
-            servicePort: 80
-          path: /oauth2/userinfo
-  {{- end }}
   {{- range $domain, $paths := $routes }}
     - host: {{ $domain }}
       http:

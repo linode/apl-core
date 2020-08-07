@@ -107,7 +107,7 @@ spec:
       from: 
         - source:
             requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
-      {{- if (and (not $s.isShared) (not (and $s.isCore (eq $v.teamId "admin")))) }}
+      {{- if not $s.isShared }}
       when:
         - key: request.auth.claims[groups]
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]

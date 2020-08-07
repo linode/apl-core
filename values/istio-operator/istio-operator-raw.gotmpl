@@ -137,7 +137,7 @@ resources:
       configPatches:
         - applyTo: HTTP_FILTER
           match:
-            context: SIDECAR_INBOUND
+            context: ANY
             listener:
               portNumber: 80
               filterChain:
