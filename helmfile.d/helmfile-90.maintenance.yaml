@@ -6,7 +6,7 @@ bases:
 
 releases:
   - name: jobs
-    installed: true
+    installed: false
     <<: *jobs
     values:
       - ../values/jobs/harbor.gotmpl

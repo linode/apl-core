@@ -20,11 +20,11 @@ releases:
     namespace: harbor
     <<: *raw
   - name: otomi-api
-    installed: true
+    installed: false
     namespace: shared
     <<: *default
   - name: otomi-web
-    installed: true
+    installed: false
     namespace: shared
     <<: *default
   - name: redis-shared
