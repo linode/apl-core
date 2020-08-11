@@ -1,0 +1,22 @@
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: std
+  parameters:
+    kind: Managed
+    storageaccounttype: {{ .type }}
+  provisioner: rook-ceph.rbd.csi.ceph.com
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: fast
+  parameters:
+    kind: Managed
+    storageaccounttype: {{ .type }}
+  provisioner: rook-ceph.rbd.csi.ceph.com
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
