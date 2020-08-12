@@ -1,5 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts.istio }}
+{{- $k := $v | get "charts.keycloak" dict }}
+{{- $realm := $k | get "realm" "master" }}
+{{- $o := $v.oidc }}
+{{- $provider := index $o $o.provider }}
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
@@ -84,7 +88,10 @@ resources:
           contextPath: '/kiali'
           dashboard:
             auth:
-              strategy: anonymous
+              strategy: anonymous #openid
+              # openid:
+              #   issuer_uri: {{ $provider | getOrNil "issuer" | default (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) }}
+              #   client_id: {{ $v.oidc.clientID }}
             jaegerURL: https://{{ $appsDomain }}/tracing/
             grafanaURL: https://{{ $appsDomain }}/grafana-istio/
         gateways:
@@ -116,6 +123,29 @@ resources:
           env:
             GF_SERVER_ROOT_URL: /grafana-istio/
           contextPath: '/grafana-istio'
+          grafana.ini:
+            "auth.anonymous":
+              enabled: false
+              # enabled: true
+              org_role: Admin
+              org_name: Main Org.
+            "auth.generic_oauth":
+              # enabled: false
+              enabled: true
+              name: OAuth
+              org_role: Admin
+              allow_sign_up: true
+              # allow_sign_up: false
+              oauth_auto_login: true # false = so we can login with admin / bladibla
+              client_id: {{ $v.oidc.clientID }}
+              client_secret: {{ $v.oidc.clientSecret }}
+              scopes: openid
+              # auth_url: {{ $v.oidc.authUrl }}
+              auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
+              # token_url: {{ $v.oidc.tokenUrl }}
+              token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
+              api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+              role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
         meshConfig:
           enableAutoMtls: true
           accessLogFile: "/dev/stdout"
