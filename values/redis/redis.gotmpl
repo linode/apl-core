@@ -5,4 +5,10 @@ cluster:
 persistence:
   size: 1Gi
 usePassword: false
+master:
+  priorityClassName: "system-cluster-critical"
+slave:
+  priorityClassName: "system-cluster-critical"
+metrics:
+  priorityClassName: "system-cluster-critical"
 # password: bla

@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v.charts "cert-manager" }}
+global:
+  priorityClassName: "system-cluster-critical"
 prometheus:
   servicemonitor:
     enabled: true

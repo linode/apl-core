@@ -48,7 +48,8 @@ controller:
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
-{{- end }}    
+{{- end }}
+  priorityClassName: "system-cluster-critical"
   extraArgs:
     v: 3
   config:
@@ -79,3 +80,11 @@ controller:
     omitClusterIP: true
   publishService:
     enabled: true
+
+  admissionWebhooks:
+    patch:
+      priorityClassName: "system-cluster-critical"
+
+
+defaultBackend:
+  priorityClassName: "system-cluster-critical"

@@ -33,8 +33,10 @@ prometheusOperator:
   manageCrds: false # chart > 8.2.0
   kubeletService:
     enabled: true
+  priorityClassName: "system-cluster-critical"
 prometheus:
   prometheusSpec:
+    priorityClassName: "system-node-critical"
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.customer $v.cluster.provider $v.cluster.name | lower | quote }}
     # podMetadata:
@@ -59,6 +61,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
+    priorityClassName: "system-cluster-critical"
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -236,3 +239,4 @@ kube-state-metrics:
 prometheus-node-exporter:
   rbac:
     pspEnabled: false
+  priorityClassName: "system-node-critical"

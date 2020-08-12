@@ -9,6 +9,7 @@ keycloak:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}
     deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
+  priorityClassName: "system-cluster-critical"
 
 postgresql:
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
@@ -22,6 +23,11 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: po-prometheus
+  master:
+    priorityClassName: "system-cluster-critical"
+  slave:
+    priorityClassName: "system-cluster-critical"
+
 prometheus:
   operator:
     enabled: true

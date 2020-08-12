@@ -18,6 +18,7 @@ config:
   clientSecret: {{ $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
+priorityClassName: "system-cluster-critical"
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}
