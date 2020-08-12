@@ -19,7 +19,8 @@ controller:
   {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-  minAvailable: 2
+  replicaCount: 2
+  minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" (ne $v.cluster.provider "azure") }}
     minReplicas: 1
