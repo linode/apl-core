@@ -2,11 +2,13 @@
 set -e
 CMD=$1
 
-VALUES_DIR=$PWD
+ENV_DIR=$PWD
 OTOMI_IMAGE=''
 OTOMI_MODE='values'
 K8S_CONTEXT=''
 KUBE_CONTEXT_REFRESH=0
+DOCKER_WORKING_DIR='/home/app/stack'
+
 
 [[ -z "$CMD" ]] && echo "Missing command argument" && exit 2
 
@@ -38,7 +40,7 @@ function set_otomi_image {
   if [[ "$OTOMI_MODE" == 'stack' ]]; then
     local version="v$(jq --raw-output .version package.json)"
   else
-    source $VALUES_DIR/env.ini
+    source $ENV_DIR/env.ini
     local version
     eval "version=\$${CLUSTER}Version"
   fi
@@ -57,8 +59,8 @@ validate_env() {
 
 function drun() {
   echo $@
-  # execute any kubectl command to refresh access token
   if [ $KUBE_CONTEXT_REFRESH -eq 1 ]; then
+    # execute any kubectl command to refresh access token
     kubectl version >/dev/null
   fi
   docker run -it --rm \
@@ -69,12 +71,12 @@ function drun() {
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v $ENV_DIR:$PWD/env \
+    -v $ENV_DIR:/home/app/stack/env \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
     -e CLUSTER="$CLUSTER" \
-    -w $PWD \
+    -w $DOCKER_WORKING_DIR \
     $OTOMI_IMAGE \
     $@
 }
@@ -96,14 +98,17 @@ function execute {
       break
       ;;
     aws)
+      DOCKER_WORKING_DIR=$PWD
       drun aws "${@:2}"
       break
       ;;
     az)
+      DOCKER_WORKING_DIR=$PWD
       drun az "${@:2}"
       break
       ;;
     gcloud)
+      DOCKER_WORKING_DIR=$PWD
       drun gcloud "${@:2}"
       break
       ;;
@@ -128,14 +133,12 @@ function execute {
       break
       ;;
     *)
-      echo "Sorry, I don't understand"
-      exit 1
+      drun $@
+      break
       ;;
     esac
   done
 }
-
-echo "Otomi"
 
 validate_env
 set_otomi_mode
