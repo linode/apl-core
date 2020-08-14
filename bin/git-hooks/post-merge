@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+. bin/utils.sh
+
+drun bin/crypt.sh dec
