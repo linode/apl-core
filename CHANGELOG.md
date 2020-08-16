@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.81](https://github.com/redkubes/otomi-stack/compare/v0.10.80...v0.10.81) (2020-08-16)
+
+
+### Bug Fixes
+
+* nginx hpa, prom metrics [ci skip] ([a148172](https://github.com/redkubes/otomi-stack/commit/a148172211d42c085fca6339fb8f77367c7cba78))
+* upgraded+fixed prom op, fixed nginx replicas ([5553329](https://github.com/redkubes/otomi-stack/commit/555332938c470bc7baab9b0b0728be7a5a7d0488))
+
 ### [0.10.80](https://github.com/redkubes/otomi-stack/compare/v0.10.79...v0.10.80) (2020-08-07)
 
 
