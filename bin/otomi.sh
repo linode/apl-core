@@ -56,14 +56,13 @@ function drun() {
   fi
 
   docker run -it --rm \
-    -v $PWD:$PWD \
     -v /tmp:/tmp \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
     -v ${HELM_CONFIG}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v ${ENV_DIR}:/home/app/stack/env \
+    -v ${ENV_DIR}:${$STACK_DIR}/env \
     $STACK_VOLUME \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
     -e CLOUD="$CLOUD" \
