@@ -14,16 +14,10 @@ VERBOSE=0
 [[ -z "$CMD" ]] && echo "Missing command argument" && exit 2
 
 function set_k8s_context {
-
-  if [[ "$CLOUD" == "aws" ]]; then
-    K8S_CONTEXT="${CUSTOMER}-eks-${CLUSTER}"
-  elif [[ "$CLOUD" == "azure" ]]; then
-    K8S_CONTEXT="${CUSTOMER}-aks-${CLUSTER}-admin"
-  elif [[ "$CLOUD" == "google" ]]; then
-    K8S_CONTEXT="gke_${PROJECT}_${GOOGLE_REGION}_${CLUSTER_NAME}"
-  else
-    K8S_CONTEXT="${CUSTOMER}-${CLOUD}-${CLUSTER}"
-  fi
+  local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
+  source $ENV_FILE
+  [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
+  kubectl config use-context $K8S_CONTEXT > /dev/null
 }
 
 function set_otomi_image {
@@ -62,7 +56,7 @@ function drun() {
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v ${ENV_DIR}:${$STACK_DIR}/env \
+    -v ${ENV_DIR}:${STACK_DIR}/env \
     $STACK_VOLUME \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
     -e CLOUD="$CLOUD" \
@@ -85,8 +79,20 @@ function execute {
       drun helmfile "${@:2}"
       break
       ;;
+    helmfile-build-values)
+      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build
+      break
+      ;;
+    helmfile-template)
+      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps
+      break
+      ;;
     hfd)
-      drun helmfile "${@:2}" --skip-deps
+      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" --skip-deps
+      break
+      ;;
+    hft)
+      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi skipping | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi "helmfile-"
       break
       ;;
     aws)
@@ -139,8 +145,9 @@ function verbose_env {
     echo "STACK_DIR=$STACK_DIR"
   fi 
 }
-verbose_env
+
 validate_env
 set_otomi_image
 set_k8s_context
+verbose_env
 execute $@
