@@ -22,11 +22,6 @@ kubeScheduler:
   enabled: false
 kubeProxy:
   enabled: false
-{{- if eq $v.cluster.provider "azure" }}
-kubelet:
-  serviceMonitor:
-    https: false
-{{- end }}
 {{- end }}
 prometheusOperator:
   configReloaderCpu: 200m

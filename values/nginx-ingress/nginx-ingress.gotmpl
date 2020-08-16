@@ -4,6 +4,14 @@
 rbac:
   create: true
 defaultBackend:
+  useComponentLabel: true
+  resources:
+    limits:
+      cpu: 20m
+      memory: 20Mi
+    requests:
+      cpu: 10m
+      memory: 10Mi  
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
@@ -14,19 +22,29 @@ defaultBackend:
     omitClusterIP: true
 
 controller:
-  {{- with ($n | get "resources" dict) }}
+  useComponentLabel: true
+  {{- if (hasKey $n "resources") }}
   resources: {{- $n.resources | toYaml | nindent 4 }}
+  {{- else }}
+  # set fixed allocation with limits same as requests
+  resources:
+    limits:
+        cpu: 500m
+        memory: 512Mi
+    requests:
+        cpu: 100m
+        memory: 256Mi
   {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
-    enabled: {{ $n | get "autoscaling.enabled" (ne $v.cluster.provider "azure") }}
+    enabled: {{ $n | get "autoscaling.enabled" true }}
     minReplicas: 1
     maxReplicas: 12
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
