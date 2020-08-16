@@ -4,10 +4,11 @@ CMD=$1
 
 ENV_DIR=$PWD
 OTOMI_IMAGE=''
-OTOMI_MODE='values'
 K8S_CONTEXT=''
 KUBE_CONTEXT_REFRESH=0
-DOCKER_WORKING_DIR='/home/app/stack'
+STACK_DIR=${STACK_DIR:-'/home/app/stack'}
+DOCKER_WORKING_DIR=$STACK_DIR
+VERBOSE=0
 
 
 [[ -z "$CMD" ]] && echo "Missing command argument" && exit 2
@@ -23,31 +24,14 @@ function set_k8s_context {
   else
     K8S_CONTEXT="${CUSTOMER}-${CLOUD}-${CLUSTER}"
   fi
-  echo "K8S_CONTEXT=$K8S_CONTEXT"
-}
-
-function set_otomi_mode {
-  if [[ "$(basename $PWD)" == "otomi-stack" ]]; then
-    OTOMI_MODE='stack'
-  else
-    OTOMI_MODE='values'
-  fi
-  echo "OTOMI_MODE=$OTOMI_MODE"
 }
 
 function set_otomi_image {
-
-  if [[ "$OTOMI_MODE" == 'stack' ]]; then
-    local version="v$(jq --raw-output .version package.json)"
-  else
-    source $ENV_DIR/env.ini
-    local version
-    eval "version=\$${CLUSTER}Version"
-  fi
+  source $ENV_DIR/env.ini
+  local version
+  eval "version=\$${CLUSTER}Version"
   [[ -z "$version" ]] && echo "Unable to retrieve otomi-stack image version" && exit 1
   OTOMI_IMAGE="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
-  echo "OTOMI_IMAGE=$OTOMI_IMAGE"
-
 }
 
 validate_env() {
@@ -58,20 +42,29 @@ validate_env() {
 }
 
 function drun() {
-  echo $@
+  if [ $VERBOSE -eq 1 ]; then
+    echo "Command: $@"
+  fi
+  
+  # execute any kubectl command to refresh access token
   if [ $KUBE_CONTEXT_REFRESH -eq 1 ]; then
-    # execute any kubectl command to refresh access token
     kubectl version >/dev/null
   fi
+
+  if [[ "$STACK_DIR" != "/home/app/stack" ]]; then
+    STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
+  fi
+
   docker run -it --rm \
     -v $PWD:$PWD \
     -v /tmp:/tmp \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
-    -v $HELM_CONFIG:/home/app/.config/helm \
+    -v ${HELM_CONFIG}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v $ENV_DIR:/home/app/stack/env \
+    -v ${ENV_DIR}:/home/app/stack/env \
+    $STACK_VOLUME \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
@@ -98,17 +91,14 @@ function execute {
       break
       ;;
     aws)
-      DOCKER_WORKING_DIR=$PWD
       drun aws "${@:2}"
       break
       ;;
     az)
-      DOCKER_WORKING_DIR=$PWD
       drun az "${@:2}"
       break
       ;;
     gcloud)
-      DOCKER_WORKING_DIR=$PWD
       drun gcloud "${@:2}"
       break
       ;;
@@ -140,10 +130,18 @@ function execute {
   done
 }
 
+
+function verbose_env {
+  if [ $VERBOSE -eq 1 ]; then
+    echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
+    echo "K8S_CONTEXT=$K8S_CONTEXT"
+    echo "KUBE_CONTEXT_REFRESH=$KUBE_CONTEXT_REFRESH"
+    echo "OTOMI_IMAGE=$OTOMI_IMAGE"
+    echo "STACK_DIR=$STACK_DIR"
+  fi 
+}
+verbose_env
 validate_env
-set_otomi_mode
 set_otomi_image
 set_k8s_context
 execute $@
- 
-echo "That's all folks!"
