@@ -1,4 +1,14 @@
 #/usr/bin/env bash
+#####################################################################################
+##
+## NOTE:
+## This is a command line tool to operate on otomi-stack
+## All comands and executed in docker container
+## Keep this file simple and do not depend on any external file.
+## Do not use any non standard tooling. Only Docker is needed.
+## If you need to use any extra binaries then most probably you want to run in inside docker container.
+##
+#####################################################################################
 set -e
 CMD=$1
 
