@@ -4,9 +4,8 @@ tasks:
   ingress-azure:
     type: cronjob
     enabled: {{ eq $v.cluster.provider "azure" }}
-    # enabled: {{ eq $v.cluster.provider "azure" }}
     image: otomi/tools:{{ $v.toolsVersion }}
-    configmap:
+    config:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!
