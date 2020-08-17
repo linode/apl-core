@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 . bin/colors.sh
+set -e
+ENV_DIR=${ENV_DIR:-./env}
 
-[[ -z "$ENV_DIR"]] && echo "Error<$0>: Missing ENV_DIR environment variable" && exit 2
-
-tpl="values.drone/.drone.tpl.yaml"
+tpl="$PWD/bin/drone/.drone.tpl.yaml"
 source ${ENV_DIR}/env.ini
 cd ${ENV_DIR}/env >/dev/null
 for c in */; do

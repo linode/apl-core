@@ -18,6 +18,7 @@ K8S_CONTEXT=''
 KUBE_CONTEXT_REFRESH=0
 STACK_DIR=${STACK_DIR:-'/home/app/stack'}
 DOCKER_WORKING_DIR=$STACK_DIR
+DOCKER_TTY_PARAMS=''
 VERBOSE=0
 
 
@@ -26,6 +27,7 @@ function show_usage {
   echo "The $0 usage:
     aws - run command on Amazon Web Services CLI
     az - run command on Azure CLI
+    bash - run interactive bash
     deploy - execute otomi-stack deploy script
     decrypt - decrypt values to env/*.dec files
     encrypt - encrypt values encrypt all env/*.dec files
@@ -77,7 +79,7 @@ function drun() {
     STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
   fi
 
-  docker run -it --rm \
+  docker run $DOCKER_PARAMS --rm \
     -v /tmp:/tmp \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
     -v ${HELM_CONFIG}:/home/app/.config/helm \
@@ -153,6 +155,11 @@ function execute {
       ;;
     install-drone-pipelines)
       drun bin/gen-drone.sh
+      break
+      ;;
+    bash)
+      DOCKER_TTY_PARAMS='-it'
+      drun $@
       break
       ;;
     *)

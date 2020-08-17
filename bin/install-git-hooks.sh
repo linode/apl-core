@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 set -e
-[[ -z "$ENV_DIR"]] && echo "Error<$0>: Missing ENV_DIR environment variable" && exit 2
-
+ENV_DIR=${ENV_DIR:-./env}
 TARGET=${ENV_DIR}/.git/hooks/
 echo "Installing git hooks at: $TARGET"
-cp bin/values.git-hooks/* $TARGET
+cp bin/git-hooks/* $TARGET
 echo "SUCCESS: Installed git hooks at: $TARGET"
