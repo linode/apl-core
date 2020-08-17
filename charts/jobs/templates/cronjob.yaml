@@ -32,15 +32,15 @@ spec:
                 requests:
                   cpu: 100m
                   memory: 128Mi
-          envFrom:
-          {{- if $spec.secret }}
-          - secretRef:
-              name: {{ $name }}
-          {{- end }}
-          {{- if $spec.config }}
-          - configMapRef:
-              name: {{ $name }}
-          {{- end }}
+              envFrom:
+              {{- if $spec.secret }}
+              - secretRef:
+                  name: {{ $name }}
+              {{- end }}
+              {{- if $spec.config }}
+              - configMapRef:
+                  name: {{ $name }}
+              {{- end }}
           restartPolicy: Never
 {{ end }}
 {{ end }}
