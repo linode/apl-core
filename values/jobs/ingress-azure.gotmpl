@@ -9,5 +9,6 @@ tasks:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!
+    serviceAccountName: cluster-maintainer
     script: |
       {{- readFile "scripts/delete-pod.sh" | nindent 6 }}
