@@ -11,8 +11,26 @@ DOCKER_WORKING_DIR=$STACK_DIR
 VERBOSE=0
 
 
-[[ -z "$CMD" ]] && echo "Missing command argument" && exit 2
 
+function show_usage {
+  echo "The $0 usage:
+    aws - run command on Amazon Web Services CLI
+    az - run command on Azure CLI
+    deploy - execute otomi-stack deploy script
+    decrypt - decrypt values to env/*.dec files
+    encrypt - encrypt values encrypt all env/*.dec files
+    gcloud - run command on Google Cloud CLI
+    helm - run helm
+    helmfile - run helmfile
+    helmfile-values - show merged values 
+    helmfile-template
+    hfd - run helmfile with selected environment
+    hft - run helmfile template with selected environment in silent mode
+    install-git-hooks - set pre-commit and post-merge git hooks
+    install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
+  "
+
+}
 function set_k8s_context {
   local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
   source $ENV_FILE
@@ -79,12 +97,12 @@ function execute {
       drun helmfile "${@:2}"
       break
       ;;
-    helmfile-build-values)
+    helmfile-values)
       drun helmfile -f helmfile.tpl/helmfile-dump.yaml build
       break
       ;;
     helmfile-template)
-      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps
+      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps 
       break
       ;;
     hfd)
@@ -119,11 +137,11 @@ function execute {
       drun bin/crypt.sh dec
       break
       ;;
-    set-values-git-hooks)
+    install-git-hooks)
       drun bin/install-git-hooks.sh
       break
       ;;
-    set-values-drone-pipelines)
+    install-drone-pipelines)
       drun bin/gen-drone.sh
       break
       ;;
@@ -145,6 +163,8 @@ function verbose_env {
     echo "STACK_DIR=$STACK_DIR"
   fi 
 }
+
+[[ -z "$CMD" ]] && echo "Missing command argument" && show_usage && exit 2
 
 validate_env
 set_otomi_image
