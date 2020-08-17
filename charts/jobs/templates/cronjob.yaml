@@ -18,6 +18,7 @@ spec:
     spec:
       template:
         spec:
+          serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
           containers:
             - image: "{{ $spec.image }}"
               name: {{ $name }}
