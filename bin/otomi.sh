@@ -35,7 +35,8 @@ function show_usage {
     helm - run helm
     helmfile - run helmfile
     helmfile-values - show merged values 
-    helmfile-template
+    helmfile-template - run helmfile template
+    help - print this help
     hfd - run helmfile with selected environment
     hft - run helmfile template with selected environment in silent mode
     install-git-hooks - set pre-commit and post-merge git hooks
@@ -79,7 +80,7 @@ function drun() {
     STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
   fi
 
-  docker run $DOCKER_PARAMS --rm \
+  docker run $DOCKER_TTY_PARAMS --rm \
     -v /tmp:/tmp \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
     -v ${HELM_CONFIG}:/home/app/.config/helm \
@@ -160,6 +161,10 @@ function execute {
     bash)
       DOCKER_TTY_PARAMS='-it'
       drun $@
+      break
+      ;;
+    help)
+      show_usage
       break
       ;;
     *)
