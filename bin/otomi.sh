@@ -60,10 +60,10 @@ function set_otomi_image {
 }
 
 validate_env() {
-  if [[ -z "$CLOUD" ||  -z "$GCLOUD_SERVICE_KEY" || -z "$CLUSTER" ]]; then
-    echo "Error<$0>: Missing environment variables"
-    exit 2
-  fi
+  [[ -z "$CLOUD" ]] && echo "Error<$0>: The CLOUD environment variable is not set" && exit 2
+  [[ -z "$CLUSTER" ]] && echo "Error<$0>: The CLUSTER environment variable is not set" && exit 2
+  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error<$0>: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  return 0
 }
 
 function drun() {
@@ -188,8 +188,9 @@ function verbose_env {
 
 [[ -z "$CMD" ]] && echo "Missing command argument" && show_usage && exit 2
 
-validate_env
+
 set_otomi_image
 set_k8s_context
 verbose_env
+validate_env
 execute $@
