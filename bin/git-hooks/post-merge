@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-. bin/utils.sh
-
-drun bin/crypt.sh dec
+set -e
+[ ! -x "otomi.sh" ] && echo "ERROR: the file otomi.sh does not exist or is not executable." 
+./otomi.sh decrypt

@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-. bin/utils.sh
+
+set -e
+[ ! -x "otomi.sh" ] && echo "ERROR: the file otomi.sh does not exist or is not executable." 
 
 match=".drone.tpl.yaml\|env.ini"
 if git diff --cached --name-only | grep $match >/dev/null; then
-  bin/gen-drone.sh
+  ./otomi.sh bin/gen-drone.sh
   git add */.drone.*.yml
 fi
-drun bin/crypt.sh enc
+./otomi.sh encrypt
 git add *.yaml
 exit 0
