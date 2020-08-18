@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.88](https://github.com/redkubes/otomi-stack/compare/v0.10.87...v0.10.88) (2020-08-18)
+
+
+### Bug Fixes
+
+* docker secrets attached to sa [ci skip] ([66aab07](https://github.com/redkubes/otomi-stack/commit/66aab075e3559ffe4288ad3f9c635df617a9cc12))
+
 ### [0.10.87](https://github.com/redkubes/otomi-stack/compare/v0.10.86...v0.10.87) (2020-08-18)
 
 
