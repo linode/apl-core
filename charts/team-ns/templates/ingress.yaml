@@ -46,8 +46,10 @@
 {{- end }}
 
 # public services
+{{- if gt (len $public) 0 }}
 {{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
+{{- end }}
 
 {{- if $v.cluster.hasCloudLB }}
 # external LB ingress
