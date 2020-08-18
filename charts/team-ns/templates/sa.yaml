@@ -8,6 +8,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  labels: {{- include "chart-labels" $ | nindent 4 }}
   name: default
 {{- if gt (len $pullSecrets) 0 }}
 imagePullSecrets:
