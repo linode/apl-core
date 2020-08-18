@@ -142,7 +142,7 @@ releases:
                     {{- range $s := $team.services }}
                     {{- if hasKey $s "isPublic" }}
                     {{- $url := printf "%s%s" ($s | get "domain" (printf "%s.%s%s.%s" $s.name $v.cluster.teamPrefix $teamId $v.cluster.domain)) ($s | get "path" "/") }}
-                    {{- if and (not (has $url $registry)) }}
+                    {{- if and (not (has $url $registry)) (not (hasKey $s "scaleToZero")) }}
                     {{- $registry = append $registry $url }}
                     - https://{{ $url }}
                     {{- end }}
