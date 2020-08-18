@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.86](https://github.com/redkubes/otomi-stack/compare/v0.10.85...v0.10.86) (2020-08-18)
+
+
+### Bug Fixes
+
+* disabling probe for scaleToZero [ci skip] ([ff89dcf](https://github.com/redkubes/otomi-stack/commit/ff89dcfee4c6d4fff30c374a66538a74b0edec3c))
+
 ### [0.10.85](https://github.com/redkubes/otomi-stack/compare/v0.10.84...v0.10.85) (2020-08-18)
 
 
