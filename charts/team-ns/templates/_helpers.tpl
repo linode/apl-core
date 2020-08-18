@@ -21,7 +21,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
 {{- define "dockercfg" -}}
-{"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password }}","email":"not@val.id","auth":"{{ .password | b64enc}}"}}}
+{"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"not@val.id","auth":"{{ .password | b64enc}}"}}}
 {{- end -}}
 {{- define "ingress" -}}
 
