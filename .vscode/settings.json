@@ -14,5 +14,7 @@
     "*.tpl": "yaml",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm"
-  }
+  },
+  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini"],
+  "cSpell.ignoreWords": ["backoff", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"]
 }

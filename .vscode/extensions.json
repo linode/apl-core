@@ -10,6 +10,7 @@
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "pascalreitermann93.vscode-yaml-sort",
     "redhat.vscode-yaml",
+    "streetsidesoftware.code-spell-checker",
     "xyz.local-history"
   ]
 }
