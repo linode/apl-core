@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.83](https://github.com/redkubes/otomi-stack/compare/v0.10.82...v0.10.83) (2020-08-18)
+
+
+### Bug Fixes
+
+* create service account for jobs and cronjobs ([b481a3b](https://github.com/redkubes/otomi-stack/commit/b481a3ba4d522cf7ce8a7f49ea8fb610ba7f5d9c))
+* envoy crd, secrets [ci skip] ([f4634d2](https://github.com/redkubes/otomi-stack/commit/f4634d2aa62f31b6d8f49e35273c881e0e4f883b))
+* provide env to cronjob ([53a8315](https://github.com/redkubes/otomi-stack/commit/53a831510522a409b7bda6882e468c66b027e287))
+* typos and add spell checker config ([18f5f20](https://github.com/redkubes/otomi-stack/commit/18f5f2099b6271b0d424c0bcb844e77c89e1ddf1))
+
 ### [0.10.82](https://github.com/redkubes/otomi-stack/compare/v0.10.81...v0.10.82) (2020-08-18)
 
 
