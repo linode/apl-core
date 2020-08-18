@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.82](https://github.com/redkubes/otomi-stack/compare/v0.10.81...v0.10.82) (2020-08-18)
+
+
+### Bug Fixes
+
+* add condition for creating public ingress ([e33f871](https://github.com/redkubes/otomi-stack/commit/e33f871d10bdd77b4bbecc2bf4a16ca4ae7d64e6))
+
 ### [0.10.81](https://github.com/redkubes/otomi-stack/compare/v0.10.80...v0.10.81) (2020-08-16)
 
 
