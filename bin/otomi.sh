@@ -12,16 +12,25 @@
 set -e
 CMD=$1
 
+CUSTOMER=''
 ENV_DIR=$PWD
 OTOMI_IMAGE=''
 K8S_CONTEXT=''
-KUBE_CONTEXT_REFRESH=0
+SET_KUBE_CONTEXT=1
 STACK_DIR=${STACK_DIR:-'/home/app/stack'}
 DOCKER_WORKING_DIR=$STACK_DIR
 DOCKER_TTY_PARAMS=''
 VERBOSE=0
+HELM_CONFIG=''
 
-
+function set_helm_config {
+  uname -a | grep -i darwin >/dev/null
+  if [ $? -eq 0 ]; then
+    HELM_CONFIG="$HOME/Library/Preferences/helm"
+  else
+    HELM_CONFIG="$HOME/.config/helm"
+  fi
+}
 
 function show_usage {
   echo "The $0 usage:
@@ -48,15 +57,24 @@ function set_k8s_context {
   local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
   source $ENV_FILE
   [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
+  return 0
+}
+
+function use_k8s_context {
   kubectl config use-context $K8S_CONTEXT > /dev/null
 }
 
-function set_otomi_image {
-  source $ENV_DIR/env.ini
+function set_env_ini {
+  local INIT_PATH=$ENV_DIR/env.ini
+  source $INIT_PATH
   local version
   eval "version=\$${CLUSTER}Version"
-  [[ -z "$version" ]] && echo "Unable to retrieve otomi-stack image version" && exit 1
+  [[ -z "$version" ]] && echo "Unable to evaluate '${CLUSTER}Version' variable from $INIT_PATH" && exit 1
+  [[ -z "$customer" ]] && echo "Unable to evaluate 'customer' variable from $INIT_PATH" && exit 1
+
   OTOMI_IMAGE="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
+  CUSTOMER=$customer
+  return 0
 }
 
 validate_env() {
@@ -67,12 +85,15 @@ validate_env() {
 }
 
 function drun() {
+  CMD=$@
   if [ $VERBOSE -eq 1 ]; then
-    echo "Command: $@"
+    echo "Command: $CMD"
   fi
   
   # execute any kubectl command to refresh access token
-  if [ $KUBE_CONTEXT_REFRESH -eq 1 ]; then
+  if [ $SET_KUBE_CONTEXT -eq 1 ]; then
+    set_k8s_context
+    use_k8s_context
     kubectl version >/dev/null
   fi
 
@@ -89,13 +110,14 @@ function drun() {
     -v ${HOME}/.azure:/home/app/.azure \
     -v ${ENV_DIR}:${STACK_DIR}/env \
     $STACK_VOLUME \
-    -e K8S_CONTEXT="$K8S_CONTEXT" \
+    -e CUSTOMER=$CUSTOMER \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
     -e CLUSTER="$CLUSTER" \
+    -e K8S_CONTEXT="$K8S_CONTEXT" \
     -w $DOCKER_WORKING_DIR \
     $OTOMI_IMAGE \
-    $@
+    $CMD
 }
 
 function execute {
@@ -127,14 +149,17 @@ function execute {
       break
       ;;
     aws)
+      SET_KUBE_CONTEXT=0
       drun aws "${@:2}"
       break
       ;;
     az)
+      SET_KUBE_CONTEXT=0
       drun az "${@:2}"
       break
       ;;
     gcloud)
+      SET_KUBE_CONTEXT=0
       drun gcloud "${@:2}"
       break
       ;;
@@ -151,10 +176,12 @@ function execute {
       break
       ;;
     install-git-hooks)
+      SET_KUBE_CONTEXT=0
       drun bin/install-git-hooks.sh
       break
       ;;
     install-drone-pipelines)
+      SET_KUBE_CONTEXT=0
       drun bin/gen-drone.sh
       break
       ;;
@@ -180,7 +207,7 @@ function verbose_env {
   if [ $VERBOSE -eq 1 ]; then
     echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
     echo "K8S_CONTEXT=$K8S_CONTEXT"
-    echo "KUBE_CONTEXT_REFRESH=$KUBE_CONTEXT_REFRESH"
+    echo "SET_KUBE_CONTEXT=$SET_KUBE_CONTEXT"
     echo "OTOMI_IMAGE=$OTOMI_IMAGE"
     echo "STACK_DIR=$STACK_DIR"
   fi 
@@ -189,8 +216,8 @@ function verbose_env {
 [[ -z "$CMD" ]] && echo "Missing command argument" && show_usage && exit 2
 
 
-set_otomi_image
-set_k8s_context
+set_env_ini
 verbose_env
+set_helm_config
 validate_env
 execute $@
