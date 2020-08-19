@@ -13,6 +13,7 @@ spec:
     metadata:
       labels: {{- include "jobs.labels" $ | nindent 8 }}
     spec:
+      serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
       containers:
       - image: "{{ $spec.image }}"
         name: "{{ $name }}"

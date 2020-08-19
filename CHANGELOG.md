@@ -2,6 +2,85 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.90](https://github.com/redkubes/otomi-stack/compare/v0.10.89...v0.10.90) (2020-08-19)
+
+
+### Bug Fixes
+
+* probes [ci skip] ([86a5f96](https://github.com/redkubes/otomi-stack/commit/86a5f9657754cac921b62dbb72eef446f555f58c))
+
+### [0.10.89](https://github.com/redkubes/otomi-stack/compare/v0.10.88...v0.10.89) (2020-08-18)
+
+
+### Bug Fixes
+
+* team svc probes [ci skip] ([97c05d4](https://github.com/redkubes/otomi-stack/commit/97c05d46ac4d385c516e7a2faf1c885542520dd4))
+
+### [0.10.88](https://github.com/redkubes/otomi-stack/compare/v0.10.87...v0.10.88) (2020-08-18)
+
+
+### Bug Fixes
+
+* docker secrets attached to sa [ci skip] ([66aab07](https://github.com/redkubes/otomi-stack/commit/66aab075e3559ffe4288ad3f9c635df617a9cc12))
+
+### [0.10.87](https://github.com/redkubes/otomi-stack/compare/v0.10.86...v0.10.87) (2020-08-18)
+
+
+### Bug Fixes
+
+* docker secret [ci skip] ([4a27cd0](https://github.com/redkubes/otomi-stack/commit/4a27cd00486e3cccd5d1424fead11cb7a8c13833))
+
+### [0.10.86](https://github.com/redkubes/otomi-stack/compare/v0.10.85...v0.10.86) (2020-08-18)
+
+
+### Bug Fixes
+
+* disabling probe for scaleToZero [ci skip] ([ff89dcf](https://github.com/redkubes/otomi-stack/commit/ff89dcfee4c6d4fff30c374a66538a74b0edec3c))
+
+### [0.10.85](https://github.com/redkubes/otomi-stack/compare/v0.10.84...v0.10.85) (2020-08-18)
+
+
+### Bug Fixes
+
+* harbor team names ordering [ci skip] ([5e7c7af](https://github.com/redkubes/otomi-stack/commit/5e7c7af00119efb2e661b002f2804def96f7b76d))
+
+### [0.10.84](https://github.com/redkubes/otomi-stack/compare/v0.10.83...v0.10.84) (2020-08-18)
+
+
+### Bug Fixes
+
+* generic secret entries [ci skip] ([95afbc9](https://github.com/redkubes/otomi-stack/commit/95afbc972621f7f2d7c03cf3aec80f7f7bf3a6c3))
+
+
+### Others
+
+* **release:** 0.10.83 ([8ae0c0a](https://github.com/redkubes/otomi-stack/commit/8ae0c0a227cf808c94952ebf28c824737be30b4a))
+
+### [0.10.83](https://github.com/redkubes/otomi-stack/compare/v0.10.82...v0.10.83) (2020-08-18)
+
+
+### Bug Fixes
+
+* create service account for jobs and cronjobs ([b481a3b](https://github.com/redkubes/otomi-stack/commit/b481a3ba4d522cf7ce8a7f49ea8fb610ba7f5d9c))
+* envoy crd, secrets [ci skip] ([f4634d2](https://github.com/redkubes/otomi-stack/commit/f4634d2aa62f31b6d8f49e35273c881e0e4f883b))
+* provide env to cronjob ([53a8315](https://github.com/redkubes/otomi-stack/commit/53a831510522a409b7bda6882e468c66b027e287))
+* typos and add spell checker config ([18f5f20](https://github.com/redkubes/otomi-stack/commit/18f5f2099b6271b0d424c0bcb844e77c89e1ddf1))
+
+### [0.10.82](https://github.com/redkubes/otomi-stack/compare/v0.10.81...v0.10.82) (2020-08-18)
+
+
+### Bug Fixes
+
+* add condition for creating public ingress ([e33f871](https://github.com/redkubes/otomi-stack/commit/e33f871d10bdd77b4bbecc2bf4a16ca4ae7d64e6))
+
+### [0.10.81](https://github.com/redkubes/otomi-stack/compare/v0.10.80...v0.10.81) (2020-08-16)
+
+
+### Bug Fixes
+
+* nginx hpa, prom metrics [ci skip] ([a148172](https://github.com/redkubes/otomi-stack/commit/a148172211d42c085fca6339fb8f77367c7cba78))
+* upgraded+fixed prom op, fixed nginx replicas ([5553329](https://github.com/redkubes/otomi-stack/commit/555332938c470bc7baab9b0b0728be7a5a7d0488))
+
 ### [0.10.80](https://github.com/redkubes/otomi-stack/compare/v0.10.79...v0.10.80) (2020-08-07)
 
 
