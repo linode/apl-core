@@ -129,6 +129,10 @@ function execute {
       break
       ;;
     helmfile)
+      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" --skip-deps
+      break
+      ;;
+    helmfile-raw)
       drun helmfile "${@:2}"
       break
       ;;
@@ -137,14 +141,10 @@ function execute {
       break
       ;;
     helmfile-template)
-      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps 
+      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" template --skip-deps
       break
       ;;
-    hfd)
-      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" --skip-deps
-      break
-      ;;
-    hft)
+    helmfile-template-quiet)
       drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi skipping | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi "helmfile-"
       break
       ;;
