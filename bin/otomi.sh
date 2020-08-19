@@ -45,12 +45,12 @@ function show_usage {
     exec - execute custom command
     gcloud - run CLI for Google Cloud
     helm - run helm
-    helmfile - run helmfile
+    helmfile - run helmfile with selected environment <CLOUD>-<CLUSTER>
+    helmfile-raw - run helmfile without any additional parameters
     helmfile-values - show merged values 
     helmfile-template - run helmfile template
+    helmfile-template-quiet - run helmfile template (only print yaml documents)
     help - print this help
-    hfd - run helmfile with selected environment
-    hft - run helmfile template with selected environment in silent mode
     install-git-hooks - set pre-commit and post-merge git hooks
     install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
   "
