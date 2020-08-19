@@ -34,13 +34,15 @@ function set_helm_config {
 
 function show_usage {
   echo "The $0 usage:
-    aws - run command on Amazon Web Services CLI
-    az - run command on Azure CLI
+    aws - run CLI AWS
+    az - run CLI for Azure
     bash - run interactive bash
     deploy - execute otomi-stack deploy script
     decrypt - decrypt values to env/*.dec files
     encrypt - encrypt values encrypt all env/*.dec files
-    gcloud - run command on Google Cloud CLI
+    eksctl - run CLI for Amazon EKS
+    exec - execute custom command
+    gcloud - run CLI for Google Cloud
     helm - run helm
     helmfile - run helmfile
     helmfile-values - show merged values 
@@ -158,6 +160,11 @@ function execute {
       drun az "${@:2}"
       break
       ;;
+    eksctl)
+      SET_KUBE_CONTEXT=0
+      drun eksctl "${@:2}"
+      break
+      ;; 
     gcloud)
       SET_KUBE_CONTEXT=0
       drun gcloud "${@:2}"
@@ -194,8 +201,11 @@ function execute {
       show_usage
       break
       ;;
-    *)
+    exec)
       drun $@
+      ;;
+    *)
+      show_usage
       break
       ;;
     esac
