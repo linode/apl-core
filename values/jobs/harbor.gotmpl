@@ -11,7 +11,7 @@
 {{- $keycloak := $c.keycloak -}}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 tasks:
   harbor:
     type: job
@@ -26,7 +26,7 @@ tasks:
     config:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
       HARBOR_ADMIN_GROUP_NAME: "team-admin"
-      TEAM_NAMES: '{{ $teamNames | toJson }}'
+      TEAM_NAMES: '{{ tpl $joinTpl $teamNames }}'
       OIDC_ENDPOINT: "https://keycloak.{{ $v.cluster.domain }}/realms/{{ $keycloak.realm }}"
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'

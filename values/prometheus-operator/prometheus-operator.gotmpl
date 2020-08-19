@@ -22,11 +22,6 @@ kubeScheduler:
   enabled: false
 kubeProxy:
   enabled: false
-{{- if eq $v.cluster.provider "azure" }}
-kubelet:
-  serviceMonitor:
-    https: false
-{{- end }}
 {{- end }}
 prometheusOperator:
   configReloaderCpu: 200m
@@ -100,7 +95,7 @@ alertmanager:
         - match:
             severity: critical
           receiver: critical
-        {{- if not $isRedkubesMonitored }}
+        {{- if $isRedkubesMonitored }}
           continue: true
         - match:
             severity: critical
@@ -128,7 +123,7 @@ alertmanager:
           - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
             send_resolved: true
       {{- end }}
-      {{- if not $isRedkubesMonitored }}
+      {{- if $isRedkubesMonitored }}
       - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:

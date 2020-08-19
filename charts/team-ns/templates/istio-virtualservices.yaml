@@ -6,7 +6,11 @@
 {{- if not (or $s.internal (hasKey $s "host")) }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
+{{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
+# {{- $knativeServiceDomain }}
+# {{- $domain }}
+{{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithPipe" $s.paths)) "")) }}
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -128,6 +132,7 @@ spec:
         - source:
             notRequestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
 ---
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

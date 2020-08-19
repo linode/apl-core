@@ -1,0 +1,18 @@
+{{- $v := .Values }}
+{{- $pullSecrets := list }}
+{{- range $s := $v.secrets }}
+  {{- if eq $s.type "docker-registry" }}
+    {{- $pullSecrets = (append $pullSecrets $s) }}
+  {{- end }}
+{{- end }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels: {{- include "chart-labels" $ | nindent 4 }}
+  name: default
+{{- if gt (len $pullSecrets) 0 }}
+imagePullSecrets:
+{{- range $s := $pullSecrets }}
+  - name: {{ $s.name }}
+{{- end }}
+{{- end }}
