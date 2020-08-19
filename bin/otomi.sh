@@ -53,6 +53,7 @@ function show_usage {
     help - print this help
     install-git-hooks - set pre-commit and post-merge git hooks
     install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
+    kubectl - run kubectl
   "
 }
 
@@ -205,6 +206,10 @@ function execute {
       ;;
     exec)
       drun "${@:2}"
+      break
+      ;;
+    kubectl)
+      drun kubectl "${@:2}"
       break
       ;;
     *)
