@@ -30,6 +30,7 @@ function set_helm_config {
   else
     HELM_CONFIG="$HOME/.config/helm"
   fi
+  return 0
 }
 
 function show_usage {
@@ -53,8 +54,8 @@ function show_usage {
     install-git-hooks - set pre-commit and post-merge git hooks
     install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
   "
-
 }
+
 function set_k8s_context {
   local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
   source $ENV_FILE
@@ -64,6 +65,7 @@ function set_k8s_context {
 
 function use_k8s_context {
   kubectl config use-context $K8S_CONTEXT > /dev/null
+  return 0
 }
 
 function set_env_ini {
@@ -194,7 +196,7 @@ function execute {
       ;;
     bash)
       DOCKER_TTY_PARAMS='-it'
-      drun $@
+      drun bash
       break
       ;;
     help)
@@ -202,11 +204,13 @@ function execute {
       break
       ;;
     exec)
-      drun $@
+      drun "${@:2}"
+      break
       ;;
     *)
       show_usage
-      break
+      echo "Unknown command: $@"
+      exit 1
       ;;
     esac
   done
