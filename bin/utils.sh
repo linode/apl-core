@@ -37,11 +37,11 @@ if [ $noEnvError -eq 0 ]; then
         d run -it --rm \
           -v $PWD:$PWD \
           -v /tmp:/tmp \
-          -v /Users/codar/.kube/config:/home/app/.kube/config \
+          -v ~/.kube/config:/home/app/.kube/config \
           -v $HELM_CONFIG:/home/app/.config/helm \
-          -v /Users/codar/.config/gcloud:/home/app/.config/gcloud \
-          -v /Users/codar/.aws:/home/app/.aws \
-          -v /Users/codar/.azure:/home/app/.azure \
+          -v ~/.config/gcloud:/home/app/.config/gcloud \
+          -v ~/.aws:/home/app/.aws \
+          -v ~/.azure:/home/app/.azure \
           -v $ENV_DIR:$PWD/env \
           -e K8S_CONTEXT=$K8S_CONTEXT \
           -e CLOUD=$CLOUD \
