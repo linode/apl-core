@@ -14,8 +14,8 @@
 set -e
 command=$1
 
-VERBOSE=1
-
+VERBOSE=0
+env_dir=${ENV_DIR:-$PWD}
 customer=''
 otomi_image=''
 set_kube_context=1
@@ -60,7 +60,7 @@ function show_usage {
 }
 
 function set_k8s_context {
-  local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
+  local ENV_FILE="${env_dir}/env/${CLOUD}/${CLUSTER}.sh"
   [ ! -f $ENV_FILE ] && echo "The file '${ENV_FILE}' does not exist" && exit 1
   source $ENV_FILE
   [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
@@ -73,7 +73,7 @@ function use_k8s_context {
 }
 
 function set_env_ini {
-  local init_path=$ENV_DIR/env.ini
+  local init_path=$env_dir/env.ini
   [ ! -f $init_path ] && echo "The file '${init_path}' does not exist" && exit 1
   source $init_path
   local version
@@ -114,7 +114,7 @@ function drun() {
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v ${ENV_DIR}:${stack_dir}/env \
+    -v ${env_dir}:${stack_dir}/env \
     $stack_volume \
     -e CUSTOMER=$customer \
     -e CLOUD="$CLOUD" \
@@ -225,7 +225,7 @@ function execute {
 
 function verbose_env {
   echo "docker_working_dir=$docker_working_dir"
-  echo "ENV_DIR=$ENV_DIR"
+  echo "env_dir=$env_dir"
   echo "stack_dir=$stack_dir"
   echo "otomi_image=$otomi_image"
   echo "set_kube_context=$set_kube_context"
@@ -241,7 +241,8 @@ function set_env_and_stack_dir {
     docker_working_dir=$stack_dir
     [[ -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment variable is not set" && exit 2
   else
-    ENV_DIR=$PWD
+    [[ ! -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR envirnment shall not be set" && exit 2
+    env_dir=$PWD
   fi
   return 0
 }
