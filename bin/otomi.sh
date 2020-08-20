@@ -11,27 +11,26 @@
 ## If you need to use any extra binaries then most probably you want to run as a part of otomi-stack image.
 ##
 #####################################################################################
-set -ex
-CMD=$1
+set -e
+command=$1
 
-CUSTOMER=''
-CURRENT_DIR_NAME=$(basename "$PWD")
-OTOMI_IMAGE=''
-K8S_CONTEXT=''
-SET_KUBE_CONTEXT=1
-DOCKER_WORKING_DIR='/home/app/stack'
-STACK_DIR=$DOCKER_WORKING_DIR
-DOCKER_TTY_PARAMS=''
 VERBOSE=1
-HELM_CONFIG=''
+
+customer=''
+otomi_image=''
+set_kube_context=1
+docker_working_dir='/home/app/stack'
+stack_dir=$docker_working_dir
+docker_terminal_params=''
+helm_config=''
 
 
 function set_helm_config {
   uname -a | grep -i darwin >/dev/null
   if [ $? -eq 0 ]; then
-    HELM_CONFIG="$HOME/Library/Preferences/helm"
+    helm_config="$HOME/Library/Preferences/helm"
   else
-    HELM_CONFIG="$HOME/.config/helm"
+    helm_config="$HOME/.config/helm"
   fi
   return 0
 }
@@ -74,15 +73,15 @@ function use_k8s_context {
 }
 
 function set_env_ini {
-  local INIT_PATH=$ENV_DIR/env.ini
-  source $INIT_PATH
+  local init_path=$ENV_DIR/env.ini
+  [ ! -f $init_path ] && echo "The file '${init_path}' does not exist" && exit 1
+  source $init_path
   local version
   eval "version=\$${CLUSTER}Version"
-  [[ -z "$version" ]] && echo "Unable to evaluate '${CLUSTER}Version' variable from $INIT_PATH" && exit 1
-  [[ -z "$customer" ]] && echo "Unable to evaluate 'customer' variable from $INIT_PATH" && exit 1
+  [[ -z "$version" ]] && echo "Unable to evaluate '${CLUSTER}Version' variable from $init_path" && exit 1
+  [[ -z "$customer" ]] && echo "Unable to evaluate 'customer' variable from $init_path" && exit 1
 
-  OTOMI_IMAGE="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
-  CUSTOMER=$customer
+  otomi_image="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
   return 0
 }
 
@@ -94,43 +93,43 @@ validate_env() {
 }
 
 function drun() {
-  CMD=$@
+  command=$@
   
   # execute any kubectl command to refresh access token
-  if [ $SET_KUBE_CONTEXT -eq 1 ]; then
+  if [ $set_kube_context -eq 1 ]; then
     set_k8s_context
     use_k8s_context
     kubectl version >/dev/null
   fi
 
   if [ $VERBOSE -eq 1 ]; then
-    echo "Command: $CMD"
+    echo "Command: $command"
     verbose_env
   fi
 
-  docker run $DOCKER_TTY_PARAMS --rm \
+  docker run $docker_terminal_params --rm \
     -v /tmp:/tmp \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
-    -v ${HELM_CONFIG}:/home/app/.config/helm \
+    -v ${helm_config}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
-    -v ${ENV_DIR}:${STACK_DIR}/env \
-    $STACK_VOLUME \
-    -e CUSTOMER=$CUSTOMER \
+    -v ${ENV_DIR}:${stack_dir}/env \
+    $stack_volume \
+    -e CUSTOMER=$customer \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
     -e CLUSTER="$CLUSTER" \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
-    -w $DOCKER_WORKING_DIR \
-    $OTOMI_IMAGE \
-    $CMD
+    -w $docker_working_dir \
+    $otomi_image \
+    $command
 }
 
 function execute {
   while :
   do 
-    case $CMD in
+    case $command in
     helm)
       drun helm "${@:2}"
       break
@@ -156,22 +155,22 @@ function execute {
       break
       ;;
     aws)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun aws "${@:2}"
       break
       ;;
     az)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun az "${@:2}"
       break
       ;;
     eksctl)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun eksctl "${@:2}"
       break
       ;; 
     gcloud)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun gcloud "${@:2}"
       break
       ;;
@@ -188,17 +187,17 @@ function execute {
       break
       ;;
     install-git-hooks)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun bin/install-git-hooks.sh
       break
       ;;
     install-drone-pipelines)
-      SET_KUBE_CONTEXT=0
+      set_kube_context=0
       drun bin/gen-drone.sh
       break
       ;;
     bash)
-      DOCKER_TTY_PARAMS='-it'
+      docker_terminal_params='-it'
       drun bash
       break
       ;;
@@ -225,19 +224,21 @@ function execute {
 
 
 function verbose_env {
-  echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
+  echo "docker_working_dir=$docker_working_dir"
   echo "ENV_DIR=$ENV_DIR"
-  echo "STACK_DIR=$STACK_DIR"
-  echo "OTOMI_IMAGE=$OTOMI_IMAGE"
-  echo "SET_KUBE_CONTEXT=$SET_KUBE_CONTEXT"
+  echo "stack_dir=$stack_dir"
+  echo "otomi_image=$otomi_image"
+  echo "set_kube_context=$set_kube_context"
   echo "K8S_CONTEXT=$K8S_CONTEXT"
 }
 
 function set_env_and_stack_dir {
-  if [[ "$CURRENT_DIR_NAME" == 'otomi-stack' ]]; then
-    STACK_DIR=$PWD
-    STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
-    DOCKER_WORKING_DIR=$STACK_DIR
+  local cwd=$(basename "$PWD")
+
+  if [[ "$cwd" == 'otomi-stack' ]]; then
+    stack_dir=$PWD
+    stack_volume="-v ${stack_dir}:${stack_dir}"
+    docker_working_dir=$stack_dir
     [[ -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment variable is not set" && exit 2
   else
     ENV_DIR=$PWD
@@ -245,7 +246,7 @@ function set_env_and_stack_dir {
   return 0
 }
 
-[[ -z "$CMD" ]] && echo "Missing command argument" && show_usage && exit 2
+[[ -z "$command" ]] && echo "Missing command argument" && show_usage && exit 2
 
 validate_env
 set_env_and_stack_dir
