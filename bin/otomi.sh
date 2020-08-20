@@ -14,24 +14,26 @@
 set -e
 command=$1
 
+# VERBOSE - export this varibale to run this script in verbose mode
 VERBOSE=0
-env_dir=${ENV_DIR:-$PWD}
-customer=''
-otomi_image=''
+# MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
+MOUNT_TMP_DIR=0
+
+# set_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 set_kube_context=1
-docker_working_dir='/home/app/stack'
-stack_dir=$docker_working_dir
+# A path to directory with values directory
+env_dir=$PWD
+
+mount_stack_dir=0
+stack_dir='/home/app/stack'
+otomi_image=''
 docker_terminal_params=''
 helm_config=''
 
 
 function set_helm_config {
-  uname -a | grep -i darwin >/dev/null
-  if [ $? -eq 0 ]; then
-    helm_config="$HOME/Library/Preferences/helm"
-  else
-    helm_config="$HOME/.config/helm"
-  fi
+  helm_config="$HOME/.config/helm"
+  uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
   return 0
 }
 
@@ -60,10 +62,10 @@ function show_usage {
 }
 
 function set_k8s_context {
-  local ENV_FILE="${env_dir}/env/${CLOUD}/${CLUSTER}.sh"
-  [ ! -f $ENV_FILE ] && echo "The file '${ENV_FILE}' does not exist" && exit 1
-  source $ENV_FILE
-  [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
+  local env_sh_path="${env_dir}/env/${CLOUD}/${CLUSTER}.sh"
+  [ ! -f $env_sh_path ] && echo "Error: The file '${env_sh_path}' does not exist" && exit 1
+  source $env_sh_path
+  [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_sh_path" && exit 1
   return 0
 }
 
@@ -74,26 +76,28 @@ function use_k8s_context {
 
 function set_env_ini {
   local init_path=$env_dir/env.ini
-  [ ! -f $init_path ] && echo "The file '${init_path}' does not exist" && exit 1
+  [ ! -f $init_path ] && echo "Error: The file '${init_path}' does not exist" && exit 1
   source $init_path
   local version
   eval "version=\$${CLUSTER}Version"
-  [[ -z "$version" ]] && echo "Unable to evaluate '${CLUSTER}Version' variable from $init_path" && exit 1
-  [[ -z "$customer" ]] && echo "Unable to evaluate 'customer' variable from $init_path" && exit 1
+  [[ -z "$version" ]] && echo "Error: Unable to evaluate '${CLUSTER}Version' variable from $init_path" && exit 1
+  [[ -z "$customer" ]] && echo "Error: Unable to evaluate 'customer' variable from $init_path" && exit 1
 
   otomi_image="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
   return 0
 }
 
-validate_env() {
-  [[ -z "$CLOUD" ]] && echo "Error<$0>: The CLOUD environment variable is not set" && exit 2
-  [[ -z "$CLUSTER" ]] && echo "Error<$0>: The CLUSTER environment variable is not set" && exit 2
-  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error<$0>: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+validate_required_env() {
+  [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && exit 2
+  [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
+  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   return 0
 }
 
 function drun() {
-  command=$@
+  local command=$@
+  local tmp_volume=''
+  local stack_volume=''
   
   # execute any kubectl command to refresh access token
   if [ $set_kube_context -eq 1 ]; then
@@ -102,13 +106,21 @@ function drun() {
     kubectl version >/dev/null
   fi
 
+  if [ $MOUNT_TMP_DIR -eq 1 ]; then
+    tmp_volume=" -v /tmp:/tmp"
+  fi
+
+  if [ $mount_stack_dir -eq 1 ]; then
+    stack_volume="-v ${stack_dir}:${stack_dir}"
+  fi
+
   if [ $VERBOSE -eq 1 ]; then
     echo "Command: $command"
     verbose_env
   fi
 
   docker run $docker_terminal_params --rm \
-    -v /tmp:/tmp \
+    $tmp_volume \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
     -v ${helm_config}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
@@ -116,12 +128,12 @@ function drun() {
     -v ${HOME}/.azure:/home/app/.azure \
     -v ${env_dir}:${stack_dir}/env \
     $stack_volume \
-    -e CUSTOMER=$customer \
+    -e CUSTOMER="$customer" \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
     -e CLUSTER="$CLUSTER" \
     -e K8S_CONTEXT="$K8S_CONTEXT" \
-    -w $docker_working_dir \
+    -w $stack_dir \
     $otomi_image \
     $command
 }
@@ -215,7 +227,7 @@ function execute {
       ;;
     *)
       show_usage
-      echo "Unknown command: $@"
+      echo "Error: Unknown command: $@"
       exit 1
       ;;
     esac
@@ -224,9 +236,9 @@ function execute {
 
 
 function verbose_env {
-  echo "docker_working_dir=$docker_working_dir"
   echo "env_dir=$env_dir"
   echo "stack_dir=$stack_dir"
+  echo "helm_config=$helm_config"
   echo "otomi_image=$otomi_image"
   echo "set_kube_context=$set_kube_context"
   echo "K8S_CONTEXT=$K8S_CONTEXT"
@@ -236,20 +248,19 @@ function set_env_and_stack_dir {
   local cwd=$(basename "$PWD")
 
   if [[ "$cwd" == 'otomi-stack' ]]; then
-    stack_dir=$PWD
-    stack_volume="-v ${stack_dir}:${stack_dir}"
-    docker_working_dir=$stack_dir
     [[ -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment variable is not set" && exit 2
+    stack_dir=$PWD
+    env_dir=$ENV_DIR
+    mount_stack_dir=1
   else
     [[ ! -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR envirnment shall not be set" && exit 2
-    env_dir=$PWD
   fi
   return 0
 }
 
-[[ -z "$command" ]] && echo "Missing command argument" && show_usage && exit 2
+[[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2
 
-validate_env
+validate_required_env
 set_env_and_stack_dir
 set_env_ini
 set_helm_config
