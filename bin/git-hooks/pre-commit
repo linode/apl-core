@@ -5,7 +5,7 @@ set -e
 
 match=".drone.tpl.yaml\|env.ini"
 if git diff --cached --name-only | grep $match >/dev/null; then
-  ./otomi.sh bin/gen-drone.sh
+  ./otomi.sh install-drone-pipelines
   git add */.drone.*.yml
 fi
 ./otomi.sh encrypt
