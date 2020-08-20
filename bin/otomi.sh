@@ -11,19 +11,20 @@
 ## If you need to use any extra binaries then most probably you want to run as a part of otomi-stack image.
 ##
 #####################################################################################
-set -e
+set -ex
 CMD=$1
 
 CUSTOMER=''
-ENV_DIR=$PWD
+CURRENT_DIR_NAME=$(basename "$PWD")
 OTOMI_IMAGE=''
 K8S_CONTEXT=''
 SET_KUBE_CONTEXT=1
-STACK_DIR=${STACK_DIR:-'/home/app/stack'}
-DOCKER_WORKING_DIR=$STACK_DIR
+DOCKER_WORKING_DIR='/home/app/stack'
+STACK_DIR=$DOCKER_WORKING_DIR
 DOCKER_TTY_PARAMS=''
-VERBOSE=0
+VERBOSE=1
 HELM_CONFIG=''
+
 
 function set_helm_config {
   uname -a | grep -i darwin >/dev/null
@@ -61,6 +62,7 @@ function show_usage {
 
 function set_k8s_context {
   local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
+  [ ! -f $ENV_FILE ] && echo "The file '${ENV_FILE}' does not exist" && exit 1
   source $ENV_FILE
   [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
   return 0
@@ -93,9 +95,6 @@ validate_env() {
 
 function drun() {
   CMD=$@
-  if [ $VERBOSE -eq 1 ]; then
-    echo "Command: $CMD"
-  fi
   
   # execute any kubectl command to refresh access token
   if [ $SET_KUBE_CONTEXT -eq 1 ]; then
@@ -104,8 +103,9 @@ function drun() {
     kubectl version >/dev/null
   fi
 
-  if [[ "$STACK_DIR" != "/home/app/stack" ]]; then
-    STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
+  if [ $VERBOSE -eq 1 ]; then
+    echo "Command: $CMD"
+    verbose_env
   fi
 
   docker run $DOCKER_TTY_PARAMS --rm \
@@ -225,20 +225,30 @@ function execute {
 
 
 function verbose_env {
-  if [ $VERBOSE -eq 1 ]; then
-    echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
-    echo "K8S_CONTEXT=$K8S_CONTEXT"
-    echo "SET_KUBE_CONTEXT=$SET_KUBE_CONTEXT"
-    echo "OTOMI_IMAGE=$OTOMI_IMAGE"
-    echo "STACK_DIR=$STACK_DIR"
-  fi 
+  echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
+  echo "ENV_DIR=$ENV_DIR"
+  echo "STACK_DIR=$STACK_DIR"
+  echo "OTOMI_IMAGE=$OTOMI_IMAGE"
+  echo "SET_KUBE_CONTEXT=$SET_KUBE_CONTEXT"
+  echo "K8S_CONTEXT=$K8S_CONTEXT"
+}
+
+function set_env_and_stack_dir {
+  if [[ "$CURRENT_DIR_NAME" == 'otomi-stack' ]]; then
+    STACK_DIR=$PWD
+    STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
+    DOCKER_WORKING_DIR=$STACK_DIR
+    [[ -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment variable is not set" && exit 2
+  else
+    ENV_DIR=$PWD
+  fi
+  return 0
 }
 
 [[ -z "$CMD" ]] && echo "Missing command argument" && show_usage && exit 2
 
-
-set_env_ini
-verbose_env
-set_helm_config
 validate_env
+set_env_and_stack_dir
+set_env_ini
+set_helm_config
 execute $@
