@@ -1,153 +1,125 @@
-#/usr/bin/env bash
-set -e
-CMD=$1
+#!/usr/bin/env bash
+printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
+PACKAGE_VERSION=$(cat package.json |
+  grep '"version"' |
+  head -1 |
+  awk -F: '{ print $2 }' |
+  sed 's/[",]//g' |
+  tr -d '[[:space:]]')
 
-ENV_DIR=$PWD
-OTOMI_IMAGE=''
-K8S_CONTEXT=''
-KUBE_CONTEXT_REFRESH=0
-STACK_DIR=${STACK_DIR:-'/home/app/stack'}
-DOCKER_WORKING_DIR=$STACK_DIR
-VERBOSE=1
+. bin/env.sh
+noEnvError=$?
 
+. bin/aliases.sh
+function drun() { $@; }
 
-[[ -z "$CMD" ]] && echo "Missing command argument" && exit 2
+if [ $noEnvError -eq 0 ]; then
+  img=eu.gcr.io/otomi-cloud/otomi-stack:v$PACKAGE_VERSION
+  d --version &>/dev/null
+  hasDocker=$?
+  d ps &>/dev/null
+  dockerRunning=$?
 
-function set_k8s_context {
-  local ENV_FILE="${ENV_DIR}/env/${CLOUD}/${CLUSTER}.sh"
-  source $ENV_FILE
-  [[ -z "$K8S_CONTEXT" ]] && echo "The K8S_CONTEXT env is not defined in $ENV_FILE" && exit 1
-  kubectl config use-context $K8S_CONTEXT > /dev/null
-}
-
-function set_otomi_image {
-  source $ENV_DIR/env.ini
-  local version
-  eval "version=\$${CLUSTER}Version"
-  [[ -z "$version" ]] && echo "Unable to retrieve otomi-stack image version" && exit 1
-  OTOMI_IMAGE="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
-}
-
-validate_env() {
-  if [[ -z "$CLOUD" ||  -z "$GCLOUD_SERVICE_KEY" || -z "$CLUSTER" ]]; then
-    echo "Error<$0>: Missing environment variables"
-    exit 2
+  # if not has docker: ci
+  if [ $hasDocker -eq 0 ]; then
+    echo "Found docker client, assuming developer context."
+    uname -a | grep -i darwin >/dev/null
+    if [ $? -eq 0 ]; then
+      HELM_CONFIG="$HOME/Library/Preferences/helm"
+    else
+      HELM_CONFIG="$HOME/.config/helm"
+    fi
+    if [ $dockerRunning -eq 0 ]; then
+      echo "Found docker running, will use $img instead of local tooling"
+      function drun() {
+        # execute any kubectl command to refresh access token
+        k version >/dev/null
+        d run -it --rm -v $PWD:$PWD \
+          -v /tmp:/tmp \
+          -v ~/.kube/config:/home/app/.kube/config \
+          -v $HELM_CONFIG:/home/app/.config/helm \
+          -v ~/.config/gcloud:/home/app/.config/gcloud \
+          -v ~/.aws:/home/app/.aws \
+          -v ~/.azure:/home/app/.azure \
+          -v $ENV_DIR:$PWD/env \
+          -e K8S_CONTEXT=$K8S_CONTEXT \
+          -e CLOUD=$CLOUD \
+          -e GCLOUD_SERVICE_KEY=$GCLOUD_SERVICE_KEY \
+          -e CLUSTER=$CLUSTER \
+          -w $PWD $img $@
+      }
+      # unalias h hf_ hk aw gc &>/dev/null
+      function h() { drun helm $@; }
+      function hf_() { drun helmfile $@; }
+      function hk() { drun helm delete $@; }
+      function aw() { drun aws $@; }
+      function az() { drun az $@; }
+      function gc() { drun gcloud $@; }
+      export drun h hf_ hk
+    else
+      echo "No docker daemon running. Please start and source aliases again."
+    fi
   fi
-}
 
-function drun() {
-  if [ $VERBOSE -eq 1 ]; then
-    echo "Command: $@"
+  function kpo() {
+    labels=$1
+    shift
+    pod=$(k get po -l "$labels" $@ -ojsonpath='{.items[0].metadata.name}')
+    k delete po $pod $@
+  }
+  function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
+  function kad() { k delete "$@" --all; }
+  function kdnp() {
+    for ns in default kube-system system monitoring ingress shared; do
+      kad networkpolicy -n $ns
+    done
+  }
+  # force erase all namespaces
+  function kkns() {
+    k proxy &
+    k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize"; rm  "$0.json"'
+    kk
+  }
+  # erase entire stack but keep nodes
+  function kkc() {
+    k delete crd $(k get crd | egrep "cert-manager|istio|ory|coreos|knative|velero" | awk '{print $1}')
+    hf_ -e ${CLOUD}-$CLUSTER destroy
+    k delete ns --all
+  }
+
+  if [ $hasDocker -eq 0 ]; then
+    kcu $K8S_CONTEXT >/dev/null
+    if [ $? -ne 0 ] && [ "$CLOUD" = "aws" ]; then
+      # check if we have a mismatching context for an aws cluster
+      chek=$(k config get-contexts | grep $K8S_CONTEXT | awk '{print $2}')
+      aw eks --region $AWS_REGION update-kubeconfig --name $K8S_CONTEXT
+      echo "Renaming aws context '$chek' to '$K8S_CONTEXT'"
+      k config rename-context $chek $K8S_CONTEXT
+      kcu $K8S_CONTEXT
+    fi
+
+    function hf() {
+      err=$(kcu $K8S_CONTEXT)
+      # first test still in right context, else bork
+      if [ $? -ne 0 ]; then
+        echo $err
+      else
+        drun helmfile -e ${CLOUD}-$CLUSTER $@
+      fi
+    }
+  else
+    function hf() {
+      helmfile -e ${CLOUD}-$CLUSTER $@
+    }
   fi
-  
-  # execute any kubectl command to refresh access token
-  if [ $KUBE_CONTEXT_REFRESH -eq 1 ]; then
-    kubectl version >/dev/null
-  fi
 
-  if [[ "$STACK_DIR" != "/home/app/stack" ]]; then
-    STACK_VOLUME="-v ${STACK_DIR}:${STACK_DIR}"
-  fi
+  # environment scoped, no deps, so faster:
+  function hfd() { hf $@ --skip-deps; }
+  # templates only without cruft:
+  function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
-  docker run -it --rm \
-    -v /tmp:/tmp \
-    -v ${HOME}/.kube/config:/home/app/.kube/config \
-    -v ${HELM_CONFIG}:/home/app/.config/helm \
-    -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
-    -v ${HOME}/.aws:/home/app/.aws \
-    -v ${HOME}/.azure:/home/app/.azure \
-    -v ${ENV_DIR}:${STACK_DIR}/env \
-    $STACK_VOLUME \
-    -e K8S_CONTEXT="$K8S_CONTEXT" \
-    -e CLOUD="$CLOUD" \
-    -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-    -e CLUSTER="$CLUSTER" \
-    -w $DOCKER_WORKING_DIR \
-    $OTOMI_IMAGE \
-    $@
-}
-
-function execute {
-  while :
-  do 
-    case $CMD in
-    helm)
-      drun helm "${@:2}"
-      break
-      ;;
-    helmfile)
-      drun helmfile "${@:2}"
-      break
-      ;;
-    helmfile-build-values)
-      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build
-      break
-      ;;
-    helmfile-template)
-      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps 
-      break
-      ;;
-    hfd) 
-      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" --skip-deps
-      break
-      ;;
-    hft) 
-      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi skipping | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi "helmfile-"
-      break
-      ;;
-    aws)
-      drun aws "${@:2}"
-      break
-      ;;
-    az)
-      drun az "${@:2}"
-      break
-      ;;
-    gcloud)
-      drun gcloud "${@:2}"
-      break
-      ;;
-    deploy)
-      drun bin/deploy.sh
-      break
-      ;;
-    encrypt)
-      drun bin/crypt.sh enc
-      break
-      ;;
-    decrypt)
-      drun bin/crypt.sh dec
-      break
-      ;;
-    set-values-git-hooks)
-      drun bin/install-git-hooks.sh
-      break
-      ;;
-    set-values-drone-pipelines)
-      drun bin/gen-drone.sh
-      break
-      ;;
-    *)
-      drun $@
-      break
-      ;;
-    esac
-  done
-}
-
-
-function verbose_env {
-  if [ $VERBOSE -eq 1 ]; then
-    echo "DOCKER_WORKING_DIR=$DOCKER_WORKING_DIR"
-    echo "K8S_CONTEXT=$K8S_CONTEXT"
-    echo "KUBE_CONTEXT_REFRESH=$KUBE_CONTEXT_REFRESH"
-    echo "OTOMI_IMAGE=$OTOMI_IMAGE"
-    echo "STACK_DIR=$STACK_DIR"
-  fi 
-}
-
-validate_env
-set_otomi_image
-set_k8s_context
-verbose_env
-execute $@
+  printf "${COLOR_LIGHT_PURPLE}DONE!${COLOR_NC}\n"
+  printf "${COLOR_LIGHT_BLUE}Aliases loaded targeting ${COLOR_LIGHT_GREEN}CLOUD ${COLOR_YELLOW}$CLOUD${COLOR_LIGHT_BLUE} and ${COLOR_LIGHT_GREEN}CLUSTER ${COLOR_YELLOW}$CLUSTER${COLOR_NC}\n"
+else
+  printf "${COLOR_RED}ERROR!${COLOR_NC}\n"
+fi
