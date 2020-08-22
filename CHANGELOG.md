@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.91](https://github.com/redkubes/otomi-stack/compare/v0.10.90...v0.10.91) (2020-08-22)
+
+
+### Features
+
+* **service:** knative service can have secretKeyRef [ci skip] ([e59f38c](https://github.com/redkubes/otomi-stack/commit/e59f38cb7e2a26e944b7c264849900c3bacd729c))
+
 ### [0.10.90](https://github.com/redkubes/otomi-stack/compare/v0.10.89...v0.10.90) (2020-08-19)
 
 
