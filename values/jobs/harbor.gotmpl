@@ -31,8 +31,5 @@ tasks:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: 'false'
-    script: |
-      set -e
-      npm run tasks:harbor-init
-      npm run tasks:harbor
+    script: npm run tasks:harbor
 
