@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.96](https://github.com/redkubes/otomi-stack/compare/v0.10.95...v0.10.96) (2020-08-23)
+
+
+### Bug Fixes
+
+* oidc groups, keycloak values, pullserets [ci skip] ([aef874e](https://github.com/redkubes/otomi-stack/commit/aef874e4afc0ab5328d2a642037bc994924a6c87))
+
+
+### Others
+
+* **release:** 0.10.95 ([04fcde9](https://github.com/redkubes/otomi-stack/commit/04fcde95a31ecf3ea26b5686e3c9115c3382f0d8))
+
 ### [0.10.95](https://github.com/redkubes/otomi-stack/compare/v0.10.94...v0.10.95) (2020-08-23)
 
 
