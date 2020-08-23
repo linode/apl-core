@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
+{{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
@@ -33,12 +34,20 @@ spec:
     spec:
       containers:
         - image: {{ $k.image.repository }}:{{ $k.image.tag }}
+          {{- if or $k.env $k.secrets }}
           env:
-            - name: TEAM_NAME
-              value: {{ $s.name }}
-            {{- with $k.env }}
-            {{- . | toYaml | nindent 12 }}
+            {{- with $k.env }}{{ . | toYaml | nindent 12 }}{{ end }}
+            {{- range $secret := ($k.secrets | default list) }} 
+              {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
+              {{- range $entry := $entries }}
+            - name: {{ $entry | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $entry }}
+              {{- end }}
             {{- end }}
+          {{- end }}
           {{- with $k.envFrom }}
           envFrom: {{- . | toYaml | nindent 12 }}
           {{- end }}

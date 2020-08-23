@@ -10,3 +10,7 @@ releases:
     labels:
       pkg: istio-operator
     <<: *default
+  - name: keycloak
+    installed: true
+    namespace: keycloak
+    <<: *default

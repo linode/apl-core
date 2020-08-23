@@ -7,10 +7,6 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: keycloak
-    installed: {{ $c | get "keycloak.enabled" true }}
-    namespace: keycloak
-    <<: *default
   - name: harbor
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor

@@ -6,9 +6,7 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: jobs-ingress-azure
-    installed: {{ eq $v.cluster.provider "azure" }}
-    <<: *jobs
-  - name: jobs-harbor
+  - name: jobs-harbor-init
     installed: {{ $c | get "harbor.enabled" false }}
     <<: *jobs
+

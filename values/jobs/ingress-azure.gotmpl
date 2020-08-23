@@ -3,7 +3,6 @@
 tasks:
   ingress-azure:
     type: cronjob
-    enabled: {{ eq $v.cluster.provider "azure" }}
     image: otomi/tools:{{ $v.toolsVersion }}
     config:
       LABELS: "app=ingress-azure"
