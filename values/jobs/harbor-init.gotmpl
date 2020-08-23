@@ -3,6 +3,7 @@
 tasks:
   harbor-init:
     type: job
+    enabled: true
     description: Copy letsencrypt cert
     image: otomi/tools:{{ $v.toolsVersion }}
     script: kubectl -n istio-system get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
