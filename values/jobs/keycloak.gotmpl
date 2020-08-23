@@ -35,6 +35,7 @@ tasks:
       IDP_OIDC_URL: {{ $idp.issuer }}
       REDIRECT_URIS: '[
           "https://auth.{{ $v.cluster.domain }}/*",
+          "https://apps.{{ $v.cluster.domain }}/*",
           {{- range $name, $team := $teams }}
           "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
           {{- end }}

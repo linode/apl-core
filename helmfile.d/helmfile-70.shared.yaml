@@ -15,6 +15,20 @@ releases:
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
     <<: *raw
+  - name: oauth2-proxy
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *default
+  - name: oauth2-proxy-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *raw
   - name: otomi-api
     installed: true
     namespace: shared
