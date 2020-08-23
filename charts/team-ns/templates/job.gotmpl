@@ -1,0 +1,26 @@
+{{- $v := .Values }}
+{{- $pullSecrets := list }}
+{{- range $s := $v.secrets }}
+  {{- if eq $s.type "docker-registry" }}
+    {{- $pullSecrets = (append $pullSecrets $s) }}
+  {{- end }}
+{{- end }}
+{{- if gt (len $pullSecrets) 0 }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-image-pull-secret
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: k8s
+        image: otomi/tools:{{ $v.toolsVersion }}
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh","-c", "kubectl patch serviceaccount default -p '{\"imagePullSecrets\": [{{ range $s := $pullSecrets }}{\"name\": \"{{ $s.name }}\"}{{ end }}]}'"]
+{{- end }}
+        

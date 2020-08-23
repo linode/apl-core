@@ -2,8 +2,8 @@
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 keycloak:
-  username: keycloak
-  password: "D33pLe@rn"
+  username: {{ $k | get "admin.username" "admin" }}
+  password: {{ $k | get "admin.password" "bladibla" }}
   basepath: ""
   persistence:
     dbVendor: {{ $dbVendor }}
