@@ -1,11 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
-{{- $teamsMapping := list }}
+{{- $teamsMapping := dict }}
 {{- range $name, $team := $teams }}
 {{- $teamNames = print "team-" $name | append $teamNames -}}
 {{- if ($team | get "oidc.groupMapping" false) }}
-  {{- $teamsMapping = printf "\"team-%s\":\"%s\"" $name $team.oidc.groupMapping | append $teamsMapping -}}
+  {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
 {{- end -}}
 {{- end -}}
 {{- $c := $v.charts }}
@@ -40,6 +40,4 @@ tasks:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
-    config:
-      TEAM_NAMES: '{{ tpl $joinTpl $teamNames }}'
     script: npm run tasks:keycloak
