@@ -23,8 +23,15 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- define "dockercfg" -}}
 {"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"not@val.id","auth":"{{ .password | b64enc}}"}}}
 {{- end -}}
-{{- define "ingress" -}}
 
+{{- define "itemsByName" -}}
+{{- range $i := . }}
+{{ $i.name }}:
+{{ $i | toYaml | nindent 2 }}
+{{- end }}
+{{- end -}}
+
+{{- define "ingress" -}}
 {{- $appsDomain := printf "apps.%s" .domain }}
 {{- $ := . }}
 # collect unique host and service names

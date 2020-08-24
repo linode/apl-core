@@ -1,0 +1,45 @@
+{{- $v := .Environment.Values }}
+{{- $teams := $v.teamConfig.teams }}
+{{- $teamNames := list }}
+{{- $teamsMapping := dict }}
+{{- range $name, $team := $teams }}
+{{- $teamNames = print "team-" $name | append $teamNames -}}
+{{- if ($team | get "oidc.groupMapping" false) }}
+  {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
+{{- end -}}
+{{- end -}}
+{{- $c := $v.charts }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $idp := $v.oidc.idp }}
+{{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
+{{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
+tasks:
+  keycloak:
+    type: job
+    description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+    enabled: true
+    image: {{ $otomiApiImage }}
+    secret:
+      KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+      KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
+      KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
+      KEYCLOAK_REALM: master
+      KEYCLOAK_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+      TENANT_ID: {{ $idp.tenantID }}
+      TENANT_CLIENT_ID: {{ $idp.clientID }}
+      TENANT_CLIENT_SECRET: {{ $idp.clientSecret }}
+      IDP_ALIAS: {{ $k.idp.alias }}
+      IDP_GROUP_OTOMI_ADMIN: {{ $idp.adminGroupID }}
+      IDP_GROUP_TEAM_ADMIN: {{ $idp.teamAdminGroupID }}
+      IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
+      IDP_OIDC_URL: {{ $idp.issuer }}
+      REDIRECT_URIS: '[
+          "https://auth.{{ $v.cluster.domain }}/*",
+          "https://apps.{{ $v.cluster.domain }}/*",
+          {{- range $name, $team := $teams }}
+          "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
+          {{- end }}
+          "https://harbor.{{ $v.cluster.domain }}/*"
+      ]'
+    script: npm run tasks:keycloak

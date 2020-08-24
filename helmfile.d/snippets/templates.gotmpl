@@ -11,10 +11,13 @@ templates:
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
   jobs: &jobs
-    namespace: jobs
+    namespace: maintenance
     chart: ../charts/jobs
     labels:
       tag: jobs
+    values:
+      - ../values/jobs/{{ .Release.Name | replace "jobs-" "" }}.gotmpl
+      - ../values/default.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:

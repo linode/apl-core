@@ -89,7 +89,7 @@ persistence:
 logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: '{{ $h.adminPassword }}'
+harborAdminPassword: '{{ $h | get "adminPassword" "bladibla" }}'
 # The secret key used for encryption. Must be a string of 16 chars.
 secretKey: '{{ $h.secretKey }}'
 
