@@ -31,6 +31,7 @@ tasks:
       TENANT_CLIENT_SECRET: {{ $idp.clientSecret }}
       IDP_ALIAS: {{ $k.idp.alias }}
       IDP_GROUP_OTOMI_ADMIN: {{ $idp.adminGroupID }}
+      IDP_GROUP_TEAM_ADMIN: {{ $idp.teamAdminGroupID }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
       IDP_OIDC_URL: {{ $idp.issuer }}
       REDIRECT_URIS: '[
