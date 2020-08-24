@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.97](https://github.com/redkubes/otomi-stack/compare/v0.10.96...v0.10.97) (2020-08-24)
+
+
+### Bug Fixes
+
+* missing team-admin value for keycloak [ci skip] ([2513b58](https://github.com/redkubes/otomi-stack/commit/2513b58b5508ec7644241e3e3a7403f76d48624e))
+
 ### [0.10.96](https://github.com/redkubes/otomi-stack/compare/v0.10.95...v0.10.96) (2020-08-23)
 
 
