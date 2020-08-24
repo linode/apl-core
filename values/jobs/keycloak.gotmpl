@@ -36,6 +36,7 @@ tasks:
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
       IDP_OIDC_URL: {{ $idp.issuer }}
       REDIRECT_URIS: '[
+          "https://otomi.{{ $v.cluster.domain }}",
           "https://auth.{{ $v.cluster.domain }}/*",
           "https://apps.{{ $v.cluster.domain }}/*",
           "https://otomi.{{ $v.cluster.domain }}/*",
