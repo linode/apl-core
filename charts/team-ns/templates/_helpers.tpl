@@ -76,7 +76,7 @@ metadata:
 {{- if eq .provider "aws" }}
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
-    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }} {{ .ingress.tags }}"
+    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }}"
     ingress.kubernetes.io/ssl-redirect: "true"
 {{- end }}
 {{- if eq .provider "azure" }}
