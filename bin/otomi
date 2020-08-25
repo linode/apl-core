@@ -42,6 +42,7 @@ function show_usage {
     aws - run CLI AWS
     az - run CLI for Azure
     bash - run interactive bash
+    commit - wraper for git-commit (encrypt -> generate pipelines -> commit changes)
     deploy - execute otomi-stack deploy script
     decrypt - decrypt values to env/*.dec files
     encrypt - encrypt values encrypt all env/*.dec files
@@ -55,9 +56,10 @@ function show_usage {
     helmfile-template - run helmfile template
     helmfile-template-quiet - run helmfile template (only print yaml documents)
     help - print this help
-    install-git-hooks - set pre-commit and post-merge git hooks
     install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
     kubectl - run kubectl
+    pull - wraper for git-pull (encrypt -> generate pipelines -> commit changes)
+
   "
 }
 
@@ -139,8 +141,6 @@ function drun() {
 }
 
 function execute {
-  while :
-  do 
     case $command in
     helm)
       drun helm "${@:2}"
@@ -198,11 +198,6 @@ function execute {
       drun bin/crypt.sh dec
       break
       ;;
-    install-git-hooks)
-      set_kube_context=0
-      drun bin/install-git-hooks.sh
-      break
-      ;;
     install-drone-pipelines)
       set_kube_context=0
       drun bin/gen-drone.sh
@@ -225,13 +220,22 @@ function execute {
       drun kubectl "${@:2}"
       break
       ;;
+    commit)
+      set_kube_context=0
+      drun bin/git-commit.sh
+      break
+      ;;
+    pull)
+    set_kube_context=0
+    drun bin/git-pull.sh
+    break
+    ;;
     *)
       show_usage
       echo "Error: Unknown command: $@"
       exit 1
       ;;
     esac
-  done
 }
 
 

@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e
-[ ! -x "otomi.sh" ] && echo "ERROR: the file otomi.sh does not exist or is not executable." 
-./otomi.sh decrypt
