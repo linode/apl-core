@@ -30,6 +30,9 @@ spec:
 {{ toYaml .Values.nginx.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+{{- if .Values.nginx.serviceAccountName }}
+      serviceAccountName: {{ .Values.nginx.serviceAccountName }}
+{{- end }}
       securityContext:
         fsGroup: 10000
       {{- with .Values.imagePullSecrets }}

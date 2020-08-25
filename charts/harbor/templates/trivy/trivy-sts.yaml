@@ -1,5 +1,5 @@
 {{- if .Values.trivy.enabled }}
-{{- $trivyPVC := .Values.persistence.persistentVolumeClaim.trivy }}
+{{- $trivy := .Values.persistence.persistentVolumeClaim.trivy }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -30,6 +30,13 @@ spec:
 {{ toYaml .Values.trivy.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if .Values.trivy.serviceAccountName }}
+      serviceAccountName: {{ .Values.trivy.serviceAccountName }}
+{{- end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 10000
@@ -43,6 +50,14 @@ spec:
             privileged: false
             allowPrivilegeEscalation: false
           env:
+          {{- if has "trivy" .Values.proxy.components }}
+            - name: HTTP_PROXY
+              value: "{{ .Values.proxy.httpProxy }}"
+            - name: HTTPS_PROXY
+              value: "{{ .Values.proxy.httpsProxy }}"
+            - name: NO_PROXY
+              value: "{{ template "harbor.noProxy" . }}"
+          {{- end }}
             - name: "SCANNER_LOG_LEVEL"
               value: {{ .Values.logLevel | quote }}
             - name: "SCANNER_TRIVY_CACHE_DIR"
@@ -90,11 +105,11 @@ spec:
             - name: api-server
               containerPort: {{ template "harbor.trivy.containerPort" . }}
           volumeMounts:
-            - name: data
-              mountPath: /home/scanner/.cache
-              readOnly: false
+          - name: data
+            mountPath: /home/scanner/.cache
+            subPath: {{ .Values.persistence.persistentVolumeClaim.trivy.subPath }}
+            readOnly: false
           {{- if .Values.internalTLS.enabled }}
-          volumeMounts:
           - name: trivy-internal-certs
             mountPath: /harbor_cust_cert/harbor_internal_ca.crt
             subPath: ca.crt
@@ -104,6 +119,9 @@ spec:
           - name: trivy-internal-certs
             mountPath: /etc/harbor/ssl/trivy.key
             subPath: tls.key
+          {{- end }}
+          {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 10 }}
           {{- end }}
           livenessProbe:
             httpGet:
@@ -125,28 +143,42 @@ spec:
             failureThreshold: 3
           resources:
 {{ toYaml .Values.trivy.resources | indent 12 }}
-      {{- if .Values.internalTLS.enabled }}
+      {{- if or (or .Values.internalTLS.enabled .Values.caBundleSecretName) (or (not .Values.persistence.enabled) $trivy.existingClaim) }}
       volumes:
-        - name: trivy-internal-certs
-          secret:
-            secretName: {{ template "harbor.internalTLS.trivy.secretName" . }}
+      {{- if .Values.internalTLS.enabled }}
+      - name: trivy-internal-certs
+        secret:
+          secretName: {{ template "harbor.internalTLS.trivy.secretName" . }}
       {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+      {{- if not .Values.persistence.enabled }}
+      - name: "data"
+        emptyDir: {}
+      {{- else if $trivy.existingClaim }}
+      - name: "data"
+        persistentVolumeClaim:
+          claimName: {{ $trivy.existingClaim }}
+      {{- end }}
+      {{- end }}
+{{- if and .Values.persistence.enabled (not $trivy.existingClaim) }}
   volumeClaimTemplates:
-    - metadata:
-        name: data
-        labels:
-{{ include "harbor.labels" . | indent 10 }}
-      spec:
-        accessModes:
-          - {{ $trivyPVC.accessMode | quote }}
-        {{- if $trivyPVC.storageClass }}
-        {{- if (eq "-" $trivyPVC.storageClass) }}
-        storageClassName: ""
-        {{- else }}
-        storageClassName: "{{ $trivyPVC.storageClass }}"
-        {{- end }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ $trivyPVC.size | quote }}
+  - metadata:
+      name: data
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ $trivy.accessMode | quote }}]
+      {{- if $trivy.storageClass }}
+      {{- if (eq "-" $trivy.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ $trivy.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ $trivy.size | quote }}
+{{- end }}
 {{- end }}

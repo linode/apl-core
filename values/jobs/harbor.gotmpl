@@ -1,4 +1,15 @@
 {{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+{{- $o := $v.oidc }}
+{{- $h := $c | get "harbor" dict }}
+{{- $k := $c | get "keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $realm := $k | get "realm" "master" }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $hasHarbor := $h | get "enabled" false -}}
+{{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
+{{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
@@ -6,11 +17,6 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-{{- $c := $v.charts }}
-{{- $hasHarbor := $c | get "harbor.enabled" false -}}
-{{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
-{{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 tasks:
   harbor:
     type: job
@@ -18,18 +24,17 @@ tasks:
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     image: {{ $otomiApiImage }}
     secret:
-      HARBOR_PASSWORD:  {{ $c.harbor | get "adminPassword" "bladibla" }}
+      HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
       HARBOR_USER: admin
-      OIDC_CLIENT_ID: {{ $v.oidc.clientID }}
-      OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+      OIDC_CLIENT_ID: {{ $o.clientID }}
+      OIDC_CLIENT_SECRET: {{ $o.clientSecret }}
     config:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
-      HARBOR_ADMIN_GROUP_NAME: "team-admin"
       TEAM_NAMES: '{{ $teamNames | toJson }}'
-      OIDC_ENDPOINT: "https://keycloak.{{ $v.cluster.domain }}/realms/{{ $c.keycloak | get "realm" "master" }}"
+      OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}'
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
-      OIDC_VERIFY_CERT: 'false'
+      OIDC_VERIFY_CERT: 'true'
     script: npm run tasks:harbor
 
