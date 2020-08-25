@@ -339,6 +339,11 @@ proxy:
     - core
     - jobservice
     - clair
+    - trivy
+
+# The custom ca bundle secret, the secret must contain key named "ca.crt"
+# which will be injected into the trust store for chartmuseum, clair, core, jobservice, registry, trivy components
+# caBundleSecretName: ""
 
 ## UAA Authentication Options
 # If you're using UAA for authentication behind a self-signed
@@ -351,7 +356,9 @@ proxy:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: v2.0.0
+    tag: v2.0.2
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   replicas: 1
   # resources:
   #  requests:
@@ -366,7 +373,9 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: v2.0.0
+    tag: v2.0.2
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   replicas: 1
 # resources:
 #  requests:
@@ -381,7 +390,9 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: v2.0.0
+    tag: v2.0.2
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   replicas: 1
   ## Liveness probe values
   livenessProbe:
@@ -412,8 +423,10 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: v2.0.0
+    tag: v2.0.2
   replicas: 1
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   maxJobWorkers: 10
   # The logger for jobs: "file", "database" or "stdout"
   jobLogger: file
@@ -432,11 +445,12 @@ jobservice:
   secret: ""
 
 registry:
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: v2.0.0
-
+      tag: v2.0.2
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -444,12 +458,14 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: v2.0.0
+      tag: v2.0.2
 
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   replicas: 1
   nodeSelector: {}
   tolerations: []
@@ -485,11 +501,13 @@ registry:
 
 chartmuseum:
   enabled: true
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   # Harbor defaults ChartMuseum to returning relative urls, if you want using absolute url you should enable it by change the following value to 'true'
   absoluteUrl: false
   image:
     repository: goharbor/chartmuseum-photon
-    tag: v2.0.0
+    tag: v2.0.2
   replicas: 1
   # resources:
   #  requests:
@@ -503,10 +521,12 @@ chartmuseum:
 
 clair:
   enabled: true
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   clair:
     image:
       repository: goharbor/clair-photon
-      tag: v2.0.0
+      tag: v2.0.2
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -514,7 +534,7 @@ clair:
   adapter:
     image:
       repository: goharbor/clair-adapter-photon
-      tag: v2.0.0
+      tag: v2.0.2
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -536,7 +556,9 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.0.0
+    tag: v2.0.2
+  # set the service account to be used, default if left empty
+  serviceAccountName: ""
   # replicas the number of Pod replicas
   replicas: 1
   # debugMode the flag to enable Trivy debug mode with more verbose scanning log
@@ -584,18 +606,22 @@ trivy:
 notary:
   enabled: true
   server:
+    # set the service account to be used, default if left empty
+    serviceAccountName: ""
     image:
       repository: goharbor/notary-server-photon
-      tag: v2.0.0
+      tag: v2.0.2
     replicas: 1
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
   signer:
+    # set the service account to be used, default if left empty
+    serviceAccountName: ""
     image:
       repository: goharbor/notary-signer-photon
-      tag: v2.0.0
+      tag: v2.0.2
     replicas: 1
     # resources:
     #  requests:
@@ -619,13 +645,11 @@ database:
   # and fill the connection informations in "external" section
   type: internal
   internal:
+    # set the service account to be used, default if left empty
+    serviceAccountName: ""
     image:
       repository: goharbor/harbor-db
-      tag: v2.0.0
-    # the image used by the init container
-    initContainerImage:
-      repository: busybox
-      tag: latest
+      tag: v2.0.2
     # The initial superuser password for internal database
     password: "changeit"
     # resources:
@@ -657,8 +681,8 @@ database:
   maxIdleConns: 50
   # The maximum number of open connections to the database.
   # If it <= 0, then there is no limit on the number of open connections.
-  # Note: the default number of connections is 100 for postgre.
-  maxOpenConns: 100
+  # Note: the default number of connections is 1024 for postgre of harbor.
+  maxOpenConns: 1000
   ## Additional deployment annotations
   podAnnotations: {}
 
@@ -667,9 +691,11 @@ redis:
   # and fill the connection informations in "external" section
   type: internal
   internal:
+    # set the service account to be used, default if left empty
+    serviceAccountName: ""
     image:
       repository: goharbor/redis-photon
-      tag: v2.0.0
+      tag: v2.0.2
     # resources:
     #  requests:
     #    memory: 256Mi
