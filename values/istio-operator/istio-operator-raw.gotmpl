@@ -1,9 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts.istio }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $o := $v.oidc }}
-{{- $provider := index $o $o.provider }}
+{{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
@@ -90,7 +92,7 @@ resources:
             auth:
               strategy: anonymous #openid
               # openid:
-              #   issuer_uri: {{ $provider | getOrNil "issuer" | default (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) }}
+              #   issuer_uri: {{ $keycloakBase }}
               #   client_id: {{ $v.oidc.clientID }}
             jaegerURL: https://{{ $appsDomain }}/tracing/
             grafanaURL: https://{{ $appsDomain }}/grafana-istio/
@@ -125,26 +127,24 @@ resources:
           contextPath: '/grafana-istio'
           grafana.ini:
             "auth.anonymous":
-              enabled: false
+              enabled: {{ not $hasOIDC }}
               # enabled: true
               org_role: Admin
               org_name: Main Org.
             "auth.generic_oauth":
               # enabled: false
-              enabled: true
+              enabled: {{ $hasOIDC }}
               name: OAuth
               org_role: Admin
               allow_sign_up: true
               # allow_sign_up: false
               oauth_auto_login: true # false = so we can login with admin / bladibla
-              client_id: {{ $v.oidc.clientID }}
-              client_secret: {{ $v.oidc.clientSecret }}
+              client_id: {{ $o.clientID }}
+              client_secret: {{ $o.clientSecret }}
               scopes: openid
-              # auth_url: {{ $v.oidc.authUrl }}
-              auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
-              # token_url: {{ $v.oidc.tokenUrl }}
-              token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
-              api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+              auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($o | getOrNil "grafana.authUrl") }}
+              token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($o | getOrNil "grafana.tokenUrl") }}
+              api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
               role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
         meshConfig:
           enableAutoMtls: true

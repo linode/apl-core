@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.98](https://github.com/redkubes/otomi-stack/compare/v0.10.97...v0.10.98) (2020-08-24)
+
+
+### Bug Fixes
+
+* missing redirect url [ci skip] ([7ca53f0](https://github.com/redkubes/otomi-stack/commit/7ca53f0adc4367a393f333215aac7822843cea15))
+
+### [0.10.97](https://github.com/redkubes/otomi-stack/compare/v0.10.96...v0.10.97) (2020-08-24)
+
+
+### Bug Fixes
+
+* missing team-admin value for keycloak [ci skip] ([2513b58](https://github.com/redkubes/otomi-stack/commit/2513b58b5508ec7644241e3e3a7403f76d48624e))
+
+### [0.10.96](https://github.com/redkubes/otomi-stack/compare/v0.10.95...v0.10.96) (2020-08-23)
+
+
+### Bug Fixes
+
+* oidc groups, keycloak values, pullserets [ci skip] ([aef874e](https://github.com/redkubes/otomi-stack/commit/aef874e4afc0ab5328d2a642037bc994924a6c87))
+
+
+### Others
+
+* **release:** 0.10.95 ([04fcde9](https://github.com/redkubes/otomi-stack/commit/04fcde95a31ecf3ea26b5686e3c9115c3382f0d8))
+
+### [0.10.95](https://github.com/redkubes/otomi-stack/compare/v0.10.94...v0.10.95) (2020-08-23)
+
+
+### Others
+
+* **release:** 0.10.94 ([4bc7cdd](https://github.com/redkubes/otomi-stack/commit/4bc7cdd9d1507af44e04d4c9c098474a9760eb15))
+
+### [0.10.94](https://github.com/redkubes/otomi-stack/compare/v0.10.93...v0.10.94) (2020-08-23)
+
+
+### Bug Fixes
+
+* oidc defaults [ci skip] ([6c665b7](https://github.com/redkubes/otomi-stack/commit/6c665b70e4d49b50278f9458e656bafc3253bbcc))
+
+### [0.10.93](https://github.com/redkubes/otomi-stack/compare/v0.10.91...v0.10.93) (2020-08-23)
+
+
+### Bug Fixes
+
+* values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
+
+
+### Others
+
+* **release:** 0.10.92 ([4bbb4a1](https://github.com/redkubes/otomi-stack/commit/4bbb4a157348ae9a86e6ee2a4cdaef1d4322736d))
+
+### [0.10.92](https://github.com/redkubes/otomi-stack/compare/v0.10.91...v0.10.92) (2020-08-23)
+
+
+### Bug Fixes
+
+* values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
+
+### [0.10.91](https://github.com/redkubes/otomi-stack/compare/v0.10.90...v0.10.91) (2020-08-22)
+
+
+### Features
+
+* **service:** knative service can have secretKeyRef [ci skip] ([e59f38c](https://github.com/redkubes/otomi-stack/commit/e59f38cb7e2a26e944b7c264849900c3bacd729c))
+
 ### [0.10.90](https://github.com/redkubes/otomi-stack/compare/v0.10.89...v0.10.90) (2020-08-19)
 
 

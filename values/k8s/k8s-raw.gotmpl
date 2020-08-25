@@ -19,6 +19,24 @@ resources:
       labels:
         name: {{ $ns }}
         istio-injection: enabled
+  {{- $pullSecrets := list }}
+  {{- range $s := $team.secrets }}
+    {{- if eq $s.type "docker-registry" }}
+      {{- $pullSecrets = (append $pullSecrets $s) }}
+    {{- end }}
+  {{- end }}
+  # patching service account here as helm does not recognize it as it's own
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: default
+      namespace: {{ $ns }}
+  {{- if gt (len $pullSecrets) 0 }}
+    imagePullSecrets:
+  {{- range $s := $pullSecrets }}
+      - name: {{ $s.name }}
+  {{- end }}
+  {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding

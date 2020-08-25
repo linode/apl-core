@@ -4,7 +4,7 @@
 
 # create the cluster
 gcloud container --project "$PROJECT" clusters create "otomi-gke-$CLUSTER" --region "$GOOGLE_REGION" \
-  --no-enable-basic-auth --cluster-version "1.15.12-gke.2" --machine-type "n1-standard-4" \
+  --no-enable-basic-auth --cluster-version "1.16.13-gke.1" --machine-type "n1-standard-4" \
   --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
   --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
   --num-nodes "1" --no-enable-stackdriver-kubernetes \
