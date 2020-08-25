@@ -147,10 +147,9 @@ spec:
     {{- if not (eq $.provider "nginx") }}
       {{- if eq $.provider "aws" }}
           - backend:
-              - path: /*
-                backend:
-                  serviceName: ssl-redirect
-                  servicePort: use-annotation
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+            path: /*
       {{- end }}
           - backend:
               serviceName: nginx-ingress-controller
