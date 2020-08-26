@@ -2,6 +2,7 @@
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
 app.kubernetes.io/version: {{ .Chart.Version }}
+app.kubernetes.io/part-of: otomi
 helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
