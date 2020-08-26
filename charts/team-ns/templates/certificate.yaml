@@ -10,6 +10,7 @@
 {{- end }}
 {{- end }}
 {{- end }}
+
 {{- if eq $v.teamId "admin" -}}
   {{- $proxyDomain := printf "proxy.%s" $v.domain }}
   {{- $domains = (append $domains $proxyDomain) }}
@@ -18,8 +19,9 @@
 {{- $domains = (append $domains $appsDomain) }}
 
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
-  {{- range $domain := $domains }}
-  {{ $name := $domain | replace "." "-" }}
+
+{{- range $domain := $domains }}
+{{ $name := $domain | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -39,6 +41,198 @@ spec:
     - key encipherment
     - ocsp signing
 ---
+<<<<<<< HEAD
   {{- end }}
+||||||| merged common ancestors
+  {{- end }}
+{{- else if and $v.cluster.useCloudCA (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: certs-post-job-1-team-{{ $v.teamId }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      name: certs-post-job-1-team-{{ $v.teamId }}
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: certs-job
+        image: "otomi/tools:{{ $v.toolsVersion }}"
+        command:
+          - sh
+          - -c
+        args:
+          - |
+            sleep 5 # needed otherwise we get connection refused on the k8s api
+            set -e
+  {{- if eq $v.cluster.provider "aws" }}
+            certArns=""
+            {{- range $s := $domains }}
+            {{- if and (not $s.certArn) $s.domain }}
+            certArn=$(aws acm request-certificate \
+              --region {{ $v.cluster.region }} \
+              --domain-name {{ $s.domain }} \
+              --validation-method DNS \
+              --idempotency-token '{{ $s.domain | replace "." "" | replace "-" "" }}' \
+              --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ',')$certArn"
+            {{- else if $s.certArn }}
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ','){{ $s.certArn }}"
+            {{- end }}
+            {{- end }}
+            set +e
+            # kubectl delete cm cert-arns-team-{{ $v.teamId }}
+            # kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
+            kubectl apply cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
+  {{- else if eq $v.cluster.provider "google" }}
+              # TODO: request cert
+  {{- else if eq $v.cluster.provider "azure" }}
+              # TODO: request cert
+  {{- end }}
+  {{- if eq $v.cluster.provider "aws" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: certs-post-job-2-team-{{ $v.teamId }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-4"
+spec:
+  template:
+    metadata:
+      name: certs-post-job-2-team-{{ $v.teamId }}
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: certs-job
+        image: "otomi/tools:{{ $v.toolsVersion }}"
+        command:
+          - sh
+          - -c
+        args:
+          - |
+            # get the certArns that were generated
+            sleep 2 # needed otherwise we get connection refused on the k8s api
+            oldCertArns="{{ include "helm-toolkit.utils.joinListWithComma" $v.ingress.certArns }}"
+            oldCertArns="$(kubectl -n ingress get ing aws-team-{{ $v.teamId }}-external -o json | jq -r ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"])"
+            certArns=$(kubectl get cm cert-arns-team-{{ $v.teamId }} -o json | jq -r '.data.certArns')
+            certArns="$oldCertArns$([ \"$oldCertArns\" != \"\" ] && echo ',')$certArns"
+            # patch the aws ingress
+            kubectl -n ingress get ing aws-team-{{ $v.teamId }}-external -o json | jq ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"] = \"$certArns\"" | kubectl -n ingress apply -f -
+  {{- end }}
+=======
+{{- end }}
+
+{{- else if and $v.cluster.useCloudCA (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: certs-post-job-1-team-{{ $v.teamId }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      name: certs-post-job-1-team-{{ $v.teamId }}
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: certs-job
+        image: "otomi/tools:{{ $v.toolsVersion }}"
+        command:
+          - sh
+          - -c
+        args:
+          - |
+            sleep 5 # needed otherwise we get connection refused on the k8s api
+            set -e
+  {{- if eq $v.cluster.provider "aws" }}
+            certArns=""
+            {{- range $s := $v.services }}
+            {{- if and (not (hasKey $s "certArn")) $s.domain }}
+            certArn=$(aws acm request-certificate \
+              --region {{ $v.cluster.region }} \
+              --domain-name {{ $s.domain }} \
+              --validation-method DNS \
+              --idempotency-token '{{ $s.domain | replace "." "" | replace "-" "" }}' \
+              --options CertificateTransparencyLoggingPreference=DISABLED | jq -r '.CertificateArn')
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ',')$certArn"
+            {{- else if $s.certArn }}
+            certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ','){{ $s.certArn }}"
+            {{- end }}
+            {{- end }}
+            kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns --dry-run=true -o yaml | kubectl apply -f -
+  {{- else if eq $v.cluster.provider "google" }}
+              # TODO: request cert
+  {{- else if eq $v.cluster.provider "azure" }}
+              # TODO: request cert
+  {{- end }}
+  {{- if eq $v.cluster.provider "aws" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: certs-post-job-2-team-{{ $v.teamId }}
+  labels: {{- include "chart-labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-4"
+spec:
+  template:
+    metadata:
+      name: certs-post-job-2-team-{{ $v.teamId }}
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: certs-job
+        image: "otomi/tools:{{ $v.toolsVersion }}"
+        command:
+          - sh
+          - -c
+        args:
+          - |
+            # get the certArns that were generated
+            sleep 2 # needed otherwise we get connection refused on the k8s api
+            oldCertArns="{{ include "helm-toolkit.utils.joinListWithComma" $v.ingress.certArns }}"
+            oldCertArns="$(kubectl -n ingress get ing aws-team-{{ $v.teamId }}-external -o json | jq -r ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"])"
+            certArns=$(kubectl get cm cert-arns-team-{{ $v.teamId }} -o json | jq -r '.data.certArns')
+            certArns="$oldCertArns$([ \"$oldCertArns\" != \"\" ] && echo ',')$certArns"
+            # patch the aws ingress
+            kubectl -n ingress get ing aws-team-{{ $v.teamId }}-external -o json | jq ".metadata.annotations[\"alb.ingress.kubernetes.io/certificate-arn\"] = \"$certArns\"" | kubectl -n ingress apply -f -
+  {{- end }}
+>>>>>>> 9efe0a544dcffc20aba585c4ae2c579e0e168770
 {{- end }}
 

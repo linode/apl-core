@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 apiVersion: apps/v1
+||||||| merged common ancestors
+apiVersion: apps/v1beta2
+=======
+apiVersion: {{ template "deployment.apiVersion" . }}
+>>>>>>> 9efe0a544dcffc20aba585c4ae2c579e0e168770
 kind: Deployment
 metadata:
   name: {{ include "ingress-merge.fullname" . }}
