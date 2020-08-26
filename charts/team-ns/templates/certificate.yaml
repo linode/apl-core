@@ -10,6 +10,7 @@
 {{- end }}
 {{- end }}
 {{- end }}
+
 {{- if eq $v.teamId "admin" -}}
   {{- $proxyDomain := printf "proxy.%s" $v.domain }}
   {{- $domains = (append $domains $proxyDomain) }}
@@ -18,8 +19,9 @@
 {{- $domains = (append $domains $appsDomain) }}
 
 {{- if and (not $v.cluster.useCloudCA) (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
-  {{- range $domain := $domains }}
-  {{ $name := $domain | replace "." "-" }}
+
+{{- range $domain := $domains }}
+{{ $name := $domain | replace "." "-" }}
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
@@ -39,7 +41,8 @@ spec:
     - key encipherment
     - ocsp signing
 ---
-  {{- end }}
+{{- end }}
+
 {{- else if and $v.cluster.useCloudCA (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
 apiVersion: batch/v1
 kind: Job
@@ -73,8 +76,8 @@ spec:
             set -e
   {{- if eq $v.cluster.provider "aws" }}
             certArns=""
-            {{- range $s := $domains }}
-            {{- if and (not $s.certArn) $s.domain }}
+            {{- range $s := $v.services }}
+            {{- if and (not (hasKey $s "certArn")) $s.domain }}
             certArn=$(aws acm request-certificate \
               --region {{ $v.cluster.region }} \
               --domain-name {{ $s.domain }} \
@@ -86,10 +89,7 @@ spec:
             certArns="$certArns$([ \"$certArns\" != \"\" ] && echo ','){{ $s.certArn }}"
             {{- end }}
             {{- end }}
-            set +e
-            # kubectl delete cm cert-arns-team-{{ $v.teamId }}
-            # kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
-            kubectl apply cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns
+            kubectl create cm cert-arns-team-{{ $v.teamId }} --from-literal=certArns=$certArns --dry-run=true -o yaml | kubectl apply -f -
   {{- else if eq $v.cluster.provider "google" }}
               # TODO: request cert
   {{- else if eq $v.cluster.provider "azure" }}
