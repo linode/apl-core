@@ -59,7 +59,6 @@ function show_usage {
     install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
     kubectl - run kubectl
     pull - wraper for git-pull (encrypt -> generate pipelines -> commit changes)
-
   "
 }
 
@@ -71,8 +70,9 @@ function set_k8s_context {
   return 0
 }
 
-function use_k8s_context {
-  kubectl config use-context $K8S_CONTEXT > /dev/null
+function validate_k8s_context {
+  local context=$(kubectl config current-context)
+  [[ "$K8S_CONTEXT" != "$context" ]] && echo "Error: Your current kubernetes context does not match expected one: $K8S_CONTEXT" && exit 1
   return 0
 }
 
@@ -100,11 +100,11 @@ function drun() {
   local command=$@
   local tmp_volume=''
   local stack_volume=''
-  
+
   # execute any kubectl command to refresh access token
   if [ $set_kube_context -eq 1 ]; then
     set_k8s_context
-    use_k8s_context
+    validate_k8s_context
     kubectl version >/dev/null
   fi
 
@@ -213,6 +213,7 @@ function execute {
       break
       ;;
     exec)
+      set_kube_context=0
       drun "${@:2}"
       break
       ;;
