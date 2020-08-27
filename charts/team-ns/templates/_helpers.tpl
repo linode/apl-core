@@ -1,3 +1,7 @@
+{{- define "raw.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "chart-labels" -}}
 app: {{ template "raw.name" . }}
 app.kubernetes.io/name: {{ template "raw.name" . }}
