@@ -11,7 +11,7 @@
 # {{- $knativeServiceDomain }}
 # {{- $domain }}
 {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
-{{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithPipe" $s.paths)) "")) }}
+{{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:

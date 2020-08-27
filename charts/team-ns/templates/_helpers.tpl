@@ -17,9 +17,10 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
-{{- define "helm-toolkit.utils.joinListWithPipe" -}}
+{{- define "helm-toolkit.utils.joinListWithSep" -}}
 {{- $local := dict "first" true -}}
-{{- range $k, $v := . -}}{{- if not $local.first -}}|{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- $ := . -}}
+{{- range $k, $v := .list -}}{{- if not $local.first -}}{{ $.sep }}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
 {{- define "flatten-name" -}}
