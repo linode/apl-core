@@ -17,5 +17,5 @@ releases:
     <<: *default
   - name: metrics-server
     installed: {{ eq $v.cluster.provider "onprem" }} 
-    namespace: monitoring
+    namespace: kube-system
     <<: *default
