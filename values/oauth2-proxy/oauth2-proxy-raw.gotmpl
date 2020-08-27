@@ -33,4 +33,3 @@ resources:
           hosts:
             - '{{ $domain }}'
       {{- end }}
-  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $name "stage" $cm.stage) $v) | nindent 4 }}
