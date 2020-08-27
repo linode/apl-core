@@ -67,6 +67,9 @@ metadata:
     externaldns: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
+    {{- if eq $v.cluster.provider "onprem" }}
+    external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
+    {{- end }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     nginx.ingress.kubernetes.io/rewrite-target: $2
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
