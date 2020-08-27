@@ -30,11 +30,11 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: false
+    installed: true
     namespace: shared
     <<: *default
   - name: otomi-web
-    installed: false
+    installed: true
     namespace: shared
     <<: *default
   - name: redis-shared
