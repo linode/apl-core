@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $dns := $v | get "charts.external-dns" dict }}
-{{- $dnsProvider := $v.cluster.dnsProvider | default $v.cluster.provider }}
+{{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
 {{- $google := $v | get "google" dict }}
 {{- $aws := $v | get "aws" dict }}
 {{- $azure := $v | get "azure" dict }}
