@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: cert-manager
-    installed: false
+    installed: true
     namespace: ingress
     labels:
       tag: cert-manager

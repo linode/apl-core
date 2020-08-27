@@ -15,3 +15,7 @@ releases:
     installed: false # {{ eq $v.cluster.provider "azure" }}
     namespace: monitoring
     <<: *default
+  - name: metrics-server
+    installed: true 
+    namespace: monitoring
+    <<: *default

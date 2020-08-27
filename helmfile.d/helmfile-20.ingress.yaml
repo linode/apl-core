@@ -18,13 +18,13 @@ releases:
       tag: ingress
     <<: *raw
   - name: cert-manager-artifacts
-    installed: false
+    installed: true
     namespace: ingress
     labels:
       tag: cert-manager
     <<: *raw
   - name: external-dns
-    installed: false
+    installed: true
     namespace: ingress
     <<: *default
   - name: ingress-azure
