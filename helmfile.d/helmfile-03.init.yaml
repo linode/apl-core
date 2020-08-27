@@ -4,7 +4,7 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
-{{- $knativeVersion := ($v.cluster.k8sVersion | toString | replace "1." "0.") }}
+{{- $knativeVersion := 0.16 }}
 
 releases:
   - name: knative-init

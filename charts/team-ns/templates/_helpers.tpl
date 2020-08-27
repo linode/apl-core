@@ -1,7 +1,10 @@
 {{- define "chart-labels" -}}
-app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app: {{ template "raw.name" . }}
+app.kubernetes.io/name: {{ template "raw.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.Version }}
+app.kubernetes.io/part-of: otomi
 helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
@@ -76,7 +79,7 @@ metadata:
 {{- if eq .provider "aws" }}
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
-    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }} {{ .ingress.tags }}"
+    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }}"
     ingress.kubernetes.io/ssl-redirect: "true"
 {{- end }}
 {{- if eq .provider "azure" }}
@@ -150,10 +153,9 @@ spec:
     {{- if not (eq $.provider "nginx") }}
       {{- if eq $.provider "aws" }}
           - backend:
-              - path: /*
-                backend:
-                  serviceName: ssl-redirect
-                  servicePort: use-annotation
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+            path: /*
       {{- end }}
           - backend:
               serviceName: nginx-ingress-controller
