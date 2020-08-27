@@ -4,7 +4,7 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if eq $v.cluster.provider "azure" }}
+{{- if eq $dnsProvider "azure" }}
   {{- $ap := $cm.provider.azure.azuredns }}
   - apiVersion: v1
     kind: Secret
@@ -13,7 +13,7 @@ resources:
     data:
       {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
 {{- end }}
-{{- if eq $v.cluster.provider "google" }}
+{{- if eq $dnsProvider "google" }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -35,12 +35,12 @@ resources:
         solvers:
           - selector: {}
             dns01:
-              {{- index $cm.provider $provider | toYaml | nindent 14 }}
+              {{- index $cm.provider $dnsProvider | toYaml | nindent 14 }}
 {{- end }}
 # generate all da certs
-{{- range $domain, $certInfo := $vars.domains }}
-  {{- if not $certInfo.hasCert }}
-    {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
+{{- range $domInfo := $vars.domains }}
+  {{- if not $domInfo.hasCert }}
+    {{- $certName := ($domInfo.domain | replace "." "-") }}
+  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
   {{- end }}
 {{- end }}
