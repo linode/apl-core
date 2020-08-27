@@ -41,6 +41,6 @@ resources:
 {{- range $domain, $certInfo := $vars.domains }}
   {{- if not $certInfo.hasCert }}
     {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $certName "stage" $cm.stage "labels" $labels) $v) | nindent 4 }}
+  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
   {{- end }}
 {{- end }}
