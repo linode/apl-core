@@ -11,6 +11,9 @@ resources:
         {{ if not $v.cluster.hasCloudLB }}
         externaldns: "true"
         {{- end }}
+        {{ if eq $v.cluster.provider "onprem" }}
+        external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
+        {{- end }}
         kubernetes.io/ingress.class: nginx
         ingress.kubernetes.io/ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
