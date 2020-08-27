@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.107](https://github.com/redkubes/otomi-stack/compare/v0.10.106...v0.10.107) (2020-08-27)
+
+
+### Bug Fixes
+
+* oauth-proxy target onprem [ci skip] ([8ad50ea](https://github.com/redkubes/otomi-stack/commit/8ad50eaa18cad50c440d98bb2fe54eea79d4de05))
+
 ### [0.10.106](https://github.com/redkubes/otomi-stack/compare/v0.10.105...v0.10.106) (2020-08-27)
 
 
