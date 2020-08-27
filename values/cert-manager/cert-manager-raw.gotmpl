@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v.charts "cert-manager" }}
-{{- $provider := $v.cluster.provider }}
+{{- $dnsProvider := $v.cluster.dnsProvider | default $v.cluster.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:

@@ -74,7 +74,7 @@ resources:
     - kind: ServiceAccount
       name: default
       namespace: team-admin
-  {{- range $ns := list "drone-pipelines" "shared" }}
+  {{- range $ns := list "drone-pipelines" "shared" "maintenance" }}
   - apiVersion: v1
     kind: Secret
     metadata:

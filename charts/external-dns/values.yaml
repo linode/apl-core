@@ -13,7 +13,7 @@
 image:
   registry: docker.io
   repository: bitnami/external-dns
-  tag: 0.5.17-debian-9-r50
+  tag: 0.7.3-debian-10-r0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -35,18 +35,56 @@ image:
 ## K8s resources type to be observed for new DNS entries by ExternalDNS
 ##
 sources:
-- service
-- ingress
-# - crd
+  # - crd
+  - service
+  - ingress
 
 ## DNS provider where the DNS records will be created. Available providers are:
-## - aws, azure, cloudflare, coredns, designate, digitalocean, google, infoblox, rfc2136
+## - alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, infoblox, rfc2136, transip
 ##
 provider: aws
 
-## Whether to publish DNS records for ClusterIP services or not (optional)
+## Flags related to processing sources
+## ref: https://github.com/kubernetes-sigs/external-dns/blob/master/pkg/apis/externaldns/types.go#L272
+##
+## Limit sources of endpoints to a specific namespace (default: all namespaces)
+##
+namespace: ""
+## Templated strings that are used to generate DNS names from sources that don't define a hostname themselves
+##
+fqdnTemplates: []
+## Combine FQDN template and annotations instead of overwriting
+##
+combineFQDNAnnotation: false
+## Ignore hostname annotation when generating DNS names, valid only when fqdn-template is set
+##
+ignoreHostnameAnnotation: false
+## Allow external-dns to publish DNS records for ClusterIP services
 ##
 publishInternalServices: false
+## Allow external-dns to publish host-ip for headless services
+##
+publishHostIP: false
+## The service types to take care about (default: all, options: ClusterIP, NodePort, LoadBalancer, ExternalName)
+##
+serviceTypeFilter: []
+
+## Alibaba cloud configuration to be set via arguments/env. variables
+##
+alibabacloud:
+  ## These will be added to /etc/kubernetes/alibaba-cloud.json via secret
+  accessKeyId: ""
+  accessKeySecret: ""
+  regionId: ""
+
+  ## Use an existing secret with key "alibaba-cloud.json" defined.
+  ## This ignores alibabacloud.accessKeyId, and alibabacloud.accessKeySecret
+  ##
+  # secretName:
+
+  ## Zone Filter. Available values are: public, private, or no value for both
+  ##
+  zoneType: ""
 
 ## AWS configuration to be set via arguments/env. variables
 ##
@@ -59,6 +97,11 @@ aws:
     ## pre external-dns 0.5.9 home dir should be `/root/.aws`
     ##
     mountPath: "/.aws"
+    ## Use an existing secret with key "credentials" defined.
+    ## This ignores aws.credentials.secretKey, and aws.credentials.accessKey
+    ##
+    # secretName:
+
   ## AWS region
   ##
   region: "us-east-1"
@@ -77,6 +120,9 @@ aws:
   ## Enable AWS Prefer CNAME. Available values are: true, false
   ##
   preferCNAME: ""
+  ## Enable AWS evaluation of target health. Available values are: true, false
+  ##
+  evaluateTargetHealth: ""
 ## Azure configuration to be set via arguments/env. variables
 ##
 azure:
@@ -117,6 +163,10 @@ cloudflare:
   ## `CF_API_KEY` to set in the environment
   ##
   apiKey: ""
+  ## Use an existing secret with keys "cloudflare_api_token" or "cloudflare_api_key" defined.
+  ## This ignores cloudflare.apiToken, and cloudflare.apiKey
+  ##
+  # secretName:
   ## `CF_API_EMAIL` to set in the environment
   ##
   email: ""
@@ -163,6 +213,21 @@ coredns:
 ## OpenStack Designate provider configuration to be set via arguments/env. variables
 ##
 designate:
+  ## Set Openstack environment variables (optional). Username and password will be saved in a kubernetes secret
+  ## The alternative to this is to export the necessary Openstack environment variables in the extraEnv argument
+  ##
+  # username: "someuser"
+  # password: "p@55w0rd"
+  # authUrl: "https://mykeystone.example.net:5000/v3/"
+  # regionName: "dev"
+  # userDomainName: "development"
+  # projectName: "myteamname"
+
+  ## Use a host path custom CA (optional)
+  ## This conflicts setting the above customCA to true and chart rendering will fail if you set customCA to true and specify customCAHostPath
+  ##
+  # customCAHostPath: /path/to/cafile
+
   ## Use a custom CA (optional)
   ##
   customCA:
@@ -183,6 +248,10 @@ digitalocean:
   ## `DO_TOKEN` to set in the environment
   ##
   apiToken: ""
+  ## Use an existing secret with key "digitalocean_api_token" defined.
+  ## This ignores digitalocean.apiToken
+  ##
+  # secretName:
 
 ## Google configuration to be set via arguments/env. variables
 ##
@@ -193,6 +262,7 @@ google:
   ## Google Application Credentials
   ##
   serviceAccountSecret: ""
+  serviceAccountSecretKey: "credentials.json"
   serviceAccountKey: ""
 
 ## Infoblox configuration to be set via arguments/env. variables
@@ -203,6 +273,7 @@ infoblox:
   wapiUsername: "admin"
   wapiPassword: ""
   gridHost: ""
+  view: ""
   ## Optional keys
   ##
   domainFilter: ""
@@ -211,6 +282,13 @@ infoblox:
   wapiVersion: ""
   wapiConnectionPoolSize: ""
   wapiHttpTimeout: ""
+
+## OVH configuration to be set via arguments/env. variables
+##
+ovh:
+  consumerKey: ""
+  applicationKey: ""
+  applicationSecret: ""
 
 ## RFC 2136 configuration to be set via arguments/env. variables
 ##
@@ -222,6 +300,8 @@ rfc2136:
   tsigSecretAlg: hmac-sha256
   tsigKeyname: externaldns-key
   tsigAxfr: true
+  ## Possible units [ns, us, ms, s, m, h], see more https://golang.org/pkg/time/#ParseDuration
+  minTTL: "0s"
 
 ## PowerDNS configuration to be set via arguments/env. variables
 ##
@@ -229,10 +309,33 @@ pdns:
   apiUrl: ""
   apiPort: "8081"
   apiKey: ""
+  ## Use an external secret where pdns_api_key is defined
+  ##
+  # secretName: ""
+
+## TransIP configuration to be set via arguments/env. variables
+##
+transip:
+  ## Account name to be used
+  ##
+  account: ""
+  ##
+  ## API key that is authorised for the account
+  apiKey: ""
+
+## VinylDNS configuration to be set via arguments/env. variables
+##
+vinyldns:
+  host: ""
+  accessKey: ""
+  secretKey: ""
 
 ## Limit possible target zones by domain suffixes (optional)
 ##
 domainFilters: []
+## Exclude subdomains (optional)
+##
+excludeDomains: []
 ## Limit possible target zones by zone id (optional)
 ##
 zoneIdFilters: []
@@ -242,6 +345,9 @@ annotationFilter: ""
 ## When enabled, prints DNS record changes rather than actually performing them
 ##
 dryRun: false
+## When enabled, triggers run loop on create/update/delete events (optional, in addition of regular interval)
+##
+triggerLoopOnEvent: false
 ## Adjust the interval for DNS updates
 ##
 interval: "1m"
@@ -249,11 +355,15 @@ interval: "1m"
 ## - panic, debug, info, warn, error, fatal
 ##
 logLevel: info
+## Formats of the ExternalDNS logs. Available values are:
+## - text, json
+##
+logFormat: text
 ## Modify how DNS records are sychronized between sources and providers (options: sync, upsert-only)
 ##
 policy: upsert-only
 ## Registry Type. Available types are: txt, noop
-## ref: https://github.com/kubernetes-incubator/external-dns/blob/master/docs/proposal/registry.md
+## ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/proposal/registry.md
 ##
 registry: "txt"
 ## TXT Registry Identifier
@@ -262,10 +372,6 @@ txtOwnerId: ""
 ## Prefix to create a TXT record with a name following the pattern prefix.<CNAME record>
 ##
 # txtPrefix: ""
-## Load balancer service to be used; ie: custom-istio-namespace/custom-istio-ingressgateway.
-## Omit to use the default (istio-system/istio-ingressgateway)
-##
-istioIngressGateways: []
 
 ## Extra Arguments to passed to external-dns
 ##
@@ -347,18 +453,23 @@ service:
   ##
   annotations: {}
 
+## ServiceAccount parameters
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccount:
+  create: true
+  ## Service Account for pods
+  ##
+  name:
+  ## Annotations for the Service Account
+  ##
+  annotations: {}
+
 ## RBAC parameteres
 ## https://kubernetes.io/docs/reference/access-authn-authz/rbac/
 ##
 rbac:
   create: true
-  ## Service Account for pods
-  ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-  ##
-  serviceAccountName: default
-  ## Annotations for the Service Account
-  ##
-  serviceAccountAnnotations: {}
   ## RBAC API version
   ##
   apiVersion: v1beta1
@@ -368,12 +479,14 @@ rbac:
 
 ## Kubernetes Security Context
 ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+## Example:
+## securityContext:
+##   allowPrivilegeEscalation: false
+##   readOnlyRootFilesystem: true
+##   capabilities:
+##     drop: ["ALL"]
 ##
 securityContext: {}
-  # allowPrivilegeEscalation: false
-  # readOnlyRootFilesystem: true
-  # capabilities:
-  #   drop: ["ALL"]
 podSecurityContext:
   fsGroup: 1001
   runAsUser: 1001
@@ -415,9 +528,42 @@ readinessProbe:
   failureThreshold: 6
   successThreshold: 1
 
+## Configure extra volumes
+extraVolumes: []
+
+## Configure extra volumeMounts
+extraVolumeMounts: []
+
 ## Prometheus Exporter / Metrics
 ##
 metrics:
   enabled: false
   ## Metrics exporter pod Annotation and Labels
   ##
+  # podAnnotations:
+  #   prometheus.io/scrape: "true"
+  #   prometheus.io/port: "7979"
+
+  ## Prometheus Operator ServiceMonitor configuration
+  ##
+  serviceMonitor:
+    enabled: false
+    ## Namespace in which Prometheus is running
+    ##
+    # namespace: monitoring
+
+    ## Interval at which metrics should be scraped.
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    # interval: 10s
+
+    ## Timeout after which the scrape is ended
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    # scrapeTimeout: 10s
+
+    ## ServiceMonitor selector labels
+    ## ref: https://github.com/bitnami/charts/tree/master/bitnami/prometheus-operator#prometheus-configuration
+    ##
+    # selector:
+    #   prometheus: my-prometheus
