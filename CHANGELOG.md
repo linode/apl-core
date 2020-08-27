@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.103](https://github.com/redkubes/otomi-stack/compare/v0.10.102...v0.10.103) (2020-08-27)
+
+
+### Bug Fixes
+
+* no metrics server if not onprem [ci skip] ([57bfdf9](https://github.com/redkubes/otomi-stack/commit/57bfdf9ee2f43bed9d4a508d089927f2743391da))
+
 ### [0.10.102](https://github.com/redkubes/otomi-stack/compare/v0.10.101...v0.10.102) (2020-08-27)
 
 ### [0.10.101](https://github.com/redkubes/otomi-stack/compare/v0.10.100...v0.10.101) (2020-08-27)
