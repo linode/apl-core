@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.99](https://github.com/redkubes/otomi-stack/compare/v0.10.98...v0.10.99) (2020-08-27)
+
+
+### Bug Fixes
+
+* alerts channel [ci skip] ([9bdff35](https://github.com/redkubes/otomi-stack/commit/9bdff3501dcd4f83085d5fb4ce739bb7ebfa7bba))
+* harbod charts permissions issue [ci skip] ([1435610](https://github.com/redkubes/otomi-stack/commit/143561081f5b03082e7a93dcd7c6ccc43d664c58))
+* labels gone [ci skip] ([2d5cb32](https://github.com/redkubes/otomi-stack/commit/2d5cb32b8216bd290d8b0188cc23ab8ce5ab860e))
+* labels gone [ci skip] ([f66cdf9](https://github.com/redkubes/otomi-stack/commit/f66cdf90789cb90ea7d4439dca0d7e7f9713c6cf))
+
+
+### Code Refactoring
+
+* all certs now in artifacts [ci skip] ([41b84a9](https://github.com/redkubes/otomi-stack/commit/41b84a97e8091e3279642c66249b784327a80fad))
+* **oidc:** keycloak=no falls back to oidc idp ([fbc7aea](https://github.com/redkubes/otomi-stack/commit/fbc7aea03341024670520ab536e03e092c251172))
+
 ### [0.10.98](https://github.com/redkubes/otomi-stack/compare/v0.10.97...v0.10.98) (2020-08-24)
 
 
