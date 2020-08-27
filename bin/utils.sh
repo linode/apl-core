@@ -115,7 +115,7 @@ if [ $noEnvError -eq 0 ]; then
   fi
 
   # environment scoped, no deps, so faster:
-  function hfd() { hf $@ --skip-deps; }
+  function hfd() { hf $@; }
   # templates only without cruft:
   function hft() { hfd --quiet $@ template | grep -vi skipping | grep -vi "helmfile-"; }
 
