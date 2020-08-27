@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.101](https://github.com/redkubes/otomi-stack/compare/v0.10.100...v0.10.101) (2020-08-27)
+
+
+### Bug Fixes
+
+* chart helper [ci skip] ([acc6f90](https://github.com/redkubes/otomi-stack/commit/acc6f90ee1ff4a3cbe411fa69e4eae1b108f53e6))
+* regression from merge perhaps [ci skip] ([563ea19](https://github.com/redkubes/otomi-stack/commit/563ea195544af0a734a1a2df0af4a1ab79a5b0a1))
+
 ### [0.10.100](https://github.com/redkubes/otomi-stack/compare/v0.10.99...v0.10.100) (2020-08-27)
 
 
