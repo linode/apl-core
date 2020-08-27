@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: cert-manager
-    installed: false
+    installed: true
     namespace: ingress
     labels:
       tag: cert-manager
@@ -15,10 +15,6 @@ releases:
   - name: cluster-autoscaler
     installed: {{ eq $v.cluster.provider "aws" }}
     namespace: kube-system
-    <<: *default
-  - name: istio-local-gw
-    installed: false
-    namespace: istio-system
     <<: *default
   - name: knative-serving
     installed: {{ $v.cluster.hasKnative }}

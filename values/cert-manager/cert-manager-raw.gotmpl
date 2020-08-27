@@ -1,10 +1,10 @@
 {{- $v := .Environment.Values }}
 {{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
-{{- $provider := $v.cluster.provider }}
+{{- $dnsProvider := $v.cluster.dnsProvider | default $v.cluster.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
-  {{- if eq $v.cluster.provider "azure" }}
+  {{- if eq $dnsProvider "azure" }}
   {{- $ap := $cm.provider.azure.azuredns }}
   - apiVersion: v1
     kind: Secret
@@ -15,7 +15,7 @@ resources:
     data:
       {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
   {{- end }}
-  {{- if eq $v.cluster.provider "google" }}
+  {{- if eq $dnsProvider "google" }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -39,7 +39,7 @@ resources:
         solvers:
           - selector: {}
             dns01:
-              {{- index $cm.provider $provider | toYaml | nindent 14 }}
+              {{- index $cm.provider $dnsProvider | toYaml | nindent 14 }}
   {{- end }}
   # Create all the public certs that the teams requested here (outside of team charts)
   # We do this so that teams can share domains (e.g. for micro service collaboration)
