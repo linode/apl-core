@@ -2,7 +2,6 @@
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $provider := $v.cluster.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
-{{- $labels := readFile "../../helmfile.d/snippets/labels.yaml" | fromYaml }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
 {{- if eq $v.cluster.provider "azure" }}
@@ -11,7 +10,6 @@ resources:
     kind: Secret
     metadata:
       name: {{ $ap.clientSecretSecretRef.name }}
-      labels: {{- $labels | toYaml | nindent 8 }}
     data:
       {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
 {{- end }}
@@ -20,7 +18,6 @@ resources:
     kind: Secret
     metadata:
       name: cloud-dns-key
-      labels: {{- $labels | toYaml | nindent 8 }}
     data:
       key.json: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
 {{- end }}
@@ -29,7 +26,6 @@ resources:
     kind: ClusterIssuer
     metadata:
       name: letsencrypt-{{ $stage }}
-      labels: {{- $labels | toYaml | nindent 8 }}
     spec:
       acme:
         server: https://acme{{ (eq $stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
@@ -45,6 +41,6 @@ resources:
 {{- range $domain, $certInfo := $vars.domains }}
   {{- if not $certInfo.hasCert }}
     {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $certName "stage" $cm.stage "labels" $labels) $v) | nindent 4 }}
+  - {{ tpl $certTpl (merge (dict "domain" $domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
   {{- end }}
 {{- end }}
