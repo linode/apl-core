@@ -39,7 +39,10 @@ merged with each item in `.Values.resources`.
 metadata:
   labels:
     app: {{ template "raw.name" . }}
-    chart: {{ template "raw.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ template "raw.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/part-of: otomi
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}

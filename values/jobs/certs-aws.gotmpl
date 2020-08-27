@@ -1,0 +1,24 @@
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $domainsWithoutArns := list }}
+{{- $existingArns := list }}
+{{- range $certInfo := $vars.domains }}
+  {{- if not $certInfo.hasCert }}
+    {{- $domainsWithoutArns = append $domainsWithoutArns $certInfo.domain }}
+  {{- else if hasKey $certInfo "certArn" }}
+    {{- $existingArns = append $existingArns $certInfo.certArn }}
+  {{ end }}
+{{- end }}  
+tasks:
+  keycloak:
+    type: job
+    description: Import certs into ACM
+    enabled: {{ eq $v.cluster.provider "aws" }}
+    image: otomi/tools:{{ $v.toolsVersion }}
+    schedule: "* * * * *" # every minute
+    script: |
+      domainsWithoutArns='{{ tpl $joinTpl (dict "list" $domainsWithoutArns "sep" " ") }}'
+      existingArns='{{ tpl $joinTpl (dict "list" $existingArns "sep" " ") }}'
+      {{- readFile "scripts/certs-aws.sh" | nindent 6 }}

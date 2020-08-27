@@ -20,12 +20,6 @@ resources:
         {{- end }}
         alb.ingress.kubernetes.io/success-codes: '200,302,404'
         alb.ingress.kubernetes.io/healthcheck-path: /healthz
-<<<<<<< HEAD
-        {{- if ($v.ingress | get "disableHttp2" false) }}
-||||||| merged common ancestors
-        {{- if $v.ingress.disableHttp2 }}
-=======
         {{- if (hasKey $v.ingress "disableHttp2") }}
->>>>>>> 9efe0a544dcffc20aba585c4ae2c579e0e168770
         alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=false"
         {{- end }}
