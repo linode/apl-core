@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.104](https://github.com/redkubes/otomi-stack/compare/v0.10.103...v0.10.104) (2020-08-27)
+
+
+### Bug Fixes
+
+* auth cert [ci skip]C ([74071a9](https://github.com/redkubes/otomi-stack/commit/74071a97a4a5389e26f1be4b53b2f4e75e42ee60))
+
 ### [0.10.103](https://github.com/redkubes/otomi-stack/compare/v0.10.102...v0.10.103) (2020-08-27)
 
 
