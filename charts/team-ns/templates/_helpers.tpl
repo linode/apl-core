@@ -56,7 +56,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
-{{- $internetFacing := or (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
+{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
 {{- if and $internetFacing .isApps }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
@@ -92,6 +92,9 @@ metadata:
   {{- if not .hasCloudLB }}
     ingress.kubernetes.io/ssl-redirect: "true"
   {{- end }}
+{{- end }}
+{{- if and (eq .cluster.provider "onprem") $internetFacing }}
+    external-dns.alpha.kubernetes.io/target: {{ .cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ .domain }}
