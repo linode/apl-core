@@ -1,0 +1,37 @@
+{{- $v := . }}
+{{- $tc := .teamConfig }}
+{{- $coreAdminServices := list }}{{- range $s := .services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $domains := list }}
+{{- $domainNames := list }}
+{{- $teams := set $tc.teams "admin" dict }}
+{{- range $teamId, $team := $tc.teams }}
+  {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domain }}
+  {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
+  {{- range $s := $services }}
+    {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) }}
+      {{- $domain := printf "apps.%s" $baseDomain }}
+      {{- if hasKey $s "domain" }}
+        {{- $domain = $s.domain }}
+      {{- else if hasKey $s "isShared" }}
+        {{- $domain = printf "%s.%s" $s.name $v.cluster.domain }}
+      {{- else if hasKey $s "ownHost" }}
+        {{- $domain = printf "%s.%s" $s.name $baseDomain }}
+      {{- end }}
+      {{- if not (has $domain $domainNames) }}
+        {{- $domInfo := dict "domain" $domain "hasCert" (hasKey $s "hasCert") }}
+        {{- if hasKey $s "certName" }}{{ $domInfo = set $domInfo "certName" $s.certName }}{{ end }}
+        {{- if hasKey $s "certArn" }}{{ $domInfo = set $domInfo "certArn" $s.certArn }}{{ end }}
+        {{- $domains = append $domains $domInfo }}
+        {{- $domainNames = append $domainNames $domain }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $proxyDomain := print "proxy." $v.cluster.domain }}
+{{- $authDomain := print "auth." $v.cluster.domain }}
+{{- $domains := concat $domains (list (dict "domain" $proxyDomain "hasCert" false) (dict "domain" $authDomain "hasCert" false)) }}
+domains:
+  {{- range $domInfo := $domains }}
+  - {{- $domInfo | toYaml | nindent 4 }}
+  {{- end }}

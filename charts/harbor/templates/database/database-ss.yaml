@@ -25,16 +25,21 @@ spec:
 {{ toYaml .Values.database.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+{{- if .Values.database.internal.serviceAccountName }}
+      serviceAccountName: {{ .Values.database.internal.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
       - name: "change-permission-of-directory"
-        image: {{ .Values.database.internal.initContainerImage.repository }}:{{ .Values.database.internal.initContainerImage.tag }}
+        securityContext:
+          runAsUser: 0
+        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
-        args: ["-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
+        args: ["-c", "chown -R postgres:postgres /var/lib/postgresql/data; chmod 0700 /var/lib/postgresql/data"]
         volumeMounts:
         - name: database-data
           mountPath: /var/lib/postgresql/data

@@ -26,6 +26,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+{{- if .Values.notary.server.serviceAccountName }}
+      serviceAccountName: {{ .Values.notary.server.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

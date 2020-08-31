@@ -37,6 +37,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+{{- if .Values.registry.serviceAccountName }}
+      serviceAccountName: {{ .Values.registry.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -68,8 +71,6 @@ spec:
         - secretRef:
             name: "{{ template "harbor.registry" . }}"
         env:
-        # - name: REGISTRY_LOG_LEVEL
-        #   value: "debug"
         {{- if has "registry" .Values.proxy.components }}
         - name: HTTP_PROXY
           value: "{{ .Values.proxy.httpProxy }}"
@@ -131,6 +132,9 @@ spec:
           mountPath: /etc/registry/pk.pem
           subPath: pk.pem
         {{- end }}
+        {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
       - name: registryctl
         image: {{ .Values.registry.controller.image.repository }}:{{ .Values.registry.controller.image.tag }}
@@ -211,6 +215,9 @@ spec:
           mountPath: /etc/registry/gcs-key.json
           subPath: gcs-key.json
         {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
+        {{- end }}
       volumes:
       - name: registry-htpasswd
         secret:
@@ -262,6 +269,9 @@ spec:
             - key: CLOUDFRONT_KEY_DATA
               path: pk.pem
       {{- end }}
+      {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
       {{- end }}
     {{- with .Values.registry.nodeSelector }}
       nodeSelector:

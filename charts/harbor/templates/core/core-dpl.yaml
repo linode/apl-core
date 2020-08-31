@@ -31,6 +31,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+{{- if .Values.core.serviceAccountName }}
+      serviceAccountName: {{ .Values.core.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -113,6 +116,9 @@ spec:
         {{- end }}
         - name: psc
           mountPath: /etc/core/token
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
+        {{- end }}
 {{- if .Values.core.resources }}
         resources:
 {{ toYaml .Values.core.resources | indent 10 }}
@@ -163,6 +169,9 @@ spec:
       {{- end }}
       - name: psc
         emptyDir: {}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
     {{- with .Values.core.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}

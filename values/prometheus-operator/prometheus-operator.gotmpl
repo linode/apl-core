@@ -107,8 +107,8 @@ alertmanager:
         {{- end }}
     receivers:
       - name: "null"
+      {{- $channel := $p.alertmanager | get "slack.channel" "mon-otomi" }}
       {{- if or ($v.cluster | getOrNil ".isRedkubesMonitored") $hasSlack }}
-      {{- $channel := $isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
       - name: default
         slack_configs:
           - channel: "#{{ $channel }}"
@@ -131,13 +131,13 @@ alertmanager:
       - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
-          - channel: "#mon-otomi-crit"
+          - channel: "#{{ $channel }}-crit"
             api_url: {{ $v.redkubesSlackUrl }}
             {{ $slackTpl | nindent 12  }}
       {{- end }}
 grafana:
   image:
-    tag: 6.7.3
+    tag: 7.1.5
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:

@@ -89,8 +89,8 @@ releases:
             {{- end }}
             receivers:
               - name: "null"
-              {{- if eq $receiver "slack" }}
               {{- $channel := $team | get "slack.channel" "mon-otomi" }}
+              {{- if eq $receiver "slack" }}
               - name: default
                 slack_configs:
                   - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
@@ -114,7 +114,7 @@ releases:
               {{- if and $v.cluster.isRedkubesMonitored (hasKey $team "receiver") }}
                 # sending team criticals also to redkubes to be aware of team issues
                 slack_configs:
-                  - channel: "#mon-otomi-crit"
+                  - channel: "#{{ $channel }}-crit"
                     api_url: {{ $v.redkubesSlackUrl }}
                     {{- $slackTpl | nindent 20 }}
               {{- end }}
