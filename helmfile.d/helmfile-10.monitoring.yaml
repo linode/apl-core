@@ -31,6 +31,6 @@ releases:
     namespace: monitoring
     <<: *default
   - name: weave-scope
-    installed: true
+    installed: {{ $c | get "weave-scope.enabled" false }}
     namespace: monitoring
     <<: *default
