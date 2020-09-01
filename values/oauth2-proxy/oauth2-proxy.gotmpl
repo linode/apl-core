@@ -19,6 +19,14 @@ config:
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
 priorityClassName: "system-cluster-critical"
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}
