@@ -5,6 +5,7 @@
 {{- $domains := list }}
 {{- $domainNames := list }}
 {{- $teams := set $tc.teams "admin" dict }}
+# {{ $tc.teams | toJson }}
 {{- range $teamId, $team := $tc.teams }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domain }}
   {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
@@ -19,9 +20,7 @@
         {{- $domain = printf "%s.%s" $s.name $baseDomain }}
       {{- end }}
       {{- if not (has $domain $domainNames) }}
-        {{- $domInfo := dict "domain" $domain "hasCert" (hasKey $s "hasCert") }}
-        {{- if hasKey $s "certName" }}{{ $domInfo = set $domInfo "certName" $s.certName }}{{ end }}
-        {{- if hasKey $s "certArn" }}{{ $domInfo = set $domInfo "certArn" $s.certArn }}{{ end }}
+        {{- $domInfo := dict "domain" $domain "hasCert" (hasKey $s "hasCert") "certName" ($s |get "certName" "") "certArn" ($s | get "certArn" "") }}
         {{- $domains = append $domains $domInfo }}
         {{- $domainNames = append $domainNames $domain }}
       {{- end }}
@@ -30,7 +29,7 @@
 {{- end }}
 {{- $proxyDomain := print "proxy." $v.cluster.domain }}
 {{- $authDomain := print "auth." $v.cluster.domain }}
-{{- $domains := concat $domains (list (dict "domain" $proxyDomain "hasCert" false) (dict "domain" $authDomain "hasCert" false)) }}
+{{- $domains = concat $domains (list (dict "domain" $proxyDomain "hasCert" false "certArn" "" "certName" "") (dict "domain" $authDomain "hasCert" false "certArn" "" "certName" "")) }}
 domains:
   {{- range $domInfo := $domains }}
   - {{- $domInfo | toYaml | nindent 4 }}

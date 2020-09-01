@@ -7,14 +7,11 @@ resources:
       name: merged-ingress
     data:
       annotations: |
-        provider: aws
+        externaldns: true
         kubernetes.io/ingress.class: alb
         alb.ingress.kubernetes.io/scheme: internet-facing
         alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS":443}]'
         alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
-        {{- if $v.ingress.certArns }}
-        alb.ingress.kubernetes.io/certificate-arn: {{ tpl $joinTpl $v.ingress.certArns | quote }}
-        {{- end }}
         {{- if $v.cluster.allowedCidrs }}
         alb.ingress.kubernetes.io/inbound-cidrs: {{ tpl $joinTpl $v.cluster.allowedCidrs | quote }}
         {{- end }}
