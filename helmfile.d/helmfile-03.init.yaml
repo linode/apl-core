@@ -7,6 +7,12 @@ bases:
 {{- $knativeVersion := 0.16 }}
 
 releases:
+  - name: jobs-artifacts
+    installed: true
+    namespace: maintenance
+    labels:
+      tag: jobs
+    <<: *raw
   - name: knative-init
     installed: {{ $v.cluster.hasKnative }}
     namespace: default
