@@ -199,6 +199,7 @@ grafana:
       org_role: Admin
       org_name: Main Org.
     "auth.generic_oauth":
+      tls_skip_verify_insecure: {{ eq ($v.charts | get "cert-manager.stage") "staging" }}
       # enabled: false
       enabled: true
       name: OAuth

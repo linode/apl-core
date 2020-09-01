@@ -14,7 +14,8 @@
 {{- $idp := $v.oidc.idp }}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" -}}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
 tasks:
   keycloak:
     type: job
@@ -44,4 +45,4 @@ tasks:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
-    script: export NODE_EXTRA_CA_CERTS=/fakeroot.pem && npm run tasks:keycloak
+    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
