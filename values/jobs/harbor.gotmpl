@@ -9,7 +9,6 @@
 {{- $hasHarbor := $h | get "enabled" false -}}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
@@ -36,5 +35,5 @@ tasks:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: 'true'
-    script: npm run tasks:harbor
+    script: export NODE_EXTRA_CA_CERTS=/fakeroot.pem && npm run tasks:harbor
 

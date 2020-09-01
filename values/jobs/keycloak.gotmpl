@@ -9,7 +9,8 @@
 {{- end -}}
 {{- end -}}
 {{- $c := $v.charts }}
-{{- $k := $v.charts | get "keycloak" dict }}
+{{- $cm := $c | get "cert-manager" -}}
+{{- $k := $c | get "keycloak" dict }}
 {{- $idp := $v.oidc.idp }}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
@@ -43,4 +44,4 @@ tasks:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
-    script: npm run tasks:keycloak
+    script: export NODE_EXTRA_CA_CERTS=/fakeroot.pem && npm run tasks:keycloak

@@ -14,7 +14,7 @@ google:
   project: {{ $google.projectId }}
   serviceAccountKey: |
     {{- $google.cloudDnsKey | nindent 4 }}
-{{- else if eq $dnsProvider "aws" }}
+{{- else if and (eq $dnsProvider "aws") (hasKey $dns "aws") }}
 aws:
   {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}
@@ -26,6 +26,7 @@ azure:
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
+logLevel: {{ $dns | get "logLevel" "info" }}
 dryRun: false
 crd:
   create: false

@@ -1,4 +1,8 @@
 {{- $v := .Environment.Values }}
-clusterName: {{ $v.cluster.name }}
-autoDiscoverAwsRegion: true
-autoDiscoverAwsVpcID: true
+clusterName: otomi-eks-{{ $v.cluster.name }}
+# autoDiscoverAwsRegion: true
+autoDiscoverAwsRegion: false
+# autoDiscoverAwsVpcID: true
+autoDiscoverAwsVpcID: false
+awsVpcID: {{ $v.cluster.vpcID }}
+awsRegion: {{ $v.cluster.region }}

@@ -13,5 +13,5 @@ releases:
     installed: {{ $c | get "harbor.enabled" false }}
     <<: *jobs
   - name: jobs-certs-aws
-    installed: false #{{ eq $v.cluster.provider "aws" }}
+    installed: {{ eq $v.cluster.provider "aws" }}
     <<: *jobs
