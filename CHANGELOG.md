@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.110](https://github.com/redkubes/otomi-stack/compare/v0.10.109...v0.10.110) (2020-09-01)
+
+
+### Bug Fixes
+
+* skip tls verify when cert=staging [ci skip] ([2077f06](https://github.com/redkubes/otomi-stack/commit/2077f062be9b80846b8c67e7d3444531a60891ee))
+
 ### [0.10.109](https://github.com/redkubes/otomi-stack/compare/v0.10.108...v0.10.109) (2020-09-01)
 
 
