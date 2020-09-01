@@ -3,3 +3,10 @@ clusterName: {{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
 priorityClassName: "system-cluster-critical"
+resources:
+  requests:
+    cpu: 500m
+    memory: 64Mi
+  limits:
+    cpu: 1
+    memory: 256Mi

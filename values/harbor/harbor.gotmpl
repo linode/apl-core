@@ -23,8 +23,22 @@ core:
   xsrfKey: UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd 
   secret: 9gfm2350fg3fg3m8
   secretName: {{ $harborSecretName }}
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
 jobservice:
   secret: mnf9adfgjwr23m4d
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -110,10 +124,24 @@ registry:
     image:
       repository: goharbor/registry-photon
       tag: v2.0.0
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m
   controller:
     image:
       repository: goharbor/harbor-registryctl
       tag: v2.0.0
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m
   # Secret is used to secure the upload state from client
   # and registry storage backend.
   # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
@@ -134,3 +162,10 @@ database:
       repository: goharbor/harbor-db
       tag: v2.0.0
     # password: "sd83jf7s"
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m

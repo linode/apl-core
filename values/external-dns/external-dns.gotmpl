@@ -3,8 +3,6 @@
 {{- $google := $v | get "google" dict }}
 {{- $aws := $v | get "aws" dict }}
 {{- $azure := $v | get "azure" dict }}
-image:
-  tag: 0.5.15-debian-9-r1
 sources:
 - ingress
 - istio-gateway
@@ -49,13 +47,13 @@ podSecurityContext:
 
 priorityClassName: "system-cluster-critical"
 
-resources: {}
-#  limits:
-#    cpu: 50m
-#    memory: 50Mi
-#  requests:
-#    memory: 50Mi
-#    cpu: 10m
+resources:
+  limits:
+    cpu: 50m
+    memory: 50Mi
+  requests:
+    memory: 50Mi
+    cpu: 10m
 
 metrics:
   enabled: true

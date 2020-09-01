@@ -5,10 +5,40 @@ cluster:
 persistence:
   size: 1Gi
 usePassword: false
+
+sentinel:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
 master:
   priorityClassName: "system-cluster-critical"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
 slave:
   priorityClassName: "system-cluster-critical"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
 metrics:
   priorityClassName: "system-cluster-critical"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
 # password: bla

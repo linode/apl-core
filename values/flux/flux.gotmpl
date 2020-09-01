@@ -7,9 +7,23 @@ git:
   ciSkip: true
 memcached:
   maxItemSize: 10m
+  resources:
+    requests:
+      memory: 16Mi
+      cpu: 50m
+    limits:
+      memory: 322Mi
+      cpu: 100m
 registry:
   automationInterval: "5m"
   # Maximum registry requests per second per host
   rps: 200
   trace: false
 
+resources:
+  requests:
+    memory: 32Mi
+    cpu: 50m
+  limits:
+    memory: 64Mi
+    cpu: 100m

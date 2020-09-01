@@ -3,3 +3,30 @@ global:
     tag: 1.12.0
   service:
     name: weave-scope
+
+weave-scope-frontend:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
+
+weave-scope-agent:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
+
+weave-scope-cluster-agent:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 256Mi
