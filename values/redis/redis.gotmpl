@@ -18,19 +18,19 @@ master:
   priorityClassName: "system-cluster-critical"
   resources:
     requests:
-      cpu: 500m
+      cpu: 200m
       memory: 64Mi
     limits:
-      cpu: 1
+      cpu: 500m
       memory: 256Mi
 slave:
   priorityClassName: "system-cluster-critical"
   resources:
     requests:
-      cpu: 500m
+      cpu: 200m
       memory: 64Mi
     limits:
-      cpu: 1
+      cpu: 500m
       memory: 256Mi
 metrics:
   priorityClassName: "system-cluster-critical"
