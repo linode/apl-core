@@ -15,9 +15,9 @@ set -e
 command=$1
 
 # VERBOSE - export this varibale to run this script in verbose mode
-VERBOSE=0
+VERBOSE=${VERBOSE:-0}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
-MOUNT_TMP_DIR=0
+MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 
 # set_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 set_kube_context=1
@@ -257,7 +257,7 @@ function set_env_and_stack_dir {
     env_dir=$ENV_DIR
     mount_stack_dir=1
   else
-    [[ ! -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR envirnment shall not be set" && exit 2
+    [[ ! -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment shall not be set" && exit 2
   fi
   return 0
 }
