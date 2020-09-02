@@ -30,6 +30,9 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- if .Values.portal.serviceAccountName }}
+      serviceAccountName: {{ .Values.portal.serviceAccountName }}
+{{- end }}
       containers:
       - name: portal
         image: {{ .Values.portal.image.repository }}:{{ .Values.portal.image.tag }}

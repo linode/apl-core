@@ -34,7 +34,8 @@ if [ $noEnvError -eq 0 ]; then
       function drun() {
         # execute any kubectl command to refresh access token
         k version >/dev/null
-        d run -it --rm -v $PWD:$PWD \
+        d run -it --rm \
+          -v $PWD:$PWD \
           -v /tmp:/tmp \
           -v ~/.kube/config:/home/app/.kube/config \
           -v $HELM_CONFIG:/home/app/.config/helm \
@@ -44,7 +45,7 @@ if [ $noEnvError -eq 0 ]; then
           -v $ENV_DIR:$PWD/env \
           -e K8S_CONTEXT=$K8S_CONTEXT \
           -e CLOUD=$CLOUD \
-          -e GCLOUD_SERVICE_KEY=$GCLOUD_SERVICE_KEY \
+          -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
           -e CLUSTER=$CLUSTER \
           -w $PWD $img $@
       }

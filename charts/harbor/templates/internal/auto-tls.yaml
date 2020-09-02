@@ -73,7 +73,7 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
 type: kubernetes.io/tls
 data:
-  tls.ca: {{ $ca.Cert | b64enc | quote }}
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
   tls.crt: {{ $chartCrt.Cert | b64enc | quote }}
   tls.key: {{ $chartCrt.Key | b64enc | quote }}
 {{- end }}

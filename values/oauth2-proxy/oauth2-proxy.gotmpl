@@ -1,9 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $o := $v.oidc }}
+{{- $provider := ($o | get "provider" "oidc") }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $cm := $v | get "charts.cert-manager" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $provider := $o | get ($o | get "provider" "oidc") dict }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 image:
   tag: "v6.0.0"
@@ -23,20 +25,22 @@ config:
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}
 {{- range $teamId, $team := $tc.teams }}
-{{- if hasKey $team "services" }}
-{{- range $s := $team.services }}
-{{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
-{{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
-{{- $domains = append $domains $s.domain }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+  {{- if hasKey $team "services" }}
+    {{- range $s := $team.services }}
+      {{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
+        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
+          {{- $domains = append $domains $s.domain }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- $domainList := tpl $joinTpl (append $domains (printf ".%s" $v.cluster.domain)) }}
 
 extraArgs:
-  provider: oidc
+  ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
+  # supported: oidc, google, azure, github
+  provider: {{ $provider }}
   whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
@@ -59,6 +63,12 @@ extraArgs:
   ###
   # Provider specifics:
   ###
-  oidc-issuer-url: {{ $hasKeycloak | ternary (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) $o.idp.issuer }}
+  {{- if eq $provider "oidc" }}
+  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}
   insecure-oidc-allow-unverified-email: true
+  {{- else if eq $provider "azure" }}
+  azure-tenant: {{ $o.azure.tenantID }}
+  {{- else if eq $provider "github" }}
+  github-org: {{ $o | getOrNil "github.org" }}
+  {{- end }}
 

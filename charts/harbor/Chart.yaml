@@ -1,9 +1,10 @@
 apiVersion: v1
-appVersion: 2.0.0
+appVersion: 2.0.2
 description: An open source trusted cloud native registry that stores, signs, and
   scans content
+engine: gotpl
 home: https://goharbor.io
-icon: https://raw.githubusercontent.com/goharbor/harbor/master/docs/img/harbor_logo.png
+icon: https://raw.githubusercontent.com/goharbor/website/master/static/img/logos/harbor-icon-color.png
 keywords:
 - docker
 - registry
@@ -19,4 +20,4 @@ name: harbor
 sources:
 - https://github.com/goharbor/harbor
 - https://github.com/goharbor/harbor-helm
-version: 1.4.0
+version: 1.4.2

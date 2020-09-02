@@ -1,24 +1,23 @@
 {{- $v := .Environment.Values }}
 {{- $dns := $v | get "charts.external-dns" dict }}
+{{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
 {{- $google := $v | get "google" dict }}
 {{- $aws := $v | get "aws" dict }}
 {{- $azure := $v | get "azure" dict }}
-image:
-  tag: 0.5.15-debian-9-r1
 sources:
 - ingress
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
-provider: {{ $v.cluster.provider }}
-{{- if eq $v.cluster.provider "google" }}
+provider: {{ $dnsProvider }}
+{{- if eq $dnsProvider "google" }}
 google:
   project: {{ $google.projectId }}
   serviceAccountKey: |
     {{- $google.cloudDnsKey | nindent 4 }}
-{{- else if eq $v.cluster.provider "aws" }}
+{{- else if and (eq $dnsProvider "aws") (hasKey $dns "aws") }}
 aws:
   {{- $dns.aws | toYaml | nindent 2 }}
-{{- else if eq $v.cluster.provider "azure" }}
+{{- else if eq $dnsProvider "azure" }}
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
   tenantId: {{ $azure.tenantId }}
@@ -27,6 +26,7 @@ azure:
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
+logLevel: {{ $dns | get "logLevel" "info" }}
 dryRun: false
 crd:
   create: false
