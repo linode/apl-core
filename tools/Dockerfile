@@ -2,24 +2,23 @@ FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG KUBECTL_VERSION=1.16.9
+ARG KUBECTL_VERSION=v1.18.6
 # https://cloud.google.com/sdk/docs/downloads-versioned-archives
-ARG GOOGLE_SDK_VERSION=298.0.0
+ARG GOOGLE_SDK_VERSION=305.0.0
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.2.4
+ARG HELM_VERSION=v3.3.0
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=v3.1.1
+ARG HELM_DIFF_VERSION=v3.1.2
 # https://github.com/zendesk/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=v2.0.2
 # https://github.com/mozilla/sops/releases
-ARG SOPS_VERSION=3.6.0
-ARG HELMFILE_VERSION=0.114.0
-# ARG HELMFILE_VERSION=0.123.0
+ARG SOPS_VERSION=v3.6.0
+ARG HELMFILE_VERSION=v0.125.6
 # https://github.com/weaveworks/eksctl/releases
 ARG EKSCTL_VERSION=0.24.0
 ARG YAML2JSON_VERSION=0.4.0
 
-ENV HELM_FILE_NAME helm-v${HELM_VERSION}-linux-amd64.tar.gz
+ENV HELM_FILE_NAME helm-${HELM_VERSION}-linux-amd64.tar.gz
 
 WORKDIR /
 
@@ -60,11 +59,11 @@ RUN AZ_REPO=$(lsb_release -cs) && echo "deb [arch=amd64] https://packages.micros
 RUN apt-get update -qq &&  apt-get install -qqy azure-cli && rm -rf /var/lib/apt/lists/* 
 
 # kubectl
-ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl
+ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl
 RUN chmod +x kubectl
 
 # sops
-ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
+ADD https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux sops
 RUN chmod +x sops
 
 # helm
@@ -75,7 +74,7 @@ RUN echo "exec $*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 RUN helm plugin install https://github.com/futuresimple/helm-secrets --version ${HELM_SECRETS_VERSION}
 
 # helmfile
-ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
+ADD https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
 RUN chmod +x helmfile
 
 # eksctl
