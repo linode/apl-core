@@ -3,7 +3,7 @@
 set -e
 ENV_DIR=${ENV_DIR:-./env}
 
-tpl="$PWD/bin/drone/.drone.tpl.yaml"
+tpl="$PWD/tpl/.drone.tpl.yaml"
 source ${ENV_DIR}/env.ini
 cd ${ENV_DIR}/env >/dev/null
 for c in */; do
