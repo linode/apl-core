@@ -124,6 +124,7 @@ function drun() {
     $tmp_volume \
     -v ${HOME}/.gitconfig:/home/app/.gitconfig \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
+    -v ${HOME}/.ssh:/home/app/.ssh \
     -v ${helm_config}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
     -v ${HOME}/.aws:/home/app/.aws \

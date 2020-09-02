@@ -35,6 +35,7 @@ RUN apt-get update -qq && \
   gettext \
   lsb-release \
   netcat \
+  openssh-server \
   python3 \
   python3-pip \
   python3-setuptools \
