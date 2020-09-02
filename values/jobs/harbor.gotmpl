@@ -3,13 +3,13 @@
 {{- $o := $v.oidc }}
 {{- $h := $c | get "harbor" dict }}
 {{- $k := $c | get "keycloak" dict }}
+{{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $hasHarbor := $h | get "enabled" false -}}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
@@ -35,6 +35,6 @@ tasks:
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
-      OIDC_VERIFY_CERT: 'true'
-    script: npm run tasks:harbor
+      OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
+    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
 
