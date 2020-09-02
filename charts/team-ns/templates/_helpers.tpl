@@ -1,7 +1,14 @@
+{{- define "raw.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "chart-labels" -}}
-app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app: {{ template "raw.name" . }}
+app.kubernetes.io/name: {{ template "raw.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.Version }}
+app.kubernetes.io/part-of: otomi
 helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
@@ -10,9 +17,10 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
-{{- define "helm-toolkit.utils.joinListWithPipe" -}}
+{{- define "helm-toolkit.utils.joinListWithSep" -}}
 {{- $local := dict "first" true -}}
-{{- range $k, $v := . -}}{{- if not $local.first -}}|{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
+{{- $ := . -}}
+{{- range $k, $v := .list -}}{{- if not $local.first -}}{{ $.sep }}{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
 {{- end -}}
 
 {{- define "flatten-name" -}}
@@ -56,7 +64,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
-{{- $internetFacing := or (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
+{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
 {{- if and $internetFacing .isApps }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
@@ -76,7 +84,7 @@ metadata:
 {{- if eq .provider "aws" }}
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
-    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }} {{ .ingress.tags }}"
+    alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }}"
     ingress.kubernetes.io/ssl-redirect: "true"
 {{- end }}
 {{- if eq .provider "azure" }}
@@ -92,6 +100,9 @@ metadata:
   {{- if not .hasCloudLB }}
     ingress.kubernetes.io/ssl-redirect: "true"
   {{- end }}
+{{- end }}
+{{- if and (eq .cluster.provider "onprem") $internetFacing }}
+    external-dns.alpha.kubernetes.io/target: {{ .cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ .domain }}
@@ -147,10 +158,9 @@ spec:
     {{- if not (eq $.provider "nginx") }}
       {{- if eq $.provider "aws" }}
           - backend:
-              - path: /*
-                backend:
-                  serviceName: ssl-redirect
-                  servicePort: use-annotation
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+            path: /*
       {{- end }}
           - backend:
               serviceName: nginx-ingress-controller

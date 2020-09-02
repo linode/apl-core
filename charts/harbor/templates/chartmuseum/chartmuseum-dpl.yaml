@@ -37,6 +37,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+{{- if .Values.chartmuseum.serviceAccountName }}
+      serviceAccountName: {{ .Values.chartmuseum.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -119,6 +122,9 @@ spec:
           mountPath: /harbor_cust_cert/custom-ca-bundle.crt
           subPath: ca.crt
         {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
+        {{- end }}
       volumes:
       - name: chartmuseum-data
       {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "filesystem") }}
@@ -144,6 +150,9 @@ spec:
       - name: storage-service-ca
         secret:
           secretName: {{ .Values.persistence.imageChartStorage.caBundleSecretName }}
+      {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
       {{- end }}
       {{- with .Values.chartmuseum.nodeSelector }}
       nodeSelector:

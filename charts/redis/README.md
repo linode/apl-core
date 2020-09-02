@@ -490,7 +490,7 @@ must be specified.
 ### 4.0.0
 
 This version removes the `chart` label from the `spec.selector.matchLabels`
-which is immutable since `StatefulSet apps/v1beta2`. It has been inadvertently
+which is immutable since `StatefulSet apps/v1`. It has been inadvertently
 added, causing any subsequent upgrade to fail. See https://github.com/helm/charts/issues/7726.
 
 It also fixes https://github.com/helm/charts/issues/7726 where a deployment `extensions/v1beta1` can not be upgraded if `spec.selector` is not explicitly set.

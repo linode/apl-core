@@ -54,7 +54,7 @@ Return the appropriate apiVersion for deployment.
 {{- define "deployment.apiVersion" -}}
 {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
 {{- if semverCompare "<1.9-0" $kubeTargetVersion -}}
-{{- print "apps/v1beta2" -}}
+{{- print "apps/v1" -}}
 {{- else -}}
 {{- print "apps/v1" -}}
 {{- end -}}
@@ -69,5 +69,16 @@ Return the appropriate apiVersion for podsecuritypolicy.
 {{- print "extensions/v1beta1" -}}
 {{- else -}}
 {{- print "policy/v1beta1" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the service account name used by the pod.
+*/}}
+{{- define "cluster-autoscaler.serviceAccountName" -}}
+{{- if .Values.rbac.serviceAccount.create -}}
+    {{ default (include "cluster-autoscaler.fullname" .) .Values.rbac.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.rbac.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
