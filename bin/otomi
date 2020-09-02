@@ -56,13 +56,12 @@ function show_usage {
     helmfile-template - run helmfile template
     helmfile-template-quiet - run helmfile template (only print yaml documents)
     help - print this help
-    install-drone-pipelines - create drone configuration file at env/<CLOUD>/.drone.<CLUSTER>.yml file
     kubectl - run kubectl
     pull - wraper for git-pull (encrypt -> generate pipelines -> commit changes)
   "
 }
 
-function set_k8s_context {
+function evaluate_k8s_context {
   local env_sh_path="${env_dir}/env/${CLOUD}/${CLUSTER}.sh"
   [ ! -f $env_sh_path ] && echo "Error: The file '${env_sh_path}' does not exist" && exit 1
   source $env_sh_path
@@ -103,7 +102,7 @@ function drun() {
 
   # execute any kubectl command to refresh access token
   if [ $set_kube_context -eq 1 ]; then
-    set_k8s_context
+    evaluate_k8s_context
     validate_k8s_context
     kubectl version >/dev/null
   fi
@@ -123,6 +122,7 @@ function drun() {
 
   docker run $docker_terminal_params --rm \
     $tmp_volume \
+    -v ${HOME}/.gitconfig:/home/app/.gitconfig \
     -v ${HOME}/.kube/config:/home/app/.kube/config \
     -v ${helm_config}:/home/app/.config/helm \
     -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
@@ -191,19 +191,17 @@ function execute {
       break
       ;;
     encrypt)
+      set_kube_context=0
       drun bin/crypt.sh enc
       break
       ;;
     decrypt)
+      set_kube_context=0
       drun bin/crypt.sh dec
       break
       ;;
-    install-drone-pipelines)
-      set_kube_context=0
-      drun bin/gen-drone.sh
-      break
-      ;;
     bash)
+      set_kube_context=0
       docker_terminal_params='-it'
       drun bash
       break
@@ -227,10 +225,10 @@ function execute {
       break
       ;;
     pull)
-    set_kube_context=0
-    drun bin/git-pull.sh
-    break
-    ;;
+      set_kube_context=0
+      drun bin/git-pull.sh
+      break
+      ;;
     *)
       show_usage
       echo "Error: Unknown command: $@"

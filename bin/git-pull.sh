@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ex
 ENV_DIR=${ENV_DIR:-./env}
 
 git -C $ENV_DIR pull
