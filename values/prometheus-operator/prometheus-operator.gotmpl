@@ -24,6 +24,13 @@ kubeProxy:
   enabled: false
 {{- end }}
 prometheusOperator:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
   configReloaderCpu: 200m
   admissionWebhooks:
     enabled: false
@@ -62,6 +69,13 @@ additionalPrometheusRules:
 alertmanager:
   alertmanagerSpec:
     priorityClassName: "system-cluster-critical"
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 250m
+      limits:
+        memory: 256Mi
+        cpu: 500m
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -135,8 +149,6 @@ alertmanager:
             {{ $slackTpl | nindent 12  }}
       {{- end }}
 grafana:
-  image:
-    tag: 6.7.3
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
