@@ -1,10 +1,26 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
+init:
+  resources:
+    limits:
+      cpu: "10m"
+      memory: "32Mi"
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+
 keycloak:
   username: keycloak
   password: "D33pLe@rn"
   basepath: ""
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "1Gi"
+    requests:
+      cpu: "100m"
+      memory: "1Gi"
   persistence:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}
@@ -40,4 +56,3 @@ prometheus:
       
 test:
   enabled: false
-
