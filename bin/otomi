@@ -29,7 +29,7 @@ stack_dir='/home/app/stack'
 otomi_image=''
 docker_terminal_params=''
 helm_config=''
-
+readme_url='https://github.com/redkubes/otomi-stack'
 
 function set_helm_config {
   helm_config="$HOME/.config/helm"
@@ -85,6 +85,13 @@ function set_env_ini {
   [[ -z "$customer" ]] && echo "Error: Unable to evaluate 'customer' variable from $init_path" && exit 1
 
   otomi_image="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
+  return 0
+}
+
+evaluate_secrets_file() {
+  local secrets_path="${env_dir}/.secrets"
+  [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
+  source $secrets_path
   return 0
 }
 
@@ -256,16 +263,15 @@ function set_env_and_stack_dir {
     stack_dir=$PWD
     env_dir=$ENV_DIR
     mount_stack_dir=1
-  else
-    [[ ! -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment shall not be set" && exit 2
   fi
   return 0
 }
 
 [[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2
 
-validate_required_env
 set_env_and_stack_dir
+evaluate_secrets_file
+validate_required_env
 set_env_ini
 set_helm_config
 execute $@
