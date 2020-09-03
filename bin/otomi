@@ -29,7 +29,7 @@ stack_dir='/home/app/stack'
 otomi_image=''
 docker_terminal_params=''
 helm_config=''
-reamde_url='https://github.com/redkubes/otomi-stack'
+readme_url='https://github.com/redkubes/otomi-stack'
 
 function set_helm_config {
   helm_config="$HOME/.config/helm"
@@ -90,7 +90,7 @@ function set_env_ini {
 
 evaluate_secrets_file() {
   local secrets_path="${env_dir}/.secrets"
-  [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $reamde_url" && exit 2
+  [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
   source $secrets_path
   return 0
 }
