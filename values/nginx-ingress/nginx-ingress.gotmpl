@@ -42,7 +42,7 @@ controller:
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
     minReplicas: 1
-    maxReplicas: 12
+    maxReplicas: 6
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}
