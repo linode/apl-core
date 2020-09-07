@@ -17,6 +17,8 @@ ARG HELMFILE_VERSION=v0.125.6
 # https://github.com/weaveworks/eksctl/releases
 ARG EKSCTL_VERSION=0.24.0
 ARG YAML2JSON_VERSION=0.4.0
+# https://github.com/instrumenta/kubeval/releases
+ARG KUBEVAL_VERSION=0.15.0
 
 ENV HELM_FILE_NAME helm-${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -96,6 +98,10 @@ ENV PATH $PATH:$APP_HOME/gsdk
 # yaml2json https://github.com/wakeful/yaml2json/releases/download/0.4.0/yaml2json-linux-amd64
 ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
 RUN chmod +x yaml2json
+
+# kubeval https://github.com/instrumenta/kubeval/releases/download/0.15.0/kubeval-linux-amd64.tar.gz
+ADD https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 
 RUN chown -R app:app /home/app
 USER app
