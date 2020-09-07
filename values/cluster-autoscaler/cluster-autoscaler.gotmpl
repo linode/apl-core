@@ -2,8 +2,8 @@
 {{- $a := index $v.charts "cluster-autoscaler" }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
-image:
-  tag: {{ $a.image.tag }}
+# image:
+#   tag: v1.17.1
 
 autoDiscovery:
   clusterName:  {{ $v.clusterName }}

@@ -11,8 +11,8 @@ init:
       memory: "32Mi"
 
 keycloak:
-  username: keycloak
-  password: "D33pLe@rn"
+  username: {{ $k | get "admin.username" "admin" }}
+  password: {{ $k | get "admin.password" "bladibla" }}
   basepath: ""
   resources:
     limits:

@@ -7,10 +7,6 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: keycloak
-    installed: {{ $c | get "keycloak.enabled" true }}
-    namespace: keycloak
-    <<: *default
   - name: harbor
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
@@ -18,6 +14,20 @@ releases:
   - name: harbor-artifacts
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
+    <<: *raw
+  - name: oauth2-proxy
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *default
+  - name: oauth2-proxy-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
     installed: true

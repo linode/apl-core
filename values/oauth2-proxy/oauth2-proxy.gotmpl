@@ -1,8 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $o := $v.oidc }}
+{{- $provider := ($o | get "provider" "oidc") }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $cm := $v | get "charts.cert-manager" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $provider := index $o $o.provider }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
 image:
   tag: "v6.0.0"
@@ -31,22 +34,22 @@ resources:
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}
 {{- range $teamId, $team := $tc.teams }}
-{{- if hasKey $team "services" }}
-{{- range $s := $team.services }}
-{{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
-{{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
-{{- $domains = append $domains $s.domain }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+  {{- if hasKey $team "services" }}
+    {{- range $s := $team.services }}
+      {{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
+        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
+          {{- $domains = append $domains $s.domain }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- $domainList := tpl $joinTpl (append $domains (printf ".%s" $v.cluster.domain)) }}
 
 extraArgs:
-  # oidc, google, azure, github
-  provider: oidc
-  # provider: {{ $o.provider }}
+  ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
+  # supported: oidc, google, azure, github
+  provider: {{ $provider }}
   whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
@@ -69,18 +72,12 @@ extraArgs:
   ###
   # Provider specifics:
   ###
-  {{- if eq $o.provider "oidc" }}
-  oidc-issuer-url: {{ $provider | getOrNil "issuer" | default (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) }}
+  {{- if eq $provider "oidc" }}
+  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}
   insecure-oidc-allow-unverified-email: true
-  {{- else if eq $o.provider "azure" }}
+  {{- else if eq $provider "azure" }}
   azure-tenant: {{ $o.azure.tenantID }}
-  {{- else if eq $o.provider "keycloak" }}
-  login-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
-  redeem-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
-  # redeem-url: http://keycloak-http.keycloak/realms/{{ $realm }}/protocol/openid-connect/token
-  validate-url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
-  # validate-url: http://keycloak-http.keycloak/realms/{{ $realm }}/protocol/openid-connect/userinfo
-  {{- else if eq $o.provider "github" }}
+  {{- else if eq $provider "github" }}
   github-org: {{ $o | getOrNil "github.org" }}
   {{- end }}
 

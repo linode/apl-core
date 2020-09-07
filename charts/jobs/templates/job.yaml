@@ -1,8 +1,6 @@
 {{- $v := .Values }}
-
 {{- range $name, $spec := $v.tasks }}
-{{ if and $spec.enabled (eq $spec.type "job") }}
----
+{{- if and $spec.enabled (eq $spec.type "job") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -17,7 +15,7 @@ spec:
       containers:
       - image: "{{ $spec.image }}"
         name: "{{ $name }}"
-        command: ["sh", "-c"]
+        command: ["{{ $spec.shell | default "sh" }}", "-c"]
         args:
           - |
             {{- toString $spec.script | nindent 12 }}
@@ -31,8 +29,23 @@ spec:
         - configMapRef:
             name: {{ $name }}
         {{- end }}
+        volumeMounts:
+          - name: fakeroot
+            mountPath: /fakeroot.pem
+            subPath: fakeroot.pem
+          {{- if $spec.mounts }}
+          {{- $spec.mounts | toYaml | nindent 10 }}
+          {{- end }}
       restartPolicy: Never
+      volumes:
+        - name: fakeroot
+          configMap:
+            name: fakeroot
+        {{- if $spec.volumes }}
+        {{- $spec.volumes | toYaml | nindent 8 }}
+        {{- end }}
   backoffLimit: 3
   ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
-{{ end }}
-{{ end }}
+---
+{{- end }}
+{{- end }}

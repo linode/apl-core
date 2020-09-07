@@ -2,5 +2,5 @@
 
 . bin/env.sh
 
-# create the cluster
+# delete the cluster
 gcloud container --project "$PROJECT" clusters delete "$CLUSTER" --region "$GOOGLE_REGION"

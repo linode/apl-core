@@ -6,13 +6,13 @@ bases:
 
 releases:
   - name: aws-alb-ingress-controller
-    installed: {{ and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) }}
+    installed: {{ and (eq $v.cluster.provider "aws") $v.cluster.hasCloudLB }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
   - name: aws-alb-ingress-controller-artifacts
-    installed: {{ and (eq $v.cluster.provider "aws") ($v.cluster.hasCloudLB) }}
+    installed: {{ and (eq $v.cluster.provider "aws") $v.cluster.hasCloudLB }}
     namespace: ingress
     labels:
       tag: ingress
@@ -34,7 +34,7 @@ releases:
       tag: ingress
     <<: *default
   - name: ingress-merge
-    installed: {{ eq $v.cluster.provider "aws" }}
+    installed: {{ and (eq $v.cluster.provider "aws") $v.cluster.hasCloudLB }}
     namespace: ingress
     labels:
       tag: ingress
@@ -45,18 +45,4 @@ releases:
     labels:
       tag: ingress
     <<: *default
-  - name: oauth2-proxy
-    installed: true
-    namespace: istio-system
-    labels:
-      tag: ingress
-      pkg: oauth2-proxy
-    <<: *default
-  - name: oauth2-proxy-artifacts
-    installed: true
-    namespace: istio-system
-    labels:
-      tag: ingress
-      pkg: oauth2-proxy
-    <<: *raw
 

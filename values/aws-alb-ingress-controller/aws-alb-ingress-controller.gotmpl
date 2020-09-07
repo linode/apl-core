@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-clusterName: {{ $v.cluster.name }}
+clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
 priorityClassName: "system-cluster-critical"

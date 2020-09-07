@@ -9,6 +9,7 @@ resources:
 tasks: {}
   # someTask:
   #   enabled: true
+  #   shell: bash # default sh
   #   config:
   #     BLA: somebla
   #   secret:

@@ -30,6 +30,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+{{- if .Values.clair.serviceAccountName }}
+      serviceAccountName: {{ .Values.clair.serviceAccountName }}
+{{- end -}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -70,7 +73,7 @@ spec:
         - name: config
           mountPath: /etc/clair/config.yaml
           subPath: config.yaml
-      {{- if .Values.internalTLS.enabled }}
+        {{- if .Values.internalTLS.enabled }}
         - name: clair-internal-certs
           mountPath: /harbor_cust_cert/harbor_internal_ca.crt
           subPath: ca.crt
@@ -80,6 +83,9 @@ spec:
         - name: clair-internal-certs
           mountPath: /etc/harbor/ssl/clair_adapter.key
           subPath: tls.key
+        {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
       - name: adapter
         image: {{ .Values.clair.adapter.image.repository }}:{{ .Values.clair.adapter.image.tag }}
@@ -130,8 +136,9 @@ spec:
 {{- end }}
         ports:
         - containerPort: {{ template "harbor.clairAdapter.containerPort" . }}
-        {{- if .Values.internalTLS.enabled }}
+        {{- if or .Values.internalTLS.enabled .Values.caBundleSecretName }}
         volumeMounts:
+        {{- if .Values.internalTLS.enabled }}
         - name: clair-internal-certs
           mountPath: /harbor_cust_cert/harbor_internal_ca.crt
           subPath: ca.crt
@@ -142,6 +149,10 @@ spec:
           mountPath: /etc/harbor/ssl/clair_adapter.key
           subPath: tls.key
         {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
+        {{- end }}
+        {{- end }}
       volumes:
       - name: config
         secret:
@@ -150,6 +161,9 @@ spec:
       - name: clair-internal-certs
         secret:
           secretName: {{ template "harbor.internalTLS.clair.secretName" . }}
+      {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
       {{- end }}
     {{- with .Values.clair.nodeSelector }}
       nodeSelector:

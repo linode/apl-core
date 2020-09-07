@@ -1,9 +1,12 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts.istio }}
+{{- $cm := $v.charts | get "cert-manager" }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $o := $v.oidc }}
-{{- $provider := index $o $o.provider }}
+{{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
@@ -100,7 +103,7 @@ resources:
             auth:
               strategy: anonymous #openid
               # openid:
-              #   issuer_uri: {{ $provider | getOrNil "issuer" | default (printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm) }}
+              #   issuer_uri: {{ $keycloakBase }}
               #   client_id: {{ $v.oidc.clientID }}
             jaegerURL: https://{{ $appsDomain }}/tracing/
             grafanaURL: https://{{ $appsDomain }}/grafana-istio/
@@ -135,30 +138,61 @@ resources:
           contextPath: '/grafana-istio'
           grafana.ini:
             "auth.anonymous":
-              enabled: false
+              enabled: {{ not $hasOIDC }}
               # enabled: true
               org_role: Admin
               org_name: Main Org.
             "auth.generic_oauth":
               # enabled: false
-              enabled: true
+              enabled: {{ $hasOIDC }}
               name: OAuth
               org_role: Admin
               allow_sign_up: true
               # allow_sign_up: false
               oauth_auto_login: true # false = so we can login with admin / bladibla
-              client_id: {{ $v.oidc.clientID }}
-              client_secret: {{ $v.oidc.clientSecret }}
+              client_id: {{ $o.clientID }}
+              client_secret: {{ $o.clientSecret }}
               scopes: openid
-              # auth_url: {{ $v.oidc.authUrl }}
-              auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
-              # token_url: {{ $v.oidc.tokenUrl }}
-              token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
-              api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+              auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($o | getOrNil "grafana.authUrl") }}
+              token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($o | getOrNil "grafana.tokenUrl") }}
+              api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
               role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
         meshConfig:
           enableAutoMtls: true
           accessLogFile: "/dev/stdout"
+        pilot:
+          {{- if eq $cm.stage "staging" }}
+          jwksResolverExtraRootCA: |
+            -----BEGIN CERTIFICATE-----
+            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
+            -----END CERTIFICATE-----
+          {{- end }}
         prometheus:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:

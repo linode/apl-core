@@ -1,7 +1,11 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $o := $v.oidc }}
+{{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
@@ -120,8 +124,8 @@ alertmanager:
         {{- end }}
     receivers:
       - name: "null"
+      {{- $channel := $p.alertmanager | get "slack.channel" "mon-otomi" }}
       {{- if or ($v.cluster | getOrNil ".isRedkubesMonitored") $hasSlack }}
-      {{- $channel := $isRedkubesMonitored | ternary "mon-otomi" ($p.alertmanager | get "slack.channel" "mon-otomi") }}
       - name: default
         slack_configs:
           - channel: "#{{ $channel }}"
@@ -144,11 +148,13 @@ alertmanager:
       - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
-          - channel: "#mon-otomi-crit"
+          - channel: "#{{ $channel }}-crit"
             api_url: {{ $v.redkubesSlackUrl }}
             {{ $slackTpl | nindent 12  }}
       {{- end }}
 grafana:
+  image:
+    tag: 7.1.5
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -210,6 +216,7 @@ grafana:
       org_role: Admin
       org_name: Main Org.
     "auth.generic_oauth":
+      tls_skip_verify_insecure: {{ eq ($v.charts | get "cert-manager.stage") "staging" }}
       # enabled: false
       enabled: true
       name: OAuth
@@ -220,11 +227,9 @@ grafana:
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
       scopes: openid
-      # auth_url: {{ $v.oidc.authUrl }}
-      auth_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/auth
-      # token_url: {{ $v.oidc.tokenUrl }}
-      token_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/token
-      api_url: https://keycloak.{{ $v.cluster.domain }}/realms/{{ $realm }}/protocol/openid-connect/userinfo
+      auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($o | getOrNil "grafana.authUrl") }}
+      token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($o | getOrNil "grafana.tokenUrl") }}
+      api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
       role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
     log:
       level: debug

@@ -13,4 +13,4 @@ name: cluster-autoscaler
 sources:
 - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 - https://github.com/spotinst/kubernetes-autoscaler/tree/master/cluster-autoscaler
-version: 7.2.1
+version: 7.3.4

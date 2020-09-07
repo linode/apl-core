@@ -29,15 +29,15 @@ server:
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
-    # DRONE_LOGS_DEBUG: true
-    # DRONE_LOGS_TRACE: true
-    # DRONE_LOGS_PRETTY: true
-    # DRONE_RPC_DEBUG: true
+    DRONE_LOGS_DEBUG: true
+    DRONE_LOGS_TRACE: true
+    DRONE_LOGS_PRETTY: true
+    DRONE_RPC_DEBUG: true
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
-    DRONE_SERVER_PROXY_HOST: proxy.{{ $domain }}/drone
+    DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
 kubernetes:
   resources:
     requests:

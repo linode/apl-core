@@ -13,8 +13,10 @@
     "*.yml": "yaml",
     "*.tpl": "yaml",
     "helmfile-*.yaml": "helm",
-    "helmfile.yaml": "helm"
+    "helmfile.yaml": "helm",
+    "otomi": "shellscript"
   },
-  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini"],
+  "cSpell.enabled": true,
+  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],
   "cSpell.ignoreWords": ["backoff", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"]
 }

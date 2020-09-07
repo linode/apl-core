@@ -1,14 +1,17 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
-  - name: istio-artifacts
-    installed: true
-    namespace: istio-system
-    labels:
-      pkg: istio
-    chart: ../charts/raw
-    values:
-    - ../values/raw/istio-raw.gotmpl
+  - name: jobs-ingress-azure
+    installed: {{ eq $v.cluster.provider "azure" }}
+    <<: *jobs
+  - name: jobs-harbor
+    installed: {{ $c | get "harbor.enabled" false }}
+    <<: *jobs
+  - name: jobs-certs-aws
+    installed: {{ eq $v.cluster.provider "aws" }}
+    <<: *jobs
