@@ -32,8 +32,8 @@ controller:
         cpu: 500m
         memory: 512Mi
     requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 500m
+        memory: 512Mi
   {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}

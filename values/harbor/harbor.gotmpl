@@ -169,3 +169,13 @@ database:
       limits:
         memory: 512Mi
         cpu: 500m
+
+clair:
+  clair:
+    resources:
+      requests:
+        cpu: 200m 
+        memory: 2Gi
+      limits:
+        cpu: 400m
+        memory: 4Gi
