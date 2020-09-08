@@ -103,23 +103,35 @@ validate_required_env() {
   return 0
 }
 
-function test_pass() {
-  echo "Validation Success;"
-  rm -rf /tmp/kubeval-fixtures/
-  exit 0
-}
-function test_fail() {
-  echo "Validation Failed;"
-  rm -rf /tmp/kubeval-fixtures/
-  exit 1
-}
 function kube_validate() {
-  local k8s_version=${1:-1.16.0}
+  # accepts a list of versions to check against
+  # example:~$ otomi kubeval 1.15.0 1.16.0 1.17.0
+  local k8s_versions=("${@:-1.16.0}")
+  local tmp_validation_dir=/tmp/kubeval-fixtures
+  local VALIDATE=0
   MOUNT_TMP_DIR=1
-  echo "Generating Manifests in tmp location and checking Otomi Stack against Kubernetes Version: ${k8s_version}"
+
+  clean_exit() {
+    [[ $VALIDATE -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+    rm -rf $tmp_validation_dir
+    exit $VALIDATE
+  }
+
+  test_fail() {
+    VALIDATE=1
+  }
+
+  echo "Generating Manifests in tmp location."
   # using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
-  drun helmfile -e ${CLOUD}-$CLUSTER --quiet template --skip-deps --output-dir=/tmp/kubeval-fixtures >/dev/null
-  ( (drun kubeval --force-color -d /tmp/kubeval-fixtures --strict --ignore-missing-schemas --kubernetes-version $k8s_version) || test_fail) && test_pass
+  drun helmfile -e ${CLOUD}-$CLUSTER --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
+  for v in "${k8s_versions[@]}"; do
+    echo "Validating Otomi Stack against Kubernetes Version: $v"
+    (
+      drun kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $v
+    ) || test_fail
+  done
+  clean_exit
+
 }
 
 function drun() {
