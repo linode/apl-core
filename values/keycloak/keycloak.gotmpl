@@ -16,11 +16,11 @@ keycloak:
   basepath: ""
   resources:
     limits:
-      cpu: "600m"
-      memory: "1Gi"
+      cpu: 1
+      memory: 1Gi
     requests:
-      cpu: "100m"
-      memory: "1Gi"
+      cpu: 100m
+      memory: 1Gi
   persistence:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}

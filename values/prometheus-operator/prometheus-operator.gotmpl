@@ -47,6 +47,13 @@ prometheusOperator:
   priorityClassName: "system-cluster-critical"
 prometheus:
   prometheusSpec:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
     priorityClassName: "system-node-critical"
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.customer $v.cluster.provider $v.cluster.name | lower | quote }}
