@@ -119,7 +119,7 @@ function kube_validate() {
   echo "Generating Manifests in tmp location and checking Otomi Stack against Kubernetes Version: ${k8s_version}"
   # using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
   drun helmfile -e ${CLOUD}-$CLUSTER --quiet template --skip-deps --output-dir=/tmp/kubeval-fixtures >/dev/null
-  ( (kubeval --force-color -d /tmp/kubeval-fixtures --strict --ignore-missing-schemas --kubernetes-version $k8s_version) || test_fail) && test_pass
+  ( (drun kubeval --force-color -d /tmp/kubeval-fixtures --strict --ignore-missing-schemas --kubernetes-version $k8s_version) || test_fail) && test_pass
 }
 
 function drun() {
