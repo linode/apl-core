@@ -239,7 +239,7 @@ grafana:
       api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
       role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
     log:
-      level: debug
+      level: error
     server:
       root_url: https://{{ $appsDomain }}/grafana
     users:
