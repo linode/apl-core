@@ -41,7 +41,7 @@ controller:
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 6
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75

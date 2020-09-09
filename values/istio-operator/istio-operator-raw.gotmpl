@@ -25,6 +25,9 @@ resources:
             enabled: true
             k8s:
               priorityClassName: "system-cluster-critical"
+              hpaSpec:
+                minReplicas: 2
+                maxReplicas: 6
               service:
                 type: ClusterIP
                 ports:
@@ -44,6 +47,9 @@ resources:
               istio: ingressgateway-auth
               app: ingressgateway-auth
             k8s:
+              hpaSpec:
+                minReplicas: 2
+                maxReplicas: 10
               priorityClassName: "system-cluster-critical"
               service:
                 type: ClusterIP
@@ -77,6 +83,11 @@ resources:
         egressGateways:
           - name: istio-egressgateway
             enabled: false
+        pilot:
+          k8s:
+            hpaSpec:
+              minReplicas: 2
+              maxReplicas: 6
         # cni:
         #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
       addonComponents:
@@ -125,7 +136,7 @@ resources:
             auto: {{ $ig | get "mtls.enabled" false }}
           # controlPlaneSecurityEnabled: true
           logging:
-            level: {{ $ig | get "logging.level" "default:info" }}
+            level: {{ $ig | get "logging.level" "default:error" }}
           proxy:
             {{- with ($ig | getOrNil "proxy.resources") }}
             resources: {{- $ig.proxy.resources | toYaml | nindent 14 }}
