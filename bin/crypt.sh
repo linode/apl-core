@@ -25,7 +25,7 @@ auth_azure() {
 
 crypt() {
   cd $ENV_DIR >/dev/null
-  find ./env -name '*.secrets.yaml' -exec bash -c "helm secrets $mode {}" \;
+  find . -name '*.secrets.yaml' -exec bash -c "helm secrets $mode {}" \;
   cd - >/dev/null
 }
 
