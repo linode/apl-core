@@ -1,0 +1,12 @@
+tabWidth: 2
+semi: false
+trailingComma: all
+singleQuote: true
+printWidth: 120
+overrides:
+  - files:
+      - '*.yaml'
+      - '*.dec'
+    options:
+      tabWidth: 4
+      useTabs: true

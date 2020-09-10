@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
-{{- $ns := $v.cluster.hasCloudLB | ternary "ingress" "istio-system" }}
+{{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
 tasks:
   harbor-init:
     type: job

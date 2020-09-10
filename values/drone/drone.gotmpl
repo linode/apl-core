@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts.drone }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
 {{- $host := printf "drone.%s" $domain }}
 images:
   server:

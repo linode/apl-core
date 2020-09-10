@@ -3,17 +3,16 @@
 ##
 ## NOTE:
 ## This is a command line tool to operate on otomi-stack.
-## All commands and executed in docker container.
+## All commands are executed in docker container.
 ## Keep this file as simple as possible:
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
 ## - only Docker is needed to run otomi-stack image
-## If you need to use any extra binaries then most probably you want to run as a part of otomi-stack image.
+## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
 set -e
 command=$1
-
 # VERBOSE - export this varibale to run this script in verbose mode
 VERBOSE=${VERBOSE:-0}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
@@ -22,60 +21,59 @@ MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 # set_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 set_kube_context=1
 # A path to directory with values directory
-env_dir=$PWD
+env_dir=${ENV_DIR:-$PWD}
 
 mount_stack_dir=0
 stack_dir='/home/app/stack'
 otomi_image=''
-docker_terminal_params=''
+docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
-function set_helm_config {
+function set_helm_config() {
   helm_config="$HOME/.config/helm"
   uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
   return 0
 }
 
-function show_usage {
-  echo "The $0 usage:
-    aws - run CLI AWS
-    az - run CLI for Azure
-    bash - run interactive bash
-    commit - wraper for git-commit (encrypt -> generate pipelines -> commit changes)
-    deploy - execute otomi-stack deploy script
-    decrypt - decrypt values to env/*.dec files
-    encrypt - encrypt values encrypt all env/*.dec files
-    eksctl - run CLI for Amazon EKS
-    exec - execute custom command
-    gcloud - run CLI for Google Cloud
-    helm - run helm
-    helmfile - run helmfile with selected environment <CLOUD>-<CLUSTER>
-    helmfile-raw - run helmfile without any additional parameters
-    helmfile-values - show merged values 
-    helmfile-template - run helmfile template
-    helmfile-template-quiet - run helmfile template (only print yaml documents)
-    help - print this help
-    kubectl - run kubectl
-    pull - wraper for git-pull (encrypt -> generate pipelines -> commit changes)
+function show_usage() {
+  echo "otomi usage:
+    apply      apply k8s resources (use labels like '-l name=prometheus-operator')
+    aws        run aws cli
+    az         run azure cli
+    bash       run interactive bash
+    bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
+    commit     wrapper for encrypt > generate pipelines > git commit changed files
+    decrypt    decrypt values to *.secrets.yaml.dec files
+    deploy     execute otomi-stack deploy script
+    diff       diff k8s resources (use labels like '-l name=prometheus-operator')
+    eksctl     run eksctl cli
+    encrypt    encrypt values in all *.secrets.yaml files
+    gcloud     run gcloud cli
+    help       print this help
+    hf         run helmfile with CLUSTER and CLOUD already set
+    pull       wrapper for git pull > decrypt
+    template   export k8s resources (use labels like '-l name=prometheus-operator')
+    values     show helmfile values for CLOUD and CLUSTER
+    x          execute command in container
   "
 }
 
-function evaluate_k8s_context {
-  local env_sh_path="${env_dir}/env/${CLOUD}/${CLUSTER}.sh"
-  [ ! -f $env_sh_path ] && echo "Error: The file '${env_sh_path}' does not exist" && exit 1
-  source $env_sh_path
-  [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_sh_path" && exit 1
+function evaluate_k8s_context() {
+  local env_path="${env_dir}/clouds/${CLOUD}/${CLUSTER}/.env"
+  [ ! -f $env_path ] && echo "Error: The file '${env_path}' does not exist" && exit 1
+  source $env_path
+  [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_path" && exit 1
   return 0
 }
 
-function validate_k8s_context {
+function validate_k8s_context() {
   local context=$(kubectl config current-context)
-  [[ "$K8S_CONTEXT" != "$context" ]] && echo "Error: Your current kubernetes context does not match expected one: $K8S_CONTEXT" && exit 1
+  [[ "$K8S_CONTEXT" != "$context" ]] && echo "Error: Your current kubernetes context does not match target context: $K8S_CONTEXT" && exit 1
   return 0
 }
 
-function set_env_ini {
+function set_env_ini() {
   local init_path=$env_dir/env.ini
   [ ! -f $init_path ] && echo "Error: The file '${init_path}' does not exist" && exit 1
   source $init_path
@@ -88,17 +86,22 @@ function set_env_ini {
   return 0
 }
 
-evaluate_secrets_file() {
+evaluate_secrets() {
   local secrets_path="${env_dir}/.secrets"
   [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
   source $secrets_path
+  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not found in .secrets" && exit 2
   return 0
 }
 
-validate_required_env() {
+validate_cluster_env() {
   [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && exit 2
   [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
-  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  return 0
+}
+
+is_repo() {
+  [[ "$(basename "$PWD")" == 'otomi-stack' ]] && "Error: Should not be ran from otomi-stack" && exit 2
   return 0
 }
 
@@ -148,105 +151,126 @@ function drun() {
     $command
 }
 
-function execute {
-    case $command in
-    helm)
-      drun helm "${@:2}"
-      break
-      ;;
-    helmfile)
-      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" --skip-deps
-      break
-      ;;
-    helmfile-raw)
-      drun helmfile "${@:2}"
-      break
-      ;;
-    helmfile-values)
-      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build
-      break
-      ;;
-    helmfile-template)
-      drun helmfile -e ${CLOUD}-$CLUSTER "${@:2}" template --skip-deps
-      break
-      ;;
-    helmfile-template-quiet)
-      drun helmfile -e ${CLOUD}-$CLUSTER --quiet "${@:2}" template --skip-deps | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi skipping | grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn -vi "helmfile-"
-      break
-      ;;
-    aws)
-      set_kube_context=0
-      drun aws "${@:2}"
-      break
-      ;;
-    az)
-      set_kube_context=0
-      drun az "${@:2}"
-      break
-      ;;
-    eksctl)
-      set_kube_context=0
-      drun eksctl "${@:2}"
-      break
-      ;; 
-    gcloud)
-      set_kube_context=0
-      drun gcloud "${@:2}"
-      break
-      ;;
-    deploy)
-      drun bin/deploy.sh
-      break
-      ;;
-    encrypt)
-      set_kube_context=0
-      drun bin/crypt.sh enc
-      break
-      ;;
-    decrypt)
-      set_kube_context=0
-      drun bin/crypt.sh dec
-      break
-      ;;
-    bash)
-      set_kube_context=0
-      docker_terminal_params='-it'
-      drun bash
-      break
-      ;;
-    help)
-      show_usage
-      break
-      ;;
-    exec)
-      set_kube_context=0
-      drun "${@:2}"
-      break
-      ;;
-    kubectl)
-      drun kubectl "${@:2}"
-      break
-      ;;
-    commit)
-      set_kube_context=0
-      drun bin/git-commit.sh
-      break
-      ;;
-    pull)
-      set_kube_context=0
-      drun bin/git-pull.sh
-      break
-      ;;
-    *)
-      show_usage
-      echo "Error: Unknown command: $@"
-      exit 1
-      ;;
-    esac
+function execute() {
+  shift 2
+  case $command in
+  values)
+    set_kube_context=0
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env@'"${ENV_DIR}"'@g'
+    break
+    ;;
+  hf)
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -v skipping | grep -v basePath=
+    break
+    ;;
+  aws)
+    set_kube_context=0
+    drun aws $@
+    break
+    ;;
+  azure)
+    set_kube_context=0
+    drun aws $@
+    break
+    ;;
+  gcloud)
+    set_kube_context=0
+    drun aws $@
+    break
+    ;;
+  eksctl)
+    set_kube_context=0
+    drun aws $@
+    break
+    ;;
+  apply)
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
+    break
+    ;;
+  diff)
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
+    break
+    ;;
+  sync)
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -v skipping | grep -v basePath=
+    break
+    ;;
+  template)
+    set_kube_context=0
+    validate_cluster_env
+    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath= | grep -v "helmfile-"
+    break
+    ;;
+  bootstrap)
+    set_kube_context=0
+    validate_cluster_env
+    drun bin/bootstrap.sh $@
+    break
+    ;;
+  deploy)
+    validate_cluster_env
+    drun bin/deploy.sh | grep -v skipping | grep -v basePath=
+    break
+    ;;
+  encrypt)
+    set_kube_context=0
+    evaluate_secrets
+    drun bin/crypt.sh enc
+    break
+    ;;
+  decrypt)
+    set_kube_context=0
+    evaluate_secrets
+    drun bin/crypt.sh dec
+    break
+    ;;
+  bash)
+    set_kube_context=0
+    validate_cluster_env
+    docker_terminal_params='-it'
+    drun bash
+    break
+    ;;
+  kubectl)
+    drun kubectl $@
+    break
+    ;;
+  x)
+    validate_cluster_env
+    set_kube_context=0
+    drun $@
+    break
+    ;;
+  commit)
+    set_kube_context=0
+    is_repo
+    validate_cluster_env
+    evaluate_secrets
+    drun bin/git-commit.sh
+    break
+    ;;
+  pull)
+    set_kube_context=0
+    is_repo
+    validate_cluster_env
+    evaluate_secrets
+    drun bin/git-pull.sh
+    break
+    ;;
+  *)
+    show_usage
+    [ "$1" != "" ] && echo "Error: Unknown command: $@"
+    exit 1
+    ;;
+  esac
 }
 
-
-function verbose_env {
+function verbose_env() {
   echo "env_dir=$env_dir"
   echo "stack_dir=$stack_dir"
   echo "helm_config=$helm_config"
@@ -255,11 +279,11 @@ function verbose_env {
   echo "K8S_CONTEXT=$K8S_CONTEXT"
 }
 
-function set_env_and_stack_dir {
+function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
 
   if [[ "$cwd" == 'otomi-stack' ]]; then
-    [[ -z "$ENV_DIR" ]] && echo "Error<$0>: The ENV_DIR environment variable is not set" && exit 2
+    [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
     stack_dir=$PWD
     env_dir=$ENV_DIR
     mount_stack_dir=1
@@ -270,8 +294,6 @@ function set_env_and_stack_dir {
 [[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2
 
 set_env_and_stack_dir
-evaluate_secrets_file
-validate_required_env
 set_env_ini
 set_helm_config
-execute $@
+execute $command $@

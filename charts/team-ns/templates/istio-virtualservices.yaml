@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
@@ -126,7 +126,7 @@ spec:
             {{- end }}
             hosts: [{{ $domain }}]
             {{- if $s.authz.excludePaths }}
-            notPaths: [{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}]
+            notPaths: [{{ include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.authz.excludePaths "sep" ",") }}]
             {{- end }}
     - from:
         - source:

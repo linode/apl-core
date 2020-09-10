@@ -14,7 +14,6 @@
 {{- $idp := $v.oidc.idp }}
 {{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
 {{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" -}}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 tasks:
   keycloak:

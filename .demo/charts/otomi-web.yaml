@@ -1,0 +1,5 @@
+charts:
+    otomi-web:
+        image:
+            pullPolicy: Always
+            tag: v0.4.16

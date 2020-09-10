@@ -1,0 +1,5 @@
+.history
+.secrets
+*.json
+*.yaml.dec
+bin/

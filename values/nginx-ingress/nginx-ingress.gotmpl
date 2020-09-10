@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $domain := printf "%s%s.%s" $v.cluster.teamPrefix "admin" $v.cluster.domain }}
+{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
 {{- $n := $v | get "charts.nginx-ingress" dict }}
 rbac:
   create: true
@@ -13,7 +13,7 @@ defaultBackend:
       cpu: 10m
       memory: 10Mi  
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
@@ -36,7 +36,7 @@ controller:
         memory: 256Mi
   {{- end }}
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.cluster.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -52,7 +52,7 @@ controller:
   extraArgs:
     v: 3
   config:
-    ssl-redirect: {{ if $v.cluster.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+    ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     hsts: "true"
     disable-ipv6: "true"
     client-body-timeout: "5"
@@ -75,7 +75,7 @@ controller:
       additionalLabels: # needed to be picked up by our one and only prometheus-operator:
         release: prometheus-operator
   service:
-    type: {{ if $v.cluster.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
+    type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
   publishService:
     enabled: true
