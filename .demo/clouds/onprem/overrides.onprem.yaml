@@ -1,0 +1,8 @@
+otomi:
+    hasCloudLB: false
+charts:
+    cert-manager:
+        stage: production
+    external-dns:
+        domainFilters:
+            - onprem.otomi.cloud

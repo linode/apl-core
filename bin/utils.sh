@@ -10,7 +10,7 @@ PACKAGE_VERSION=$(cat package.json |
 . bin/env.sh
 noEnvError=$?
 
-. bin/aliases.sh
+. bin/aliases
 function drun() { $@; }
 
 if [ $noEnvError -eq 0 ]; then

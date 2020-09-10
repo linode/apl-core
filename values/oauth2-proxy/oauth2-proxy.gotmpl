@@ -6,7 +6,7 @@
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithComma.gotmpl" }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:
   tag: "v6.0.0"
   repository: quay.io/oauth2-proxy/oauth2-proxy
@@ -35,7 +35,7 @@ config:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domainList := tpl $joinTpl (append $domains (printf ".%s" $v.cluster.domain)) }}
+{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
 
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}

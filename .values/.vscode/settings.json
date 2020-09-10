@@ -1,0 +1,17 @@
+{
+  "[docker,shell]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[json,md,yaml,dec]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.yml": "yaml",
+    "otomi": "shellscript"
+  },
+  "yaml.schemas": {
+    ".vscode/generated-values-schema.json": "*.yaml.dec"
+  }
+}

@@ -1,5 +1,11 @@
-# proseWrap: always
+tabWidth: 2
 semi: false
 trailingComma: all
 singleQuote: true
 printWidth: 120
+overrides:
+  - files:
+      - '.demo/**/*.yaml'
+    options:
+      tabWidth: 4
+      useTabs: true

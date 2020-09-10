@@ -14,7 +14,7 @@ releases:
       tag: jobs
     <<: *raw
   - name: knative-init
-    installed: {{ $v.cluster.hasKnative }}
+    installed: true
     namespace: default
     labels:
       init: true

@@ -1,0 +1,71 @@
+charts:
+    istio:
+        addonComponents:
+            grafana:
+                enabled: true
+            kiali:
+                enabled: true
+            prometheus:
+                enabled: true
+            tracing:
+                enabled: true
+        gateways:
+            istio-egressgateway:
+                resources:
+                    limits:
+                        cpu: 200m
+                        memory: 256Mi
+                    requests:
+                        cpu: 20m
+                        memory: 80Mi
+            istio-ingressgateway:
+                resources:
+                    limits:
+                        cpu: 200m
+                        memory: 256Mi
+                    requests:
+                        cpu: 20m
+                        memory: 80Mi
+        global:
+            logging:
+                level: default:debug
+            mtls:
+                enabled: false
+            proxy:
+                resources:
+                    limits:
+                        cpu: 200m
+                        memory: 256Mi
+                    requests:
+                        cpu: 20m
+                        memory: 80Mi
+            sds:
+                enabled: true
+        mixer:
+            policy:
+                enabled: true
+                resources:
+                    limits:
+                        cpu: 100m
+                        memory: 100Mi
+                    requests:
+                        cpu: 10m
+                        memory: 100Mi
+            telemetry:
+                enabled: true
+                resources:
+                    limits:
+                        cpu: 100m
+                        memory: 100Mi
+                    requests:
+                        cpu: 50m
+                        memory: 100Mi
+        pilot:
+            resources:
+                limits:
+                    cpu: 100m
+                    memory: 200Mi
+                requests:
+                    cpu: 10m
+                    memory: 100Mi
+            traceSampling: 100

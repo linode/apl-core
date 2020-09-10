@@ -9,7 +9,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-  auth_enabled: {{ $v.cluster.isMultitenant }}
+  auth_enabled: {{ $v.otomi.isMultitenant }}
   ingester:
     chunk_idle_period: 15m
     chunk_block_size: 262144
@@ -78,7 +78,7 @@ promtail:
   serviceName: promtail
 
 extraContainers:
-{{- if $v.cluster.isMultitenant }}
+{{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy
   image: angelbarrera92/basic-auth-reverse-proxy:dev
   args:
@@ -95,7 +95,7 @@ extraContainers:
 {{- end }}
 
 extraVolumes:
-{{- if $v.cluster.isMultitenant }}
+{{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
@@ -104,7 +104,7 @@ extraVolumes:
 extraVolumeMounts: []
 
 extraPorts:
-{{- if $v.cluster.isMultitenant }}
+{{- if $v.otomi.isMultitenant }}
 - port: 11811
   protocol: TCP
   name: http
@@ -118,6 +118,6 @@ extraArgs:
   # log.level: debug
 
 podAnnotations:
-  {{- if $v.cluster.isMultitenant }}
+  {{- if $v.otomi.isMultitenant }}
   checksum/teams: {{ $teamNames | sha256sum }}
   {{- end }}  

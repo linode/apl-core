@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if and (or (eq $v.teamId "admin") ($v.cluster.isMultitenant)) }}
+{{- if and (or (eq $v.teamId "admin") ($v.otomi.isMultitenant)) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
 {{- if (hasKey $s "mtls") }}
