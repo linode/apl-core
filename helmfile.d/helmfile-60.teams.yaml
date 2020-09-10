@@ -9,7 +9,7 @@ bases:
 {{- $adminDomain := printf $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
-{{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v.cluster | toString }}
+{{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v | toString }}
 releases:
   - name: team-ns-admin
     installed: true
