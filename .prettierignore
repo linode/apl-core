@@ -1,4 +1,5 @@
 .history/
 charts/
-!charts/*.{yaml|md}
+!^charts/*.{yaml | md}
+!^charts/team-ns/*.{yaml | md}
 helmfile*/

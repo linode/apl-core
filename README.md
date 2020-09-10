@@ -45,7 +45,11 @@ If you are not logged in with the correct credentials because you were logged in
 
 ### 1.2 Unencrypted values repo
 
-The values reside in another repo (otomi-values), and `$ENV_DIR` should be an absolute path to the root of this checked out repo. The `*.yaml` files should be decrypted first, and for that the `GCLOUD_SERVICE_KEY` should be known to the environment. Please get the correct `.secrets` file from company storage and put it in the values repo, then source it and run `drun bin/crypt.sh dec` to decrypt.
+To start with a fresh values repo run this oneliner in an empty folder to initialize:
+
+    docker run eu.gcr.io/otomi-cloud/otomi-stack:v0.10.111 bash -c bin/bootstrap.sh
+
+The values reside in another repo (otomi-values), and `$ENV_DIR` should be an absolute path to the root of this checked out repo. The `*.yaml` files should be decrypted first, and for that the correct service account credentials should be known to the environment. Please get the correct `.secrets` file from company storage and put it in the values repo, then source it and run `otomi decrypt` to decrypt.
 
 Any changes made to the values repo should be committed from that repo, and the readme in that repo explains how. Most important part is the `bin/install-pre-commit.sh` script to automatically encrypt the values before committing.
 

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "codezombiech.gitignore",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "donjayamanne.githistory",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "redhat.vscode-yaml",
+    "xyz.local-history"
+  ]
+}

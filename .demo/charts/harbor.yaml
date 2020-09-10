@@ -1,0 +1,9 @@
+charts:
+    harbor:
+        enabled: true
+        persistence:
+            imageChartStorage:
+                type: gcs
+                gcs:
+                    bucket: otomi-demo-harbor
+                    rootdirectory: /demo

@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $ := . }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- range $s := $v.services }}
 {{- if hasKey $s "mtls" }}
 {{- if or (hasKey $s.mtls "gatewayDisabled") (hasKey $s.mtls "policyMode") }}

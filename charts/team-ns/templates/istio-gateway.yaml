@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 # collect unique domains for this GW
 {{- $publicDomains := list }}
 {{- $authDomains := list }}

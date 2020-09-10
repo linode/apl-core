@@ -1,7 +1,7 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $authSvc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}
 # split list of services into separate ingress types:
 # - auth: public vs private
@@ -51,7 +51,7 @@
 ---
 {{- end }}
 
-{{- if $v.cluster.hasCloudLB }}
+{{- if $v.otomi.hasCloudLB }}
 # external LB ingress
 {{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
 ---
@@ -63,7 +63,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
-    {{- if not $v.cluster.hasCloudLB }}
+    {{- if not $v.otomi.hasCloudLB }}
     externaldns: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
@@ -92,7 +92,7 @@ spec:
           servicePort: 80
         path: /({{ $p.name }})({{ $p.path }})
   {{- end }}
-  {{- if not $v.cluster.hasCloudLB }}
+  {{- if not $v.otomi.hasCloudLB }}
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}

@@ -1,0 +1,26 @@
+teamConfig:
+    teams:
+        demo:
+            services:
+                - name: master
+                  id: 6a047a06-3881-4df6-ab12-e9db44fac37e
+                  ksvc:
+                      scaleToZero: true
+                      image:
+                          repository: otomi/helloworld-nodejs
+                          tag: 1.2.12
+                      env:
+                          - name: TARGET
+                            value: World, I just woke up
+                          - name: SERVANTS
+                            value: /servant-1,/servant-2
+                      resources:
+                          requests:
+                              cpu: 50m
+                              memory: 64Mi
+                          limits:
+                              cpu: 100m
+                              memory: 128Mi
+                      annotations: {}
+                  domain: master.gke.otomi.cloud
+                  isPublic: true

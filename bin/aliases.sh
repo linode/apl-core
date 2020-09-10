@@ -4,6 +4,7 @@ function h() { helm $@; }
 function hk() { helm delete $@; }
 function hf_() { helmfile $@; }
 
+alias otomi="bin/otomi"
 alias d="docker"
 alias k="kubectl"
 alias ksk="k -n kube-system"

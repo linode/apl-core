@@ -1,0 +1,19 @@
+otomi:
+    isManaged: true
+    isMultitenant: true
+    isRedkubesMonitored: true
+    teamPrefix: team-
+    useCloudCA: false
+customer:
+    name: demo
+ingress:
+    allowedCidrs: []
+oidc:
+    clientID: demo
+    idp:
+        issuer:
+        tenantID:
+        clientID:
+        adminGroupID:
+        teamAdminGroupID:
+    scope: openid email profile

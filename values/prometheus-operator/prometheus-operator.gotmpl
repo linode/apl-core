@@ -9,7 +9,7 @@
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
-{{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v.cluster | toString }}
+{{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v | toString }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -17,7 +17,7 @@ coreDns:
 global:
   rbac:
     pspEnabled: false
-{{- if $v.cluster.isManaged }}
+{{- if $v.otomi.isManaged }}
 kubeEtcd:
   enabled: false
 kubeControllerManager:
@@ -40,7 +40,7 @@ prometheusOperator:
 prometheus:
   prometheusSpec:
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.cluster.customer $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: {{ printf "%s/%s/%s" $v.customer.name $v.cluster.provider $v.cluster.name | lower | quote }}
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -152,7 +152,7 @@ grafana:
       editable: false
       type: loki
       access: proxy
-      {{- if $v.cluster.isMultitenant }}
+      {{- if $v.otomi.isMultitenant }}
       url: http://loki:11811
       basicAuth: true
       basicAuthUser: admins

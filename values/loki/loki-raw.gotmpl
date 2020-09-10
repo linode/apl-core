@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $l := $v.charts.loki }}
-{{- if $v.cluster.isMultitenant }}
+{{- if $v.otomi.isMultitenant }}
 resources:
   - apiVersion: v1
     kind: Secret

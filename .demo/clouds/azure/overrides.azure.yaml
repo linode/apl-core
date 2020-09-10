@@ -1,0 +1,9 @@
+charts:
+    external-dns:
+        domainFilters:
+            - aks.otomi.cloud
+clouds:
+    azure:
+        diskType: Standard_LRS
+otomi:
+    hasCloudLB: true

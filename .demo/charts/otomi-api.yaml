@@ -1,0 +1,13 @@
+charts:
+    otomi-api:
+        git:
+            branch: master
+            localPath: /tmp/otomi-stack
+            repoUrl: github.com/redkubes/otomi-values.git
+        image:
+            pullPolicy: Always
+            tag: v0.4.30
+        tools:
+            image:
+                tag: master
+                pullPolicy: Always

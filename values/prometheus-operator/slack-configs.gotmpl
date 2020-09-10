@@ -1,5 +1,5 @@
 color: '{{`{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}`}}'
-title: '[{{`{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}`}}] Notification for cluster "{{ .customer }}/{{ .provider }}/{{ .name }}"'
+title: '[{{`{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}`}}] Notification for cluster "{{ .customer.name }}/{{ .cluster.provider }}/{{ .cluster.name }}"'
 pretext: '{{`{{ .CommonAnnotations.summary }}`}}'
 text: |-{{`
   {{ range .Alerts }}
