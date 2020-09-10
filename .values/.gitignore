@@ -1,5 +1,7 @@
 .history
 .secrets
+.prettierrc.yml
+.vscode
 *.json
 *.yaml.dec
 bin/
