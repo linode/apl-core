@@ -49,7 +49,7 @@ resources:
             k8s:
               hpaSpec:
                 minReplicas: 2
-                maxReplicas: 10
+                maxReplicas: 6
               priorityClassName: "system-cluster-critical"
               service:
                 type: ClusterIP
@@ -71,6 +71,9 @@ resources:
               app: cluster-local-gateway
             k8s:
               priorityClassName: "system-cluster-critical"
+              hpaSpec:
+                minReplicas: 2
+                maxReplicas: 6
               service:
                 type: ClusterIP
                 ports:
