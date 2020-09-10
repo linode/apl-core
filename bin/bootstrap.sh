@@ -43,5 +43,7 @@ if [ ! $SOURCING ]; then
     $docker cp -r ${cid}/home/app/stack/.demo/* $ENV_DIR/
   fi
   [ ! -z "$cid" ] && $docker rm ${cid} >/dev/null
-  echo "You can now use otomi CLI :)"
+  echo "You can now use otomi CLI"
+  echo "Start by sourcing aliases:"
+  echo ". bin/aliases"
 fi
