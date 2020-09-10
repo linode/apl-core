@@ -10,5 +10,3 @@ if git -C $ENV_DIR diff --name-only | grep $match >/dev/null; then
   git -C $ENV_DIR add env.ini
 fi
 bin/crypt.sh enc
-git -C $ENV_DIR add $ENV_DIR/*.yaml
-git -C $ENV_DIR commit -m 'Manual commit'

@@ -29,9 +29,9 @@ RUN apt-get update -qq && \
   curl \
   ca-certificates \
   coreutils \
-  git \
-  gnupg \
   gettext \
+  git \
+  gnupg2 \
   lsb-release \
   netcat \
   openssh-server \
@@ -96,6 +96,8 @@ ENV PATH $PATH:$APP_HOME/gsdk
 # yaml2json https://github.com/wakeful/yaml2json/releases/download/0.4.0/yaml2json-linux-amd64
 ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
 RUN chmod +x yaml2json
+
+RUN git config --global gpg.program gpg2
 
 RUN chown -R app:app /home/app
 USER app

@@ -251,7 +251,8 @@ function execute() {
     is_repo
     validate_cluster_env
     evaluate_secrets
-    drun bin/git-commit.sh
+    drun bin/pre-commit.sh
+    git add . && git commit -m 'Manual commit'
     break
     ;;
   pull)
@@ -259,7 +260,8 @@ function execute() {
     is_repo
     validate_cluster_env
     evaluate_secrets
-    drun bin/git-pull.sh
+    git -C $ENV_DIR pull
+    drun bin/crypt.sh dec
     break
     ;;
   *)
