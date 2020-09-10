@@ -13,7 +13,6 @@
 #####################################################################################
 set -e
 command=$1
-shift
 # VERBOSE - export this varibale to run this script in verbose mode
 VERBOSE=${VERBOSE:-0}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
@@ -27,7 +26,7 @@ env_dir=${ENV_DIR:-$PWD}
 mount_stack_dir=0
 stack_dir='/home/app/stack'
 otomi_image=''
-docker_terminal_params=''
+docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
@@ -153,16 +152,17 @@ function drun() {
 }
 
 function execute() {
-  shift
+  shift 2
   case $command in
   values)
+    set_kube_context=0
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build
+    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env@'"${ENV_DIR}"'@g'
     break
     ;;
   hf)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -vi skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -v skipping | grep -v basePath=
     break
     ;;
   aws)
@@ -187,22 +187,23 @@ function execute() {
     ;;
   apply)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -vi skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
     break
     ;;
   diff)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -vi skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
     break
     ;;
   sync)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -vi skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -v skipping | grep -v basePath=
     break
     ;;
   template)
+    set_kube_context=0
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -vi skipping | grep -vi "helmfile-"
+    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath= | grep -v "helmfile-"
     break
     ;;
   bootstrap)
@@ -213,7 +214,7 @@ function execute() {
     ;;
   deploy)
     validate_cluster_env
-    drun bin/deploy.sh
+    drun bin/deploy.sh | grep -v skipping | grep -v basePath=
     break
     ;;
   encrypt)
@@ -240,6 +241,7 @@ function execute() {
     break
     ;;
   x)
+    validate_cluster_env
     set_kube_context=0
     drun $@
     break

@@ -45,7 +45,18 @@ If you read this you will have already installed it and ran the bootstrapper.
 
 ### 2.1 Initial configuration
 
-The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys.
+The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys. Please configure all the yaml files correctly with these values.
+
+Otomi Stack toggles/flags explained:
+
+```yaml
+otomi:
+  hasCloudLB: false # if true expects external LoadBalancer to terminate all incoming traffic
+  isManaged: true # masters are managed and not under control
+  isMultitenant: true # team-$name namespaces, each with logging and alerting, false: all goes to team-admin ns
+  isRedkubesMonitored: true # RedKubes SLA? Then we need to get alerts too
+  teamPrefix: team- # prefix used for team domain URLs
+```
 
 ### 2.2 Changing values
 
@@ -65,7 +76,7 @@ After changing values you can do a diff:
 
 ```bash
 otomi diff
-# or:
+# or target one release:
 otomi diff -l name=prometheus-operator
 ```
 
@@ -96,7 +107,7 @@ otomi apply -l name=prometheus-operator
 This will first do a `diff` and then a `sync`. But if you expect the helm bookkeeping to not match the current state (because resources were manipulated without helm), then do a sync:
 
 ```bash
-# or:
+# or target one release:
 otomi sync -l name=prometheus-operator
 ```
 

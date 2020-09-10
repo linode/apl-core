@@ -3,7 +3,7 @@ otomi:
     isMultitenant: true
     isRedkubesMonitored: true
     teamPrefix: team-
-    useCloudCA: false
+    hasCloudLB: false
 customer:
     name: demo
 ingress:

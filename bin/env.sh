@@ -18,4 +18,4 @@ else
   fi
 fi
 # source dependent env vars
-. $ENV_DIR/$CLOUD/$CLUSTER/.env
+. $ENV_DIR/clouds/$CLOUD/$CLUSTER/.env

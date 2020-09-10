@@ -62,10 +62,10 @@ Helmfile has some custom functionality, but uses a subset of Helm's features. Mo
 
 ### 2.1 Testing
 
-To test code against running clusters you will need to export at least `CLOUD` and `CLUSTER` and source the aliases:
+To test code against running clusters you will need to export at least `ENV_DIR`, `CLOUD` and `CLUSTER` and source the aliases:
 
 ```bash
-export CLOUD=google CLUSTER=demo && . bin/aliases
+export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo && . bin/aliases
 ```
 
 After changing code you can do a diff to see everything still works:

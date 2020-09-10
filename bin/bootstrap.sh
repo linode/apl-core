@@ -32,8 +32,11 @@ if [ ! $SOURCING ]; then
   $docker cp ${cid}/home/app/stack/bin/aliases $otomi_path
   $docker cp ${cid}/home/app/stack/bin/otomi $otomi_path
   $docker cp -r ${cid}/home/app/stack/.values/.vscode $ENV_DIR/
-  for f in '.drone.tpl.yml' '.gitattributes' '.prettierrc.yml' '.sops.yaml' 'env.ini' 'README.md'; do
+  for f in '.drone.tpl.yml' '.gitattributes' '.sops.yaml' 'env.ini' 'README.md'; do
     [ ! -f $ENV_DIR/$f ] && $docker cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
+  done
+  for f in '.gitignore' '.prettierrc.yml'; do
+    $docker cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
   done
   if [ "$install_demo_files" != "" ]; then
     echo "Installing demo files"
