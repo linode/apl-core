@@ -4,9 +4,9 @@ nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 # image:
 #   tag: v1.17.1
-
+{{ $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}
 autoDiscovery:
-  clusterName:  {{ $v.clusterName }}
+  clusterName:  {{ printf "%s-%s-%s" $v.customer.name (index $map $v.cluster.provider) $v.cluster.name }}
 
 cloudProvider: {{ $v.cluster.provider }}
 

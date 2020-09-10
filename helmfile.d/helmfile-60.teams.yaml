@@ -22,6 +22,7 @@ releases:
       - name: admin
         teamId: admin
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}
         certStage: {{ $cm.stage }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
@@ -43,6 +44,7 @@ releases:
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
         knative:

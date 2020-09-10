@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: {{ .name }}
-  namespace: {{ if .cluster.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+  namespace: {{ if .otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
 spec:
   secretName: {{ .name }}
   commonName: '{{ .domain }}'

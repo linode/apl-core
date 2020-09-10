@@ -12,11 +12,6 @@ app.kubernetes.io/part-of: otomi
 helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
-{{- define "helm-toolkit.utils.joinListWithComma" -}}
-{{- $local := dict "first" true -}}
-{{- range $k, $v := . -}}{{- if not $local.first -}},{{- end -}}{{- $v -}}{{- $_ := set $local "first" false -}}{{- end -}}
-{{- end -}}
-
 {{- define "helm-toolkit.utils.joinListWithSep" -}}
 {{- $local := dict "first" true -}}
 {{- $ := . -}}
@@ -64,12 +59,12 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   {{- $names = (append $names $s.name) }}
 {{- end }}
 {{- end }}
-{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .cluster.hasCloudLB) (eq .provider "nginx")) }}
+{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .otomi.hasCloudLB) (eq .provider "nginx")) }}
 {{- if and $internetFacing .isApps }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}
-{{- if and (eq .teamId "admin") .cluster.hasCloudLB (not (eq .provider "nginx")) }}
+{{- if and (eq .teamId "admin") .otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" .cluster.domain) list)) }}
   {{- $routes = (merge $routes (dict (printf "proxy.%s" .domain) list)) }}
 {{- end }}

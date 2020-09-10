@@ -126,7 +126,7 @@ spec:
             {{- end }}
             hosts: [{{ $domain }}]
             {{- if $s.authz.excludePaths }}
-            notPaths: [{{ include "helm-toolkit.utils.joinListWithComma" $s.authz.excludePaths }}]
+            notPaths: [{{ include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.authz.excludePaths "sep" ",") }}]
             {{- end }}
     - from:
         - source:

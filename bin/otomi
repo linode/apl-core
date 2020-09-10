@@ -155,22 +155,22 @@ function execute() {
     ;;
   hf)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -vi "skipping missing environment values file matching"
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -vi skipping
     break
     ;;
   apply)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply | grep -Fv skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -vi skipping
     break
     ;;
   diff)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff | grep -Fv skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -vi skipping
     break
     ;;
   sync)
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync | grep -vi skipping
+    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -vi skipping
     break
     ;;
   template)
