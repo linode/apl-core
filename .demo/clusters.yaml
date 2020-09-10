@@ -1,0 +1,35 @@
+clouds:
+    aws:
+        domain: eks.otomi.cloud
+        clusters:
+            demo:
+                apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
+                apiServer:
+                k8sVersion: 1.16
+                region: eu-central-1
+    google:
+        domain: gke.otomi.cloud
+        clusters:
+            demo:
+                apiName: gke_otomi-cloud_europe-west4_otomi-gke-demo
+                apiServer:
+                k8sVersion: 1.17
+                region: europe-west4
+    azure:
+        domain: aks.otomi.cloud
+        clusters:
+            demo:
+                apiName: aks_otomi-cloud_westeurope_otomi-aks-demo
+                apiServer:
+                k8sVersion: 1.17
+                region: westeurope
+    onprem:
+        domain: onprem.otomi.cloud
+        clusters:
+            demo:
+                dnsProvider: google
+                apiName: onprem_otomi-cloud
+                apiServer:
+                k8sVersion: 1.18
+                region: local
+                entrypoint:
