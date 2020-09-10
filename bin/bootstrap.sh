@@ -29,6 +29,7 @@ if [ ! $SOURCING ]; then
     docker="docker"
   fi
   set -e
+  $docker cp ${cid}/home/app/stack/bin/aliases $otomi_path
   $docker cp ${cid}/home/app/stack/bin/otomi $otomi_path
   $docker cp -r ${cid}/home/app/stack/.values/.vscode $ENV_DIR/
   for f in '.drone.tpl.yml' '.gitattributes' '.prettierrc.yml' '.sops.yaml' 'env.ini' 'README.md'; do

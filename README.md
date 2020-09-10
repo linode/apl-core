@@ -2,34 +2,19 @@
 
 Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
 
-All services are declared in own/vendor [Helm charts](https://helm.sh). See [./helmfile.yaml](./helmfile.yaml) which services will be synced.
-
-Click here to open the [index of the system services](https://index.team-admin.dev.aks.otomi.cloud/).
-
-It is imperative to use the aliases to use the same command line commands. Not only to align with the team or to avoid manual errors, but also to use the same tooling in the docker image to avoid version skew. Please see [bin/aliases.sh](bin/aliases.sh) to understand what the commands in this readme do.
-
-This stack is published as a private docker image here: `eu.gcr.io/otomi-cloud/otomi-stack`, and the rest of this readme is for developers only.
+This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development.
 
 This readme has the following index:
 
-1. [Prerequisites for installation](#1-prerequisites-for-installation)
-2. [Installation](#2-installation)
-3. [Development](#3-development)
-4. [Operation](#4-operation)
-5. [Troubleshooting](#4-5roubleshooting)
+1. [Prerequisites for installation](#1-prerequisites)
+2. [Development](#2-development)
+3. [Deployment](#3-deployment)
 
-## 1. Prerequisites for development
-
-It is imperative to know the functioning of [helm](https://helm.sh) and [helmfile](https://github.com/roboll/helmfile). Please read about both beforehand. They both use Go templating and make use of the [Sprig template functions](http://masterminds.github.io/sprig/).
-
-Before listing the hard requirements I would like to offer some really helpful tools:
-
-- [Visual Studio Code](https://code.visualstudio.com): The most used code editor, which asks to install the extensions delivered in this repo.
-- [kube_ps1 prompt](https://github.com/jonmosco/kube-ps1): I have it on the right with `RPROMPT='$(kube_ps1)'`
+## 1. Prerequisites
 
 ### 1.1 Working k8s cluster with correct policies
 
-Admin accessible k8s cluster(s). For convenience we have added `bin/create-gke-cluster.sh` to create a k8s cluster in GKE.
+Admin accessible k8s cluster(s).
 
 If you don't have access with kubectl immediately, you have to pull the credentials from the cloud:
 
@@ -43,103 +28,74 @@ If you are not logged in with the correct credentials because you were logged in
 - AWS: `aws login eks`
 - Google: `gcloud auth login`
 
-### 1.2 Unencrypted values repo
+### 1.2 Docker credentials for local tooling
 
-To start with a fresh values repo run this oneliner in an empty folder to initialize:
-
-    docker run eu.gcr.io/otomi-cloud/otomi-stack:v0.10.111 bash -c bin/bootstrap.sh
-
-The values reside in another repo (otomi-values), and `$ENV_DIR` should be an absolute path to the root of this checked out repo. The `*.yaml` files should be decrypted first, and for that the correct service account credentials should be known to the environment. Please get the correct `.secrets` file from company storage and put it in the values repo, then source it and run `otomi decrypt` to decrypt.
-
-Any changes made to the values repo should be committed from that repo, and the readme in that repo explains how. Most important part is the `bin/install-pre-commit.sh` script to automatically encrypt the values before committing.
-
-### 1.3 Configured values
-
-This monorepo is targeting the cluster(s) as described in the `$ENV_DIR/env/clusters.yaml.dec` file in the `redkubes/otomi-values` repo. Please register your target clusters there.
-
-Please look at the `$ENV_DIR/env/**` files and configure as needed for your target clusters.
-
-## 2. Installation
-
-The first time install must be done for each configured cloud and cluster like this:
+Use the following command to configure Docker to use the correct credentials for pulling the API image (paid license) locally.
 
 ```bash
-export ENV_DIR=$PWD/../otomi-values CLOUD=(azure|google|aws) CLUSTER=(dev|demo|prd) && bin/deploy.sh
+gcloud auth configure-docker
 ```
 
-It should install and start all the services in this repo. In case of errors see [troubleshooting](#5-troubleshooting) below.
+### 1.3 Values repo
 
-### 2.1 GitOps syncing
-
-After initial deployment, to enable Continuous Deployment of this repo from within Drone, for each cluster (DEV|DEMO|PRD):
-
-1. Login to Drone and activate the repo to sync with.
-2. Choose the drone pipeline file to use: `.env/(azure|google|aws)/.drone.($CLUSTER).yml` and press save.
-
-Sync is now live, and every git change is applied by each cluster's Drone by calling `bin/sync.sh` from the updated code.
-
-### 2.2 Manual Deployment
-
-After initial deployment, it is possible to deploy (parts of) the stack to any cluster directly through helmfile, but this is meant for development and dev clusters only. To be able to deploy manually, you should have the right credentials and access rights in .kube/config. Deployment is ONLY ALLOWED BY USING THE ALIASES:
+If you don't yet have a values repo, you can start one in a new folder like this:
 
 ```bash
-# target the customer values you wish to deploy with
-export ENV_DIR=~/Documents/Workspace/redkubes/otomi/otomi-values
-# target the cloud you wish you deploy to and load the aliases
-export CLOUD=(azure|google|aws) CLUSTER=(dev|demo|prd) && . bin/utils.sh
-# use hfd for deployment to dev, and hft|hfa|hfp to acc|tst|prd (see `bin/aliases`)
-hfd apply|diff|template
-# or target a single chart:
-hfd -l name=index apply
-# or target a single chart in debug mode, while excluding cruft from other helmfiles:
-hfd --log-level=debug -f helmfile.d/helmfile-30.system.yaml -l name=index apply
+docker run -e ENV_DIR=$PWD -v $PWD:$PWD otomi/stack:latest bash -c 'bin/bootstrap.sh 1'
 ```
 
-### 2.3 Upgrades
+This will also install the needed artifacts (such as the Otomi CLI) and demo values.
 
-The `bin/upgrades` folder should have an upgrade script for all minor and major changes. Please run successively and make sure no errors occur.
+Please read the `README.md` that is exported as it has extensive instructions on initial configuration.
 
-## 3. Development
+## 2. Development
 
-The helmfiles are found in `helmfile.d/` and `helmfile.tpl`, and their values under `values/**`. The `helmfile.tpl` dir only contains charts that are used for basic k8s manifest generation to be deployed with kubectl apply, so we don't get chart conflicts. (See `bin/deploy.sh` and `bin/sync.sh`.)
+Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies. Notable quirks that can give you headaches:
 
-The charts are found in the `charts/custom` folder. These charts can be exact copies from their online counterparts (see their `Chart.yaml`), or contain slight modifications/adaptations. The only real explicit one is `chart/index` which is an adaption of `bitnami/nginx` to hold our custom index page listing all the accessible services in this repo.
+- dashes (`-`) in the template statements remove all whitespace characters (before or after the statement). The helm formatter will always autoclose with an ending dash. Sometimes you need to remove this ending dash to not break the yaml.
 
-### Helm charts & helmfiles
+Helmfile has some custom functionality, but uses a subset of Helm's features. Most notable differences:
 
-Open a terminal and watch all pods except those in `kube-system` namespace:
+- helm's `.Files.Get` can be achieved by helmfile's `readFile`
+- helm's `.Files.Glob` can be achieved by executing a bash command and parsing the result. (See `helmfile.d/snippets/env.gotmpl`)
+- helmfile's `get` can read a nested property and takes an optional default value, which you can see a lot in the top of the `*.gotmpl` files
+
+### 2.1 Testing
+
+To test code against running clusters you will need to export at least `CLOUD` and `CLUSTER` and source the aliases:
 
 ```bash
-watch -n1 "kubectl --all-namespaces=true get po | grep -Fv kube-system"
+export CLOUD=google CLUSTER=demo && . bin/aliases
 ```
 
-You can test modifications to helm charts and helmfiles:
+After changing code you can do a diff to see everything still works:
 
 ```bash
-. bin/utils.sh
-# diff one chart with the one deployed on dev:
-hfd -l name=index diff
-# deploy the whole prometheus-operator stack:
-hfd -l name=prometheus-operator apply
-# deploy all charts in the monitoring namespace:
-hfd -f helmfile.d/helmfile-10.monitoring.yaml apply
+otomi diff
+# or target one release:
+otomi diff -l name=prometheus-operator
 ```
 
-## 4. Operation
+## 3. Deployment
 
-As explained in the intro, the services are listed under the [index of the admin services](https://index.team-admin.dev.aks.otomi.cloud/).
+It is preferred that deployment is done from the values repo, as it is tied to a cluster, and thus can do least damage.
+When you feel that you are in control and want fast iteration you can connect to a values repo directly by exporting `ENV_DIR`. It is mandatory and won't work without it. The CLI will also check that you are targeting `kubectl`'s `current-context` as a failsafe mechanism.
 
-It is possible to change settings through any of these UIs, but to make them persistent these changes need to be scripted into this repo. Please read through the charts and their values thoroughly to see how configuration is injected.
-
-## 5. Troubleshooting
-
-### Deployment
-
-It might be needed to run the deployment twice because of race conditions in the `gatekeeper-operator-artifacts` chart.
-
-### Istio
+To deploy everything in the stack:
 
 ```bash
-# istio auth checks from gateway to service (here grafana):
-istioctl -n istio-system authn tls-check $(kis get po -l app=istio-ingressgateway | tail -n1| awk '{print $1}') prometheus-operator-grafana.monitoring.svc.cluster.local
+otomi deploy
+```
+
+It is also possible to target individual helmfile releases from the stack:
+
+```bash
+otomi apply -l name=prometheus-operator
+```
+
+This will first do a `diff` and then a `sync`. But if you expect the helm bookkeeping to not match the current state (because resources were manipulated without helm), then do a sync:
+
+```bash
+# or:
+otomi sync -l name=prometheus-operator
 ```
