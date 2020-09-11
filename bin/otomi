@@ -108,17 +108,13 @@ function kube_validate() {
   # example:~$ otomi kubeval 1.15.0 1.16.0 1.17.0
   local k8s_versions=("${@:-1.16.0}")
   local tmp_validation_dir=/tmp/kubeval-fixtures
-  local VALIDATE=0
+  local exitcode=0
   MOUNT_TMP_DIR=1
 
   clean_exit() {
-    [[ $VALIDATE -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+    [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
     rm -rf $tmp_validation_dir
-    exit $VALIDATE
-  }
-
-  test_fail() {
-    VALIDATE=1
+    exit $exitcode
   }
 
   echo "Generating Manifests in tmp location."
@@ -128,7 +124,7 @@ function kube_validate() {
     echo "Validating Otomi Stack against Kubernetes Version: $v"
     (
       drun kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $v
-    ) || test_fail
+    ) || (exitcode=0)
   done
   clean_exit
 
