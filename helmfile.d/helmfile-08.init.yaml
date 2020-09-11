@@ -5,11 +5,11 @@ bases:
 {{- $v := .Environment.Values }}
 
 releases:
-  - name: prometheus-operator
+  - name: kube-prometheus-stack
     installed: true
     namespace: monitoring
     labels:
-      pkg: prometheus-operator
+      pkg: kube-prometheus-stack
     <<: *default
   - name: promitor-agent-scraper
     installed: false # {{ eq $v.cluster.provider "azure" }}

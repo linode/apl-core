@@ -1,0 +1,27 @@
+apiVersion: v1
+appVersion: 0.38.1
+description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
+  and Prometheus rules combined with documentation and scripts to provide easy to
+  operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus
+  Operator.
+home: https://github.com/prometheus-operator/kube-prometheus
+icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+keywords:
+- operator
+- prometheus
+maintainers:
+- name: vsliouniaev
+- name: bismarck
+- email: gianrubio@gmail.com
+  name: gianrubio
+- email: github.gkarthiks@gmail.com
+  name: gkarthiks
+- email: scott@r6by.com
+  name: scottrigby
+- email: miroslav.hadzhiev@gmail.com
+  name: Xtigyro
+name: kube-prometheus-stack
+sources:
+- https://github.com/prometheus-operator/kube-prometheus
+- https://github.com/prometheus-operator/prometheus-operator
+version: 9.4.0
