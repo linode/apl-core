@@ -10,6 +10,9 @@ STACK_VERSION=${STACK_VERSION:-latest}
 alias otomi="${ENV_DIR}/bin/otomi"
 
 if [ ! $SOURCING ]; then
+  cid=''
+  cmd_cp='cp -r'
+
   # install CLI
   otomi_path="${ENV_DIR}/bin/"
   mkdir -p $otomi_path &>/dev/null
@@ -25,24 +28,23 @@ if [ ! $SOURCING ]; then
   docker info &>/dev/null
   if [ "$?" == "0" ]; then
     cid="$(docker create $img):"
-    cmd="docker cp ${cid}:"
-    docker="docker"
+    cmd_cp="docker cp"
   fi
   set -e
-  $docker cp ${cid}/home/app/stack/bin/aliases $otomi_path
-  $docker cp ${cid}/home/app/stack/bin/otomi $otomi_path
-  $docker cp -r ${cid}/home/app/stack/.values/.vscode $ENV_DIR/
+  $cmd_cp ${cid}/home/app/stack/bin/aliases $otomi_path
+  $cmd_cp ${cid}/home/app/stack/bin/otomi $otomi_path
+  $cmd_cp ${cid}/home/app/stack/.values/.vscode $ENV_DIR/
   for f in '.drone.tpl.yml' '.gitattributes' '.sops.yaml' 'env.ini' 'README.md'; do
-    [ ! -f $ENV_DIR/$f ] && $docker cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
+    [ ! -f $ENV_DIR/$f ] && cmd_cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
   done
   for f in '.gitignore' '.prettierrc.yml'; do
-    $docker cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
+    $cmd_cp ${cid}/home/app/stack/.values/$f $ENV_DIR/
   done
   if [ "$install_demo_files" != "" ]; then
     echo "Installing demo files"
-    $docker cp -r ${cid}/home/app/stack/.demo/* $ENV_DIR/
+    $cmd_cp ${cid}/home/app/stack/.demo/* $ENV_DIR/
   fi
-  [ ! -z "$cid" ] && $docker rm ${cid} >/dev/null
+  [ ! -z "$cid" ] && docker rm ${cid} >/dev/null
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"
   echo ". bin/aliases"
