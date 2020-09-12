@@ -203,7 +203,8 @@ function execute() {
   template)
     set_kube_context=0
     validate_cluster_env
-    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath= | grep -v 'helmfile-'
+    set -o pipefail
+    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
     break
     ;;
   bootstrap)
