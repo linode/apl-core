@@ -49,10 +49,10 @@ prometheus:
   prometheusSpec:
     resources:
       requests:
-        cpu: 500m
+        cpu: 100m
         memory: 512Mi
       limits:
-        cpu: 2000m
+        cpu: 1000m
         memory: 2Gi
     priorityClassName: "system-node-critical"
     externalLabels:
@@ -83,7 +83,7 @@ alertmanager:
     resources:
       requests:
         memory: 128Mi
-        cpu: 250m
+        cpu: 100m
       limits:
         memory: 256Mi
         cpu: 500m
@@ -165,7 +165,7 @@ grafana:
   resources:
     requests:
       memory: 128Mi
-      cpu: 250m
+      cpu: 100m
     limits:
       memory: 256Mi
       cpu: 500m
@@ -268,10 +268,10 @@ kube-state-metrics:
   resources:
     requests:
       memory: 128Mi
-      cpu: 250m
+      cpu: 100m
     limits:
       memory: 256Mi
-      cpu: 500m
+      cpu: 400m
   podSecurityPolicy:
     enabled: false
 
