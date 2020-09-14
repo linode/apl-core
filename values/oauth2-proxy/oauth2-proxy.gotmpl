@@ -24,11 +24,11 @@ config:
 priorityClassName: "system-cluster-critical"
 resources:
   limits:
-    cpu: 400m
+    cpu: 500m
     memory: 256Mi
   requests:
     cpu: 100m
-    memory: 256Mi
+    memory: 128Mi
 
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
