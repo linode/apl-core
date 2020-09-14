@@ -1,5 +1,5 @@
 dependencies:
   - name: postgresql
-    version: 8.9.5
+    version: '8.9.*'
     repository: https://charts.bitnami.com/bitnami
     condition: keycloak.persistence.deployPostgres

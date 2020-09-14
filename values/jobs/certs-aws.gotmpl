@@ -9,7 +9,7 @@ tasks:
   certs-aws:
     type: job
     description: Import certs into ACM
-    enabled: {{ and (eq $v.cluster.provider "aws") $v.cluster.hasCloudLB }}
+    enabled: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     image: {{ $otomiApiImage }}
     schedule: "0/1 * * * *" # every minute
     # schedule: "0 1 * * *" # every day

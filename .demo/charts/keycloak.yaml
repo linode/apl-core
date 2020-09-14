@@ -1,0 +1,6 @@
+charts:
+    keycloak:
+        enabled: true
+        realm: master
+        idp:
+            alias: redkubes-azure

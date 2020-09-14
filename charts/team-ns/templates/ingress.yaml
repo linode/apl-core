@@ -1,7 +1,7 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
-{{- if or (eq $v.teamId "admin") ($v.cluster.isMultitenant) }}
+{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $authSvc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}
 # split list of services into separate ingress types:
 # - auth: public vs private
@@ -30,30 +30,30 @@
 {{- end }}
 
 # apps.* that need their path rewritten to /
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
 ---
 
 # apps.* that need their path forwarded instead of rewritten to /
 {{- if gt (len $privateForward) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
 ---
 {{- end }}
 
 # apps with custom domains
 {{- if gt (len $privateCustom) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
 ---
 {{- end }}
 
 # public services
 {{- if gt (len $public) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
 {{- end }}
 
-{{- if $v.cluster.hasCloudLB }}
+{{- if $v.otomi.hasCloudLB }}
 # external LB ingress
-{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
+{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
 ---
 {{- end }}
 
@@ -63,7 +63,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
-    {{- if not $v.cluster.hasCloudLB }}
+    {{- if not $v.otomi.hasCloudLB }}
     externaldns: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
@@ -92,7 +92,7 @@ spec:
           servicePort: 80
         path: /({{ $p.name }})({{ $p.path }})
   {{- end }}
-  {{- if not $v.cluster.hasCloudLB }}
+  {{- if not $v.otomi.hasCloudLB }}
   tls:
     - hosts:
         - {{ printf "proxy.%s" $v.domain }}

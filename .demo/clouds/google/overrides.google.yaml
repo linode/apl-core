@@ -1,0 +1,11 @@
+charts:
+    external-dns:
+        domainFilters:
+            - otomi.cloud
+        zoneIdFilters:
+            - otomi
+otomi:
+    hasCloudLB: false
+clouds:
+    google:
+        projectId: otomi-cloud

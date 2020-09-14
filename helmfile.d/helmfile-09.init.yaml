@@ -17,7 +17,7 @@ releases:
     namespace: kube-system
     <<: *default
   - name: knative-serving
-    installed: {{ $v.cluster.hasKnative }}
+    installed: true
     namespace: knative-serving
     chart: ../charts/raw
     labels:

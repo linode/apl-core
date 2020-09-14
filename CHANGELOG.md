@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/redkubes/otomi-stack/compare/v0.10.110...v0.11.0) (2020-09-10)
+
+
+### Bug Fixes
+
+* evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
+* git commit now outside of container [ci skip] ([7bbf067](https://github.com/redkubes/otomi-stack/commit/7bbf0672a70450b56915f5b716730e220941f156))
+* missing demo file [ci skip] ([3272dc3](https://github.com/redkubes/otomi-stack/commit/3272dc34e373ef7946e62e2e516557e458c7a293))
+* typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
+
+### [0.10.111](https://github.com/redkubes/otomi-stack/compare/v0.10.110...v0.10.111) (2020-09-09)
+
+
+### Bug Fixes
+
+* evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
+* only encode secrets, jobs get rescheduled when changed [ci skip] ([c05c1c9](https://github.com/redkubes/otomi-stack/commit/c05c1c9cd62c0fc4231e5a315611da3114974946))
+* typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
+
 ### [0.10.110](https://github.com/redkubes/otomi-stack/compare/v0.10.109...v0.10.110) (2020-09-01)
 
 

@@ -1,0 +1,97 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+workspace:
+  path: /home/app/stack/env
+
+trigger:
+  event:
+    - push
+
+steps:
+  - name: check-changes
+    image: alpine/git
+    commands:
+      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
+      - chmod -R a+w env
+
+  - name: slack-__CUSTOMER-start
+    image: plugins/slack
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - check-changes
+    settings:
+      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
+      channel: mon-otomi
+      username: Drone
+      template: >
+        Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+
+  - name: decrypt
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - check-changes
+    commands:
+      - cd .. && bin/crypt.sh dec
+
+  - name: test
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - decrypt
+    commands:
+      - cd .. && bin/test.sh
+
+  - name: deploy
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    commands:
+      - cd .. && bin/sync.sh
+    depends_on:
+      - test
+
+  - name: maintenance
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    commands:
+      - cd .. && bin/maintenance.sh
+    depends_on:
+      - deploy
+
+  - name: slack-__CUSTOMER
+    image: plugins/slack
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - maintenance
+    settings:
+      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
+      channel: mon-otomi
+      username: Drone
+      template: >
+        {{#success build.status}}
+          Completed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' :)
+        {{else}}
+          Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+        {{/success}}
+    when:
+      status:
+        - success
+        - failure

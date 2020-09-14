@@ -26,7 +26,7 @@ podAnnotations:
 
 pipelineStages:
   - docker: {}
-  {{- if $v.cluster.isMultitenant }}
+  {{- if $v.otomi.isMultitenant }}
   - tenant:
       value: admins
   - json:
