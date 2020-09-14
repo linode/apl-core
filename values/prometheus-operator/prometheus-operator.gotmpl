@@ -34,7 +34,7 @@ prometheusOperator:
       memory: 256Mi
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 128Mi
   configReloaderCpu: 200m
   admissionWebhooks:
     enabled: false
@@ -162,6 +162,13 @@ alertmanager:
 grafana:
   image:
     tag: 7.1.5
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: 500m
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -258,9 +265,24 @@ kube-state-metrics:
   #   verticalpodautoscalers: false
   # podAnnotations:
   #   sidecar.istio.io/inject: "false"
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: 500m
   podSecurityPolicy:
     enabled: false
+
 prometheus-node-exporter:
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 128Mi
+      cpu: 500m
   rbac:
     pspEnabled: false
   priorityClassName: "system-node-critical"
