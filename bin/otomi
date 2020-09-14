@@ -140,7 +140,6 @@ function drun() {
     -v ${HOME}/.aws:/home/app/.aws \
     -v ${HOME}/.azure:/home/app/.azure \
     -v ${env_dir}:${stack_dir}/env \
-    $stack_volume \
     -e CUSTOMER="$customer" \
     -e CLOUD="$CLOUD" \
     -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-
-. bin/env.sh
+set -e
+ENV_DIR=${ENV_DIR:-'./env'}
+. $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
 
 # create the cluster
 gcloud container --project "$PROJECT" clusters create "otomi-gke-$CLUSTER" --region "$GOOGLE_REGION" \

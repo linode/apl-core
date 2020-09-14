@@ -2,8 +2,10 @@
 
 # prerequites:
 # gcloud auth login
-. bin/env.sh
 set -e
+ENV_DIR=${ENV_DIR:-'./env'}
+. $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
+
 # expects $CUSTOMER to be set !!
 PROJECT="otomi-cloud"
 ROLE="objectViewer"

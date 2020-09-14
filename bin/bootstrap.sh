@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && echo "Sourcing env..." && SOURCING=true
-set -e
+set -ex
 
 install_demo_files=$1
 

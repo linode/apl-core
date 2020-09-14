@@ -14,7 +14,7 @@ steps:
     image: alpine/git
     commands:
       - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
-      - chmod -R a+w env
+      - find env -type d -exec chmod a+w {} \;
 
   - name: slack-__CUSTOMER-start
     image: plugins/slack
@@ -40,7 +40,7 @@ steps:
     depends_on:
       - check-changes
     commands:
-      - cd .. && bin/crypt.sh dec
+      - cd .. && bin/otomi decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
@@ -60,19 +60,9 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/sync.sh
+      - cd .. && bin/otomi deploy
     depends_on:
       - test
-
-  - name: maintenance
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    commands:
-      - cd .. && bin/maintenance.sh
-    depends_on:
-      - deploy
 
   - name: slack-__CUSTOMER
     image: plugins/slack
@@ -80,7 +70,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
-      - maintenance
+      - deploy
     settings:
       webhook: https://hooks.slack.com/services/__WEBHOOK_ID
       channel: mon-otomi
