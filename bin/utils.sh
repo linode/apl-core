@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 printf "${COLOR_LIGHT_PURPLE}Loading environment...${COLOR_NC}\n"
-PACKAGE_VERSION=$(cat package.json |
-  grep '"version"' |
-  head -1 |
-  awk -F: '{ print $2 }' |
-  sed 's/[",]//g' |
-  tr -d '[[:space:]]')
+PACKAGE_VERSION=$(cat package.json | jq -r .version)
 
 . bin/env.sh
 noEnvError=$?
