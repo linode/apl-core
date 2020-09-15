@@ -34,7 +34,7 @@ steps:
       CLOUD: __CLOUD
     commands:
       - chmod -R a+w env
-      - cd .. && bin/otomi decrypt
+      - cd .. && bin/otomi test
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION

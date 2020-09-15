@@ -12,25 +12,40 @@
 ##
 #####################################################################################
 shopt -s expand_aliases
+set -e
+ENV_DIR=${ENV_DIR:-$PWD}
+[ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
+
 . bin/aliases
 script=$0
 command=$1
-set -e
+
+function verbose_env() {
+  echo "has_docker=$has_docker"
+  echo "ENV_DIR=$ENV_DIR"
+  echo "stack_dir=$stack_dir"
+  echo "helm_config=$helm_config"
+  echo "cmd_image=$cmd_image"
+  echo "check_kube_context=$check_kube_context"
+  echo "K8S_CONTEXT=$K8S_CONTEXT"
+  echo "IN_DOCKER=$IN_DOCKER"
+  echo "command=$command"
+}
 
 # VERBOSE - export this varibale to run this script in verbose mode
-VERBOSE=${VERBOSE:-0}
+VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
 # A path to directory with values directory
-export ENV_DIR=${ENV_DIR:-$PWD}
 
 has_docker=0
 dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
+verbose_env
 customer=$(customer_name)
 cmd_image=''
 docker_terminal_params='-t'
@@ -140,8 +155,7 @@ function drun() {
     stack_volume="-v ${stack_dir}:${stack_dir}"
   fi
 
-  if [ $VERBOSE -eq 1 ]; then
-    echo "Command: $command"
+  if [ "$VERBOSE" == "1" ]; then
     verbose_env
   fi
 
@@ -161,6 +175,7 @@ function drun() {
       -v ${HOME}/.azure:/home/app/.azure \
       -v ${ENV_DIR}:${stack_dir}/env \
       -e CUSTOMER="$customer" \
+      -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
@@ -181,12 +196,16 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env/env@'"${ENV_DIR}"'@g'
+    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env/env@'"${ENV_DIR}"'@g'
+    ;;
+  test)
+    validate_cluster_env
+    drun bin/test.sh
     ;;
   hf)
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -v skipping | grep -v basePath=
+    drun helmfile -e $CLOUD-$CLUSTER $@ | grep -v skipping | grep -v basePath=
     ;;
   aws)
     check_kube_context=0
@@ -207,23 +226,23 @@ function execute() {
   apply)
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
+    drun helmfile -e $CLOUD-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
     ;;
   diff)
     validate_cluster_env
-    set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
+    # set -o pipefail
+    drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
     ;;
   sync)
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -v skipping | grep -v basePath=
+    drun helmfile -e $CLOUD-$CLUSTER $@ sync --skip-deps | grep -v skipping | grep -v basePath=
     ;;
   template)
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
+    drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
     ;;
   bootstrap)
     check_kube_context=0
@@ -232,7 +251,7 @@ function execute() {
     ;;
   deploy)
     validate_cluster_env
-    drun bin/deploy.sh | grep -v skipping | grep -v basePath=
+    drun bin/deploy.sh
     ;;
   encrypt)
     check_kube_context=0
@@ -288,17 +307,6 @@ function execute() {
     exit 1
     ;;
   esac
-}
-
-function verbose_env() {
-  echo "has_docker=$has_docker"
-  echo "ENV_DIR=$ENV_DIR"
-  echo "stack_dir=$stack_dir"
-  echo "helm_config=$helm_config"
-  echo "cmd_image=$cmd_image"
-  echo "check_kube_context=$check_kube_context"
-  echo "K8S_CONTEXT=$K8S_CONTEXT"
-  echo "IN_DOCKER=$IN_DOCKER"
 }
 
 function set_env_and_stack_dir() {
