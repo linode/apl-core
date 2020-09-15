@@ -5,39 +5,26 @@ set -e
 
 # source env
 ENV_DIR=${ENV_DIR:-./env}
-otomi_version=$(otomi_version)
 alias otomi="${ENV_DIR}/bin/otomi"
 
 skip_demo_files=$1
-cid=''
-cmd_cp='cp -r'
-cp_path=''
 [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
 # install CLI
 otomi_path="${ENV_DIR}/bin/"
 mkdir -p $otomi_path &>/dev/null
-img="eu.gcr.io/otomi-cloud/otomi-stack:v${otomi_version}"
-echo "Installing artifacts from ${img}"
-if [ "$IN_DOCKER" == "0" ]; then
-  cid="$(docker create $img)"
-  cp_path="${cid}:"
-  cmd_cp="docker cp"
-fi
-$cmd_cp ${cp_path}/home/app/stack/bin/aliases $otomi_path
-$cmd_cp ${cp_path}/home/app/stack/bin/otomi $otomi_path
-$cmd_cp ${cp_path}/home/app/stack/.values/.vscode $ENV_DIR/
+img="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
+echo "Installing artifacts from $img"
 for f in '.gitattributes' '.sops.yaml'; do
-  [ ! -f $ENV_DIR/$f ] && $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
+  [ ! -f $ENV_DIR/$f ] && cp /home/app/stack/.values/$f $ENV_DIR/
 done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
-  $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
+  cp /home/app/stack/.values/$f $ENV_DIR/
 done
 if [ "$skip_demo_files" != "1" ]; then
   echo "Installing demo files"
-  $cmd_cp ${cp_path}/home/app/stack/.demo $ENV_DIR/env
+  cp -r /home/app/stack/.demo $ENV_DIR/env
 fi
-[ ! -z "$cid" ] && docker rm ${cid} >/dev/null
 if [ ! $has_otomi ]; then
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"

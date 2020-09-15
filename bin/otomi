@@ -111,7 +111,7 @@ function validate_k8s_context() {
 }
 
 function set_otomi_image() {
-  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:v$(otomi_version)"
+  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:v$(otomi_image_tag)"
   return 0
 }
 
