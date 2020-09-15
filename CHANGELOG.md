@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.1](https://github.com/redkubes/otomi-stack/compare/v0.11.0...v0.11.1) (2020-09-15)
+
+
+### Features
+
+* use otomi CLI in docker ([e2aa085](https://github.com/redkubes/otomi-stack/commit/e2aa085d35a0d46d0b0100a1d8893b830ec9eea4))
+
+
+### Bug Fixes
+
+* adjust path to values env dir ([79b4b9d](https://github.com/redkubes/otomi-stack/commit/79b4b9d1a4b3cd45e672a6132ce7a7a3a3168899))
+* bugs [ci skip] ([3008576](https://github.com/redkubes/otomi-stack/commit/3008576eb5aa5153322bc8823f1c14673210630c))
+* bugs [ci skip] ([f98311f](https://github.com/redkubes/otomi-stack/commit/f98311f4618ba874d3aa43196f95eeebf941e353))
+* docker without -r option ([f0f1b55](https://github.com/redkubes/otomi-stack/commit/f0f1b559413787857b9028e2d0257fd75cc6e031))
+* gitignore for values [ci skip] ([d0dad19](https://github.com/redkubes/otomi-stack/commit/d0dad19527bf76cb26ce1952942745b0e4611cea))
+* obtain cloudDnsKey value ([c62c1af](https://github.com/redkubes/otomi-stack/commit/c62c1af68dfed1487a0b58f9e0258c74c52035ed))
+* otomi cli exists with error code on failure ([f979d0c](https://github.com/redkubes/otomi-stack/commit/f979d0c7fdd9f21019cf1cb291512e1f76729552))
+* otomi template command ([62ea049](https://github.com/redkubes/otomi-stack/commit/62ea0496e91b0e5abf90b81188a57ce655cae9e5))
+* remove container ([1660c12](https://github.com/redkubes/otomi-stack/commit/1660c12b4066f935c49b7d870a9b0adfbca4f97d))
+* rework [ci skip] ([2722be7](https://github.com/redkubes/otomi-stack/commit/2722be76c46c59c938a30b3e76873e0cf791051c))
+
 ## [0.11.0](https://github.com/redkubes/otomi-stack/compare/v0.10.110...v0.11.0) (2020-09-10)
 
 
