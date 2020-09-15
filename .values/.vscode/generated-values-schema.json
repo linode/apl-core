@@ -107,6 +107,86 @@
         },
         "password": {
           "type": "string"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "isPublic": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "ownHost": {
+                "type": "boolean"
+              },
+              "svc": {
+                "type": "string"
+              },
+              "isShared": {
+                "type": "boolean"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "forwardPath": {
+                "type": "boolean"
+              },
+              "hide": {
+                "type": "boolean"
+              },
+              "port": {
+                "type": "number"
+              },
+              "authz": {
+                "type": "object",
+                "properties": {
+                  "forwardOriginalToken": {
+                    "type": "boolean"
+                  },
+                  "workload": {
+                    "type": "object",
+                    "properties": {
+                      "app.kubernetes.io/name": {
+                        "type": "string"
+                      },
+                      "app.kubernetes.io/instance": {
+                        "type": "string"
+                      },
+                      "app": {
+                        "type": "string"
+                      },
+                      "component": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "host": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "logo": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -778,242 +858,82 @@
         "^.*$": { "$ref": "#/definitions/cloud" }
       },
       "additionalProperties": false
-    }
-  },
-  "customer": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "type": "string"
-      }
-    }
-  },
-  "otomi": {
-    "type": "object",
-    "properties": {
-      "customer": {
-        "type": "string"
-      },
-      "isManaged": {
-        "type": "boolean"
-      },
-      "isMultitenant": {
-        "type": "boolean"
-      },
-      "isRedkubesMonitored": {
-        "type": "boolean"
-      },
-      "pullSecret": {
-        "type": "string"
-      },
-      "teamPrefix": {
-        "type": "string"
-      }
-    }
-  },
-  "oidc": {
-    "type": "object",
-    "properties": {
-      "clientID": {
-        "type": "string"
-      },
-      "clientSecret": {
-        "type": "string"
-      },
-      "idp": {
-        "type": "object",
-        "properties": {
-          "adminGroupID": {
-            "type": "string"
-          },
-          "clientID": {
-            "type": "string"
-          },
-          "clientSecret": {
-            "type": "string"
-          },
-          "issuer": {
-            "type": "string"
-          },
-          "teamAdminGroupID": {
-            "type": "string"
-          },
-          "tenantID": {
-            "type": "string"
-          }
-        }
-      },
-      "scope": {
-        "type": "string"
-      }
-    }
-  },
-  "proxies": {
-    "type": "array",
-    "items": {
+    },
+    "customer": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string"
-        },
-        "namespace": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
         }
       }
-    }
-  },
-  "services": {
-    "type": "array",
-    "items": {
+    },
+    "otomi": {
       "type": "object",
       "properties": {
-        "isPublic": {
+        "isManaged": {
           "type": "boolean"
         },
-        "name": {
-          "type": "string"
-        },
-        "namespace": {
-          "type": "string"
-        },
-        "ownHost": {
+        "isMultitenant": {
           "type": "boolean"
         },
-        "svc": {
-          "type": "string"
-        },
-        "isShared": {
+        "isRedkubesMonitored": {
           "type": "boolean"
         },
-        "paths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "forwardPath": {
-          "type": "boolean"
-        },
-        "hide": {
-          "type": "boolean"
-        },
-        "port": {
-          "type": "number"
-        },
-        "authz": {
-          "type": "object",
-          "properties": {
-            "forwardOriginalToken": {
-              "type": "boolean"
-            },
-            "workload": {
-              "type": "object",
-              "properties": {
-                "app.kubernetes.io/name": {
-                  "type": "string"
-                },
-                "app.kubernetes.io/instance": {
-                  "type": "string"
-                },
-                "app": {
-                  "type": "string"
-                },
-                "component": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "host": {
+        "pullSecret": {
           "type": "string"
         },
-        "path": {
+        "teamPrefix": {
           "type": "string"
-        },
-        "logo": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            }
-          }
         }
       }
-    }
-  },
-  "sites": {
-    "type": "array",
-    "items": {}
-  },
-  "teamConfig": {
-    "type": "object",
-    "properties": {
-      "services": {
-        "type": "array",
-        "items": {
+    },
+    "oidc": {
+      "type": "object",
+      "properties": {
+        "clientID": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "idp": {
           "type": "object",
           "properties": {
-            "host": {
+            "adminGroupID": {
               "type": "string"
             },
-            "isShared": {
-              "type": "boolean"
-            },
-            "name": {
+            "clientID": {
               "type": "string"
             },
-            "namespace": {
+            "clientSecret": {
               "type": "string"
             },
-            "svc": {
+            "issuer": {
               "type": "string"
             },
-            "path": {
+            "teamAdminGroupID": {
               "type": "string"
             },
-            "authz": {
-              "type": "object",
-              "properties": {
-                "workload": {
-                  "type": "object",
-                  "properties": {
-                    "app.kubernetes.io/instance": {
-                      "type": "string"
-                    },
-                    "app.kubernetes.io/name": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "hasPrefix": {
-              "type": "boolean"
-            },
-            "port": {
-              "type": "number"
-            },
-            "logo": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                }
-              }
+            "tenantID": {
+              "type": "string"
             }
           }
-        }
-      },
-      "teams": {
-        "type": "object",
-        "patternProperties": {
-          "^[a-z-]+$": { "$ref": "#/definitions/team" }
         },
-        "additionalProperties": false
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "teamConfig": {
+      "type": "object",
+      "properties": {
+        "teams": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z-]+$": { "$ref": "#/definitions/team" }
+          },
+          "additionalProperties": false
+        }
       }
     }
   }

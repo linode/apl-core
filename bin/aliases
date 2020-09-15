@@ -30,5 +30,5 @@ function otomi_version() {
 }
 
 function customer_name() {
-  cat $ENV_DIR/clusters.yaml | yq r - customer.name
+  cat $ENV_DIR/settings.yaml | yq r - customer.name
 }
