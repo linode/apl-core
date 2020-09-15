@@ -29,7 +29,7 @@ steps:
         themeColor: 009EEA
 
   - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -38,7 +38,7 @@ steps:
       - cd .. && bin/crypt.sh dec
 
   - name: test
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -48,7 +48,7 @@ steps:
       - cd .. && bin/test.sh
 
   - name: deploy
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -57,17 +57,7 @@ steps:
     depends_on:
       - test
 
-  - name: maintenance
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    commands:
-      - cd .. && bin/maintenance.sh
-    depends_on:
-      - deploy
-
-  - name: notify-__CUSTOMER-success
+  - name: notify-success
     image: diyfr/drone_plugin_teams
     environment:
       CLUSTER: __CLUSTER
@@ -84,7 +74,7 @@ steps:
       status:
         - success
 
-  - name: notify-__CUSTOMER-error
+  - name: notify-error
     image: diyfr/drone_plugin_teams
     environment:
       CLUSTER: __CLUSTER

@@ -32,10 +32,10 @@ if [ ! $SOURCING ]; then
   $cmd_cp ${cp_path}/home/app/stack/bin/aliases $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/bin/otomi $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/.values/.vscode $ENV_DIR/
-  for f in '.drone.tpl.slack.yml' '.drone.tpl.msteams.yml' '.gitattributes' '.sops.yaml' 'README.md'; do
+  for f in '.gitattributes' '.sops.yaml'; do
     [ ! -f $ENV_DIR/$f ] && $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
   done
-  for f in '.gitignore' '.prettierrc.yml'; do
+  for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
     $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
   done
   if [ "$skip_demo_files" != "1" ]; then
