@@ -21,14 +21,11 @@ if [ ! $SOURCING ]; then
   mkdir -p $otomi_path &>/dev/null
   img="eu.gcr.io/otomi-cloud/otomi-stack:v${otomi_version}"
   echo "Installing artifacts from ${img}"
-  set +e
-  docker info &>/dev/null
-  if [ "$?" == "0" ]; then
+  if [ "$IN_DOCKER" == "0" ]; then
     cid="$(docker create $img)"
     cp_path="${cid}:"
     cmd_cp="docker cp"
   fi
-  set -e
   $cmd_cp ${cp_path}/home/app/stack/bin/aliases $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/bin/otomi $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/.values/.vscode $ENV_DIR/
@@ -40,7 +37,7 @@ if [ ! $SOURCING ]; then
   done
   if [ "$skip_demo_files" != "1" ]; then
     echo "Installing demo files"
-    $cmd_cp ${cp_path}/home/app/stack/.demo/* $ENV_DIR/
+    $cmd_cp ${cp_path}/home/app/stack/.demo $ENV_DIR/env
   fi
   [ ! -z "$cid" ] && docker rm ${cid} >/dev/null
   if [ ! $has_otomi ]; then

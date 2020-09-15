@@ -5,7 +5,7 @@ shopt -s expand_aliases
 set -e
 
 ENV_DIR=${ENV_DIR:-./env}
-RECEIVER=$(cat $ENV_DIR/settings.yaml | yq r - alerts.receiver)
+RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
 
 customer_name=$(customer_name)
 echo "customer_name: $customer_name"
@@ -16,10 +16,10 @@ if [ "$RECEIVER" = "slack" ]; then
 else
   key="lowPrio"
 fi
-webhook=$(cat $ENV_DIR/settings.secrets.yaml | yq r - alerts.$RECEIVER.$key)
+webhook=$(cat $ENV_DIR/env/settings.secrets.yaml | yq r - alerts.$RECEIVER.$key)
 
 tpl=$PWD/tpl/.drone.tpl.$RECEIVER.yml
-cd $ENV_DIR/clouds >/dev/null
+cd $ENV_DIR/env/clouds >/dev/null
 for c in */; do
   CLOUD=$(echo $c | sed -e 's/\///g')
   cd $CLOUD >/dev/null

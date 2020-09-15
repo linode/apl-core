@@ -22,7 +22,7 @@ alias kp="k proxy &"
 function otomi_version() {
   local version
   if [[ ! -z "$CLOUD" || -z "$CLUSTER" ]]; then
-    version=$(cat $ENV_DIR/clusters.yaml | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
+    version=$(cat $ENV_DIR/env/clusters.yaml | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
   else
     version='latest'
   fi
@@ -30,5 +30,5 @@ function otomi_version() {
 }
 
 function customer_name() {
-  cat $ENV_DIR/settings.yaml | yq r - customer.name
+  cat $ENV_DIR/env/settings.yaml | yq r - customer.name
 }

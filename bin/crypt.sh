@@ -5,13 +5,13 @@ ENV_DIR=${ENV_DIR:-./env}
 command=$1
 
 function rotate() {
-  cd $ENV_DIR >/dev/null
+  cd $ENV_DIR/env >/dev/null
   find . -type f -name '*.secrets.yaml.enc' -exec bash -c "sops --input-type=yaml --output-type yaml -r {} > {}" \;
   cd - >/dev/null
 }
 
 function crypt() {
-  cd $ENV_DIR >/dev/null
+  cd $ENV_DIR/env >/dev/null
   if [ "$command" == "encrypt" ]; then
     find . -name '*.secrets.yaml' -exec bash -c "sops -e {} > {}.enc" \;
   else

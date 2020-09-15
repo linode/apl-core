@@ -34,7 +34,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - find . -type d -exec chmod a+w {} \;
+      - chmod -R a+w env
       - cd .. && bin/crypt.sh dec
 
   - name: test
