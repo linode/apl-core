@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-ENV_DIR=${ENV_DIR:-'./env/env'}
+ENV_DIR=${ENV_DIR:-'./env'}
 . $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
 
 # create the cluster
