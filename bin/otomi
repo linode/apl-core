@@ -215,7 +215,6 @@ function execute() {
     ;;
   diff)
     validate_cluster_env
-    docker_terminal_params='-it'
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
     break
