@@ -14,7 +14,8 @@
     "*.tpl": "yaml",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",
-    "otomi": "shellscript"
+    "otomi": "shellscript",
+    "aliases": "shellscript"
   },
   "cSpell.enabled": true,
   "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],

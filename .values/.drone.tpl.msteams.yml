@@ -1,0 +1,119 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+workspace:
+  path: /home/app/stack/env
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
+
+env:
+  IN_DOCKER: '1'
+
+steps:
+  - name: notify-start
+    image: diyfr/drone_plugin_teams
+    # image: plugins/slack
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    settings:
+      webhook: __WEBHOOK
+      content:
+        title: Started syncing cluster
+        text: Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+        themeColor: 009EEA
+
+  - name: decrypt
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    commands:
+      - find . -type d -exec chmod a+w {} \;
+      - cd .. && bin/crypt.sh dec
+
+  - name: test
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - decrypt
+    commands:
+      - cd .. && bin/test.sh
+
+  - name: deploy
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    commands:
+      - cd .. && bin/sync.sh
+    depends_on:
+      - test
+
+  - name: maintenance
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    commands:
+      - cd .. && bin/maintenance.sh
+    depends_on:
+      - deploy
+
+  - name: notify-__CUSTOMER-success
+    image: diyfr/drone_plugin_teams
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - maintenance
+    settings:
+      webhook: __WEBHOOK
+      content:
+        title: Completed syncing cluster
+        text: Completed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' :)
+        themeColor: #228B22
+    when:
+      status:
+        - success
+
+  - name: notify-__CUSTOMER-error
+    image: diyfr/drone_plugin_teams
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - maintenance
+    settings:
+      webhook: __WEBHOOK
+      content:
+        title: Failed syncing cluster
+        text: Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+        themeColor: EA4300
+    when:
+      status:
+        - failure
+
+  - name: slack-RedKubes-error
+    image: plugins/slack
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    depends_on:
+      - maintenance
+    settings:
+      webhook: https://hooks.slack.com/services/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
+      channel: mon-otomi
+      username: Drone
+      template: >
+        Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+    when:
+      status:
+        - failure

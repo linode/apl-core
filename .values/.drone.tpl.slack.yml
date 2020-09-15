@@ -6,25 +6,22 @@ workspace:
   path: /home/app/stack/env
 
 trigger:
+  branch:
+    - master
   event:
     - push
 
-steps:
-  - name: check-changes
-    image: alpine/git
-    commands:
-      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
-      - find env -type d -exec chmod a+w {} \;
+env:
+  IN_DOCKER: '1'
 
+steps:
   - name: slack-__CUSTOMER-start
     image: plugins/slack
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
-    depends_on:
-      - check-changes
     settings:
-      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
+      webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
       template: >
@@ -33,20 +30,15 @@ steps:
   - name: decrypt
     image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
     environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
-    depends_on:
-      - check-changes
     commands:
+      - find . -type d -exec chmod a+w {} \;
       - cd .. && bin/otomi decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
     environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
@@ -72,7 +64,7 @@ steps:
     depends_on:
       - deploy
     settings:
-      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
+      webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
       template: >

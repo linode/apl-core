@@ -11,21 +11,28 @@
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
-set -e
+shopt -s expand_aliases
+. bin/aliases
+script=$0
 command=$1
+set -e
+
 # VERBOSE - export this varibale to run this script in verbose mode
 VERBOSE=${VERBOSE:-0}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 
-# set_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
-set_kube_context=1
+# check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
+check_kube_context=1
 # A path to directory with values directory
-env_dir=${ENV_DIR:-$PWD}
+export ENV_DIR=${ENV_DIR:-$PWD}
 
+has_docker=0
+dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-otomi_image=''
+customer=$(customer_name)
+cmd_image=''
 docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
@@ -44,7 +51,7 @@ function show_usage() {
     bash       run interactive bash
     bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit     wrapper for encrypt > generate pipelines > git commit changed files
-    decrypt    decrypt values to *.secrets.yaml.dec files
+    decrypt    decrypt *.secrets.yaml.enc to *.secrets.yaml files
     deploy     execute otomi-stack deploy script
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
     eksctl     run eksctl cli
@@ -59,8 +66,17 @@ function show_usage() {
   "
 }
 
+function check_docker() {
+  set +e
+  which docker &>/dev/null
+  if [ "$?" = "0" ]; then
+    has_docker=1
+  fi
+  set -e
+}
+
 function evaluate_k8s_context() {
-  local env_path="${env_dir}/env/clouds/${CLOUD}/${CLUSTER}/.env"
+  local env_path="${ENV_DIR}/clouds/${CLOUD}/${CLUSTER}/.env"
   [ ! -f $env_path ] && echo "Error: The file '${env_path}' does not exist" && exit 1
   source $env_path
   [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_path" && exit 1
@@ -68,26 +84,21 @@ function evaluate_k8s_context() {
 }
 
 function validate_k8s_context() {
-  local context=$(kubectl config current-context)
-  [[ "$K8S_CONTEXT" != "$context" ]] && echo "Error: Your current kubernetes context does not match target context: $K8S_CONTEXT" && exit 1
+  local context=$(k config current-context)
+  if [[ "$K8S_CONTEXT" != "$context" ]]; then
+    echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
+    echo "Please run 'otomi switch' to switch to target"
+  fi
   return 0
 }
 
-function set_env_ini() {
-  local init_path=$env_dir/env.ini
-  [ ! -f $init_path ] && echo "Error: The file '${init_path}' does not exist" && exit 1
-  source $init_path
-  local version
-  eval "version=\$${CLUSTER}Version"
-  [[ -z "$version" ]] && echo "Error: Unable to evaluate '${CLUSTER}Version' variable from $init_path" && exit 1
-  [[ -z "$customer" ]] && echo "Error: Unable to evaluate 'customer' variable from $init_path" && exit 1
-
-  otomi_image="eu.gcr.io/otomi-cloud/otomi-stack:${version}"
+function set_otomi_image() {
+  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:v$(otomi_version)"
   return 0
 }
 
 evaluate_secrets() {
-  local secrets_path="${env_dir}/.secrets"
+  local secrets_path="${ENV_DIR}/.secrets"
   [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
   source $secrets_path
   [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not found in .secrets" && exit 2
@@ -108,10 +119,11 @@ is_repo() {
 function drun() {
   local command=$@
   local tmp_volume=''
+  local docker_vars=''
   local stack_volume=''
 
   # execute any kubectl command to refresh access token
-  if [ $set_kube_context -eq 1 ]; then
+  if [ $check_kube_context -eq 1 ]; then
     evaluate_k8s_context
     validate_k8s_context
     kubectl version >/dev/null
@@ -130,31 +142,40 @@ function drun() {
     verbose_env
   fi
 
-  docker run $docker_terminal_params --rm \
-    $tmp_volume \
-    -v ${HOME}/.gitconfig:/home/app/.gitconfig \
-    -v ${HOME}/.kube/config:/home/app/.kube/config \
-    -v ${HOME}/.ssh:/home/app/.ssh \
-    -v ${helm_config}:/home/app/.config/helm \
-    -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
-    -v ${HOME}/.aws:/home/app/.aws \
-    -v ${HOME}/.azure:/home/app/.azure \
-    -v ${env_dir}:${stack_dir}/env \
-    -e CUSTOMER="$customer" \
-    -e CLOUD="$CLOUD" \
-    -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-    -e CLUSTER="$CLUSTER" \
-    -e K8S_CONTEXT="$K8S_CONTEXT" \
-    -w $stack_dir \
-    $otomi_image \
+  # use docker run if has_docker AND either:
+  # - not in docker
+  # - in docker AND force docker
+  if [[ $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
+    docker run $docker_terminal_params --rm \
+      $tmp_volume \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v ${HOME}/.gitconfig:/home/app/.gitconfig \
+      -v ${HOME}/.kube/config:/home/app/.kube/config \
+      -v ${HOME}/.ssh:/home/app/.ssh \
+      -v ${helm_config}:/home/app/.config/helm \
+      -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
+      -v ${HOME}/.aws:/home/app/.aws \
+      -v ${HOME}/.azure:/home/app/.azure \
+      -v ${ENV_DIR}:${stack_dir}/env \
+      -e CUSTOMER="$customer" \
+      -e CLOUD="$CLOUD" \
+      -e IN_DOCKER="1" \
+      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
+      -e CLUSTER="$CLUSTER" \
+      -e K8S_CONTEXT="$K8S_CONTEXT" \
+      -w $stack_dir \
+      $cmd_image \
+      $command
+  else
     $command
+  fi
 }
 
 function execute() {
   shift 2
   case $command in
   values)
-    set_kube_context=0
+    check_kube_context=0
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env@'"${ENV_DIR}"'@g'
@@ -167,22 +188,22 @@ function execute() {
     break
     ;;
   aws)
-    set_kube_context=0
+    check_kube_context=0
     drun aws $@
     break
     ;;
   azure)
-    set_kube_context=0
+    check_kube_context=0
     drun aws $@
     break
     ;;
   gcloud)
-    set_kube_context=0
+    check_kube_context=0
     drun aws $@
     break
     ;;
   eksctl)
-    set_kube_context=0
+    check_kube_context=0
     drun aws $@
     break
     ;;
@@ -205,16 +226,16 @@ function execute() {
     break
     ;;
   template)
-    set_kube_context=0
+    check_kube_context=0
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
     break
     ;;
   bootstrap)
-    set_kube_context=0
+    check_kube_context=0
     validate_cluster_env
-    drun bin/bootstrap.sh $@
+    drun bin/bootstrap.sh 1
     break
     ;;
   deploy)
@@ -223,19 +244,25 @@ function execute() {
     break
     ;;
   encrypt)
-    set_kube_context=0
+    check_kube_context=0
     evaluate_secrets
-    drun bin/crypt.sh enc
+    drun bin/crypt.sh encrypt
     break
     ;;
   decrypt)
-    set_kube_context=0
+    check_kube_context=0
     evaluate_secrets
-    drun bin/crypt.sh dec
+    drun bin/crypt.sh decrypt
+    break
+    ;;
+  rotate-keys)
+    check_kube_context=0
+    evaluate_secrets
+    drun bin/crypt.sh rotate
     break
     ;;
   bash)
-    set_kube_context=0
+    check_kube_context=0
     validate_cluster_env
     docker_terminal_params='-it'
     drun bash
@@ -245,14 +272,18 @@ function execute() {
     drun kubectl $@
     break
     ;;
+  switch)
+    k config use-context $K8S_CONTEXT
+    break
+    ;;
   x)
     validate_cluster_env
-    set_kube_context=0
+    check_kube_context=0
     drun $@
     break
     ;;
   commit)
-    set_kube_context=0
+    check_kube_context=0
     is_repo
     validate_cluster_env
     evaluate_secrets
@@ -261,7 +292,7 @@ function execute() {
     break
     ;;
   pull)
-    set_kube_context=0
+    check_kube_context=0
     is_repo
     validate_cluster_env
     evaluate_secrets
@@ -278,12 +309,14 @@ function execute() {
 }
 
 function verbose_env() {
-  echo "env_dir=$env_dir"
+  echo "has_docker=$has_docker"
+  echo "ENV_DIR=$ENV_DIR"
   echo "stack_dir=$stack_dir"
   echo "helm_config=$helm_config"
-  echo "otomi_image=$otomi_image"
-  echo "set_kube_context=$set_kube_context"
+  echo "cmd_image=$cmd_image"
+  echo "check_kube_context=$check_kube_context"
   echo "K8S_CONTEXT=$K8S_CONTEXT"
+  echo "IN_DOCKER=$IN_DOCKER"
 }
 
 function set_env_and_stack_dir() {
@@ -292,7 +325,7 @@ function set_env_and_stack_dir() {
   if [[ "$cwd" == 'otomi-stack' ]]; then
     [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
     stack_dir=$PWD
-    env_dir=$ENV_DIR
+    ENV_DIR=$ENV_DIR
     mount_stack_dir=1
   fi
   return 0
@@ -301,6 +334,7 @@ function set_env_and_stack_dir() {
 [[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2
 
 set_env_and_stack_dir
-set_env_ini
+set_otomi_image
 set_helm_config
+check_docker
 execute $command $@

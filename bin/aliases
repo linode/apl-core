@@ -1,6 +1,6 @@
 alias otomi="bin/otomi"
 alias d="docker"
-alias k="otomi kubectl"
+alias k="kubectl"
 alias ksk="k -n kube-system"
 alias ki="k -n ingress"
 alias kh="k -n harbor"
@@ -18,3 +18,17 @@ alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config current-context"
 alias kcu="k config use-context"
 alias kp="k proxy &"
+
+function otomi_version() {
+  local version
+  if [[ ! -z "$CLOUD" || -z "$CLUSTER" ]]; then
+    version=$(cat $ENV_DIR/clusters.yaml | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
+  else
+    version='latest'
+  fi
+  echo $version
+}
+
+function customer_name() {
+  cat $ENV_DIR/clusters.yaml | yq r - customer.name
+}

@@ -1,0 +1,23 @@
+{{- $v := .Environment.Values -}}
+{{- $c := $v.charts -}}
+{{- $image := print "eu.gcr.io/otomi-cloud/otomi-stack:v" $v.cluster.otomiVersion -}}
+
+tasks:
+  certs-aws:
+    type: job
+    description: Decrypt files, rotate keys and re-encrypt
+    enabled: false
+    image: {{ $image }}
+    schedule: "0 0 1 * *" # first day every month at 00:00h
+    shell: bash
+    config:
+      GCLOUD_SERVICE_KEY:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      AZURE_TENANT_ID:
+      AZURE_CLIENT_ID:
+      AZURE_CLIENT_SECRET:
+    script: bin/crypt.sh rotate
+
+
+

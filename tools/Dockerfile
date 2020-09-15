@@ -23,16 +23,17 @@ ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 WORKDIR /
 
 RUN apt-get update -qq \
+  && apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -qqy --no-install-recommends
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -  
+RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
+  && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
   && apt-get install -qqy --no-install-recommends \
-  apt-transport-https \
   build-essential \
-  curl \
-  ca-certificates \
   coreutils \
+  containerd.io docker-ce docker-ce-cli \
   gettext \
   git \
   gnupg2 \
-  lsb-release \
   netcat \
   openssh-server \
   python3 \
@@ -43,6 +44,7 @@ RUN apt-get update -qq \
   nano \
   groff \
   jq \
+  yq \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/app
