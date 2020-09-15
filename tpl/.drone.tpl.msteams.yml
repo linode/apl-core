@@ -35,7 +35,7 @@ steps:
       CLOUD: __CLOUD
     commands:
       - chmod -R a+w env
-      - cd .. && bin/crypt.sh dec
+      - cd .. && bin/crypt.sh decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
@@ -45,7 +45,7 @@ steps:
     depends_on:
       - decrypt
     commands:
-      - cd .. && bin/test.sh
+      - cd .. && bin/otomi test
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
@@ -53,7 +53,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/sync.sh
+      - cd .. && bin/otomi deploy
     depends_on:
       - test
 
