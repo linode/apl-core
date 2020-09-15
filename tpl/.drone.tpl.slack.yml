@@ -28,7 +28,7 @@ steps:
         Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
 
   - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -37,7 +37,7 @@ steps:
       - cd .. && bin/otomi test
 
   - name: test
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -47,7 +47,7 @@ steps:
       - cd .. && bin/test.sh
 
   - name: deploy
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD

@@ -10,7 +10,7 @@ RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
 customer_name=$(customer_name)
 echo "customer_name: $customer_name"
 
-otomi_version=$(otomi_version)
+otomi_image_tag=$(otomi_image_tag)
 if [ "$RECEIVER" = "slack" ]; then
   key="url"
 else
@@ -27,7 +27,7 @@ for c in */; do
     CLUSTER=$(echo $c | sed -e 's/\///g')
     printf "${COLOR_LIGHT_PURPLE}Creating clusters/$CLOUD/$CLUSTER/.drone.yml${COLOR_NC}\n"
     cat $tpl | sed -e "s/__CLOUD/${CLOUD}/g" -e "s/__CLUSTER/${CLUSTER}/g" \
-      -e "s/__STACK_VERSION/${otomi_version}/g" -e "s|__WEBHOOK|${webhook}|g" \
+      -e "s/__IMAGE_TAG/${otomi_image_tag}/g" -e "s|__WEBHOOK|${webhook}|g" \
       -e "s/__CUSTOMER/${customer_name}/g" \
       >$CLUSTER/.drone.yml
   done
