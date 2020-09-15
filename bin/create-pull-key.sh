@@ -3,8 +3,8 @@
 # prerequites:
 # gcloud auth login
 set -e
-ENV_DIR=${ENV_DIR:-'./env'}
-. $ENV_DIR/clouds/$CLOUD/clusters/$CLUSTER/.env
+ENV_DIR=${ENV_DIR:-'./env/env'}
+. $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
 
 # expects $CUSTOMER to be set !!
 PROJECT="otomi-cloud"

@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 #####################################################################################
 ##
 ## NOTE:
@@ -66,17 +66,20 @@ function show_usage() {
   "
 }
 
-function check_docker() {
+function check_docker_running() {
   set +e
-  which docker &>/dev/null
+  docker --version &>/dev/null
   if [ "$?" = "0" ]; then
     has_docker=1
+  else
+    echo "Otomi CLI expect a running docker daemon!"
+    exit 1
   fi
   set -e
 }
 
 function evaluate_k8s_context() {
-  local env_path="${ENV_DIR}/clouds/${CLOUD}/${CLUSTER}/.env"
+  local env_path="${ENV_DIR}/env/clouds/${CLOUD}/${CLUSTER}/.env"
   [ ! -f $env_path ] && echo "Error: The file '${env_path}' does not exist" && exit 1
   source $env_path
   [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_path" && exit 1
@@ -178,109 +181,90 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env@'"${ENV_DIR}"'@g'
-    break
+    drun helmfile -e ${CLOUD}-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env/env@'"${ENV_DIR}"'@g'
     ;;
   hf)
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER $@ | grep -v skipping | grep -v basePath=
-    break
     ;;
   aws)
     check_kube_context=0
     drun aws $@
-    break
     ;;
   azure)
     check_kube_context=0
     drun aws $@
-    break
     ;;
   gcloud)
     check_kube_context=0
     drun aws $@
-    break
     ;;
   eksctl)
     check_kube_context=0
     drun aws $@
-    break
     ;;
   apply)
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
-    break
     ;;
   diff)
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
-    break
     ;;
   sync)
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER $@ sync --skip-deps | grep -v skipping | grep -v basePath=
-    break
     ;;
   template)
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
     drun helmfile -e ${CLOUD}-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
-    break
     ;;
   bootstrap)
     check_kube_context=0
     validate_cluster_env
     drun bin/bootstrap.sh 1
-    break
     ;;
   deploy)
     validate_cluster_env
     drun bin/deploy.sh | grep -v skipping | grep -v basePath=
-    break
     ;;
   encrypt)
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh encrypt
-    break
     ;;
   decrypt)
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh decrypt
-    break
     ;;
   rotate-keys)
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh rotate
-    break
     ;;
   bash)
     check_kube_context=0
     validate_cluster_env
     docker_terminal_params='-it'
     drun bash
-    break
     ;;
   kubectl)
     drun kubectl $@
-    break
     ;;
   switch)
     k config use-context $K8S_CONTEXT
-    break
     ;;
   x)
     validate_cluster_env
     check_kube_context=0
     drun $@
-    break
     ;;
   commit)
     check_kube_context=0
@@ -289,7 +273,6 @@ function execute() {
     evaluate_secrets
     drun bin/pre-commit.sh
     git add . && git commit -m 'Manual commit'
-    break
     ;;
   pull)
     check_kube_context=0
@@ -298,7 +281,6 @@ function execute() {
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/crypt.sh decrypt
-    break
     ;;
   *)
     show_usage
@@ -336,5 +318,5 @@ function set_env_and_stack_dir() {
 set_env_and_stack_dir
 set_otomi_image
 set_helm_config
-check_docker
+check_docker_running
 execute $command $@
