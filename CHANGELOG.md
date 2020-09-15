@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.4](https://github.com/redkubes/otomi-stack/compare/v0.11.3...v0.11.4) (2020-09-15)
+
+
+### Bug Fixes
+
+* back to env [ci skip] ([940c5a9](https://github.com/redkubes/otomi-stack/commit/940c5a98ba0fde67846ac45ec8c1f473cb26bd65))
+
 ### [0.11.3](https://github.com/redkubes/otomi-stack/compare/v0.11.2...v0.11.3) (2020-09-15)
 
 
