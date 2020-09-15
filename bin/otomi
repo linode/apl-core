@@ -165,6 +165,7 @@ function drun() {
   if [[ $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
     docker run $docker_terminal_params --rm \
       $tmp_volume \
+      $stack_volume \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
