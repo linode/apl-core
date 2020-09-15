@@ -1,30 +1,26 @@
 #!/usr/bin/env bash
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && echo "Sourcing env..." && SOURCING=true
-set -ex
-
-install_demo_files=$1
+shopt -s expand_aliases
+. bin/aliases
+set -e
 
 # source env
 ENV_DIR=${ENV_DIR:-./env}
-STACK_VERSION=${STACK_VERSION:-latest}
+otomi_version=$(otomi_version)
 alias otomi="${ENV_DIR}/bin/otomi"
 
 if [ ! $SOURCING ]; then
+  skip_demo_files=$1
   cid=''
   cmd_cp='cp -r'
   cp_path=''
+  [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
   # install CLI
   otomi_path="${ENV_DIR}/bin/"
   mkdir -p $otomi_path &>/dev/null
-  if [ -f "$ENV_DIR/env.ini" ]; then
-    source $ENV_DIR/env.ini
-    # we now always lock on env.ini version and want the CLUSTER env var
-    [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
-    eval "STACK_VERSION=\$${CLUSTER}Version"
-  fi
-  img="eu.gcr.io/otomi-cloud/otomi-stack:${STACK_VERSION}"
-  echo "Installing Otomi artifacts from ${img}"
+  img="eu.gcr.io/otomi-cloud/otomi-stack:v${otomi_version}"
+  echo "Installing artifacts from ${img}"
   set +e
   docker info &>/dev/null
   if [ "$?" == "0" ]; then
@@ -36,18 +32,20 @@ if [ ! $SOURCING ]; then
   $cmd_cp ${cp_path}/home/app/stack/bin/aliases $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/bin/otomi $otomi_path
   $cmd_cp ${cp_path}/home/app/stack/.values/.vscode $ENV_DIR/
-  for f in '.drone.tpl.yml' '.gitattributes' '.sops.yaml' 'env.ini' 'README.md'; do
-    [ ! -f $ENV_DIR/$f ] && cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
+  for f in '.drone.tpl.slack.yml' '.drone.tpl.msteams.yml' '.gitattributes' '.sops.yaml' 'README.md'; do
+    [ ! -f $ENV_DIR/$f ] && $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
   done
   for f in '.gitignore' '.prettierrc.yml'; do
     $cmd_cp ${cp_path}/home/app/stack/.values/$f $ENV_DIR/
   done
-  if [ "$install_demo_files" != "" ]; then
+  if [ "$skip_demo_files" != "1" ]; then
     echo "Installing demo files"
     $cmd_cp ${cp_path}/home/app/stack/.demo/* $ENV_DIR/
   fi
   [ ! -z "$cid" ] && docker rm ${cid} >/dev/null
-  echo "You can now use otomi CLI"
-  echo "Start by sourcing aliases:"
-  echo ". bin/aliases"
+  if [ ! $has_otomi ]; then
+    echo "You can now use otomi CLI"
+    echo "Start by sourcing aliases:"
+    echo ". bin/aliases"
+  fi
 fi

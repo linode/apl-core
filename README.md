@@ -41,7 +41,7 @@ gcloud auth configure-docker
 If you don't yet have a values repo, you can start one in a new folder like this:
 
 ```bash
-docker run -e ENV_DIR=$PWD -v $PWD:$PWD otomi/stack:latest bash -c 'bin/bootstrap.sh 1'
+docker run -e ENV_DIR=$PWD -v $PWD:$PWD otomi/stack:latest bin/bootstrap.sh
 ```
 
 This will also install the needed artifacts (such as the Otomi CLI) and demo values.

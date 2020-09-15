@@ -1,7 +1,13 @@
 toolsVersion: 1.3.5
-provider: ""
-adminDomain: ""
-hasCloudLB: false
+cluster:
+  provider: ""
+  name: ""
+  ingress:
+    allowedCidrs: []
+    tags: ""
+    disableHttp2: false
+otomi:    
+  hasCloudLB: false
 certStage: staging
 namespace: ""
 resourceQuota:
@@ -9,18 +15,8 @@ resourceQuota:
   # persistentvolumeclaims: "1"
   services.loadbalancers: "0"
   # resourcequotas: "1"  
-ingress:
-  allowedCidrs: []
-  certArns: []
-  tags: ""
-  disableHttp2: false
 services: []
 proxies: []
-region: ""
-authAnnotations: {}
-ingressAnnotations: {}
-knative:
-  enabled: true
 limitRange:
   default:
     cpu: 100m
