@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.7](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.7) (2020-09-15)
+
+
+### Bug Fixes
+
+* failing otomi version check for new users [ci skip] ([8db5dc4](https://github.com/redkubes/otomi-stack/commit/8db5dc433f37c44c8711d8c9136ef73588f750b7))
+* image tag ([c505526](https://github.com/redkubes/otomi-stack/commit/c505526b3a7ed9c061ab37ef19164d2911c602b6))
+* no more need for docker check in bootstrap [ci skip] ([d2cb322](https://github.com/redkubes/otomi-stack/commit/d2cb3224d8b782a1380c00b70e8cd72e2dd8c1e4))
+* put back functions in aliases [ci skip] ([054ebf8](https://github.com/redkubes/otomi-stack/commit/054ebf86dd51146d5c7e143bef0ca02a7aa7abc2))
+* put back stack_volume to otomi drun [ci skip] ([e271ce8](https://github.com/redkubes/otomi-stack/commit/e271ce8a5cde7716d5da6eeb70a547f83c61ce55))
+
+
+### Others
+
+* **release:** 0.11.6 ([92c9130](https://github.com/redkubes/otomi-stack/commit/92c9130620664a174c585e0e6d804aeec96e9033))
+
 ### [0.11.6](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.6) (2020-09-15)
 
 
