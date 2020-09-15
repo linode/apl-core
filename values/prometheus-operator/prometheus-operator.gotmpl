@@ -28,6 +28,8 @@ kubeProxy:
   enabled: false
 {{- end }}
 prometheusOperator:
+  configReloaderCpu: 50m
+  configReloaderMemory: 25Mi
   resources:
     limits:
       cpu: 100m
@@ -35,7 +37,6 @@ prometheusOperator:
     requests:
       cpu: 100m
       memory: 128Mi
-  configReloaderCpu: 100m
   admissionWebhooks:
     enabled: false
   tlsProxy:

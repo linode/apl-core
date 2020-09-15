@@ -29,10 +29,10 @@ controller:
   # set fixed allocation with limits same as requests
   resources:
     limits:
-        cpu: 500m
+        cpu: 2000m
         memory: 512Mi
     requests:
-        cpu: 500m
+        cpu: 200m
         memory: 512Mi
   {{- end }}
   podAnnotations:
