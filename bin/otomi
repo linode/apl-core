@@ -17,6 +17,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
 . bin/aliases
+
 script=$0
 command=$1
 
@@ -45,7 +46,6 @@ has_docker=0
 dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-verbose_env
 customer=$(customer_name)
 cmd_image=''
 docker_terminal_params='-t'
@@ -111,7 +111,7 @@ function validate_k8s_context() {
 }
 
 function set_otomi_image() {
-  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:v$(otomi_image_tag)"
+  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
   return 0
 }
 
@@ -208,31 +208,40 @@ function execute() {
     set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER $@ | grep -v skipping | grep -v basePath=
     ;;
-  aws)
-    check_kube_context=0
-    drun aws $@
-    ;;
-  azure)
-    check_kube_context=0
-    drun aws $@
-    ;;
-  gcloud)
-    check_kube_context=0
-    drun aws $@
-    ;;
-  eksctl)
-    check_kube_context=0
-    drun aws $@
-    ;;
   apply)
     validate_cluster_env
     set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER $@ apply --skip-deps | grep -v skipping | grep -v basePath=
     ;;
+  bash)
+    check_kube_context=0
+    validate_cluster_env
+    docker_terminal_params='-it'
+    drun bash
+    ;;
+  bootstrap)
+    check_kube_context=0
+    validate_cluster_env
+    drun bin/bootstrap.sh 1
+    ;;
+  decrypt)
+    check_kube_context=0
+    evaluate_secrets
+    drun bin/crypt.sh decrypt
+    ;;
+  deploy)
+    validate_cluster_env
+    drun bin/deploy.sh
+    ;;
   diff)
     validate_cluster_env
     # set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
+    ;;
+  encrypt)
+    check_kube_context=0
+    evaluate_secrets
+    drun bin/crypt.sh encrypt
     ;;
   sync)
     validate_cluster_env
@@ -245,44 +254,15 @@ function execute() {
     set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
     ;;
-  bootstrap)
-    check_kube_context=0
-    validate_cluster_env
-    drun bin/bootstrap.sh 1
-    ;;
-  deploy)
-    validate_cluster_env
-    drun bin/deploy.sh
-    ;;
-  encrypt)
-    check_kube_context=0
-    evaluate_secrets
-    drun bin/crypt.sh encrypt
-    ;;
-  decrypt)
-    check_kube_context=0
-    evaluate_secrets
-    drun bin/crypt.sh decrypt
-    ;;
   rotate-keys)
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh rotate
     ;;
-  bash)
-    check_kube_context=0
-    validate_cluster_env
-    docker_terminal_params='-it'
-    drun bash
-    ;;
-  kubectl)
-    drun kubectl $@
-    ;;
   switch)
     k config use-context $K8S_CONTEXT
     ;;
   x)
-    validate_cluster_env
     check_kube_context=0
     drun $@
     ;;
