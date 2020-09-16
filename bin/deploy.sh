@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 . bin/aliases
 set -e
+set -o pipefail
 
 # install some stuff that we never want to end up as charts
 otomi template -f helmfile.tpl/helmfile-init.yaml | otomi x kubectl apply -f -
