@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.8](https://github.com/redkubes/otomi-stack/compare/v0.11.7...v0.11.8) (2020-09-16)
+
+
+### Features
+
+* test if helmfile can template provided values ([2ce8b9b](https://github.com/redkubes/otomi-stack/commit/2ce8b9b8f668117fae34c4345bb41f5dc3b05996))
+
+
+### Bug Fixes
+
+* add team values to environments ([8568204](https://github.com/redkubes/otomi-stack/commit/8568204231009b5ddf3914bd9ac825c1d6340882))
+
 ### [0.11.7](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.7) (2020-09-15)
 
 
