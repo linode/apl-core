@@ -27,15 +27,19 @@ steps:
       template: >
         Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
 
+  - name: prepare-values
+    image: alpine/git
+    commands:
+      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
+      - chmod -R a+w env
+
   - name: decrypt
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
-    # The workspace is mounted as docker volume and is owned by root. See: https://discourse.drone.io/t/cant-run-tests-permissions-denied/4682/2
-    user: 0
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
     commands:
       - chmod -R a+w env
       - cd .. && bin/crypt.sh decrypt
@@ -56,7 +60,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/deploy.sh
     depends_on:
       - test
 

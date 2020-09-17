@@ -61,8 +61,6 @@ function set_helm_config() {
 function show_usage() {
   echo "otomi usage:
     apply      apply k8s resources (use labels like '-l name=prometheus-operator')
-    aws        run aws cli
-    az         run azure cli
     bash       run interactive bash
     bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit     wrapper for encrypt > generate pipelines > git commit changed files
@@ -71,7 +69,6 @@ function show_usage() {
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
     eksctl     run eksctl cli
     encrypt    encrypt values in all *.secrets.yaml files
-    gcloud     run gcloud cli
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
     pull       wrapper for git pull > decrypt
@@ -139,6 +136,14 @@ function drun() {
   local tmp_volume=''
   local docker_vars=''
   local stack_volume=''
+  local socket_volume=''
+
+  if [ "$CI" != "" ]; then
+    echo "Running in CI: $CI"
+    check_kube_context=0
+  else
+    socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
+  fi
 
   # execute any kubectl command to refresh access token
   if [ $check_kube_context -eq 1 ]; then
@@ -148,7 +153,7 @@ function drun() {
   fi
 
   if [ $MOUNT_TMP_DIR -eq 1 ]; then
-    tmp_volume=" -v /tmp:/tmp"
+    tmp_volume="-v /tmp:/tmp"
   fi
 
   if [ $mount_stack_dir -eq 1 ]; then
@@ -162,11 +167,12 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [[ $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
+  if [[ ("$CI" == "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
+    echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $tmp_volume \
       $stack_volume \
-      -v /var/run/docker.sock:/var/run/docker.sock \
+      $socket_volume \
       -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
@@ -186,6 +192,7 @@ function drun() {
       $cmd_image \
       $command
   else
+    echo "Running native version of command: $command"
     $command
   fi
 }
@@ -260,7 +267,7 @@ function execute() {
     drun bin/crypt.sh rotate
     ;;
   switch)
-    kubectl config use-context $K8S_CONTEXT
+    otomi x kubectl config use-context $K8S_CONTEXT
     ;;
   x)
     check_kube_context=0
