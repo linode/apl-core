@@ -17,6 +17,7 @@ function crypt() {
   else
     find . -type f -name '*.secrets.yaml.enc' -exec sh -c 'sops --input-type=yaml --output-type yaml -d $1 > ${1%.enc}' sh {} \;
   fi
+  return $?
   cd - >/dev/null
 }
 

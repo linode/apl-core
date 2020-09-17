@@ -82,7 +82,7 @@ resources:
       namespace: {{ $ns }}
     type: kubernetes.io/dockerconfigjson
     data:
-      .dockerconfigjson: {{ $v.pullSecret }}
+      .dockerconfigjson: {{ $v.otomi.pullSecret }}
   - apiVersion: v1
     kind: ServiceAccount
     metadata:

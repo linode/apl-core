@@ -72,7 +72,7 @@ spec:
 {{ toYaml .Values.kubernetes.resources | indent 10 }}
 {{- if not .Values.dind.enabled }}
         securityContext:
-          privileged: true
+          privileged: true  
         volumeMounts:
           - mountPath: /var/run/docker.sock
             name: docker-socket
