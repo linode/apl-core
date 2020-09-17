@@ -204,7 +204,7 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env/env@'"${ENV_DIR}"'@g'
+    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -v skipping | grep -v basePath= | sed -e 's@../env@'"${ENV_DIR}"'@g'
     ;;
   test)
     validate_cluster_env
