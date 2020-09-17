@@ -22,17 +22,18 @@ ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
 WORKDIR /
 
-RUN apt-get update -qq && \
-  apt-get install -qqy --no-install-recommends \
-  apt-transport-https \
+RUN apt-get update -qq \
+  && apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -qqy --no-install-recommends
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -  
+RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
+  && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+  && apt-get install -qqy --no-install-recommends \
   build-essential \
-  curl \
-  ca-certificates \
   coreutils \
+  containerd.io docker-ce docker-ce-cli \
   gettext \
   git \
   gnupg2 \
-  lsb-release \
   netcat \
   openssh-server \
   python3 \
@@ -42,7 +43,9 @@ RUN apt-get update -qq && \
   vim \
   nano \
   groff \
-  jq
+  jq \
+  yq \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/app
 RUN groupadd -r app &&\
@@ -56,7 +59,7 @@ ENV PATH $PATH:$APP_HOME
 # azure
 RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null
 RUN AZ_REPO=$(lsb_release -cs) && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list
-RUN apt-get update -qq &&  apt-get install -qqy azure-cli && rm -rf /var/lib/apt/lists/* 
+RUN apt-get update -qq &&  apt-get install -qqy azure-cli --no-install-recommends && rm -rf /var/lib/apt/lists/* 
 
 # kubectl
 ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl

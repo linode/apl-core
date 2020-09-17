@@ -54,7 +54,7 @@ otomi:
   hasCloudLB: false # if true expects external LoadBalancer to terminate all incoming traffic (see azure for AppGW settings)
   isManaged: true # masters are managed and not under control
   isMultitenant: true # team-$name namespaces, each with logging and alerting, false: all goes to team-admin ns
-  isRedkubesMonitored: true # RedKubes SLA? Then we need to get alerts too
+  isRedkubesMonitored: true # Monitored by RedKubes? Then we need to get alerts.
   teamPrefix: team- # prefix used for team domain URLs
 ```
 

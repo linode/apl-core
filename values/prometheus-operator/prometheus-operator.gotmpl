@@ -8,7 +8,6 @@
 {{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
 {{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
-{{- $isRedkubesMonitored := ($v.cluster | get "isRedkubesMonitored" false) }}
 {{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v | toString }}
 nameOverride: po
 fullnameOverride: po
@@ -63,16 +62,12 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
-    # podMetadata:
-    #   annotations:
-    #     sidecar.istio.io/inject: "false"
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
-    # logFormat: logfmt # TODO: remove if in master: https://github.com/helm/charts/pull/15330
   config:
     {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
     global:
-      slack_api_url: {{ $isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
+      slack_api_url: {{ $v.otomi.isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
     route:
       receiver: default
       group_by: [alertname]
@@ -90,16 +85,12 @@ alertmanager:
             alertname: KubeAPILatencyHigh
           receiver: "null"
         {{- end }}
-        # - match:
-        #     labels:
-        #       otomistack: 'true'
-        #   receiver: default
         # redkubes monitoring: only alerts that are for teams AND non-critical should go to the configured receiver
         # > so NO config here for admins
         - match:
             severity: critical
           receiver: critical
-        {{- if $isRedkubesMonitored }}
+        {{- if $v.otomi.isRedkubesMonitored }}
           continue: true
         - match:
             severity: critical
@@ -108,7 +99,7 @@ alertmanager:
     receivers:
       - name: "null"
       {{- $channel := $p.alertmanager | get "slack.channel" "mon-otomi" }}
-      {{- if or ($v.cluster | getOrNil ".isRedkubesMonitored") $hasSlack }}
+      {{- if or $v.otomi.isRedkubesMonitored $hasSlack }}
       - name: default
         slack_configs:
           - channel: "#{{ $channel }}"
@@ -127,7 +118,7 @@ alertmanager:
           - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
             send_resolved: true
       {{- end }}
-      {{- if $isRedkubesMonitored }}
+      {{- if not $v.otomi.isRedkubesMonitored }}
       - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
