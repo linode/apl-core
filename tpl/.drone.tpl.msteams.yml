@@ -52,7 +52,7 @@ steps:
     depends_on:
       - decrypt
     commands:
-      - cd .. && bin/deploy.sh
+      - cd .. && bin/test.sh
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
@@ -60,7 +60,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/deploy.sh
     depends_on:
       - test
 
