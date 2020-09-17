@@ -1,12 +1,9 @@
-function aw() { aws $@; }
-function gc() { gcloud $@; }
-function h() { helm $@; }
-function hk() { helm delete $@; }
-function hf_() { helmfile $@; }
-
 alias otomi="bin/otomi"
 alias d="docker"
-alias k="kubectl"
+alias oaws="otomi x aws"
+alias oaz="otomi x az"
+alias og="otomi x gcloud"
+alias ok="otomi x kubectl"
 alias ksk="k -n kube-system"
 alias ki="k -n ingress"
 alias kh="k -n harbor"
@@ -19,10 +16,23 @@ alias kta="k -n team-admin"
 alias ka="k --all-namespaces=true"
 alias kaa="ka get po,rs,job,deploy,ds,statefulset,svc"
 alias kap="ka get po"
-alias kdel="k delete"
 alias kcv="k config view"
 alias kce="$EDITOR ~/.kube/config"
 alias kcg="k config current-context"
 alias kcu="k config use-context"
 alias kp="k proxy &"
-alias kp="killall kubectl"
+
+function otomi_image_tag() {
+  local version
+  local clusters_file="$ENV_DIR/env/clusters.yaml"
+  if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
+    version="v$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)"
+  else
+    version='latest'
+  fi
+  echo $version
+}
+
+function customer_name() {
+  cat $ENV_DIR/env/settings.yaml | yq r - customer.name
+}
