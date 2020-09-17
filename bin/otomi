@@ -102,7 +102,7 @@ function evaluate_k8s_context() {
 }
 
 function validate_k8s_context() {
-  local context=$(k config current-context)
+  local context=$(kubectl config current-context)
   if [[ "$K8S_CONTEXT" != "$context" ]]; then
     echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
     echo "Please run 'otomi switch' to switch to target"
@@ -260,7 +260,7 @@ function execute() {
     drun bin/crypt.sh rotate
     ;;
   switch)
-    k config use-context $K8S_CONTEXT
+    kubectl config use-context $K8S_CONTEXT
     ;;
   x)
     check_kube_context=0
