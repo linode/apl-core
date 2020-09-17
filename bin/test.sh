@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-shopt -s expand_aliases
-. bin/aliases
+helmfile -e $CLOUD-$CLUSTER template -f helmfile.tpl/helmfile-init.yaml
+helmfile -e $CLOUD-$CLUSTER template
+helmfile -e $CLOUD-$CLUSTER diff --skip-deps
 
-otomi template -f helmfile.tpl/helmfile-init.yaml
-otomi template
-
-otomi diff

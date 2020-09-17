@@ -32,8 +32,11 @@ steps:
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
+    # The workspace is mounted as docker volume and is owned by root. See: https://discourse.drone.io/t/cant-run-tests-permissions-denied/4682/2
+    user: 0
     commands:
-      - ls -l && whoami
       - chmod -R a+w env
       - cd .. && bin/crypt.sh decrypt
 
