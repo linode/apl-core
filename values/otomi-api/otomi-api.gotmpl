@@ -42,7 +42,6 @@ core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   services: {{- toYaml $v.services | nindent 4 }}
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
-  priorityClassName: "system-cluster-critical"
 
 tools:
   image:

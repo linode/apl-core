@@ -40,6 +40,13 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: po-prometheus
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi
   master:
     priorityClassName: "system-cluster-critical"
   slave:

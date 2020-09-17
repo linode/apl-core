@@ -21,7 +21,7 @@ config:
   clientSecret: {{ $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
-replicaCount: 2
+replicas: 2
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
