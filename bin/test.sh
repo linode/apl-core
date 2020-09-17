@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-helmfile -e $CLOUD-$CLUSTER template -f helmfile.tpl/helmfile-init.yaml
-helmfile -e $CLOUD-$CLUSTER template
-helmfile -e $CLOUD-$CLUSTER diff --skip-deps
+hf="helmfile -e $CLOUD-$CLUSTER"
 
+$hf template -f helmfile.tpl/helmfile-init.yaml
+$hf template
+$hf diff --skip-deps
