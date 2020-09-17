@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.9](https://github.com/redkubes/otomi-stack/compare/v0.11.8...v0.11.9) (2020-09-17)
+
+
+### Features
+
+* enrich drone slack notification ([f8758fc](https://github.com/redkubes/otomi-stack/commit/f8758fc87120095712aeb0345db07ca7673eb863))
+
+
+### Bug Fixes
+
+* drone pipeline ([a7e07d7](https://github.com/redkubes/otomi-stack/commit/a7e07d70e01e288f11ddcaf893aca527e0ec5bf6))
+* exist if any command in pipe fails ([5c5aeef](https://github.com/redkubes/otomi-stack/commit/5c5aeef87bc2174fb0199a43df11bea422e71f38))
+* exit with non-zero on test.sh failure ([d99e37b](https://github.com/redkubes/otomi-stack/commit/d99e37b1c4e7aeac144f13b744fffb51ac975613))
+* image tag for drone pipeline ([c9c71ec](https://github.com/redkubes/otomi-stack/commit/c9c71eccd3a02fa8de3e5898b4b50918f6c393c7))
+* pipeline regression [ci skip] ([a3713da](https://github.com/redkubes/otomi-stack/commit/a3713dae41264b5aaf6442f2b97021af6b24d1c9))
+* pipeline regression [ci skip] ([90a9ab4](https://github.com/redkubes/otomi-stack/commit/90a9ab4519ab0ee3aaf2781c7479b63f9496304a))
+* pullSecret and team secrets ([173d7eb](https://github.com/redkubes/otomi-stack/commit/173d7eb9fb74abfccea3e5221f7f475640a21598))
+* read otomi version from clusters.yaml ([bd1724f](https://github.com/redkubes/otomi-stack/commit/bd1724f1c5e63c2e1d39c53647541cc90b274e11))
+* regression deploy [ci skip] ([ccdc0f7](https://github.com/redkubes/otomi-stack/commit/ccdc0f7ffc6224384434a8b5a4d03bb3be1005d4))
+* regression deploy [ci skip] ([c7a6e62](https://github.com/redkubes/otomi-stack/commit/c7a6e62085b6387bc5d1717a6b62758dff382e82))
+* regression, sorry ([208027c](https://github.com/redkubes/otomi-stack/commit/208027cb2f750e306e26d4bff9c18c9f721cccdc))
+* remove unnecessary ownership change ([bd5b8e9](https://github.com/redkubes/otomi-stack/commit/bd5b8e9708148065e5b0104f44de887e5c3e3924))
+* removed refs to otomi in bin scripts [ci skip] ([49e51e5](https://github.com/redkubes/otomi-stack/commit/49e51e53b1f1354927760d8e1ea38ee1a0fdf9a0))
+
 ### [0.11.8](https://github.com/redkubes/otomi-stack/compare/v0.11.7...v0.11.8) (2020-09-16)
 
 
