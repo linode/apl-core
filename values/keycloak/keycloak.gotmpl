@@ -1,6 +1,15 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
+init:
+  resources:
+    limits:
+      cpu: "10m"
+      memory: "32Mi"
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+
 keycloak:
   username: {{ $k | get "admin.username" "admin" }}
   password: {{ $k | get "admin.password" "bladibla" }}
@@ -9,6 +18,15 @@ keycloak:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}
     deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
+  priorityClassName: "system-cluster-critical"
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 1Gi
+  replicas: 2
 
 postgresql:
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
@@ -22,6 +40,11 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: po-prometheus
+  master:
+    priorityClassName: "system-cluster-critical"
+  slave:
+    priorityClassName: "system-cluster-critical"
+
 prometheus:
   operator:
     enabled: true
@@ -34,4 +57,3 @@ prometheus:
       
 test:
   enabled: false
-

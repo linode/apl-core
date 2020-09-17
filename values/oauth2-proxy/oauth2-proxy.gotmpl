@@ -21,6 +21,19 @@ config:
   clientSecret: {{ $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
+replicaCount: 2
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+priorityClassName: "system-cluster-critical"
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 32Mi
+
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}

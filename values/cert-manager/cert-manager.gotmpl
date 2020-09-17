@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v.charts "cert-manager" }}
+global:
+  priorityClassName: "system-cluster-critical"
 prometheus:
   servicemonitor:
     enabled: true
@@ -10,3 +12,19 @@ podAnnotations:
   sidecar.istio.io/inject: "false"  
 
 installCRDs: true
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 200m
+    memory: 512Mi
+
+webhook:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 256Mi

@@ -1,8 +1,12 @@
 {{- $v := .Environment.Values }}
 clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
-# autoDiscoverAwsRegion: false
 autoDiscoverAwsVpcID: true
-# autoDiscoverAwsVpcID: false
-# awsVpcID: {{ $v.cluster.vpcID }}
-# awsRegion: {{ $v.cluster.region }}
+priorityClassName: "system-cluster-critical"
+resources:
+  requests:
+    cpu: 500m
+    memory: 64Mi
+  limits:
+    cpu: 1
+    memory: 256Mi

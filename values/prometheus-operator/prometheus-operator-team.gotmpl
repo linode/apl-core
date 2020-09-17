@@ -11,9 +11,25 @@ prometheusOperator:
   enabled: false
   manageCrds: false
 prometheus:
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 500m
   additionalServiceMonitors: null
   prometheusSpec:
     enableAdminAPI: false
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
+
+alertmanager:
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 500m

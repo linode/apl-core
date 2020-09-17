@@ -5,6 +5,15 @@
 
 replicaCount: 1
 
+priorityClassName: "system-cluster-critical"
+resources:
+  limits:
+    cpu: 300m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-api
@@ -33,9 +42,16 @@ core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   services: {{- toYaml $v.services | nindent 4 }}
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
+  priorityClassName: "system-cluster-critical"
 
 tools:
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
-  
+  resources:
+    limits:
+      cpu: 400m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi

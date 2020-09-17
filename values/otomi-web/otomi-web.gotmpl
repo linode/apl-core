@@ -4,6 +4,14 @@
 
 replicaCount: 2
 
+resources:
+  limits:
+    cpu: 400m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-web

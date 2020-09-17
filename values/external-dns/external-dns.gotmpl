@@ -46,13 +46,15 @@ podSecurityContext:
   fsGroup: 1001
   runAsUser: 1001
 
-resources: {}
-#  limits:
-#    cpu: 50m
-#    memory: 50Mi
-#  requests:
-#    memory: 50Mi
-#    cpu: 10m
+priorityClassName: "system-cluster-critical"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    memory: 64Mi
+    cpu: 10m
 
 metrics:
   enabled: true
