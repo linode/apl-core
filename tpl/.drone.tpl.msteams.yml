@@ -41,6 +41,8 @@ steps:
         from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+    depends_on:
+      - prepare-values
     commands:
       - cd .. && bin/crypt.sh decrypt
 
