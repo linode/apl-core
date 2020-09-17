@@ -4,6 +4,6 @@ ENV APP_HOME=/home/app/stack
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-COPY --chown=app:app . . 
+COPY . .
 
 CMD ["bin/deploy.sh"]
