@@ -24,20 +24,32 @@ steps:
       webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
+      # template: http://plugins.drone.io/drone-plugins/drone-slack/
       template: >
         Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
 
+        Drone: <{{ build.link }}>
+
+  - name: prepare-values
+    image: alpine/git
+    commands:
+      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
+      - chmod -R a+w env
+
   - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+    depends_on:
+      - prepare-values
     commands:
-      - chmod -R a+w env
-      - cd .. && bin/otomi test
+      - cd .. && bin/crypt.sh decrypt
 
   - name: test
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -47,12 +59,12 @@ steps:
       - cd .. && bin/test.sh
 
   - name: deploy
-    image: eu.gcr.io/otomi-cloud/otomi-stack:v__IMAGE_TAG
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/deploy.sh
     depends_on:
       - test
 
@@ -73,6 +85,8 @@ steps:
         {{else}}
           Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
         {{/success}}
+
+        Drone: <{{ build.link }}>
     when:
       status:
         - success
