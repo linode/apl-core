@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+
 ENV_DIR=${ENV_DIR:-'./env'}
 . $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
 
