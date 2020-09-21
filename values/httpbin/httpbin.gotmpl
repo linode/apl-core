@@ -1,0 +1,17 @@
+{{- $values := .Environment.Values }}
+{{- $httpbin := $values.charts | get "httpbin" dict }}
+
+nameOverride: httpbin
+fullnameOverride: httpbin
+
+resources:
+{{- if (hasKey $httpbin "resources") }}
+  {{- $httpbin.resources | toYaml | nindent 2 }}
+{{- else }}
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 50m
+    memory: 64Mi
+{{ end }}
