@@ -115,8 +115,10 @@ function set_otomi_image() {
 
 evaluate_secrets() {
   local secrets_path="$ENV_DIR/.secrets"
-  [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
-  source $secrets_path
+  if [ "$CI" == "" ]; then
+    [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
+    source $secrets_path
+  fi
   if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
     echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$GOOGLE_APPLICATION_CREDENTIALS
   fi
