@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values -}}
-{{- $l :=  $v.charts.loki }}
+{{- $l := $v.charts | get "loki" dict }}
 {{- $teamNames := "" }}
 {{- range $name, $config := $v.teamConfig.teams }}
 {{- $teamNames = print "%s%s" $teamNames $name }}
