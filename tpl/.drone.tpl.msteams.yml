@@ -28,6 +28,11 @@ steps:
         text: Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
         themeColor: 009EEA
 
+  - name: prepare-env
+    image: alpine:latest
+    commands:
+      - chmod -R a+w env
+
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
@@ -36,15 +41,9 @@ steps:
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
     depends_on:
-      - prepare-values
+      - prepare-env
     commands:
       - cd .. && bin/otomi test
-
-  - name: prepare-values
-    image: alpine/git
-    commands:
-      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
-      - chmod -R a+w env
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
