@@ -39,6 +39,7 @@ VERBOSE=${VERBOSE:-"0"}
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
 [ "$CI" != "" ] && GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+export GOOGLE_APPLICATION_CREDENTIALS
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
