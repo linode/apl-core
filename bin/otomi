@@ -38,6 +38,7 @@ VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
+[ "$CI" != "" ] && GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -114,8 +115,8 @@ function set_otomi_image() {
 }
 
 evaluate_secrets() {
-  local secrets_path="$ENV_DIR/.secrets"
   if [ "$CI" == "" ]; then
+    local secrets_path="$ENV_DIR/.secrets"
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
     source $secrets_path
   fi
