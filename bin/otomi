@@ -74,7 +74,7 @@ function show_usage() {
     pull       wrapper for git pull > decrypt
     template   export k8s resources (use labels like '-l name=prometheus-operator')
     values     show helmfile values for CLOUD and CLUSTER
-    lint       run charts linting using kubeval
+    lint       run charts linting using kubeval against k8s version (otomi lint 1.16.0)
     x          execute command in container
   "
 }

@@ -19,8 +19,6 @@ $hf --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
 
 for version in "${k8s_versions[@]}"; do
     echo "Validating Otomi Stack against Kubernetes Version: $version"
-    (
-        kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $version
-    ) || exitcode=1
+    kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $version || exitcode=1
 done
 clean_exit
