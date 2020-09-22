@@ -10,7 +10,7 @@ global:
 
 weave-scope-frontend:
   resources:
-{{- if (hasKey $weaveScope."weave-scope-frontend" "resources") }}
+{{- if (hasKey $weaveScope "resources.frontend") }}
   {{- $weaveScope.resources.frontend | toYaml | nindent 4 }}
 {{- else }}
     requests:
@@ -23,7 +23,7 @@ weave-scope-frontend:
 
 weave-scope-agent:
   resources:
-{{- if (hasKey $weaveScope "weave-scope-agent.resources") }}
+{{- if (hasKey $weaveScope "resources.agent") }}
   {{- $weaveScope.resources.agent | toYaml | nindent 4 }}
 {{- else }}
     requests:
@@ -36,7 +36,7 @@ weave-scope-agent:
 
 weave-scope-cluster-agent:
   resources:
-{{- if (hasKey $weaveScope."weave-scope-cluster-agent" "resources") }}
+{{- if (hasKey $weaveScope "resources.clusterAgent") }}
   {{- $weaveScope.resources.clusterAgent | toYaml | nindent 4 }}
 {{- else }}
     requests:
