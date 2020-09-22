@@ -11,7 +11,7 @@ global:
 weave-scope-frontend:
   resources:
 {{- if (hasKey $weaveScope."weave-scope-frontend" "resources") }}
-  {{- $weaveScope.weave-scope-frontend.resources | toYaml | nindent 4 }}
+  {{- $weaveScope.resources.frontend | toYaml | nindent 4 }}
 {{- else }}
     requests:
       cpu: 500m
@@ -24,7 +24,7 @@ weave-scope-frontend:
 weave-scope-agent:
   resources:
 {{- if (hasKey $weaveScope "weave-scope-agent.resources") }}
-  {{- $weaveScope.weave-scope-agent.resources | toYaml | nindent 4 }}
+  {{- $weaveScope.resources.agent | toYaml | nindent 4 }}
 {{- else }}
     requests:
       cpu: 500m
@@ -37,7 +37,7 @@ weave-scope-agent:
 weave-scope-cluster-agent:
   resources:
 {{- if (hasKey $weaveScope."weave-scope-cluster-agent" "resources") }}
-  {{- $weaveScope.weave-scope-cluster-agent.resources | toYaml | nindent 4 }}
+  {{- $weaveScope.resources.clusterAgent | toYaml | nindent 4 }}
 {{- else }}
     requests:
       cpu: 500m
