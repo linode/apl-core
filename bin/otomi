@@ -12,7 +12,7 @@
 ##
 #####################################################################################
 shopt -s expand_aliases
-set -e
+set -ex
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
