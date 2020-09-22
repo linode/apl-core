@@ -6,6 +6,7 @@
     "donjayamanne.githistory",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "redhat.vscode-yaml",
+    "signageos.signageos-vscode-sops",
     "xyz.local-history"
   ]
 }
