@@ -74,8 +74,10 @@ function show_usage() {
     encrypt    encrypt values in all *.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
+    lint       runs a linter that will check OPA rules on templates (coming soon!)
     pull       wrapper for git pull > decrypt
     template   export k8s resources (use labels like '-l name=prometheus-operator')
+    test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
     x          execute command in container
   "
@@ -282,6 +284,11 @@ function execute() {
     evaluate_k8s_context
     # otomi x ls -als /home/app/.kube/
     kubectl config use $K8S_CONTEXT
+    ;;
+  test)
+    validate_cluster_env
+    drun bin/test.sh
+    drun $@
     ;;
   x)
     check_kube_context=0
