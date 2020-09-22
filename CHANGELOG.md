@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.16](https://github.com/redkubes/otomi-stack/compare/v0.11.15...v0.11.16) (2020-09-22)
+
+
+### Bug Fixes
+
+* team secrets [ci skip] ([c670d0a](https://github.com/redkubes/otomi-stack/commit/c670d0a0512e89b9a3d4750843aabd299f08c5f1))
+
+
+### Others
+
+* **release:** 0.11.15 ([b097c6d](https://github.com/redkubes/otomi-stack/commit/b097c6dd038d152524acc15f2b1c54fc893f0642))
+* **release:** 0.11.15 ([132b222](https://github.com/redkubes/otomi-stack/commit/132b222a98c92862c8cc59ca281180e8328bbdf8))
+* **release:** 0.11.15 ([4cc48f3](https://github.com/redkubes/otomi-stack/commit/4cc48f3b1ab5d8ba2e2a70338c9ca023a8fcb9c6))
+* **release:** 0.11.15 ([bb6d7bc](https://github.com/redkubes/otomi-stack/commit/bb6d7bc53e3e5822fa7a3bbbbf5702cd9acc2514))
+* **release:** 0.11.15 ([e015f55](https://github.com/redkubes/otomi-stack/commit/e015f550d3d3e09c94272286a4b4f3f040c92390))
+
 ### [0.11.15](https://github.com/redkubes/otomi-stack/compare/v0.11.14...v0.11.15) (2020-09-22)
 
 
