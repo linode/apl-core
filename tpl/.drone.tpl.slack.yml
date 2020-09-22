@@ -46,7 +46,7 @@ steps:
     depends_on:
       - prepare-values
     commands:
-      - cd .. && bin/crypt.sh decrypt
+      - cd .. && bin/otomi decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
@@ -56,7 +56,7 @@ steps:
     depends_on:
       - decrypt
     commands:
-      - cd .. && bin/test.sh
+      - cd .. && bin/otomi test
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
@@ -64,7 +64,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/deploy.sh
+      - cd .. && bin/otomi deploy
     depends_on:
       - test
 
