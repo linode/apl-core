@@ -20,6 +20,10 @@ function crypt() {
   cd - >/dev/null
 }
 
+if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
+  echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+fi
+
 case $command in
 encrypt | decrypt)
   printf "${COLOR_LIGHT_PURPLE}${command}ing secrets...${COLOR_NC}\n"

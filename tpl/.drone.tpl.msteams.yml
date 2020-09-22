@@ -11,8 +11,10 @@ trigger:
   event:
     - push
 
-env:
+environment:
   IN_DOCKER: '1'
+  GCLOUD_SERVICE_KEY:
+    from_secret: GCLOUD_SERVICE_KEY
 
 steps:
   - name: notify-start
@@ -27,24 +29,6 @@ steps:
         title: Started syncing cluster
         text: Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
         themeColor: 009EEA
-
-  - name: prepare-values
-    image: alpine/git
-    commands:
-      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
-      - chmod -R a+w env
-
-  - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
-    environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    depends_on:
-      - prepare-values
-    commands:
-      - cd .. && bin/otomi decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
