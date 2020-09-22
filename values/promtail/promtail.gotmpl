@@ -6,16 +6,16 @@ loki:
 nameOverride: promtail
 
 resources:
-{{- if (hasKey $promtail "resources") }}
-  {{- $promtail.resources | toYaml | nindent 2 }}
-{{- else }}
+  {{- if (hasKey $promtail "resources") }}
+    {{- $promtail.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 500m
     memory: 256Mi
   requests:
     cpu: 100m
     memory: 256Mi
-{{ end }}
+  {{ end }}
 
 securityContext:
   readOnlyRootFilesystem: true

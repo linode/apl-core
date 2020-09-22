@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $weaveScope := $v.charts | get "weaveScope" dict }}
-{{- $otomiWeb := $v.charts | get "otomi-web" }}
+{{- $otomiWeb := $v.charts | get "otomi-web" dict }}
 
 global:
   image:
@@ -10,39 +10,39 @@ global:
 
 weave-scope-frontend:
   resources:
-{{- if (hasKey $weaveScope."weave-scope-frontend" "resources") }}
-  {{- $weaveScope.weave-scope-frontend.resources | toYaml | nindent 4 }}
-{{- else }}
+  {{- if (hasKey $weaveScope."weave-scope-frontend" "resources") }}
+    {{- $weaveScope.weave-scope-frontend.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-{{ end }}
+  {{ end }}
 
 weave-scope-agent:
   resources:
-{{- if (hasKey $weaveScope "weave-scope-agent.resources") }}
-  {{- $weaveScope.weave-scope-agent.resources | toYaml | nindent 4 }}
-{{- else }}
+  {{- if (hasKey $weaveScope "weave-scope-agent.resources") }}
+    {{- $weaveScope.weave-scope-agent.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-{{ end }}
+  {{ end }}
 
 weave-scope-cluster-agent:
   resources:
-{{- if (hasKey $weaveScope."weave-scope-cluster-agent" "resources") }}
-  {{- $weaveScope.weave-scope-cluster-agent.resources | toYaml | nindent 4 }}
-{{- else }}
+  {{- if (hasKey $weaveScope."weave-scope-cluster-agent" "resources") }}
+    {{- $weaveScope.weave-scope-cluster-agent.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-{{ end }}
+  {{ end }}
