@@ -3,7 +3,6 @@ set -e
 set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
-RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
 
 export RECEIVER
 match=".drone.tpl.$receiver.yaml\|clusters.yaml"
