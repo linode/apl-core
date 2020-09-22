@@ -6,7 +6,11 @@ set -e
 set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
+
+helm secrets dec $ENV_DIR/env/secrets.settings.yaml
+
 RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
+[ "$RECEIVER" == "" ] && RECEIVER=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.receiver)
 
 customer_name=$(customer_name)
 echo "customer_name: $customer_name"
@@ -21,8 +25,8 @@ else
 fi
 
 # Note: the .secrets.yaml exists only if .secrets.yaml.enc has been decrypted
-helm secrets dec $ENV_DIR/env/secrets.settings.yaml
 webhook=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.$RECEIVER.$key)
+[ "$webhook" == "" ] && webhook=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.$RECEIVER.$key)
 clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
 
 function template_drone_config() {
