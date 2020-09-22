@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.10](https://github.com/redkubes/otomi-stack/compare/v0.11.9...v0.11.10) (2020-09-22)
+
+
+### Features
+
+* add redirect uri used for user logout ([be2fadd](https://github.com/redkubes/otomi-stack/commit/be2fadd3021a18f2871694cfdc63c4022c1ed4f5))
+
+
+### Bug Fixes
+
+* crypt routine now using helm secrets ([2535a77](https://github.com/redkubes/otomi-stack/commit/2535a77a64dd4faf060f06b16907cfef81f34d20))
+* docs [ci skip] ([555cc6d](https://github.com/redkubes/otomi-stack/commit/555cc6dbe14045cb032546631ee321fb7361cf0a))
+* docs [ci skip] ([c6680a8](https://github.com/redkubes/otomi-stack/commit/c6680a8cd8cc153d160bb1d2a0d3f3962d8bd77e))
+* gcp key [ci skip] ([d2cfa9b](https://github.com/redkubes/otomi-stack/commit/d2cfa9be926b4e41cb5d285bf5b4c53b2733e677))
+
 ### [0.11.9](https://github.com/redkubes/otomi-stack/compare/v0.11.8...v0.11.9) (2020-09-17)
 
 
