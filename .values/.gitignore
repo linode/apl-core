@@ -4,5 +4,5 @@
 .vscode
 .gitattributes
 *.json
-*.secrets.yaml
+*.yaml.dec
 bin/
