@@ -118,8 +118,7 @@ evaluate_secrets() {
   [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
   source $secrets_path
   if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-    echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$PWD/key.json
+    echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$GOOGLE_APPLICATION_CREDENTIALS
   fi
 
   return 0
