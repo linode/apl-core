@@ -13,8 +13,6 @@ trigger:
 
 environment:
   IN_DOCKER: '1'
-  GCLOUD_SERVICE_KEY:
-    from_secret: GCLOUD_SERVICE_KEY
 
 steps:
   - name: notify-start
@@ -35,6 +33,8 @@ steps:
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
     depends_on:
       - decrypt
     commands:
@@ -45,6 +45,8 @@ steps:
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
     commands:
       - cd .. && bin/otomi deploy
     depends_on:
