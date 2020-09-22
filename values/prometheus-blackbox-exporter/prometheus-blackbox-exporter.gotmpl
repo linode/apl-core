@@ -9,7 +9,7 @@ usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $pbe.sentinel "resources") }}
+  {{- if (hasKey $pbe "sentinel.resources") }}
     {{- $pbe.sentinel.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:

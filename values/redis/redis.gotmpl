@@ -9,7 +9,7 @@ usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $redis.sentinel "resources") }}
+  {{- if (hasKey $redis "sentinel.resources") }}
     {{- $redis.sentinel.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:
@@ -23,7 +23,7 @@ sentinel:
 master:
   priorityClassName: "system-cluster-critical"
   resources:
-  {{- if (hasKey $redis.master "resources") }}
+  {{- if (hasKey $redis "master.resources") }}
     {{- $redis.master.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:
@@ -37,7 +37,7 @@ master:
 slave:
   priorityClassName: "system-cluster-critical"
   resources:
-  {{- if (hasKey $redis.slave "resources") }}
+  {{- if (hasKey $redis "slave.resources") }}
     {{- $redis.slave.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:
@@ -51,7 +51,7 @@ slave:
 metrics:
   priorityClassName: "system-cluster-critical"
   resources:
-  {{- if (hasKey $redis.metrics "resources") }}
+  {{- if (hasKey $redis "metrics.resources") }}
     {{- $redis.metrics.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:

@@ -19,7 +19,7 @@ server:
   dind:
     enabled: false
   resources:
-    {{- if (hasKey $d.server "resources") }}
+    {{- if (hasKey $d "server.resources") }}
       {{- $d.server.resources | toYaml | nindent 4 }}
     {{- else }}
     requests:
@@ -43,7 +43,7 @@ server:
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
 kubernetes:
   resources:
-    {{- if (hasKey $d.kubernetes "resources") }}
+    {{- if (hasKey $d "kubernetes.resources") }}
       {{- $d.kubernetes.resources | toYaml | nindent 4 }}
     {{- else }}
     requests:

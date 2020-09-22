@@ -19,8 +19,8 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-web
-  tag: {{ $otomi-web.image.tag }}
-  pullPolicy: {{ $otomi-web.image | get "pullPolicy" "IfNotPresent" }}
+  tag: {{ $o.image.tag }}
+  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
 env:
   API_BASE_URL: /api

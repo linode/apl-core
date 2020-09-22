@@ -28,7 +28,7 @@ resources:
 
 webhook:
   resources:
-    {{- if (hasKey $cm.webhook "resources") }}
+    {{- if (hasKey $cm "webhook.resources") }}
       {{- $cm.webhook.resources | toYaml | nindent 4 }}
     {{- else }}
     requests:
