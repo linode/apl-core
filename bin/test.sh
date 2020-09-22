@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-shopt -s expand_aliases
-. bin/utils.sh
 set -e
+hf="helmfile -e $CLOUD-$CLUSTER"
 
-hfd diff
+$hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps
+$hf template --skip-deps
+$hf diff --skip-deps

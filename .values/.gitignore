@@ -2,6 +2,7 @@
 .secrets
 .prettierrc.yml
 .vscode
+.gitattributes
 *.json
-*.yaml.dec
+*.secrets.yaml
 bin/

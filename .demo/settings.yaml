@@ -6,8 +6,6 @@ otomi:
     hasCloudLB: false
 customer:
     name: demo
-ingress:
-    allowedCidrs: []
 oidc:
     clientID: demo
     idp:

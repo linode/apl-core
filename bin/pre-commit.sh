@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -e
+set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
+RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
 
-match=".drone.tpl.yaml\|env.ini"
+export RECEIVER
+match=".drone.tpl.$receiver.yaml\|clusters.yaml"
 if git -C $ENV_DIR diff --name-only | grep $match >/dev/null; then
   bin/gen-drone.sh
-  git -C $ENV_DIR add $ENV_DIR/*/.drone.*.yml
-  git -C $ENV_DIR add env.ini
 fi
-bin/crypt.sh enc
+bin/crypt.sh encrypt

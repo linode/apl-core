@@ -1,8 +1,198 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": false,
+  "definitions": {
+    "alerts": {
+      "properties": {
+        "groupInterval": {
+          "type": "string",
+          "default": "5m"
+        },
+        "repeatInterval": {
+          "type": "string",
+          "default": "3h"
+        },
+        "receiver": {
+          "type": "string",
+          "enum": ["slack", "msteams"]
+        },
+        "slack": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "channel": {
+              "type": "string",
+              "default": "mon-otomi"
+            }
+          }
+        },
+        "msteams": {
+          "type": "object",
+          "properties": {
+            "highPrio": {
+              "type": "string"
+            },
+            "lowPrio": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "cloud": {
+      "properties": {
+        "domain": { "type": "string" },
+        "clusters": {
+          "patternProperties": {
+            "^[a-z-]+$": { "$ref": "#/definitions/cluster" }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "properties": {
+        "apiName": {
+          "type": "string"
+        },
+        "apiServer": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "k8sVersion": {
+          "type": "number"
+        },
+        "otomiVersion": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "vpcID": {
+          "type": "string"
+        }
+      }
+    },
+    "team": {
+      "properties": {
+        "azure": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "oidc": {
+          "oidc": {
+            "properties": {
+              "groupMapping": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "password": {
+          "type": "string"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "isPublic": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "ownHost": {
+                "type": "boolean"
+              },
+              "svc": {
+                "type": "string"
+              },
+              "isShared": {
+                "type": "boolean"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "forwardPath": {
+                "type": "boolean"
+              },
+              "hide": {
+                "type": "boolean"
+              },
+              "port": {
+                "type": "number"
+              },
+              "authz": {
+                "type": "object",
+                "properties": {
+                  "forwardOriginalToken": {
+                    "type": "boolean"
+                  },
+                  "workload": {
+                    "type": "object",
+                    "properties": {
+                      "app.kubernetes.io/name": {
+                        "type": "string"
+                      },
+                      "app.kubernetes.io/instance": {
+                        "type": "string"
+                      },
+                      "app": {
+                        "type": "string"
+                      },
+                      "component": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "host": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "logo": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "properties": {
+    "alerts": { "$ref": "#/definitions/alerts" },
     "charts": {
       "type": "object",
       "properties": {
@@ -664,129 +854,22 @@
     },
     "clouds": {
       "type": "object",
+      "patternProperties": {
+        "^.*$": { "$ref": "#/definitions/cloud" }
+      },
+      "additionalProperties": false
+    },
+    "customer": {
+      "type": "object",
       "properties": {
-        "aws": {
-          "type": "object",
-          "properties": {
-            "clusters": {
-              "type": "object",
-              "properties": {
-                "demo": {
-                  "type": "object",
-                  "properties": {
-                    "k8sVersion": {
-                      "type": "number"
-                    },
-                    "region": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "domain": {
-              "type": "string"
-            }
-          }
-        },
-        "azure": {
-          "type": "object",
-          "properties": {
-            "clusters": {
-              "type": "object",
-              "properties": {
-                "demo": {
-                  "type": "object",
-                  "properties": {
-                    "k8sVersion": {
-                      "type": "number"
-                    },
-                    "region": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "domain": {
-              "type": "string"
-            }
-          }
-        },
-        "google": {
-          "type": "object",
-          "properties": {
-            "clusters": {
-              "type": "object",
-              "properties": {
-                "demo": {
-                  "type": "object",
-                  "properties": {
-                    "apiName": {
-                      "type": "string"
-                    },
-                    "apiServer": {
-                      "type": "string"
-                    },
-                    "k8sVersion": {
-                      "type": "number"
-                    },
-                    "region": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "dev": {
-                  "type": "object",
-                  "properties": {
-                    "k8sVersion": {
-                      "type": "number"
-                    },
-                    "region": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "dnsZones": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "domain": {
-              "type": "string"
-            }
-          }
+        "name": {
+          "type": "string"
         }
       }
     },
-    "cluster": {
+    "otomi": {
       "type": "object",
       "properties": {
-        "allowedCidrs": {
-          "type": "array",
-          "items": {}
-        },
-        "apiName": {
-          "type": "string"
-        },
-        "apiServer": {
-          "type": "string"
-        },
-        "customer": {
-          "type": "string"
-        },
-        "domain": {
-          "type": "string"
-        },
-        "hasCloudLB": {
-          "type": "boolean"
-        },
-        "hasKnative": {
-          "type": "boolean"
-        },
         "isManaged": {
           "type": "boolean"
         },
@@ -796,61 +879,11 @@
         "isRedkubesMonitored": {
           "type": "boolean"
         },
-        "k8sVersion": {
-          "type": "number"
-        },
-        "name": {
-          "type": "string"
-        },
-        "provider": {
-          "type": "string"
-        },
-        "region": {
+        "pullSecret": {
           "type": "string"
         },
         "teamPrefix": {
           "type": "string"
-        },
-        "useCloudCA": {
-          "type": "boolean"
-        }
-      }
-    },
-    "enabled": {
-      "type": "object",
-      "properties": {
-        "sitespeed": {
-          "type": "boolean"
-        }
-      }
-    },
-    "google": {
-      "type": "object",
-      "properties": {
-        "cloudDnsKey": {
-          "type": "string"
-        },
-        "projectId": {
-          "type": "string"
-        }
-      }
-    },
-    "k8s": {
-      "type": "object",
-      "properties": {
-        "namespaces": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "disableIstioInjection": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
-              }
-            }
-          }
         }
       }
     },
@@ -891,561 +924,17 @@
         }
       }
     },
-    "proxies": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "namespace": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "pullSecret": {
-      "type": "string"
-    },
-    "redkubesSlackUrl": {
-      "type": "string"
-    },
-    "services": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "isPublic": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "namespace": {
-            "type": "string"
-          },
-          "ownHost": {
-            "type": "boolean"
-          },
-          "svc": {
-            "type": "string"
-          },
-          "isShared": {
-            "type": "boolean"
-          },
-          "paths": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "forwardPath": {
-            "type": "boolean"
-          },
-          "hide": {
-            "type": "boolean"
-          },
-          "port": {
-            "type": "number"
-          },
-          "authz": {
-            "type": "object",
-            "properties": {
-              "forwardOriginalToken": {
-                "type": "boolean"
-              },
-              "workload": {
-                "type": "object",
-                "properties": {
-                  "app.kubernetes.io/name": {
-                    "type": "string"
-                  },
-                  "app.kubernetes.io/instance": {
-                    "type": "string"
-                  },
-                  "app": {
-                    "type": "string"
-                  },
-                  "component": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "host": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "logo": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    },
-    "sites": {
-      "type": "array",
-      "items": {}
-    },
     "teamConfig": {
       "type": "object",
       "properties": {
-        "services": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "host": {
-                "type": "string"
-              },
-              "isShared": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
-              },
-              "namespace": {
-                "type": "string"
-              },
-              "svc": {
-                "type": "string"
-              },
-              "path": {
-                "type": "string"
-              },
-              "authz": {
-                "type": "object",
-                "properties": {
-                  "workload": {
-                    "type": "object",
-                    "properties": {
-                      "app.kubernetes.io/instance": {
-                        "type": "string"
-                      },
-                      "app.kubernetes.io/name": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              },
-              "hasPrefix": {
-                "type": "boolean"
-              },
-              "port": {
-                "type": "number"
-              },
-              "logo": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
         "teams": {
           "type": "object",
-          "properties": {
-            "cyso": {
-              "type": "object",
-              "properties": {
-                "azure": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "id": {
-                  "type": "string"
-                },
-                "oidc": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "password": {
-                  "type": "string"
-                },
-                "secrets": {
-                  "type": "array",
-                  "items": {}
-                },
-                "services": {
-                  "type": "array",
-                  "items": {}
-                }
-              }
-            },
-            "demo": {
-              "type": "object",
-              "properties": {
-                "azure": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "id": {
-                  "type": "string"
-                },
-                "oidc": {
-                  "type": "object",
-                  "properties": {
-                    "groupMapping": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "password": {
-                  "type": "string"
-                },
-                "secrets": {
-                  "type": "array",
-                  "items": {}
-                },
-                "services": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "domain": {
-                        "type": "string"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "isPublic": {
-                        "type": "boolean"
-                      },
-                      "ksvc": {
-                        "type": "object",
-                        "properties": {
-                          "annotations": {
-                            "type": "object",
-                            "properties": {}
-                          },
-                          "env": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "image": {
-                            "type": "object",
-                            "properties": {
-                              "repository": {
-                                "type": "string"
-                              },
-                              "tag": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "resources": {
-                            "type": "object",
-                            "properties": {
-                              "limits": {
-                                "type": "object",
-                                "properties": {
-                                  "cpu": {
-                                    "type": "string"
-                                  },
-                                  "memory": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "requests": {
-                                "type": "object",
-                                "properties": {
-                                  "cpu": {
-                                    "type": "string"
-                                  },
-                                  "memory": {
-                                    "type": "string"
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "scaleToZero": {
-                            "type": "boolean"
-                          }
-                        }
-                      },
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "greater": {
-              "type": "object",
-              "properties": {
-                "azure": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "id": {
-                  "type": "string"
-                },
-                "password": {
-                  "type": "string"
-                },
-                "secrets": {
-                  "type": "array",
-                  "items": {}
-                },
-                "services": {
-                  "type": "array",
-                  "items": {}
-                }
-              }
-            },
-            "joep": {
-              "type": "object",
-              "properties": {
-                "azure": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "id": {
-                  "type": "string"
-                },
-                "password": {
-                  "type": "string"
-                },
-                "secrets": {
-                  "type": "array",
-                  "items": {}
-                },
-                "services": {
-                  "type": "array",
-                  "items": {}
-                }
-              }
-            },
-            "otomi": {
-              "type": "object",
-              "properties": {
-                "azure": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "id": {
-                  "type": "string"
-                },
-                "oidc": {
-                  "type": "object",
-                  "properties": {
-                    "groupMapping": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "password": {
-                  "type": "string"
-                },
-                "secrets": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "password": {
-                        "type": "string"
-                      },
-                      "server": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      },
-                      "username": {
-                        "type": "string"
-                      },
-                      "entries": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
-                              "type": "string"
-                            },
-                            "value": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      },
-                      "ca": {
-                        "type": "string"
-                      },
-                      "crt": {
-                        "type": "string"
-                      },
-                      "key": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "services": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "domain": {
-                        "type": "string"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "isPublic": {
-                        "type": "boolean"
-                      },
-                      "ksvc": {
-                        "type": "object",
-                        "properties": {
-                          "annotations": {
-                            "type": "object",
-                            "properties": {}
-                          },
-                          "env": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          },
-                          "image": {
-                            "type": "object",
-                            "properties": {
-                              "repository": {
-                                "type": "string"
-                              },
-                              "tag": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "resources": {
-                            "type": "object",
-                            "properties": {
-                              "limits": {
-                                "type": "object",
-                                "properties": {
-                                  "cpu": {
-                                    "type": "string"
-                                  },
-                                  "memory": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "requests": {
-                                "type": "object",
-                                "properties": {
-                                  "cpu": {
-                                    "type": "string"
-                                  },
-                                  "memory": {
-                                    "type": "string"
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "scaleToZero": {
-                            "type": "boolean"
-                          },
-                          "secrets": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "entries": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                },
-                                "name": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "paths": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "internal": {
-                        "type": "boolean"
-                      },
-                      "ownHost": {
-                        "type": "boolean"
-                      },
-                      "port": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "patternProperties": {
+            "^[a-z-]+$": { "$ref": "#/definitions/team" }
+          },
+          "additionalProperties": false
         }
       }
-    },
-    "tenant": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "toolsVersion": {
-      "type": "string"
     }
   }
 }

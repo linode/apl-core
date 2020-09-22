@@ -11,44 +11,46 @@ trigger:
   event:
     - push
 
+env:
+  IN_DOCKER: '1'
+
 steps:
-  - name: check-changes
+  - name: slack-start
+    image: plugins/slack
+    environment:
+      CLUSTER: __CLUSTER
+      CLOUD: __CLOUD
+    settings:
+      webhook: __WEBHOOK
+      channel: mon-otomi
+      username: Drone
+      # template: http://plugins.drone.io/drone-plugins/drone-slack/
+      template: >
+        Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+
+        Drone: <{{ build.link }}>
+
+  - name: prepare-values
     image: alpine/git
     commands:
       - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
       - chmod -R a+w env
 
-  - name: slack-__CUSTOMER-start
-    image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    depends_on:
-      - check-changes
-    settings:
-      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
-      channel: mon-otomi
-      username: Drone
-      template: >
-        Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
-
   - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
-      - check-changes
+      - prepare-values
     commands:
-      - cd .. && bin/crypt.sh dec
+      - cd .. && bin/crypt.sh decrypt
 
   - name: test
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
@@ -57,24 +59,14 @@ steps:
       - cd .. && bin/test.sh
 
   - name: deploy
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
+    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     commands:
-      - cd .. && bin/sync.sh
+      - cd .. && bin/deploy.sh
     depends_on:
       - test
-
-  - name: maintenance
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__STACK_VERSION
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    commands:
-      - cd .. && bin/maintenance.sh
-    depends_on:
-      - deploy
 
   - name: slack-__CUSTOMER
     image: plugins/slack
@@ -82,9 +74,9 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
-      - maintenance
+      - deploy
     settings:
-      webhook: https://hooks.slack.com/services/__WEBHOOK_ID
+      webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
       template: >
@@ -93,6 +85,8 @@ steps:
         {{else}}
           Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
         {{/success}}
+
+        Drone: <{{ build.link }}>
     when:
       status:
         - success
