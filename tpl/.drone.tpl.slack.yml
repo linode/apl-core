@@ -37,8 +37,6 @@ steps:
       CLOUD: __CLOUD
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
-    depends_on:
-      - decrypt
     commands:
       - cd .. && bin/otomi test
 
