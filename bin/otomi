@@ -271,8 +271,8 @@ function execute() {
     otomi x kubectl config use-context $K8S_CONTEXT
     ;;
   lint)
+    set -o pipefail
     drun bin/lint.sh $@
-    break
     ;;
   x)
     check_kube_context=0
