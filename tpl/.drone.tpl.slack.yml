@@ -30,6 +30,12 @@ steps:
 
         Drone: <{{ build.link }}>
 
+  - name: prepare-values
+    image: alpine/git
+    commands:
+      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
+      - chmod -R a+w env
+
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
@@ -37,6 +43,8 @@ steps:
       CLOUD: __CLOUD
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
+    depends_on:
+      - prepare-values
     commands:
       - cd .. && bin/otomi test
 
