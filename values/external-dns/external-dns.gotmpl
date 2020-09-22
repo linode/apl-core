@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $dns := $v | get "charts.external-dns" dict }}
+{{- $dns := $v.charts | get "external-dns" dict }}
 {{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
 {{- $google := $v | get "clouds.google" dict }}
 {{- $aws := $v | get "clouds.aws" dict }}
@@ -49,12 +49,16 @@ podSecurityContext:
 priorityClassName: "system-cluster-critical"
 
 resources:
+  {{- if (hasKey $dns "resources") }}
+    {{- $dns.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 100m
     memory: 128Mi
   requests:
     memory: 64Mi
     cpu: 10m
+  {{ end }}
 
 metrics:
   enabled: true

@@ -1,7 +1,8 @@
 {{- $v := .Environment.Values }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := $v.charts | get "cert-manager" dict }}
 global:
   priorityClassName: "system-cluster-critical"
+
 prometheus:
   servicemonitor:
     enabled: true
@@ -12,19 +13,28 @@ podAnnotations:
   sidecar.istio.io/inject: "false"  
 
 installCRDs: true
+
 resources:
+  {{- if (hasKey $cm "resources") }}
+    {{- $cm.resources | toYaml | nindent 2 }}
+  {{- else }}
   requests:
     cpu: 100m
     memory: 256Mi
   limits:
     cpu: 200m
     memory: 512Mi
+  {{ end }}
 
 webhook:
   resources:
+    {{- if (hasKey $cm.webhook "resources") }}
+      {{- $cm.webhook.resources | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       cpu: 50m
       memory: 64Mi
     limits:
       cpu: 100m
       memory: 256Mi
+    {{ end }}

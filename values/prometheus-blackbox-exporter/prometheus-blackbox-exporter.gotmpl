@@ -1,10 +1,24 @@
-resources:
-  requests:
-    cpu: 100m
-    memory: 32Mi
-  limits:
-    cpu: 200m
-    memory: 128Mi
+{{- $v := .Environment.Values }}
+{{- $pbe := $v.charts | get "prometheus-blackbox-exporter" dict }}
+
+cluster:
+  enabled: false
+persistence:
+  size: 1Gi
+usePassword: false
+
+sentinel:
+  resources:
+  {{- if (hasKey $pbe.sentinel "resources") }}
+    {{- $pbe.sentinel.resources | toYaml | nindent 4 }}
+  {{- else }}
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  {{ end }}
 
 config:
   modules:

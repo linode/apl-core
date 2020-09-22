@@ -1,8 +1,9 @@
 {{- $v := .Environment.Values }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $cm := $v.charts | get "cert-manager" dict }}
+{{- $oauth2 := $v.charts | get "oauth2-proxy" dict }}
 {{- $o := $v.oidc }}
 {{- $provider := ($o | get "provider" "oidc") }}
-{{- $k := $v | get "charts.keycloak" dict }}
-{{- $cm := $v | get "charts.cert-manager" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
@@ -27,13 +28,16 @@ podDisruptionBudget:
   minAvailable: 1
 priorityClassName: "system-cluster-critical"
 resources:
+  {{- if (hasKey $oauth2 "resources") }}
+    {{- $oauth2.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 500m
     memory: 128Mi
   requests:
     cpu: 100m
     memory: 32Mi
-
+  {{ end }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}

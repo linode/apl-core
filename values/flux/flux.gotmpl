@@ -1,3 +1,5 @@
+{{- $v := .Environment.Values }}
+{{- $flux := $v.charts | get "flux" dict }}
 git:
   url: "ssh://git@github.com/redkubes/otomi-stack.git"
   readonly: true
@@ -8,12 +10,16 @@ git:
 memcached:
   maxItemSize: 10m
   resources:
+    {{- if (hasKey $flux.memcached "resources") }}
+      {{- $flux.memcached.resources | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 16Mi
       cpu: 50m
     limits:
       memory: 256Mi
       cpu: 100m
+    {{ end }}
 registry:
   automationInterval: "5m"
   # Maximum registry requests per second per host
@@ -21,9 +27,13 @@ registry:
   trace: false
 
 resources:
+  {{- if (hasKey $flux "resources") }}
+  {{- $flux.resources | toYaml | nindent 2 }}
+  {{- else }}
   requests:
     memory: 32Mi
     cpu: 50m
   limits:
     memory: 64Mi
     cpu: 100m
+  {{ end }}

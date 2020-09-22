@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $k := $v | get "charts.keycloak" dict }}
+{{- $k := $v.charts | get "keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 init:
   resources:

@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $a := index $v.charts "cluster-autoscaler" }}
+{{- $a := $v.charts | get "cluster-autoscaler" dict }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 # image:
@@ -34,12 +34,16 @@ rbac:
 
 priorityClassName: "system-cluster-critical"
 resources:
+  {{- if (hasKey $a "resources") }}
+    {{- $a.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 100m
     memory: 256Mi
   requests:
     cpu: 100m
     memory: 256Mi
+  {{ end }}
 
 serviceMonitor:
   enabled: true

@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
-{{- $r := $v.charts | get "redis" dict }}
+{{- $redis := $v.charts | get "redis" dict }}
+
 cluster:
   enabled: false
 persistence:
@@ -8,37 +9,56 @@ usePassword: false
 
 sentinel:
   resources:
+  {{- if (hasKey $redis.sentinel "resources") }}
+    {{- $redis.sentinel.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 200m
       memory: 64Mi
     limits:
       cpu: 500m
       memory: 256Mi
+  {{ end }}
+
 master:
   priorityClassName: "system-cluster-critical"
   resources:
+  {{- if (hasKey $redis.master "resources") }}
+    {{- $redis.master.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 200m
       memory: 64Mi
     limits:
       cpu: 500m
       memory: 256Mi
+  {{ end }}
+
 slave:
   priorityClassName: "system-cluster-critical"
   resources:
+  {{- if (hasKey $redis.slave "resources") }}
+    {{- $redis.slave.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 200m
       memory: 64Mi
     limits:
       cpu: 500m
       memory: 256Mi
+  {{ end }}
+
 metrics:
   priorityClassName: "system-cluster-critical"
   resources:
+  {{- if (hasKey $redis.metrics "resources") }}
+    {{- $redis.metrics.resources | toYaml | nindent 4 }}
+  {{- else }}
     requests:
       cpu: 50m
       memory: 64Mi
     limits:
       cpu: 100m
       memory: 256Mi
+  {{ end }}
 # password: bla

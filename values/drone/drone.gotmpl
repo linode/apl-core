@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $d := $v.charts.drone }}
+{{- $d := $v.charts | get "drone" dict }}
 {{- $host := printf "drone.%s" $v.cluster.domain }}
 images:
   server:
@@ -19,12 +19,16 @@ server:
   dind:
     enabled: false
   resources:
+    {{- if (hasKey $d.server "resources") }}
+      {{- $d.server.resources | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 32Mi
       cpu: 40m
     limits:
       memory: 2Gi
       cpu: 1
+    {{ end }}
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
@@ -39,12 +43,16 @@ server:
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
 kubernetes:
   resources:
+    {{- if (hasKey $d.kubernetes "resources") }}
+      {{- $d.kubernetes.resources | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 32Mi
       cpu: 40m
     limits:
       memory: 2Gi
       cpu: 1
+    {{ end }}
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true

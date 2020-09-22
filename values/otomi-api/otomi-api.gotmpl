@@ -1,19 +1,22 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.cluster }}
-{{- $o := index $v.charts "otomi-api" }}
+{{- $o := $v.charts | get "otomi-api" dict }}
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
 
 replicaCount: 1
 
 priorityClassName: "system-cluster-critical"
 resources:
+  {{- if (hasKey $o "resources") }}
+    {{- $o.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 300m
     memory: 128Mi
   requests:
     cpu: 100m
     memory: 128Mi
-
+  {{ end }}
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-stack-api
@@ -48,9 +51,13 @@ tools:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
   resources:
+    {{- if (hasKey $o.tools "resources") }}
+      {{- $o.tools.resources | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m
       memory: 256Mi
+    {{ end }}

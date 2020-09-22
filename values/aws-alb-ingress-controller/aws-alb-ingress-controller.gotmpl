@@ -1,12 +1,18 @@
 {{- $v := .Environment.Values }}
+{{- $aaic := $v.charts | get "aws-alb-ingress-controller" dict }}
 clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
 priorityClassName: "system-cluster-critical"
+
 resources:
+  {{- if (hasKey $aaic "resources") }}
+    {{- $aaic.resources | toYaml | nindent 2 }}
+  {{- else }}
   requests:
     cpu: 500m
     memory: 64Mi
   limits:
     cpu: 1
     memory: 256Mi
+  {{ end }}
