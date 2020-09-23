@@ -9,8 +9,8 @@ usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $pbe "resources.sentinel") }}
-    {{- $pbe.resources.sentinel | toYaml | nindent 4 }}
+  {{- if (hasKey $pbe "resources") }}
+    {{- $pbe.resources | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 100m

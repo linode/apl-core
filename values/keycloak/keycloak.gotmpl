@@ -3,16 +3,12 @@
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 init:
   resources:
-    {{- if (hasKey $k "resources.init") }}
-      {{- $k.resources.init | toYaml | nindent 4 }}
-    {{- else }}
     limits:
       cpu: "10m"
       memory: "32Mi"
     requests:
       cpu: "10m"
       memory: "32Mi"
-    {{- end }}
 
 keycloak:
   username: {{ $k | get "admin.username" "admin" }}

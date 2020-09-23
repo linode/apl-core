@@ -51,14 +51,10 @@ slave:
 metrics:
   priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "resources.metrics") }}
-    {{- $redis.resources.metrics | toYaml | nindent 4 }}
-  {{- else }}
     requests:
       cpu: 50m
       memory: 64Mi
     limits:
       cpu: 100m
       memory: 256Mi
-  {{- end }}
 # password: bla

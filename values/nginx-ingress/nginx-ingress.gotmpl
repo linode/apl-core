@@ -9,16 +9,13 @@ defaultBackend:
   useComponentLabel: true
   priorityClassName: "otomi-critical"
   resources:
-    {{- if (hasKey $n "resources.defaultbackend") }}
-      {{- $n.resources.defaultbackend | toYaml | nindent 4 }}
-    {{- else }}
     limits:
       cpu: 20m
       memory: 20Mi
     requests:
       cpu: 10m
       memory: 10Mi
-    {{- end }}
+
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
@@ -32,8 +29,8 @@ controller:
   useComponentLabel: true
   # set fixed allocation with limits same as requests
   resources:
-    {{- if (hasKey $n "resources.controller") }}
-      {{- $n.resources.controller | toYaml | nindent 4 }}
+    {{- if (hasKey $n "resources") }}
+      {{- $n.resources | toYaml | nindent 4 }}
     {{- else }}
     limits:
         cpu: 2000m
@@ -48,8 +45,8 @@ controller:
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: 2
-    maxReplicas: 6
+    minReplicas: {{ $n | get "autoscaling.minReplicas" 2 }}
+    maxReplicas: {{ $n | get "autoscaling.maxReplicas" 6 }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}
@@ -91,4 +88,3 @@ controller:
   admissionWebhooks:
     patch:
       priorityClassName: "otomi-critical"
-

@@ -20,8 +20,8 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  xsrfKey: UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd 
-  secret: 9gfm2350fg3fg3m8
+  xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
+  secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
   resources:
     {{- if (hasKey $h "resources.core") }}
@@ -35,7 +35,7 @@ core:
       cpu: 100m
     {{- end }}
 jobservice:
-  secret: mnf9adfgjwr23m4d
+  secret: {{ $h | get "jobservice.secret" "mnf9adfgjwr23m4d" }}
   resources:
     {{- if (hasKey $h "resources.jobservice") }}
       {{- $h.resources.jobservice | toYaml | nindent 2 }}
@@ -137,10 +137,10 @@ registry:
         {{- $h.resources.registry | toYaml | nindent 6 }}
       {{- else }}
       requests:
-        memory: 256Mi
+        memory: 64Mi
         cpu: 50m
       limits:
-        memory: 512Mi
+        memory: 128Mi
         cpu: 100m
       {{- end }}
   controller:
