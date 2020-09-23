@@ -19,8 +19,8 @@ server:
   dind:
     enabled: false
   resources:
-    {{- if (hasKey $d "server.resources") }}
-      {{- $d.server.resources | toYaml | nindent 4 }}
+    {{- if (hasKey $d "resources.server") }}
+      {{- $d.resources.server | toYaml | nindent 4 }}
     {{- else }}
     requests:
       memory: 32Mi
@@ -28,7 +28,7 @@ server:
     limits:
       memory: 2Gi
       cpu: 1
-    {{ end }}
+    {{- end }}
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
@@ -43,8 +43,8 @@ server:
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
 kubernetes:
   resources:
-    {{- if (hasKey $d "kubernetes.resources") }}
-      {{- $d.kubernetes.resources | toYaml | nindent 4 }}
+    {{- if (hasKey $d "resources.runner") }}
+      {{- $d.resources.runner | toYaml | nindent 4 }}
     {{- else }}
     requests:
       memory: 32Mi
@@ -52,7 +52,7 @@ kubernetes:
     limits:
       memory: 2Gi
       cpu: 1
-    {{ end }}
+    {{- end }}
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true

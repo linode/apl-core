@@ -10,8 +10,8 @@ git:
 memcached:
   maxItemSize: 10m
   resources:
-    {{- if (hasKey $flux.memcached "resources") }}
-      {{- $flux.memcached.resources | toYaml | nindent 4 }}
+    {{- if (hasKey $flux "resources.memcached") }}
+      {{- $flux.resources.memcached | toYaml | nindent 4 }}
     {{- else }}
     requests:
       memory: 16Mi
@@ -19,7 +19,7 @@ memcached:
     limits:
       memory: 256Mi
       cpu: 100m
-    {{ end }}
+    {{- end }}
 registry:
   automationInterval: "5m"
   # Maximum registry requests per second per host
@@ -27,8 +27,8 @@ registry:
   trace: false
 
 resources:
-  {{- if (hasKey $flux "resources") }}
-  {{- $flux.resources | toYaml | nindent 2 }}
+  {{- if (hasKey $flux "resources.flux") }}
+    {{- $flux.resources.flux | toYaml | nindent 2 }}
   {{- else }}
   requests:
     memory: 32Mi
@@ -36,4 +36,4 @@ resources:
   limits:
     memory: 64Mi
     cpu: 100m
-  {{ end }}
+  {{- end }}

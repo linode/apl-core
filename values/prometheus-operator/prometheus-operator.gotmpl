@@ -1,12 +1,12 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
-{{- $k := $v | get "charts.keycloak" dict }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $p := $v.charts | get "prometheus-operator" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $o := $v.oidc }}
 {{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
-{{- $p := $v | get "charts.prometheus-operator" }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v | toString }}
 nameOverride: po
@@ -30,12 +30,16 @@ prometheusOperator:
   configReloaderCpu: 50m
   configReloaderMemory: 25Mi
   resources:
+    {{- if (hasKey $p "resources.operator") }}
+      {{- $p.resources.operator | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m
       memory: 128Mi
+    {{- end }}
   admissionWebhooks:
     enabled: false
   tlsProxy:
@@ -44,17 +48,21 @@ prometheusOperator:
   manageCrds: false # chart > 8.2.0
   kubeletService:
     enabled: true
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
 prometheus:
   prometheusSpec:
     resources:
+      {{- if (hasKey $p "resources.prometheus") }}
+        {{- $p.resources.prometheus | toYaml | nindent 6 }}
+      {{- else }}
       requests:
         cpu: 100m
         memory: 512Mi
       limits:
         cpu: 1000m
         memory: 2Gi
-    priorityClassName: "system-node-critical"
+      {{- end }}
+    priorityClassName: "otomi-critical"
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.customer.name $v.cluster.provider $v.cluster.name | lower | quote }}
     # podMetadata:
@@ -79,14 +87,18 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 alertmanager:
   alertmanagerSpec:
-    priorityClassName: "system-cluster-critical"
+    priorityClassName: "otomi-critical"
     resources:
+      {{- if (hasKey $p "resources.alertmanager") }}
+        {{- $p.resources.alertmanager | toYaml | nindent 6 }}
+      {{- else }}
       requests:
         memory: 128Mi
         cpu: 100m
       limits:
         memory: 256Mi
         cpu: 500m
+      {{- end }}
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -158,12 +170,16 @@ grafana:
   image:
     tag: 7.1.5
   resources:
+    {{- if (hasKey $p "resources.grafana") }}
+      {{- $p.resources.grafana | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 128Mi
       cpu: 100m
     limits:
       memory: 256Mi
       cpu: 500m
+    {{- end }}
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -261,23 +277,31 @@ kube-state-metrics:
   # podAnnotations:
   #   sidecar.istio.io/inject: "false"
   resources:
+    {{- if (hasKey $p "resources.metrics") }}
+      {{- $p.resources.metrics | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 128Mi
       cpu: 100m
     limits:
       memory: 256Mi
       cpu: 400m
+    {{- end }}
   podSecurityPolicy:
     enabled: false
 
 prometheus-node-exporter:
   resources:
+    {{- if (hasKey $p "resources.nodeexporter") }}
+      {{- $p.resources.nodeexporter | toYaml | nindent 4 }}
+    {{- else }}
     requests:
       memory: 128Mi
       cpu: 100m
     limits:
       memory: 128Mi
       cpu: 500m
+    {{- end }}
   rbac:
     pspEnabled: false
-  priorityClassName: "system-node-critical"
+  priorityClassName: "otomi-critical"

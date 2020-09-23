@@ -26,7 +26,7 @@ replicas: 2
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
-priorityClassName: "system-cluster-critical"
+priorityClassName: "otomi-critical"
 resources:
   {{- if (hasKey $oauth2 "resources") }}
     {{- $oauth2.resources | toYaml | nindent 2 }}
@@ -37,7 +37,7 @@ resources:
   requests:
     cpu: 100m
     memory: 32Mi
-  {{ end }}
+  {{- end }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- $tc := $v.teamConfig }}
@@ -88,4 +88,3 @@ extraArgs:
   {{- else if eq $provider "github" }}
   github-org: {{ $o | getOrNil "github.org" }}
   {{- end }}
-

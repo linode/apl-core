@@ -15,7 +15,7 @@ resources:
   requests:
     cpu: 100m
     memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 securityContext:
   readOnlyRootFilesystem: true
@@ -47,7 +47,7 @@ pipelineStages:
   {{- end }}
   {{- end }}
 
-priorityClassName: "system-node-critical"
+priorityClassName: "otomi-critical"
 config:
   server:
     log_level: error

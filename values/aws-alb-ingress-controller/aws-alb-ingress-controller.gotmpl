@@ -3,7 +3,7 @@
 clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
-priorityClassName: "system-cluster-critical"
+priorityClassName: "otomi-critical"
 
 resources:
   {{- if (hasKey $aaic "resources") }}
@@ -15,4 +15,4 @@ resources:
   limits:
     cpu: 1
     memory: 256Mi
-  {{ end }}
+  {{- end }}

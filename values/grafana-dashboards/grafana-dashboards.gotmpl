@@ -6,7 +6,7 @@ folders:
   # - istio
   {{- if and (eq $cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
   - azure
-  {{ end }}
+  {{- end }}
   {{- if $c.sitespeed.enabled }}
   - sitespeed
-  {{ end }}
+  {{- end }}

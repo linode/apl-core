@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $weaveScope := $v.charts | get "weaveScope" dict }}
+{{- $w := $v.charts | get "weaveScope" dict }}
 
 global:
   image:
@@ -9,8 +9,8 @@ global:
 
 weave-scope-frontend:
   resources:
-  {{- if (hasKey $weaveScope "resources.frontend") }}
-    {{- $weaveScope.resources.frontend | toYaml | nindent 4 }}
+  {{- if (hasKey $w "resources.frontend") }}
+    {{- $w.resources.frontend | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 500m
@@ -18,12 +18,12 @@ weave-scope-frontend:
     limits:
       cpu: 1
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 weave-scope-agent:
   resources:
-  {{- if (hasKey $weaveScope "resources.agent") }}
-    {{- $weaveScope.resources.agent | toYaml | nindent 4 }}
+  {{- if (hasKey $w "resources.agent") }}
+    {{- $w.resources.agent | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 500m
@@ -31,12 +31,12 @@ weave-scope-agent:
     limits:
       cpu: 1
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 weave-scope-cluster-agent:
   resources:
-  {{- if (hasKey $weaveScope "resources.clusterAgent") }}
-    {{- $weaveScope.resources.clusterAgent | toYaml | nindent 4 }}
+  {{- if (hasKey $w "resources.agent") }}
+    {{- $w.resources.agent | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 500m
@@ -44,4 +44,4 @@ weave-scope-cluster-agent:
     limits:
       cpu: 1
       memory: 256Mi
-  {{ end }}
+  {{- end }}

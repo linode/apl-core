@@ -65,12 +65,16 @@ persistence:
 # priorityClassName:
 
 resources:
+  {{- if (hasKey $l "resources") }}
+    {{- $l.resources | toYaml | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 800m
     memory: 256Mi
   requests:
     cpu: 100m
     memory: 128Mi
+  {{- end }}
 
 fullnameOverride: loki
 

@@ -3,12 +3,16 @@
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 init:
   resources:
+    {{- if (hasKey $k "resources.init") }}
+      {{- $k.resources.init | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: "10m"
       memory: "32Mi"
     requests:
       cpu: "10m"
       memory: "32Mi"
+    {{- end }}
 
 keycloak:
   username: {{ $k | get "admin.username" "admin" }}
@@ -18,14 +22,18 @@ keycloak:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}
     deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
   resources:
+    {{- if (hasKey $k "resources.keycloak") }}
+      {{- $k.resources.keycloak | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
       memory: 1Gi
+    {{- end }}
   replicas: 2
 
 postgresql:
@@ -41,16 +49,20 @@ postgresql:
       additionalLabels:
         prometheus: po-prometheus
   resources:
+    {{- if (hasKey $k "resources.postgresql") }}
+      {{- $k.resources.postgresql | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
       memory: 1Gi
+    {{- end }}
   master:
-    priorityClassName: "system-cluster-critical"
+    priorityClassName: "otomi-critical"
   slave:
-    priorityClassName: "system-cluster-critical"
+    priorityClassName: "otomi-critical"
 
 prometheus:
   operator:

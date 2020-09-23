@@ -4,15 +4,21 @@
 
 rbac:
   create: true
+
 defaultBackend:
   useComponentLabel: true
+  priorityClassName: "otomi-critical"
   resources:
+    {{- if (hasKey $n "resources.defaultbackend") }}
+      {{- $n.resources.defaultbackend | toYaml | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 20m
       memory: 20Mi
     requests:
       cpu: 10m
-      memory: 10Mi  
+      memory: 10Mi
+    {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
@@ -24,18 +30,18 @@ defaultBackend:
 
 controller:
   useComponentLabel: true
-  {{- if (hasKey $n "resources") }}
-  resources: {{- $n.resources | toYaml | nindent 4 }}
-  {{- else }}
   # set fixed allocation with limits same as requests
   resources:
+    {{- if (hasKey $n "resources.controller") }}
+      {{- $n.resources.controller | toYaml | nindent 4 }}
+    {{- else }}
     limits:
         cpu: 2000m
         memory: 512Mi
     requests:
         cpu: 200m
         memory: 512Mi
-  {{- end }}
+    {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   replicaCount: 2
@@ -50,7 +56,7 @@ controller:
   nodeSelector: 
     beta.kubernetes.io/os: linux
 {{- end }}
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
   extraArgs:
     v: 3
   config:
@@ -84,8 +90,5 @@ controller:
 
   admissionWebhooks:
     patch:
-      priorityClassName: "system-cluster-critical"
+      priorityClassName: "otomi-critical"
 
-
-defaultBackend:
-  priorityClassName: "system-cluster-critical"

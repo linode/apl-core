@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 global:
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
 
 prometheus:
   servicemonitor:
@@ -24,12 +24,12 @@ resources:
   limits:
     cpu: 200m
     memory: 512Mi
-  {{ end }}
+  {{- end }}
 
 webhook:
   resources:
-    {{- if (hasKey $cm "webhook.resources") }}
-      {{- $cm.webhook.resources | toYaml | nindent 4 }}
+    {{- if (hasKey $cm "resources.webhook") }}
+      {{- $cm.resources.webhook | toYaml | nindent 4 }}
     {{- else }}
     requests:
       cpu: 50m
@@ -37,4 +37,4 @@ webhook:
     limits:
       cpu: 100m
       memory: 256Mi
-    {{ end }}
+    {{- end }}

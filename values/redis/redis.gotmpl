@@ -9,8 +9,8 @@ usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $redis "sentinel.resources") }}
-    {{- $redis.sentinel.resources | toYaml | nindent 4 }}
+  {{- if (hasKey $redis "resources.sentinel") }}
+    {{- $redis.resources.sentinel | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m
@@ -18,13 +18,13 @@ sentinel:
     limits:
       cpu: 500m
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 master:
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "master.resources") }}
-    {{- $redis.master.resources | toYaml | nindent 4 }}
+  {{- if (hasKey $redis "resources.master") }}
+    {{- $redis.resources.master | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m
@@ -32,13 +32,13 @@ master:
     limits:
       cpu: 500m
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 slave:
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "slave.resources") }}
-    {{- $redis.slave.resources | toYaml | nindent 4 }}
+  {{- if (hasKey $redis "resources.slave") }}
+    {{- $redis.resources.slave | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m
@@ -46,13 +46,13 @@ slave:
     limits:
       cpu: 500m
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 
 metrics:
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "metrics.resources") }}
-    {{- $redis.metrics.resources | toYaml | nindent 4 }}
+  {{- if (hasKey $redis "resources.metrics") }}
+    {{- $redis.resources.metrics | toYaml | nindent 4 }}
   {{- else }}
     requests:
       cpu: 50m
@@ -60,5 +60,5 @@ metrics:
     limits:
       cpu: 100m
       memory: 256Mi
-  {{ end }}
+  {{- end }}
 # password: bla
