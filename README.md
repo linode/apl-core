@@ -48,6 +48,19 @@ This will also install the needed artifacts (such as the Otomi CLI) and demo val
 
 Please read the `README.md` that is exported as it has extensive instructions on initial configuration.
 
+### 1.4 Key Service Account
+
+Please refer to [SOPS](https://github.com/mozilla/sops) to get aquainted and choose / wire up your KMS provider.
+
+**ADDITIONAL: Google's GCP KMS**
+
+In order to work with (en)crypted files + GCP KMS in VSCode, then it needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
+code $ENV_DIR
+```
+
 ## 2. Development
 
 Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies. Notable quirks that can give you headaches:
