@@ -17,7 +17,7 @@ tasks:
       AZURE_TENANT_ID:
       AZURE_CLIENT_ID:
       AZURE_CLIENT_SECRET:
-    script: bin/crypt.sh rotate
+    script: find $ENV_DIR/env -type f -name '*.secrets.yaml.enc' -exec bash -c "sops --input-type=yaml --output-type yaml -r {} > {}" \;
 
 
 

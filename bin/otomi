@@ -245,11 +245,6 @@ function execute() {
     validate_cluster_env
     drun bin/bootstrap.sh 1
     ;;
-  decrypt)
-    check_kube_context=0
-    evaluate_secrets
-    drun bin/crypt.sh decrypt
-    ;;
   deploy)
     validate_cluster_env
     drun bin/deploy.sh
@@ -258,11 +253,6 @@ function execute() {
     validate_cluster_env
     # set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -v skipping | grep -v basePath=
-    ;;
-  encrypt)
-    check_kube_context=0
-    evaluate_secrets
-    drun bin/crypt.sh encrypt
     ;;
   sync)
     validate_cluster_env
@@ -274,11 +264,6 @@ function execute() {
     validate_cluster_env
     set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -v skipping | grep -v basePath=
-    ;;
-  rotate-keys)
-    check_kube_context=0
-    evaluate_secrets
-    drun bin/crypt.sh rotate
     ;;
   switch)
     evaluate_k8s_context
@@ -308,7 +293,6 @@ function execute() {
     validate_cluster_env
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/crypt.sh decrypt
     ;;
   *)
     show_usage

@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: otomi-values-decrypt
+spec:
+  template:
+    spec:
+      containers:
+      - name: otomi-values-decrypt
+        image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+        imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+        securityContext: {{- toYaml .Values.tools.securityContext | nindent 10 }}
+        envFrom:
+        - secretRef:
+            name: {{ include "otomi-api.fullname" . }}
+        - configMapRef:
+            name: {{ include "otomi-api.fullname" . }}
+        resources: {{- toYaml .Values.tools.resources | nindent 10 }}
+        volumeMounts:
+        - name: repo
+          mountPath: /tmp
+        command: [find", "/tmp", "-type f", "-name 'secrets.*.yaml'", "-exec helm secrets dec {}", "\;"]
+      restartPolicy: Never
+  backoffLimit: 4
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: otomi-values-encrypt
+spec:
+  template:
+    spec:
+      containers:
+      - name: otomi-values-encrypt
+        image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
+        imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
+        securityContext: {{- toYaml .Values.tools.securityContext | nindent 10 }}
+        envFrom:
+        - secretRef:
+            name: {{ include "otomi-api.fullname" . }}
+        - configMapRef:
+            name: {{ include "otomi-api.fullname" . }}
+        resources: {{- toYaml .Values.tools.resources | nindent 10 }}
+        volumeMounts:
+        - name: repo
+          mountPath: /tmp
+        command: [find", "/tmp", "-type f", "-name 'secrets.*.yaml'", "-exec helm secrets enc {}", "\;"]
+      restartPolicy: Never
+  backoffLimit: 4
