@@ -11,7 +11,7 @@ trigger:
   event:
     - push
 
-env:
+environment:
   IN_DOCKER: '1'
 
 steps:
@@ -30,41 +30,32 @@ steps:
 
         Drone: <{{ build.link }}>
 
-  - name: prepare-values
-    image: alpine/git
+  - name: prepare-env
+    image: alpine:latest
     commands:
-      - if (git diff --exit-code $DRONE_COMMIT_BEFORE $DRONE_COMMIT_AFTER -- env); then exit 78; fi
       - chmod -R a+w env
-
-  - name: decrypt
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
-    environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    depends_on:
-      - prepare-values
-    commands:
-      - cd .. && bin/crypt.sh decrypt
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
     depends_on:
-      - decrypt
+      - prepare-env
     commands:
-      - cd .. && bin/test.sh
+      - cd .. && bin/otomi test
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
+      GCLOUD_SERVICE_KEY:
+        from_secret: GCLOUD_SERVICE_KEY
     commands:
-      - cd .. && bin/deploy.sh
+      - cd .. && bin/otomi deploy
     depends_on:
       - test
 

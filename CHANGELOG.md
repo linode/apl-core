@@ -2,656 +2,639 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.11.9](https://github.com/redkubes/otomi-stack/compare/v0.11.8...v0.11.9) (2020-09-17)
-
-
-### Features
-
-* enrich drone slack notification ([f8758fc](https://github.com/redkubes/otomi-stack/commit/f8758fc87120095712aeb0345db07ca7673eb863))
+### [0.11.18](https://github.com/redkubes/otomi-stack/compare/v0.11.17...v0.11.18) (2020-09-22)
 
 
 ### Bug Fixes
 
-* drone pipeline ([a7e07d7](https://github.com/redkubes/otomi-stack/commit/a7e07d70e01e288f11ddcaf893aca527e0ec5bf6))
-* exist if any command in pipe fails ([5c5aeef](https://github.com/redkubes/otomi-stack/commit/5c5aeef87bc2174fb0199a43df11bea422e71f38))
-* exit with non-zero on test.sh failure ([d99e37b](https://github.com/redkubes/otomi-stack/commit/d99e37b1c4e7aeac144f13b744fffb51ac975613))
-* image tag for drone pipeline ([c9c71ec](https://github.com/redkubes/otomi-stack/commit/c9c71eccd3a02fa8de3e5898b4b50918f6c393c7))
-* pipeline regression [ci skip] ([a3713da](https://github.com/redkubes/otomi-stack/commit/a3713dae41264b5aaf6442f2b97021af6b24d1c9))
-* pipeline regression [ci skip] ([90a9ab4](https://github.com/redkubes/otomi-stack/commit/90a9ab4519ab0ee3aaf2781c7479b63f9496304a))
-* pullSecret and team secrets ([173d7eb](https://github.com/redkubes/otomi-stack/commit/173d7eb9fb74abfccea3e5221f7f475640a21598))
-* read otomi version from clusters.yaml ([bd1724f](https://github.com/redkubes/otomi-stack/commit/bd1724f1c5e63c2e1d39c53647541cc90b274e11))
-* regression deploy [ci skip] ([ccdc0f7](https://github.com/redkubes/otomi-stack/commit/ccdc0f7ffc6224384434a8b5a4d03bb3be1005d4))
-* regression deploy [ci skip] ([c7a6e62](https://github.com/redkubes/otomi-stack/commit/c7a6e62085b6387bc5d1717a6b62758dff382e82))
-* regression, sorry ([208027c](https://github.com/redkubes/otomi-stack/commit/208027cb2f750e306e26d4bff9c18c9f721cccdc))
-* remove unnecessary ownership change ([bd5b8e9](https://github.com/redkubes/otomi-stack/commit/bd5b8e9708148065e5b0104f44de887e5c3e3924))
-* removed refs to otomi in bin scripts [ci skip] ([49e51e5](https://github.com/redkubes/otomi-stack/commit/49e51e53b1f1354927760d8e1ea38ee1a0fdf9a0))
+* env [ci skip] ([f1e1aba](https://github.com/redkubes/otomi-stack/commit/f1e1abaeeba1141519510b4cf5d2cfb44e63b0f5))
 
-### [0.11.8](https://github.com/redkubes/otomi-stack/compare/v0.11.7...v0.11.8) (2020-09-16)
+### [0.11.17](https://github.com/redkubes/otomi-stack/compare/v0.11.16...v0.11.17) (2020-09-22)
 
-
-### Features
-
-* test if helmfile can template provided values ([2ce8b9b](https://github.com/redkubes/otomi-stack/commit/2ce8b9b8f668117fae34c4345bb41f5dc3b05996))
+### [0.11.16](https://github.com/redkubes/otomi-stack/compare/v0.11.15...v0.11.16) (2020-09-22)
 
 
 ### Bug Fixes
 
-* add team values to environments ([8568204](https://github.com/redkubes/otomi-stack/commit/8568204231009b5ddf3914bd9ac825c1d6340882))
-
-### [0.11.7](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.7) (2020-09-15)
-
-
-### Bug Fixes
-
-* failing otomi version check for new users [ci skip] ([8db5dc4](https://github.com/redkubes/otomi-stack/commit/8db5dc433f37c44c8711d8c9136ef73588f750b7))
-* image tag ([c505526](https://github.com/redkubes/otomi-stack/commit/c505526b3a7ed9c061ab37ef19164d2911c602b6))
-* no more need for docker check in bootstrap [ci skip] ([d2cb322](https://github.com/redkubes/otomi-stack/commit/d2cb3224d8b782a1380c00b70e8cd72e2dd8c1e4))
-* put back functions in aliases [ci skip] ([054ebf8](https://github.com/redkubes/otomi-stack/commit/054ebf86dd51146d5c7e143bef0ca02a7aa7abc2))
-* put back stack_volume to otomi drun [ci skip] ([e271ce8](https://github.com/redkubes/otomi-stack/commit/e271ce8a5cde7716d5da6eeb70a547f83c61ce55))
+* team secrets [ci skip] ([c670d0a](https://github.com/redkubes/otomi-stack/commit/c670d0a0512e89b9a3d4750843aabd299f08c5f1))
 
 
 ### Others
 
-* **release:** 0.11.6 ([92c9130](https://github.com/redkubes/otomi-stack/commit/92c9130620664a174c585e0e6d804aeec96e9033))
+* **release:** 0.11.15 ([b097c6d](https://github.com/redkubes/otomi-stack/commit/b097c6dd038d152524acc15f2b1c54fc893f0642))
+* **release:** 0.11.15 ([132b222](https://github.com/redkubes/otomi-stack/commit/132b222a98c92862c8cc59ca281180e8328bbdf8))
+* **release:** 0.11.15 ([4cc48f3](https://github.com/redkubes/otomi-stack/commit/4cc48f3b1ab5d8ba2e2a70338c9ca023a8fcb9c6))
+* **release:** 0.11.15 ([bb6d7bc](https://github.com/redkubes/otomi-stack/commit/bb6d7bc53e3e5822fa7a3bbbbf5702cd9acc2514))
+* **release:** 0.11.15 ([e015f55](https://github.com/redkubes/otomi-stack/commit/e015f550d3d3e09c94272286a4b4f3f040c92390))
+
+### [0.11.15](https://github.com/redkubes/otomi-stack/compare/v0.11.14...v0.11.15) (2020-09-22)
+
+
+### Bug Fixes
+
+* pipeline ([7e73c94](https://github.com/redkubes/otomi-stack/commit/7e73c94306605bef1f3119436eaa01634d0aecd7))
+
+### [0.11.14](https://github.com/redkubes/otomi-stack/compare/v0.11.13...v0.11.14) (2020-09-22)
+
+
+### Others
+
+* **release:** 0.11.12 ([4048224](https://github.com/redkubes/otomi-stack/commit/404822467c0b76c736844c4f0a345abe166c86a6))
+* **release:** 0.11.13 ([4c9fb25](https://github.com/redkubes/otomi-stack/commit/4c9fb25ace340fc86cc12cc74ea2185f7d01b279))
+* **release:** 0.11.13 ([d84418e](https://github.com/redkubes/otomi-stack/commit/d84418e0086eb71ef65973aec192f4de48fcead1))
+* **release:** 0.11.13 ([9393bbe](https://github.com/redkubes/otomi-stack/commit/9393bbe80984b9334843ae521aa974cbf3c0e81d))
+* **release:** 0.11.13 ([69c18a1](https://github.com/redkubes/otomi-stack/commit/69c18a130e04fab8571d57b96b11c1372b79937a))
+* **release:** 0.11.13 ([7431171](https://github.com/redkubes/otomi-stack/commit/74311719b433fea8a8be61e297a07b4cbdeee915))
+
+### [0.11.13](https://github.com/redkubes/otomi-stack/compare/v0.11.12...v0.11.13) (2020-09-22)
+
+### Others
+
+- **release:** 0.11.12 ([de1078d](https://github.com/redkubes/otomi-stack/commit/de1078d7e99d724bbf2feecfedc8f04ec116f2e4))
+
+### [0.11.12](https://github.com/redkubes/otomi-stack/compare/v0.11.11...v0.11.12) (2020-09-22)
+
+### [0.11.11](https://github.com/redkubes/otomi-stack/compare/v0.11.10...v0.11.11) (2020-09-22)
+
+### Bug Fixes
+
+- version [ci skip](<[02fe709](https://github.com/redkubes/otomi-stack/commit/02fe70931c991493271fff163c639279e8426e16)>)
+
+### [0.11.10](https://github.com/redkubes/otomi-stack/compare/v0.11.9...v0.11.10) (2020-09-22)
+
+### Features
+
+- add redirect uri used for user logout ([be2fadd](https://github.com/redkubes/otomi-stack/commit/be2fadd3021a18f2871694cfdc63c4022c1ed4f5))
+
+### Bug Fixes
+
+- crypt routine now using helm secrets ([2535a77](https://github.com/redkubes/otomi-stack/commit/2535a77a64dd4faf060f06b16907cfef81f34d20))
+- docs [ci skip](<[555cc6d](https://github.com/redkubes/otomi-stack/commit/555cc6dbe14045cb032546631ee321fb7361cf0a)>)
+- docs [ci skip](<[c6680a8](https://github.com/redkubes/otomi-stack/commit/c6680a8cd8cc153d160bb1d2a0d3f3962d8bd77e)>)
+- gcp key [ci skip](<[d2cfa9b](https://github.com/redkubes/otomi-stack/commit/d2cfa9be926b4e41cb5d285bf5b4c53b2733e677)>)
+
+### [0.11.9](https://github.com/redkubes/otomi-stack/compare/v0.11.8...v0.11.9) (2020-09-17)
+
+### Features
+
+- enrich drone slack notification ([f8758fc](https://github.com/redkubes/otomi-stack/commit/f8758fc87120095712aeb0345db07ca7673eb863))
+
+### Bug Fixes
+
+- drone pipeline ([a7e07d7](https://github.com/redkubes/otomi-stack/commit/a7e07d70e01e288f11ddcaf893aca527e0ec5bf6))
+- exist if any command in pipe fails ([5c5aeef](https://github.com/redkubes/otomi-stack/commit/5c5aeef87bc2174fb0199a43df11bea422e71f38))
+- exit with non-zero on test.sh failure ([d99e37b](https://github.com/redkubes/otomi-stack/commit/d99e37b1c4e7aeac144f13b744fffb51ac975613))
+- image tag for drone pipeline ([c9c71ec](https://github.com/redkubes/otomi-stack/commit/c9c71eccd3a02fa8de3e5898b4b50918f6c393c7))
+- pipeline regression [ci skip](<[a3713da](https://github.com/redkubes/otomi-stack/commit/a3713dae41264b5aaf6442f2b97021af6b24d1c9)>)
+- pipeline regression [ci skip](<[90a9ab4](https://github.com/redkubes/otomi-stack/commit/90a9ab4519ab0ee3aaf2781c7479b63f9496304a)>)
+- pullSecret and team secrets ([173d7eb](https://github.com/redkubes/otomi-stack/commit/173d7eb9fb74abfccea3e5221f7f475640a21598))
+- read otomi version from clusters.yaml ([bd1724f](https://github.com/redkubes/otomi-stack/commit/bd1724f1c5e63c2e1d39c53647541cc90b274e11))
+- regression deploy [ci skip](<[ccdc0f7](https://github.com/redkubes/otomi-stack/commit/ccdc0f7ffc6224384434a8b5a4d03bb3be1005d4)>)
+- regression deploy [ci skip](<[c7a6e62](https://github.com/redkubes/otomi-stack/commit/c7a6e62085b6387bc5d1717a6b62758dff382e82)>)
+- regression, sorry ([208027c](https://github.com/redkubes/otomi-stack/commit/208027cb2f750e306e26d4bff9c18c9f721cccdc))
+- remove unnecessary ownership change ([bd5b8e9](https://github.com/redkubes/otomi-stack/commit/bd5b8e9708148065e5b0104f44de887e5c3e3924))
+- removed refs to otomi in bin scripts [ci skip](<[49e51e5](https://github.com/redkubes/otomi-stack/commit/49e51e53b1f1354927760d8e1ea38ee1a0fdf9a0)>)
+
+### [0.11.8](https://github.com/redkubes/otomi-stack/compare/v0.11.7...v0.11.8) (2020-09-16)
+
+### Features
+
+- test if helmfile can template provided values ([2ce8b9b](https://github.com/redkubes/otomi-stack/commit/2ce8b9b8f668117fae34c4345bb41f5dc3b05996))
+
+### Bug Fixes
+
+- add team values to environments ([8568204](https://github.com/redkubes/otomi-stack/commit/8568204231009b5ddf3914bd9ac825c1d6340882))
+
+### [0.11.7](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.7) (2020-09-15)
+
+### Bug Fixes
+
+- failing otomi version check for new users [ci skip](<[8db5dc4](https://github.com/redkubes/otomi-stack/commit/8db5dc433f37c44c8711d8c9136ef73588f750b7)>)
+- image tag ([c505526](https://github.com/redkubes/otomi-stack/commit/c505526b3a7ed9c061ab37ef19164d2911c602b6))
+- no more need for docker check in bootstrap [ci skip](<[d2cb322](https://github.com/redkubes/otomi-stack/commit/d2cb3224d8b782a1380c00b70e8cd72e2dd8c1e4)>)
+- put back functions in aliases [ci skip](<[054ebf8](https://github.com/redkubes/otomi-stack/commit/054ebf86dd51146d5c7e143bef0ca02a7aa7abc2)>)
+- put back stack_volume to otomi drun [ci skip](<[e271ce8](https://github.com/redkubes/otomi-stack/commit/e271ce8a5cde7716d5da6eeb70a547f83c61ce55)>)
+
+### Others
+
+- **release:** 0.11.6 ([92c9130](https://github.com/redkubes/otomi-stack/commit/92c9130620664a174c585e0e6d804aeec96e9033))
 
 ### [0.11.6](https://github.com/redkubes/otomi-stack/compare/v0.11.5...v0.11.6) (2020-09-15)
 
-
 ### Bug Fixes
 
-* failing otomi version check for new users [ci skip] ([8db5dc4](https://github.com/redkubes/otomi-stack/commit/8db5dc433f37c44c8711d8c9136ef73588f750b7))
-* no more need for docker check in bootstrap [ci skip] ([d2cb322](https://github.com/redkubes/otomi-stack/commit/d2cb3224d8b782a1380c00b70e8cd72e2dd8c1e4))
-* put back functions in aliases [ci skip] ([054ebf8](https://github.com/redkubes/otomi-stack/commit/054ebf86dd51146d5c7e143bef0ca02a7aa7abc2))
-* put back stack_volume to otomi drun [ci skip] ([e271ce8](https://github.com/redkubes/otomi-stack/commit/e271ce8a5cde7716d5da6eeb70a547f83c61ce55))
+- failing otomi version check for new users [ci skip](<[8db5dc4](https://github.com/redkubes/otomi-stack/commit/8db5dc433f37c44c8711d8c9136ef73588f750b7)>)
+- no more need for docker check in bootstrap [ci skip](<[d2cb322](https://github.com/redkubes/otomi-stack/commit/d2cb3224d8b782a1380c00b70e8cd72e2dd8c1e4)>)
+- put back functions in aliases [ci skip](<[054ebf8](https://github.com/redkubes/otomi-stack/commit/054ebf86dd51146d5c7e143bef0ca02a7aa7abc2)>)
+- put back stack_volume to otomi drun [ci skip](<[e271ce8](https://github.com/redkubes/otomi-stack/commit/e271ce8a5cde7716d5da6eeb70a547f83c61ce55)>)
 
 ### [0.11.5](https://github.com/redkubes/otomi-stack/compare/v0.11.4...v0.11.5) (2020-09-15)
 
-
 ### Bug Fixes
 
-* working code, some env missing [ci skip] ([cfc64fa](https://github.com/redkubes/otomi-stack/commit/cfc64fab328b1c1b522ca76e82e43ab24b732064))
+- working code, some env missing [ci skip](<[cfc64fa](https://github.com/redkubes/otomi-stack/commit/cfc64fab328b1c1b522ca76e82e43ab24b732064)>)
 
 ### [0.11.4](https://github.com/redkubes/otomi-stack/compare/v0.11.3...v0.11.4) (2020-09-15)
 
-
 ### Bug Fixes
 
-* back to env [ci skip] ([940c5a9](https://github.com/redkubes/otomi-stack/commit/940c5a98ba0fde67846ac45ec8c1f473cb26bd65))
+- back to env [ci skip](<[940c5a9](https://github.com/redkubes/otomi-stack/commit/940c5a98ba0fde67846ac45ec8c1f473cb26bd65)>)
 
 ### [0.11.3](https://github.com/redkubes/otomi-stack/compare/v0.11.2...v0.11.3) (2020-09-15)
 
-
 ### Bug Fixes
 
-* pipeline [ci skip] ([f4f5e5b](https://github.com/redkubes/otomi-stack/commit/f4f5e5b17884a05654137220d16da17a9a5de36e))
+- pipeline [ci skip](<[f4f5e5b](https://github.com/redkubes/otomi-stack/commit/f4f5e5b17884a05654137220d16da17a9a5de36e)>)
 
 ### [0.11.2](https://github.com/redkubes/otomi-stack/compare/v0.11.1...v0.11.2) (2020-09-15)
 
 ### [0.11.1](https://github.com/redkubes/otomi-stack/compare/v0.11.0...v0.11.1) (2020-09-15)
 
-
 ### Features
 
-* use otomi CLI in docker ([e2aa085](https://github.com/redkubes/otomi-stack/commit/e2aa085d35a0d46d0b0100a1d8893b830ec9eea4))
-
+- use otomi CLI in docker ([e2aa085](https://github.com/redkubes/otomi-stack/commit/e2aa085d35a0d46d0b0100a1d8893b830ec9eea4))
 
 ### Bug Fixes
 
-* adjust path to values env dir ([79b4b9d](https://github.com/redkubes/otomi-stack/commit/79b4b9d1a4b3cd45e672a6132ce7a7a3a3168899))
-* bugs [ci skip] ([3008576](https://github.com/redkubes/otomi-stack/commit/3008576eb5aa5153322bc8823f1c14673210630c))
-* bugs [ci skip] ([f98311f](https://github.com/redkubes/otomi-stack/commit/f98311f4618ba874d3aa43196f95eeebf941e353))
-* docker without -r option ([f0f1b55](https://github.com/redkubes/otomi-stack/commit/f0f1b559413787857b9028e2d0257fd75cc6e031))
-* gitignore for values [ci skip] ([d0dad19](https://github.com/redkubes/otomi-stack/commit/d0dad19527bf76cb26ce1952942745b0e4611cea))
-* obtain cloudDnsKey value ([c62c1af](https://github.com/redkubes/otomi-stack/commit/c62c1af68dfed1487a0b58f9e0258c74c52035ed))
-* otomi cli exists with error code on failure ([f979d0c](https://github.com/redkubes/otomi-stack/commit/f979d0c7fdd9f21019cf1cb291512e1f76729552))
-* otomi template command ([62ea049](https://github.com/redkubes/otomi-stack/commit/62ea0496e91b0e5abf90b81188a57ce655cae9e5))
-* remove container ([1660c12](https://github.com/redkubes/otomi-stack/commit/1660c12b4066f935c49b7d870a9b0adfbca4f97d))
-* rework [ci skip] ([2722be7](https://github.com/redkubes/otomi-stack/commit/2722be76c46c59c938a30b3e76873e0cf791051c))
+- adjust path to values env dir ([79b4b9d](https://github.com/redkubes/otomi-stack/commit/79b4b9d1a4b3cd45e672a6132ce7a7a3a3168899))
+- bugs [ci skip](<[3008576](https://github.com/redkubes/otomi-stack/commit/3008576eb5aa5153322bc8823f1c14673210630c)>)
+- bugs [ci skip](<[f98311f](https://github.com/redkubes/otomi-stack/commit/f98311f4618ba874d3aa43196f95eeebf941e353)>)
+- docker without -r option ([f0f1b55](https://github.com/redkubes/otomi-stack/commit/f0f1b559413787857b9028e2d0257fd75cc6e031))
+- gitignore for values [ci skip](<[d0dad19](https://github.com/redkubes/otomi-stack/commit/d0dad19527bf76cb26ce1952942745b0e4611cea)>)
+- obtain cloudDnsKey value ([c62c1af](https://github.com/redkubes/otomi-stack/commit/c62c1af68dfed1487a0b58f9e0258c74c52035ed))
+- otomi cli exists with error code on failure ([f979d0c](https://github.com/redkubes/otomi-stack/commit/f979d0c7fdd9f21019cf1cb291512e1f76729552))
+- otomi template command ([62ea049](https://github.com/redkubes/otomi-stack/commit/62ea0496e91b0e5abf90b81188a57ce655cae9e5))
+- remove container ([1660c12](https://github.com/redkubes/otomi-stack/commit/1660c12b4066f935c49b7d870a9b0adfbca4f97d))
+- rework [ci skip](<[2722be7](https://github.com/redkubes/otomi-stack/commit/2722be76c46c59c938a30b3e76873e0cf791051c)>)
 
 ## [0.11.0](https://github.com/redkubes/otomi-stack/compare/v0.10.110...v0.11.0) (2020-09-10)
 
-
 ### Bug Fixes
 
-* evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
-* git commit now outside of container [ci skip] ([7bbf067](https://github.com/redkubes/otomi-stack/commit/7bbf0672a70450b56915f5b716730e220941f156))
-* missing demo file [ci skip] ([3272dc3](https://github.com/redkubes/otomi-stack/commit/3272dc34e373ef7946e62e2e516557e458c7a293))
-* typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
+- evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
+- git commit now outside of container [ci skip](<[7bbf067](https://github.com/redkubes/otomi-stack/commit/7bbf0672a70450b56915f5b716730e220941f156)>)
+- missing demo file [ci skip](<[3272dc3](https://github.com/redkubes/otomi-stack/commit/3272dc34e373ef7946e62e2e516557e458c7a293)>)
+- typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
 
 ### [0.10.111](https://github.com/redkubes/otomi-stack/compare/v0.10.110...v0.10.111) (2020-09-09)
 
-
 ### Bug Fixes
 
-* evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
-* only encode secrets, jobs get rescheduled when changed [ci skip] ([c05c1c9](https://github.com/redkubes/otomi-stack/commit/c05c1c9cd62c0fc4231e5a315611da3114974946))
-* typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
+- evaluate .secrets file ([ede3b1b](https://github.com/redkubes/otomi-stack/commit/ede3b1bd06b8208b033306591b96889c16daf040))
+- only encode secrets, jobs get rescheduled when changed [ci skip](<[c05c1c9](https://github.com/redkubes/otomi-stack/commit/c05c1c9cd62c0fc4231e5a315611da3114974946)>)
+- typo ([c185215](https://github.com/redkubes/otomi-stack/commit/c18521503d225ee558e621cd94d46e9baae92b72))
 
 ### [0.10.110](https://github.com/redkubes/otomi-stack/compare/v0.10.109...v0.10.110) (2020-09-01)
 
-
 ### Bug Fixes
 
-* skip tls verify when cert=staging [ci skip] ([2077f06](https://github.com/redkubes/otomi-stack/commit/2077f062be9b80846b8c67e7d3444531a60891ee))
+- skip tls verify when cert=staging [ci skip](<[2077f06](https://github.com/redkubes/otomi-stack/commit/2077f062be9b80846b8c67e7d3444531a60891ee)>)
 
 ### [0.10.109](https://github.com/redkubes/otomi-stack/compare/v0.10.108...v0.10.109) (2020-09-01)
 
-
 ### Feature Improvements
 
-* added certs-aws task to import letsencrypt certs [ci skip] ([e685c43](https://github.com/redkubes/otomi-stack/commit/e685c43ea29135e1a03c26cfdccddaa0dc458f31))
+- added certs-aws task to import letsencrypt certs [ci skip](<[e685c43](https://github.com/redkubes/otomi-stack/commit/e685c43ea29135e1a03c26cfdccddaa0dc458f31)>)
 
 ### [0.10.108](https://github.com/redkubes/otomi-stack/compare/v0.10.107...v0.10.108) (2020-08-27)
 
-
 ### Bug Fixes
 
-* proxy target onprem [ci skip] ([c0b9f74](https://github.com/redkubes/otomi-stack/commit/c0b9f7479f10f6fb576ce6d42e20b806d8158902))
+- proxy target onprem [ci skip](<[c0b9f74](https://github.com/redkubes/otomi-stack/commit/c0b9f7479f10f6fb576ce6d42e20b806d8158902)>)
 
 ### [0.10.107](https://github.com/redkubes/otomi-stack/compare/v0.10.106...v0.10.107) (2020-08-27)
 
-
 ### Bug Fixes
 
-* oauth-proxy target onprem [ci skip] ([8ad50ea](https://github.com/redkubes/otomi-stack/commit/8ad50eaa18cad50c440d98bb2fe54eea79d4de05))
+- oauth-proxy target onprem [ci skip](<[8ad50ea](https://github.com/redkubes/otomi-stack/commit/8ad50eaa18cad50c440d98bb2fe54eea79d4de05)>)
 
 ### [0.10.106](https://github.com/redkubes/otomi-stack/compare/v0.10.105...v0.10.106) (2020-08-27)
 
-
 ### Bug Fixes
 
-* metrics server in kube-system [ci skip] ([77a2cb1](https://github.com/redkubes/otomi-stack/commit/77a2cb190da8923487bd6a5100939e8a1ae45b19))
+- metrics server in kube-system [ci skip](<[77a2cb1](https://github.com/redkubes/otomi-stack/commit/77a2cb190da8923487bd6a5100939e8a1ae45b19)>)
 
 ### [0.10.105](https://github.com/redkubes/otomi-stack/compare/v0.10.104...v0.10.105) (2020-08-27)
 
-
 ### Bug Fixes
 
-* certs regression [ci skip] ([994b142](https://github.com/redkubes/otomi-stack/commit/994b1429dc3e25960228e5b503c99d012d467c26))
+- certs regression [ci skip](<[994b142](https://github.com/redkubes/otomi-stack/commit/994b1429dc3e25960228e5b503c99d012d467c26)>)
 
 ### [0.10.104](https://github.com/redkubes/otomi-stack/compare/v0.10.103...v0.10.104) (2020-08-27)
 
-
 ### Bug Fixes
 
-* auth cert [ci skip]C ([74071a9](https://github.com/redkubes/otomi-stack/commit/74071a97a4a5389e26f1be4b53b2f4e75e42ee60))
+- auth cert [ci skip]C ([74071a9](https://github.com/redkubes/otomi-stack/commit/74071a97a4a5389e26f1be4b53b2f4e75e42ee60))
 
 ### [0.10.103](https://github.com/redkubes/otomi-stack/compare/v0.10.102...v0.10.103) (2020-08-27)
 
-
 ### Bug Fixes
 
-* no metrics server if not onprem [ci skip] ([57bfdf9](https://github.com/redkubes/otomi-stack/commit/57bfdf9ee2f43bed9d4a508d089927f2743391da))
+- no metrics server if not onprem [ci skip](<[57bfdf9](https://github.com/redkubes/otomi-stack/commit/57bfdf9ee2f43bed9d4a508d089927f2743391da)>)
 
 ### [0.10.102](https://github.com/redkubes/otomi-stack/compare/v0.10.101...v0.10.102) (2020-08-27)
 
 ### [0.10.101](https://github.com/redkubes/otomi-stack/compare/v0.10.100...v0.10.101) (2020-08-27)
 
-
 ### Bug Fixes
 
-* chart helper [ci skip] ([acc6f90](https://github.com/redkubes/otomi-stack/commit/acc6f90ee1ff4a3cbe411fa69e4eae1b108f53e6))
-* regression from merge perhaps [ci skip] ([563ea19](https://github.com/redkubes/otomi-stack/commit/563ea195544af0a734a1a2df0af4a1ab79a5b0a1))
+- chart helper [ci skip](<[acc6f90](https://github.com/redkubes/otomi-stack/commit/acc6f90ee1ff4a3cbe411fa69e4eae1b108f53e6)>)
+- regression from merge perhaps [ci skip](<[563ea19](https://github.com/redkubes/otomi-stack/commit/563ea195544af0a734a1a2df0af4a1ab79a5b0a1)>)
 
 ### [0.10.100](https://github.com/redkubes/otomi-stack/compare/v0.10.99...v0.10.100) (2020-08-27)
 
-
 ### Bug Fixes
 
-* certs [ci skip] ([c6f5215](https://github.com/redkubes/otomi-stack/commit/c6f5215a88bdf18841f66a05f1f9f249442819ac))
-* dnsprovider [ci skip] ([0b217e8](https://github.com/redkubes/otomi-stack/commit/0b217e8fae22ad4d6badcb4066337426c77a9ede))
+- certs [ci skip](<[c6f5215](https://github.com/redkubes/otomi-stack/commit/c6f5215a88bdf18841f66a05f1f9f249442819ac)>)
+- dnsprovider [ci skip](<[0b217e8](https://github.com/redkubes/otomi-stack/commit/0b217e8fae22ad4d6badcb4066337426c77a9ede)>)
 
 ### [0.10.99](https://github.com/redkubes/otomi-stack/compare/v0.10.98...v0.10.99) (2020-08-27)
 
-
 ### Bug Fixes
 
-* alerts channel [ci skip] ([9bdff35](https://github.com/redkubes/otomi-stack/commit/9bdff3501dcd4f83085d5fb4ce739bb7ebfa7bba))
-* harbod charts permissions issue [ci skip] ([1435610](https://github.com/redkubes/otomi-stack/commit/143561081f5b03082e7a93dcd7c6ccc43d664c58))
-* labels gone [ci skip] ([2d5cb32](https://github.com/redkubes/otomi-stack/commit/2d5cb32b8216bd290d8b0188cc23ab8ce5ab860e))
-* labels gone [ci skip] ([f66cdf9](https://github.com/redkubes/otomi-stack/commit/f66cdf90789cb90ea7d4439dca0d7e7f9713c6cf))
-
+- alerts channel [ci skip](<[9bdff35](https://github.com/redkubes/otomi-stack/commit/9bdff3501dcd4f83085d5fb4ce739bb7ebfa7bba)>)
+- harbod charts permissions issue [ci skip](<[1435610](https://github.com/redkubes/otomi-stack/commit/143561081f5b03082e7a93dcd7c6ccc43d664c58)>)
+- labels gone [ci skip](<[2d5cb32](https://github.com/redkubes/otomi-stack/commit/2d5cb32b8216bd290d8b0188cc23ab8ce5ab860e)>)
+- labels gone [ci skip](<[f66cdf9](https://github.com/redkubes/otomi-stack/commit/f66cdf90789cb90ea7d4439dca0d7e7f9713c6cf)>)
 
 ### Code Refactoring
 
-* all certs now in artifacts [ci skip] ([41b84a9](https://github.com/redkubes/otomi-stack/commit/41b84a97e8091e3279642c66249b784327a80fad))
-* **oidc:** keycloak=no falls back to oidc idp ([fbc7aea](https://github.com/redkubes/otomi-stack/commit/fbc7aea03341024670520ab536e03e092c251172))
+- all certs now in artifacts [ci skip](<[41b84a9](https://github.com/redkubes/otomi-stack/commit/41b84a97e8091e3279642c66249b784327a80fad)>)
+- **oidc:** keycloak=no falls back to oidc idp ([fbc7aea](https://github.com/redkubes/otomi-stack/commit/fbc7aea03341024670520ab536e03e092c251172))
 
 ### [0.10.98](https://github.com/redkubes/otomi-stack/compare/v0.10.97...v0.10.98) (2020-08-24)
 
-
 ### Bug Fixes
 
-* missing redirect url [ci skip] ([7ca53f0](https://github.com/redkubes/otomi-stack/commit/7ca53f0adc4367a393f333215aac7822843cea15))
+- missing redirect url [ci skip](<[7ca53f0](https://github.com/redkubes/otomi-stack/commit/7ca53f0adc4367a393f333215aac7822843cea15)>)
 
 ### [0.10.97](https://github.com/redkubes/otomi-stack/compare/v0.10.96...v0.10.97) (2020-08-24)
 
-
 ### Bug Fixes
 
-* missing team-admin value for keycloak [ci skip] ([2513b58](https://github.com/redkubes/otomi-stack/commit/2513b58b5508ec7644241e3e3a7403f76d48624e))
+- missing team-admin value for keycloak [ci skip](<[2513b58](https://github.com/redkubes/otomi-stack/commit/2513b58b5508ec7644241e3e3a7403f76d48624e)>)
 
 ### [0.10.96](https://github.com/redkubes/otomi-stack/compare/v0.10.95...v0.10.96) (2020-08-23)
 
-
 ### Bug Fixes
 
-* oidc groups, keycloak values, pullserets [ci skip] ([aef874e](https://github.com/redkubes/otomi-stack/commit/aef874e4afc0ab5328d2a642037bc994924a6c87))
-
+- oidc groups, keycloak values, pullserets [ci skip](<[aef874e](https://github.com/redkubes/otomi-stack/commit/aef874e4afc0ab5328d2a642037bc994924a6c87)>)
 
 ### Others
 
-* **release:** 0.10.95 ([04fcde9](https://github.com/redkubes/otomi-stack/commit/04fcde95a31ecf3ea26b5686e3c9115c3382f0d8))
+- **release:** 0.10.95 ([04fcde9](https://github.com/redkubes/otomi-stack/commit/04fcde95a31ecf3ea26b5686e3c9115c3382f0d8))
 
 ### [0.10.95](https://github.com/redkubes/otomi-stack/compare/v0.10.94...v0.10.95) (2020-08-23)
 
-
 ### Others
 
-* **release:** 0.10.94 ([4bc7cdd](https://github.com/redkubes/otomi-stack/commit/4bc7cdd9d1507af44e04d4c9c098474a9760eb15))
+- **release:** 0.10.94 ([4bc7cdd](https://github.com/redkubes/otomi-stack/commit/4bc7cdd9d1507af44e04d4c9c098474a9760eb15))
 
 ### [0.10.94](https://github.com/redkubes/otomi-stack/compare/v0.10.93...v0.10.94) (2020-08-23)
 
-
 ### Bug Fixes
 
-* oidc defaults [ci skip] ([6c665b7](https://github.com/redkubes/otomi-stack/commit/6c665b70e4d49b50278f9458e656bafc3253bbcc))
+- oidc defaults [ci skip](<[6c665b7](https://github.com/redkubes/otomi-stack/commit/6c665b70e4d49b50278f9458e656bafc3253bbcc)>)
 
 ### [0.10.93](https://github.com/redkubes/otomi-stack/compare/v0.10.91...v0.10.93) (2020-08-23)
 
-
 ### Bug Fixes
 
-* values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
-
+- values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
 
 ### Others
 
-* **release:** 0.10.92 ([4bbb4a1](https://github.com/redkubes/otomi-stack/commit/4bbb4a157348ae9a86e6ee2a4cdaef1d4322736d))
+- **release:** 0.10.92 ([4bbb4a1](https://github.com/redkubes/otomi-stack/commit/4bbb4a157348ae9a86e6ee2a4cdaef1d4322736d))
 
 ### [0.10.92](https://github.com/redkubes/otomi-stack/compare/v0.10.91...v0.10.92) (2020-08-23)
 
-
 ### Bug Fixes
 
-* values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
+- values ([564985f](https://github.com/redkubes/otomi-stack/commit/564985f76c31feca914a5b051708910de323a163))
 
 ### [0.10.91](https://github.com/redkubes/otomi-stack/compare/v0.10.90...v0.10.91) (2020-08-22)
 
-
 ### Features
 
-* **service:** knative service can have secretKeyRef [ci skip] ([e59f38c](https://github.com/redkubes/otomi-stack/commit/e59f38cb7e2a26e944b7c264849900c3bacd729c))
+- **service:** knative service can have secretKeyRef [ci skip](<[e59f38c](https://github.com/redkubes/otomi-stack/commit/e59f38cb7e2a26e944b7c264849900c3bacd729c)>)
 
 ### [0.10.90](https://github.com/redkubes/otomi-stack/compare/v0.10.89...v0.10.90) (2020-08-19)
 
-
 ### Bug Fixes
 
-* probes [ci skip] ([86a5f96](https://github.com/redkubes/otomi-stack/commit/86a5f9657754cac921b62dbb72eef446f555f58c))
+- probes [ci skip](<[86a5f96](https://github.com/redkubes/otomi-stack/commit/86a5f9657754cac921b62dbb72eef446f555f58c)>)
 
 ### [0.10.89](https://github.com/redkubes/otomi-stack/compare/v0.10.88...v0.10.89) (2020-08-18)
 
-
 ### Bug Fixes
 
-* team svc probes [ci skip] ([97c05d4](https://github.com/redkubes/otomi-stack/commit/97c05d46ac4d385c516e7a2faf1c885542520dd4))
+- team svc probes [ci skip](<[97c05d4](https://github.com/redkubes/otomi-stack/commit/97c05d46ac4d385c516e7a2faf1c885542520dd4)>)
 
 ### [0.10.88](https://github.com/redkubes/otomi-stack/compare/v0.10.87...v0.10.88) (2020-08-18)
 
-
 ### Bug Fixes
 
-* docker secrets attached to sa [ci skip] ([66aab07](https://github.com/redkubes/otomi-stack/commit/66aab075e3559ffe4288ad3f9c635df617a9cc12))
+- docker secrets attached to sa [ci skip](<[66aab07](https://github.com/redkubes/otomi-stack/commit/66aab075e3559ffe4288ad3f9c635df617a9cc12)>)
 
 ### [0.10.87](https://github.com/redkubes/otomi-stack/compare/v0.10.86...v0.10.87) (2020-08-18)
 
-
 ### Bug Fixes
 
-* docker secret [ci skip] ([4a27cd0](https://github.com/redkubes/otomi-stack/commit/4a27cd00486e3cccd5d1424fead11cb7a8c13833))
+- docker secret [ci skip](<[4a27cd0](https://github.com/redkubes/otomi-stack/commit/4a27cd00486e3cccd5d1424fead11cb7a8c13833)>)
 
 ### [0.10.86](https://github.com/redkubes/otomi-stack/compare/v0.10.85...v0.10.86) (2020-08-18)
 
-
 ### Bug Fixes
 
-* disabling probe for scaleToZero [ci skip] ([ff89dcf](https://github.com/redkubes/otomi-stack/commit/ff89dcfee4c6d4fff30c374a66538a74b0edec3c))
+- disabling probe for scaleToZero [ci skip](<[ff89dcf](https://github.com/redkubes/otomi-stack/commit/ff89dcfee4c6d4fff30c374a66538a74b0edec3c)>)
 
 ### [0.10.85](https://github.com/redkubes/otomi-stack/compare/v0.10.84...v0.10.85) (2020-08-18)
 
-
 ### Bug Fixes
 
-* harbor team names ordering [ci skip] ([5e7c7af](https://github.com/redkubes/otomi-stack/commit/5e7c7af00119efb2e661b002f2804def96f7b76d))
+- harbor team names ordering [ci skip](<[5e7c7af](https://github.com/redkubes/otomi-stack/commit/5e7c7af00119efb2e661b002f2804def96f7b76d)>)
 
 ### [0.10.84](https://github.com/redkubes/otomi-stack/compare/v0.10.83...v0.10.84) (2020-08-18)
 
-
 ### Bug Fixes
 
-* generic secret entries [ci skip] ([95afbc9](https://github.com/redkubes/otomi-stack/commit/95afbc972621f7f2d7c03cf3aec80f7f7bf3a6c3))
-
+- generic secret entries [ci skip](<[95afbc9](https://github.com/redkubes/otomi-stack/commit/95afbc972621f7f2d7c03cf3aec80f7f7bf3a6c3)>)
 
 ### Others
 
-* **release:** 0.10.83 ([8ae0c0a](https://github.com/redkubes/otomi-stack/commit/8ae0c0a227cf808c94952ebf28c824737be30b4a))
+- **release:** 0.10.83 ([8ae0c0a](https://github.com/redkubes/otomi-stack/commit/8ae0c0a227cf808c94952ebf28c824737be30b4a))
 
 ### [0.10.83](https://github.com/redkubes/otomi-stack/compare/v0.10.82...v0.10.83) (2020-08-18)
 
-
 ### Bug Fixes
 
-* create service account for jobs and cronjobs ([b481a3b](https://github.com/redkubes/otomi-stack/commit/b481a3ba4d522cf7ce8a7f49ea8fb610ba7f5d9c))
-* envoy crd, secrets [ci skip] ([f4634d2](https://github.com/redkubes/otomi-stack/commit/f4634d2aa62f31b6d8f49e35273c881e0e4f883b))
-* provide env to cronjob ([53a8315](https://github.com/redkubes/otomi-stack/commit/53a831510522a409b7bda6882e468c66b027e287))
-* typos and add spell checker config ([18f5f20](https://github.com/redkubes/otomi-stack/commit/18f5f2099b6271b0d424c0bcb844e77c89e1ddf1))
+- create service account for jobs and cronjobs ([b481a3b](https://github.com/redkubes/otomi-stack/commit/b481a3ba4d522cf7ce8a7f49ea8fb610ba7f5d9c))
+- envoy crd, secrets [ci skip](<[f4634d2](https://github.com/redkubes/otomi-stack/commit/f4634d2aa62f31b6d8f49e35273c881e0e4f883b)>)
+- provide env to cronjob ([53a8315](https://github.com/redkubes/otomi-stack/commit/53a831510522a409b7bda6882e468c66b027e287))
+- typos and add spell checker config ([18f5f20](https://github.com/redkubes/otomi-stack/commit/18f5f2099b6271b0d424c0bcb844e77c89e1ddf1))
 
 ### [0.10.82](https://github.com/redkubes/otomi-stack/compare/v0.10.81...v0.10.82) (2020-08-18)
 
-
 ### Bug Fixes
 
-* add condition for creating public ingress ([e33f871](https://github.com/redkubes/otomi-stack/commit/e33f871d10bdd77b4bbecc2bf4a16ca4ae7d64e6))
+- add condition for creating public ingress ([e33f871](https://github.com/redkubes/otomi-stack/commit/e33f871d10bdd77b4bbecc2bf4a16ca4ae7d64e6))
 
 ### [0.10.81](https://github.com/redkubes/otomi-stack/compare/v0.10.80...v0.10.81) (2020-08-16)
 
-
 ### Bug Fixes
 
-* nginx hpa, prom metrics [ci skip] ([a148172](https://github.com/redkubes/otomi-stack/commit/a148172211d42c085fca6339fb8f77367c7cba78))
-* upgraded+fixed prom op, fixed nginx replicas ([5553329](https://github.com/redkubes/otomi-stack/commit/555332938c470bc7baab9b0b0728be7a5a7d0488))
+- nginx hpa, prom metrics [ci skip](<[a148172](https://github.com/redkubes/otomi-stack/commit/a148172211d42c085fca6339fb8f77367c7cba78)>)
+- upgraded+fixed prom op, fixed nginx replicas ([5553329](https://github.com/redkubes/otomi-stack/commit/555332938c470bc7baab9b0b0728be7a5a7d0488))
 
 ### [0.10.80](https://github.com/redkubes/otomi-stack/compare/v0.10.79...v0.10.80) (2020-08-07)
 
-
 ### Bug Fixes
 
-* blackbox exporter for teams [ci skip] ([4243a6c](https://github.com/redkubes/otomi-stack/commit/4243a6ccdac02b956763b601b2746ac702ff9469))
-* metrics for teams [ci skip] ([fed3992](https://github.com/redkubes/otomi-stack/commit/fed39923a37f6eee4b6a63434af8ce009aa782b6))
+- blackbox exporter for teams [ci skip](<[4243a6c](https://github.com/redkubes/otomi-stack/commit/4243a6ccdac02b956763b601b2746ac702ff9469)>)
+- metrics for teams [ci skip](<[fed3992](https://github.com/redkubes/otomi-stack/commit/fed39923a37f6eee4b6a63434af8ce009aa782b6)>)
 
 ### [0.10.79](https://github.com/redkubes/otomi-stack/compare/v0.10.78...v0.10.79) (2020-08-07)
 
-
 ### Bug Fixes
 
-* auth ingress [ci skip] ([553e262](https://github.com/redkubes/otomi-stack/commit/553e2624659f15fcd6b65043baccf96987acb3c2))
+- auth ingress [ci skip](<[553e262](https://github.com/redkubes/otomi-stack/commit/553e2624659f15fcd6b65043baccf96987acb3c2)>)
 
 ### [0.10.78](https://github.com/redkubes/otomi-stack/compare/v0.10.77...v0.10.78) (2020-08-07)
 
-
 ### Bug Fixes
 
-* httpbin path [ci skip] ([0769236](https://github.com/redkubes/otomi-stack/commit/076923670dd33bedc4a908c7bb31db4ceae502df))
+- httpbin path [ci skip](<[0769236](https://github.com/redkubes/otomi-stack/commit/076923670dd33bedc4a908c7bb31db4ceae502df)>)
 
 ### [0.10.77](https://github.com/redkubes/otomi-stack/compare/v0.10.76...v0.10.77) (2020-08-07)
 
-
 ### Bug Fixes
 
-* redirect to otomi [ci skip] ([edbfa72](https://github.com/redkubes/otomi-stack/commit/edbfa726980633db4fc28073edb2957e662f017f))
+- redirect to otomi [ci skip](<[edbfa72](https://github.com/redkubes/otomi-stack/commit/edbfa726980633db4fc28073edb2957e662f017f)>)
 
 ### [0.10.76](https://github.com/redkubes/otomi-stack/compare/v0.10.75...v0.10.76) (2020-08-07)
 
-
 ### Bug Fixes
 
-* harbor logo for teams c[ skip] ([6b69a2f](https://github.com/redkubes/otomi-stack/commit/6b69a2f996ec577af5ef91ae00d3977c06c6d99a))
+- harbor logo for teams c[ skip](<[6b69a2f](https://github.com/redkubes/otomi-stack/commit/6b69a2f996ec577af5ef91ae00d3977c06c6d99a)>)
 
 ### [0.10.75](https://github.com/redkubes/otomi-stack/compare/v0.10.74...v0.10.75) (2020-08-07)
 
-
 ### Bug Fixes
 
-* httpbin on own domain [ci skip] ([bf51d73](https://github.com/redkubes/otomi-stack/commit/bf51d73c04f2ed2ee03cbe2ce4f492119b70e6a9))
+- httpbin on own domain [ci skip](<[bf51d73](https://github.com/redkubes/otomi-stack/commit/bf51d73c04f2ed2ee03cbe2ce4f492119b70e6a9)>)
 
 ### [0.10.74](https://github.com/redkubes/otomi-stack/compare/v0.10.73...v0.10.74) (2020-08-07)
 
-
 ### Bug Fixes
 
-* core apps on shared domain [ci skip] ([ce8fdf3](https://github.com/redkubes/otomi-stack/commit/ce8fdf303683f43d4fbdaad6d3e84a2dc88b8881))
+- core apps on shared domain [ci skip](<[ce8fdf3](https://github.com/redkubes/otomi-stack/commit/ce8fdf303683f43d4fbdaad6d3e84a2dc88b8881)>)
 
 ### [0.10.73](https://github.com/redkubes/otomi-stack/compare/v0.10.72...v0.10.73) (2020-08-06)
 
-
 ### Bug Fixes
 
-* harbor values [ci skip] ([a36204f](https://github.com/redkubes/otomi-stack/commit/a36204ff20c78289a5495d54e482cf6d0aafb801))
+- harbor values [ci skip](<[a36204f](https://github.com/redkubes/otomi-stack/commit/a36204ff20c78289a5495d54e482cf6d0aafb801)>)
 
 ### [0.10.72](https://github.com/redkubes/otomi-stack/compare/v0.10.71...v0.10.72) (2020-07-29)
 
-
 ### Bug Fixes
 
-* missing httpbin chart [ci skip] ([2b58a9c](https://github.com/redkubes/otomi-stack/commit/2b58a9cc89d3760c9d2925696442858ab5eb1c44))
-* missing httpbin chart [ci skip] ([c2a778b](https://github.com/redkubes/otomi-stack/commit/c2a778b0120537230789845ff563655781b0891d))
-
+- missing httpbin chart [ci skip](<[2b58a9c](https://github.com/redkubes/otomi-stack/commit/2b58a9cc89d3760c9d2925696442858ab5eb1c44)>)
+- missing httpbin chart [ci skip](<[c2a778b](https://github.com/redkubes/otomi-stack/commit/c2a778b0120537230789845ff563655781b0891d)>)
 
 ### Feature Improvements
 
-* added OIDC_CLIENT_SECRET for api [ci skip] ([25d932a](https://github.com/redkubes/otomi-stack/commit/25d932a286f3fa858d42e21889f1097f36086cdc))
+- added OIDC_CLIENT_SECRET for api [ci skip](<[25d932a](https://github.com/redkubes/otomi-stack/commit/25d932a286f3fa858d42e21889f1097f36086cdc)>)
 
 ### [0.10.71](https://github.com/redkubes/otomi-stack/compare/v0.10.70...v0.10.71) (2020-07-29)
 
-
 ### Bug Fixes
 
-* team workloads [ci skip] ([c299ce5](https://github.com/redkubes/otomi-stack/commit/c299ce57a121b9ce8f24faed95d6db342431e370))
-* token forward for api [ci skip] ([98f709b](https://github.com/redkubes/otomi-stack/commit/98f709b7e64ee58aafdda24a6943f404c84a0d17))
+- team workloads [ci skip](<[c299ce5](https://github.com/redkubes/otomi-stack/commit/c299ce57a121b9ce8f24faed95d6db342431e370)>)
+- token forward for api [ci skip](<[98f709b](https://github.com/redkubes/otomi-stack/commit/98f709b7e64ee58aafdda24a6943f404c84a0d17)>)
 
 ### [0.10.70](https://github.com/redkubes/otomi-stack/compare/v0.10.69...v0.10.70) (2020-07-29)
 
-
 ### Bug Fixes
 
-* gave admin group access to everything [ci skip] ([368cc77](https://github.com/redkubes/otomi-stack/commit/368cc7761e686d01a232555d2609d5d892182727))
+- gave admin group access to everything [ci skip](<[368cc77](https://github.com/redkubes/otomi-stack/commit/368cc7761e686d01a232555d2609d5d892182727)>)
 
 ### [0.10.69](https://github.com/redkubes/otomi-stack/compare/v0.10.68...v0.10.69) (2020-07-29)
 
-
 ### Bug Fixes
 
-* logout link [ci skip] ([9558f7e](https://github.com/redkubes/otomi-stack/commit/9558f7e52f9d6e6f586e4f9f5b0c564537148d23))
+- logout link [ci skip](<[9558f7e](https://github.com/redkubes/otomi-stack/commit/9558f7e52f9d6e6f586e4f9f5b0c564537148d23)>)
 
 ### [0.10.68](https://github.com/redkubes/otomi-stack/compare/v0.10.67...v0.10.68) (2020-07-28)
 
-
 ### Bug Fixes
 
-* logout link [ci skip] ([5600c20](https://github.com/redkubes/otomi-stack/commit/5600c205e2459e39ca2e9d9ce1311a677af97249))
+- logout link [ci skip](<[5600c20](https://github.com/redkubes/otomi-stack/commit/5600c205e2459e39ca2e9d9ce1311a677af97249)>)
 
 ### [0.10.67](https://github.com/redkubes/otomi-stack/compare/v0.10.65...v0.10.67) (2020-07-28)
 
 ### [0.10.66](https://github.com/redkubes/otomi-stack/compare/v0.10.65...v0.10.66) (2020-07-28)
 
-
 ### Features
 
-* **(add keycloak chart):** keycloak chart stack service ([7e4355b](https://github.com/redkubes/otomi-stack/commit/7e4355bef7a00d2b7c411c5bb4dc80af8700b988))
-
+- **(add keycloak chart):** keycloak chart stack service ([7e4355b](https://github.com/redkubes/otomi-stack/commit/7e4355bef7a00d2b7c411c5bb4dc80af8700b988))
 
 ### Bug Fixes
 
-* auth proxy [ci skip] ([27e4828](https://github.com/redkubes/otomi-stack/commit/27e4828874b964ff37e9de67f836757dffa7d120))
-* gateway domains ([c57df11](https://github.com/redkubes/otomi-stack/commit/c57df11e11fd53bd43aabc1242a17e25f684a59c))
-* harbor secret ([a71d925](https://github.com/redkubes/otomi-stack/commit/a71d925d4ddd79ac539851d07762efcf532933b6))
-* keycloak, groups, logout [ci skip] ([61e4422](https://github.com/redkubes/otomi-stack/commit/61e4422a5ae5702fd8c9c9098da989830f95d20e))
-* oauth proxy ([d778198](https://github.com/redkubes/otomi-stack/commit/d7781986b0e385cd009bd830a6eb843293dbae9f))
-
+- auth proxy [ci skip](<[27e4828](https://github.com/redkubes/otomi-stack/commit/27e4828874b964ff37e9de67f836757dffa7d120)>)
+- gateway domains ([c57df11](https://github.com/redkubes/otomi-stack/commit/c57df11e11fd53bd43aabc1242a17e25f684a59c))
+- harbor secret ([a71d925](https://github.com/redkubes/otomi-stack/commit/a71d925d4ddd79ac539851d07762efcf532933b6))
+- keycloak, groups, logout [ci skip](<[61e4422](https://github.com/redkubes/otomi-stack/commit/61e4422a5ae5702fd8c9c9098da989830f95d20e)>)
+- oauth proxy ([d778198](https://github.com/redkubes/otomi-stack/commit/d7781986b0e385cd009bd830a6eb843293dbae9f))
 
 ### Code Refactoring
 
-* merge master ([3ea5f78](https://github.com/redkubes/otomi-stack/commit/3ea5f78db51309b6fab5c465dd70bc607c8a54e0))
-* **add kk alias:** add kk alias for keycloak ns commands ([ee50c44](https://github.com/redkubes/otomi-stack/commit/ee50c445fedc27d12e0415569a18485006c99661))
-* **expose keycloak through public ingress:** add isShared:true ([9b75288](https://github.com/redkubes/otomi-stack/commit/9b75288c51cde58565afe161a3d53297f15238c7))
-* **keycloak-http svc:** keycloak http service exposed on port 80 ([adeac7d](https://github.com/redkubes/otomi-stack/commit/adeac7de235661954ea04f95f0fd57987ae7ecd8))
-
+- merge master ([3ea5f78](https://github.com/redkubes/otomi-stack/commit/3ea5f78db51309b6fab5c465dd70bc607c8a54e0))
+- **add kk alias:** add kk alias for keycloak ns commands ([ee50c44](https://github.com/redkubes/otomi-stack/commit/ee50c445fedc27d12e0415569a18485006c99661))
+- **expose keycloak through public ingress:** add isShared:true ([9b75288](https://github.com/redkubes/otomi-stack/commit/9b75288c51cde58565afe161a3d53297f15238c7))
+- **keycloak-http svc:** keycloak http service exposed on port 80 ([adeac7d](https://github.com/redkubes/otomi-stack/commit/adeac7de235661954ea04f95f0fd57987ae7ecd8))
 
 ### Feature Improvements
 
-* upgraded prometheus-operator, knative ([42a6feb](https://github.com/redkubes/otomi-stack/commit/42a6feb420660601d891d1ff1b3ff04447ffe458))
+- upgraded prometheus-operator, knative ([42a6feb](https://github.com/redkubes/otomi-stack/commit/42a6feb420660601d891d1ff1b3ff04447ffe458))
 
 ### [0.10.65](https://github.com/redkubes/otomi-stack/compare/v0.10.64...v0.10.65) (2020-07-22)
 
-
 ### Bug Fixes
 
-* helmfile regression still exists [ci skip] ([795072d](https://github.com/redkubes/otomi-stack/commit/795072dbb7ded3b3f6d4ffb5d2e96b75703b5503))
+- helmfile regression still exists [ci skip](<[795072d](https://github.com/redkubes/otomi-stack/commit/795072dbb7ded3b3f6d4ffb5d2e96b75703b5503)>)
 
 ### [0.10.64](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.64) (2020-07-22)
 
-
 ### Bug Fixes
 
-* istio-operator chart missing ns, worklfow latest only on release [ci skip] ([743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393))
-* minAvailable now 2 for nginx [ci skip] ([f2ed6c4](https://github.com/redkubes/otomi-stack/commit/f2ed6c4a227ec747c6bf879488cdd5295cc1e41d))
-* missing files [ci skip] ([e07b7e7](https://github.com/redkubes/otomi-stack/commit/e07b7e7416e0ef882b006e83ae56dd1d3cef0bd4))
-
+- istio-operator chart missing ns, worklfow latest only on release [ci skip](<[743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393)>)
+- minAvailable now 2 for nginx [ci skip](<[f2ed6c4](https://github.com/redkubes/otomi-stack/commit/f2ed6c4a227ec747c6bf879488cdd5295cc1e41d)>)
+- missing files [ci skip](<[e07b7e7](https://github.com/redkubes/otomi-stack/commit/e07b7e7416e0ef882b006e83ae56dd1d3cef0bd4)>)
 
 ### Others
 
-* **release:** 0.10.62 ([8cde246](https://github.com/redkubes/otomi-stack/commit/8cde246ce81214036bf8275ed9921f509fb14ca6))
-
+- **release:** 0.10.62 ([8cde246](https://github.com/redkubes/otomi-stack/commit/8cde246ce81214036bf8275ed9921f509fb14ca6))
 
 ### CI
 
-* workflow simplification [ci skip] ([74e78b7](https://github.com/redkubes/otomi-stack/commit/74e78b797bf88854213dab9bca0a7867e1f40bec))
+- workflow simplification [ci skip](<[74e78b7](https://github.com/redkubes/otomi-stack/commit/74e78b797bf88854213dab9bca0a7867e1f40bec)>)
 
 ### [0.10.62](https://github.com/redkubes/otomi-stack/compare/v0.10.61...v0.10.62) (2020-07-20)
 
-
 ### Bug Fixes
 
-* istio-operator chart missing ns, worklfow latest only on release [ci skip] ([743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393))
+- istio-operator chart missing ns, worklfow latest only on release [ci skip](<[743af75](https://github.com/redkubes/otomi-stack/commit/743af7511c6463ded83c6dd7471ec1d9453fd393)>)
 
 ### [0.10.61](https://github.com/redkubes/otomi-stack/compare/v0.10.60...v0.10.61) (2020-07-16)
 
-
 ### Bug Fixes
 
-* maintenance error [ci skip] ([9309eb6](https://github.com/redkubes/otomi-stack/commit/9309eb631818941720c82c2c32dca9cc614a612c))
+- maintenance error [ci skip](<[9309eb6](https://github.com/redkubes/otomi-stack/commit/9309eb631818941720c82c2c32dca9cc614a612c)>)
 
 ### [0.10.60](https://github.com/redkubes/otomi-stack/compare/v0.10.59...v0.10.60) (2020-07-16)
 
-
 ### Bug Fixes
 
-* filtered out internal services from ingress [ci skip] ([773bfe4](https://github.com/redkubes/otomi-stack/commit/773bfe4e548a45b7c8e1acba142af5f94588e028))
-* upgrade issues, istio upgrade [ci skip] ([2e94275](https://github.com/redkubes/otomi-stack/commit/2e94275ea52279ee9d58721d3f1bf91d15b462d3))
+- filtered out internal services from ingress [ci skip](<[773bfe4](https://github.com/redkubes/otomi-stack/commit/773bfe4e548a45b7c8e1acba142af5f94588e028)>)
+- upgrade issues, istio upgrade [ci skip](<[2e94275](https://github.com/redkubes/otomi-stack/commit/2e94275ea52279ee9d58721d3f1bf91d15b462d3)>)
 
 ### [0.10.59](https://github.com/redkubes/otomi-stack/compare/v0.10.58...v0.10.59) (2020-07-14)
 
-
 ### Bug Fixes
 
-* proxy ingress bug [ci skip] ([057b81e](https://github.com/redkubes/otomi-stack/commit/057b81e73fe19305d86d1ca40ca5bcf46196c8a0))
+- proxy ingress bug [ci skip](<[057b81e](https://github.com/redkubes/otomi-stack/commit/057b81e73fe19305d86d1ca40ca5bcf46196c8a0)>)
 
 ### [0.10.58](https://github.com/redkubes/otomi-stack/compare/v0.10.57...v0.10.58) (2020-07-14)
 
-
 ### Bug Fixes
 
-* exclusion for hasCloudLB [ci skip] ([5c6c32c](https://github.com/redkubes/otomi-stack/commit/5c6c32c4cf54bfc15d80e59e3b3963bcfbd219ee))
+- exclusion for hasCloudLB [ci skip](<[5c6c32c](https://github.com/redkubes/otomi-stack/commit/5c6c32c4cf54bfc15d80e59e3b3963bcfbd219ee)>)
 
 ### [0.10.57](https://github.com/redkubes/otomi-stack/compare/v0.10.56...v0.10.57) (2020-07-14)
 
-
 ### Bug Fixes
 
-* added dns label to proxy [ci skip] ([f7a30e3](https://github.com/redkubes/otomi-stack/commit/f7a30e302ee56e228d9d97da12029a4ea8b95210))
-* readme [ci skip] ([d1c2ba0](https://github.com/redkubes/otomi-stack/commit/d1c2ba09fe04bbe344aa116516e62a256b5d66aa))
-* service probes per team ([2db7f40](https://github.com/redkubes/otomi-stack/commit/2db7f4027f32eddf4ad39de4b4e0bc40f3eecc4c))
-
+- added dns label to proxy [ci skip](<[f7a30e3](https://github.com/redkubes/otomi-stack/commit/f7a30e302ee56e228d9d97da12029a4ea8b95210)>)
+- readme [ci skip](<[d1c2ba0](https://github.com/redkubes/otomi-stack/commit/d1c2ba09fe04bbe344aa116516e62a256b5d66aa)>)
+- service probes per team ([2db7f40](https://github.com/redkubes/otomi-stack/commit/2db7f4027f32eddf4ad39de4b4e0bc40f3eecc4c))
 
 ### Feature Improvements
 
-* upgraded prom operator [ci skip] ([976263a](https://github.com/redkubes/otomi-stack/commit/976263af5afc733c1f93544d657c1b1a755027c6))
+- upgraded prom operator [ci skip](<[976263a](https://github.com/redkubes/otomi-stack/commit/976263af5afc733c1f93544d657c1b1a755027c6)>)
 
 ### [0.10.56](https://github.com/redkubes/otomi-stack/compare/v0.10.55...v0.10.56) (2020-07-09)
 
-
 ### Bug Fixes
 
-* harbor host [ci skip] ([ff8a0c0](https://github.com/redkubes/otomi-stack/commit/ff8a0c0823452a33630b9af6ef7f2590998890e4))
+- harbor host [ci skip](<[ff8a0c0](https://github.com/redkubes/otomi-stack/commit/ff8a0c0823452a33630b9af6ef7f2590998890e4)>)
 
 ### [0.10.55](https://github.com/redkubes/otomi-stack/compare/v0.10.54...v0.10.55) (2020-07-09)
 
-
 ### Bug Fixes
 
-* alias [ci skip] ([7470946](https://github.com/redkubes/otomi-stack/commit/74709464c33a13139b778d851bd269e594b63e8f))
-* charts upgraded for k8s 1.16 [ci skip] ([6018f60](https://github.com/redkubes/otomi-stack/commit/6018f602e5f755ec94a3fbe6ea85bd4a3c68f375))
+- alias [ci skip](<[7470946](https://github.com/redkubes/otomi-stack/commit/74709464c33a13139b778d851bd269e594b63e8f)>)
+- charts upgraded for k8s 1.16 [ci skip](<[6018f60](https://github.com/redkubes/otomi-stack/commit/6018f602e5f755ec94a3fbe6ea85bd4a3c68f375)>)
 
 ### [0.10.54](https://github.com/redkubes/otomi-stack/compare/v0.10.53...v0.10.54) (2020-07-07)
 
-
 ### Bug Fixes
 
-* paths [ci skip] ([b2be66c](https://github.com/redkubes/otomi-stack/commit/b2be66c4e9ca354fa6f42847b39da367d77fd550))
+- paths [ci skip](<[b2be66c](https://github.com/redkubes/otomi-stack/commit/b2be66c4e9ca354fa6f42847b39da367d77fd550)>)
 
 ### [0.10.53](https://github.com/redkubes/otomi-stack/compare/v0.10.52...v0.10.53) (2020-07-07)
 
-
 ### Bug Fixes
 
-* paths [ci skip] ([bbaab7f](https://github.com/redkubes/otomi-stack/commit/bbaab7fc9df6399829b22c569e9eb755bdf3c49c))
+- paths [ci skip](<[bbaab7f](https://github.com/redkubes/otomi-stack/commit/bbaab7fc9df6399829b22c569e9eb755bdf3c49c)>)
 
 ### [0.10.52](https://github.com/redkubes/otomi-stack/compare/v0.10.51...v0.10.52) (2020-07-07)
 
-
 ### Bug Fixes
 
-* paths easier [ci skip] ([1321d47](https://github.com/redkubes/otomi-stack/commit/1321d474729e693f15beb33eef1197aa375c5750))
+- paths easier [ci skip](<[1321d47](https://github.com/redkubes/otomi-stack/commit/1321d474729e693f15beb33eef1197aa375c5750)>)
 
 ### [0.10.51](https://github.com/redkubes/otomi-stack/compare/v0.10.50...v0.10.51) (2020-07-07)
 
-
 ### Bug Fixes
 
-* defaults for missing values [ci skip] ([6e5455b](https://github.com/redkubes/otomi-stack/commit/6e5455b9d1ab7cbb9a483dcb0b756b895d2e4d08))
+- defaults for missing values [ci skip](<[6e5455b](https://github.com/redkubes/otomi-stack/commit/6e5455b9d1ab7cbb9a483dcb0b756b895d2e4d08)>)
 
 ### [0.10.50](https://github.com/redkubes/otomi-stack/compare/v0.10.49...v0.10.50) (2020-07-07)
 
-
 ### Bug Fixes
 
-* core loki path [ci skip] ([5b10522](https://github.com/redkubes/otomi-stack/commit/5b10522f5ca2ed2348162397e27d86898cc261fe))
+- core loki path [ci skip](<[5b10522](https://github.com/redkubes/otomi-stack/commit/5b10522f5ca2ed2348162397e27d86898cc261fe)>)
 
 ### [0.10.49](https://github.com/redkubes/otomi-stack/compare/v0.10.48...v0.10.49) (2020-07-07)
 
-
 ### Bug Fixes
 
-* disablesync [ci skip] ([8d401c5](https://github.com/redkubes/otomi-stack/commit/8d401c52145db90db9efc7413c56087f1134640e))
-* health check ([9465e9e](https://github.com/redkubes/otomi-stack/commit/9465e9e25d7ebdbcf2c3c2b42b3f0f7afb164d21))
-* missing files ([e1ec9fb](https://github.com/redkubes/otomi-stack/commit/e1ec9fb9b5fa47436a9bc5e73eb56fd06d6401a4))
-
+- disablesync [ci skip](<[8d401c5](https://github.com/redkubes/otomi-stack/commit/8d401c52145db90db9efc7413c56087f1134640e)>)
+- health check ([9465e9e](https://github.com/redkubes/otomi-stack/commit/9465e9e25d7ebdbcf2c3c2b42b3f0f7afb164d21))
+- missing files ([e1ec9fb](https://github.com/redkubes/otomi-stack/commit/e1ec9fb9b5fa47436a9bc5e73eb56fd06d6401a4))
 
 ### Feature Improvements
 
-* added tools server for enc/dec ([3d55eff](https://github.com/redkubes/otomi-stack/commit/3d55eff98101f4ebac5ffb7a632e956e1f7ba376))
+- added tools server for enc/dec ([3d55eff](https://github.com/redkubes/otomi-stack/commit/3d55eff98101f4ebac5ffb7a632e956e1f7ba376))
 
 ### [0.10.48](https://github.com/redkubes/otomi-stack/compare/v0.10.47...v0.10.48) (2020-07-01)
 
-
 ### Bug Fixes
 
-* removed vs appendHeaders as it is deprecated [ci skip] ([827b48e](https://github.com/redkubes/otomi-stack/commit/827b48e57a25932a00b4aa06c8a44b86f2744711))
+- removed vs appendHeaders as it is deprecated [ci skip](<[827b48e](https://github.com/redkubes/otomi-stack/commit/827b48e57a25932a00b4aa06c8a44b86f2744711)>)
 
 ### [0.10.47](https://github.com/redkubes/otomi-stack/compare/v0.10.44...v0.10.47) (2020-06-30)
 
-
 ### Bug Fixes
 
-* helmfile regression, removed crypt step [ci skip] ([b87c885](https://github.com/redkubes/otomi-stack/commit/b87c885a4e4745259de3fa96829f6b8f54ae6d70))
-* helmfile regression, removed crypt step [ci skip] ([a4c15de](https://github.com/redkubes/otomi-stack/commit/a4c15de36934a025ecb45631fa8948b524255622))
-
+- helmfile regression, removed crypt step [ci skip](<[b87c885](https://github.com/redkubes/otomi-stack/commit/b87c885a4e4745259de3fa96829f6b8f54ae6d70)>)
+- helmfile regression, removed crypt step [ci skip](<[a4c15de](https://github.com/redkubes/otomi-stack/commit/a4c15de36934a025ecb45631fa8948b524255622)>)
 
 ### Others
 
-* **release:** 0.10.46 ([39ad769](https://github.com/redkubes/otomi-stack/commit/39ad769b99275dc63df9cc9f28fcad583e4984be))
-* **release:** 0.10.46 ([b4c4b83](https://github.com/redkubes/otomi-stack/commit/b4c4b8351e74dbfae42ff6fce06a3f61ca626eef))
+- **release:** 0.10.46 ([39ad769](https://github.com/redkubes/otomi-stack/commit/39ad769b99275dc63df9cc9f28fcad583e4984be))
+- **release:** 0.10.46 ([b4c4b83](https://github.com/redkubes/otomi-stack/commit/b4c4b8351e74dbfae42ff6fce06a3f61ca626eef))
 
 ### [0.10.46](https://github.com/redkubes/otomi-stack/compare/v0.10.44...v0.10.46) (2020-06-30)
 

@@ -37,6 +37,9 @@ function verbose_env() {
 VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
+GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
+[ "$CI" != "" ] && GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+export GOOGLE_APPLICATION_CREDENTIALS
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -48,7 +51,7 @@ mount_stack_dir=0
 stack_dir='/home/app/stack'
 customer=$(customer_name)
 cmd_image=''
-docker_terminal_params='-t'
+docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
@@ -71,8 +74,10 @@ function show_usage() {
     encrypt    encrypt values in all *.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
+    lint       runs a linter that will check OPA rules on templates (coming soon!)
     pull       wrapper for git pull > decrypt
     template   export k8s resources (use labels like '-l name=prometheus-operator')
+    test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
     lint       run charts linting using kubeval against k8s version (otomi lint 1.16.0)
     x          execute command in container
@@ -114,14 +119,20 @@ function set_otomi_image() {
 }
 
 evaluate_secrets() {
-  local secrets_path="${ENV_DIR}/.secrets"
-  [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
-  source $secrets_path
-  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not found in .secrets" && exit 2
+  if [ "$CI" == "" ]; then
+    local secrets_path="$ENV_DIR/.secrets"
+    [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
+    source $secrets_path
+  fi
+  if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
+    echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$GOOGLE_APPLICATION_CREDENTIALS
+  fi
+
   return 0
 }
 
 validate_cluster_env() {
+  evaluate_secrets
   [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && exit 2
   [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
   return 0
@@ -165,15 +176,17 @@ function drun() {
     verbose_env
   fi
 
+  if [ -f $GOOGLE_APPLICATION_CREDENTIALS ]; then
+    gcp_key_volume="-v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS"
+  fi
+
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
   if [[ ("$CI" == "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
-    echo "Running dockerized version of command: $command"
+    [ "$VERBOSE" == "1" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
-      $tmp_volume \
-      $stack_volume \
-      $socket_volume \
+      $tmp_volume $stack_volume $socket_volume $gcp_key_volume \
       -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
@@ -186,14 +199,15 @@ function drun() {
       -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
-      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
+      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -w $stack_dir \
       $cmd_image \
       $command
   else
-    echo "Running native version of command: $command"
+    [ "$VERBOSE" == "1" ] && echo "Running native version of command: $command"
+    env
     $command
   fi
 }
@@ -268,7 +282,14 @@ function execute() {
     drun bin/crypt.sh rotate
     ;;
   switch)
-    otomi x kubectl config use-context $K8S_CONTEXT
+    evaluate_k8s_context
+    # otomi x ls -als /home/app/.kube/
+    kubectl config use $K8S_CONTEXT
+    ;;
+  test)
+    validate_cluster_env
+    drun bin/test.sh
+    drun $@
     ;;
   lint)
     set -o pipefail
@@ -308,7 +329,6 @@ function set_env_and_stack_dir() {
   if [[ "$cwd" == 'otomi-stack' ]]; then
     [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
     stack_dir=$PWD
-    ENV_DIR=$ENV_DIR
     mount_stack_dir=1
   fi
   return 0

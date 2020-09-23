@@ -43,6 +43,15 @@ otomi gcloud auth configure-docker
 Most of the time you will work with the `otomi` command line tool.
 If you read this you will have already installed it and ran the bootstrapper.
 
+Important reminder: in order to work with (en)crypted files + GCP KMS, then vscode needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
+code $ENV_DIR
+```
+
+WHy? When a command is ran that needs access to decrypted files the otomi cli will try to echo \$GCLOUD_SERVICE_KEY (if found in `.secrets`) to that file. The `$GOOGLE_APPLICATION_CREDENTIALS` location is used for the crypt routines, so it needs to exist and have valid service account json content.
+
 ### 2.1 Initial configuration
 
 The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys. Please configure all the yaml files correctly with these values.
