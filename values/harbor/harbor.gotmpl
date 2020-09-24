@@ -187,15 +187,51 @@ database:
       {{- end }}
 
 clair:
-  clair:
+  resources:
+    {{- if (hasKey $h "resources.clair") }}
+      {{- $h.resources.clair | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 2Gi
+    limits:
+      cpu: 400m
+      memory: 4Gi
+    {{- end }}
+
+chartmuseum:
+  resources:
+    {{- if (hasKey $h "resources.chartmuseum") }}
+      {{- $h.resources.chartmuseum | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 128Mi
+    limits:
+      cpu: 400m
+      memory: 256Mi
+    {{- end }}
+
+portal:
+  resources:
+    {{- if (hasKey $h "resources.portal") }}
+      {{- $h.resources.portal | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 128Mi
+    limits:
+      cpu: 400m
+      memory: 128Mi
+    {{- end }}
+
+redis:
+  internal:
     resources:
-      {{- if (hasKey $h "resources.clair") }}
-        {{- $h.resources.clair | toYaml | nindent 2 }}
-      {{- else }}
       requests:
-        cpu: 200m 
-        memory: 2Gi
+        cpu: 100m 
+        memory: 128Mi
       limits:
         cpu: 400m
-        memory: 4Gi
-      {{- end }}
+        memory: 128Mi
+
