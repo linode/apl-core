@@ -24,11 +24,11 @@ resources:
           k8s:
             priorityClassName: "otomi-critical"
             hpaSpec:
-              minReplicas: {{ $n | get "pilot.autoscaling.minReplicas" 2 }}
-              maxReplicas: {{ $n | get "pilot.autoscaling.maxReplicas" 6 }}
+              minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 2 }}
+              maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 6 }}
             resources:
-              {{- if (hasKey $i "pilot.resources") }}
-                {{- $i.pilot.resources | toYaml | nindent 14 }}
+              {{- if (hasKey $i "resources.pilot") }}
+                {{- $i.resources.pilot | toYaml | nindent 14 }}
               {{- else }}
               requests:
                 memory: 128Mi
@@ -43,8 +43,8 @@ resources:
             k8s:
               priorityClassName: "otomi-critical"
               resources:
-              {{- if (hasKey $i "ingressgateway.resources") }}
-                {{- $i.ingressgateway.resources | toYaml | nindent 14 }}
+              {{- if (hasKey $i "resources.ingressgateway") }}
+                {{- $i.resources.ingressgateway | toYaml | nindent 14 }}
               {{- else }}
               requests:
                 memory: 128Mi
@@ -54,8 +54,8 @@ resources:
                 cpu: 500m
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $n | get "ingressgateway.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "ingressgateway.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 6 }}
               service:
                 type: ClusterIP
                 ports:
@@ -76,20 +76,20 @@ resources:
               app: ingressgateway-auth
             k8s:
               hpaSpec:
-                minReplicas: {{ $n | get "gatewayauth.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "gatewayauth.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "autoscaling.gatewayauth.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "autoscaling.gatewayauth.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-              {{- if (hasKey $i "gatewayauth.resources") }}
-                {{- $i.gatewayauth.resources | toYaml | nindent 14 }}
-              {{- else }}
-              requests:
-                memory: 128Mi
-                cpu: 100m
-              limits:
-                memory: 256Mi
-                cpu: 500m
-              {{- end }}
+                {{- if (hasKey $i "resources.gatewayauth") }}
+                  {{- $i.resources.gatewayauth | toYaml | nindent 16 }}
+                {{- else }}
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
+                {{- end }}
               service:
                 type: ClusterIP
                 ports:
@@ -110,20 +110,20 @@ resources:
               app: cluster-local-gateway
             k8s:
               hpaSpec:
-                minReplicas: {{ $n | get "localgateway.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "localgateway.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "autoscaling.localgateway.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "autoscaling.localgateway.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-              {{- if (hasKey $i "localgateway.resources") }}
-                {{- $i.localgateway.resources | toYaml | nindent 14 }}
-              {{- else }}
-              requests:
-                memory: 128Mi
-                cpu: 100m
-              limits:
-                memory: 256Mi
-                cpu: 500m
-              {{- end }}
+                {{- if (hasKey $i "resources.localgateway") }}
+                  {{- $i.resources.localgateway | toYaml | nindent 16 }}
+                {{- else }}
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
+                {{- end }}
               service:
                 type: ClusterIP
                 ports:
@@ -145,8 +145,8 @@ resources:
           enabled: {{ $ia | get "prometheus.enabled" true }}
           k8s:
             resources:
-              {{- if (hasKey $i "grafana.resources") }}
-                {{- $i.grafana.resources | toYaml | nindent 14 }}
+              {{- if (hasKey $i "resources.grafana") }}
+                {{- $i.resources.grafana | toYaml | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -160,8 +160,8 @@ resources:
           enabled: {{ $ia | get "tracing.enabled" true }}
           k8s:
             resources:
-              {{- if (hasKey $i "tracing.resources") }}
-                {{- $i.tracing.resources | toYaml | nindent 14 }}
+              {{- if (hasKey $i "resources.tracing") }}
+                {{- $i.resources.tracing | toYaml | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -175,8 +175,8 @@ resources:
           enabled: {{ $ia | get "kiali.enabled" true }}
           k8s:
             resources:
-              {{- if (hasKey $i "kiali.resources") }}
-                {{- $i.kiali.resources | toYaml | nindent 14 }}
+              {{- if (hasKey $i "resources.kiali") }}
+                {{- $i.resources.kiali | toYaml | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -201,8 +201,8 @@ resources:
           istio-ingressgateway:
             sds:
               enabled: {{ $ig | get "sds.enabled" false }}
-             {{- with ($iga | getOrNil "istio-ingressgateway.resources") }}
-            resources: {{- $iga | get "istio-ingressgateway.resources" | toYaml | nindent 14 }}
+             {{- with ($iga | getOrNil "resources.istio-ingressgateway") }}
+            resources: {{- $iga | get "resources.istio-ingressgateway" | toYaml | nindent 14 }}
             {{- end }}
           # istio-egressgateway:
           #   {{/*- with ($iga | getOrNil "istio-egressgateway.resources") */}}

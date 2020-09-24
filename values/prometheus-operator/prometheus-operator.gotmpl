@@ -30,16 +30,12 @@ prometheusOperator:
   configReloaderCpu: 50m
   configReloaderMemory: 64Mi
   resources:
-    {{- if (hasKey $p "resources.operator") }}
-      {{- $p.resources.operator | toYaml | nindent 4 }}
-    {{- else }}
     limits:
       cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m
       memory: 128Mi
-    {{- end }}
   admissionWebhooks:
     enabled: false
   tlsProxy:
@@ -89,16 +85,12 @@ alertmanager:
   alertmanagerSpec:
     priorityClassName: "otomi-critical"
     resources:
-      {{- if (hasKey $p "resources.alertmanager") }}
-        {{- $p.resources.alertmanager | toYaml | nindent 6 }}
-      {{- else }}
       requests:
         memory: 128Mi
         cpu: 100m
       limits:
         memory: 256Mi
         cpu: 500m
-      {{- end }}
     # podMetadata:
     #   annotations:
     #     sidecar.istio.io/inject: "false"
@@ -277,31 +269,23 @@ kube-state-metrics:
   # podAnnotations:
   #   sidecar.istio.io/inject: "false"
   resources:
-    {{- if (hasKey $p "resources.metrics") }}
-      {{- $p.resources.metrics | toYaml | nindent 4 }}
-    {{- else }}
     requests:
       memory: 128Mi
       cpu: 100m
     limits:
       memory: 256Mi
       cpu: 400m
-    {{- end }}
   podSecurityPolicy:
     enabled: false
 
 prometheus-node-exporter:
   resources:
-    {{- if (hasKey $p "resources.nodeexporter") }}
-      {{- $p.resources.nodeexporter | toYaml | nindent 4 }}
-    {{- else }}
     requests:
       memory: 128Mi
       cpu: 100m
     limits:
       memory: 128Mi
       cpu: 500m
-    {{- end }}
   rbac:
     pspEnabled: false
   priorityClassName: "otomi-critical"
