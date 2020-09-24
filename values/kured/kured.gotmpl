@@ -7,13 +7,9 @@ configuration:
   annotationTtl: 10m
 
 resources:
-  {{- if (hasKey $k "resources") }}
-    {{- $k.resources | toYaml | nindent 2 }}
-  {{- else }}
   limits:
     cpu: 50m
     memory: 128Mi
   requests:
     cpu: 20m
     memory: 32Mi
-  {{- end }}
