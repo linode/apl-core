@@ -24,8 +24,8 @@ resources:
           k8s:
             priorityClassName: "otomi-critical"
             hpaSpec:
-              minReplicas: {{ $n | get "pilot.autoscaling.minReplicas" 2 }}
-              maxReplicas: {{ $n | get "pilot.autoscaling.maxReplicas" 6 }}
+              minReplicas: {{ $i | get "pilot.autoscaling.minReplicas" 2 }}
+              maxReplicas: {{ $i | get "pilot.autoscaling.maxReplicas" 6 }}
             resources:
               {{- if (hasKey $i "pilot.resources") }}
                 {{- $i.pilot.resources | toYaml | nindent 14 }}
@@ -54,8 +54,8 @@ resources:
                 cpu: 500m
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $n | get "ingressgateway.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "ingressgateway.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "ingressgateway.autoscaling.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "ingressgateway.autoscaling.maxReplicas" 6 }}
               service:
                 type: ClusterIP
                 ports:
@@ -76,20 +76,20 @@ resources:
               app: ingressgateway-auth
             k8s:
               hpaSpec:
-                minReplicas: {{ $n | get "gatewayauth.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "gatewayauth.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "gatewayauth.autoscaling.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "gatewayauth.autoscaling.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-              {{- if (hasKey $i "gatewayauth.resources") }}
-                {{- $i.gatewayauth.resources | toYaml | nindent 14 }}
-              {{- else }}
-              requests:
-                memory: 128Mi
-                cpu: 100m
-              limits:
-                memory: 256Mi
-                cpu: 500m
-              {{- end }}
+                {{- if (hasKey $i "gatewayauth.resources") }}
+                  {{- $i.gatewayauth.resources | toYaml | nindent 16 }}
+                {{- else }}
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
+                {{- end }}
               service:
                 type: ClusterIP
                 ports:
@@ -110,20 +110,20 @@ resources:
               app: cluster-local-gateway
             k8s:
               hpaSpec:
-                minReplicas: {{ $n | get "localgateway.autoscaling.minReplicas" 2 }}
-                maxReplicas: {{ $n | get "localgateway.autoscaling.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "localgateway.autoscaling.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "localgateway.autoscaling.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-              {{- if (hasKey $i "localgateway.resources") }}
-                {{- $i.localgateway.resources | toYaml | nindent 14 }}
-              {{- else }}
-              requests:
-                memory: 128Mi
-                cpu: 100m
-              limits:
-                memory: 256Mi
-                cpu: 500m
-              {{- end }}
+                {{- if (hasKey $i "localgateway.resources") }}
+                  {{- $i.localgateway.resources | toYaml | nindent 16 }}
+                {{- else }}
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
+                {{- end }}
               service:
                 type: ClusterIP
                 ports:
