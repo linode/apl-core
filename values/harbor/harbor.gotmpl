@@ -194,10 +194,22 @@ clair:
       {{- else }}
       requests:
         cpu: 100m 
-        memory: 2Gi
+        memory: 1Gi
       limits:
         cpu: 400m
-        memory: 4Gi
+        memory: 2Gi
+      {{- end }}
+  adapter:
+    resources:
+      {{- if (hasKey $h "resources.adapter") }}
+        {{- $h.resources.adapter | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 256Mi
       {{- end }}
 
 chartmuseum:
