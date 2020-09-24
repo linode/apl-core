@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template "fullname" . }}-chart-info
-  namespace: {{ $.Release.Namespace }}
-  labels:
-{{ include "gitlab.standardLabels" . | indent 4 }}
-data:
-  gitlabVersion: "{{ coalesce .Values.global.gitlabVersion .Chart.AppVersion }}"
