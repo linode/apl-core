@@ -30,16 +30,12 @@ prometheusOperator:
   configReloaderCpu: 50m
   configReloaderMemory: 25Mi
   resources:
-    {{- if (hasKey $p "resources.operator") }}
-      {{- $p.resources.operator | toYaml | nindent 4 }}
-    {{- else }}
     limits:
       cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m
       memory: 128Mi
-    {{- end }}
   admissionWebhooks:
     enabled: false
   tlsProxy:
