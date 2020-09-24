@@ -49,16 +49,12 @@ podSecurityContext:
 priorityClassName: "otomi-critical"
 
 resources:
-  {{- if (hasKey $dns "resources") }}
-    {{- $dns.resources | toYaml | nindent 2 }}
-  {{- else }}
   limits:
     cpu: 100m
     memory: 128Mi
   requests:
     memory: 64Mi
     cpu: 10m
-  {{- end }}
 
 metrics:
   enabled: true

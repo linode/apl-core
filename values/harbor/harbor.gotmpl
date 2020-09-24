@@ -133,16 +133,12 @@ registry:
       repository: goharbor/registry-photon
       tag: v2.0.0
     resources:
-      {{- if (hasKey $h "resources.registry") }}
-        {{- $h.resources.registry | toYaml | nindent 6 }}
-      {{- else }}
       requests:
         memory: 64Mi
         cpu: 50m
       limits:
         memory: 128Mi
         cpu: 100m
-      {{- end }}
   controller:
     image:
       repository: goharbor/harbor-registryctl

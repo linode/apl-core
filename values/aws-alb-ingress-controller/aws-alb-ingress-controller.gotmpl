@@ -6,13 +6,9 @@ autoDiscoverAwsVpcID: true
 priorityClassName: "otomi-critical"
 
 resources:
-  {{- if (hasKey $aaic "resources") }}
-    {{- $aaic.resources | toYaml | nindent 2 }}
-  {{- else }}
   requests:
     cpu: 500m
     memory: 64Mi
   limits:
     cpu: 1
     memory: 256Mi
-  {{- end }}

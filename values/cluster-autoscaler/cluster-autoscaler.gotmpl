@@ -34,16 +34,12 @@ rbac:
 
 priorityClassName: "otomi-critical"
 resources:
-  {{- if (hasKey $a "resources") }}
-    {{- $a.resources | toYaml | nindent 2 }}
-  {{- else }}
   limits:
     cpu: 100m
     memory: 256Mi
   requests:
     cpu: 100m
     memory: 256Mi
-  {{- end }}
 
 serviceMonitor:
   enabled: true

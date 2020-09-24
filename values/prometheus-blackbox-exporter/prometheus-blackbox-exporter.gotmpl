@@ -9,16 +9,12 @@ usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $pbe "resources") }}
-    {{- $pbe.resources | toYaml | nindent 4 }}
-  {{- else }}
     requests:
       cpu: 100m
       memory: 32Mi
     limits:
       cpu: 200m
       memory: 128Mi
-  {{- end }}
 
 config:
   modules:

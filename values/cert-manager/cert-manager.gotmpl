@@ -15,26 +15,18 @@ podAnnotations:
 installCRDs: true
 
 resources:
-  {{- if (hasKey $cm "resources") }}
-    {{- $cm.resources | toYaml | nindent 2 }}
-  {{- else }}
   requests:
     cpu: 100m
     memory: 256Mi
   limits:
     cpu: 200m
     memory: 512Mi
-  {{- end }}
 
 webhook:
   resources:
-    {{- if (hasKey $cm "resources.webhook") }}
-      {{- $cm.resources.webhook | toYaml | nindent 4 }}
-    {{- else }}
     requests:
       cpu: 50m
       memory: 64Mi
     limits:
       cpu: 100m
       memory: 256Mi
-    {{- end }}
