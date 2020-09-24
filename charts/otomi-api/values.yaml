@@ -82,6 +82,7 @@ env:
   CLUSTER_APISERVER:
   # DISABLE_SYNC: true
   ENV_DIR: /tmp/otomi-stack
+  GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
 
 core: {}
 
