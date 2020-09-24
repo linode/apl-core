@@ -1,0 +1,19 @@
+{{- $v := .Environment.Values }}
+{{- $k := $v.charts | get "kured" dict }}
+
+# Using --annotation-ttl=30m will allow other nodes to take over if TTL has expired (in this case 30min) and continue reboot process.
+
+configuration:
+  annotationTtl: 10m
+
+resources:
+  {{- if (hasKey $k "resources") }}
+    {{- $k.resources | toYaml | nindent 2 }}
+  {{- else }}
+  limits:
+    cpu: 50m
+    memory: 128Mi
+  requests:
+    cpu: 20m
+    memory: 32Mi
+  {{- end }}
