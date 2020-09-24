@@ -9,39 +9,27 @@ global:
 
 weave-scope-frontend:
   resources:
-  {{- if (hasKey $w "resources.frontend") }}
-    {{- $w.resources.frontend | toYaml | nindent 4 }}
-  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-  {{- end }}
 
 weave-scope-agent:
   resources:
-  {{- if (hasKey $w "resources.agent") }}
-    {{- $w.resources.agent | toYaml | nindent 4 }}
-  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-  {{- end }}
 
 weave-scope-cluster-agent:
   resources:
-  {{- if (hasKey $w "resources.agent") }}
-    {{- $w.resources.agent | toYaml | nindent 4 }}
-  {{- else }}
     requests:
       cpu: 500m
       memory: 64Mi
     limits:
       cpu: 1
       memory: 256Mi
-  {{- end }}
