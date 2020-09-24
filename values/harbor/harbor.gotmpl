@@ -187,17 +187,18 @@ database:
       {{- end }}
 
 clair:
-  resources:
-    {{- if (hasKey $h "resources.clair") }}
-      {{- $h.resources.clair | toYaml | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 100m 
-      memory: 2Gi
-    limits:
-      cpu: 400m
-      memory: 4Gi
-    {{- end }}
+  clair:
+    resources:
+      {{- if (hasKey $h "resources.clair") }}
+        {{- $h.resources.clair | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 2Gi
+      limits:
+        cpu: 400m
+        memory: 4Gi
+      {{- end }}
 
 chartmuseum:
   resources:
