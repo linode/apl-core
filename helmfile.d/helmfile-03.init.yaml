@@ -31,10 +31,6 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: flux
-    installed: false # not ready yet
-    namespace: maintenance
-    <<: *default
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
