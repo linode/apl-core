@@ -91,3 +91,10 @@ resources:
     imagePullSecrets:
     - name: gcr-json-key
   {{- end }}
+  - apiVersion: scheduling.k8s.io/v1beta1
+    kind: PriorityClass
+    metadata:
+      name: otomi-critical
+    value: 1000000
+    globalDefault: false
+    description: "This priority class should be used for Otomi High priority service pods only."
