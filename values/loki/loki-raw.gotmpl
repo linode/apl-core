@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $l := $v.charts.loki }}
+{{- $l := $v.charts | get "loki" dict }}
 {{- if $v.otomi.isMultitenant }}
 resources:
   - apiVersion: v1

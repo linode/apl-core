@@ -20,3 +20,11 @@ metrics:
     additionalLabels:
       release: prometheus # change this accordingly
     scrapeInterval: 30s
+
+resources:
+  limits:
+    cpu: 10m
+    memory: 32Mi
+  requests:
+    cpu: 1m
+    memory: 8Mi
