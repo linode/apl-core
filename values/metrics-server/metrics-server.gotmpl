@@ -1,0 +1,18 @@
+{{- $v := .Environment.Values }}
+{{- $m := $v.charts | get "metrics-server" dict }}
+
+extraArgs:
+  kubelet-insecure-tls: true
+  kubelet-preferred-address-types: InternalIP
+
+resources:
+  {{- if (hasKey $m "resources") }}
+    {{- $m.resources | toYaml | nindent 2 }}
+  {{- else }}
+  limits:
+    cpu: 300m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  {{- end }}

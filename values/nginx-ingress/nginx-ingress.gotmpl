@@ -1,17 +1,21 @@
 {{- $v := .Environment.Values }}
+{{- $n := $v.charts | get "nginx-ingress" dict }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
-{{- $n := $v | get "charts.nginx-ingress" dict }}
+
 rbac:
   create: true
+
 defaultBackend:
   useComponentLabel: true
+  priorityClassName: "otomi-critical"
   resources:
     limits:
       cpu: 20m
       memory: 20Mi
     requests:
       cpu: 10m
-      memory: 10Mi  
+      memory: 10Mi
+
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
@@ -23,32 +27,33 @@ defaultBackend:
 
 controller:
   useComponentLabel: true
-  {{- if (hasKey $n "resources") }}
-  resources: {{- $n.resources | toYaml | nindent 4 }}
-  {{- else }}
   # set fixed allocation with limits same as requests
   resources:
+    {{- if (hasKey $n "resources") }}
+      {{- $n.resources | toYaml | nindent 4 }}
+    {{- else }}
     limits:
-        cpu: 500m
+        cpu: 2000m
         memory: 512Mi
     requests:
-        cpu: 100m
-        memory: 256Mi
-  {{- end }}
+        cpu: 200m
+        memory: 512Mi
+    {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: 1
-    maxReplicas: 12
+    minReplicas: {{ $n | get "autoscaling.minReplicas" 2 }}
+    maxReplicas: {{ $n | get "autoscaling.maxReplicas" 6 }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
-{{- end }}    
+{{- end }}
+  priorityClassName: "otomi-critical"
   extraArgs:
     v: 3
   config:
@@ -79,3 +84,7 @@ controller:
     omitClusterIP: true
   publishService:
     enabled: true
+
+  admissionWebhooks:
+    patch:
+      priorityClassName: "otomi-critical"

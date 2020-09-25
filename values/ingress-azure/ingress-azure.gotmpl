@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $i := index $v.charts "ingress-azure" }}
+{{- $i := $v.charts | get "ingress-azure" dict }}
 
 ################################################################################
 # Specify the authentication with Azure Resource Manager

@@ -1,0 +1,14 @@
+apiVersion: v1
+appVersion: 1.5.0
+description: A Helm chart for kured
+home: https://github.com/weaveworks/kured
+icon: https://raw.githubusercontent.com/weaveworks/kured/master/img/logo.png
+maintainers:
+- email: christian.kotzbauer@gmail.com
+  name: ckotzbauer
+- email: david@davidkarlsen.com
+  name: davidkarlsen
+name: kured
+sources:
+- https://github.com/weaveworks/kured
+version: 2.2.0

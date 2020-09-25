@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values -}}
-{{- $l :=  $v.charts.loki }}
+{{- $l := $v.charts | get "loki" dict }}
 {{- $teamNames := "" }}
 {{- range $name, $config := $v.teamConfig.teams }}
 {{- $teamNames = print "%s%s" $teamNames $name }}
@@ -65,12 +65,16 @@ persistence:
 # priorityClassName:
 
 resources:
-limits:
-  cpu: 200m
-  memory: 256Mi
-requests:
-  cpu: 100m
-  memory: 128Mi
+  {{- if (hasKey $l "resources") }}
+    {{- $l.resources | toYaml | nindent 2 }}
+  {{- else }}
+  limits:
+    cpu: 800m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  {{- end }}
 
 fullnameOverride: loki
 

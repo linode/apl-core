@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domain }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $name := $domain | replace "." "-" }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 resources:
