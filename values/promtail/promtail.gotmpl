@@ -1,17 +1,21 @@
 {{- $v := .Environment.Values }}
+{{- $promtail := $v.charts | get "promtail" dict }}
 {{- $t := $v.teamConfig }}
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
-
 nameOverride: promtail
 
-resources: {}
-#  limits:
-#    cpu: 200m
-#    memory: 128Mi
-#  requests:
-#    cpu: 100m
-#    memory: 128Mi
+resources:
+  {{- if (hasKey $promtail "resources") }}
+    {{- $promtail.resources | toYaml | nindent 2 }}
+  {{- else }}
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  {{- end }}
 
 securityContext:
   readOnlyRootFilesystem: true
@@ -43,6 +47,7 @@ pipelineStages:
   {{- end }}
   {{- end }}
 
-# config:
-#   server:
-#     log.level: debug      
+priorityClassName: "otomi-critical"
+config:
+  server:
+    log_level: error

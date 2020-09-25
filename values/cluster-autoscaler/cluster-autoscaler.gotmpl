@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $a := index $v.charts "cluster-autoscaler" }}
+{{- $a := $v.charts | get "cluster-autoscaler" dict }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 # image:
@@ -32,13 +32,14 @@ rbac:
   create: true
   pspEnabled: false
 
+priorityClassName: "otomi-critical"
 resources:
   limits:
     cpu: 100m
-    memory: 300Mi
+    memory: 256Mi
   requests:
     cpu: 100m
-    memory: 300Mi
+    memory: 256Mi
 
 serviceMonitor:
   enabled: true
