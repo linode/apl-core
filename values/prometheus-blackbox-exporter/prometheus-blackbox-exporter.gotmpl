@@ -1,0 +1,23 @@
+{{- $v := .Environment.Values }}
+{{- $pbe := $v.charts | get "prometheus-blackbox-exporter" dict }}
+
+cluster:
+  enabled: false
+persistence:
+  size: 1Gi
+usePassword: false
+
+sentinel:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+config:
+  modules:
+    http_2xx:
+      prober: http
+      timeout: 12s # a knative service should start under 12s, right?

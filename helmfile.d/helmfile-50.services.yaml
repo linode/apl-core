@@ -20,6 +20,4 @@ releases:
     installed: true
     namespace: shared
     chart: ../charts/httpbin
-    values:
-      - nameOverride: httpbin
-        fullnameOverride: httpbin
+    <<: *default
