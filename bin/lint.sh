@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# accepts a list of versions to check against
-# example:~$ otomi kubeval 1.15.0 1.16.0 1.17.0
+# checks current context for kuberntes version to check against
+# example:~$ otomi lint
+
 set -e
-# k8s_versions=("${@:-1.16.0}")
 tmp_validation_dir=/tmp/kubeval-fixtures
 exitcode=1
 hf="helmfile -e $CLOUD-$CLUSTER"
@@ -59,5 +59,6 @@ validate_versions() {
     ) && echo "Version $version allowed" && exit 0 || echo "Version $version Not Found" && exit 1
 
 }
+
 version="$(current_k8s_version).0"
 (validate_versions $version) && (validate_resources $version)
