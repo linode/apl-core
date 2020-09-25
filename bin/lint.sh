@@ -2,23 +2,62 @@
 
 # accepts a list of versions to check against
 # example:~$ otomi kubeval 1.15.0 1.16.0 1.17.0
-k8s_versions=("${@:-1.16.0}")
+set -e
+# k8s_versions=("${@:-1.16.0}")
 tmp_validation_dir=/tmp/kubeval-fixtures
-exitcode=0
+exitcode=1
 hf="helmfile -e $CLOUD-$CLUSTER"
+ENV_DIR=${ENV_DIR:-$PWD}
 
-clean_exit() {
+declare -a allowed_versions=(
+    v1.15.0
+    v1.16.0
+    v1.17.0
+    v1.18.0
+)
+
+cleanup() {
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
     rm -rf $tmp_validation_dir
     exit $exitcode
 }
+trap cleanup EXIT
 
-echo "Generating Manifests in tmp location."
-# using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
-$hf --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
+generate_manifests() {
+    echo "Generating Manifests in tmp location."
+    # using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
+    $hf --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
+}
 
-for version in "${k8s_versions[@]}"; do
+current_k8s_version() {
+    local version
+    local clusters_file="$ENV_DIR/env/clusters.yaml"
+    if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
+        version="$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.k8sVersion)"
+        echo $version
+    else
+        exit 1
+    fi
+}
+
+validate_resources() {
+    local version=$1
+    generate_manifests
     echo "Validating Otomi Stack against Kubernetes Version: $version"
-    kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $version || exitcode=1
-done
-clean_exit
+    kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $version && exitcode=0
+}
+
+version_allowed() {
+    for e in "${allowed_versions[@]}"; do [[ "$e" == "$1" ]] && exit 0; done
+    exit 1
+}
+
+validate_versions() {
+    local version=$1
+    (
+        version_allowed v"$version"
+    ) && echo "Version $version allowed" && exit 0 || echo "Version $version Not Found" && exit 1
+
+}
+version="$(current_k8s_version).0"
+(validate_versions $version) && (validate_resources $version)

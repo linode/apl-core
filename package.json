@@ -54,7 +54,7 @@
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-commit": "lint-staged",
-    "lint": "tests/lint.sh",
+    "lint": "bin/lint.sh",
     "release": "standard-version"
   },
   "standard-version": {

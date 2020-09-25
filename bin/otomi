@@ -293,7 +293,6 @@ function execute() {
     drun $@
     ;;
   lint)
-    set -o pipefail
     drun bin/lint.sh $@
     ;;
   x)
