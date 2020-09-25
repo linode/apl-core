@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $h := $v.charts.harbor }}
+{{- $h := $v.charts | get "harbor" dict }}
 {{- $hp := $v.charts.harbor.persistence }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domain }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domain }}
@@ -20,11 +20,33 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  xsrfKey: UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd 
-  secret: 9gfm2350fg3fg3m8
+  xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
+  secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
+  resources:
+    {{- if (hasKey $h "resources.core") }}
+      {{- $h.resources.core | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
+    {{- end }}
 jobservice:
-  secret: mnf9adfgjwr23m4d
+  secret: {{ $h | get "jobservice.secret" "mnf9adfgjwr23m4d" }}
+  resources:
+    {{- if (hasKey $h "resources.jobservice") }}
+      {{- $h.resources.jobservice | toYaml | nindent 2 }}
+    {{- else }}
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
+    {{- end }}
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -110,10 +132,28 @@ registry:
     image:
       repository: goharbor/registry-photon
       tag: v2.0.0
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 50m
+      limits:
+        memory: 128Mi
+        cpu: 100m
   controller:
     image:
       repository: goharbor/harbor-registryctl
       tag: v2.0.0
+    resources:
+      {{- if (hasKey $h "resources.controller") }}
+        {{- $h.resources.controller | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m
+      {{- end }}
   # Secret is used to secure the upload state from client
   # and registry storage backend.
   # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
@@ -134,3 +174,77 @@ database:
       repository: goharbor/harbor-db
       tag: v2.0.0
     # password: "sd83jf7s"
+    resources:
+      {{- if (hasKey $h "resources.database") }}
+        {{- $h.resources.database | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+      {{- end }}
+
+clair:
+  clair:
+    resources:
+      {{- if (hasKey $h "resources.clair") }}
+        {{- $h.resources.clair | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 1Gi
+      limits:
+        cpu: 400m
+        memory: 2Gi
+      {{- end }}
+  adapter:
+    resources:
+      {{- if (hasKey $h "resources.adapter") }}
+        {{- $h.resources.adapter | toYaml | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 256Mi
+      {{- end }}
+
+chartmuseum:
+  resources:
+    {{- if (hasKey $h "resources.chartmuseum") }}
+      {{- $h.resources.chartmuseum | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 128Mi
+    limits:
+      cpu: 400m
+      memory: 256Mi
+    {{- end }}
+
+portal:
+  resources:
+    {{- if (hasKey $h "resources.portal") }}
+      {{- $h.resources.portal | toYaml | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 128Mi
+    limits:
+      cpu: 400m
+      memory: 128Mi
+    {{- end }}
+
+redis:
+  internal:
+    resources:
+      requests:
+        cpu: 100m 
+        memory: 128Mi
+      limits:
+        cpu: 400m
+        memory: 128Mi
+

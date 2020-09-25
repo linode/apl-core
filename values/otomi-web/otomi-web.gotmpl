@@ -1,8 +1,20 @@
 {{- $v := .Environment.Values }}
-{{- $o := index $v.charts "otomi-web" }}
+{{- $o := $v.charts | get "otomi-web" dict }}
 {{- $domain := printf "otomi.%s" $v.cluster.domain }}
 
 replicaCount: 2
+
+resources:
+  {{- if (hasKey $o "resources") }}
+    {{- $o.resources | toYaml | nindent 2 }}
+  {{- else }}
+  limits:
+    cpu: 400m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  {{- end }}
 
 image:
   registry: eu.gcr.io

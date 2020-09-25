@@ -1286,12 +1286,6 @@ prometheusOperator:
   ## Resource limits & requests
   ##
   resources: {}
-  # limits:
-  #   cpu: 200m
-  #   memory: 200Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 100Mi
 
   # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
   # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working
@@ -1837,8 +1831,6 @@ prometheus:
     ## Resource limits & requests
     ##
     resources: {}
-    # requests:
-    #   memory: 400Mi
 
     ## Prometheus StorageSpec for persistent data
     ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/user-guides/storage.md
