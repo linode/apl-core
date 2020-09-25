@@ -19,3 +19,7 @@ releases:
     installed: {{ eq $v.cluster.provider "onprem" }} 
     namespace: kube-system
     <<: *default
+  - name: kured
+    installed: {{ eq $v.cluster.provider "onprem" }}
+    namespace: kube-system
+    <<: *default
