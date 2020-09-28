@@ -10,9 +10,9 @@ done
 # health check?
 if [ "${request:1:1}" = " " ]; then printf "$ok" && exit; fi
 # other request:
-mode=${request:1:8}
-if [ "$mode" != "decrypt " ] && [ "$mode" != "encrypt " ]; then
-  echo "No valid request: '$mode'. Should be one of: decrypt|encrypt" >&2
+mode=${request:1:4}
+if [ "$mode" != "dec " ] && [ "$mode" != "enc " ]; then
+  echo "No valid request: '$mode'. Should be one of: dec|enc" >&2
   printf "$err"
   exit
 fi
