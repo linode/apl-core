@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $n := $v.charts | get "nginx-ingress" dict }}
+{{- $n := $v.charts | get "nginx-ingress" | default dict }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
 
 rbac:
