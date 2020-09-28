@@ -1,0 +1,41 @@
+{{- $v := .Environment.Values }}
+{{- $k := $v.charts | get "kube-descheduler" dict }}
+
+schedule: "*/2 * * * *"
+
+cmdOptions:
+  # Setting --v=4 or greater on the Descheduler will log all reasons why any pod is not evictable.
+  v: 4
+  # evict-local-storage-pods:
+  # max-pods-to-evict-per-node: 10
+  # node-selector: "key1=value1,key2=value2"
+
+deschedulerPolicy:
+  evictLocalStoragePods: true
+  maxNoOfPodsToEvictPerNode: 15
+  strategies:
+    LowNodeUtilization:
+      enabled: true
+      params:
+        # by default otomi components have a priority class named otomi-critical, we can deschedule pods up to this class
+        thresholdPriorityClassName: "otomi-critical"
+        nodeResourceUtilizationThresholds:
+          thresholds:
+            cpu: 50
+            memory: 30
+            # pods: 20
+          targetThresholds:
+            cpu: 60
+            memory: 50
+            # pods: 40
+    RemoveDuplicates:
+      enabled: true
+    RemovePodsViolatingInterPodAntiAffinity:
+      enabled: true
+    RemovePodsViolatingNodeAffinity:
+      enabled: true
+      params:
+        nodeAffinityType:
+        - requiredDuringSchedulingIgnoredDuringExecution
+    RemovePodsViolatingNodeTaints:
+      enabled: true
