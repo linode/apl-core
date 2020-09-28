@@ -9,12 +9,12 @@ resources:
   {{- if (hasKey $promtail "resources") }}
     {{- $promtail.resources | toYaml | nindent 2 }}
   {{- else }}
-  limits:
-    cpu: 500m
-    memory: 256Mi
   requests:
     cpu: 100m
     memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
   {{- end }}
 
 securityContext:
