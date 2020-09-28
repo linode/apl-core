@@ -1,6 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts | get "kube-descheduler" dict }}
 
+nameOverride: "kube-descheduler"
+fullnameOverride: "kube-descheduler"
+
 schedule: "*/2 * * * *"
 
 cmdOptions:
