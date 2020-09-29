@@ -9,16 +9,16 @@ skip_demo_files=$1
 [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
 # install CLI
-otomi_path="${ENV_DIR}/bin/"
-mkdir -p $otomi_path &>/dev/null
+bin_path="${ENV_DIR}/bin/"
+mkdir -p $bin_path &>/dev/null
 img="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
-cp $PWD/bin/aliases $otomi_path
-cp $PWD/bin/otomi $otomi_path
+for f in 'aliases' 'common.sh' 'otomi'; do
+  cp $PWD/bin/$f $bin_path
+done
 cp -r $PWD/.values/.vscode $ENV_DIR/
 # convert schema to loose json:
 grep -v 'required:' $PWD/values-schema.yaml | yaml2json | jq -M '.' >$ENV_DIR/.vscode/values-schema.json
-exit
 for f in '.gitattributes' '.sops.yaml'; do
   [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
 done
