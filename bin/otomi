@@ -97,7 +97,7 @@ function check_docker_running() {
 }
 
 function evaluate_k8s_context() {
-  local env_path="${ENV_DIR}/clouds/${CLOUD}/${CLUSTER}/.env"
+  local env_path="${ENV_DIR}/env/clouds/${CLOUD}/${CLUSTER}/.env"
   [ ! -f $env_path ] && echo "Error: The file '${env_path}' does not exist" && exit 1
   source $env_path
   [[ -z "$K8S_CONTEXT" ]] && echo "Error: The K8S_CONTEXT env is not defined in $env_path" && exit 1
