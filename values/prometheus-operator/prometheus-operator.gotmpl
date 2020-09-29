@@ -150,7 +150,7 @@ alertmanager:
           - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
             send_resolved: true
       {{- end }}
-      {{- if not $v.otomi.isRedkubesMonitored }}
+      {{- if $v.otomi.isRedkubesMonitored }}
       - name: critical-redkubes
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
