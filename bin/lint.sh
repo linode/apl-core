@@ -9,6 +9,8 @@ exitcode=1
 hf="helmfile -e $CLOUD-$CLUSTER"
 ENV_DIR=${ENV_DIR:-$PWD}
 
+. bin/common.sh
+
 declare -a allowed_versions=(
     v1.15.0
     v1.16.0
@@ -27,17 +29,6 @@ generate_manifests() {
     echo "Generating Manifests in tmp location."
     # using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
     $hf --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
-}
-
-current_k8s_version() {
-    local version
-    local clusters_file="$ENV_DIR/env/clusters.yaml"
-    if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
-        version="$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.k8sVersion)"
-        echo $version
-    else
-        exit 1
-    fi
 }
 
 validate_resources() {
@@ -60,5 +51,5 @@ validate_versions() {
 
 }
 
-version="$(current_k8s_version).0"
+version="$(otomi_cluster_info k8sVersion).0"
 (validate_versions $version) && (validate_resources $version)
