@@ -218,7 +218,6 @@ function drun() {
       $command
   else
     [ "$VERBOSE" == "1" ] && echo "Running native version of command: $command"
-    env
     $command
   fi
 }
