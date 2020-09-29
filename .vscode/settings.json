@@ -19,5 +19,6 @@
   },
   "cSpell.enabled": true,
   "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],
-  "cSpell.words": ["backoff", "devops", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"]
+  "cSpell.words": ["backoff", "devops", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"],
+  "cSpell.ignoreWords": ["somekey", "somesecretvalue"]
 }

@@ -2,6 +2,7 @@ charts:
     drone:
         orgsFilter: redkubes
         repoFilter: redkubes
+        githubAdminTeam: admins
         sourceControl:
             provider: github
             github:

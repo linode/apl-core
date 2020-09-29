@@ -14,6 +14,6 @@
     "aliases": "shellscript"
   },
   "yaml.schemas": {
-    ".vscode/generated-values-schema.json": "env/*.yaml"
+    ".vscode/values-schema.json": "env/*.yaml"
   }
 }

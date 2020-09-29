@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-shopt -s expand_aliases
-. bin/aliases
+. bin/common.sh
 . bin/colors.sh
 set -e
 set -o pipefail
