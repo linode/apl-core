@@ -1,8 +1,58 @@
 ---
-'$schema': http://json-schema.org/draft-07/schema#
+'$schema': 'http://json-schema.org/draft/2019-09/schema#'
 type: object
 additionalProperties: false
 definitions:
+  domain:
+    type: string
+    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
+  repository:
+    type: string
+    pattern: ^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$
+    description: A container image repository
+  memoryQuantity:
+    type: string
+    pattern: ^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+  cpuQuantity:
+    type: string
+    pattern: ^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$
+  env:
+    type: string
+    pattern: ^[a-zA-Z0-9_]*$
+  labelsAnnotations:
+    type: string
+    pattern: ^((.){1,253}\/)?(.){1,63}$
+  labels:
+    type: object
+    description: A set of labels.
+    patternProperties:
+      '^((.){1,253}\/)?(.){1,63}$': ^(.){1,63}$
+  idName:
+    type: string
+    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+  portNumber:
+    type: number
+    minimum: 80
+    maximum: 150
+  resource:
+    type: object
+    properties:
+      cpu:
+        '$ref': '#/definitions/cpuQuantity'
+      memory:
+        '$ref': '#/definitions/memoryQuantity'
+    required: [cpu, memory]
+  resources:
+    title: Pod resources
+    description: Compute resources for containers
+    type: object
+    properties:
+      requests:
+        description: Requested resources (guaranteed)
+        '$ref': '#/definitions/resource'
+      limits:
+        description: Requested resources (best effort)
+        '$ref': '#/definitions/resource'
   alerts:
     properties:
       groupInterval:
@@ -16,6 +66,7 @@ definitions:
         enum:
           - slack
           - msteams
+        default: slack
       slack:
         type: object
         properties:
@@ -24,6 +75,7 @@ definitions:
           channel:
             type: string
             default: mon-otomi
+        required: [url]
       msteams:
         type: object
         properties:
@@ -31,6 +83,8 @@ definitions:
             type: string
           lowPrio:
             type: string
+        required: [highPrio, lowPrio]
+    required: [receiver]
   cloud:
     properties:
       domain:
@@ -40,94 +94,212 @@ definitions:
           '^[a-z-]+$':
             '$ref': '#/definitions/cluster'
         additionalProperties: false
+    required: [domain, clusters]
   cluster:
     type: object
     properties:
       apiName:
         type: string
+        description: Only used for API/UI to show in app.
       apiServer:
         type: string
+        description: Used by kubectl for local deployment to target cluster.
+      dnsZones:
+        type: array
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
       domain:
         type: string
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       k8sVersion:
         type: number
-      otomiVersion:
-        type: string
+        enum: [1.16, 1.17, 1.18]
+        default: 1.18
+        description: Target k8s cluster version.
       name:
         type: string
+        description: 'Cluster name. Keep it short as it will be used for creating the cluster domain (by prefixing this on the cloud domain).'
+      otomiVersion:
+        type: string
+        default: latest
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
       provider:
         type: string
+        enum: [aws, azure, google, onprem]
+        default: google
       region:
         type: string
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
       vpcID:
         type: string
+        description: AWS only. If provided will override autodiscovery from metadata.
+    required: [apiServer, k8sVersion, name, otomiVersion, provider, region]
   team:
     properties:
       azure:
         type: object
       id:
-        type: string
+        '$ref': '#/definitions/idName'
+        description: Must be the same as the name.
       name:
-        type: string
+        '$ref': '#/definitions/idName'
       oidc:
         oidc:
           properties:
             groupMapping:
               type: string
+              description: IDP group id to map onto this team.
       password:
         type: string
+        description: Will be used to separate team resources.
       services:
         type: array
         items:
           type: object
           properties:
+            id:
+              type: string
+              description: Unique identifier created by and used in API. Optional.
             isPublic:
               type: boolean
+              description: If true then no SSO will be used.
+              default: false
             name:
-              type: string
-            namespace:
-              type: string
+              '$ref': '#/definitions/idName'
+              description: Short name. Will be used for generation of knative service name, as well as service URL.
             ownHost:
               type: boolean
+              description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
+              default: true
+              # deprecated: true
+            ksvc:
+              type: object
+              description: Details for a knative service that will be deployed and operated.
+              properties:
+                scaleToZero:
+                  title: Scale to zero
+                  description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
+                  type: boolean
+                  default: false
+                image:
+                  title: Container image
+                  type: object
+                  nullable: true
+                  properties:
+                    repository:
+                      '$ref': '#/definitions/repository'
+                    tag:
+                      type: string
+                secrets:
+                  type: array
+                  title: Secrets
+                  nullable: true
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      entries:
+                        title: Entries
+                        type: array
+                        items:
+                          type: string
+                        uniqueItems: true
+                    required: [name]
+                  required: [repository, tag]
+                env:
+                  title: Environment variables
+                  # description: Environment variables for containers
+                  type: array
+                  nullable: true
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        '$ref': '#/definitions/env'
+                      value:
+                        type: string
+                        maxLength: 131072
+                    required: [name, value]
+                resources:
+                  '$ref': '#/definitions/resources'
+                annotations:
+                  '$ref': '#/definitions/labelsAnnotations'
+                autoCD:
+                  title: Continuous delivery pipeline
+                  description: NOT IN USE YET! Deploys new images based on a tagging strategy.
+                  type: object
+                  oneOf:
+                    - title: 'Off'
+                      nullable: true
+                      additionalProperties: false
+                    - title: Semver versioning
+                      nullable: true
+                      properties:
+                        tagMatcher:
+                          type: string
+                          enum: [semver]
+                          default: semver
+                        semver:
+                          title: Semver version pattern
+                          type: string
+                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
+                          description:
+                            'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.:
+                            PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
+                      required: [semver]
+                    - title: Glob pattern matching
+                      properties:
+                        tagMatcher:
+                          type: string
+                          enum: [glob]
+                          default: glob
+                        glob:
+                          title: Glob string pattern
+                          type: string
+                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
+                          example: 'master-v1.*.*'
+                      required: [glob]
+                      additionalProperties: false
             svc:
-              type: string
+              '$ref': '#/definitions/idName'
+              description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
             isShared:
               type: boolean
+              description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
             paths:
               type: array
               items:
                 type: string
+                description: |
+                  Path mapping to only let this path go to the service. This allows micro services to operate on the same domain and port.
+                  When left empty all paths will go to this service.
             forwardPath:
               type: boolean
-            hide:
-              type: boolean
+              description: Wether to forward the path into the service, or 'terminate' it.
+              default: false
             port:
-              type: number
+              '$ref': '#/definitions/portNumber'
+              description: Points to the backing k8s service (only used when 'svc' is set).
+              default: 80
             authz:
               type: object
+              description: Identifies a workload to authorize.
               properties:
                 forwardOriginalToken:
                   type: boolean
+                  description: If true istio will forward the bearer token instead of removing it from the headers.
+                  default: false
                 workload:
-                  type: object
-                  properties:
-                    app.kubernetes.io/name:
-                      type: string
-                    app.kubernetes.io/instance:
-                      type: string
-                    app:
-                      type: string
-                    component:
-                      type: string
-            host:
-              type: string
-            path:
-              type: string
-            logo:
-              type: object
-              properties:
-                name:
-                  type: string
+                  '$ref': '#/definitions/labelsAnnotations'
+          required: [id, name]
+          oneOf:
+            - svc
+            - ksvc
+    required: [id, name]
 properties:
   alerts:
     '$ref': '#/definitions/alerts'
@@ -166,6 +338,12 @@ properties:
             type: string
           repoFilter:
             type: string
+          resources:
+            properties:
+              runner:
+                '$ref': '#/definitions/resources'
+              server:
+                '$ref': '#/definitions/resources'
           server:
             type: object
             properties:
@@ -192,6 +370,10 @@ properties:
             type: array
             items:
               type: string
+          logLevel:
+            type: string
+            enum: [debug, info, warning, error]
+            default: info
           zoneIdFilters:
             type: array
             items:
@@ -260,42 +442,12 @@ properties:
                 type: object
                 properties:
                   resources:
-                    type: object
-                    properties:
-                      limits:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-                      requests:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
+                    '$ref': '#/definitions/resources'
               istio-ingressgateway:
                 type: object
                 properties:
                   resources:
-                    type: object
-                    properties:
-                      limits:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-                      requests:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
+                    '$ref': '#/definitions/resources'
           global:
             type: object
             properties:
@@ -313,22 +465,7 @@ properties:
                 type: object
                 properties:
                   resources:
-                    type: object
-                    properties:
-                      limits:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-                      requests:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
+                    '$ref': '#/definitions/resources'
               sds:
                 type: object
                 properties:
@@ -343,22 +480,7 @@ properties:
                   enabled:
                     type: boolean
                   resources:
-                    type: object
-                    properties:
-                      limits:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-                      requests:
-                        type: object
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
+                    '$ref': '#/definitions/resources'
               telemetry:
                 type: object
                 properties:
@@ -385,22 +507,7 @@ properties:
             type: object
             properties:
               resources:
-                type: object
-                properties:
-                  limits:
-                    type: object
-                    properties:
-                      cpu:
-                        type: string
-                      memory:
-                        type: string
-                  requests:
-                    type: object
-                    properties:
-                      cpu:
-                        type: string
-                      memory:
-                        type: string
+                '$ref': '#/definitions/resources'
               traceSampling:
                 type: number
       keycloak:

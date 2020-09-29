@@ -4,7 +4,7 @@ clouds:
         clusters:
             demo:
                 apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
-                apiServer:
+                apiServer: 1.1.1.1
                 k8sVersion: 1.16
                 region: eu-central-1
     google:
@@ -12,7 +12,7 @@ clouds:
         clusters:
             demo:
                 apiName: gke_otomi-cloud_europe-west4_otomi-gke-demo
-                apiServer:
+                apiServer: 1.1.1.1
                 k8sVersion: 1.17
                 region: europe-west4
     azure:
@@ -20,7 +20,7 @@ clouds:
         clusters:
             demo:
                 apiName: aks_otomi-cloud_westeurope_otomi-aks-demo
-                apiServer:
+                apiServer: 1.1.1.1
                 k8sVersion: 1.17
                 region: westeurope
     onprem:
@@ -29,7 +29,7 @@ clouds:
             demo:
                 dnsProvider: google
                 apiName: onprem_otomi-cloud
-                apiServer:
+                apiServer: 1.1.1.1
                 k8sVersion: 1.18
                 region: local
-                entrypoint:
+                entrypoint: 1.1.1.1

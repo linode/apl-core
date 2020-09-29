@@ -5,20 +5,23 @@
   "[js,json,md,yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],
+  "cSpell.enabled": true,
+  "cSpell.ignoreWords": ["somekey", "somesecretvalue"],
+  "cSpell.words": ["backoff", "devops", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"],
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "files.associations": {
     "*.gotmpl": "helm",
     "*.tmpl": "nginx",
-    "*.yml": "yaml",
     "*.tpl": "yaml",
+    "*.yml": "yaml",
+    "aliases": "shellscript",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",
-    "otomi": "shellscript",
-    "aliases": "shellscript"
+    "otomi": "shellscript"
   },
-  "cSpell.enabled": true,
-  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],
-  "cSpell.words": ["backoff", "devops", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"],
-  "cSpell.ignoreWords": ["somekey", "somesecretvalue"]
+  "yaml.schemas": {
+    "http://json-schema.org/draft/2019-09/schema#": "values-schema.yaml"
+  }
 }

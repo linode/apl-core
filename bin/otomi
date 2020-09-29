@@ -282,7 +282,6 @@ function execute() {
     ;;
   switch)
     evaluate_k8s_context
-    # otomi x ls -als /home/app/.kube/
     kubectl config use $K8S_CONTEXT
     ;;
   test)
@@ -320,8 +319,9 @@ function execute() {
 
 function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
-
-  if [[ "$cwd" == 'otomi-stack' ]]; then
+  [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
+  if [[ "$cwd" == "otomi-stack" ]]; then
+    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
     [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
     stack_dir=$PWD
     mount_stack_dir=1
