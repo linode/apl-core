@@ -43,7 +43,7 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - cd .. && bin/otomi lint && bin/otomi test
+      - cd .. && bin/otomi test
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
