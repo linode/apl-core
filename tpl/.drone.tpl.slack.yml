@@ -5,6 +5,9 @@ name: default
 workspace:
   path: /home/app/stack/env
 
+concurrency:
+  limit: 1
+
 trigger:
   branch:
     - master
