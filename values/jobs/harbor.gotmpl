@@ -8,8 +8,8 @@
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $hasHarbor := $h | get "enabled" false -}}
-{{- $otomiApiTag := $c | get "otomi-api.image.tag" -}}
-{{- $otomiApiImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-api:%s" $otomiApiTag -}}
+{{- $otomiTasksTag := $c | get "otomi-tasks.image.tag" -}}
+{{- $otomiTasksImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-tasks:%s" $otomiTasksTag -}}
 
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
@@ -22,7 +22,7 @@ tasks:
     type: job
     enabled: {{ $hasHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    image: {{ $otomiApiImage }}
+    image: {{ $otomiTasksImage }}
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
       HARBOR_USER: admin
