@@ -1,0 +1,23 @@
+{{- $v := .Environment.Values }}
+{{- $d := $v.charts | get "drone" dict }}
+{{- $host := printf "drone.%s" $v.cluster.domain }}
+
+nameOverride: "drone-admit-members"
+fullnameOverride: "drone-admit-members"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 20m
+    memory: 40Mi
+
+sharedSecret: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+github:
+  token: {{ $d.github.token }}
+  org: {{ $d.github.org }}
+  team: {{ $d.github.team | default "admins" }}
+
+env:
+  DRONE_DEBUG: {{ $d | get "debug" false }}

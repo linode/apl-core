@@ -1,7 +1,10 @@
 charts:
     drone:
+        debug: false
         orgsFilter: redkubes
         repoFilter: redkubes
+        github:
+            adminTeam: admins
         sourceControl:
             provider: github
             github:
