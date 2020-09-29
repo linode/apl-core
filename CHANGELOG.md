@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.20](https://github.com/redkubes/otomi-stack/compare/v0.11.19...v0.11.20) (2020-09-29)
+
+
+### Features
+
+* jsonschema for values ([#150](https://github.com/redkubes/otomi-stack/issues/150)) ([1ea90b7](https://github.com/redkubes/otomi-stack/commit/1ea90b72951c12bfc4b471486a484e70cb4bf22e)), closes [#137](https://github.com/redkubes/otomi-stack/issues/137)
+
+
+### Bug Fixes
+
+* missing route ([#147](https://github.com/redkubes/otomi-stack/issues/147)) ([df54c60](https://github.com/redkubes/otomi-stack/commit/df54c6058d6f1968d3014a5343192dc55a7c8fce))
+* sops settings for vscode [ci skip] ([2a76f75](https://github.com/redkubes/otomi-stack/commit/2a76f759d87d13b22ed753c0ded1b761ef037a3e))
+
 ### [0.11.19](https://github.com/redkubes/otomi-stack/compare/v0.11.18...v0.11.19) (2020-09-29)
 
 
