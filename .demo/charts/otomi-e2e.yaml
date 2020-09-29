@@ -1,0 +1,6 @@
+charts:
+    otomi-e2e:
+        image:
+            pullPolicy: Always
+            tag: v0.2.43
+        

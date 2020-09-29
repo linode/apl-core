@@ -1,0 +1,22 @@
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+{{- $k := $c | get "keycloak" dict }}
+{{- $cm := $c | get "cert-manager" -}}
+{{- $idp := $v.oidc.idp }}
+{{- $otomiE2eTag := $c | get "otomi-e2e.image.tag" -}}
+{{- $otomiE2eImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-e2e:%s" $otomiE2eTag -}}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+tasks:
+  tests-smoke:
+    type: job
+    description: Test OIDC auhentication methods 
+    enabled: true
+    image: {{ $otomiE2eImage }}
+    secret:
+      CYPRESS_KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+      CYPRESS_KEYCLOAK_REALM: master
+      CYPRESS_KEYCLOAK_CLIENT_ID: otomi
+      CYPRESS_KEYCLOAK_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+      CYPRESS_IDP_ALIAS: {{ $k.idp.alias }}
+      CYPRESS_CLUSTER_DOMAIN:  $v.cluster.domain
+    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tests:smoke:oauth-proxy

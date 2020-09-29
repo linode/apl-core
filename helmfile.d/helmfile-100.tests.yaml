@@ -1,0 +1,11 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: tests-smoke
+    installed: {{ eq $v.cluster.name "dev" }}
+    <<: *jobs
