@@ -1,11 +1,8 @@
 templates:
   default: &default
     chart: ../charts/{{ .Release.Name }}
-    missingFileHandler: Warn
     values:
-      - ../values/{{ .Release.Name }}/{{ .Release.Name }}.yaml
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
-      - ../values/default.gotmpl
   raw: &raw
     chart: ../charts/raw
     values:
@@ -17,7 +14,6 @@ templates:
       tag: jobs
     values:
       - ../values/jobs/{{ .Release.Name | replace "jobs-" "" }}.gotmpl
-      - ../values/default.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
