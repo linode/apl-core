@@ -663,19 +663,6 @@ properties:
     properties:
       name:
         type: string
-  otomi:
-    type: object
-    properties:
-      isManaged:
-        type: boolean
-      isMultitenant:
-        type: boolean
-      isRedkubesMonitored:
-        type: boolean
-      pullSecret:
-        type: string
-      teamPrefix:
-        type: string
   oidc:
     type: object
     properties:
@@ -700,6 +687,21 @@ properties:
             type: string
       scope:
         type: string
+  otomi:
+    type: object
+    properties:
+      isManaged:
+        type: boolean
+      isMultitenant:
+        type: boolean
+      isRedkubesMonitored:
+        type: boolean
+      pullSecret:
+        type: string
+      teamPrefix:
+        type: string
+  sops:
+    description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:
     type: object
     properties:
