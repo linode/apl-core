@@ -4,7 +4,8 @@ charts:
         orgsFilter: redkubes
         repoFilter: redkubes
         github:
-            adminTeam: admins
+            org: redkubes
+            team: admins
         sourceControl:
             provider: github
             github:

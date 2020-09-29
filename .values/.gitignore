@@ -1,8 +1,8 @@
-.history
-.secrets
-.prettierrc.yml
-.vscode
-.gitattributes
-*.json
+/.history
+/.secrets
+/.prettierrc.yml
+/.vscode
+/.gitattributes
+/*.json
 *.yaml.dec
-bin/
+/bin/
