@@ -1,7 +1,8 @@
 #!/bin/bash
 
 function otomi_cluster() {
-    local clusters_file="$ENV_DIR/env/clusters.yaml"
+    local clusters_file="$ENV_DIR/clusters.yaml"
+    echo "$CLOUD $CLUSTER"
     if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
         cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER
     else
@@ -15,7 +16,7 @@ function otomi_cluster_info() {
 }
 
 function otomi_settings() {
-    cat $ENV_DIR/env/settings.yaml | yq r - $1
+    cat $ENV_DIR/settings.yaml | yq r - $1
 }
 
 function get_otomi_version() {
