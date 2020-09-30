@@ -30,7 +30,7 @@ keycloak:
       cpu: 100m
       memory: 1Gi
     {{- end }}
-  replicas: 2
+  replicas: 1
 
 postgresql:
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
