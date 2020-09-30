@@ -24,6 +24,6 @@ releases:
     namespace: kube-system
     <<: *default
   - name: kube-descheduler
-    installed: {{ eq $v.cluster.provider "onprem" }}
+    installed: {{ $v | get "charts.kube-descheduler.enabled" false }}
     namespace: kube-system
     <<: *default
