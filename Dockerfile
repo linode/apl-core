@@ -5,7 +5,8 @@ RUN apk --no-cache add make gcc g++ python git jq
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run lint:all
+
+RUN npm run spellcheck
 
 FROM otomi/tools:1.4.5 as prod
 
