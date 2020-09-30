@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.22](https://github.com/redkubes/otomi-stack/compare/v0.11.21...v0.11.22) (2020-09-30)
+
+
+### Bug Fixes
+
+* downgrade keycloak replicas to one ([a7999fe](https://github.com/redkubes/otomi-stack/commit/a7999fe2ebbf33e88d8f96eeb6b8d359cdba6984))
+* remove unexisting command ([298b75f](https://github.com/redkubes/otomi-stack/commit/298b75f9607703add4d156aec493bf0e0aecfff5))
+* removed env output from drun [ci skip] ([5dd6151](https://github.com/redkubes/otomi-stack/commit/5dd6151c0b02a08fe46a207335f74bc6fd57147e))
+* vscode sops setting for decryption ([d0adf0b](https://github.com/redkubes/otomi-stack/commit/d0adf0bcf4795f9c792ed6860d9900eb5e572a3f))
+
 ### [0.11.21](https://github.com/redkubes/otomi-stack/compare/v0.11.20...v0.11.21) (2020-09-29)
 
 
