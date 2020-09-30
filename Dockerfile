@@ -6,7 +6,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run lint
+RUN npm run lint:all
 
 FROM otomi/tools:1.4.5 as prod
 
