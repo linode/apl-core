@@ -82,7 +82,6 @@ function show_usage() {
     decrypt    decrypt *.secrets.yaml.enc to *.secrets.yaml files
     deploy     execute otomi-stack deploy script
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    eksctl     run eksctl cli
     encrypt    encrypt values in all *.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
