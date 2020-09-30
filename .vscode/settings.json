@@ -5,10 +5,7 @@
   "[js,json,md,yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.enableFiletypes": ["dockerfile", "gotmpl", "helm", "ini", "sh", "yaml", "yml"],
   "cSpell.enabled": true,
-  "cSpell.ignoreWords": ["somekey", "somesecretvalue"],
-  "cSpell.words": ["backoff", "devops", "keycloak", "ksvc", "nindent", "oidc", "otomi", "rbac"],
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "files.associations": {

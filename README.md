@@ -1,6 +1,6 @@
 # otomi-stack
 
-Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
 
 An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md)
 
@@ -52,7 +52,7 @@ Please read the `README.md` that is exported as it has extensive instructions on
 
 ### 1.4 Key Service Account
 
-Please refer to [SOPS](https://github.com/mozilla/sops) to get aquainted and choose / wire up your KMS provider.
+Please refer to [SOPS](https://github.com/mozilla/sops) to get acquainted and choose / wire up your KMS provider.
 
 **ADDITIONAL: Google's GCP KMS**
 

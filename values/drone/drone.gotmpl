@@ -16,7 +16,7 @@ sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   host: {{ $host }}
   protocol: https
-  adminUser: {{ $d.server.adminUser }}
+  adminUser: {{ $d.adminUser }}
   dind:
     enabled: false
   resources:
