@@ -11,12 +11,12 @@
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
-shopt -s expand_aliases
 set -e
+[ "$ENV_DIR" == "" ] && env_unset=1
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
-. bin/aliases
+. bin/common.sh
 
 script=$0
 command=$1
@@ -55,6 +55,18 @@ docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
+function set_env_and_stack_dir() {
+  local cwd=$(basename "$PWD")
+  [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
+  if [[ "$cwd" == "otomi-stack" ]]; then
+    [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
+    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
+    stack_dir=$PWD
+    mount_stack_dir=1
+  fi
+  return 0
+}
+
 function set_helm_config() {
   helm_config="$HOME/.config/helm"
   uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
@@ -70,7 +82,6 @@ function show_usage() {
     decrypt    decrypt *.secrets.yaml.enc to *.secrets.yaml files
     deploy     execute otomi-stack deploy script
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    eksctl     run eksctl cli
     encrypt    encrypt values in all *.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
@@ -138,7 +149,7 @@ validate_cluster_env() {
 }
 
 is_repo() {
-  [[ "$(basename "$PWD")" == 'otomi-stack' ]] && "Error: Should not be ran from otomi-stack" && exit 2
+  [[ "$(basename "$PWD")" == "otomi-stack" ]] && "Error: Should not be ran from otomi-stack" && exit 2
   return 0
 }
 
@@ -206,13 +217,13 @@ function drun() {
       $command
   else
     [ "$VERBOSE" == "1" ] && echo "Running native version of command: $command"
-    env
     $command
   fi
 }
 
 function execute() {
   local helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
+  local helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
   shift 2
   case $command in
   values)
@@ -274,7 +285,7 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHide
+    drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
     ;;
   rotate-keys)
     check_kube_context=0
@@ -283,7 +294,6 @@ function execute() {
     ;;
   switch)
     evaluate_k8s_context
-    # otomi x ls -als /home/app/.kube/
     kubectl config use $K8S_CONTEXT
     ;;
   test)
@@ -317,17 +327,6 @@ function execute() {
     exit 1
     ;;
   esac
-}
-
-function set_env_and_stack_dir() {
-  local cwd=$(basename "$PWD")
-
-  if [[ "$cwd" == 'otomi-stack' ]]; then
-    [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
-    stack_dir=$PWD
-    mount_stack_dir=1
-  fi
-  return 0
 }
 
 [[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2

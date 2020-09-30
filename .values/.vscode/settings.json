@@ -13,7 +13,8 @@
     "otomi": "shellscript",
     "aliases": "shellscript"
   },
+  "sops.defaults.gcpCredentialsPath": "${workspaceFolder}/gcp-key.json",
   "yaml.schemas": {
-    ".vscode/generated-values-schema.json": "env/*.yaml"
+    ".vscode/values-schema.json": "env/*.yaml"
   }
 }

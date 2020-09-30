@@ -1,16 +1,17 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
+{{- $debug := $d | get "debug" false }}
 {{- $host := printf "drone.%s" $v.cluster.domain }}
 images:
   server:
-    tag: latest
+    tag: 1.9.0
   agent:
     repository: "docker.io/drone/drone-runner-kube"
     tag: latest
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: zumsecreetz
+sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   host: {{ $host }}
@@ -26,21 +27,23 @@ server:
       memory: 32Mi
       cpu: 40m
     limits:
-      memory: 2Gi
-      cpu: 1
+      memory: 256Mi
+      cpu: 200m
     {{- end }}
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
-    DRONE_LOGS_DEBUG: true
-    DRONE_LOGS_TRACE: true
-    DRONE_LOGS_PRETTY: true
-    DRONE_RPC_DEBUG: true
+    DRONE_LOGS_DEBUG: {{ $debug }}
+    DRONE_LOGS_TRACE: {{ $debug }}
+    DRONE_LOGS_PRETTY: false
+    DRONE_RPC_DEBUG: {{ $debug }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- if $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
+    DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
+    DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 kubernetes:
   resources:
     {{- if (hasKey $d "resources.runner") }}

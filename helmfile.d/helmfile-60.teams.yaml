@@ -234,7 +234,6 @@ releases:
       team: {{ $teamId }}
     values:
       - ../values/prometheus-msteams/prometheus-msteams.gotmpl
-      - ../values/default.gotmpl
       - commonLabels:
           team: {{ $teamId }}
         metrics:
@@ -255,7 +254,6 @@ releases:
       team: {{ $teamId }}
     values:
       - ../values/grafana-dashboards/grafana-dashboards.gotmpl
-      - ../values/default.gotmpl
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         team: {{ $teamId }}
         folders:

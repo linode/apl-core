@@ -1,0 +1,17 @@
+otomi:
+    isManaged: true
+    isMultitenant: true
+    isRedkubesMonitored: true
+    teamPrefix: team-
+    hasCloudLB: false
+customer:
+    name: demo
+oidc:
+    clientID: demo
+    idp:
+        issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695
+        tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+        clientID: someClientID
+        adminGroupID: someAdminGroupID
+        teamAdminGroupID: someTeamAdminGroupID
+    scope: openid email profile

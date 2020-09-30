@@ -16,7 +16,7 @@ releases:
     namespace: monitoring
     <<: *default
   - name: metrics-server
-    installed: {{ eq $v.cluster.provider "onprem" }} 
+    installed: {{ list "onprem" "aws" | has $v.cluster.provider }}
     namespace: kube-system
     <<: *default
   - name: kured

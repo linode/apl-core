@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.22](https://github.com/redkubes/otomi-stack/compare/v0.11.21...v0.11.22) (2020-09-30)
+
+
+### Bug Fixes
+
+* downgrade keycloak replicas to one ([a7999fe](https://github.com/redkubes/otomi-stack/commit/a7999fe2ebbf33e88d8f96eeb6b8d359cdba6984))
+* remove unexisting command ([298b75f](https://github.com/redkubes/otomi-stack/commit/298b75f9607703add4d156aec493bf0e0aecfff5))
+* removed env output from drun [ci skip] ([5dd6151](https://github.com/redkubes/otomi-stack/commit/5dd6151c0b02a08fe46a207335f74bc6fd57147e))
+* vscode sops setting for decryption ([d0adf0b](https://github.com/redkubes/otomi-stack/commit/d0adf0bcf4795f9c792ed6860d9900eb5e572a3f))
+
+### [0.11.21](https://github.com/redkubes/otomi-stack/compare/v0.11.20...v0.11.21) (2020-09-29)
+
+
+### Bug Fixes
+
+* incoming webhook to auth ingress [ci skip] ([3e252dc](https://github.com/redkubes/otomi-stack/commit/3e252dc05a7eb180356d96010a33b81220f86ffd))
+
+### [0.11.20](https://github.com/redkubes/otomi-stack/compare/v0.11.19...v0.11.20) (2020-09-29)
+
+
+### Features
+
+* jsonschema for values ([#150](https://github.com/redkubes/otomi-stack/issues/150)) ([1ea90b7](https://github.com/redkubes/otomi-stack/commit/1ea90b72951c12bfc4b471486a484e70cb4bf22e)), closes [#137](https://github.com/redkubes/otomi-stack/issues/137)
+
+
+### Bug Fixes
+
+* missing route ([#147](https://github.com/redkubes/otomi-stack/issues/147)) ([df54c60](https://github.com/redkubes/otomi-stack/commit/df54c6058d6f1968d3014a5343192dc55a7c8fce))
+* sops settings for vscode [ci skip] ([2a76f75](https://github.com/redkubes/otomi-stack/commit/2a76f759d87d13b22ed753c0ded1b761ef037a3e))
+
+### [0.11.19](https://github.com/redkubes/otomi-stack/compare/v0.11.18...v0.11.19) (2020-09-29)
+
+
+### Features
+
+* added drone-admit-members [ci skip] ([3131556](https://github.com/redkubes/otomi-stack/commit/3131556b731790b0c9bb1806cb43da2b946c1cbc))
+
+
+### Bug Fixes
+
+* adding owners file [ci skip] ([f5d37d6](https://github.com/redkubes/otomi-stack/commit/f5d37d65809ed62dc601464aadf3aceadca19d57))
+* cleaned up old charts, fixes version flipping [ci skip] ([52a6680](https://github.com/redkubes/otomi-stack/commit/52a6680f846ea6d1d21ec3a3dd3b2535abc76945))
+* default to empty dict even if value is null ([ae4c742](https://github.com/redkubes/otomi-stack/commit/ae4c7425992563c6a37b710f1baedf607ccc735f))
+* deploy an existing k8s service to team-demo ([#136](https://github.com/redkubes/otomi-stack/issues/136)) ([9e11c93](https://github.com/redkubes/otomi-stack/commit/9e11c938a1ffb25ce7e8059849259344212afe67))
+* limit drone concurency to one ([#149](https://github.com/redkubes/otomi-stack/issues/149)) ([c6df454](https://github.com/redkubes/otomi-stack/commit/c6df454526485d673b5c103db6d1664b74bea2e5))
+* missing file coming from bootstrap [ci skip] ([3ff1711](https://github.com/redkubes/otomi-stack/commit/3ff1711f6f495b3d7651c6e579a71daa13752d37))
+* test output was too sensitive [ci skip] ([94b02ea](https://github.com/redkubes/otomi-stack/commit/94b02ea49f4523d946f6022b40ae9e651bc5fc50))
+
+
+### Reverts
+
+* Revert "Fix to server (#139)" ([fa193fd](https://github.com/redkubes/otomi-stack/commit/fa193fd5480673353d088215816e3c7674f05fcd)), closes [#139](https://github.com/redkubes/otomi-stack/issues/139)
+
+
+### Others
+
+* **release:** 0.11.18 ([c1cac4d](https://github.com/redkubes/otomi-stack/commit/c1cac4de1cb09ead0a7e36e4a3fb15680ee65069))
+* **release:** 0.11.18 ([9e0ae1f](https://github.com/redkubes/otomi-stack/commit/9e0ae1fa74ea88bc603319296184aae4323ef95d))
+
+
+### Feature Improvements
+
+* helmfile output filter [ci skip] ([9ea4dff](https://github.com/redkubes/otomi-stack/commit/9ea4dff43b1a015384917a2d5c6af759b1dee5d9))
+
+
+### Docs
+
+* architecture - ingress overview added [ci skip] ([103b4f0](https://github.com/redkubes/otomi-stack/commit/103b4f09734c1ff991ee0b80d1201f87c9a90db3))
+
 ### [0.11.18](https://github.com/redkubes/otomi-stack/compare/v0.11.17...v0.11.18) (2020-09-22)
 
 
