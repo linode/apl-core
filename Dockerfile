@@ -6,4 +6,6 @@ WORKDIR $APP_HOME
 
 COPY . .
 
+RUN npm run lint:all
+
 CMD ["bin/deploy.sh"]

@@ -15,9 +15,9 @@ resources:
 
 sharedSecret: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 github:
-  token: {{ $d.github.token }}
-  org: {{ $d.github.org }}
-  team: {{ $d.github.team | default "admins" }}
+  token: {{ $d.githubAdmins.token }}
+  org: {{ $d.githubAdmins.org }}
+  team: {{ $d.githubAdmins.team | default "admins" }}
 
 env:
   DRONE_DEBUG: {{ $d | get "debug" false }}
