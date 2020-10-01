@@ -63,6 +63,11 @@ export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
 code $ENV_DIR
 ```
 
+### 1.5 Local tooling
+
+- npm@~10.0 binary
+- `npm install` in root
+
 ## 2. Development
 
 Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies. Notable quirks that can give you headaches:
