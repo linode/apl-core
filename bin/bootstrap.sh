@@ -17,8 +17,8 @@ for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path
 done
 cp -r $PWD/.values/.vscode $ENV_DIR/
+cp -r $PWD/values-schema.yaml $ENV_DIR/.vscode/
 # convert schema to loose json:
-grep -v 'required:' $PWD/values-schema.yaml | yaml2json | jq -M '.' >$ENV_DIR/.vscode/values-schema.json
 for f in '.gitattributes' '.sops.yaml'; do
   [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
 done

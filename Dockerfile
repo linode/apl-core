@@ -3,9 +3,12 @@ FROM node:13.10.1-alpine as dev
 RUN apk --no-cache add make gcc g++ python git jq
 
 COPY package*.json ./
+RUN ls -als
 RUN npm install
 COPY . .
-COPY ./.cspell.json .
+RUN ls -als
+COPY .cspell.json .
+RUN ls -als 
 
 RUN npm run lint:all
 
