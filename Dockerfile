@@ -5,7 +5,7 @@ RUN apk --no-cache add make gcc g++ python git jq
 COPY package*.json ./
 RUN npm install
 COPY . .
-COPY .cspell.json .
+COPY ./.cspell.json .
 
 RUN npm run lint:all
 
