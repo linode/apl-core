@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.23](https://github.com/redkubes/otomi-stack/compare/v0.11.22...v0.11.23) (2020-09-30)
+
+
+### Features
+
+* spellcheck enabled, updated schema ([de9cb0d](https://github.com/redkubes/otomi-stack/commit/de9cb0d57fd582ea1649f30c761b7406193e2a50))
+
+
+### Bug Fixes
+
+* ci image ([21ea4a4](https://github.com/redkubes/otomi-stack/commit/21ea4a4ec943254cf3dfbf93f724114dc286f2ab))
+* ci image ([4857bb6](https://github.com/redkubes/otomi-stack/commit/4857bb6bda7822af8d7efade24d8a913f2dff134))
+* lint:all ([d882880](https://github.com/redkubes/otomi-stack/commit/d882880408fccfb5751ecad9cf58ce938abf8e7e))
+* multistage dockerfile needed for tests ([e977bd8](https://github.com/redkubes/otomi-stack/commit/e977bd86fb3374febacbabfe6443d51564ff1569))
+* spellcheck disabled for now ([500d7f9](https://github.com/redkubes/otomi-stack/commit/500d7f96bf79e5e7d17e45840de15b84f0c3cc3e))
+* spellcheck disabled for now ([3af4a0f](https://github.com/redkubes/otomi-stack/commit/3af4a0f2e23d878633d8e25c54ef3c0966c2d04c))
+
+
+### Feature Improvements
+
+* spellcheck added to pre-commit ([d7ad1e5](https://github.com/redkubes/otomi-stack/commit/d7ad1e59e978360b920e0c5ddc0d968d89151a5a))
+
 ### [0.11.22](https://github.com/redkubes/otomi-stack/compare/v0.11.21...v0.11.22) (2020-09-30)
 
 

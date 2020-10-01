@@ -3,6 +3,11 @@
 type: object
 additionalProperties: false
 definitions:
+  k8sVersion:
+    type: number
+    pattern: ^{1,2}\.{16,18}
+    default: 1.18
+    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
   domain:
     type: string
     pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
@@ -13,27 +18,38 @@ definitions:
   memoryQuantity:
     type: string
     pattern: ^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki
+    examples:
+      - 1Mi
+      - 0.5M
   cpuQuantity:
     type: string
     pattern: ^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$
+    description: Amount of cores, or slice of cpu in millis.
+    examples:
+      - '1'
+      - 200m
   env:
     type: string
     pattern: ^[a-zA-Z0-9_]*$
   labelsAnnotations:
-    type: string
-    pattern: ^((.){1,253}\/)?(.){1,63}$
-  labels:
     type: object
-    description: A set of labels.
     patternProperties:
-      '^((.){1,253}\/)?(.){1,63}$': ^(.){1,63}$
+      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$': ^((.){1,253}\/)?(.){1,63}$
+  annotations:
+    '$ref': '#/definitions/labelsAnnotations'
+    description: A set of annotations.
+  labels:
+    '$ref': '#/definitions/labelsAnnotations'
+    description: A set of labels.
   idName:
     type: string
     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+    description: A lowercase name that starts with a letter and may contain dashes.
   portNumber:
     type: number
     minimum: 80
-    maximum: 150
+    maximum: 32768
   resource:
     type: object
     properties:
@@ -58,37 +74,44 @@ definitions:
       groupInterval:
         type: string
         default: 5m
+        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
       repeatInterval:
         type: string
         default: 3h
+        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
       receiver:
         type: string
         enum:
           - slack
           - msteams
         default: slack
+        description: A notification receiver. You can only choose one of Slack or MS Teams in simple configuration mode.
       slack:
         type: object
         properties:
           url:
             type: string
+            description: A Slack webhook URL.
           channel:
             type: string
             default: mon-otomi
+            description: 'The Slack channel for non-critical notifications. This channel, as well as one with the suffix "-crit" (for criticals) should exist.'
         required: [url]
       msteams:
         type: object
         properties:
           highPrio:
             type: string
+            description: The low prio web hook
           lowPrio:
             type: string
+            description: The high prio web hook
         required: [highPrio, lowPrio]
     required: [receiver]
   cloud:
     properties:
       domain:
-        type: string
+        '$ref': '#/definitions/domain'
       clusters:
         patternProperties:
           '^[a-z-]+$':
@@ -106,15 +129,14 @@ definitions:
         description: Used by kubectl for local deployment to target cluster.
       dnsZones:
         type: array
+        items:
+          '$ref': '#/definitions/domain'
         description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
       domain:
-        type: string
+        '$ref': '#/definitions/domain'
         description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       k8sVersion:
-        type: number
-        enum: [1.16, 1.17, 1.18]
-        default: 1.18
-        description: Target k8s cluster version.
+        '$ref': '#/definitions/k8sVersion'
       name:
         type: string
         description: 'Cluster name. Keep it short as it will be used for creating the cluster domain (by prefixing this on the cloud domain).'
@@ -227,7 +249,7 @@ definitions:
                 resources:
                   '$ref': '#/definitions/resources'
                 annotations:
-                  '$ref': '#/definitions/labelsAnnotations'
+                  '$ref': '#/definitions/annotations'
                 autoCD:
                   title: Continuous delivery pipeline
                   description: NOT IN USE YET! Deploys new images based on a tagging strategy.
@@ -313,8 +335,8 @@ properties:
             type: string
           provider:
             type: object
-            properties:
-              google:
+            patternProperties:
+              '(aws|azure|google)':
                 type: object
                 properties:
                   clouddns:
@@ -334,6 +356,17 @@ properties:
       drone:
         type: object
         properties:
+          adminUser:
+            type: string
+          githubAdmins:
+            type: object
+            properties:
+              org:
+                type: string
+              team:
+                type: string
+              token:
+                type: string
           orgsFilter:
             type: string
           repoFilter:
@@ -344,11 +377,6 @@ properties:
                 '$ref': '#/definitions/resources'
               server:
                 '$ref': '#/definitions/resources'
-          server:
-            type: object
-            properties:
-              adminUser:
-                type: string
           sourceControl:
             type: object
             properties:
@@ -690,16 +718,33 @@ properties:
   otomi:
     type: object
     properties:
+      hasCloudLB:
+        type: boolean
+        description:
+          Set this to true when an external LB exists (Azure AppGW, Google Apigee) or needs to be started (ALB). Expects existing LBs to terminate https.
+          Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.
+        default: false
       isManaged:
         type: boolean
+        description: Wether masters are managed and not under control. Set this to false when onprem.
+        default: true
       isMultitenant:
         type: boolean
+        description: Wether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
+        default: true
       isRedkubesMonitored:
         type: boolean
+        description: Wether this cluster is monitored under a RedKubes Premium SLA. Sends all notifications to RedKubes.
+        default: false
       pullSecret:
         type: string
+        description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
+        default: ''
       teamPrefix:
         type: string
+        default: team-
+        description: The prefix to use in URLs for team domains.
+        pattern: ^[a-z]+[-]{1}$
   sops:
     description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:
