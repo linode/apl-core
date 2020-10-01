@@ -1,6 +1,7 @@
 .*
 !.values
 !.demo
+!.cspell.json
 env
 node_modules
 tools
