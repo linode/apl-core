@@ -7,6 +7,8 @@ WORKDIR $APP_HOME
 COPY package*.json ./
 RUN npm install
 COPY . .
+COPY .cspell.json .
+
 RUN npm run lint:all
 
 #-----------------------------
