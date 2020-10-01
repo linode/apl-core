@@ -1,7 +1,5 @@
 FROM node:slim as ci
 
-RUN apk --no-cache add make gcc g++ python git jq
-
 ENV APP_HOME=/home/app/stack
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME

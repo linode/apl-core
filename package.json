@@ -59,7 +59,7 @@
     "lint": "bin/lint.sh",
     "lint:all": "run-p spellcheck",
     "release": "standard-version",
-    "spellcheck": "cspell \"./**/*\" \"./.**/**\""
+    "spellcheck": "cspell \"**/*\" \".**/**\""
   },
   "standard-version": {
     "skip": {
