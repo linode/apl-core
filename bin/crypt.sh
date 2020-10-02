@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-export GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-  echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-else
-  echo "GCLOUD_SERVICE_KEY not set!"
-  exit 1
-fi
-
 ENV_DIR=${ENV_DIR:-./env}
+. bin/common.sh
+prepare_crypt
+
 command=$1
 
 function rotate() {

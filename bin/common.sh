@@ -33,3 +33,13 @@ function get_receiver() {
   fi
   echo $receiver
 }
+
+function prepare_crypt() {
+  [ "$ENV_DIR" == "" ] || [ "$GCLOUD_SERVICE_KEY" == "" ] && exit 1
+  GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
+  if [ "$IN_DOCKER" != "" ] || [ "$CI" != "" ]; then
+    GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+  fi
+  export GOOGLE_APPLICATION_CREDENTIALS
+}
