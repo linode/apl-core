@@ -54,15 +54,6 @@ Please read the `README.md` that is exported as it has extensive instructions on
 
 Please refer to [SOPS](https://github.com/mozilla/sops) to get acquainted and choose / wire up your KMS provider.
 
-**ADDITIONAL: Google's GCP KMS**
-
-In order to work with (en)crypted files + GCP KMS in VSCode, then it needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
-code $ENV_DIR
-```
-
 ### 1.5 Local tooling
 
 - npm@~10.0 binary
