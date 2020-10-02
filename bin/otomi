@@ -12,9 +12,16 @@
 ##
 #####################################################################################
 set -e
-[ "$ENV_DIR" == "" ] && env_unset=1
-ENV_DIR=${ENV_DIR:-$PWD}
-[ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
+# in docker?
+if [ "$IN_DOCKER" == "" ]; then
+  # no, we must be given ENV_DIR when in stack, otherwise we can have PWD
+  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "No ENV_DIR set!" && exit 1
+  ENV_DIR=${ENV_DIR:-$PWD}
+else
+  ENV_DIR="/home/app/stack/env"
+fi
+# fix for I don't rememeber which context would come in with /home/app/stack (might be obsolete)
+# [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
 . bin/common.sh
 
@@ -59,7 +66,6 @@ function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
   [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
   if [[ "$cwd" == "otomi-stack" ]]; then
-    [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
     [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
     stack_dir=$PWD
     mount_stack_dir=1
