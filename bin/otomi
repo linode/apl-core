@@ -14,8 +14,9 @@
 set -e
 # in docker?
 if [ "$IN_DOCKER" == "" ]; then
-  # no, we must be given ENV_DIR when in stack, otherwise we can have PWD
-  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "No ENV_DIR set!" && exit 1
+  # no, we must be given ENV_DIR when in stack
+  [[ "$(basename "$PWD")" == "otomi-stack" ]] && [ "$ENV_DIR" == "" ] && echo "No ENV_DIR set!" && exit 1
+  # otherwise we can have PWD
   ENV_DIR=${ENV_DIR:-$PWD}
 else
   ENV_DIR="/home/app/stack/env"
