@@ -80,10 +80,10 @@ function show_usage() {
     bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit     wrapper for encrypt > generate pipelines > git commit changed files
     console    starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
-    decrypt    decrypt *.secrets.yaml.enc to *.secrets.yaml files
+    decrypt    decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy     execute otomi-stack deploy script
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    encrypt    encrypt values in all *.secrets.yaml files
+    encrypt    encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
     lint       runs a linter that will check OPA rules on templates (coming soon!)
@@ -266,7 +266,8 @@ function execute() {
     evaluate_secrets
     if [ "$@" != "" ]; then
       for f in $@; do
-        drun helm secrets dec ./env/$f
+        echo "Decrypting $f"
+        drun helm secrets dec ./env/env/$f >/dev/null
       done
       exit
     fi
@@ -286,7 +287,8 @@ function execute() {
     evaluate_secrets
     if [ "$@" != "" ]; then
       for f in $@; do
-        drun helm secrets enc ./env/$f
+        echo "Encrypting $f"
+        drun && helm secrets enc ./env/env/$f >/dev/null
       done
       exit
     fi
