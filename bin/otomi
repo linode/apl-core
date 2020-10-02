@@ -206,7 +206,7 @@ function drun() {
       -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
       -v ${HOME}/.aws:/home/app/.aws \
       -v ${HOME}/.azure:/home/app/.azure \
-      -v ${ENV_DIR}:${stack_dir}/env \
+      -v ${ENV_DIR}:${ENV_DIR} \
       -e ENV_DIR="/home/app/stack/env" \
       -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
