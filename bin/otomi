@@ -18,6 +18,7 @@ if [ "$IN_DOCKER" == "" ]; then
   [[ "$(basename "$PWD")" == "otomi-stack" ]] && [ "$ENV_DIR" == "" ] && echo "No ENV_DIR set!" && exit 1
   # otherwise we can have PWD
   ENV_DIR=${ENV_DIR:-$PWD}
+  . $ENV_DIR/.secrets
 else
   ENV_DIR="/home/app/stack/env"
 fi
@@ -25,6 +26,7 @@ fi
 # [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
 . bin/common.sh
+prepare_crypt
 
 script=$0
 command=$1
@@ -45,9 +47,6 @@ function verbose_env() {
 VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
-GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
-[ "$CI" != "" ] && GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-export GOOGLE_APPLICATION_CREDENTIALS
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -109,7 +108,7 @@ function check_docker_running() {
   if [ "$?" = "0" ]; then
     has_docker=1
   else
-    echo "Otomi CLI expect a running docker daemon!"
+    echo "Otomi CLI expects a running docker daemon!"
     exit 1
   fi
   set -e
@@ -335,7 +334,7 @@ function execute() {
     ;;
   commit)
     check_kube_context=0
-    is_repo
+    # is_repo
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/pre-commit.sh
