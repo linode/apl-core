@@ -316,7 +316,7 @@ function execute() {
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/pre-commit.sh
-    git add . && git commit -m 'Manual commit'
+    git add . && git commit -m 'Manual commit' --no-verify
     ;;
   pull)
     check_kube_context=0
