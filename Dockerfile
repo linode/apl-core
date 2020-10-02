@@ -1,4 +1,4 @@
-FROM node:slim as ci
+FROM node:14-slim as ci
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME

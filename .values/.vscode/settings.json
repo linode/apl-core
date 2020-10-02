@@ -10,6 +10,7 @@
   "files.associations": {
     "*.yml": "yaml",
     "*.yaml.enc": "yaml",
+    ".secrets*": "shellscript",
     "otomi": "shellscript",
     "aliases": "shellscript"
   },
