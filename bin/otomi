@@ -211,7 +211,7 @@ function drun() {
       -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
+      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -w $stack_dir \
@@ -264,7 +264,7 @@ function execute() {
   decrypt)
     check_kube_context=0
     evaluate_secrets
-    if [ "$@" != "" ]; then
+    if [ $@ ]; then
       for f in $@; do
         echo "Decrypting $f"
         drun helm secrets dec ./env/env/$f >/dev/null
@@ -285,7 +285,7 @@ function execute() {
   encrypt)
     check_kube_context=0
     evaluate_secrets
-    if [ "$@" != "" ]; then
+    if [ $@ ]; then
       for f in $@; do
         echo "Encrypting $f"
         drun && helm secrets enc ./env/env/$f >/dev/null
