@@ -721,7 +721,8 @@ properties:
       hasCloudLB:
         type: boolean
         description:
-          Set this to true when an external LB exists (Azure AppGW, Google Apigee) or needs to be started (ALB). Expects existing LBs to terminate https.
+          Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee).
+          This will then be configured through ingress controllers. Expects existing LBs to terminate https.
           Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.
         default: false
       isManaged:
