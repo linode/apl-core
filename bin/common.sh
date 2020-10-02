@@ -1,12 +1,13 @@
 function otomi_image_tag() {
   local version
   local clusters_file="$ENV_DIR/env/clusters.yaml"
-  if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
-    version="v$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)"
+  if [ -f $clusters_file ] && [ "$CLOUD" != "" ] && [ "$CLUSTER" != "" ]; then
+    semver=$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
+    tag="v$semver"
   else
-    version='latest'
+    tag='latest'
   fi
-  echo $version
+  echo $tag
 }
 
 function customer_name() {
