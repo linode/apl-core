@@ -20,7 +20,6 @@ environment:
 steps:
   - name: notify-start
     image: diyfr/drone_plugin_teams
-    # image: plugins/slack
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
