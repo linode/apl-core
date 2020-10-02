@@ -9,4 +9,3 @@ match=".drone.tpl.$receiver.yaml\|clusters.yaml"
 if git -C $ENV_DIR diff --name-only | grep $match >/dev/null; then
   bin/gen-drone.sh
 fi
-bin/crypt.sh encrypt
