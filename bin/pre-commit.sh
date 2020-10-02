@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-pwd
+echo $ENV_DIR
 exit
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
