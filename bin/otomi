@@ -260,7 +260,6 @@ function execute() {
     ;;
   console)
     check_kube_context=0
-    validate_cluster_env
     bin/console.sh $@
     ;;
   decrypt)

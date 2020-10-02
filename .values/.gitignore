@@ -8,3 +8,4 @@
 .decrypted~*
 /docker-compose*
 /bin/
+core.yaml
