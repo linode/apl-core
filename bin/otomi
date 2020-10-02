@@ -264,6 +264,12 @@ function execute() {
   decrypt)
     check_kube_context=0
     evaluate_secrets
+    if [ "$@" != "" ]; then
+      for f in $@; do
+        drun helm secrets dec ./env/$f
+      done
+      exit
+    fi
     drun bin/crypt.sh decrypt
     ;;
   deploy)
@@ -278,6 +284,12 @@ function execute() {
   encrypt)
     check_kube_context=0
     evaluate_secrets
+    if [ "$@" != "" ]; then
+      for f in $@; do
+        drun helm secrets enc ./env/$f
+      done
+      exit
+    fi
     drun bin/crypt.sh encrypt
     ;;
   sync)
