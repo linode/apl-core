@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.26](https://github.com/redkubes/otomi-stack/compare/v0.11.25...v0.11.26) (2020-10-02)
+
+
+### Bug Fixes
+
+* crypt key [ci skip] ([edfd5e0](https://github.com/redkubes/otomi-stack/commit/edfd5e074a173a424767f5f89108150b15ccd3b2))
+* crypt mechanism [ci skip] ([2177615](https://github.com/redkubes/otomi-stack/commit/2177615a31caa3c393e40982fccb3fc7f8a68e34))
+* enhanced otomi en-/decrypt [ci skip] ([f8234dc](https://github.com/redkubes/otomi-stack/commit/f8234dc0b1fa444b97f0fff4ed93f7fea33a88aa))
+* forgot hooks, enhanced otomi en-/decrypt [ci skip] ([ac49c97](https://github.com/redkubes/otomi-stack/commit/ac49c97e0ac7876274a85f44f97884bb151190a5))
+
+
+### Others
+
+* **release:** 0.11.25 ([abded08](https://github.com/redkubes/otomi-stack/commit/abded085e8da4aaf1ecaf2e6485850465e07621d))
+* **release:** 0.11.25 ([06ed385](https://github.com/redkubes/otomi-stack/commit/06ed385d90903dc60bf555d5a503a09f15da716b))
+* **release:** 0.11.25 ([a22b4b5](https://github.com/redkubes/otomi-stack/commit/a22b4b51e4483812d816dbe629ee306d419434f9))
+* **release:** 0.11.25 ([de31ad3](https://github.com/redkubes/otomi-stack/commit/de31ad3494fcc12c79c7ed221c32be1cdde1f7f9))
+
 ### [0.11.25](https://github.com/redkubes/otomi-stack/compare/v0.11.24...v0.11.25) (2020-10-02)
 
 
