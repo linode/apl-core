@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.24](https://github.com/redkubes/otomi-stack/compare/v0.11.23...v0.11.24) (2020-10-02)
+
+
+### Features
+
+* docker lint stage, docker-compose for console ([#154](https://github.com/redkubes/otomi-stack/issues/154)) ([bd3cbe8](https://github.com/redkubes/otomi-stack/commit/bd3cbe8c9f0c15fffd597d4a195df4521162369e))
+
+
+### Bug Fixes
+
+* cspell.json missing [ci skip] ([c2ef684](https://github.com/redkubes/otomi-stack/commit/c2ef6845f6f993e4fb4cdd1fe4f05bdecd8db05d))
+
+
+### Docs
+
+* added npm install section [ci skip] ([646ef96](https://github.com/redkubes/otomi-stack/commit/646ef9669dd225d49307058843b0a443725cbc89))
+
 ### [0.11.23](https://github.com/redkubes/otomi-stack/compare/v0.11.22...v0.11.23) (2020-09-30)
 
 
