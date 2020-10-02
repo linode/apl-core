@@ -27,10 +27,8 @@ steps:
       webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
-      # template: http://plugins.drone.io/drone-plugins/drone-slack/
       template: >
         Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
-
         Drone: <{{ build.link }}>
 
   - name: prepare-env
