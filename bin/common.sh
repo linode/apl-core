@@ -16,11 +16,13 @@ function customer_name() {
 
 function get_receiver() {
   file="$ENV_DIR/env/secrets.settings.yaml"
-  RECEIVER=$(cat $file | yq r - alerts.receiver)
-  [ "$RECEIVER" == "" ] && [ -f $ENV_DIR/env/secrets.settings.yaml.dec ] && RECEIVER=$(cat $file.dec | yq r - alerts.receiver)
-  if [ "$RECEIVER" == "" ]; then
-    helm secrets dec $file
-    RECEIVER=$(cat $file.dec | yq r - alerts.receiver)
+  receiver=$(cat $file | yq r - alerts.receiver)
+  if [ "$receiver" == "" ] && [ -f $ENV_DIR/env/secrets.settings.yaml.dec ]; then
+    receiver=$(cat $file.dec | yq r - alerts.receiver)
   fi
-  echo $RECEIVER
+  if [ "$receiver" == "" ]; then
+    helm secrets dec $file
+    receiver=$(cat $file.dec | yq r - alerts.receiver)
+  fi
+  echo $receiver
 }
