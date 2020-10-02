@@ -207,6 +207,7 @@ function drun() {
       -v ${HOME}/.aws:/home/app/.aws \
       -v ${HOME}/.azure:/home/app/.azure \
       -v ${ENV_DIR}:${stack_dir}/env \
+      -e ENV_DIR="/home/app/stack/env" \
       -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \
