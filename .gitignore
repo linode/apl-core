@@ -7,3 +7,4 @@ node_modules/
 /*.json
 !.cspell.json
 !package*.json
+!.cspell.json

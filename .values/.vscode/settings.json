@@ -10,11 +10,12 @@
   "files.associations": {
     "*.yml": "yaml",
     "*.yaml.enc": "yaml",
+    ".secrets*": "shellscript",
     "otomi": "shellscript",
     "aliases": "shellscript"
   },
   "sops.defaults.gcpCredentialsPath": "gcp-key.json",
   "yaml.schemas": {
-    ".vscode/values-schema.json": "env/*.yaml"
+    ".vscode/values-schema.yaml": "env/*.yaml"
   }
 }

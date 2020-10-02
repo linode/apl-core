@@ -5,5 +5,7 @@
 /.gitattributes
 /*.json
 *.yaml.dec
-/bin/
 .decrypted~*
+/docker-compose*
+/bin/
+core.yaml
