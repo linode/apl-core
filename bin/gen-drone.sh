@@ -6,11 +6,7 @@ set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
 
-helm secrets dec $ENV_DIR/env/secrets.settings.yaml
-
-RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
-[ "$RECEIVER" == "" ] && RECEIVER=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.receiver)
-
+RECEIVER=get_receiver
 customer_name=$(customer_name)
 echo "customer_name: $customer_name"
 clustersPath="$ENV_DIR/env/clusters.yaml"

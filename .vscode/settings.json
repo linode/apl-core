@@ -17,7 +17,8 @@
     "aliases": "shellscript",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",
-    "otomi": "shellscript"
+    "otomi": "shellscript",
+    "bin/hooks/*": "shellscript"
   },
   "yaml.schemas": {
     "http://json-schema.org/draft/2019-09/schema#": "values-schema.yaml"
