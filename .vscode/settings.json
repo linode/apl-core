@@ -13,6 +13,7 @@
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
     "*.yml": "yaml",
+    ".secrets*": "shellscript",
     "aliases": "shellscript",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",

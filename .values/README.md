@@ -1,4 +1,4 @@
-# otomi values repo
+# otomi values repo (stack version: ##VERSION)
 
 Repo that holds values for k8s clusters to deploy otomi-stack on.
 Contains drone pipelines for each cluster, which listen to updates of this repo.
@@ -10,13 +10,11 @@ This readme has the following index:
 2. [Configuration](#2-configuration)
 3. [Deployment](#3-deployment)
 4. [GitOps syncing](#4-gitops-syncing)
-5. [Lifecycle management](#4-lifecycle-management)
+5. [Lifecycle management](#5-lifecycle-management)
 
 ## 1. Prerequisites
 
-### 1.1 Working k8s cluster with correct policies
-
-Admin accessible k8s cluster(s).
+### 1.1 Admin accessible k8s cluster(s)
 
 If you don't have access with kubectl immediately, you have to pull the credentials from the cloud:
 
@@ -30,58 +28,52 @@ If you are not logged in with the correct credentials because you were logged in
 - AWS: `otomi aws login eks`
 - Google: `otomi gcloud auth login`
 
-### 1.2 Docker credentials for local tooling
+### 1.2 Docker credentials for Otomi API (paid license)
 
-Use the following command to configure Docker to use the correct credentials for pulling the API image (paid license) locally:
-
-```bash
-otomi gcloud auth configure-docker
-```
+To pull the API image locally you will have received the \$OTOMI_PULLSECRET. Please put it in your `.secrets` file and run `otomi bootstrap` once again to pull in extra files.
 
 ## 2. Configuration
 
-Most of the time you will work with the `otomi` command line tool.
-If you read this you will have already installed it and ran the bootstrapper.
+To work with the values repo you will need the `otomi` command line tool.
+If you read this you will have already installed it and ran the dockerized bootstrapper.
 
-Important reminder: in order to work with (en)crypted files + GCP KMS, then vscode needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
+After this initial boostrap demo files were installed (`env/**/*.yaml`), demonstrating all the possibilities of the values configuration.
+There are two ways to configure these: manually, or with the Otomi Console UI.
 
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
-code $ENV_DIR
-```
+It's easiest to start by editing the basic configuration settings in the files themselves. It also helps to understand what is going on. (The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys.)
 
-WHy? When a command is ran that needs access to decrypted files the otomi cli will try to echo \$GCLOUD_SERVICE_KEY (if found in `.secrets`) to that file. The `$GOOGLE_APPLICATION_CREDENTIALS` location is used for the crypt routines, so it needs to exist and have valid service account json content.
+Please edit the value files to your liking. Remove the cloud providers not in use, and edit/add your clusters.
 
-### 2.1 Initial configuration
+### Otomi Console UI (paid license)
 
-The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys. Please configure all the yaml files correctly with these values.
-
-Otomi Stack toggles/flags explained:
-
-```yaml
-otomi:
-  hasCloudLB: false # if true expects external LoadBalancer to terminate all incoming traffic (see azure for AppGW settings)
-  isManaged: true # masters are managed and not under control
-  isMultitenant: true # team-$name namespaces, each with logging and alerting, false: all goes to team-admin ns
-  isRedkubesMonitored: true # Monitored by RedKubes? Then we need to get alerts.
-  teamPrefix: team- # prefix used for team domain URLs
-```
-
-### 2.2 Changing values
-
-In order pull changes from remote git repo use:
+If you have a paid license to use the Otomi API you should be able to use the Otomi Console UI. It's user friendly interface allows you to operate on the values more easily.
+To start the console locally (using docker-compose):
 
 ```bash
-otomi pull
+otomi console
 ```
 
-This will do a git pull and decrypt the values.
+If you see errors about your values folder not yet git initialized, then please do so and push to it's remote location. Otherwise Otomi API can not pull the values.
+It might also complain about missing or faulty git credentials, so please follow the instructions and make sure the credentials are correct.
 
-In case the stack version of your target cluster in `env.ini` was changed because of an upgrade, run `otomi bootstrap` to pull in the latest cli and other corresponding resources to become up to date.
+After running DEPLOY in the UI, the values are saved to it's remote git location. However, it has not really deployed to your target cluster(s) yet. The first time this will have to be done with the cli. Please refer to the [deployment section](#3-deployment) for that.
+
+### 2.1 Manual configuration
+
+When using Visual Studio Code the values will be automatically validated, and autocompletion and hints will be available.
+(IMPORTANT NOTE: this will only work when all suggested extensions have been installed!)
+
+Please configure all the empty/dummy yaml values remaining.
+
+Don't forget: hovering over a yaml key will give you a description about it's intent. Autocompletion will insert defaults or show example values.
+
+### 2.2 Changing values of running clusters
+
+Pull the latest changes with `otomi pull` before editing values. When opening secrets files these will be de-/encrypted on the fly when using VSCode.
 
 ### 2.3 Diffing resulting output
 
-After changing values you can do a diff:
+After changing values you can do a `git diff` (which will take care of decrypting on the fly) of course, but you can also run a k8s resources diff with the target cluster:
 
 ```bash
 otomi diff
@@ -91,13 +83,13 @@ otomi diff -l name=prometheus-operator
 
 ### 2.3 Committing values
 
-In order to save changes in local git repo use:
+To save changes to git do:
 
 ```bash
 otomi commit
 ```
 
-This will encrypt the values and create a commit with standardized commit message.
+This will do some extra work (git pull, generate drone pipelines), before committing the values with a standardized commit message. (Don't forget to run `git push` when you are done as that is not included by design :)
 
 ## 3. Deployment
 
@@ -136,11 +128,11 @@ Otomi Stack contains a curated list of apps, which are mostly deployed by [matur
 - Resources not under helm chart control: since helm 3.2 these can be adopted. When trying to deploy helm resources over existing resources helm will give detailed instructions on how to adopt these.
 - Some resources have labels and do not allow changing them. This usually points to bad chart practices, but mandates removal before recreating these resources. This can't always be done and is a big drawback. Remedies exist but might have to be investigated on the fly.
 
-We try to automate as much as possible with the scripts found in `bin/upgrades/`, but since this is a large monorepo with many working parts we can't guarantee seamless upgrades from every version.
+We try to automate as much as possible with the scripts found in `otomi-stack/bin/upgrades/`, but since this is a large monorepo with many working parts we can't guarantee seamless upgrades from every version.
 
-So every time an upgrade of the stack is released it is important to follow these steps:
+So every time an upgrade of the stack is released it is important to follow these steps first:
 
 1. Read the release notes on [redkubes/otomi-stack](https://github.com/redkubes/otomi-stack) for impact and special cases.
 2. Check the corresponding upgrade script(s) and read the comments. It might involve manual steps.
-3. Set the new version tag in `env.ini` and run `otomi bootstrap` to pull in latest artifacts
+3. Set the new version tag in `clusters.yaml` and run `otomi bootstrap` to pull in latest artifacts
 4. Do a diff first: `otomi diff`

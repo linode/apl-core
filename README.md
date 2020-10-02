@@ -4,7 +4,7 @@ Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box 
 
 An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md)
 
-This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development.
+This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development & deployment.
 
 This readme has the following index:
 

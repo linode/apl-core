@@ -20,8 +20,11 @@ function crypt() {
   cd - >/dev/null
 }
 
-if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-  echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+if [ "$GOOGLE_APPLICATION_CREDENTIALS" == "" ]; then
+  export GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+  if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
+    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+  fi
 fi
 
 case $command in
