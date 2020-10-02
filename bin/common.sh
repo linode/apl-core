@@ -21,18 +21,21 @@ function get_receiver() {
   file=$ENV_DIR/env/settings.yaml
   file_secrets=$ENV_DIR/env/secrets.settings.yaml
   receiver=$(cat $file | yq r - alerts.receiver)
-  if [ "$receiver" == "" ] && [ -f "$file_secrets.dec" ]; then
-    receiver=$(cat $file_secrets.dec | yq r - alerts.receiver)
-  fi
   if [ "$receiver" == "" ]; then
-    set +e
-    helm secrets dec $file_secrets >/dev/null
+    if [ ! -f "$file_secrets.dec" ]; then
+      set +e
+      helm secrets dec $file_secrets >/dev/null
+      set -e
+    fi
     receiver=$(cat $file_secrets.dec | yq r - alerts.receiver)
+    [ "$receiver" != "" ] && [ "$@" != "" ] && val=$(cat $file_secrets.dec | yq r - alerts.$receiver.$@)
   fi
-  if [ "$receiver" == "" ]; then
-    exit 1
+  [ "$receiver" == "" ] && exit 1
+  if [ "$val" != "" ]; then
+    echo $val
+  else
+    echo $receiver
   fi
-  echo $receiver
 }
 
 function prepare_crypt() {
