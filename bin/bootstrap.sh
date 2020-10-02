@@ -29,6 +29,7 @@ if [ "$skip_demo_files" != "1" ]; then
   echo "Installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
+cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 if [ "$OTOMI_PULLSECRET" != "" ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/

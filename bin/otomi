@@ -313,7 +313,6 @@ function execute() {
   commit)
     check_kube_context=0
     is_repo
-    validate_cluster_env
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/pre-commit.sh
@@ -322,10 +321,9 @@ function execute() {
   pull)
     check_kube_context=0
     is_repo
-    validate_cluster_env
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/bootstrap.sh 1 #>/dev/null
+    drun bin/bootstrap.sh 1
     ;;
   *)
     show_usage
