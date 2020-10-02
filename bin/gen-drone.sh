@@ -12,15 +12,14 @@ clustersPath="$ENV_DIR/env/clusters.yaml"
 tpl=$PWD/tpl/.drone.tpl.$receiver.yml
 otomi_image_tag=$(otomi_image_tag)
 
-if [ "$receiver" = "slack" ]; then
+if [ "$receiver" == "slack" ]; then
   key="url"
 else
   key="lowPrio"
 fi
 
 # Note: the .secrets.yaml exists only if .secrets.yaml.enc has been decrypted
-webhook=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.$receiver.$key)
-[ "$webhook" == "" ] && webhook=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.$receiver.$key)
+webhook=$(get_receiver $key)
 clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
 
 function template_drone_config() {

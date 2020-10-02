@@ -82,7 +82,7 @@ function set_helm_config() {
 function show_usage() {
   echo "otomi usage:
     apply      apply k8s resources (use labels like '-l name=prometheus-operator')
-    bash       run interactive bash
+    bash       run interactive bash shell in otomi-stack container
     bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit     wrapper for encrypt > generate pipelines > git commit changed files
     console    starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
@@ -93,8 +93,8 @@ function show_usage() {
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
     lint       runs a linter that will check OPA rules on templates (coming soon!)
-    pull       wrapper for git pull > decrypt
-    switch     switches context to the target cluster
+    pull       wrapper for git pull && bootstrap
+    switch     switches context to the target cluster and boostraps
     template   export k8s resources (use labels like '-l name=prometheus-operator')
     test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
@@ -320,8 +320,8 @@ function execute() {
     ;;
   switch)
     evaluate_k8s_context
-    drun bin/bootstrap.sh 1
     kubectl config use $K8S_CONTEXT
+    drun bin/bootstrap.sh 1
     ;;
   test)
     validate_cluster_env
@@ -334,7 +334,7 @@ function execute() {
     ;;
   commit)
     check_kube_context=0
-    # is_repo
+    is_repo
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/pre-commit.sh
