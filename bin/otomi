@@ -255,6 +255,7 @@ function execute() {
     ;;
   bootstrap)
     check_kube_context=0
+    validate_cluster_env
     drun bin/bootstrap.sh 1
     ;;
   console)
