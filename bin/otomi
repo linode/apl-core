@@ -12,24 +12,16 @@
 ##
 #####################################################################################
 set -e
-# in docker?
-if [ "$IN_DOCKER" == "" ]; then
-  # no, we must be given ENV_DIR when in stack
-  [[ "$(basename "$PWD")" == "otomi-stack" ]] && [ "$ENV_DIR" == "" ] && echo "No ENV_DIR set!" && exit 1
-  # otherwise we can have PWD
-  ENV_DIR=${ENV_DIR:-$PWD}
-  . $ENV_DIR/.secrets
-else
-  ENV_DIR="/home/app/stack/env"
-fi
-# fix for I don't rememeber which context would come in with /home/app/stack (might be obsolete)
-# [ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
-
-. bin/common.sh
-prepare_crypt
 
 script=$0
 command=$1
+[ "$ENV_DIR" == "" ] && env_unset=1
+ENV_DIR=${ENV_DIR:-$PWD}
+[ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
+
+. $ENV_DIR/.secrets
+. bin/common.sh
+prepare_crypt
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -66,6 +58,7 @@ function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
   [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
   if [[ "$cwd" == "otomi-stack" ]]; then
+    [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 1
     [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
     stack_dir=$PWD
     mount_stack_dir=1
@@ -142,10 +135,7 @@ evaluate_secrets() {
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
     source $secrets_path
   fi
-  if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-    echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$GOOGLE_APPLICATION_CREDENTIALS
-  fi
-
+  prepare_crypt
   return 0
 }
 
@@ -194,17 +184,14 @@ function drun() {
     verbose_env
   fi
 
-  if [ -f $GOOGLE_APPLICATION_CREDENTIALS ]; then
-    gcp_key_volume="-v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS"
-  fi
-
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
   if [[ ("$CI" == "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
     [ "$VERBOSE" == "1" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
-      $tmp_volume $stack_volume $socket_volume $gcp_key_volume \
+      $tmp_volume $stack_volume $socket_volume \
+      -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
       -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
@@ -212,8 +199,8 @@ function drun() {
       -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
       -v ${HOME}/.aws:/home/app/.aws \
       -v ${HOME}/.azure:/home/app/.azure \
-      -v ${ENV_DIR}:${ENV_DIR} \
-      -e ENV_DIR="${ENV_DIR}" \
+      -v ${ENV_DIR}:${stack_dir}/env \
+      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \

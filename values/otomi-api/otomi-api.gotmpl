@@ -33,7 +33,6 @@ secrets:
 env:
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o.git.branch | default "master" }}
-  GIT_LOCAL_PATH: /tmp/otomi-stack
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
