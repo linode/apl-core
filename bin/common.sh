@@ -27,7 +27,7 @@ function get_receiver() {
   receiver=$(cat $file | yq r - alerts.receiver)
   [ "$receiver" == "" ] && receiver=$(cat $file_secrets.dec | yq r - alerts.receiver)
   [ "$receiver" == "" ] && exit 1
-  if [ "$@" != "" ]; then
+  if [ "$1" != "" ]; then
     val=$(cat $file_secrets.dec | yq r - alerts.$receiver.$@)
     [ "$val" == "" ] && exit 1
     echo $val
