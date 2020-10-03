@@ -145,7 +145,7 @@ validate_cluster_env() {
 }
 
 is_repo() {
-  # [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "Error: Should not be ran from otomi-stack" && exit 2
+  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "Error: Should not be ran from otomi-stack" && exit 2
   return 0
 }
 
