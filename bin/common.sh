@@ -42,3 +42,17 @@ function prepare_crypt() {
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
 }
+
+function for_each_cluster {
+  executable=$1
+  [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
+  local clustersPath="$ENV_DIR/env/clusters.yaml"
+  clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
+
+  for cloud in ${clouds[@]}; do
+    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '.|keys[]'))
+    for cluster in ${clusters[@]}; do
+    CLOUD=$cloud; CLUSTER=$cluster; $executable
+    done
+  done
+}

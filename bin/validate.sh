@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 set -o pipefail
 
-values_path='/tmp/otomi-values.yaml'
+values_path="/tmp/values-$CLOUD-$CLUSTER.yaml"
 
 function cleanup {
   [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -f $values_path
