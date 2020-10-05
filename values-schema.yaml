@@ -761,6 +761,7 @@ properties:
         type: string
       entrypoint:
         type: string
+        description: A public IP address used by DNS record to map public domian with cluster Ingress gateway (applicable to onprem provider)
       k8sVersion:
         type: number
       name:
@@ -776,7 +777,6 @@ properties:
       - apiServer
       - dnsProvider
       - domain
-      - entrypoint
       - k8sVersion
       - name
       - otomiVersion
