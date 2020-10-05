@@ -1,8 +1,9 @@
-.*
-!.values
-!.demo
-env
-node_modules
-tools
-*.json
-!package.json
+/.*
+!/.values
+!/.demo
+/env
+/node_modules
+/tools
+/*.json
+!/package.json
+!/.cspell.json

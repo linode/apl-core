@@ -1,0 +1,67 @@
+version: '3.4'
+
+services:
+  api:
+    container_name: api
+    image: eu.gcr.io/otomi-cloud/otomi-stack-api:${API_TAG:-latest}
+    user: ${USER_ID}:${GROUP_ID}
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    depends_on:
+      - tools
+    volumes:
+      - ${PWD}/core.yaml:/etc/otomi/core.yaml
+      - data:/tmp
+    environment:
+      TOOLS_HOST: tools
+      CLUSTER_ID: ${CLUSTER_ID:-google/dev}
+      GIT_REPO_URL: ${GIT_REPO_URL:-github.com/redkubes/otomi-values.git}
+      GIT_BRANCH: ${GIT_BRANCH:-master}
+      GIT_USER: ${GIT_USER}
+      GIT_EMAIL: ${GIT_EMAIL}
+      GIT_PASSWORD: ${GIT_PASSWORD}
+      CLUSTER_APISERVER: http://127.0.0.1:8080
+
+  tools:
+    container_name: tools
+    image: eu.gcr.io/otomi-cloud/otomi-stack:${TOOLS_TAG:-latest}
+    user: ${USER_ID}:${GROUP_ID}
+    command: bin/server.sh
+    expose:
+      - 17771
+    ports:
+      - 17771:17771
+    volumes:
+      - data:/tmp
+    environment:
+      ENV_DIR: /tmp/otomi-stack
+      GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
+
+  web:
+    image: eu.gcr.io/otomi-cloud/otomi-stack-web:${WEB_TAG:-latest}
+    container_name: web
+    expose:
+      - 80
+
+  proxy:
+    image: nginx:latest
+    container_name: proxy
+    ports:
+      - 3000:80
+    expose:
+      - 80
+    depends_on:
+      - api
+      - web
+    volumes:
+      - ./docker-compose/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: None
+      device: /tmp
+      o: bind

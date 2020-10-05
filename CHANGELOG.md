@@ -2,6 +2,79 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.28](https://github.com/redkubes/otomi-stack/compare/v0.11.27...v0.11.28) (2020-10-03)
+
+
+### Bug Fixes
+
+* otomi commit [ci skip] ([3a8c0b9](https://github.com/redkubes/otomi-stack/commit/3a8c0b9b26d3b6bf9705bbbe3327f2599194f544))
+
+### [0.11.27](https://github.com/redkubes/otomi-stack/compare/v0.11.26...v0.11.27) (2020-10-03)
+
+
+### Bug Fixes
+
+* crypt key for tools server [ci skip] ([fcc0712](https://github.com/redkubes/otomi-stack/commit/fcc0712673b12b6c9dbaf40437020a950e29e45c))
+
+
+### Others
+
+* **release:** 0.11.26 ([655a919](https://github.com/redkubes/otomi-stack/commit/655a919fd7714508fb587b227d2b87d40b5d7ab9))
+* **release:** 0.11.26 ([1c71ae9](https://github.com/redkubes/otomi-stack/commit/1c71ae9da968d044a04b6709f6744ddb83b0052e))
+* **release:** 0.11.26 ([6b7ac6e](https://github.com/redkubes/otomi-stack/commit/6b7ac6e6d6d6eeb44e84a62126f4816b09e1f5dd))
+* **release:** 0.11.26 ([575d67a](https://github.com/redkubes/otomi-stack/commit/575d67afa52e6b41c3ff5f6deebed71df6366d57))
+* **release:** 0.11.26 ([993b05c](https://github.com/redkubes/otomi-stack/commit/993b05c44a04e3e3a2bfd7be8f45ddf4d5558a77))
+* **release:** 0.11.26 ([a69da7f](https://github.com/redkubes/otomi-stack/commit/a69da7ff19e45f389b939cab056743f957470288))
+* **release:** 0.11.26 ([6acc717](https://github.com/redkubes/otomi-stack/commit/6acc71715841d5322cd7706b993a5f0ffe35e7fd))
+* **release:** 0.11.26 ([47d3a64](https://github.com/redkubes/otomi-stack/commit/47d3a64b07587361af3f528901ca1e4ddafeb31a))
+* **release:** 0.11.26 ([98668a0](https://github.com/redkubes/otomi-stack/commit/98668a035c0be81d3a70d18fe9d6a29dcf58247b))
+* **release:** 0.11.26 ([fba9b20](https://github.com/redkubes/otomi-stack/commit/fba9b202068b843867dff72d3d3f4c8c577a0167))
+
+### [0.11.26](https://github.com/redkubes/otomi-stack/compare/v0.11.25...v0.11.26) (2020-10-02)
+
+
+### Bug Fixes
+
+* crypt key [ci skip] ([edfd5e0](https://github.com/redkubes/otomi-stack/commit/edfd5e074a173a424767f5f89108150b15ccd3b2))
+* crypt mechanism [ci skip] ([2177615](https://github.com/redkubes/otomi-stack/commit/2177615a31caa3c393e40982fccb3fc7f8a68e34))
+* enhanced otomi en-/decrypt [ci skip] ([f8234dc](https://github.com/redkubes/otomi-stack/commit/f8234dc0b1fa444b97f0fff4ed93f7fea33a88aa))
+* forgot hooks, enhanced otomi en-/decrypt [ci skip] ([ac49c97](https://github.com/redkubes/otomi-stack/commit/ac49c97e0ac7876274a85f44f97884bb151190a5))
+
+
+### Others
+
+* **release:** 0.11.25 ([abded08](https://github.com/redkubes/otomi-stack/commit/abded085e8da4aaf1ecaf2e6485850465e07621d))
+* **release:** 0.11.25 ([06ed385](https://github.com/redkubes/otomi-stack/commit/06ed385d90903dc60bf555d5a503a09f15da716b))
+* **release:** 0.11.25 ([a22b4b5](https://github.com/redkubes/otomi-stack/commit/a22b4b51e4483812d816dbe629ee306d419434f9))
+* **release:** 0.11.25 ([de31ad3](https://github.com/redkubes/otomi-stack/commit/de31ad3494fcc12c79c7ed221c32be1cdde1f7f9))
+
+### [0.11.25](https://github.com/redkubes/otomi-stack/compare/v0.11.24...v0.11.25) (2020-10-02)
+
+
+### Others
+
+* **release:** 0.11.24 ([6eabd2b](https://github.com/redkubes/otomi-stack/commit/6eabd2bbb4f96c487aac35547127dba458221f58))
+* **release:** 0.11.24 ([825f7c7](https://github.com/redkubes/otomi-stack/commit/825f7c79fb0e271fe777d4f215418e36c1b48c40))
+* **release:** 0.11.24 ([1054c97](https://github.com/redkubes/otomi-stack/commit/1054c9785b4169f3831382a34c67eff9fc7c4245))
+* **release:** 0.11.24 ([f022e06](https://github.com/redkubes/otomi-stack/commit/f022e067ddae973504de2c6960bc23e643981276))
+
+### [0.11.24](https://github.com/redkubes/otomi-stack/compare/v0.11.23...v0.11.24) (2020-10-02)
+
+
+### Features
+
+* docker lint stage, docker-compose for console ([#154](https://github.com/redkubes/otomi-stack/issues/154)) ([bd3cbe8](https://github.com/redkubes/otomi-stack/commit/bd3cbe8c9f0c15fffd597d4a195df4521162369e))
+
+
+### Bug Fixes
+
+* cspell.json missing [ci skip] ([c2ef684](https://github.com/redkubes/otomi-stack/commit/c2ef6845f6f993e4fb4cdd1fe4f05bdecd8db05d))
+
+
+### Docs
+
+* added npm install section [ci skip] ([646ef96](https://github.com/redkubes/otomi-stack/commit/646ef9669dd225d49307058843b0a443725cbc89))
+
 ### [0.11.23](https://github.com/redkubes/otomi-stack/compare/v0.11.22...v0.11.23) (2020-09-30)
 
 
