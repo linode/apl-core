@@ -24,6 +24,6 @@ releases:
     namespace: kube-system
     <<: *default
   - name: kube-descheduler
-    installed: {{ $v | get "charts.kube-descheduler.enabled" false }}
+    installed: {{ $v | get "charts.kube-descheduler.enabled" true }}
     namespace: kube-system
     <<: *default
