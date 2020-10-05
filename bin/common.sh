@@ -37,7 +37,7 @@ function get_receiver() {
 }
 
 function prepare_crypt() {
-  [ "$GCLOUD_SERVICE_KEY" == "" ] && exit 1
+  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
