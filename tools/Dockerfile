@@ -93,12 +93,18 @@ RUN chmod +x aws-iam-authenticator
 
 # gcloud
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
-RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk
+RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk && rm -rf /tmp/*
 ENV PATH $PATH:$APP_HOME/gsdk
 
 # yaml2json \/releases/download/0.4.0/yaml2json-linux-amd64
 ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
 RUN chmod +x yaml2json
+
+
+# node 12 https://github.com/nodesource/distributions/blob/master/README.md
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+RUN apt-get install -y nodejs && \
+  npm install -g ajv-cli
 
 RUN git config --global gpg.program gpg2
 
