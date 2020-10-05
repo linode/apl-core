@@ -3,7 +3,7 @@ charts:
         git:
             branch: master
             localPath: /tmp/otomi-stack
-            repoUrl: github.com/redkubes/otomi-values.git
+            repoUrl: github.com/redkubes/otomi-values-demo.git
         image:
             pullPolicy: Always
             tag: v0.4.30

@@ -1,10 +1,10 @@
 # otomi-stack
 
-Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
 
 An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md)
 
-This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development.
+This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development & deployment.
 
 This readme has the following index:
 
@@ -52,16 +52,12 @@ Please read the `README.md` that is exported as it has extensive instructions on
 
 ### 1.4 Key Service Account
 
-Please refer to [SOPS](https://github.com/mozilla/sops) to get aquainted and choose / wire up your KMS provider.
+Please refer to [SOPS](https://github.com/mozilla/sops) to get acquainted and choose / wire up your KMS provider.
 
-**ADDITIONAL: Google's GCP KMS**
+### 1.5 Local tooling
 
-In order to work with (en)crypted files + GCP KMS in VSCode, then it needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
-code $ENV_DIR
-```
+- npm@~10.0 binary
+- `npm install` in root
 
 ## 2. Development
 

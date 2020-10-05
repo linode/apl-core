@@ -1,32 +1,25 @@
 #!/usr/bin/env bash
-shopt -s expand_aliases
-. bin/aliases
-. bin/colors.sh
 set -e
 set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
+. bin/common.sh
+. bin/colors.sh
 
-helm secrets dec $ENV_DIR/env/secrets.settings.yaml
-
-RECEIVER=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.receiver)
-[ "$RECEIVER" == "" ] && RECEIVER=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.receiver)
-
+receiver=$(get_receiver)
 customer_name=$(customer_name)
-echo "customer_name: $customer_name"
 clustersPath="$ENV_DIR/env/clusters.yaml"
-tpl=$PWD/tpl/.drone.tpl.$RECEIVER.yml
+tpl=$PWD/tpl/.drone.tpl.$receiver.yml
 otomi_image_tag=$(otomi_image_tag)
 
-if [ "$RECEIVER" = "slack" ]; then
+if [ "$receiver" == "slack" ]; then
   key="url"
 else
   key="lowPrio"
 fi
 
 # Note: the .secrets.yaml exists only if .secrets.yaml.enc has been decrypted
-webhook=$(cat $ENV_DIR/env/secrets.settings.yaml.dec | yq r - alerts.$RECEIVER.$key)
-[ "$webhook" == "" ] && webhook=$(cat $ENV_DIR/env/settings.yaml | yq r - alerts.$RECEIVER.$key)
+webhook=$(get_receiver $key)
 clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
 
 function template_drone_config() {

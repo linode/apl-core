@@ -88,7 +88,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: istio-ingressgateway
+          serviceName: istio-ingressgateway-auth
           servicePort: 80
         path: /({{ $p.name }})({{ $p.path }})
   {{- end }}

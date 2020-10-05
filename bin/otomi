@@ -11,15 +11,15 @@
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
-shopt -s expand_aliases
 set -e
-ENV_DIR=${ENV_DIR:-$PWD}
-[ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
-
-. bin/aliases
 
 script=$0
 command=$1
+[ "$ENV_DIR" == "" ] && env_unset=1
+ENV_DIR=${ENV_DIR:-$PWD}
+[ "$ENV_DIR" == "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
+
+. bin/common.sh
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -37,9 +37,6 @@ function verbose_env() {
 VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
-GOOGLE_APPLICATION_CREDENTIALS="$ENV_DIR/gcp-key.json"
-[ "$CI" != "" ] && GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-export GOOGLE_APPLICATION_CREDENTIALS
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -55,6 +52,18 @@ docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
+function set_env_and_stack_dir() {
+  local cwd=$(basename "$PWD")
+  [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
+  if [[ "$cwd" == "otomi-stack" ]]; then
+    [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 1
+    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
+    stack_dir=$PWD
+    mount_stack_dir=1
+  fi
+  return 0
+}
+
 function set_helm_config() {
   helm_config="$HOME/.config/helm"
   uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
@@ -64,18 +73,19 @@ function set_helm_config() {
 function show_usage() {
   echo "otomi usage:
     apply      apply k8s resources (use labels like '-l name=prometheus-operator')
-    bash       run interactive bash
+    bash       run interactive bash shell in otomi-stack container
     bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit     wrapper for encrypt > generate pipelines > git commit changed files
-    decrypt    decrypt *.secrets.yaml.enc to *.secrets.yaml files
+    console    starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    decrypt    decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy     execute otomi-stack deploy script
     diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    eksctl     run eksctl cli
-    encrypt    encrypt values in all *.secrets.yaml files
+    encrypt    encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
     lint       runs a linter that will check OPA rules on templates (coming soon!)
-    pull       wrapper for git pull > decrypt
+    pull       wrapper for git pull && bootstrap
+    switch     switches context to the target cluster and boostraps
     template   export k8s resources (use labels like '-l name=prometheus-operator')
     test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
@@ -89,7 +99,7 @@ function check_docker_running() {
   if [ "$?" = "0" ]; then
     has_docker=1
   else
-    echo "Otomi CLI expect a running docker daemon!"
+    echo "Otomi CLI expects a running docker daemon!"
     exit 1
   fi
   set -e
@@ -123,10 +133,7 @@ evaluate_secrets() {
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
     source $secrets_path
   fi
-  if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-    echo $GCLOUD_SERVICE_KEY | sed ':a;N;$!ba;s/\n/\\n/g' >$GOOGLE_APPLICATION_CREDENTIALS
-  fi
-
+  prepare_crypt
   return 0
 }
 
@@ -138,7 +145,7 @@ validate_cluster_env() {
 }
 
 is_repo() {
-  [[ "$(basename "$PWD")" == 'otomi-stack' ]] && "Error: Should not be ran from otomi-stack" && exit 2
+  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "Error: Should not be ran from otomi-stack" && exit 2
   return 0
 }
 
@@ -175,17 +182,14 @@ function drun() {
     verbose_env
   fi
 
-  if [ -f $GOOGLE_APPLICATION_CREDENTIALS ]; then
-    gcp_key_volume="-v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS"
-  fi
-
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
   if [[ ("$CI" == "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
     [ "$VERBOSE" == "1" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
-      $tmp_volume $stack_volume $socket_volume $gcp_key_volume \
+      $tmp_volume $stack_volume $socket_volume \
+      -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
       -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
@@ -194,11 +198,12 @@ function drun() {
       -v ${HOME}/.aws:/home/app/.aws \
       -v ${HOME}/.azure:/home/app/.azure \
       -v ${ENV_DIR}:${stack_dir}/env \
+      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
+      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -w $stack_dir \
@@ -206,13 +211,13 @@ function drun() {
       $command
   else
     [ "$VERBOSE" == "1" ] && echo "Running native version of command: $command"
-    env
     $command
   fi
 }
 
 function execute() {
   local helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
+  local helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
   shift 2
   case $command in
   values)
@@ -237,7 +242,6 @@ function execute() {
     ;;
   bash)
     check_kube_context=0
-    validate_cluster_env
     docker_terminal_params='-it'
     drun bash
     ;;
@@ -246,9 +250,20 @@ function execute() {
     validate_cluster_env
     drun bin/bootstrap.sh 1
     ;;
+  console)
+    check_kube_context=0
+    bin/console.sh $@
+    ;;
   decrypt)
     check_kube_context=0
     evaluate_secrets
+    if [ $@ ]; then
+      for f in $@; do
+        echo "Decrypting $f"
+        drun helm secrets dec ./env/env/$f >/dev/null
+      done
+      exit
+    fi
     drun bin/crypt.sh decrypt
     ;;
   deploy)
@@ -257,12 +272,19 @@ function execute() {
     ;;
   diff)
     validate_cluster_env
-    # set -o pipefail
+    set -o pipefail
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfileOutputHide
     ;;
   encrypt)
     check_kube_context=0
     evaluate_secrets
+    if [ $@ ]; then
+      for f in $@; do
+        echo "Encrypting $f"
+        drun && helm secrets enc ./env/env/$f >/dev/null
+      done
+      exit
+    fi
     drun bin/crypt.sh encrypt
     ;;
   sync)
@@ -274,7 +296,7 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHide
+    drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
     ;;
   rotate-keys)
     check_kube_context=0
@@ -283,8 +305,8 @@ function execute() {
     ;;
   switch)
     evaluate_k8s_context
-    # otomi x ls -als /home/app/.kube/
     kubectl config use $K8S_CONTEXT
+    drun bin/bootstrap.sh 1
     ;;
   test)
     validate_cluster_env
@@ -298,18 +320,17 @@ function execute() {
   commit)
     check_kube_context=0
     is_repo
-    validate_cluster_env
     evaluate_secrets
+    git -C $ENV_DIR pull
     drun bin/pre-commit.sh
-    git add . && git commit -m 'Manual commit'
+    git add . && git commit -m 'Manual commit' --no-verify
     ;;
   pull)
     check_kube_context=0
     is_repo
-    validate_cluster_env
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/crypt.sh decrypt
+    drun bin/bootstrap.sh 1
     ;;
   *)
     show_usage
@@ -317,17 +338,6 @@ function execute() {
     exit 1
     ;;
   esac
-}
-
-function set_env_and_stack_dir() {
-  local cwd=$(basename "$PWD")
-
-  if [[ "$cwd" == 'otomi-stack' ]]; then
-    [[ -z "$ENV_DIR" ]] && echo "Error: The ENV_DIR environment variable is not set" && exit 2
-    stack_dir=$PWD
-    mount_stack_dir=1
-  fi
-  return 0
 }
 
 [[ -z "$command" ]] && echo "Error: Missing command argument" && show_usage && exit 2
