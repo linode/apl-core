@@ -747,3 +747,137 @@ properties:
           '^[a-z-]+$':
             '$ref': '#/definitions/team'
         additionalProperties: false
+
+  cluster:
+    type: object
+    properties:
+      apiName:
+        type: string
+      apiServer:
+        type: string
+      dnsProvider:
+        type: string
+      domain:
+        type: string
+      entrypoint:
+        type: string
+      k8sVersion:
+        type: number
+      name:
+        type: string
+      otomiVersion:
+        type: string
+      provider:
+        type: string
+      region:
+        type: string
+    required:
+      - apiName
+      - apiServer
+      - dnsProvider
+      - domain
+      - entrypoint
+      - k8sVersion
+      - name
+      - otomiVersion
+      - provider
+      - region
+  k8s:
+    type: object
+    properties:
+      namespaces:
+        type: array
+        items:
+          type: object
+          properties:
+            disableIstioInjection:
+              type: boolean
+            name:
+              type: string
+          required:
+            - name
+    required:
+      - namespaces
+
+  proxies:
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        path:
+          type: string
+      required:
+        - name
+        - namespace
+        - path
+  redkubesSlackUrl:
+    type: string
+  services:
+    type: array
+    items:
+      type: object
+      properties:
+        isPublic:
+          type: boolean
+        name:
+          type: string
+        namespace:
+          type: string
+        ownHost:
+          type: boolean
+        svc:
+          type: string
+        isShared:
+          type: boolean
+        paths:
+          anyOf:
+            - type: 'null'
+            - type: array
+              items:
+                type: string
+        forwardPath:
+          type: boolean
+        hide:
+          type: boolean
+        port:
+          type: integer
+        authz:
+          type: object
+          properties:
+            forwardOriginalToken:
+              type: boolean
+            workload:
+              type: object
+              properties:
+                app.kubernetes.io/name:
+                  type: string
+                app.kubernetes.io/instance:
+                  type: string
+                app:
+                  type: string
+                component:
+                  type: string
+          required:
+            - workload
+        host:
+          type: string
+        path:
+          type: string
+        logo:
+          type: object
+          properties:
+            name:
+              type: string
+          required:
+            - name
+      required:
+        - name
+        - namespace
+        - svc
+
+  toolsVersion:
+    type: string
