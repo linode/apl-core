@@ -2,7 +2,7 @@
 {{- $c := $v.charts -}}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}
-{{- $otomiTasksTag := $c | get "otomi-tasks.image.tag" -}}
+{{- $otomiTasksTag := $c | get "otomi-tasks.image.tag" "latest" -}}
 {{- $otomiTasksImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-tasks:%s" $otomiTasksTag -}}
 
 tasks:

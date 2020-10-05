@@ -1,4 +1,0 @@
-charts:
-    otomi-tasks:
-        image:
-            tag: v0.0.1
