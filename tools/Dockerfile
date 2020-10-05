@@ -71,7 +71,7 @@ RUN chmod +x sops
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
-RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm
+RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 RUN echo "exec $*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 RUN helm plugin install https://github.com/futuresimple/helm-secrets --version ${HELM_SECRETS_VERSION}
@@ -82,7 +82,7 @@ RUN chmod +x helmfile
 
 # eksctl
 ADD https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/eksctl_Linux_amd64.tar.gz -C /tmp && mv /tmp/eksctl eksctl
+RUN tar -zxvf /tmp/eksctl_Linux_amd64.tar.gz -C /tmp && mv /tmp/eksctl eksctl && rm -rf /tmp/*
 
 # aws
 RUN pip3 install --upgrade --no-cache-dir awscli
