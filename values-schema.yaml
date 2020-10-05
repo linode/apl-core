@@ -139,17 +139,10 @@ definitions:
         description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       k8sVersion:
         '$ref': '#/definitions/k8sVersion'
-      name:
-        type: string
-        description: 'Cluster name. Keep it short as it will be used for creating the cluster domain (by prefixing this on the cloud domain).'
       otomiVersion:
         type: string
         default: latest
         description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-      provider:
-        type: string
-        enum: [aws, azure, google, onprem]
-        default: google
       region:
         type: string
         description: Dependent on provider.
@@ -160,7 +153,7 @@ definitions:
       vpcID:
         type: string
         description: AWS only. If provided will override autodiscovery from metadata.
-    required: [apiServer, k8sVersion, name, otomiVersion, provider, region]
+    required: [apiServer, k8sVersion, otomiVersion, region]
   team:
     properties:
       azure:
@@ -168,8 +161,6 @@ definitions:
       id:
         '$ref': '#/definitions/idName'
         description: Must be the same as the name.
-      name:
-        '$ref': '#/definitions/idName'
       oidc:
         oidc:
           properties:
@@ -320,7 +311,7 @@ definitions:
                 workload:
                   '$ref': '#/definitions/labelsAnnotations'
           required: [id, name]
-    required: [id, name]
+    required: [id]
 properties:
   alerts:
     '$ref': '#/definitions/alerts'
