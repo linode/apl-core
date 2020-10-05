@@ -1,11 +1,11 @@
 ---
-'$schema': 'http://json-schema.org/draft/2019-09/schema#'
+'$schema': 'http://json-schema.org/draft-07/schema'
 type: object
 additionalProperties: false
 definitions:
   k8sVersion:
     type: number
-    pattern: ^{1,2}\.{16,18}
+    pattern: ^\d\.\d\d$
     default: 1.18
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
   domain:
@@ -35,7 +35,9 @@ definitions:
   labelsAnnotations:
     type: object
     patternProperties:
-      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$': ^((.){1,253}\/)?(.){1,63}$
+      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
+      : type: string
+        pattern: ^((.){1,253}\/)?(.){1,63}$
   annotations:
     '$ref': '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -318,9 +320,6 @@ definitions:
                 workload:
                   '$ref': '#/definitions/labelsAnnotations'
           required: [id, name]
-          oneOf:
-            - svc
-            - ksvc
     required: [id, name]
 properties:
   alerts:
