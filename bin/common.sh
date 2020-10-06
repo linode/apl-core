@@ -44,6 +44,7 @@ function prepare_crypt() {
 }
 
 function for_each_cluster {
+  # Perform a command from function argument for each cluster
   executable=$1
   [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
