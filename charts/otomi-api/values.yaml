@@ -76,12 +76,12 @@ secrets:
 env:
   GIT_REPO_URL:
   GIT_BRANCH:
-  GIT_LOCAL_PATH: /tmp/otomi-stack
   CLUSTER_ID:
   CLUSTER_NAME:
   CLUSTER_APISERVER:
-  # DISABLE_SYNC: true
+  DISABLE_SYNC: false
   ENV_DIR: /tmp/otomi-stack
+  GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
 
 core: {}
 

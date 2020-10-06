@@ -1,8 +1,0 @@
-charts:
-    drone:
-        orgsFilter: redkubes
-        repoFilter: redkubes
-        sourceControl:
-            provider: github
-            github:
-                server: https://github.com

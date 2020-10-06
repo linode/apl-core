@@ -5,6 +5,9 @@ name: default
 workspace:
   path: /home/app/stack/env
 
+concurrency:
+  limit: 1
+
 trigger:
   branch:
     - master
@@ -24,10 +27,8 @@ steps:
       webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
-      # template: http://plugins.drone.io/drone-plugins/drone-slack/
       template: >
         Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
-
         Drone: <{{ build.link }}>
 
   - name: prepare-env
@@ -37,6 +38,7 @@ steps:
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    pull: always
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -49,6 +51,7 @@ steps:
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    pull: always
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD

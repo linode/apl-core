@@ -2,6 +2,9 @@
 set -e
 
 ENV_DIR=${ENV_DIR:-./env}
+. bin/common.sh
+prepare_crypt
+
 command=$1
 
 function rotate() {
@@ -19,10 +22,6 @@ function crypt() {
   fi
   cd - >/dev/null
 }
-
-if [ "$GCLOUD_SERVICE_KEY" != "" ]; then
-  echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-fi
 
 case $command in
 encrypt | decrypt)
