@@ -5,6 +5,9 @@ name: default
 workspace:
   path: /home/app/stack/env
 
+concurrency:
+  limit: 1
+
 trigger:
   branch:
     - master
@@ -17,7 +20,6 @@ environment:
 steps:
   - name: notify-start
     image: diyfr/drone_plugin_teams
-    # image: plugins/slack
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -35,6 +37,7 @@ steps:
 
   - name: test
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    pull: always
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
@@ -47,6 +50,7 @@ steps:
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    pull: always
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD

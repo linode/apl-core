@@ -98,7 +98,7 @@ ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-
 RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk
 ENV PATH $PATH:$APP_HOME/gsdk
 
-# yaml2json https://github.com/wakeful/yaml2json/releases/download/0.4.0/yaml2json-linux-amd64
+# yaml2json \/releases/download/0.4.0/yaml2json-linux-amd64
 ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
 RUN chmod +x yaml2json
 

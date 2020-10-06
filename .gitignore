@@ -1,8 +1,10 @@
 # we don't allow json files in the root except package.json
-.history
+/.history
 .tmp
 *.bak
 node_modules/
-env/
+/env/
 /*.json
+!.cspell.json
 !package*.json
+!.cspell.json

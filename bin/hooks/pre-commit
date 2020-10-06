@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Don't commit directly via git. Use 'otomi commit'."
+exit 1

@@ -1,12 +1,12 @@
 # otomi-stack
 
-Otomi stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
 
-An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md)
+An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md). The stack is published as public docker image here: (`otomi/stack:latest`).
 
-This stack is published as public docker image (`otomi/stack:latest`). This readme is aimed at development.
+This readme is aimed at development and initial deployment. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md)
 
-This readme has the following index:
+This document has the following index:
 
 1. [Prerequisites for installation](#1-prerequisites)
 2. [Development](#2-development)
@@ -14,7 +14,7 @@ This readme has the following index:
 
 ## 1. Prerequisites
 
-### 1.1 Working k8s cluster with correct policies
+### 1.1 Working k8s cluster(s)
 
 Admin accessible k8s cluster(s).
 
@@ -24,7 +24,7 @@ If you don't have access with kubectl immediately, you have to pull the credenti
 - AWS: `aws eks update-kubeconfig --name otomi-eks-dev`
 - Google: `gcloud container clusters get-credentials otomi-gke-dev --region europe-west4 --project otomi-cloud`
 
-If you are not logged in with the correct credentials because you were logged in for a customer, then re-login first:
+If you are not logged in with the correct credentials because you were logged in for another cloud account, then re-login first:
 
 - Azure: `az login`
 - AWS: `aws login eks`
@@ -32,10 +32,19 @@ If you are not logged in with the correct credentials because you were logged in
 
 ### 1.2 Docker credentials for local tooling
 
-Use the following command to configure Docker to use the correct credentials for pulling the API image (paid license) locally.
+When you are a RedKubes dev, please use the following command to configure Docker to use the correct credentials for pulling the API image (paid license) locally.
 
 ```bash
 gcloud auth configure-docker
+```
+
+Otherwise you will have to use the OTOMI_PULLSECRET to do the same:
+
+```bash
+# login with the pull secret's embedded password, which is a google account
+repo="eu.gcr.io"
+pass=$(echo $OTOMI_PULLSECRET | base64 -d | jq '.auths["eu.gcr.io"].password|fromjson')
+docker login -u _json_key -p "$pass" $repo
 ```
 
 ### 1.3 Values repo
@@ -52,28 +61,16 @@ Please read the `README.md` that is exported as it has extensive instructions on
 
 ### 1.4 Key Service Account
 
-Please refer to [SOPS](https://github.com/mozilla/sops) to get aquainted and choose / wire up your KMS provider.
+Please refer to [SOPS](https://github.com/mozilla/sops) to get acquainted and choose / wire up your KMS provider.
 
-**ADDITIONAL: Google's GCP KMS**
+### 1.5 Local tooling
 
-In order to work with (en)crypted files + GCP KMS in VSCode, then it needs to be started from a terminal with GOOGLE_APPLICATION_CREDENTIALS set:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=$ENV_DIR/gcp-key.json
-code $ENV_DIR
-```
+- npm@~10.0 binary
+- `npm install` in root
 
 ## 2. Development
 
-Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies. Notable quirks that can give you headaches:
-
-- dashes (`-`) in the template statements remove all whitespace characters (before or after the statement). The helm formatter will always autoclose with an ending dash. Sometimes you need to remove this ending dash to not break the yaml.
-
-Helmfile has some custom functionality, but uses a subset of Helm's features. Most notable differences:
-
-- helm's `.Files.Get` can be achieved by helmfile's `readFile`
-- helm's `.Files.Glob` can be achieved by executing a bash command and parsing the result. (See `helmfile.d/snippets/env.gotmpl`)
-- helmfile's `get` can read a nested property and takes an optional default value, which you can see a lot in the top of the `*.gotmpl` files
+Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies by reading our [special section on go templating](./docs/GO_TEMPLATING.md).
 
 ### 2.1 Testing
 

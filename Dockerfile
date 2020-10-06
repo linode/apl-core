@@ -1,13 +1,26 @@
-FROM otomi/tools:1.4.5 as build
+FROM node:14-slim as ci
 
 ENV APP_HOME=/home/app/stack
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
 
-RUN mkdir $APP_HOME
+COPY package*.json ./
+RUN npm install
+COPY . .
+COPY ./.cspell.json .
+
+RUN npm run lint:all
+
+#-----------------------------
+FROM otomi/tools:1.4.5 as prod
+
+ENV APP_HOME=/home/app/stack
+RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY . .
 
-FROM build as test
+FROM ci as test
 
 ARG CLOUD="google"
 ARG CLUSTER="demo"
