@@ -71,7 +71,7 @@ RUN chmod +x sops
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
-RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm
+RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 RUN echo "exec $*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 RUN helm plugin install https://github.com/futuresimple/helm-secrets --version ${HELM_SECRETS_VERSION}
@@ -82,7 +82,7 @@ RUN chmod +x helmfile
 
 # eksctl
 ADD https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/eksctl_Linux_amd64.tar.gz -C /tmp && mv /tmp/eksctl eksctl
+RUN tar -zxvf /tmp/eksctl_Linux_amd64.tar.gz -C /tmp && mv /tmp/eksctl eksctl && rm -rf /tmp/*
 
 # aws
 RUN pip3 install --upgrade --no-cache-dir awscli
@@ -93,12 +93,18 @@ RUN chmod +x aws-iam-authenticator
 
 # gcloud
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
-RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk
+RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk && rm -rf /tmp/*
 ENV PATH $PATH:$APP_HOME/gsdk
 
 # yaml2json \/releases/download/0.4.0/yaml2json-linux-amd64
 ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
 RUN chmod +x yaml2json
+
+
+# node 12 https://github.com/nodesource/distributions/blob/master/README.md
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+RUN apt-get install -y nodejs && \
+  npm install -g ajv-cli
 
 RUN git config --global gpg.program gpg2
 
