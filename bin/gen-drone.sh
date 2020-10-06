@@ -40,7 +40,7 @@ for cloud in ${clouds[@]}; do
   clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '.|keys[]'))
   for cluster in ${clusters[@]}; do
     targetPath="$ENV_DIR/env/clouds/${cloud}/${cluster}/.drone.yml"
-    otomiVersion="v$(yq r $clustersPath clouds.${cloud}.clusters.${cluster}.otomiVersion)"
+    otomiVersion="$(yq r $clustersPath clouds.${cloud}.clusters.${cluster}.otomiVersion)"
     template_drone_config $targetPath $tpl $cloud $cluster $otomiVersion
   done
 done
