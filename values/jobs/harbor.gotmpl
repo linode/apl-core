@@ -8,8 +8,7 @@
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $hasHarbor := $h | get "enabled" false -}}
-{{- $otomiTasksTag := $c | get "otomi-tasks.image.tag" "latest" -}}
-{{- $otomiTasksImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-tasks:%s" $otomiTasksTag -}}
+{{- $otomiTasksImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-tasks:%s" "latest" -}}
 
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
