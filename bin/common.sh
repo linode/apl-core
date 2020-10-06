@@ -4,7 +4,7 @@ function otomi_image_tag() {
   local clusters_file="$ENV_DIR/env/clusters.yaml"
   if [ -f $clusters_file ] && [ "$CLOUD" != "" ] && [ "$CLUSTER" != "" ]; then
     semver=$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
-    tag="v$semver"
+    tag="$semver"
   else
     tag='latest'
   fi
