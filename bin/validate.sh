@@ -10,8 +10,6 @@ function cleanup {
   return 0;
 }
 
-
-
 trap cleanup EXIT
 . bin/common.sh
 

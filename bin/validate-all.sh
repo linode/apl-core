@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 set -o pipefail
 . bin/common.sh
 ENV_DIR=${ENV_DIR:-./env}

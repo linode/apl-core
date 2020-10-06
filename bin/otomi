@@ -89,6 +89,7 @@ function show_usage() {
     template   export k8s resources (use labels like '-l name=prometheus-operator')
     test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
+    validate   validate values for each cluster against JSON schema
     x          execute command in container
   "
 }
@@ -337,7 +338,7 @@ function execute() {
   validate)
     check_kube_context=0
     evaluate_secrets
-    drun bin/validate.sh
+    drun bin/validate-all.sh
     ;;
   *)
     show_usage
