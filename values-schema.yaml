@@ -4,9 +4,9 @@ type: object
 additionalProperties: false
 definitions:
   k8sVersion:
-    type: number
-    pattern: ^\d\.\d\d$
+    type: string
     default: 1.18
+    enum: ['1.16', '1.17', '1.18']
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
   domain:
     type: string
@@ -763,7 +763,7 @@ properties:
         type: string
         description: A public IP address used by DNS record to map public domian with cluster Ingress gateway (applicable to onprem provider)
       k8sVersion:
-        type: number
+        type: string
       name:
         type: string
       otomiVersion:
