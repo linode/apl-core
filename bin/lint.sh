@@ -25,11 +25,11 @@ function crd2jsonschema() {
     local openAPIV3Schema=$(echo $document | yq r - 'spec.validation.openAPIV3Schema.properties')
 
     cat $yamlfile | yq r - |
-        yq w -P - 'title' $(echo $document | yq r - 'metadata.name') |
-        yq w -P - 'properties' $openAPIV3Schema |
-        yq w -P - "${xkgroup}.group" $(echo $document | yq r - 'spec.group') |
-        yq w -P - "${xkgroup}.kind" $(echo $document | yq r - 'spec.names.kind') |
-        yq w -P - "${xkgroup}.version" $(echo $document | yq r - 'spec.version')
+        yq w - 'title' $(echo $document | yq r - 'metadata.name') |
+        yq w - 'properties' $openAPIV3Schema |
+        yq w - "${xkgroup}.group" $(echo $document | yq r - 'spec.group') |
+        yq w - "${xkgroup}.kind" $(echo $document | yq r - 'spec.names.kind') |
+        yq w -jP - "${xkgroup}.version" $(echo $document | yq r - 'spec.version')
 }
 
 cleanup() {
