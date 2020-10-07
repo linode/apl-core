@@ -89,6 +89,7 @@ function show_usage() {
     template   export k8s resources (use labels like '-l name=prometheus-operator')
     test       runs some tests againts the target cluster
     values     show helmfile values for CLOUD and CLUSTER
+    validate   validate values for each cluster against JSON schema
     x          execute command in container
   "
 }
@@ -206,6 +207,7 @@ function drun() {
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
+      -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
       -w $stack_dir \
       $cmd_image \
       $command
@@ -224,6 +226,7 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
+    otomi_values
     drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g'
     ;;
   test)
@@ -331,6 +334,11 @@ function execute() {
     evaluate_secrets
     git -C $ENV_DIR pull
     drun bin/bootstrap.sh 1
+    ;;
+  validate)
+    check_kube_context=0
+    evaluate_secrets
+    drun bin/validate-all.sh
     ;;
   *)
     show_usage

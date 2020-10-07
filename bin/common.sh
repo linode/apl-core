@@ -4,7 +4,7 @@ function otomi_image_tag() {
   local clusters_file="$ENV_DIR/env/clusters.yaml"
   if [ -f $clusters_file ] && [ "$CLOUD" != "" ] && [ "$CLUSTER" != "" ]; then
     semver=$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
-    tag="v$semver"
+    tag="$semver"
   else
     tag='latest'
   fi
@@ -37,8 +37,23 @@ function get_receiver() {
 }
 
 function prepare_crypt() {
-  [ "$GCLOUD_SERVICE_KEY" == "" ] && exit 1
+  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
+}
+
+function for_each_cluster {
+  # Perform a command from function argument for each cluster
+  executable=$1
+  [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
+  local clustersPath="$ENV_DIR/env/clusters.yaml"
+  clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
+
+  for cloud in ${clouds[@]}; do
+    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '.|keys[]'))
+    for cluster in ${clusters[@]}; do
+    CLOUD=$cloud; CLUSTER=$cluster; $executable
+    done
+  done
 }

@@ -8,6 +8,13 @@ ENV_DIR=${ENV_DIR:-./env}
 skip_demo_files=$1
 [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
+function generate_loose_schema {
+  local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
+  local sourcePath="$PWD/values-schema.yaml"
+  yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' > $targetPath
+  echo "Stored JSON schema at: $targetPath"
+}
+
 # install CLI
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
@@ -17,8 +24,9 @@ for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
 done
 cp -r $PWD/.values/.vscode $ENV_DIR/
-# convert schema to loose json:
-grep -v 'required:' $PWD/values-schema.yaml >$ENV_DIR/.vscode/values-schema.yaml
+
+generate_loose_schema
+
 for f in '.gitattributes' '.sops.yaml'; do
   [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
 done
