@@ -18,6 +18,20 @@ declare -a allowed_versions=(
     v1.18.0
 )
 
+function crd2jsonschema() {
+    local xkgroup="x-kubernetes-group-version-kind"
+    local document=$(cat "$1")
+    local yamlfile="local-schema-for-crd.yaml"
+    local openAPIV3Schema=$(echo $document | yq r - 'spec.validation.openAPIV3Schema.properties')
+
+    cat $yamlfile | yq r - |
+        yq w -P - 'title' $(echo $document | yq r - 'metadata.name') |
+        yq w -P - 'properties' $openAPIV3Schema |
+        yq w -P - "${xkgroup}.group" $(echo $document | yq r - 'spec.group') |
+        yq w -P - "${xkgroup}.kind" $(echo $document | yq r - 'spec.names.kind') |
+        yq w -P - "${xkgroup}.version" $(echo $document | yq r - 'spec.version')
+}
+
 cleanup() {
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
     rm -rf $tmp_validation_dir
