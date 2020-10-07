@@ -1,10 +1,70 @@
-# Otomi SRE script
+# Otomi SRE
 
-This document aims to help with debugging container and kubernetes issues.
+## Basic SRE script for Otomi
 
-We recommend using _k9s_ or _Lens_ for debugging, also make sure _metrics-server_ is working on the cluster, it gives insight in cluster resources.
+Redkubes delivers support for Otomi, we offer paid support backed by and SLA and opensource support backed by a best effort SLA. Our goal is to create a community for new users and help them get comfortable with Otomi.
 
-## This document is for beginners and advanced users
+> <https://support.redkubes.com/> is powered by Zendesk, a ticket based support system.
+
+We promote <https://support.redkubes.com/> as a central support portal to keep support questions centrally accessible to the team. All support communication with our customers needs to be done via this system; _to prevent missing support questions, to measure our SLA performance and record a history of support questions._
+
+## Communication
+
+A common flow for support could be described as follows.
+
+> - User has a question or remark
+> - User creates a message via email, web or telephone and adds priority
+> - Otomi receives a notification via slack, email or telephone
+> - Otomi validates source of user's message
+> - Otomi checks SLA for user
+> - Otomi responds within SLA
+> - User responds to Otomi message etc.
+> - User accepts solution
+> - Otomi closes support ticket
+>
+> _Terms_
+>
+> - User: enduser (new or advanced, known or unknown in Otomi system)
+> - Otomi: a technical Otomi support person
+
+### A single communication channel
+
+We only deliver enduser support on our support portal <https://support.redkubes.com>. It's important to inform people about this by referencing this in Github issues etc. We offer various levels of support, defined in our SLA. A critical issue can only only be created by telephone and needs customer validation on Otomi side.
+
+### First response
+
+It's good practise to always acknowledge the support questions received, a good general response could be; (we might auto generate this message later)
+
+```
+Hi <name>,
+
+Thank you for contacting Otomi support.
+
+This message is to inform you that we have received your message and we will reachout to you shortly.
+
+Please take a look at our <https://helpdesksystem.com> answering popular questions.
+
+Kind regards,
+<name> / Otomi support
+```
+
+### Follow up
+
+Always make sure to respond within the SLA, a ticket that will break the SLA is announced in Slack to help with this. Ask the user for steps to reproduce the issue, make sure you understand the support level required. (don't over complicate things, try to stay on topic)
+
+### Summon up
+
+Provide a solution to the user's issue and validate this with the user, we only want to close a ticket if the user has accepted the solution.
+
+## Prevent stale issues
+
+Sometimes an issue has no clear solution, or a solution will take longer than expected. In this case it's recommended to close the ticket and put a solution on the roadmap. We don't want stale tickets. Be clear about this to the user.
+
+---
+
+## Advanced k8s support
+
+> We recommend using _k9s_ or _Lens_ for debugging, also make sure _metrics-server_ is working on the cluster, it gives insight in cluster resources.
 
 ### Pods not starting
 
