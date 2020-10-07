@@ -28,6 +28,6 @@ releases:
     namespace: kube-system
     <<: *default
   - name: cluster-overprovisioner
-    installed: true
+    installed: {{ eq $v.cluster.provider "onprem" | ternary false ($v | get "charts.cluster-overprovisioner.enabled" true) }}
     namespace: overprovisioner
     <<: *default
