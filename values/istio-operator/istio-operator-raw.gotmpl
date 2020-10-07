@@ -44,14 +44,14 @@ resources:
               priorityClassName: "otomi-critical"
               resources:
               {{- if hasKey $i "resources.ingressgateway-public" }}
-                {{- $i.resources.ingressgateway | toYaml | nindent 14 }}
+                {{- $i.resources.ingressgateway | toYaml | nindent 16 }}
               {{- else }}
-              requests:
-                memory: 128Mi
-                cpu: 100m
-              limits:
-                memory: 256Mi
-                cpu: 500m
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
               {{- end }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway-public.minReplicas" 2 }}
@@ -141,9 +141,8 @@ resources:
       addonComponents:
         grafana:
           enabled: {{ $ia | get "grafana.enabled" true }}
-        prometheus:
-          enabled: {{ $ia | get "prometheus.enabled" true }}
           k8s:
+            priorityClassName: "otomi-critical"
             resources:
               {{- if hasKey $i "resources.grafana" }}
                 {{- $i.resources.grafana | toYaml | nindent 14 }}
@@ -155,10 +154,25 @@ resources:
                 cpu: 500m
                 memory: 2Gi
               {{- end }}
+        prometheus:
+          enabled: {{ $ia | get "prometheus.enabled" true }}
+          k8s:
             priorityClassName: "otomi-critical"
+            resources:
+              {{- if hasKey $i "resources.prometheus" }}
+                {{- $i.resources.prometheus | toYaml | nindent 14 }}
+              {{- else }}
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                cpu: 500m
+                memory: 2Gi
+              {{- end }}
         tracing:
           enabled: {{ $ia | get "tracing.enabled" true }}
           k8s:
+            priorityClassName: "otomi-critical"
             resources:
               {{- if hasKey $i "resources.tracing" }}
                 {{- $i.resources.tracing | toYaml | nindent 14 }}
@@ -170,10 +184,10 @@ resources:
                 cpu: 500m
                 memory: 1Gi
               {{- end }}
-            priorityClassName: "otomi-critical"
         kiali:
           enabled: {{ $ia | get "kiali.enabled" true }}
           k8s:
+            priorityClassName: "otomi-critical"
             resources:
               {{- if hasKey $i "resources.kiali" }}
                 {{- $i.resources.kiali | toYaml | nindent 14 }}
@@ -185,7 +199,6 @@ resources:
                 cpu: 500m
                 memory: 1Gi
               {{- end }}
-            priorityClassName: "otomi-critical"
       values:
         kiali:
           contextPath: '/kiali'

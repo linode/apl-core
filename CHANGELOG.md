@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.30](https://github.com/redkubes/otomi-stack/compare/v0.11.28...v0.11.30) (2020-10-06)
+
+
+### Bug Fixes
+
+* fix indentation ([0939942](https://github.com/redkubes/otomi-stack/commit/0939942d4ceda1320d538d2049b1620501028717))
+* otomi-stack tag ([6c95240](https://github.com/redkubes/otomi-stack/commit/6c95240e11d7b762fff3be18e12264e7a3a4e0f0))
+* remove adding v prefix ([81dacf6](https://github.com/redkubes/otomi-stack/commit/81dacf659b0293f762cb0326402a308f294ab7e9))
+
+
+### Docs
+
+* added adr for github workflow [ci skip] ([aa01076](https://github.com/redkubes/otomi-stack/commit/aa010764d95d4f9a604f211890fcdd43418b1aca))
+* updated with guidelines for contribution and conduct [ci skip] ([82be702](https://github.com/redkubes/otomi-stack/commit/82be70227559c4a108eccb8903200066f12ed7c4))
+
+
+### Feature Improvements
+
+* pipelines now always pulling, atomic always true [ci skip] ([960faff](https://github.com/redkubes/otomi-stack/commit/960faff90e250213708640de37ddfbe57849b62c))
+
+
+### Others
+
+* **release:** 0.11.29 ([79abc32](https://github.com/redkubes/otomi-stack/commit/79abc32fc9cc8eb82ce2b35d7748ec84a9fb36fa))
+
+### [0.11.29](https://github.com/redkubes/otomi-stack/compare/v0.11.28...v0.11.29) (2020-10-06)
+
+
+### Bug Fixes
+
+* fix indentation ([0939942](https://github.com/redkubes/otomi-stack/commit/0939942d4ceda1320d538d2049b1620501028717))
+* otomi-stack tag ([6c95240](https://github.com/redkubes/otomi-stack/commit/6c95240e11d7b762fff3be18e12264e7a3a4e0f0))
+
+
+### Docs
+
+* added adr for github workflow [ci skip] ([aa01076](https://github.com/redkubes/otomi-stack/commit/aa010764d95d4f9a604f211890fcdd43418b1aca))
+* updated with guidelines for contribution and conduct [ci skip] ([82be702](https://github.com/redkubes/otomi-stack/commit/82be70227559c4a108eccb8903200066f12ed7c4))
+
+
+### Feature Improvements
+
+* pipelines now always pulling, atomic always true [ci skip] ([960faff](https://github.com/redkubes/otomi-stack/commit/960faff90e250213708640de37ddfbe57849b62c))
+
 ### [0.11.28](https://github.com/redkubes/otomi-stack/compare/v0.11.27...v0.11.28) (2020-10-03)
 
 
