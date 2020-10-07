@@ -1,0 +1,16 @@
+{{- $v := .Environment.Values }}
+{{- $httpbin := $v | get "charts.hello" dict }}
+
+nameOverride: hello
+fullnameOverride: hello
+
+image:
+  tag: 1.1.3
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 8Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
