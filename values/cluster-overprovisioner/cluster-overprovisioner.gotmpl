@@ -7,7 +7,7 @@ deployments:
   - name: default
     resources:
     {{- if (hasKey $o "resources") }}
-      {{- $h.resources | toYaml | nindent 4 }}
+      {{- $o.resources | toYaml | nindent 4 }}
     {{- else }}
       limits:
         # deployments[0].resources.limits.cpu -- Default Deployment - CPU limit for the overprovision pods
