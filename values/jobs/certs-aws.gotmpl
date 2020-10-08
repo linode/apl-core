@@ -2,7 +2,7 @@
 {{- $c := $v.charts -}}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}
-{{- $otomiTasksImage := printf "eu.gcr.io/otomi-cloud/otomi-stack-tasks:%s" "v0.1.0" -}}
+{{- $otomiTasksImage :=  "eu.gcr.io/otomi-cloud/otomi-stack-tasks:v0.1.0" -}}
 
 tasks:
   certs-aws:
