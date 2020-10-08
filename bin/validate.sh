@@ -21,4 +21,4 @@ helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 
 helmfile $quiet -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g' | \
   yq read -P - 'releases[0].values[0]' > $values_path
-ajv validate -s './values-schema.yaml' -d $values_path
+ajv validate -s './values-schema.yaml' -d $values_path > /dev/null
