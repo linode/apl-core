@@ -10,11 +10,7 @@ releases:
     installed: true
     namespace: team-demo
     chart: ../charts/hello
-    values:
-      - nameOverride: hello
-        fullnameOverride: hello
-        image:
-          tag: 1.1.3
+    <<: *default
   - name: httpbin
     # set 'installed' to true and set correct namespace for other customer demo on aws:
     installed: true
