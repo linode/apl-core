@@ -263,7 +263,7 @@ function execute() {
     if [ $@ ]; then
       for f in $@; do
         echo "Decrypting $f"
-        drun helm secrets dec ./env/env/$f >/dev/null
+        drun helm secrets dec ./env/$f >/dev/null
       done
       exit
     fi
@@ -284,7 +284,7 @@ function execute() {
     if [ $@ ]; then
       for f in $@; do
         echo "Encrypting $f"
-        drun && helm secrets enc ./env/env/$f >/dev/null
+        drun && helm secrets enc ./env/$f >/dev/null
       done
       exit
     fi
