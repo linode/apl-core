@@ -27,3 +27,7 @@ releases:
     installed: {{ $v | get "charts.kube-descheduler.enabled" true }}
     namespace: kube-system
     <<: *default
+  - name: cluster-overprovisioner
+    installed: true
+    namespace: overprovisioner
+    <<: *default
