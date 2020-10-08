@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-[ -z $ENV_DIR ] && echo "Plesae set ENV_DIR env" && exit 1
-[ -z $CLUSTER ] && echo "Plesae set CLUSTER env" && exit 1
+[ -z $ENV_DIR ] && echo "ENV_DIR must be set" && exit 1
+[ -z $CLUSTER ] && echo "CLUSTER must be set" && exit 1
 
 METERING_SET=${METERING_SET:-otomi_metering}
 VERBOSE=${VERBOSE:-0}
