@@ -263,7 +263,7 @@ function execute() {
     if [ $@ ]; then
       for f in $@; do
         echo "Decrypting $f"
-        drun helm secrets dec ./env/env/$f >/dev/null
+        drun helm secrets dec ./env/$f >/dev/null
       done
       exit
     fi
@@ -284,7 +284,7 @@ function execute() {
     if [ $@ ]; then
       for f in $@; do
         echo "Encrypting $f"
-        drun && helm secrets enc ./env/env/$f >/dev/null
+        drun && helm secrets enc ./env/$f >/dev/null
       done
       exit
     fi
@@ -329,7 +329,7 @@ function execute() {
     is_repo
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/pre-commit.sh
+    drun bin/validate-all.sh && bin/pre-commit.sh
     git add . && git commit -m 'Manual commit' --no-verify
     ;;
   pull)
