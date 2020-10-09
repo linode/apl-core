@@ -2,88 +2,121 @@
 
 # checks current context for kuberntes version to check against
 # example:~$ otomi lint
-
 set -e
-tmp_validation_dir=/tmp/kubeval-fixtures
+set -o pipefail
+k8sResourcesPath="/tmp/kubeval-fixtures"
+# schemaOutputPath="/tmp/generated-crd-schemas/schemas"
+outputPath="/tmp/generated-crd-schemas"
+destinationFile="$outputPath/all.json"
+
+queryExpression=$(mktemp -u)
+trap 'rm -f -- "$queryExpression"' INT TERM HUP ERR EXIT
 exitcode=1
 hf="helmfile -e $CLOUD-$CLUSTER"
 ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-declare -a allowed_versions=(
+declare -a allowedVersions=(
     v1.16.0
     v1.17.0
     v1.18.0
 )
 
-function crd2jsonschema() {
-    set -e
-    local xkgroup="x-kubernetes-group-version-kind"
-    local document="$1"
-    local openAPIV3Schema=$(mktemp -u)
-    local baseSchema=$(mktemp -u)
-    local jsonSchema=$(mktemp -u)
-    # clean on exit
-    trap 'rm -f -- "$baseSchema" "$openAPIV3Schema" "$jsonSchema"' INT TERM HUP ERR EXIT
-
-    # extract openapi schema from crd
-    yq r -j $document 'spec.validation.openAPIV3Schema' >$openAPIV3Schema
-
-    # check if openAPIV3Schema
-    if [[ -n $(jq -r .properties $openAPIV3Schema) ]]; then
-
-        # create initial schema file
-        cat <<'EOF' >$baseSchema
-"$schema": "http://json-schema.org/draft/2019-09/schema#"
-type: object
-EOF
-
-        # add canonical properties to schema
-        yq w $baseSchema 'title' $(yq r $document 'metadata.name') |
-            yq w - --tag='!!map' 'properties' |
-            yq w - "${xkgroup}.group" $(yq r $document 'spec.group') |
-            yq w - "${xkgroup}.kind" $(yq r $document 'spec.names.kind') |
-            yq w -j - "${xkgroup}.version" $(yq r $document 'spec.version') >$jsonSchema
-
-        # merge files into expected openapi jsonschema
-        echo "$(cat $jsonSchema) $(cat $openAPIV3Schema)" | jq -S -n '[inputs]| add'
-    fi
-
-}
-
 cleanup() {
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-    rm -rf $tmp_validation_dir
+    # rm -rf $k8sResourcesPath $outputPath
     exit $exitcode
 }
 trap cleanup EXIT
 
+run_setup() {
+    mkdir -p $outputPath $schemaOutputPath $k8sResourcesPath
+    cat <<'EOF' >$queryExpression
+    {
+        properties: .spec.validation.openAPIV3Schema.properties,
+        description: .spec.validation.openAPIV3Schema.description,
+        required: .spec.validation.openAPIV3Schema.required,
+        title: .metadata.name,
+        type: "object",
+        "$schema": "http://json-schema.org/draft/2019-09/schema#",
+        "x-kubernetes-group-version-kind.group": .spec.group,
+        "x-kubernetes-group-version-kind.kind": .spec.names.kind,
+        "x-kubernetes-group-version-kind.version": .spec.version
+    }
+EOF
+}
+
+filter_crds() {
+    local document="$1"
+    local filterExpr='select(.kind=="CustomResourceDefinition" and .spec.validation.openAPIV3Schema.properties != null)'
+    echo "$(date --utc) Processing: $document"
+
+    yq r -d'*' -j "$document" |
+        jq -c "$filterExpr" |
+        jq -S -c --raw-output -f "$queryExpression" >>"$destinationFile"
+}
+
+generate_canonical_schemas() {
+    echo "$(date --utc) Compiling all json-schemas from: $destinationFile"
+
+    # @TODO
+
+    # for crd in "$jsonCRDS"; do
+    #     echo "DE~bug crd: $crd "
+    # done
+
+}
+
+generate_schemas() {
+    local targetYamlFiles="*crd*.yaml"
+    for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c 'ls "{}"' \;); do
+        filter_crds $file
+    done
+    generate_canonical_schemas
+
+}
+
 generate_manifests() {
     echo "Generating Manifests in tmp location."
     # using OUTPUT-DIR parameter because kubeval is not accepting multiple resources per file
-    $hf --quiet template --skip-deps --output-dir=$tmp_validation_dir >/dev/null
+    $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 }
 
 validate_resources() {
     local version=$1
-    generate_manifests
     echo "Validating Otomi Stack against Kubernetes Version: $version"
-    kubeval --force-color -d $tmp_validation_dir --strict --ignore-missing-schemas --kubernetes-version $version && exitcode=0
+    export KUBEVAL_SCHEMA_LOCATION="$destinationFile"
+    kubeval --force-color -d "$k8sResourcesPath" --exit-on-error --strict --kubernetes-version "$version"
 }
 
 version_allowed() {
-    for e in "${allowed_versions[@]}"; do [[ "$e" == "$1" ]] && exit 0; done
+    for e in "${allowedVersions[@]}"; do [[ "$e" == "$1" ]] && exit 0; done
     exit 1
 }
 
-validate_versions() {
+validate_version() {
     local version=$1
     (
-        version_allowed v"$version"
+        version_allowed "$version"
     ) && echo "Version $version allowed" && exit 0 || echo "Version $version Not Found" && exit 1
 
 }
 
-version="$(otomi_cluster_info k8sVersion).0"
-(validate_versions $version) && (validate_resources $version)
+version="v$(get_k8s_version).0"
+
+# version="v1.16.0"
+
+(validate_version $version) && versionValid=0
+if [[ $versionValid == 0 ]]; then
+    run_setup
+    generate_manifests
+    generate_schemas
+    validate_resources $version
+    exit 0
+else
+    exit 1
+fi
+
+# ERR - raw/templates/resources.yaml: Failed initializing schema /tmp/generated-crd-schemas/all.json/vv1.16.0-standalone-strict/configmap-v1.json: Reference /tmp/generated-crd-schemas/all.json/vv1.16.0-standalone-strict/configmap-v1.json must be canonical
+# Validation Failed

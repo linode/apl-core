@@ -317,6 +317,7 @@ function execute() {
     drun $@
     ;;
   lint)
+    validate_cluster_env
     drun bin/lint.sh $@
     ;;
   x)
