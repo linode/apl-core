@@ -16,12 +16,10 @@ resources:
                 X-Forwarded-Proto: https
           match:
             - uri:
-                prefix: '/v2/'
+                prefix: '/'
           route:
             - destination:
-                host: harbor-harbor-registry
-                port:
-                  number: 5000
+                host: harbor-harbor-portal
         - headers:
             request:
               set:
