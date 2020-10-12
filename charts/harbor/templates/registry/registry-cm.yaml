@@ -8,7 +8,13 @@ data:
   config.yml: |+
     version: 0.1
     log:
+      {{- if eq .Values.logLevel "warning" }}
+      level: warn
+      {{- else if eq .Values.logLevel "fatal" }}
+      level: error
+      {{- else }}
       level: {{ .Values.logLevel }}
+      {{- end }}
       fields:
         service: registry
     storage:
@@ -53,6 +59,9 @@ data:
         {{- if $storage.s3.secure }}
         secure: {{ $storage.s3.secure }}
         {{- end }}
+        {{- if and $storage.s3.secure $storage.s3.skipverify }}
+        skipverify: {{ $storage.s3.skipverify }}
+        {{- end }}
         {{- if $storage.s3.v4auth }}
         v4auth: {{ $storage.s3.v4auth }}
         {{- end }}
@@ -64,6 +73,15 @@ data:
         {{- end }}
         {{- if $storage.s3.storageclass }}
         storageclass: {{ $storage.s3.storageclass }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopychunksize }}
+        multipartcopychunksize: {{ $storage.s3.multipartcopychunksize }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopymaxconcurrency }}
+        multipartcopymaxconcurrency: {{ $storage.s3.multipartcopymaxconcurrency }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopythresholdsize }}
+        multipartcopythresholdsize: {{ $storage.s3.multipartcopythresholdsize }}
         {{- end }}
       {{- else if eq $type "swift" }}
       swift:
@@ -143,15 +161,22 @@ data:
       redirect:
         disable: {{ $storage.disableredirect }}
     redis:
-      addr: "{{ template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}"
-      db: {{ template "harbor.redis.registryDatabaseIndex" . }}
+      addr: {{ template "harbor.redis.addr" . }}
+      {{- if eq "redis+sentinel" (include "harbor.redis.scheme" .) }}
+      sentinelMasterSet: {{ template "harbor.redis.masterSet" . }}
+      {{- end }}
+      db: {{ template "harbor.redis.dbForRegistry" . }}
+      password: {{ template "harbor.redis.password" . }}
+      readtimeout: 10s
+      writetimeout: 10s
+      dialtimeout: 10s
     http:
       addr: :{{ template "harbor.registry.containerPort" . }}
       relativeurls: {{ .Values.registry.relativeurls }}
       {{- if .Values.internalTLS.enabled }}
       tls:
-        certificate: /etc/harbor/tls/registry.crt
-        key: /etc/harbor/tls/registry.key
+        certificate: /etc/harbor/ssl/registry/tls.crt
+        key: /etc/harbor/ssl/registry/tls.key
         minimumtls: tls1.2
       {{- end }}
       # set via environment variable
@@ -164,7 +189,10 @@ data:
         path: /etc/registry/passwd
     validation:
       disabled: true
-
+    compatibility:
+      schema1:
+        enabled: true
+    
     {{- if .Values.registry.middleware.enabled }}
     {{- $middleware := .Values.registry.middleware }}
     {{- $middlewareType := $middleware.type }}
@@ -186,10 +214,11 @@ data:
     protocol: "https"
     port: 8443
     https_config:
-      cert: "/etc/harbor/ssl/registryctl.crt"
-      key: "/etc/harbor/ssl/registryctl.key"
+      cert: "/etc/harbor/ssl/registry/tls.crt"
+      key: "/etc/harbor/ssl/registry/tls.key"
     {{- else }}
     protocol: "http"
     port: 8080
     {{- end }}
     log_level: {{ .Values.logLevel }}
+    registry_config: "/etc/registry/config.yml"

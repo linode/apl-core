@@ -83,11 +83,11 @@ spec:
         - name: INTERNAL_TLS_ENABLED
           value: "true"
         - name: INTERNAL_TLS_KEY_PATH
-          value: /etc/harbor/tls/registry.key
+          value: /etc/harbor/ssl/registry/tls.key
         - name: INTERNAL_TLS_CERT_PATH
-          value: /etc/harbor/tls/registry.crt
+          value: /etc/harbor/ssl/registry/tls.crt
         - name: INTERNAL_TLS_TRUST_CA_PATH
-          value: /harbor_cust_cert/harbor_internal_ca.crt
+          value: /etc/harbor/ssl/registry/ca.crt
         {{- end }}
         ports:
         - containerPort: {{ template "harbor.registry.containerPort" . }}
@@ -107,14 +107,7 @@ spec:
           subPath: config.yml
         {{- if .Values.internalTLS.enabled }}
         - name: registry-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: registry-internal-certs
-          mountPath: /etc/harbor/tls/registry.crt
-          subPath: tls.crt
-        - name: registry-internal-certs
-          mountPath: /etc/harbor/tls/registry.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/registry
         {{- end }}
         {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
         - name: gcs-key
@@ -157,7 +150,6 @@ spec:
         resources:
 {{ toYaml .Values.registry.controller.resources | indent 10 }}
 {{- end }}
-        args: ["serve", "/etc/registry/config.yml"]
         envFrom:
         - secretRef:
             name: "{{ template "harbor.registry" . }}"
@@ -176,11 +168,11 @@ spec:
         - name: INTERNAL_TLS_ENABLED
           value: "true"
         - name: INTERNAL_TLS_KEY_PATH
-          value: /etc/harbor/ssl/registryctl.key
+          value: /etc/harbor/ssl/registry/tls.key
         - name: INTERNAL_TLS_CERT_PATH
-          value: /etc/harbor/ssl/registryctl.crt
+          value: /etc/harbor/ssl/registry/tls.crt
         - name: INTERNAL_TLS_TRUST_CA_PATH
-          value: /harbor_cust_cert/harbor_internal_ca.crt
+          value: /etc/harbor/ssl/registry/ca.crt
         {{- end }}
         ports:
         - containerPort: {{ template "harbor.registryctl.containerPort" . }}
@@ -196,14 +188,7 @@ spec:
           subPath: ctl-config.yml
         {{- if .Values.internalTLS.enabled }}
         - name: registry-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: registry-internal-certs
-          mountPath: /etc/harbor/ssl/registryctl.crt
-          subPath: tls.crt
-        - name: registry-internal-certs
-          mountPath: /etc/harbor/ssl/registryctl.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/registry
         {{- end }}
         {{- if .Values.persistence.imageChartStorage.caBundleSecretName }}
         - name: storage-service-ca
