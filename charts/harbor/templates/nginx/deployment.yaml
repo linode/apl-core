@@ -86,11 +86,7 @@ spec:
       {{- if .Values.expose.tls.enabled }}
       - name: certificate
         secret:
-          {{- if .Values.expose.tls.secretName }}
-          secretName: {{ .Values.expose.tls.secretName }}
-          {{- else }}
-          secretName: {{ template "harbor.nginx" . }}
-          {{- end }}
+          secretName: {{ template "harbor.tlsSecretForNginx" . }}
       {{- end }}
     {{- with .Values.nginx.nodeSelector }}
       nodeSelector:

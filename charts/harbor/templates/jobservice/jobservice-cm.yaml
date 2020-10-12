@@ -11,15 +11,16 @@ data:
     port: {{ template "harbor.jobservice.containerPort". }}
     {{- if .Values.internalTLS.enabled }}
     https_config:
-      cert: "/etc/harbor/ssl/job_service.crt"
-      key: "/etc/harbor/ssl/job_service.key"
+      cert: "/etc/harbor/ssl/jobservice/tls.crt"
+      key: "/etc/harbor/ssl/jobservice/tls.key"
     {{- end }}
     worker_pool:
       workers: {{ .Values.jobservice.maxJobWorkers }}
       backend: "redis"
       redis_pool:
-        redis_url: "{{ template "harbor.redisForJobservice" . }}"
+        redis_url: "{{ template "harbor.redis.urlForJobservice" . }}"
         namespace: "harbor_job_service_namespace"
+        idle_timeout_second: 3600
     job_loggers:
       {{- if eq .Values.jobservice.jobLogger "file" }}
       - name: "FILE"

@@ -75,14 +75,7 @@ spec:
           subPath: config.yaml
         {{- if .Values.internalTLS.enabled }}
         - name: clair-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: clair-internal-certs
-          mountPath: /etc/harbor/ssl/clair_adapter.crt
-          subPath: tls.crt
-        - name: clair-internal-certs
-          mountPath: /etc/harbor/ssl/clair_adapter.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/clair
         {{- end }}
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
@@ -124,9 +117,9 @@ spec:
         - name: SCANNER_API_SERVER_ADDR
           value: ":8443"
         - name: SCANNER_API_SERVER_TLS_KEY
-          value: /etc/harbor/ssl/clair_adapter.key
+          value: /etc/harbor/ssl/clair/tls.key
         - name: SCANNER_API_SERVER_TLS_CERTIFICATE
-          value: /etc/harbor/ssl/clair_adapter.crt
+          value: /etc/harbor/ssl/clair/tls.crt
         {{- end }}
         - name: SCANNER_LOG_LEVEL
           value: "{{ .Values.logLevel }}"
@@ -140,14 +133,7 @@ spec:
         volumeMounts:
         {{- if .Values.internalTLS.enabled }}
         - name: clair-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: clair-internal-certs
-          mountPath: /etc/harbor/ssl/clair_adapter.crt
-          subPath: tls.crt
-        - name: clair-internal-certs
-          mountPath: /etc/harbor/ssl/clair_adapter.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/clair
         {{- end }}
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
