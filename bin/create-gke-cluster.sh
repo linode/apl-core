@@ -12,12 +12,17 @@ GOOGLE_REGION=$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUST
 CUSTOMER=$(yq read $ENV_DIR/env/settings.yaml customer.name)
 K8S_VERSION=$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sVersion)
 
-[ $VERBOSE -eq "1" ] && echo "CLUSTER: $CLUSTER"
-[ $VERBOSE -eq "1" ] && echo "PROJECT: $PROJECT"
-[ $VERBOSE -eq "1" ] && echo "GOOGLE_REGION: $GOOGLE_REGION"
-[ $VERBOSE -eq "1" ] && echo "K8S_VERSION: $K8S_VERSION"
-[ $VERBOSE -eq "1" ] && echo "CUSTOMER: $CUSTOMER"
-[ $VERBOSE -eq "1" ] && echo "METERING_SET: $METERING_SET"
+print_envs() {
+  echo "ENV_DIR: $ENV_DIR"
+  echo "CLUSTER: $CLUSTER"
+  echo "PROJECT: $PROJECT"
+  echo "GOOGLE_REGION: $GOOGLE_REGION"
+  echo "K8S_VERSION: $K8S_VERSION"
+  echo "CUSTOMER: $CUSTOMER"
+  echo "METERING_SET: $METERING_SET"
+}
+
+[ $VERBOSE -eq "1" ] && print_envs
 
 # create the cluster
 gcloud container \
