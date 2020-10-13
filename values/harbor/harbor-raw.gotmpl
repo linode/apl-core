@@ -16,6 +16,18 @@ resources:
                 X-Forwarded-Proto: https
           match:
             - uri:
+                prefix: '/v2/'
+          route:
+            - destination:
+                host: harbor-harbor-registry
+                port:
+                  number: 4443
+        - headers:
+            request:
+              set:
+                X-Forwarded-Proto: https
+          match:
+            - uri:
                 prefix: '/'
           route:
             - destination:
