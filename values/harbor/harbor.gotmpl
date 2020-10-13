@@ -12,6 +12,8 @@ fullnameOverride: harbor
 notary:
   enabled: false
   secretName: {{ $notarySecretName }}
+trivy:
+  automountServiceAccountToken: true
 expose:
   type: clusterIP
   tls:
