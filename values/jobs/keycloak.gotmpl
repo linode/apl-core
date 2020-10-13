@@ -12,7 +12,7 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $idp := $v.oidc.idp }}
-{{- $otomiTasksImage :=  "eu.gcr.io/otomi-cloud/otomi-stack-tasks:v0.1.0" -}}
+{{- $otomiTasksImage :=  "eu.gcr.io/otomi-cloud/otomi-stack-tasks:tasks-workflow" -}}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 tasks:
   keycloak:
