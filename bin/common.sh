@@ -14,17 +14,9 @@ function otomi_settings() {
   cat $ENV_DIR/env/settings.yaml | yq r - $1
 }
 
-function get_otomi_version() {
-  otomi_cluster_info "otomiVersion"
-}
-
-function get_k8s_version() {
-  otomi_cluster_info "k8sVersion"
-}
-
 function otomi_image_tag() {
-  if [[ -n $(get_otomi_version) ]]; then
-    get_otomi_version
+  if [[ -n $(otomi_cluster_info "otomiVersion") ]]; then
+    otomi_cluster_info "otomiVersion"
   else
     echo 'latest'
   fi

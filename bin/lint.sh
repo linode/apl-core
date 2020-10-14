@@ -17,7 +17,7 @@ exitcode=1
 
 . bin/common.sh
 
-version="v$(get_k8s_version).0"
+version="v$(otomi_cluster_info k8sVersion).0"
 
 cleanup() {
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
