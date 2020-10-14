@@ -18,6 +18,7 @@ spec:
       serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
       containers:
       - image: "{{ $spec.image }}"
+        imagePullPolicy: Always
         name: "{{ $name }}"
         command: ["{{ $spec.shell | default "sh" }}", "-c"]
         args:
