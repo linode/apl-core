@@ -343,6 +343,11 @@ properties:
                             type: string
           stage:
             type: string
+            description: |
+              The Let’s Encrypt environment that is used for issueing certificates.
+              The 'production' issues trusted certificates but has narrow rate limits, whereas staing issues untrusted certificates but provides broader rate limits.
+              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/
+            enum: ['staging', 'production']
       drone:
         type: object
         properties:
