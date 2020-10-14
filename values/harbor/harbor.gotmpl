@@ -18,6 +18,9 @@ expose:
   type: clusterIP
   tls:
     enabled: false
+internalTLS:
+  # we use istio with mTLS enabled for harbor namespace
+  enabled: false
 nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
