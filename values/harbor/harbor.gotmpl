@@ -166,7 +166,7 @@ registry:
   # Must be a string of 16 chars.
   secret: '4j8sdf75dfd8sdfd'
   # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
-  relativeurls: false
+  relativeurls: true
   credentials:
     username: {{ $h | get "registry.credentials.username" "admin" }}
     password: {{ $h | get "registry.credentials.password" "bladibla" }}
