@@ -2,12 +2,7 @@
 
 function otomi_cluster() {
   local clusters_file="$ENV_DIR/env/clusters.yaml"
-  # echo "$CLOUD $CLUSTER"
-  if [[ -f $clusters_file && (! -z "$CLOUD" || -z "$CLUSTER") ]]; then
-    cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER
-  else
-    exit 1
-  fi
+  cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER
 }
 
 function otomi_cluster_info() {
@@ -22,12 +17,12 @@ function otomi_settings() {
 function get_otomi_version() {
   otomi_cluster_info "otomiVersion"
 }
+
 function get_k8s_version() {
   otomi_cluster_info "k8sVersion"
 }
 
 function otomi_image_tag() {
-  [[ ("$CLOUD" == "" || "$CLUSTER" == "") ]] && echo 'latest' && exit
   if [[ -n $(get_otomi_version) ]]; then
     get_otomi_version
   else
@@ -75,11 +70,9 @@ function for_each_cluster() {
   clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
 
   for cloud in ${clouds[@]}; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '.|keys[]'))
+    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '. | keys[]'))
     for cluster in ${clusters[@]}; do
-      CLOUD=$cloud
-      CLUSTER=$cluster
-      $executable
+      CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
 }

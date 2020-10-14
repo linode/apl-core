@@ -83,7 +83,7 @@ function show_usage() {
     encrypt    encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help       print this help
     hf         run helmfile with CLUSTER and CLOUD already set
-    lint       runs a linter that will check OPA rules on templates (coming soon!)
+    lint       runs a linter that will check kubernetes resources against json schemas
     pull       wrapper for git pull && bootstrap
     switch     switches context to the target cluster and boostraps
     template   export k8s resources (use labels like '-l name=prometheus-operator')
@@ -318,7 +318,7 @@ function execute() {
     ;;
   lint)
     validate_cluster_env
-    drun bin/lint.sh $@
+    drun bin/lint-all.sh
     ;;
   x)
     check_kube_context=0

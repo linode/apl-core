@@ -21,7 +21,7 @@ version="v$(get_k8s_version).0"
 
 cleanup() {
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-    rm -rf $k8sResourcesPath $outputPath
+    rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     exit $exitcode
 }
 trap cleanup EXIT
@@ -66,7 +66,7 @@ process_crd() {
 run_setup
 
 # generate_manifests
-echo "Generating Manifests in tmp location."
+echo "Generating Kubernetes Manifests."
 $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
 # generate canonical schemas
@@ -80,13 +80,12 @@ for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}"
     process_crd $file
 done
 # create schema in canonical format for each extracted file
-echo "$(date --utc) Compiling all json-schemas from: $schemasBundleFile"
+echo "$(date --utc) Compiling all json schemas from: $schemasBundleFile"
 for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
     jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
 done
 
-# validate_resources()
-echo "Validating Otomi Stack against Kubernetes Version: $version"
+# validate_resources
+echo "Validating resources against Kubernetes version: $version"
 KUBEVAL_SCHEMA_LOCATION="file://./kubernetes-json-schema/master"
 kubeval --force-color -d "$k8sResourcesPath" --schema-location $KUBEVAL_SCHEMA_LOCATION --kubernetes-version $(echo $version | sed 's/v//') && exitcode=0
-# add --exit-on-error flag for fast exit
