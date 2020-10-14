@@ -79,6 +79,7 @@
     "semver",
     "showlogs",
     "sitespeed",
-    "testmode"
+    "testmode",
+    "untrusted"
   ]
 }
