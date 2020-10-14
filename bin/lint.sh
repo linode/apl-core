@@ -2,7 +2,7 @@
 
 # checks current context for kuberntes version to check against
 # example:~$ otomi lint
-set -e
+set -eu
 set -o pipefail
 
 schemaOutputPath="/tmp/kubernetes-json-schema/master"
@@ -53,20 +53,20 @@ EOF
 process_crd() {
     local document="$1"
     local filterCRDExpr='select(.kind=="CustomResourceDefinition" and .spec.validation.openAPIV3Schema.properties != null)'
-    echo "$(date --utc) Processing: $document"
+    echo "Processing: $document"
     {
         yq r -d'*' -j "$document" |
             jq -c "$filterCRDExpr" |
             jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
     } || {
-        echo "$(date --utc) ERROR Processing: $document"
+        echo "ERROR Processing: $document"
     }
 }
 
 run_setup
 
 # generate_manifests
-echo "Generating Kubernetes Manifests."
+echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
 $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
 # generate canonical schemas
@@ -80,12 +80,12 @@ for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}"
     process_crd $file
 done
 # create schema in canonical format for each extracted file
-echo "$(date --utc) Compiling all json schemas from: $schemasBundleFile"
+echo "Compiling all json schemas from: $schemasBundleFile"
 for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
     jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
 done
 
 # validate_resources
 echo "Validating resources against Kubernetes version: $version"
-KUBEVAL_SCHEMA_LOCATION="file://./kubernetes-json-schema/master"
-kubeval --force-color -d "$k8sResourcesPath" --schema-location $KUBEVAL_SCHEMA_LOCATION --kubernetes-version $(echo $version | sed 's/v//') && exitcode=0
+kubevalSchemaLocation="file://./kubernetes-json-schema/master"
+kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') && exitcode=0
