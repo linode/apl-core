@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# checks current context for kuberntes version to check against
-# example:~$ otomi lint
 set -eu
 set -o pipefail
 
@@ -13,13 +11,13 @@ extractCrdSchemaJQFile=$(mktemp -u)
 trap 'rm -f -- "$extractCrdSchemaJQFile" ' INT TERM HUP ERR EXIT
 hf="helmfile -e $CLOUD-$CLUSTER"
 ENV_DIR=${ENV_DIR:-$PWD}
-exitcode=1
 
 . bin/common.sh
 
-version="v$(otomi_cluster_info k8sVersion).0"
+version="v$(get_k8s_version).0"
 
 cleanup() {
+    exitcode=$?
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
     rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     exit $exitcode
@@ -30,23 +28,23 @@ run_setup() {
     mkdir -p $outputPath $schemaOutputPath $k8sResourcesPath
     echo "" >$schemasBundleFile
     tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
-
-    # @TODO  for loop over .spec.versions[] and generate one file for each version
+    # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
+    . as $obj | if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
     {
-        filename: ( (.spec.names.kind | ascii_downcase) +"-"+  (.spec.group | split(".")[0]) +"-"+ ( .spec.versions[0].name // .spec.version ) + ".json" ),
+        filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .name // $obj.spec.version ) + ".json" ),
         schema: {
-            properties: .spec.validation.openAPIV3Schema.properties,
-            description: (.spec.validation.openAPIV3Schema.description // ""),
-            required: (.spec.validation.openAPIV3Schema.required // []),
-            title: .metadata.name,
+            properties: $obj.spec.validation.openAPIV3Schema.properties,
+            description: ($obj.spec.validation.openAPIV3Schema.description // ""),
+            required: ($obj.spec.validation.openAPIV3Schema.required // []),
+            title: $obj.metadata.name,
             type: "object",
             "$schema": "http://json-schema.org/draft/2019-09/schema#",
-            "x-kubernetes-group-version-kind.group": .spec.group,
-            "x-kubernetes-group-version-kind.kind": .spec.names.kind,
-            "x-kubernetes-group-version-kind.version": ( .spec.versions[0].name // .spec.version )
+            "x-kubernetes-group-version-kind.group": $obj.spec.group,
+            "x-kubernetes-group-version-kind.kind": $obj.spec.names.kind,
+            "x-kubernetes-group-version-kind.version": .name 
         }
-    }
+    } 
 EOF
 }
 
@@ -87,5 +85,5 @@ done
 
 # validate_resources
 echo "Validating resources against Kubernetes version: $version"
-kubevalSchemaLocation="file://./kubernetes-json-schema/master"
-kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') && exitcode=0
+kubevalSchemaLocation="file://${schemaOutputPath}"
+kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS'

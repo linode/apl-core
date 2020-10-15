@@ -1,29 +1,19 @@
 #!/bin/bash
 
-function otomi_cluster() {
-  local clusters_file="$ENV_DIR/env/clusters.yaml"
-  cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER
-}
+readonly otomiSettings="$ENV_DIR/env/settings.yaml"
+readonly clustersFile="$ENV_DIR/env/clusters.yaml"
 
-function otomi_cluster_info() {
-  subpath="$1"
-  otomi_cluster | yq r - $subpath
-}
-
-function otomi_settings() {
-  cat $ENV_DIR/env/settings.yaml | yq r - $1
+function get_k8s_version() {
+  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
 }
 
 function otomi_image_tag() {
-  if [[ -n $(otomi_cluster_info "otomiVersion") ]]; then
-    otomi_cluster_info "otomiVersion"
-  else
-    echo 'latest'
-  fi
+  local otomiVersion=$(yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
+  [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
 }
 
 function customer_name() {
-  otomi_settings "customer.name"
+  yq r $otomiSettings "customer.name"
 }
 
 function get_receiver() {
