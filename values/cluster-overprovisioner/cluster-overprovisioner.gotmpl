@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values -}}
-{{- $o := $v.charts | get "clusterOverprovisioner" dict }}
+{{- $o := $v.charts | get "overprovisioner" dict }}
 
 
 deployments:
@@ -16,3 +16,4 @@ deployments:
         cpu: {{ $o.cpu }}
         # deployments[0].resources.requests.memory -- Default Deployment - Memory requested for the overprovision pods
         memory: {{ $o.memory }}
+    {{- end }}

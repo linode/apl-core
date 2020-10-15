@@ -343,7 +343,7 @@ properties:
                             type: string
           stage:
             type: string
-      clusterOverprovisioner:
+      cluster-overprovisioner:
         type: object
         properties:
           enabled:
