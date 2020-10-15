@@ -8,7 +8,6 @@ outputPath="/tmp/generated-crd-schemas"
 schemasBundleFile="$outputPath/all.json"
 k8sResourcesPath="/tmp/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
-trap 'rm -f -- "$extractCrdSchemaJQFile" ' INT TERM HUP ERR EXIT
 hf="helmfile -e $CLOUD-$CLUSTER"
 ENV_DIR=${ENV_DIR:-$PWD}
 
@@ -19,7 +18,7 @@ version="v$(get_k8s_version).0"
 cleanup() {
     exitcode=$?
     [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-    rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+    rm -rf $k8sResourcesPath $outputPath $schemaOutputPath $extractCrdSchemaJQFile
     exit $exitcode
 }
 trap cleanup EXIT
