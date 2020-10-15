@@ -31,9 +31,8 @@ run_setup() {
     # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
     . as $obj |
-    $obj.spec.validation.openAPIV3Schema as $defaultSchema |
-    if $obj.spec.versions then $obj.spec.versions[] else {version: $obj.spec.version, schema: $defaultSchema} end | 
-    if .schema then {version: (.name // .version), schema: .schema} else {version: .name, schema: $defaultSchema} end | 
+    if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
+    if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end | 
     {
         filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .version  ) + ".json" ),
         schema: {
@@ -54,7 +53,6 @@ EOF
 process_crd() {
     local document="$1"
     local filterCRDExpr='select(.kind=="CustomResourceDefinition")'
-    # echo "Processing: $document"
     {
         yq r -d'*' -j "$document" |
             jq -c "$filterCRDExpr" |
