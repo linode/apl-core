@@ -72,25 +72,25 @@ function set_helm_config() {
 
 function show_usage() {
   echo "otomi usage:
-    apply      apply k8s resources (use labels like '-l name=prometheus-operator')
-    bash       run interactive bash shell in otomi-stack container
-    bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
-    commit     wrapper for encrypt > generate pipelines > git commit changed files
-    console    starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
-    decrypt    decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
-    deploy     execute otomi-stack deploy script
-    diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    encrypt    encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
-    help       print this help
-    hf         run helmfile with CLUSTER and CLOUD already set
-    lint       validate generated manifests against supported k8s versions/CRDs and defined OPA rules
-    pull       wrapper for git pull && bootstrap
-    switch     switches context to the target cluster and boostraps
-    template   export k8s resources (use labels like '-l name=prometheus-operator')
-    test       runs some tests againts the target cluster
-    values     show helmfile values for CLOUD and CLUSTER
-    validate   validate values for each cluster against JSON schema
-    x          execute command in container
+    apply               apply k8s resources (use labels like '-l name=prometheus-operator')
+    bash                run interactive bash shell in otomi-stack container
+    bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
+    commit              wrapper for encrypt > generate pipelines > git commit changed files
+    console             starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
+    deploy              execute otomi-stack deploy script
+    diff                diff k8s resources (use labels like '-l name=prometheus-operator')
+    encrypt             encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
+    help                print this help
+    hf                  run helmfile with CLUSTER and CLOUD already set
+    pull                wrapper for git pull && bootstrap
+    switch              switches context to the target cluster and boostraps
+    template            export k8s resources (use labels like '-l name=prometheus-operator')
+    test                runs some tests againts the target cluster
+    values              show helmfile values for CLOUD and CLUSTER
+    validate-templates  validate generated manifests against supported k8s versions/CRDs and defined OPA rules
+    validate-values     validate values for each cluster against JSON schema
+    x                   execute command in container
   "
 }
 
@@ -316,7 +316,7 @@ function execute() {
     drun bin/test.sh
     drun $@
     ;;
-  lint)
+  validate_templates)
     validate_cluster_env
     drun bin/lint-all.sh
     ;;
