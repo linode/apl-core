@@ -91,6 +91,10 @@ function show_usage() {
     validate-templates  validate generated manifests against supported k8s versions/CRDs and defined OPA rules
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
+
+  Extra environment variables:
+    VERBOSE=1; otomi <cmd>          Run otomi CLI in verbose mode
+    MOUNT_TMP_DIR=1; otomi <cmd>    Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
   "
 }
 
