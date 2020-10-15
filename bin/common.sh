@@ -1,4 +1,5 @@
 #!/bin/bash
+ENV_DIR=${ENV_DIR:-./env}
 
 readonly otomiSettings="$ENV_DIR/env/settings.yaml"
 readonly clustersFile="$ENV_DIR/env/clusters.yaml"

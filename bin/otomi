@@ -226,7 +226,6 @@ function execute() {
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    otomi_values
     drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g'
     ;;
   test)
