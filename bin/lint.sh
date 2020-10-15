@@ -9,7 +9,7 @@ schemasBundleFile="$outputPath/all.json"
 k8sResourcesPath="/tmp/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
 hf="helmfile -e $CLOUD-$CLUSTER"
-ENV_DIR=${ENV_DIR:-$PWD}
+ENV_DIR=${ENV_DIR:-./env}
 
 . bin/common.sh
 
