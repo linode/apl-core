@@ -24,7 +24,8 @@ cleanup() {
 trap cleanup EXIT
 
 run_setup() {
-    mkdir -p $outputPath $schemaOutputPath $k8sResourcesPath
+    rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+    mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
     echo "" >$schemasBundleFile
     tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
     # loop over .spec.versions[] and generate one file for each version
