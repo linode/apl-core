@@ -30,19 +30,22 @@ run_setup() {
     tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
     # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
-    . as $obj | if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
+    . as $obj |
+    $obj.spec.validation.openAPIV3Schema as $defaultSchema |
+    if $obj.spec.versions then $obj.spec.versions[] else {version: $obj.spec.version, schema: $defaultSchema} end | 
+    if .schema then {version: (.name // .version), schema: .schema} else {version: .name, schema: $defaultSchema} end | 
     {
-        filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .name // $obj.spec.version ) + ".json" ),
+        filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .version  ) + ".json" ),
         schema: {
-            properties: $obj.spec.validation.openAPIV3Schema.properties,
-            description: ($obj.spec.validation.openAPIV3Schema.description // ""),
-            required: ($obj.spec.validation.openAPIV3Schema.required // []),
+            properties: .schema.openAPIV3Schema.properties,
+            description: (.schema.openAPIV3Schema.description // ""),
+            required: (.schema.openAPIV3Schema.required // []),
             title: $obj.metadata.name,
             type: "object",
             "$schema": "http://json-schema.org/draft/2019-09/schema#",
             "x-kubernetes-group-version-kind.group": $obj.spec.group,
             "x-kubernetes-group-version-kind.kind": $obj.spec.names.kind,
-            "x-kubernetes-group-version-kind.version": .name 
+            "x-kubernetes-group-version-kind.version": .version 
         }
     } 
 EOF
@@ -50,7 +53,7 @@ EOF
 
 process_crd() {
     local document="$1"
-    local filterCRDExpr='select(.kind=="CustomResourceDefinition" and .spec.validation.openAPIV3Schema.properties != null)'
+    local filterCRDExpr='select(.kind=="CustomResourceDefinition")'
     # echo "Processing: $document"
     {
         yq r -d'*' -j "$document" |
@@ -79,7 +82,6 @@ for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}"
     process_crd $file
 done
 # create schema in canonical format for each extracted file
-# echo "Compiling all json schemas from: $schemasBundleFile"
 for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
     jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
 done
