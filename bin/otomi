@@ -321,7 +321,7 @@ function execute() {
     ;;
   validate-templates)
     validate_cluster_env
-    drun bin/validate-templates.sh
+    drun bin/validate-all-templates.sh
     ;;
   x)
     check_kube_context=0
