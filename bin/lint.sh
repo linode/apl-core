@@ -16,7 +16,7 @@ version="v$(get_k8s_version).0"
 
 cleanup() {
     exitcode=$?
-    [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+    [[ $exitcode -eq 0 ]] && echo "Validation Success $CLOUD-$CLUSTER-$version" || echo "Validation Failed $CLOUD-$CLUSTER-$version"
     rm -rf $extractCrdSchemaJQFile
     [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     exit $exitcode
