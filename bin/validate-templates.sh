@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 
-set -eu
+set -u
 set -o pipefail
 
-schemaOutputPath="/tmp/kubernetes-json-schema/master"
-outputPath="/tmp/generated-crd-schemas"
+EXIT_FAST=${EXIT_FAST:-"1"}
+[[ $EXIT_FAST == "1" ]] && set -e
+
+schemaOutputPath="/tmp/otomi/kubernetes-json-schema/master"
+outputPath="/tmp/otomi/generated-crd-schemas"
 schemasBundleFile="$outputPath/all.json"
-k8sResourcesPath="/tmp/kubeval-fixtures"
+k8sResourcesPath="/tmp/otomi/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
-hf="helmfile -e $CLOUD-$CLUSTER"
+exitcode=1
 
 . bin/common.sh
 
-version="v$(get_k8s_version).0"
-
 cleanup() {
-    exitcode=$?
-    [[ $exitcode -eq 0 ]] && echo "Validation Success $CLOUD-$CLUSTER-$version" || echo "Validation Failed $CLOUD-$CLUSTER-$version"
+    [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
     rm -rf $extractCrdSchemaJQFile
     [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     exit $exitcode
@@ -24,19 +24,12 @@ cleanup() {
 trap cleanup EXIT
 
 run_setup() {
+    local version="v$(get_k8s_version).0"
     rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
     echo "" >$schemasBundleFile
-
-    # changed to using canonical instead of standalone schemas for enforcing resource validation
-    tar -xzf ".schemas/${version}.tar.gz" -C $schemaOutputPath
-    mv "$schemaOutputPath/${version}" "$schemaOutputPath/${version}-standalone"
-
     # use standalone schemas
-    # tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
-
-    # use strict schemas
-    # tar -xzf ".schemas/${version}-standalone-strict.tar.gz" -C $schemaOutputPath
+    tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
 
     # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
@@ -67,34 +60,41 @@ process_crd() {
         yq r -d'*' -j "$document" |
             jq -c "$filterCRDExpr" |
             jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
-    } || {
-        echo "ERROR Processing: $document"
-    }
+    } || echo "ERROR Processing: $document"
 }
 
-run_setup
+validate_templates() {
+    local hf="helmfile -e $CLOUD-$CLUSTER"
+    local version="v$(get_k8s_version).0"
 
-# generate_manifests
-echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
-$hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+    run_setup
+    # generate_manifests
+    echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
+    $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
-echo "Processing CRD files."
-# generate canonical schemas
-targetYamlFiles="*.yaml"
-# schemas for otomi templates
-for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
-    process_crd $file
-done
-# schemas for chart crds
-for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
-    process_crd $file
-done
-# create schema in canonical format for each extracted file
-for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
-    jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
-done
+    echo "Processing CRD files."
+    # generate canonical schemas
+    targetYamlFiles="*.yaml"
+    # schemas for otomi templates
+    for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+        process_crd $file
+    done
+    # schemas for chart crds
+    for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+        process_crd $file
+    done
+    # create schema in canonical format for each extracted file
+    for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
+        jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
+    done
 
-# validate_resources
-echo "Validating resources against Kubernetes version: $version"
-kubevalSchemaLocation="file://${schemaOutputPath}"
-kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS'
+    # validate_resources
+    echo "Validating resources against Kubernetes version: $version"
+    kubevalSchemaLocation="file://${schemaOutputPath}"
+    {
+        kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS'
+    } && exitcode=0
+
+}
+
+for_each_cluster validate_templates
