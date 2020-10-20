@@ -37,6 +37,8 @@ function verbose_env() {
 VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
+# EXIT_FAST - export this varaibale to exit the script on error
+EXIT_FAST=${EXIT_FAST:-"1"}
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -95,6 +97,7 @@ function show_usage() {
   Extra environment variables:
     VERBOSE=1; otomi <cmd>          Run otomi CLI in verbose mode
     MOUNT_TMP_DIR=1; otomi <cmd>    Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
+    EXIT_FAST=1; otomi <cmd>        Exit the script after an error is returned
   "
 }
 
@@ -212,6 +215,7 @@ function drun() {
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
+      -e EXIT_FAST="$EXIT_FAST" \
       -w $stack_dir \
       $cmd_image \
       $command
