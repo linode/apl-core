@@ -45,12 +45,10 @@ services:
     hide: true
     isShared: true
   - name: harbor
-    # svc: harbor-harbor-registry
     svc: harbor-harbor-core
     namespace: harbor
     ownHost: true
     paths: [/service/, /v1/, /v2/]
-    # port: 5000
     forwardPath: true
     hide: true
     isPublic: true
