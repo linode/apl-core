@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values -}}
-{{- $o := $v.charts | get "overprovisioner" dict }}
+{{- $o := $v.charts | get "cluster-overprovisioner" dict }}
 
 
 deployments:
