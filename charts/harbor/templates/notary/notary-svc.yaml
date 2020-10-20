@@ -11,6 +11,7 @@ spec:
 {{- end }}
   ports:
   - port: 4443
+    # appProtocol: http
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: notary-server
@@ -25,6 +26,7 @@ metadata:
 spec:
   ports:
   - port: 7899
+    # appProtocol: http
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: notary-signer
