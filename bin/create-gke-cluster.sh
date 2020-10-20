@@ -27,9 +27,8 @@ print_envs() {
 [ $VERBOSE -eq "1" ] && print_envs
 
 # create the cluster
-gcloud container \
+gcloud container clusters create "otomi-gke-$CLUSTER" \
   --project "$project" \
-  clusters create "otomi-gke-$CLUSTER" \
   --addons HorizontalPodAutoscaling,HttpLoadBalancing \
   --cluster-version $k8s_version \
   --disk-size "100" \
