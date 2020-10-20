@@ -40,19 +40,19 @@ services:
     svc: harbor-harbor-core
     namespace: harbor
     ownHost: true
-    paths: [/api/, /c/, /chartrepo/, /service/]
+    paths: [/api/, /c/, /chartrepo/, /service/, /v1/, /v2/]
     forwardPath: true
     hide: true
     isShared: true
-  - name: harbor
-    svc: harbor-harbor-registry
-    namespace: harbor
-    ownHost: true
-    paths: [/v1/, /v2/]
-    port: 5000
-    forwardPath: true
-    hide: true
-    isPublic: true
+  # - name: harbor
+  #   svc: harbor-harbor-core
+  #   namespace: harbor
+  #   ownHost: true
+  #   paths: [/v1/, /v2/]
+  #   port: 5000
+  #   forwardPath: true
+  #   hide: true
+  #   isPublic: true
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
