@@ -1,18 +1,20 @@
+#!/usr/local/env bash
+ENV_DIR=${ENV_DIR:-./env}
+
+readonly otomiSettings="$ENV_DIR/env/settings.yaml"
+readonly clustersFile="$ENV_DIR/env/clusters.yaml"
+
+function get_k8s_version() {
+  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
+}
+
 function otomi_image_tag() {
-  [[ ("$CLOUD" == "" || "$CLUSTER" == "") ]] && echo 'latest' && exit
-  local version
-  local clusters_file="$ENV_DIR/env/clusters.yaml"
-  if [ -f $clusters_file ] && [ "$CLOUD" != "" ] && [ "$CLUSTER" != "" ]; then
-    semver=$(cat $clusters_file | yq r - clouds.$CLOUD.clusters.$CLUSTER.otomiVersion)
-    tag="$semver"
-  else
-    tag='latest'
-  fi
-  echo $tag
+  local otomiVersion=$(yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
+  [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
 }
 
 function customer_name() {
-  cat $ENV_DIR/env/settings.yaml | yq r - customer.name
+  yq r $otomiSettings "customer.name"
 }
 
 function get_receiver() {
@@ -43,7 +45,7 @@ function prepare_crypt() {
   export GOOGLE_APPLICATION_CREDENTIALS
 }
 
-function for_each_cluster {
+function for_each_cluster() {
   # Perform a command from function argument for each cluster
   executable=$1
   [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
@@ -51,9 +53,9 @@ function for_each_cluster {
   clouds=($(yq r -j $clustersPath clouds | jq -r '.|keys[]'))
 
   for cloud in ${clouds[@]}; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '.|keys[]'))
+    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -r '. | keys[]'))
     for cluster in ${clusters[@]}; do
-    CLOUD=$cloud; CLUSTER=$cluster; $executable
+      CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
 }

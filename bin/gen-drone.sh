@@ -2,7 +2,6 @@
 set -e
 set -o pipefail
 
-ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 . bin/colors.sh
 
