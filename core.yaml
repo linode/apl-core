@@ -18,6 +18,8 @@ k8s:
     - name: monitoring
     - name: shared
     - name: team-admin
+    - name: overprovisioner
+      disableIstioInjection: true
 
 services:
   - name: keycloak
