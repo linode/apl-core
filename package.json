@@ -56,7 +56,7 @@
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-commit": "lint-staged && npm run spellcheck",
-    "lint": "./bin/otomi validate-templates",
+    "lint": "bin/otomi validate-templates",
     "lint:all": "run-p spellcheck lint",
     "release": "standard-version",
     "spellcheck": "cspell \"**/*\" \".**/**\""
