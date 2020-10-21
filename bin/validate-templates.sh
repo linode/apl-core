@@ -30,8 +30,8 @@ run_setup() {
     mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
     echo "" >$schemasBundleFile
     # use standalone schemas
-    tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
-    tar -xzf ".schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$version-standalone"
+    tar -xzf "schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
+    tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$version-standalone"
 
     # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
