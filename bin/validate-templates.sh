@@ -21,7 +21,7 @@ cleanup() {
     [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     exit $exitcode
 }
-trap cleanup EXIT
+trap cleanup EXIT ERR
 
 run_setup() {
     exitcode=1
@@ -62,7 +62,10 @@ process_crd() {
         yq r -d'*' -j "$document" |
             jq -c "$filterCRDExpr" |
             jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
-    } || echo "ERROR Processing: $document"
+    } || {
+        echo "ERROR Processing: $document"
+        [[ $EXIT_FAST == "1" ]] && exit 1
+    }
 }
 
 validate_templates() {
