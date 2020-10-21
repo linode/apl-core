@@ -11,10 +11,6 @@ releases:
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
     <<: *default
-  - name: harbor-artifacts
-    installed: {{ $c | get "harbor.enabled" false }}
-    namespace: harbor
-    <<: *raw
   - name: oauth2-proxy
     installed: true
     namespace: istio-system
