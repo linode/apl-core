@@ -2,16 +2,15 @@
 . bin/common.sh
 set -e
 
-ENV_DIR=${ENV_DIR:-./env}
 . $ENV_DIR/.secrets
 
 skip_demo_files=$1
 [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
-function generate_loose_schema {
+function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
   local sourcePath="$PWD/values-schema.yaml"
-  yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' > $targetPath
+  yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' >$targetPath
   echo "Stored JSON schema at: $targetPath"
 }
 
