@@ -348,6 +348,15 @@ properties:
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
               Read more about rate limits: https://letsencrypt.org/docs/rate-limits/
             enum: ['staging', 'production']
+      cluster-overprovisioner:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+          memory:
+            '$ref': '#/definitions/memoryQuantity'
+          cpu:
+            '$ref': '#/definitions/cpuQuantity'
       drone:
         type: object
         properties:
