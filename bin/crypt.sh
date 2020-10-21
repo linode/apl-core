@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 prepare_crypt
 
