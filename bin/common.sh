@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/env bash
 ENV_DIR=${ENV_DIR:-./env}
 
 readonly otomiSettings="$ENV_DIR/env/settings.yaml"
