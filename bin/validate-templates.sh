@@ -24,12 +24,14 @@ cleanup() {
 trap cleanup EXIT
 
 run_setup() {
+    exitcode=1
     local version="v$(get_k8s_version).0"
     rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
     mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
     echo "" >$schemasBundleFile
     # use standalone schemas
     tar -xzf ".schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
+    tar -xzf ".schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$version-standalone"
 
     # loop over .spec.versions[] and generate one file for each version
     cat <<'EOF' >$extractCrdSchemaJQFile
@@ -74,7 +76,7 @@ validate_templates() {
 
     echo "Processing CRD files."
     # generate canonical schemas
-    targetYamlFiles="*.yaml"
+    local targetYamlFiles="*.yaml"
     # schemas for otomi templates
     for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
         process_crd $file
@@ -90,9 +92,11 @@ validate_templates() {
 
     # validate_resources
     echo "Validating resources against Kubernetes version: $version"
-    kubevalSchemaLocation="file://${schemaOutputPath}"
+    local kubevalSchemaLocation="file://${schemaOutputPath}"
+    local skipKinds="CustomResourceDefinition"
+    local skipFilenames="crd,knative-services"
     {
-        kubeval --force-color -d "$k8sResourcesPath" --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS'
+        kubeval --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
     } && exitcode=0
 
 }
