@@ -91,6 +91,11 @@ otomi commit
 
 This will do some extra work (git pull, generate drone pipelines), before committing the values with a standardized commit message. (Don't forget to run `git push` when you are done as that is not included by design :)
 
+**Warning:**
+It is recommended to use vscode with the `signageos.signageos-vscode-sops` extension to edit `secrets.*.yaml` files on the fly.
+
+It is also possible to decrypt a file with `otomi decrypt ${file}` (resulting in `${file}.dec`) but beware as helmfile has a bug, which results in any `\*.dec` files being removed by each helmfile command (see: [roboll/helmfile#1517](https://github.com/roboll/helmfile/issues/1517)). It is therefor recommended to immediately encrypt the file after making changes with `otomi encrypt ${file}` until that bug is resolved.
+
 ## 3. Deployment
 
 To deploy everything in the stack:
