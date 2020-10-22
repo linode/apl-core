@@ -45,8 +45,13 @@ prometheusOperator:
   kubeletService:
     enabled: true
   priorityClassName: "otomi-critical"
+commonLabels:
+  prometheus: system
 prometheus:
   prometheusSpec:
+    serviceMonitorSelector:
+      matchLabels:
+        prometheus: system
     resources:
       {{- if (hasKey $p "resources.prometheus") }}
         {{- $p.resources.prometheus | toYaml | nindent 6 }}

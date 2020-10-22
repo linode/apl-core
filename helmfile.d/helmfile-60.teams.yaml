@@ -120,8 +120,13 @@ releases:
                     api_url: {{ $v.redkubesSlackUrl }}
                     {{- $slackTpl | nindent 20 }}
               {{- end }}
+        commonLabels:
+          prometheus: team-{{ $teamId }}
         prometheus:
           prometheusSpec:
+            serviceMonitorSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
             externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:
