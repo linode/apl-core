@@ -4,7 +4,10 @@ tasks:
   ingress-azure:
     type: cronjob
     enabled: false
-    image: otomi/tools:{{ $v.toolsVersion }}
+    image:
+      repository: {{ $c | get "jobs.ingress-azure.image.repository" "otomi/tools" }}
+      tag: {{ $c | get "jobs.ingress-azure.image.tag" $v.toolsVersion }}
+      pullPolicy: {{ $c | get "jobs.ingress-azure.image.pullPolicy" "IfNotPresent" }}
     config:
       LABELS: "app=ingress-azure"
       NS: ingress

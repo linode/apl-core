@@ -2,14 +2,16 @@
 {{- $c := $v.charts -}}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}
-{{- $otomiTasksImage :=  "eu.gcr.io/otomi-cloud/otomi-stack-tasks:tasks-workflow" -}}
 
 tasks:
   certs-aws:
     type: job
     description: Import certs into ACM
     enabled: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
-    image: {{ $otomiTasksImage }}
+    image:
+      repository: {{ $c | get "jobs.certs-aws.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
+      tag: {{ $c | get "jobs.certs-aws.image.tag" "0.1.0" }}
+      pullPolicy: {{ $c | get "jobs.certs-aws.image.pullPolicy" "IfNotPresent" }}
     schedule: "0/1 * * * *" # every minute
     # schedule: "0 1 * * *" # every day
     shell: bash
