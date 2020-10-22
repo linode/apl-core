@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-Good to know that you're reading this, as all open source software benefits from contributions by those wanting to collaborate. It might be helpful to outline what we is expected here, but also what is already done for you, so you don't have to keep reinventing all these wheels ;)
+Good to know that you're reading this, as all open source software benefits from contributions by those wanting to collaborate. It might be helpful to outline what is expected here, but also what is already done for you, so you don't have to keep reinventing those wheels ;)
 
 ## Development
 
