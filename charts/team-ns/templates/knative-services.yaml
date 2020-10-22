@@ -26,7 +26,7 @@ spec:
           {{- if (contains "autoscaling.knative.dev/minScale" $a) -}}{{ $hasMinScale = true }}{{ end }}
         {{- end -}}
         {{- if or (not $k.annotations) (not $hasMinScale) }}
-        autoscaling.knative.dev/minScale: {{ $k.scaleToZero | ternary "0" "1" }}
+        autoscaling.knative.dev/minScale: {{ $k.scaleToZero | ternary "0" "1" | quote }}
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}

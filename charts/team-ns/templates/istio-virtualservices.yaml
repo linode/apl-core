@@ -51,14 +51,14 @@ spec:
             prefix: '{{ $path }}'        
         {{- end }}
       {{- end }}
-      {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
+    {{- end }}
+    {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
       rewrite:
-        {{- if hasKey $s "ksvc" }}
+      {{- if hasKey $s "ksvc" }}
         authority: {{ $s.name }}.{{ $v.domain }}
-        {{- end }}
-        {{- if not (hasKey $s "forwardPath") }}
+      {{- end }}
+      {{- if not (hasKey $s "forwardPath") }}
         uri: /
-        {{- end }}
       {{- end }}
     {{- end }}
     {{- if hasKey $s "ksvc" }}

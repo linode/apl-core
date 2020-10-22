@@ -45,7 +45,7 @@ controller:
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: {{ $n | get "autoscaling.minReplicas" 2 }}
+    minReplicas: {{ $n | get "autoscaling.minReplicas" 1 }}
     maxReplicas: {{ $n | get "autoscaling.maxReplicas" 6 }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
