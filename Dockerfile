@@ -12,7 +12,7 @@ COPY ./.cspell.json .
 RUN npm run spellcheck
 
 #-----------------------------
-FROM otomi/tools:1.4.7 as prod
+FROM otomi/tools:1.4.8 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME

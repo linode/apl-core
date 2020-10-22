@@ -18,6 +18,8 @@ ARG HELMFILE_VERSION=v0.128.1
 ARG EKSCTL_VERSION=0.27.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
+# https://github.com/instrumenta/kubeval/releases
+ARG CONFTEST_VERSION=0.21.0
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -97,9 +99,13 @@ ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-
 RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk && rm -rf /tmp/*
 ENV PATH $PATH:$APP_HOME/gsdk
 
-# kubeval https://github.com/instrumenta/kubeval/releases/download/0.15.0/kubeval-linux-amd64.tar.gz
+# kubeval https://github.com/instrumenta/kubeval/releases
 ADD https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
+
+# conftest https://github.com/open-policy-agent/conftest/releases
+ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
+RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
 
 # node 12 https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -

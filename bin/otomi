@@ -90,7 +90,8 @@ function show_usage() {
     template            export k8s resources (use labels like '-l name=prometheus-operator')
     test                runs some tests againts the target cluster
     values              show helmfile values for CLOUD and CLUSTER
-    validate-templates  validate generated manifests against supported k8s versions/CRDs and defined OPA rules
+    validate-policies   validate generated manifests against defined OPA rules
+    validate-templates  validate generated manifests against supported k8s versions/CRDs
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
 
@@ -326,6 +327,10 @@ function execute() {
   validate-templates)
     validate_cluster_env
     drun bin/validate-templates.sh
+    ;;
+  validate-policies)
+    validate_cluster_env
+    drun bin/validate-policies.sh
     ;;
   x)
     check_kube_context=0
