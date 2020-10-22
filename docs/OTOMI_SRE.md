@@ -62,7 +62,7 @@ Network policies or Istio policies can deny pods from communicating, note that D
 - [ ] attach a shell and perform basic nslookup or ping commands (ping doesn't work between internal services in k8s)
 - [ ] confirm that services do not mix http and https in frontend and backend
 - [ ] service names matter, prefix accordingly with http- or https- for istio to recognize
-- [ ] validate ingress, istiogateway, virtualservice and services
+- [ ] validate ingress, istio gateway, virtualservice and services
 
 > #### Advanced options for network services not working
 >
