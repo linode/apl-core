@@ -48,6 +48,19 @@ definitions:
     type: string
     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
     description: A lowercase name that starts with a letter and may contain dashes.
+  image:
+    title: Container image
+    type: object
+    properties:
+      pullPolicy:
+        type: string
+        enum: [IfNotPresent, Always]
+        default: IfNotPresent
+      repository:
+        '$ref': '#/definitions/repository'
+      tag:
+        type: string
+    required: [repository, tag]
   portNumber:
     type: number
     minimum: 80
@@ -318,6 +331,14 @@ properties:
   charts:
     type: object
     properties:
+      jobs:
+        type: object
+        patternProperties:
+          'certs-aws|harbor|harbor-init|ingress-azure|keycloak':
+            type: object
+            properties:
+              image:
+                '$ref': '#/definitions/image'
       cert-manager:
         type: object
         properties:

@@ -6,5 +6,8 @@ tasks:
     type: job
     enabled: true
     description: Copy letsencrypt cert
-    image: otomi/tools:{{ $v.toolsVersion }}
+    image:
+      repository: {{ $c | get "jobs.harbor-init.image.repository" "otomi/tools" }}
+      tag: {{ $c | get "jobs.harbor-init.image.tag" $v.toolsVersion }}
+      pullPolicy: {{ $c | get "jobs.harbor-init.image.pullPolicy" "IfNotPresent" }}
     script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
