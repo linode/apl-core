@@ -8,6 +8,7 @@ metadata:
 spec:
   ports:
     - port: 5432
+      # appProtocol: http
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: database

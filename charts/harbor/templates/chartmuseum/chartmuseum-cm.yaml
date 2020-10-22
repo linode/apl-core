@@ -8,12 +8,17 @@ metadata:
 data:
   PORT: "{{ template "harbor.chartmuseum.containerPort" . }}"
 {{- if .Values.internalTLS.enabled }}
-  TLS_CERT: "/etc/harbor/ssl/chartmuseum.crt"
-  TLS_KEY: "/etc/harbor/ssl/chartmuseum.key"
+  TLS_CERT: "/etc/harbor/ssl/chartmuseum/tls.crt"
+  TLS_KEY: "/etc/harbor/ssl/chartmuseum/tls.key"
 {{- end }}
+  {{- if eq "redis" (include "harbor.redis.scheme" .) }}
   CACHE: "redis"
-  CACHE_REDIS_ADDR: "{{ template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}"
-  CACHE_REDIS_DB: "{{ template "harbor.redis.chartmuseumDatabaseIndex" . }}"
+  {{- else }}
+  CACHE: "redis_sentinel"
+  CACHE_REDIS_MASTERNAME: "{{ template "harbor.redis.masterSet" . }}"
+  {{- end }}
+  CACHE_REDIS_ADDR: "{{ template "harbor.redis.addr" . }}"
+  CACHE_REDIS_DB: "{{ template "harbor.redis.dbForChartmuseum" . }}"
   BASIC_AUTH_USER: "chart_controller"
 {{- if .Values.chartmuseum.absoluteUrl }}
   CHART_URL: {{ .Values.externalURL }}/chartrepo
