@@ -12,10 +12,15 @@ fullnameOverride: harbor
 notary:
   enabled: false
   secretName: {{ $notarySecretName }}
+trivy:
+  automountServiceAccountToken: true
 expose:
   type: clusterIP
   tls:
     enabled: false
+internalTLS:
+  # we use istio with mTLS enabled for harbor namespace
+  enabled: false
 nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
