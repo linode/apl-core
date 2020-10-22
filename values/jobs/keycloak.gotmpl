@@ -20,7 +20,7 @@ tasks:
     enabled: true
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "0.1.0" }}
+      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.1.1" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     secret:
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
