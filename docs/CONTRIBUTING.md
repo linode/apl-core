@@ -20,7 +20,7 @@ Please make sure to add all the artifacts from the Definition of Done, which inc
 
 1. Spec validation of values happens automatically in the values repo by using `otomi commit`
 2. Linting of k8s output (manifests) that are generated from the `.demo/env/*` input happens in the build pipelines.
-   It tests k8s output from the stack for correct CRs based on theis CRDs and OPA rules defined.
+   It tests k8s output from the stack for correct CRs based on their CRDs and OPA rules defined.
    Therefor it is very important to always add test data that generates all of your templates (to keep up coverage).
 
 ### 2. End-to-end tests
