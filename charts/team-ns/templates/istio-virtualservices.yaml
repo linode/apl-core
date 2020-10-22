@@ -45,23 +45,23 @@ spec:
       {{- range $path := $s.paths }}
         {{- if eq $path "/" }}
         - uri:
-            prefix: '/'
+            prefix: /
         {{- else }}
         - uri:
             prefix: '{{ $path }}'        
         {{- end }}
       {{- end }}
-      {{- if not (hasKey $s "forwardPath") }}
+      {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
       rewrite:
+        {{- if hasKey $s "ksvc" }}
+        authority: {{ $s.name }}.{{ $v.domain }}
+        {{- end }}
+        {{- if not (hasKey $s "forwardPath") }}
         uri: /
+        {{- end }}
       {{- end }}
     {{- end }}
     {{- if hasKey $s "ksvc" }}
-      rewrite:
-        authority: {{ $s.name }}.{{ $v.domain }}
-      {{- if and (hasKey $s "paths") (not (hasKey $s "forwardPath")) }}
-        uri: "/"
-      {{- end }}
       route:
         - destination:
             host: istio-ingressgateway.istio-system.svc.cluster.local

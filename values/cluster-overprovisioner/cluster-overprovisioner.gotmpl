@@ -1,18 +1,14 @@
 {{- $v := .Environment.Values -}}
 {{- $o := $v.charts | get "cluster-overprovisioner" dict }}
-
+{{- $defaultCpu := "1000m" }}
+{{- $defaultMem := "1000Mi" }}
 
 deployments:
-  # deployments[0].name -- Default Deployment - Name for additional deployments (will be added as label cluster-over-provisioner-name, so you can match it with affinity rules)
   - name: default
     resources:
       limits:
-        # deployments[0].resources.limits.cpu -- Default Deployment - CPU limit for the overprovision pods
-        cpu: {{ $o.cpu }}
-        # deployments[0].resources.limits.memory -- Default Deployment - Memory limit for the overprovision pods
-        memory: {{ $o.memory }}
+        cpu: {{ $o | get "cpu" $defaultCpu }}
+        memory: {{ $o | get "memory" $defaultMem }}
       requests:
-        # deployments[0].resources.requests.cpu -- Default Deployment - CPU requested for the overprovision pods
-        cpu: {{ $o.cpu }}
-        # deployments[0].resources.requests.memory -- Default Deployment - Memory requested for the overprovision pods
-        memory: {{ $o.memory }}
+        cpu: {{ $o | get "cpu" $defaultCpu }}
+        memory: {{ $o | get "memory" $defaultMem }}
