@@ -90,7 +90,7 @@ otomi diff -l name=prometheus-operator
 
 ## 3. Deployment
 
-It is preferred that deployment is done from the values repo, as it is tied to a cluster, and thus can do least damage.
+It is preferred that deployment is done from the values repo, as it is tied to a values repo, and thus can do least damage.
 When you feel that you are in control and want fast iteration you can connect to a values repo directly by exporting `ENV_DIR`. It is mandatory and won't work without it. The CLI will also check that you are targeting `kubectl`'s `current-context` as a failsafe mechanism.
 
 To deploy everything in the stack:
@@ -98,6 +98,9 @@ To deploy everything in the stack:
 ```bash
 otomi deploy
 ```
+
+NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
+Retrying the command usuall works, but we have created an issue to workaround this annoyance ([#178](https://github.com/redkubes/otomi-stack/issues/178)).
 
 It is also possible to target individual helmfile releases from the stack:
 

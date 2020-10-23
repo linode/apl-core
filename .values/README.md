@@ -104,6 +104,9 @@ To deploy everything in the stack:
 otomi deploy
 ```
 
+NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
+Retrying the command usuall works, but we have created an issue to workaround this annoyance ([#178](https://github.com/redkubes/otomi-stack/issues/178)).
+
 It is also possible to target individual helmfile releases from the stack:
 
 ```bash
