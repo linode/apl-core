@@ -22,7 +22,7 @@ spec:
     metadata:
       annotations:
         {{- if not $k.scaleToZero }}
-        autoscaling.knative.dev/minScale: '1'
+        # autoscaling.knative.dev/minScale: '1'
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}

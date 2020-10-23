@@ -30,6 +30,7 @@ clouds:
                 dnsProvider: google
                 apiName: onprem_otomi-cloud
                 apiServer: 1.1.1.1
+                otomiVersion: kubeval
                 k8sVersion: 1.18
                 region: local
                 entrypoint: 1.1.1.1
