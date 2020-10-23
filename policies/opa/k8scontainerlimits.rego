@@ -147,3 +147,11 @@ general_violation[{"msg": msg, "field": field}] {
   mem > max_mem
   msg := sprintf("container <%v> memory limit <%v> is higher than the maximum allowed of <%v>", [container.name, mem_orig, max_mem_orig])
 }
+
+
+deny[msg] {
+  input.kind == "Pod"
+  image := input.spec.containers[_].image
+  not startswith(image, "hooli.com")
+  msg := sprintf("image fails to come from trusted registry: %v", [image])
+}
