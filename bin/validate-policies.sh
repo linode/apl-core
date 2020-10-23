@@ -34,7 +34,7 @@ validate_policies() {
     # validate_resources
     echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
     {
-        conftest test --fail-on-warn --namespace otomi -p $policiesPath $k8sResourcesPath
+        conftest test --fail-on-warn --all-namespaces -p $policiesPath $k8sResourcesPath
     } && exitcode=0
 
 }
