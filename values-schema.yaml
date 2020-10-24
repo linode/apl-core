@@ -810,7 +810,6 @@ properties:
     required:
       - apiName
       - apiServer
-      - dnsProvider
       - domain
       - k8sVersion
       - name
