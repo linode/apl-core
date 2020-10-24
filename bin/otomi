@@ -335,7 +335,8 @@ function execute() {
     is_repo
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/validate-all.sh && bin/pre-commit.sh
+    drun bin/validate-all.sh
+    drun bin/pre-commit.sh
     git add . && git commit -m 'Manual commit' --no-verify
     ;;
   pull)
