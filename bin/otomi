@@ -49,7 +49,7 @@ mount_stack_dir=0
 stack_dir='/home/app/stack'
 customer=$(customer_name)
 cmd_image=''
-docker_terminal_params='-it'
+docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-stack'
 
