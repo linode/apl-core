@@ -5,9 +5,9 @@
 replicaCount: 1
 
 image:
-  registry: eu.gcr.io
-  repository: otomi-cloud/otomi-stack-web
-  tag: 0.1.0
+  registry: docker.io
+  repository: otomi/console
+  tag: latest
   pullPolicy: IfNotPresent
 
 nameOverride: ""

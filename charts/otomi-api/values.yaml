@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+priorityClassName: "otomi-critical"
+
 replicaCount: 1
 
 image:
@@ -27,13 +29,13 @@ rbac:
 podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
   # capabilities:
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  runAsNonRoot: true
+  runAsUser: 999
 
 service:
   type: ClusterIP
@@ -53,13 +55,13 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 300m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
 
 nodeSelector: {}
 
@@ -80,7 +82,8 @@ env:
   CLUSTER_NAME:
   CLUSTER_APISERVER:
   DISABLE_SYNC: false
-  ENV_DIR: /tmp/otomi-stack
+  GIT_LOCAL_PATH: /tmp/otomi
+  ENV_DIR: /tmp/otomi
   GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
 
 core: {}
@@ -94,14 +97,15 @@ tools:
   podSecurityContext: {}
 
   securityContext:
-    runAsUser: 1000
+    runAsNonRoot: true
+    runAsUser: 999
 
-  resources: {}
-    # limits:
-    #   cpu: 200m
-    #   memory: 256Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 400m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
   secrets:
     GCLOUD_SERVICE_KEY: ''

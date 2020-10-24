@@ -763,7 +763,9 @@ properties:
         description: Wether this cluster is monitored under a RedKubes Premium SLA. Sends all notifications to RedKubes.
         default: false
       pullSecret:
-        type: string
+        type:
+          - string
+          - null
         description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
         default: ''
       teamPrefix:
