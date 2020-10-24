@@ -26,7 +26,7 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: true
+    installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
     namespace: shared
     <<: *default
   - name: otomi-web

@@ -2,7 +2,7 @@
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-web" dict }}
 {{- $domain := printf "otomi.%s" $v.cluster.domain }}
-replicaCount: 2
+replicaCount: 1
 
 resources:
   {{- if (hasKey $o "resources") }}
@@ -25,7 +25,7 @@ image:
 env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
-  CONSOLE_MODE: {{ hasKey $v.otomi "pullSecret" | ternary "ee" "ce" }}
-  CLUSTER: '{{ $c | toJson }}'
+  CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
+  CLUSTER: '{{ $c | toJson | replace "provider" "cloud" }}'
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
