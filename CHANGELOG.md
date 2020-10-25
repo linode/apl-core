@@ -2,6 +2,81 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.31](https://github.com/redkubes/otomi-stack/compare/v0.11.30...v0.11.31) (2020-10-25)
+
+
+### Features
+
+* add overprovisioning chart ([#145](https://github.com/redkubes/otomi-stack/issues/145)) ([193297f](https://github.com/redkubes/otomi-stack/commit/193297f4d34da9a4e8af765e6d3ed9e49f61f382))
+* linting of manifests ([#124](https://github.com/redkubes/otomi-stack/issues/124)) ([e0434de](https://github.com/redkubes/otomi-stack/commit/e0434def4393f27c95801f3b9847110ead478813))
+* make otomi-web use public image [#175](https://github.com/redkubes/otomi-stack/issues/175) ([1caafd4](https://github.com/redkubes/otomi-stack/commit/1caafd44b2cea564f5f09eabd21e513ca3316891))
+* upgrade harbor chart ([b23e934](https://github.com/redkubes/otomi-stack/commit/b23e93439bd3940e8f99ab07b03540bdffe7978b))
+
+
+### Bug Fixes
+
+* change permission form postgress filesystem ([0ef05da](https://github.com/redkubes/otomi-stack/commit/0ef05da3735c43dfd92047eb914a440fcc151443))
+* cluster data, otomi encrypt ([d4debe4](https://github.com/redkubes/otomi-stack/commit/d4debe42a563d2dcd46877ed6768f1d12258df4b))
+* do not bypass harbor core service ([bbe5a79](https://github.com/redkubes/otomi-stack/commit/bbe5a797a346c3f4fd61e57b50dead46c6b2386a))
+* do not set relativeUrls ([f71a425](https://github.com/redkubes/otomi-stack/commit/f71a4257bfa4f7254eb07553f0ec32f660563fd8))
+* enable harbor relitveUrls ([16d0d68](https://github.com/redkubes/otomi-stack/commit/16d0d682d2b0d8cebd0c393a7ae7a3c1655eb2d0))
+* expose only /service/token from harbor and make internal /service/* ([194591f](https://github.com/redkubes/otomi-stack/commit/194591f8db9ebc8204b2125e6cd252e1def2908c))
+* harbor issues ([#170](https://github.com/redkubes/otomi-stack/issues/170)) ([f0d6115](https://github.com/redkubes/otomi-stack/commit/f0d6115fae3074e105e7835f1879ab92122522f8))
+* harbor push [#109](https://github.com/redkubes/otomi-stack/issues/109) ([00adb03](https://github.com/redkubes/otomi-stack/commit/00adb034a0071d1f1bb47ea949f806e8bba74c7e))
+* harbor virtualservice ([3474d56](https://github.com/redkubes/otomi-stack/commit/3474d568e1759a29c202f3c89a1e426073d6eb26))
+* image tag ([14a7a3c](https://github.com/redkubes/otomi-stack/commit/14a7a3cc459fc3bc7824e2da888676ce7423b408))
+* make paths to harbor registry public ([d4d35ae](https://github.com/redkubes/otomi-stack/commit/d4d35aed5ddb6bfb0a0bacaebb39b7f5486a4850))
+* missing 0.17 folder ([049451f](https://github.com/redkubes/otomi-stack/commit/049451f89f63e7de8885efe1bca791163767f483))
+* missing 0.17 operator knative, output silence ([60c1516](https://github.com/redkubes/otomi-stack/commit/60c15163423304a0fd553932d31ce5b3b7c0be9a))
+* missing file, fixes [#168](https://github.com/redkubes/otomi-stack/issues/168) ([15715be](https://github.com/redkubes/otomi-stack/commit/15715be7dc31063e4cfdca9e60475968e36af0c1))
+* moved precommit back to own line ([93dcef4](https://github.com/redkubes/otomi-stack/commit/93dcef460110d904ba5c45fd5d44e6e1ba52c00e))
+* named ports ([0594416](https://github.com/redkubes/otomi-stack/commit/0594416150f6b45f50e0c16146a924519126c3d7))
+* otomi crypt relative path for files given for terminal completion ([21cf091](https://github.com/redkubes/otomi-stack/commit/21cf091ddf14500fbd248a1d2c7c7f86169216a5))
+* regression: missing rewrite section, upgraded nginx ([eb3a942](https://github.com/redkubes/otomi-stack/commit/eb3a942b080762922ef1a25cedf2037a2356dccb))
+* reverting named ports ([459315f](https://github.com/redkubes/otomi-stack/commit/459315f2c16a6bd885051263233a3b7d8744bd62))
+* spec ([a6c8fa9](https://github.com/redkubes/otomi-stack/commit/a6c8fa913af727287010114393ecdbfbf254cdd0))
+* template validation issues ([#168](https://github.com/redkubes/otomi-stack/issues/168)), overprovisioner defaults, docs ([21fa65b](https://github.com/redkubes/otomi-stack/commit/21fa65bfa99324bb5d0418cddbdfc3368afd538a))
+* temporary work around for otomi-tasks ([8f37ee5](https://github.com/redkubes/otomi-stack/commit/8f37ee529e630f74ebb2cb625ef1501bbe00fceb))
+* tools user, resources ([95d3f1e](https://github.com/redkubes/otomi-stack/commit/95d3f1e7b5890596c8b519d25501143a812cb4a2))
+* update harbor artifacts ([383a5d6](https://github.com/redkubes/otomi-stack/commit/383a5d6be5588c12ac23baddf1e5bc488e9f5a18))
+* use otomi-tasks beta release as a workaround ([fbda907](https://github.com/redkubes/otomi-stack/commit/fbda907b641febe6e54e9436b614e9710bc9209b))
+* workflow patch to limit release commands to master only ([3eadc7f](https://github.com/redkubes/otomi-stack/commit/3eadc7fbf1a2194fa63569d42f997d59335b1b6b))
+
+
+### Build System
+
+* update outdated and insecure npm modules ([#159](https://github.com/redkubes/otomi-stack/issues/159)) ([538d3e5](https://github.com/redkubes/otomi-stack/commit/538d3e54d818335655eda9f33cda83f92c70f9ae))
+
+
+### Code Refactoring
+
+* change otomi-stack-tasks docker image for jobs charts ([#148](https://github.com/redkubes/otomi-stack/issues/148)) ([25e8055](https://github.com/redkubes/otomi-stack/commit/25e8055982ddf86e1aeaed0187c0256fe916db0c))
+
+
+### Tests
+
+* **spellcheck:** spellcheck scope now including docs folder ([b3f55c8](https://github.com/redkubes/otomi-stack/commit/b3f55c872c7138c3e810a50525e0e58912644a46))
+
+
+### Docs
+
+* add note about working with secrets.*.yaml files ([#163](https://github.com/redkubes/otomi-stack/issues/163)) ([bb6b9a3](https://github.com/redkubes/otomi-stack/commit/bb6b9a367bdad28a578540a6fd43e9bf4839309f))
+* add otomi SRE script ([a04d413](https://github.com/redkubes/otomi-stack/commit/a04d4137493a9c9726ce43d26f952bad4d4bd198)), closes [#11](https://github.com/redkubes/otomi-stack/issues/11)
+* updated with workaround for gcloud refresh error ([672f6d7](https://github.com/redkubes/otomi-stack/commit/672f6d769c6f34b8554d9d968b3767b6e2bcb609))
+
+
+### Feature Improvements
+
+* do not print ajv std output ([231ee8e](https://github.com/redkubes/otomi-stack/commit/231ee8ed66f228ba73dbdaa803f74d7e95a9863c))
+* expose image properties for each job ([e2a13be](https://github.com/redkubes/otomi-stack/commit/e2a13be78027d21c562a566a221643e3cec9c1e9))
+* knative version tied to k8s version ([a3e46ab](https://github.com/redkubes/otomi-stack/commit/a3e46ab11a046d547bfe80e5804eca275092ad62))
+* make explicit that harbors internalTLS is disabled ([ca1e470](https://github.com/redkubes/otomi-stack/commit/ca1e470cfc0d63d871c144db19c98354f24bca02))
+* make trivy automountServiceAccountToken configurable ([59f048a](https://github.com/redkubes/otomi-stack/commit/59f048abfd8bcc857acb589571bfc6654cbf56fe))
+* read cluster config from clusters.yaml ([#165](https://github.com/redkubes/otomi-stack/issues/165)) ([2787a9a](https://github.com/redkubes/otomi-stack/commit/2787a9a564671a5765000c482e2cd1fa747615e7))
+* remove harbor .github dir ([c3b7c2e](https://github.com/redkubes/otomi-stack/commit/c3b7c2e2c98ac532b5b5698f86740f098a01d03c))
+* remove harbor artifacts ([ab84d7a](https://github.com/redkubes/otomi-stack/commit/ab84d7adfaf2bb9a37847042d7b038131a4d6d2c))
+* remove key-rotation job ([e663914](https://github.com/redkubes/otomi-stack/commit/e663914ff45c64d3998cd3d2c1dd0585ebffc46b))
+
 ### [0.11.30](https://github.com/redkubes/otomi-stack/compare/v0.11.28...v0.11.30) (2020-10-06)
 
 
