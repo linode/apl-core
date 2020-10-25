@@ -277,7 +277,7 @@ function execute() {
     ;;
   deploy)
     validate_cluster_env
-    drun bin/deploy.sh
+    drun bin/deploy.sh | grep -Ev $helmfileOutputHide
     ;;
   diff)
     validate_cluster_env
