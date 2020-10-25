@@ -32,7 +32,7 @@ jobs:
           registry: ${{ env.REG }}
           image_name: ${{ env.REPO }}
           image_tag: ${{ env.TAG }}
-      - if: "contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'ref/head/master')"
+      - if: "contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'ref/head/master'"
         name: Tag and release
         run: |
           docker login -u _json_key -p '${{ secrets.DOCKER_PASSWORD }}' $REG
