@@ -34,7 +34,7 @@ env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
-  CURRENT_CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
+  CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
   CLUSTERS: '{{ $clusters | toJson }}'
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
