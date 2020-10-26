@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-values_path="/tmp/values-$CLOUD-$CLUSTER.yaml"
+readonly values_path="/tmp/values-$CLOUD-$CLUSTER.yaml"
 
 function cleanup {
   local exitcode=$?
@@ -17,8 +17,7 @@ trap cleanup EXIT
 [ "$VERBOSE" == "0" ] && quiet='--quiet'
 prepare_crypt
 helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
-helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 
-helmfile $quiet -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g' | \
+helmfile $quiet -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g' | \
   yq read -P - 'releases[0].values[0]' > $values_path
-ajv validate -s './values-schema.yaml' -d $values_path > /dev/null
+ajv validate -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail > /dev/null
