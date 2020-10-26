@@ -135,6 +135,7 @@ function set_otomi_image() {
 }
 
 evaluate_secrets() {
+  [ ! -f "$ENV_DIR/.sops.yaml" ] && (echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"; return 0;)
   if [ "$CI" == "" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
@@ -225,15 +226,13 @@ function drun() {
 }
 
 function execute() {
-  local helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
-  local helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
   shift 2
   case $command in
   values)
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g'
+    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern
     ;;
   test)
     validate_cluster_env
@@ -264,6 +263,7 @@ function execute() {
     bin/console.sh $@
     ;;
   decrypt)
+    exit_if_sops_file_missing
     check_kube_context=0
     evaluate_secrets
     if [ $@ ]; then
@@ -285,6 +285,7 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfileOutputHide
     ;;
   encrypt)
+    exit_if_sops_file_missing
     check_kube_context=0
     evaluate_secrets
     if [ $@ ]; then
@@ -308,6 +309,7 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
     ;;
   rotate-keys)
+    exit_if_sops_file_missing
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh rotate
