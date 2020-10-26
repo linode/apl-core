@@ -20,7 +20,9 @@ secrets:
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
+  {{- if $v.sops.enabled }}
   GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
+  {{- end }}
   OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
@@ -32,6 +34,7 @@ env:
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
+  USE_SOPS: {{ $v.sops.enabled }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -39,10 +42,13 @@ core:
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:
+  enabled: {{ $v.sops.enabled }}
+  {{- if $v.sops.enabled }}
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
   {{- if (hasKey $o "resources.tools") }}
   resources:
     {{- $o.resources.tools | toYaml | nindent 4 }}
+  {{- end }}
   {{- end }}

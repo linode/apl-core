@@ -89,6 +89,7 @@ env:
 core: {}
 
 tools:
+  enabled: true
   image:
     registry: eu.gcr.io
     repository: otomi-cloud/otomi-stack
