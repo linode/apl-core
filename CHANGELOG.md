@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.32](https://github.com/redkubes/otomi-stack/compare/v0.11.31...v0.11.32) (2020-10-26)
+
+
+### Bug Fixes
+
+* hello in team-otomi [ci skip] ([e8ec144](https://github.com/redkubes/otomi-stack/commit/e8ec14451df50b92c66d2939ed0fad87e193d008))
+
+
+### Feature Improvements
+
+* upgraded ca, ingress order for keycloak ([758692c](https://github.com/redkubes/otomi-stack/commit/758692c0817b10c86767942b5ce426a4d1d8bfbc))
+
 ### [0.11.31](https://github.com/redkubes/otomi-stack/compare/v0.11.30...v0.11.31) (2020-10-25)
 
 
