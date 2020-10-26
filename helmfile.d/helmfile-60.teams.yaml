@@ -3,33 +3,12 @@ bases:
 ---
 {{- $v := .Environment.Values }}
 {{- $tc := $v.teamConfig }}
-{{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
-{{- $adminDomain := printf $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v | toString }}
 releases:
-  - name: team-ns-admin
-    installed: true
-    namespace: team-admin
-    chart: ../charts/team-ns
-    labels:
-      tag: teams
-      team: admin
-    values:
-      - name: admin
-        teamId: admin
-        cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $adminDomain }}
-        certStage: {{ $cm.stage }}
-        services: {{- $coreAdminServices | toYaml | nindent 10 }}
-        proxies: {{- $v.proxies | toYaml | nindent 10 }}
-        resourceQuota: null
-        knative:
-          enabled: true
   {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
