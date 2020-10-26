@@ -26,8 +26,8 @@ function exit_if_sops_file_missing(){
 }
 
 function hf_values(){
-  [ "$VERBOSE" == "0" ] && quiet='--quiet'
-  helmfile $quiet -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern | \
+  [ "${VERBOSE-0}" == "0" ] && quiet='--quiet'
+  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern | \
   yq read -P - 'releases[0].values[0]'
 }
 
