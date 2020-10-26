@@ -1,7 +1,15 @@
-{{- $v := .Environment.Values }}
-{{- $c := $v.cluster }}
-{{- $o := $v.charts | get "otomi-web" dict }}
-{{- $domain := printf "otomi.%s" $v.cluster.domain }}
+{{- $v := .Environment.Values -}}
+{{- $c := $v.cluster -}}
+{{- $o := $v.charts | get "otomi-web" dict -}}
+{{- $domain := printf "otomi.%s" $v.cluster.domain -}}
+{{- $clusters := list -}}
+{{- range $cloudName, $cloud := $v.clouds -}}
+{{- range $clusterName, $cluster := $cloud.clusters -}}
+{{- $cluster = set $cluster "cloud" $cloudName -}}
+{{- $cluster = set $cluster "name" $clusterName -}}
+{{- $clusters = append $clusters $cluster -}}
+{{- end -}}
+{{- end -}}
 replicaCount: 1
 
 resources:
@@ -26,6 +34,7 @@ env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
-  CLUSTER: '{{ $c | toJson | replace "provider" "cloud" }}'
+  CURRENT_CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
+  CLUSTERS: '{{ $clusters | toJson }}'
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
