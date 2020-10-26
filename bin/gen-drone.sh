@@ -16,7 +16,6 @@ if [ "$receiver" == "slack" ]; then
 else
   key="lowPrio"
 fi
-set -x
 webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 clouds=($(yq r -j $clustersFile clouds | jq -r '.|keys[]'))
 
