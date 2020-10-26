@@ -7,9 +7,14 @@
 {{- range $clusterName, $cluster := $cloud.clusters -}}
 {{- $cluster = set $cluster "cloud" $cloudName -}}
 {{- $cluster = set $cluster "name" $clusterName -}}
+{{- $cluster = set $cluster "id" (printf "%s/%s" $cloudName $clusterName) -}}
+{{- $cluster = set $cluster "domain" (printf "%s.%s" $clusterName $cloud.domain) -}}
 {{- $clusters = append $clusters $cluster -}}
 {{- end -}}
 {{- end -}}
+# fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
+# so we get package.json version in two regexFind steps:
+{{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 replicaCount: 1
 
 resources:
@@ -37,4 +42,5 @@ env:
   CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
   CLUSTERS: '{{ $clusters | toJson }}'
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
+  CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
