@@ -2,16 +2,45 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 ---
 
-**Describe the bug** A clear and concise description of what the bug is.
+## The problem
 
-**To Reproduce** Steps to reproduce the behavior.
+Briefly describe the issue you are experiencing. Tell us what you were trying to do and what happened instead.
 
-**Expected behavior** A clear and concise description of what you expected to happen.
+## Environment
 
-**Screenshots** If applicable, add screenshots to help explain your problem.
+Anything that can be relevant to this issue, such as:
 
-**Additional context** Add any other context about the problem here.
+* Otomi version
+* Related app versions (e.g. Nginx 1.19.3, Java SE 15.0.1)
+* Platform (e.g. AWS, Azure, Google Cloud)
+* Kubernetes version (e.g. 1.19.3)
+* OS and version (e.g. Debian 10.6)
+* Linux kernel (e.g. 5.8.0)
+
+## Details
+
+If necessary, describe the problem you have been experiencing in more detail.
+
+## Steps to reproduce 
+
+Tell us how to reproduce this issue.
+
+## Expected behaviour
+
+Tell us what should happen
+
+## Actual behaviour
+
+Tell us what happens instead
+
+## Screenshots
+
+If applicable, add screenshots to help explain your problem.
+
+## Additional context
+
+If applicable, add any other context about the problem here.
