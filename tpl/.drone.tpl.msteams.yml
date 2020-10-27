@@ -46,7 +46,7 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - cd .. && bin/otomi test
+      - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-web; cd ..; bin/otomi test"
 
   - name: deploy
     image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
@@ -57,7 +57,7 @@ steps:
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
     commands:
-      - cd .. && bin/otomi deploy && kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api
+      - cd .. && bin/otomi deploy
     depends_on:
       - test
 

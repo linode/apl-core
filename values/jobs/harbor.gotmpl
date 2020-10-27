@@ -3,6 +3,7 @@
 {{- $o := $v.oidc }}
 {{- $h := $c | get "harbor" dict }}
 {{- $k := $c | get "keycloak" dict }}
+{{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
 {{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
