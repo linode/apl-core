@@ -40,9 +40,6 @@ MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 # EXIT_FAST - export this varaibale to exit the script on error
 EXIT_FAST=${EXIT_FAST:-"1"}
 
-# DRY_RUN - simulate action
-DRY_RUN=${EXIT_FAST:-"0"}
-
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
 # A path to directory with values directory
@@ -220,7 +217,6 @@ function drun() {
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
       -e EXIT_FAST="$EXIT_FAST" \
-      -e DRY_RUN="$DRY_RUN" \
       -w $stack_dir \
       $cmd_image \
       $command
