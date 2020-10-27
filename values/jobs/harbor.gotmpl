@@ -14,12 +14,18 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-
 tasks:
   harbor:
     type: job
     enabled: {{ $hasHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+    init:
+      image:
+        repository: {{ $c | get "jobs.harbor.init.image.repository" "otomi/tools" }}
+        tag: {{ $c | get "jobs.harbor.init.image.tag" $v.toolsVersion }}
+        pullPolicy: {{ $c | get "jobs.harbor.init.image.pullPolicy" "IfNotPresent" }}
+      # move secret for harbor to use
+      script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
     image:
       repository: {{ $c | get "jobs.harbor.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
       tag: {{ $c | get "jobs.harbor.image.tag" "v0.1.1" }}

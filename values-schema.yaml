@@ -334,7 +334,7 @@ properties:
       jobs:
         type: object
         patternProperties:
-          'certs-aws|harbor|harbor-init|ingress-azure|keycloak':
+          'certs-aws|harbor|ingress-azure|keycloak':
             type: object
             properties:
               image:

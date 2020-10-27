@@ -33,6 +33,7 @@ server:
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
+    CONSOLE_MODE: CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
     DRONE_LOGS_DEBUG: {{ $debug }}
     DRONE_LOGS_TRACE: {{ $debug }}
     DRONE_LOGS_PRETTY: false
