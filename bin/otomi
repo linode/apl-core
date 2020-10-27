@@ -22,6 +22,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 function verbose_env() {
   echo "has_docker=$has_docker"
+  echo "DRY_RUN=$DRY_RUN"
   echo "ENV_DIR=$ENV_DIR"
   echo "stack_dir=$stack_dir"
   echo "helm_config=$helm_config"
@@ -38,6 +39,9 @@ VERBOSE=${VERBOSE:-"0"}
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 # EXIT_FAST - export this varaibale to exit the script on error
 EXIT_FAST=${EXIT_FAST:-"1"}
+
+# DRY_RUN - simulate action
+DRY_RUN=${EXIT_FAST:-"0"}
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -216,6 +220,7 @@ function drun() {
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
       -e EXIT_FAST="$EXIT_FAST" \
+      -e DRY_RUN="$DRY_RUN" \
       -w $stack_dir \
       $cmd_image \
       $command
@@ -329,6 +334,7 @@ function execute() {
     drun bin/validate-templates.sh
     ;;
   x)
+    validate_cluster_env
     check_kube_context=0
     drun $@
     ;;
