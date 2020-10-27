@@ -57,7 +57,7 @@ steps:
       GCLOUD_SERVICE_KEY:
         from_secret: GCLOUD_SERVICE_KEY
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/otomi deploy && kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api
     depends_on:
       - test
 
