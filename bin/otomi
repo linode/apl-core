@@ -326,11 +326,11 @@ function execute() {
     drun $@
     ;;
   validate-templates)
-    validate_cluster_env
+    evaluate_secrets
     drun bin/validate-templates.sh
     ;;
   x)
-    validate_cluster_env
+    evaluate_secrets
     check_kube_context=0
     drun $@
     ;;
