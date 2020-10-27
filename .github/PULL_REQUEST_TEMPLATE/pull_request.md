@@ -27,7 +27,10 @@ your change affects other areas of the code, etc. -->
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
+- [ ] Change (a non-breaking change, e.g. refactor of code)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Tests 
+- [ ] Documentation 
 
 ## Checklist
 
@@ -36,4 +39,5 @@ your change affects other areas of the code, etc. -->
 
 - [ ] I have added tests (if applicable)
 - [ ] I have updated documentation (if applicable)
+- [ ] I have updated the otomi [values-schema.yaml](values-schema.yaml) (if applicable)
 - [ ] My code follows the code style of this project (automated for vscode!)
