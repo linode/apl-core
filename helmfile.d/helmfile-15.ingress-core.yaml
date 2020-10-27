@@ -8,9 +8,6 @@ bases:
 {{- $adminDomain := printf $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 releases:
-  - name: jobs-keycloak-wait
-    installed: true
-    <<: *jobs
   - name: team-ns-admin
     installed: true
     namespace: team-admin

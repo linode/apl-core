@@ -18,6 +18,16 @@ tasks:
     type: job
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     enabled: true
+    init:
+      image:
+        repository: curlimages/curl
+      script: |
+        {{- if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem \{{ end }}
+        printf "Waiting until kecloak is accessible."
+        until $(curl --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
+          printf '.'
+          sleep 5
+        done
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.1.1" }}

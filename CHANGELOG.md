@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.34](https://github.com/redkubes/otomi-stack/compare/v0.11.33...v0.11.34) (2020-10-27)
+
+
+### Bug Fixes
+
+* exporting core version for api ([21023e5](https://github.com/redkubes/otomi-stack/commit/21023e55d0af5ff84ca69d9964bdd2629fdfa931))
+
+### [0.11.33](https://github.com/redkubes/otomi-stack/compare/v0.11.32...v0.11.33) (2020-10-26)
+
+
+### Bug Fixes
+
+* show all errors ([#180](https://github.com/redkubes/otomi-stack/issues/180)) ([2e0565e](https://github.com/redkubes/otomi-stack/commit/2e0565eaa826885ffbc5c41557edeca271048725))
+* weave-scope smaller resources ([56ecceb](https://github.com/redkubes/otomi-stack/commit/56ecceb62dc8d3c8fd50eb46e51205c08b3fbc2d))
+
+
+### Code Refactoring
+
+* cluster id ([501c6fe](https://github.com/redkubes/otomi-stack/commit/501c6fe27cd083440587f26f762f7761b0f7ff86))
+
+
+### Feature Improvements
+
+* exporting core version for web ([3b934a7](https://github.com/redkubes/otomi-stack/commit/3b934a7236bda5f5bac270804c7b894b3cf424df))
+* exposing all clusters to web ([bb79aa8](https://github.com/redkubes/otomi-stack/commit/bb79aa825f4f186f776ca5d05dc7ff34bcee3d18))
+* task can have init, used for keycloak to detect if it's up ([ee9d081](https://github.com/redkubes/otomi-stack/commit/ee9d081c5a21fe4011841aeb95916aadbe5c81d3))
+
 ### [0.11.32](https://github.com/redkubes/otomi-stack/compare/v0.11.31...v0.11.32) (2020-10-26)
 
 
