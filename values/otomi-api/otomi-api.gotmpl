@@ -2,6 +2,8 @@
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-api" dict }}
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
+# so we get package.json version in two regexFind steps:
+{{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 
 replicaCount: 1
 
@@ -32,6 +34,7 @@ env:
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
+  CORE_VERSION: '{{ $version }}'
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
