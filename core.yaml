@@ -99,6 +99,10 @@ services:
     logo:
       name: istio
     namespace: istio-system
+    authz:
+      workload:
+        app: grafana
+        chart: grafana
   - name: prometheus
     svc: po-prometheus
     port: 9090
