@@ -1,7 +1,7 @@
 {
   "author": "RedKubes",
   "bugs": {
-    "url": "https://github.com/redkubes/otomi-stack/issues"
+    "url": "https://github.com/redkubes/otomi-core/issues"
   },
   "config": {
     "commitizen": {
@@ -23,7 +23,7 @@
     "prettier": "^2.1.2",
     "standard-version": "^9.0.0"
   },
-  "homepage": "https://github.com/redkubes/otomi-stack#readme",
+  "homepage": "https://github.com/redkubes/otomi-core#readme",
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
@@ -40,11 +40,11 @@
       "prettier --write"
     ]
   },
-  "name": "otomi-stack",
+  "name": "otomi-core",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redkubes/otomi-stack.git"
+    "url": "git+https://github.com/redkubes/otomi-core.git"
   },
   "run-if-changed": {
     "package-lock.json": "npm install --prefer-offline --no-audit"

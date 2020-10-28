@@ -37,7 +37,7 @@ steps:
       - chmod -R a+w env
 
   - name: test
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    image: otomi/core:__IMAGE_TAG
     pull: always
     environment:
       CLUSTER: __CLUSTER
@@ -50,7 +50,7 @@ steps:
       - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-web; cd ..; bin/otomi test"
 
   - name: deploy
-    image: eu.gcr.io/otomi-cloud/otomi-stack:__IMAGE_TAG
+    image: otomi/core:__IMAGE_TAG
     pull: always
     environment:
       CLUSTER: __CLUSTER

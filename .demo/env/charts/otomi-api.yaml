@@ -1,7 +1,7 @@
 charts:
     otomi-api:
         git:
-            localPath: /tmp/otomi-stack
+            localPath: /tmp/otomi-values
             repoUrl: github.com/redkubes/otomi-values-demo.git
         image:
             pullPolicy: Always

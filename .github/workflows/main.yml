@@ -8,7 +8,7 @@ on:
 env:
   COMMIT_MSG: ${{ github.event.head_commit.message }}
   REG: eu.gcr.io
-  REPO: otomi-cloud/otomi-stack
+  REPO: otomi-cloud/otomi-core
   GIT_USER: redkubesbot
   GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 

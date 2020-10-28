@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 [ "$1" != "" ] && docker-compose down --remove-orphans && exit
-[ "$ENV_DIR" == "" ] && [ "$(basename "$PWD")" == "otomi-stack" ] && echo "ENV_DIR not known!" && exit 1
+[ "$ENV_DIR" == "" ] && [ "$(basename "$PWD")" == "otomi-core" ] && echo "ENV_DIR not known!" && exit 1
 ENV_DIR=${ENV_DIR:-$PWD}
 . $ENV_DIR/.secrets
 [ "$OTOMI_PULLSECRET" == "" ] && echo "OTOMI_PULLSECRET not given!" && exit 1
