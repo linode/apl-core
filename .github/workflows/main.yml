@@ -7,8 +7,7 @@ on:
       - '*'
 env:
   COMMIT_MSG: ${{ github.event.head_commit.message }}
-  REG: eu.gcr.io
-  REPO: otomi-cloud/otomi-core
+  REPO: otomi/core
   GIT_USER: redkubesbot
   GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
@@ -27,21 +26,20 @@ jobs:
       - name: CI tests, image build and push tag for master or branch
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: _json_key
-          password: '${{ secrets.DOCKER_PASSWORD }}'
-          registry: ${{ env.REG }}
+          username: otomi
+          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
           image_name: ${{ env.REPO }}
           image_tag: ${{ env.TAG }}
       - if: "contains(github.event.head_commit.message, 'chore(release)')"
         name: Tag and release
         run: |
-          docker login -u _json_key -p '${{ secrets.DOCKER_PASSWORD }}' $REG
-          docker tag $REG/$REPO:$TAG $REG/$REPO:latest
-          docker push $REG/$REPO:latest
+          docker login -u otomi -p '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
+          docker tag $REPO:$TAG $REPO:latest
+          docker push $REPO:latest
           RELEASE_TAG=v${COMMIT_MSG#* }
-          echo "Releasing $REG/$REPO:$RELEASE_TAG"
-          docker tag $REG/$REPO:$TAG $REG/$REPO:$RELEASE_TAG
-          docker push $REG/$REPO:$RELEASE_TAG
+          echo "Releasing $REPO:$RELEASE_TAG"
+          docker tag $REPO:$TAG $REPO:$RELEASE_TAG
+          docker push $REPO:$RELEASE_TAG
           git config --global user.email "$GIT_USER@users.noreply.github.com"
           git config --global user.name $GIT_USER
           echo "machine github.com login $GIT_USER password $GIT_PASSWORD" > ~/.netrc
