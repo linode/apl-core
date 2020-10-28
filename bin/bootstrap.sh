@@ -19,7 +19,7 @@ function generate_loose_schema() {
 # install CLI
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
-img="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
+img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/

@@ -3,7 +3,7 @@ version: '3.4'
 services:
   api:
     container_name: api
-    image: eu.gcr.io/otomi-cloud/otomi-stack-api:${API_TAG:-latest}
+    image: eu.gcr.io/otomi-cloud/otomi-api:${API_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     expose:
       - 8080
@@ -26,7 +26,7 @@ services:
 
   tools:
     container_name: tools
-    image: eu.gcr.io/otomi-cloud/otomi-stack:${TOOLS_TAG:-latest}
+    image: otomi/core:${TOOLS_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     command: bin/server.sh
     expose:

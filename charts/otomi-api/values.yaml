@@ -8,7 +8,7 @@ replicaCount: 1
 
 image:
   registry: eu.gcr.io
-  repository: otomi-cloud/otomi-stack-api
+  repository: otomi-cloud/otomi-api
   tag: 0.1.1
   pullPolicy: IfNotPresent
 
@@ -91,8 +91,8 @@ core: {}
 tools:
   enabled: true
   image:
-    registry: eu.gcr.io
-    repository: otomi-cloud/otomi-stack
+    registry: docker.io
+    repository: otomi/core
     tag: latest
     pullPolicy: IfNotPresent
   podSecurityContext: {}

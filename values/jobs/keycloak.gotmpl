@@ -29,8 +29,8 @@ tasks:
           sleep 5
         done
     image:
-      repository: {{ $c | get "jobs.keycloak.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.1.1" }}
+      repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
+      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     secret:
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
