@@ -6,7 +6,6 @@ WORKDIR $APP_HOME
 
 COPY package*.json ./
 COPY . .
-RUN cp -r .demo/env env/ && bin/validate-all.sh && bin/validate-templates.sh && rm -rf env/env
 RUN npm install
 COPY ./.cspell.json .
 RUN npm run spellcheck
