@@ -90,8 +90,8 @@ core: {}
 
 tools:
   image:
-    registry: eu.gcr.io
-    repository: otomi-cloud/otomi-core
+    registry: docker.io
+    repository: otomi/core
     tag: latest
     pullPolicy: IfNotPresent
   podSecurityContext: {}
