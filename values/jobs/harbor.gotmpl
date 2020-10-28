@@ -28,7 +28,7 @@ tasks:
       # move secret for harbor to use
       script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
     image:
-      repository: {{ $c | get "jobs.harbor.image.repository" "eu.gcr.io/otomi-cloud/otomi-stack-tasks" }}
+      repository: {{ $c | get "jobs.harbor.image.repository" "otomi/tasks" }}
       tag: {{ $c | get "jobs.harbor.image.tag" "v0.1.1" }}
       pullPolicy: {{ $c | get "jobs.harbor.image.pullPolicy" "IfNotPresent" }}
     secret:

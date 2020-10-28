@@ -2,12 +2,12 @@
 #####################################################################################
 ##
 ## NOTE:
-## This is a command line tool to operate on otomi-stack.
+## This is a command line tool to operate on otomi-core.
 ## All commands are executed in docker container.
 ## Keep this file as simple as possible:
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
-## - only Docker is needed to run otomi-stack image
+## - only Docker is needed to run otomi-core image
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
@@ -51,14 +51,14 @@ customer=$(customer_name)
 cmd_image=''
 docker_terminal_params='-t'
 helm_config=''
-readme_url='https://github.com/redkubes/otomi-stack'
+readme_url='https://github.com/redkubes/otomi-core'
 
 function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
   [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
-  if [[ "$cwd" == "otomi-stack" ]]; then
+  if [[ "$cwd" == "otomi-core" ]]; then
     [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 1
-    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
+    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-core dir"
     stack_dir=$PWD
     mount_stack_dir=1
   fi
@@ -74,12 +74,12 @@ function set_helm_config() {
 function show_usage() {
   echo "otomi usage:
     apply               apply k8s resources (use labels like '-l name=prometheus-operator')
-    bash                run interactive bash shell in otomi-stack container
+    bash                run interactive bash shell in otomi-core container
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit              wrapper for encrypt > generate pipelines > git commit changed files
     console             starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
-    deploy              execute otomi-stack deploy script
+    deploy              execute otomi-core deploy script
     diff                diff k8s resources (use labels like '-l name=prometheus-operator')
     encrypt             encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help                print this help
@@ -130,7 +130,7 @@ function validate_k8s_context() {
 }
 
 function set_otomi_image() {
-  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
+  cmd_image="otomi/core:$(otomi_image_tag)"
   return 0
 }
 
@@ -152,7 +152,7 @@ validate_cluster_env() {
 }
 
 is_repo() {
-  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "Error: Should not be ran from otomi-stack" && exit 2
+  [[ "$(basename "$PWD")" == "otomi-core" ]] && echo "Error: Should not be ran from otomi-core" && exit 2
   return 0
 }
 
