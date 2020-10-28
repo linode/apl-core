@@ -22,7 +22,6 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 function verbose_env() {
   echo "has_docker=$has_docker"
-  echo "DRY_RUN=$DRY_RUN"
   echo "ENV_DIR=$ENV_DIR"
   echo "stack_dir=$stack_dir"
   echo "helm_config=$helm_config"
@@ -330,7 +329,6 @@ function execute() {
     drun bin/validate-templates.sh
     ;;
   x)
-    evaluate_secrets
     check_kube_context=0
     drun $@
     ;;
