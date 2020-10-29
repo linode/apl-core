@@ -40,7 +40,7 @@ spec:
         - secretRef:
             name: {{ $name }}
         {{- end }}
-        {{- if $spec.config }}
+        {{- if $spec.env }}
         - configMapRef:
             name: {{ $name }}
         {{- end }}

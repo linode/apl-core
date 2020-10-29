@@ -36,7 +36,7 @@ tasks:
       HARBOR_USER: admin
       OIDC_CLIENT_ID: {{ $o.clientID }}
       OIDC_CLIENT_SECRET: {{ $o.clientSecret }}
-    config:
+    env:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
       TEAM_NAMES: '{{ $teamNames | toJson }}'
       OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}'

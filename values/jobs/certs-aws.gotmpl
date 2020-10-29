@@ -15,7 +15,7 @@ tasks:
     schedule: "0/1 * * * *" # every minute
     # schedule: "0 1 * * *" # every day
     shell: bash
-    config:
+    env:
       REGION: {{ $v.cluster.region }}
       # DOMAINS: '{{ $vars.domains }}'
       # TODO: check why toJson does not work on $vars.domains, so we can remove this workaround
