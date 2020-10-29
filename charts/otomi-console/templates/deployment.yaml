@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "otomi-web.fullname" . }}
+  name: {{ include "otomi-console.fullname" . }}
   labels:
-{{ include "otomi-web.labels" . | indent 4 }}
+{{ include "otomi-console.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "otomi-web.name" . }}
+      app.kubernetes.io/name: {{ include "otomi-console.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "otomi-web.name" . }}
+        app.kubernetes.io/name: {{ include "otomi-console.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ template "otomi-web.serviceAccountName" . }}
+      serviceAccountName: {{ template "otomi-console.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

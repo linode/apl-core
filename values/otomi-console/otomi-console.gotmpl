@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values -}}
 {{- $c := $v.cluster -}}
-{{- $o := $v.charts | get "otomi-web" dict -}}
+{{- $o := $v.charts | get "otomi-console" dict -}}
 {{- $domain := printf "otomi.%s" $v.cluster.domain -}}
 {{- $clusters := list -}}
 {{- range $cloudName, $cloud := $v.clouds -}}

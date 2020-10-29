@@ -645,7 +645,7 @@ properties:
                 properties:
                   tag:
                     type: string
-      otomi-web:
+      otomi-console:
         type: object
         properties:
           image:

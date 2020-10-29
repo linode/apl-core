@@ -1,8 +1,10 @@
-# otomi-core
+# Otomi Core
 
-Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Heart of the Otomi Container Platform, an opinionated stack of kubernetes apps working in tandem. It offers an out of the box operations stack to help manage clusters.
 
-An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md). The stack is published as public docker image here: (`otomi/stack:latest`).
+This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
+
+An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md).
 
 This readme is aimed at development and initial deployment. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md)
 
