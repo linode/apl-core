@@ -60,7 +60,6 @@ definitions:
         '$ref': '#/definitions/repository'
       tag:
         type: string
-    required: [repository, tag]
   portNumber:
     type: number
     minimum: 80
@@ -136,6 +135,9 @@ definitions:
   cluster:
     type: object
     properties:
+      enabled:
+        type: boolean
+        default: true
       apiName:
         type: string
         description: Only used for API/UI to show in app.
