@@ -29,7 +29,7 @@ tasks:
       script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
     image:
       repository: {{ $c | get "jobs.harbor.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.harbor.image.tag" "v0.1.1" }}
+      tag: {{ $c | get "jobs.harbor.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.harbor.image.pullPolicy" "IfNotPresent" }}
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
