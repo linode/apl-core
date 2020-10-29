@@ -47,7 +47,7 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-web; cd ..; bin/otomi test"
+      - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-console; cd ..; bin/otomi test"
 
   - name: deploy
     image: otomi/core:__IMAGE_TAG

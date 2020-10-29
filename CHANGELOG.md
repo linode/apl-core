@@ -41,7 +41,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 - add overprovisioning chart ([#145](https://github.com/redkubes/otomi-core/issues/145)) ([193297f](https://github.com/redkubes/otomi-core/commit/193297f4d34da9a4e8af765e6d3ed9e49f61f382))
 - linting of manifests ([#124](https://github.com/redkubes/otomi-core/issues/124)) ([e0434de](https://github.com/redkubes/otomi-core/commit/e0434def4393f27c95801f3b9847110ead478813))
-- make otomi-web use public image [#175](https://github.com/redkubes/otomi-core/issues/175) ([1caafd4](https://github.com/redkubes/otomi-core/commit/1caafd44b2cea564f5f09eabd21e513ca3316891))
+- make otomi-console use public image [#175](https://github.com/redkubes/otomi-core/issues/175) ([1caafd4](https://github.com/redkubes/otomi-core/commit/1caafd44b2cea564f5f09eabd21e513ca3316891))
 - upgrade harbor chart ([b23e934](https://github.com/redkubes/otomi-core/commit/b23e93439bd3940e8f99ab07b03540bdffe7978b))
 
 ### Bug Fixes
@@ -1521,7 +1521,7 @@ All notable changes to this project will be documented in this file. See [standa
   ([5519a27](https://github.com/redkubes/otomi-core/commit/5519a271cb332b247a8b6d0d4c8bf7c6dd9bd0e8))
 - missing react-redux after refactor, removed versions.ini
   ([856ed8c](https://github.com/redkubes/otomi-core/commit/856ed8c7c8bba46143d4d2e4c575793b62e13a49))
-- otomi-web port 80 instead of 5000 since we moved to nginx
+- otomi-console port 80 instead of 5000 since we moved to nginx
   ([4390c5d](https://github.com/redkubes/otomi-core/commit/4390c5dad3a77eb53058a002f3a35dab4df58df3))
 
 ### 0.8.36 (2020-03-25)
