@@ -848,8 +848,6 @@ properties:
         - name
         - namespace
         - path
-  redkubesSlackUrl:
-    type: string
   services:
     type: array
     items:
