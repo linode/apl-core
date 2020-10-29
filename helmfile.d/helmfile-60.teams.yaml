@@ -63,10 +63,10 @@ releases:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
           config:
-            {{- $receiver := ($team | get "receiver" ($po.alertmanager | get "receiver" "slack")) }}
+            {{- $receiver := ($team | get "receiver" ($v.alerts | get "receiver" "slack")) }}
             {{- if eq $receiver "slack" }}
             global:
-              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
+              slack_api_url: {{ $team | get "slack.url" ($v.alerts.slack.url) }}
             {{- end }}
             receivers:
               - name: "null"
@@ -92,11 +92,11 @@ releases:
                     send_resolved: true
               {{- end }}
               - name: critical-redkubes
-              {{- if and $v.otomi.isRedkubesMonitored (hasKey $team "receiver") }}
+              {{- if and $v.otomi.isRedkubesMonitored }}
                 # sending team criticals also to redkubes to be aware of team issues
                 slack_configs:
-                  - channel: "#{{ $channel }}-crit"
-                    api_url: {{ $v.redkubesSlackUrl }}
+                  - channel: "#{{ $v.alerts | get "slack.channel" "mon-otomi" }}-crit"
+                    api_url: {{ $v.alerts.slack.url }}
                     {{- $slackTpl | nindent 20 }}
               {{- end }}
         commonLabels:
