@@ -239,7 +239,6 @@ definitions:
                           type: string
                         uniqueItems: true
                     required: [name]
-                  required: [repository, tag]
                 env:
                   title: Environment variables
                   # description: Environment variables for containers
