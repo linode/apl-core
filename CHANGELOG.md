@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.35](https://github.com/redkubes/otomi-core/compare/v0.11.34...v0.11.35) (2020-10-30)
+
+
+### Features
+
+* **values:** added cluster.enabled toggle ([4cc3303](https://github.com/redkubes/otomi-core/commit/4cc3303ae076679bc83f053ee4475ea97f822d08))
+
+
+### Bug Fixes
+
+* **keycloak:** theme config needed for tasks ([6658359](https://github.com/redkubes/otomi-core/commit/665835939380d5553e6f4670ff23131f516d7cb6))
+* charts to use new public images ([0b9f2d6](https://github.com/redkubes/otomi-core/commit/0b9f2d6e9bc7a0335665c9bf4cd0de36b4cece65))
+* dependabot issues ([9cb9022](https://github.com/redkubes/otomi-core/commit/9cb9022069129f51d96aa5f4e1411d156872102b))
+* gen drone for development [ci skip] ([2990c8a](https://github.com/redkubes/otomi-core/commit/2990c8aa952bc975b4dcbd2798be395d6957762c))
+* grafana istio token removed, restarting api+web on push ([ddbc003](https://github.com/redkubes/otomi-core/commit/ddbc00348d53beb58aa0d581393923e818c75728))
+* removed harbor-init ([f90980c](https://github.com/redkubes/otomi-core/commit/f90980c6704547abcb30ef83f2daa2e5326e5a52))
+* workflow ([13b2934](https://github.com/redkubes/otomi-core/commit/13b29349cef1826cddaa7dc4d243dec8c3bf185c))
+
 ### [0.11.34](https://github.com/redkubes/otomi-core/compare/v0.11.33...v0.11.34) (2020-10-27)
 
 ### Bug Fixes
