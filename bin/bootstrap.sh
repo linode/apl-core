@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+set -eu
+
+ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
-set -e
 
 . $ENV_DIR/.secrets
 
@@ -17,7 +19,7 @@ function generate_loose_schema() {
 # install CLI
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
-img="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
+img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
@@ -37,8 +39,8 @@ if [ "$skip_demo_files" != "1" ]; then
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
-[ "$GCLOUD_SERVICE_KEY" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
-if [ "$OTOMI_PULLSECRET" != "" ]; then
+[ "${GCLOUD_SERVICE_KEY-}" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
+if [ "${OTOMI_PULLSECRET-}" != "" ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
   cp -f $PWD/core.yaml $ENV_DIR/

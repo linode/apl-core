@@ -16,8 +16,19 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
     spec:
       serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
+      {{- if $spec.init }}
+      initContainers:
+      - image: "{{ $spec.init.image.repository }}:{{ $spec.init.image.tag | default "latest" }}"
+        imagePullPolicy: "{{ $spec.init.image.pullPolicy | default "IfNotPresent"}}"
+        name: "{{ $name }}-init"
+        command: ["{{ $spec.init.shell | default "sh" }}", "-c"]
+        args:
+          - |
+            {{- toString $spec.init.script | nindent 12 }}
+      {{- end }}
       containers:
-      - image: "{{ $spec.image }}"
+      - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
+        imagePullPolicy: "{{ $spec.image.pullPolicy }}"
         name: "{{ $name }}"
         command: ["{{ $spec.shell | default "sh" }}", "-c"]
         args:
@@ -29,7 +40,7 @@ spec:
         - secretRef:
             name: {{ $name }}
         {{- end }}
-        {{- if $spec.config }}
+        {{- if $spec.env }}
         - configMapRef:
             name: {{ $name }}
         {{- end }}

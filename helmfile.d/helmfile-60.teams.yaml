@@ -3,33 +3,12 @@ bases:
 ---
 {{- $v := .Environment.Values }}
 {{- $tc := $v.teamConfig }}
-{{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
-{{- $adminDomain := printf $v.cluster.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v | toString }}
 releases:
-  - name: team-ns-admin
-    installed: true
-    namespace: team-admin
-    chart: ../charts/team-ns
-    labels:
-      tag: teams
-      team: admin
-    values:
-      - name: admin
-        teamId: admin
-        cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $adminDomain }}
-        certStage: {{ $cm.stage }}
-        services: {{- $coreAdminServices | toYaml | nindent 10 }}
-        proxies: {{- $v.proxies | toYaml | nindent 10 }}
-        resourceQuota: null
-        knative:
-          enabled: true
   {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
@@ -84,10 +63,10 @@ releases:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
           config:
-            {{- $receiver := ($team | get "receiver" ($po.alertmanager | get "receiver" "slack")) }}
+            {{- $receiver := ($team | get "receiver" ($v.alerts | get "receiver" "slack")) }}
             {{- if eq $receiver "slack" }}
             global:
-              slack_api_url: {{ $team | get "slack.url" ($po.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
+              slack_api_url: {{ $team | get "slack.url" ($v.alerts.slack.url) }}
             {{- end }}
             receivers:
               - name: "null"
@@ -113,15 +92,20 @@ releases:
                     send_resolved: true
               {{- end }}
               - name: critical-redkubes
-              {{- if and $v.otomi.isRedkubesMonitored (hasKey $team "receiver") }}
+              {{- if and $v.otomi.isRedkubesMonitored }}
                 # sending team criticals also to redkubes to be aware of team issues
                 slack_configs:
-                  - channel: "#{{ $channel }}-crit"
-                    api_url: {{ $v.redkubesSlackUrl }}
+                  - channel: "#{{ $v.alerts | get "slack.channel" "mon-otomi" }}-crit"
+                    api_url: {{ $v.alerts.slack.url }}
                     {{- $slackTpl | nindent 20 }}
               {{- end }}
+        commonLabels:
+          prometheus: team-{{ $teamId }}
         prometheus:
           prometheusSpec:
+            serviceMonitorSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
             externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:

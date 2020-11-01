@@ -45,8 +45,13 @@ prometheusOperator:
   kubeletService:
     enabled: true
   priorityClassName: "otomi-critical"
+commonLabels:
+  prometheus: system
 prometheus:
   prometheusSpec:
+    serviceMonitorSelector:
+      matchLabels:
+        prometheus: system
     resources:
       {{- if (hasKey $p "resources.prometheus") }}
         {{- $p.resources.prometheus | toYaml | nindent 6 }}
@@ -99,7 +104,7 @@ alertmanager:
   config:
     {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
     global:
-      slack_api_url: {{ $v.otomi.isRedkubesMonitored | ternary $v.redkubesSlackUrl ($p.alertmanager | get "slack.url" $v.redkubesSlackUrl) }}
+      slack_api_url: {{ $p.alertmanager | get "slack.url" }}
     route:
       receiver: default
       group_by: [alertname]
@@ -155,7 +160,7 @@ alertmanager:
         # sending criticals also to redkubes to be aware of customer issues
         slack_configs:
           - channel: "#{{ $channel }}-crit"
-            api_url: {{ $v.redkubesSlackUrl }}
+            api_url: {{ $v.alerts.slack.url }}
             {{ $slackTpl | nindent 12  }}
       {{- end }}
 grafana:

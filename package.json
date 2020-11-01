@@ -1,7 +1,7 @@
 {
   "author": "RedKubes",
   "bugs": {
-    "url": "https://github.com/redkubes/otomi-stack/issues"
+    "url": "https://github.com/redkubes/otomi-core/issues"
   },
   "config": {
     "commitizen": {
@@ -9,21 +9,21 @@
     }
   },
   "dependencies": {},
-  "description": "Opinionated Stack of Kubernetes apps and configurations",
+  "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
-    "@commitlint/cli": "^8.3.5",
-    "@commitlint/config-conventional": "^8.3.4",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@hkdobrev/run-if-changed": "^0.3.1",
-    "commitizen": "^4.2.1",
-    "cspell": "^4.1.0",
-    "cz-conventional-changelog": "^3.1.0",
-    "husky": "^4.2.3",
-    "lint-staged": "^10.0.9",
+    "commitizen": "^4.2.2",
+    "cspell": "^4.1.2",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.5.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.0.2",
-    "standard-version": "^7.1.0"
+    "prettier": "^2.1.2",
+    "standard-version": "^9.0.0"
   },
-  "homepage": "https://github.com/redkubes/otomi-stack#readme",
+  "homepage": "https://github.com/redkubes/otomi-core#readme",
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
@@ -34,17 +34,17 @@
       "pre-commit": "npm run husky:pre-commit"
     }
   },
-  "license": "ISC",
+  "license": "Apache-2.0",
   "lint-staged": {
     "*.{json,yml,yaml}": [
       "prettier --write"
     ]
   },
-  "name": "otomi-stack",
+  "name": "otomi-core",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/redkubes/otomi-stack.git"
+    "url": "git+https://github.com/redkubes/otomi-core.git"
   },
   "run-if-changed": {
     "package-lock.json": "npm install --prefer-offline --no-audit"
@@ -66,5 +66,5 @@
       "tag": true
     }
   },
-  "version": "0.11.30"
+  "version": "0.11.35"
 }

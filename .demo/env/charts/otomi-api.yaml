@@ -1,13 +1,12 @@
 charts:
     otomi-api:
         git:
-            branch: master
-            localPath: /tmp/otomi-stack
+            localPath: /tmp/otomi-values
             repoUrl: github.com/redkubes/otomi-values-demo.git
         image:
             pullPolicy: Always
-            tag: v0.4.30
+            tag: latest
         tools:
             image:
-                tag: master
+                tag: latest
                 pullPolicy: Always

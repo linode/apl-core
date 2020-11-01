@@ -15,7 +15,7 @@ ARG HELM_SECRETS_VERSION=v2.0.2
 ARG SOPS_VERSION=v3.6.0
 ARG HELMFILE_VERSION=v0.128.1
 # https://github.com/weaveworks/eksctl/releases
-ARG EKSCTL_VERSION=0.27.0
+ARG EKSCTL_VERSION=0.30.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
 # https://github.com/instrumenta/kubeval/releases

@@ -48,6 +48,18 @@ definitions:
     type: string
     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
     description: A lowercase name that starts with a letter and may contain dashes.
+  image:
+    title: Container image
+    type: object
+    properties:
+      pullPolicy:
+        type: string
+        enum: [IfNotPresent, Always]
+        default: IfNotPresent
+      repository:
+        '$ref': '#/definitions/repository'
+      tag:
+        type: string
   portNumber:
     type: number
     minimum: 80
@@ -123,6 +135,9 @@ definitions:
   cluster:
     type: object
     properties:
+      enabled:
+        type: boolean
+        default: true
       apiName:
         type: string
         description: Only used for API/UI to show in app.
@@ -224,7 +239,6 @@ definitions:
                           type: string
                         uniqueItems: true
                     required: [name]
-                  required: [repository, tag]
                 env:
                   title: Environment variables
                   # description: Environment variables for containers
@@ -318,6 +332,14 @@ properties:
   charts:
     type: object
     properties:
+      jobs:
+        type: object
+        patternProperties:
+          'certs-aws|harbor|ingress-azure|keycloak':
+            type: object
+            properties:
+              image:
+                '$ref': '#/definitions/image'
       cert-manager:
         type: object
         properties:
@@ -624,7 +646,7 @@ properties:
                 properties:
                   tag:
                     type: string
-      otomi-web:
+      otomi-console:
         type: object
         properties:
           image:
@@ -789,7 +811,6 @@ properties:
     required:
       - apiName
       - apiServer
-      - dnsProvider
       - domain
       - k8sVersion
       - name
@@ -828,8 +849,6 @@ properties:
         - name
         - namespace
         - path
-  redkubesSlackUrl:
-    type: string
   services:
     type: array
     items:

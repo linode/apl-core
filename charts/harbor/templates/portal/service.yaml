@@ -7,6 +7,7 @@ metadata:
 spec:
   ports:
     - port: {{ template "harbor.portal.servicePort" . }}
+      # appProtocol: http
       targetPort: {{ template "harbor.portal.containerPort" . }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}

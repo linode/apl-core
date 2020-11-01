@@ -1,5 +1,4 @@
 toolsVersion: 1.4.5
-redkubesSlackUrl: https://hooks.slack.com/services/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
 
 k8s:
   namespaces:
@@ -47,11 +46,10 @@ services:
     hide: true
     isShared: true
   - name: harbor
-    svc: harbor-harbor-registry
+    svc: harbor-harbor-core
     namespace: harbor
     ownHost: true
-    paths: [/v1/, /v2/]
-    port: 5000
+    paths: [/service/token/, /v1/, /v2/]
     forwardPath: true
     hide: true
     isPublic: true
@@ -73,12 +71,12 @@ services:
     namespace: shared
     ownHost: true
     isShared: true
-    svc: otomi-web
+    svc: otomi-console
     paths: [/]
     authz:
       forwardOriginalToken: true
       workload:
-        app.kubernetes.io/name: otomi-web
+        app.kubernetes.io/name: otomi-console
   - name: loki
     svc: po-grafana
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
@@ -100,6 +98,10 @@ services:
     logo:
       name: istio
     namespace: istio-system
+    authz:
+      workload:
+        app: grafana
+        chart: grafana
   - name: prometheus
     svc: po-prometheus
     port: 9090

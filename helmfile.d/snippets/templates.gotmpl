@@ -1,5 +1,6 @@
 templates:
   default: &default
+    missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl

@@ -20,4 +20,4 @@ WORKDIR $APP_HOME
 
 COPY . .
 
-CMD ["bin/deploy.sh"]
+CMD ["bin/otomi"]

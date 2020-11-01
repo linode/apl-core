@@ -21,8 +21,12 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if not $k.scaleToZero }}
-        # autoscaling.knative.dev/minScale: '1'
+        {{- $hasMinScale := false -}}
+        {{- range $a := $k.annotations -}}
+          {{- if (contains "autoscaling.knative.dev/minScale" $a) -}}{{ $hasMinScale = true }}{{ end }}
+        {{- end -}}
+        {{- if or (not $k.annotations) (not $hasMinScale) }}
+        autoscaling.knative.dev/minScale: {{ $k.scaleToZero | ternary "0" "1" | quote }}
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}

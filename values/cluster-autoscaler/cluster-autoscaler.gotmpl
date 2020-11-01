@@ -2,8 +2,9 @@
 {{- $a := $v.charts | get "cluster-autoscaler" dict }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
-# image:
-#   tag: v1.17.1
+image:
+  repository: eu.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
+  tag: v1.18.2
 {{ $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}
 autoDiscovery:
   clusterName:  {{ printf "%s-%s-%s" $v.customer.name (index $map $v.cluster.provider) $v.cluster.name }}

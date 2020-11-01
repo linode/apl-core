@@ -8,7 +8,7 @@ releases:
   - name: hello
     # set 'installed' to true and set correct namespace for other customer demo on aws:
     installed: true
-    namespace: team-demo
+    namespace: team-otomi
     chart: ../charts/hello
     <<: *default
   - name: httpbin

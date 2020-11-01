@@ -1,0 +1,29 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $c := $v.charts }}
+{{- $adminDomain := printf $v.cluster.domain }}
+{{- $cm := index $v.charts "cert-manager" }}
+releases:
+  - name: team-ns-admin
+    installed: true
+    namespace: team-admin
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+      team: admin
+    values:
+      - name: admin
+        teamId: admin
+        cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        otomi: {{- $v.otomi | toYaml | nindent 10 }}
+        domain: {{ $adminDomain }}
+        certStage: {{ $cm.stage }}
+        services: {{- $coreAdminServices | toYaml | nindent 10 }}
+        proxies: {{- $v.proxies | toYaml | nindent 10 }}
+        resourceQuota: null
+        knative:
+          enabled: true

@@ -76,11 +76,11 @@ spec:
           - name: INTERNAL_TLS_ENABLED
             value: "true"
           - name: INTERNAL_TLS_KEY_PATH
-            value: /etc/harbor/ssl/job_service.key
+            value: /etc/harbor/ssl/jobservice/tls.key
           - name: INTERNAL_TLS_CERT_PATH
-            value: /etc/harbor/ssl/job_service.crt
+            value: /etc/harbor/ssl/jobservice/tls.crt
           - name: INTERNAL_TLS_TRUST_CA_PATH
-            value: /harbor_cust_cert/harbor_internal_ca.crt
+            value: /etc/harbor/ssl/jobservice/ca.crt
           {{- end }}
         envFrom:
         - configMapRef:
@@ -98,14 +98,7 @@ spec:
           subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.subPath }}
         {{- if .Values.internalTLS.enabled }}
         - name: jobservice-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: jobservice-internal-certs
-          mountPath: /etc/harbor/ssl/job_service.crt
-          subPath: tls.crt
-        - name: jobservice-internal-certs
-          mountPath: /etc/harbor/ssl/job_service.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/jobservice
         {{- end }}
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}

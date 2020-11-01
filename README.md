@@ -1,8 +1,19 @@
-# otomi-stack
+# Otomi Core
 
-Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Heart of the Otomi Container Platform, an opinionated stack of kubernetes apps working in tandem. It offers an out of the box operations stack to utilize kubernetes clusters.
+Important features:
 
-An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md). The stack is published as public docker image here: (`otomi/stack:latest`).
+- **Single Sign On**: Bring your own IDP or use Keycloak
+- **Multi Tenancy**: Create admins and teams to allow self service of deployments
+- **Automatic Ingress Configuration**: Easily configure ingress for team services or core apps, allowing access within minutes.
+- **Automatic Vulnerability Scanning**: All configured team service containers get scanned in Harbor.
+- and many more (for a full list see [redkubes.com](https://redkubes.com))
+
+This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
+Other parts of the platform:
+
+- [Otomi Tasks](https://github.com/redkubes/otomi-tasks): tasks used by core to glue all it's pieces together
+- [Otomi Clients](https://github.com/redkubes/otomi-clients): clients used by the tasks, generated from vendors' openapi specs
 
 This readme is aimed at development and initial deployment. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md)
 
@@ -90,7 +101,7 @@ otomi diff -l name=prometheus-operator
 
 ## 3. Deployment
 
-It is preferred that deployment is done from the values repo, as it is tied to a cluster, and thus can do least damage.
+It is preferred that deployment is done from the values repo, as it is tied to a values repo, and thus can do least damage.
 When you feel that you are in control and want fast iteration you can connect to a values repo directly by exporting `ENV_DIR`. It is mandatory and won't work without it. The CLI will also check that you are targeting `kubectl`'s `current-context` as a failsafe mechanism.
 
 To deploy everything in the stack:
@@ -98,6 +109,9 @@ To deploy everything in the stack:
 ```bash
 otomi deploy
 ```
+
+NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
+Retrying the command usuall works, but we have created an issue to workaround this annoyance ([#178](https://github.com/redkubes/otomi-core/issues/178)).
 
 It is also possible to target individual helmfile releases from the stack:
 

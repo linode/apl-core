@@ -1,6 +1,6 @@
 # otomi values repo (stack version: ##VERSION)
 
-Repo that holds values for k8s clusters to deploy otomi-stack on.
+Repo that holds values for k8s clusters to deploy otomi-core on.
 Contains drone pipelines for each cluster, which listen to updates of this repo.
 Any updated values will be applied with the otomi cli (see `otomi help`)
 
@@ -104,6 +104,9 @@ To deploy everything in the stack:
 otomi deploy
 ```
 
+NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
+Retrying the command usuall works, but we have created an issue to workaround this annoyance ([#178](https://github.com/redkubes/otomi-core/issues/178)).
+
 It is also possible to target individual helmfile releases from the stack:
 
 ```bash
@@ -133,11 +136,11 @@ Otomi Stack contains a curated list of apps, which are mostly deployed by [matur
 - Resources not under helm chart control: since helm 3.2 these can be adopted. When trying to deploy helm resources over existing resources helm will give detailed instructions on how to adopt these.
 - Some resources have labels and do not allow changing them. This usually points to bad chart practices, but mandates removal before recreating these resources. This can't always be done and is a big drawback. Remedies exist but might have to be investigated on the fly.
 
-We try to automate as much as possible with the scripts found in `otomi-stack/bin/upgrades/`, but since this is a large monorepo with many working parts we can't guarantee seamless upgrades from every version.
+We try to automate as much as possible with the scripts found in `otomi-core/bin/upgrades/`, but since this is a large monorepo with many working parts we can't guarantee seamless upgrades from every version.
 
 So every time an upgrade of the stack is released it is important to follow these steps first:
 
-1. Read the release notes on [redkubes/otomi-stack](https://github.com/redkubes/otomi-stack) for impact and special cases.
+1. Read the release notes on [redkubes/otomi-core](https://github.com/redkubes/otomi-core) for impact and special cases.
 2. Check the corresponding upgrade script(s) and read the comments. It might involve manual steps.
 3. Set the new version tag in `clusters.yaml` and run `otomi bootstrap` to pull in latest artifacts
 4. Do a diff first: `otomi diff`
