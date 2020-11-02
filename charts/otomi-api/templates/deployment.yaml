@@ -53,6 +53,7 @@ spec:
             - name: core-values
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
+        {{- if .Values.tools.enabled }}
         - name: {{ .Chart.Name }}-tools
           securityContext: {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
@@ -79,6 +80,7 @@ spec:
           volumeMounts:
             - name: repo
               mountPath: /tmp
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

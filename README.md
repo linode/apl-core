@@ -27,7 +27,7 @@ This document has the following index:
 
 ### 1.1 Working k8s cluster(s)
 
-Admin accessible k8s cluster(s).
+Admin accessible k8s cluster(s). At the moment we support two versions down from 1.19, so at least 1.17.
 
 If you don't have access with kubectl immediately, you have to pull the credentials from the cloud:
 
@@ -66,9 +66,9 @@ If you don't yet have a values repo, you can start one in a new folder like this
 docker run -e ENV_DIR=$PWD -v $PWD:$PWD otomi/stack:latest bin/bootstrap.sh
 ```
 
-This will also install the needed artifacts (such as the Otomi CLI) and demo values.
+This will also install the needed artifacts (such as the Otomi CLI) and demo values. If you just want to proceed with the demo values skip to step 3.
 
-Please read the `README.md` that is exported as it has extensive instructions on initial configuration.
+Otherwise please read the `README.md` that is exported as it has extensive instructions on initial configuration.
 
 ### 1.4 Key Service Account
 

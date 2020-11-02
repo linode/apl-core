@@ -914,3 +914,5 @@ properties:
 
   toolsVersion:
     type: string
+
+required: [alerts, clouds, customer, oidc, otomi, teamConfig, k8s, services, toolsVersion]
