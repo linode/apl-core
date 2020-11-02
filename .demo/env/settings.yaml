@@ -1,4 +1,3 @@
-redkubesSlackUrl: 'https://hooks.slack.com/services/x/x'
 otomi:
     isManaged: true
     isMultitenant: true
