@@ -1,16 +1,20 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: k8spspprivilegedcontainer
+  name: k8srequiredlabels
 spec:
   crd:
     spec:
       names:
-        kind: K8sPSPPrivilegedContainer
+        kind: K8sRequiredLabels
+      validation:
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
   targets:
     - target: admission.k8s.gatekeeper.sh
       libs: |
         {{- readFile "policies/lib/helpers.rego" | nindent 8 }}
       rego: |
-        {{- readFile "policies/k8spsprivilegedcontainer.rego" | nindent 8 }}
-      
+        {{- readFile "policies/k8srequiredlabels.rego" | nindent 8 }}

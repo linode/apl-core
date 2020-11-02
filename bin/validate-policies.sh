@@ -6,7 +6,6 @@ EXIT_FAST=${EXIT_FAST:-"1"}
 [[ $EXIT_FAST == "1" ]] && set -e
 
 k8sResourcesPath="/tmp/otomi/conftest-fixtures"
-# policiesPath="policies-bck"
 policiesPath="values/gatekeeper-operator/policies"
 exitcode=1
 

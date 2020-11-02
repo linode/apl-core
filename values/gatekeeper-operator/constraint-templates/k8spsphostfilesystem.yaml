@@ -26,4 +26,3 @@ spec:
         {{- readFile "policies/lib/helpers.rego" | nindent 8 }}
       rego: |
         {{- readFile "policies/k8spsphostfilesystem.rego" | nindent 8 }}
-        

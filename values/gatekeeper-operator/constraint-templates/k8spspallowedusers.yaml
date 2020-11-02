@@ -28,4 +28,3 @@ spec:
         {{- readFile "policies/lib/helpers.rego" | nindent 8 }}
       rego: |
         {{- readFile "policies/k8spspallowedusers.rego" | nindent 8 }}
-      
