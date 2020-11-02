@@ -1,4 +1,6 @@
 package k8spspprivileged
+import data.lib.helpers
+import data.lib.helpers.object
 
 violation[{"msg": msg, "details": {}}] {
     c := input_containers[_]
@@ -7,9 +9,10 @@ violation[{"msg": msg, "details": {}}] {
 }
 
 input_containers[c] {
-    c := input.spec.containers[_]
+    c := object.spec.containers[_]
 }
 
 input_containers[c] {
-    c := input.spec.initContainers[_]
+    c := object.spec.initContainers[_]
 }
+

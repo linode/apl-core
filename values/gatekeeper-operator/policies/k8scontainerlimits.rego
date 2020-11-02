@@ -1,4 +1,8 @@
 package k8scontainerlimits
+import data.lib.helpers
+import data.lib.helpers.object
+import data.lib.helpers.parameters
+
 missing(obj, field) = true {
   not obj[field]
 }
@@ -98,60 +102,54 @@ violation[{"msg": msg}] {
   general_violation[{"msg": msg, "field": "initContainers"}]
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   cpu_orig := container.resources.limits.cpu
   not canonify_cpu(cpu_orig)
   msg := sprintf("container <%v> cpu limit <%v> could not be parsed", [container.name, cpu_orig])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   mem_orig := container.resources.limits.memory
   not canonify_mem(mem_orig)
   msg := sprintf("container <%v> memory limit <%v> could not be parsed", [container.name, mem_orig])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   not container.resources
   msg := sprintf("container <%v> has no resource limits", [container.name])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   not container.resources.limits
   msg := sprintf("container <%v> has no resource limits", [container.name])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   missing(container.resources.limits, "cpu")
   msg := sprintf("container <%v> has no cpu limit", [container.name])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   missing(container.resources.limits, "memory")
   msg := sprintf("container <%v> has no memory limit", [container.name])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   cpu_orig := container.resources.limits.cpu
   cpu := canonify_cpu(cpu_orig)
-  max_cpu_orig := input.parameters.cpu
+  max_cpu_orig := parameters.cpu
   max_cpu := canonify_cpu(max_cpu_orig)
   cpu > max_cpu
   msg := sprintf("container <%v> cpu limit <%v> is higher than the maximum allowed of <%v>", [container.name, cpu_orig, max_cpu_orig])
 }
 general_violation[{"msg": msg, "field": field}] {
-  container := input.spec[field][_]
+  container := object.spec[field][_]
   mem_orig := container.resources.limits.memory
   mem := canonify_mem(mem_orig)
-  max_mem_orig := input.parameters.memory
+  max_mem_orig := parameters.memory
   max_mem := canonify_mem(max_mem_orig)
   mem > max_mem
   msg := sprintf("container <%v> memory limit <%v> is higher than the maximum allowed of <%v>", [container.name, mem_orig, max_mem_orig])
 }
 
 
-deny[msg] {
-  input.kind == "Pod"
-  image := input.spec.containers[_].image
-  not startswith(image, "hooli.com")
-  msg := sprintf("image fails to come from trusted registry: %v", [image])
-}

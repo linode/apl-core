@@ -1,0 +1,6 @@
+{{- $v := .Environment.Values }}
+{{- $constraints := (exec "bash" (list "-c" "find  ./constraint-templates -name '*.gotmpl'")) | splitList "\n" }}
+resources:
+{{- range $constraint := $constraints }}{{ if ne $constraint "" }}
+  - {{ tpl (readFile $constraint) $v | nindent 4  }}
+{{- end }}{{ end }}

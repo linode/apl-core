@@ -6,7 +6,8 @@ EXIT_FAST=${EXIT_FAST:-"1"}
 [[ $EXIT_FAST == "1" ]] && set -e
 
 k8sResourcesPath="/tmp/otomi/conftest-fixtures"
-policiesPath="policies"
+# policiesPath="policies-bck"
+policiesPath="values/gatekeeper-operator/policies"
 exitcode=1
 
 . bin/common.sh
@@ -34,7 +35,7 @@ validate_policies() {
     # validate_resources
     echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
     {
-        conftest test --fail-on-warn --all-namespaces -p $policiesPath $k8sResourcesPath
+        conftest test --fail-on-warn --all-namespaces -d "$policiesPath/lib/constraints.yaml" -p "$policiesPath/lib/helpers.rego" -p $policiesPath $k8sResourcesPath
     } && exitcode=0
 
 }

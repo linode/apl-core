@@ -1,0 +1,29 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8spsphostfilesystem
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPHostFilesystem
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            allowedHostPaths:
+              type: array
+              items:
+                type: object
+                properties:
+                  readOnly:
+                    type: boolean
+                  pathPrefix:
+                    type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      libs: |
+        {{- readFile "policies/lib/helpers.rego" | nindent 8 }}
+      rego: |
+        {{- readFile "policies/k8spsphostfilesystem.rego" | nindent 8 }}
+        
