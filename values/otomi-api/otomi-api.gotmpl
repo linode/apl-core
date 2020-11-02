@@ -22,18 +22,21 @@ secrets:
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
+  {{- if $v.sops.enabled }}
   GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
+  {{- end }}
   OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
   GIT_REPO_URL: {{ $o.git.repoUrl }}
-  GIT_BRANCH: {{ $o.git.branch | default "master" }}
+  GIT_BRANCH: {{ $o | get "git.branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
+  USE_SOPS: {{ $v.sops.enabled }}
   CORE_VERSION: '{{ $version }}'
 
 core:
@@ -42,10 +45,13 @@ core:
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:
+  enabled: {{ $v.sops.enabled }}
+  {{- if $v.sops.enabled }}
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
   {{- if (hasKey $o "resources.tools") }}
   resources:
     {{- $o.resources.tools | toYaml | nindent 4 }}
+  {{- end }}
   {{- end }}

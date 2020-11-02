@@ -42,6 +42,8 @@ There are two ways to configure these: manually, or with the Otomi Console UI.
 
 It's easiest to start by editing the basic configuration settings in the files themselves. It also helps to understand what is going on. (The bulk of the work is setting up and harvesting the credentials for all the Azure service principals, Google service accounts and AWS secrets and keys.)
 
+The existence of `.sops.yaml` file enables encryption, so please remove it if you do not want encryption straight away.
+
 Please edit the value files to your liking. Remove the cloud providers not in use, and edit/add your clusters.
 
 ### Otomi Console UI (paid license)
