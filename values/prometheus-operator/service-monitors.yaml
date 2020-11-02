@@ -1,6 +1,4 @@
 - name: blackbox
-  additionalLabels:
-    prometheus: po-prometheus
   namespaceSelector:
     matchNames:
       - monitoring

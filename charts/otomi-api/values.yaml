@@ -89,6 +89,7 @@ env:
 core: {}
 
 tools:
+  enabled: true
   image:
     registry: docker.io
     repository: otomi/core

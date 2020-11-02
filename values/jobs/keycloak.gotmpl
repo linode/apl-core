@@ -22,7 +22,7 @@ tasks:
       image:
         repository: curlimages/curl
       script: |
-        {{- if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem \{{ end }}
+        {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem \{{ end }}
         printf "Waiting until kecloak is accessible."
         until $(curl --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
           printf '.'
