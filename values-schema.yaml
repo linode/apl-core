@@ -923,6 +923,8 @@ properties:
             properties:
               enabled:
                 type: boolean
+          resources:
+            '$ref': '#/definitions/resources'
       oauth2-proxy:
         type: object
         additionalProperties: false
