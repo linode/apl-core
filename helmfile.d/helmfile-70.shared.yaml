@@ -29,7 +29,7 @@ releases:
     installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
     namespace: shared
     <<: *default
-  - name: otomi-web
+  - name: otomi-console
     installed: true
     namespace: shared
     <<: *default

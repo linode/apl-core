@@ -60,7 +60,6 @@ definitions:
         '$ref': '#/definitions/repository'
       tag:
         type: string
-    required: [repository, tag]
   portNumber:
     type: number
     minimum: 80
@@ -136,6 +135,9 @@ definitions:
   cluster:
     type: object
     properties:
+      enabled:
+        type: boolean
+        default: true
       apiName:
         type: string
         description: Only used for API/UI to show in app.
@@ -237,7 +239,6 @@ definitions:
                           type: string
                         uniqueItems: true
                     required: [name]
-                  required: [repository, tag]
                 env:
                   title: Environment variables
                   # description: Environment variables for containers
@@ -645,7 +646,7 @@ properties:
                 properties:
                   tag:
                     type: string
-      otomi-web:
+      otomi-console:
         type: object
         properties:
           image:
@@ -848,8 +849,6 @@ properties:
         - name
         - namespace
         - path
-  redkubesSlackUrl:
-    type: string
   services:
     type: array
     items:

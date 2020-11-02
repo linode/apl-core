@@ -7,9 +7,12 @@ on:
       - '*'
 env:
   COMMIT_MSG: ${{ github.event.head_commit.message }}
+  CACHE_REGISTRY: ghcr.io
+  CACHE_REPO: redkubes/otomi-core
   REPO: otomi/core
   GIT_USER: redkubesbot
   GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
 
 jobs:
   build-test-push-release:
@@ -26,10 +29,16 @@ jobs:
       - name: CI tests, image build and push tag for master or branch
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: otomi
-          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
-          image_name: ${{ env.REPO }}
+          username: redkubesbot
+          password: '${{ secrets.NPM_TOKEN }}'
+          registry: ${{ env.CACHE_REGISTRY }}
+          image_name: ${{ env.CACHE_REPO }}
           image_tag: ${{ env.TAG }}
+      - name: Retag from cache and push
+        run: |
+          docker login -u otomi -p $DOCKER_PASSWORD
+          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
+          docker push $REPO:$TAG
       - if: "contains(github.event.head_commit.message, 'chore(release)')"
         name: Tag and release
         run: |

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.35](https://github.com/redkubes/otomi-core/compare/v0.11.34...v0.11.35) (2020-10-30)
+
+
+### Features
+
+* **values:** added cluster.enabled toggle ([4cc3303](https://github.com/redkubes/otomi-core/commit/4cc3303ae076679bc83f053ee4475ea97f822d08))
+
+
+### Bug Fixes
+
+* **keycloak:** theme config needed for tasks ([6658359](https://github.com/redkubes/otomi-core/commit/665835939380d5553e6f4670ff23131f516d7cb6))
+* charts to use new public images ([0b9f2d6](https://github.com/redkubes/otomi-core/commit/0b9f2d6e9bc7a0335665c9bf4cd0de36b4cece65))
+* dependabot issues ([9cb9022](https://github.com/redkubes/otomi-core/commit/9cb9022069129f51d96aa5f4e1411d156872102b))
+* gen drone for development [ci skip] ([2990c8a](https://github.com/redkubes/otomi-core/commit/2990c8aa952bc975b4dcbd2798be395d6957762c))
+* grafana istio token removed, restarting api+web on push ([ddbc003](https://github.com/redkubes/otomi-core/commit/ddbc00348d53beb58aa0d581393923e818c75728))
+* removed harbor-init ([f90980c](https://github.com/redkubes/otomi-core/commit/f90980c6704547abcb30ef83f2daa2e5326e5a52))
+* workflow ([13b2934](https://github.com/redkubes/otomi-core/commit/13b29349cef1826cddaa7dc4d243dec8c3bf185c))
+
 ### [0.11.34](https://github.com/redkubes/otomi-core/compare/v0.11.33...v0.11.34) (2020-10-27)
 
 ### Bug Fixes
@@ -41,7 +59,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 - add overprovisioning chart ([#145](https://github.com/redkubes/otomi-core/issues/145)) ([193297f](https://github.com/redkubes/otomi-core/commit/193297f4d34da9a4e8af765e6d3ed9e49f61f382))
 - linting of manifests ([#124](https://github.com/redkubes/otomi-core/issues/124)) ([e0434de](https://github.com/redkubes/otomi-core/commit/e0434def4393f27c95801f3b9847110ead478813))
-- make otomi-web use public image [#175](https://github.com/redkubes/otomi-core/issues/175) ([1caafd4](https://github.com/redkubes/otomi-core/commit/1caafd44b2cea564f5f09eabd21e513ca3316891))
+- make otomi-console use public image [#175](https://github.com/redkubes/otomi-core/issues/175) ([1caafd4](https://github.com/redkubes/otomi-core/commit/1caafd44b2cea564f5f09eabd21e513ca3316891))
 - upgrade harbor chart ([b23e934](https://github.com/redkubes/otomi-core/commit/b23e93439bd3940e8f99ab07b03540bdffe7978b))
 
 ### Bug Fixes
@@ -1521,7 +1539,7 @@ All notable changes to this project will be documented in this file. See [standa
   ([5519a27](https://github.com/redkubes/otomi-core/commit/5519a271cb332b247a8b6d0d4c8bf7c6dd9bd0e8))
 - missing react-redux after refactor, removed versions.ini
   ([856ed8c](https://github.com/redkubes/otomi-core/commit/856ed8c7c8bba46143d4d2e4c575793b62e13a49))
-- otomi-web port 80 instead of 5000 since we moved to nginx
+- otomi-console port 80 instead of 5000 since we moved to nginx
   ([4390c5d](https://github.com/redkubes/otomi-core/commit/4390c5dad3a77eb53058a002f3a35dab4df58df3))
 
 ### 0.8.36 (2020-03-25)

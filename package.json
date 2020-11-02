@@ -9,7 +9,7 @@
     }
   },
   "dependencies": {},
-  "description": "Opinionated Stack of Kubernetes apps and configurations",
+  "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
@@ -34,7 +34,7 @@
       "pre-commit": "npm run husky:pre-commit"
     }
   },
-  "license": "ISC",
+  "license": "Apache-2.0",
   "lint-staged": {
     "*.{json,yml,yaml}": [
       "prettier --write"
@@ -66,5 +66,5 @@
       "tag": true
     }
   },
-  "version": "0.11.34"
+  "version": "0.11.35"
 }

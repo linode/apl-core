@@ -46,7 +46,7 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-web; cd ..; bin/otomi test"
+      - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-console; cd ..; bin/otomi test"
 
   - name: deploy
     image: otomi/core:__IMAGE_TAG
@@ -95,19 +95,19 @@ steps:
       status:
         - failure
 
-  - name: slack-RedKubes-error
-    image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
-    depends_on:
-      - maintenance
-    settings:
-      webhook: https://hooks.slack.com/services/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
-      channel: mon-otomi
-      username: Drone
-      template: >
-        Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
-    when:
-      status:
-        - failure
+  # - name: slack-RedKubes-error
+  #   image: plugins/slack
+  #   environment:
+  #     CLUSTER: __CLUSTER
+  #     CLOUD: __CLOUD
+  #   depends_on:
+  #     - maintenance
+  #   settings:
+  #     webhook: __WEBHOOK_REDKUBES
+  #     channel: mon-otomi
+  #     username: Drone
+  #     template: >
+  #       Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+  #   when:
+  #     status:
+  #       - failure

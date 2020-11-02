@@ -9,7 +9,7 @@ tasks:
       repository: {{ $c | get "jobs.ingress-azure.image.repository" "otomi/tools" }}
       tag: {{ $c | get "jobs.ingress-azure.image.tag" $v.toolsVersion }}
       pullPolicy: {{ $c | get "jobs.ingress-azure.image.pullPolicy" "IfNotPresent" }}
-    config:
+    env:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!

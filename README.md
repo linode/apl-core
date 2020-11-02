@@ -1,8 +1,19 @@
-# otomi-core
+# Otomi Core
 
-Otomi Stack is Otomi's opinionated Kubernetes stack, offering an out of the box operations stack to help manage clusters.
+Heart of the Otomi Container Platform, an opinionated stack of kubernetes apps working in tandem. It offers an out of the box operations stack to utilize kubernetes clusters.
+Important features:
 
-An architecture overview can be found here: [docs/architecture.md](./docs/architecture.md). The stack is published as public docker image here: (`otomi/stack:latest`).
+- **Single Sign On**: Bring your own IDP or use Keycloak
+- **Multi Tenancy**: Create admins and teams to allow self service of deployments
+- **Automatic Ingress Configuration**: Easily configure ingress for team services or core apps, allowing access within minutes.
+- **Automatic Vulnerability Scanning**: All configured team service containers get scanned in Harbor.
+- and many more (for a full list see [redkubes.com](https://redkubes.com))
+
+This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
+Other parts of the platform:
+
+- [Otomi Tasks](https://github.com/redkubes/otomi-tasks): tasks used by core to glue all it's pieces together
+- [Otomi Clients](https://github.com/redkubes/otomi-clients): clients used by the tasks, generated from vendors' openapi specs
 
 This readme is aimed at development and initial deployment. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md)
 

@@ -10,12 +10,12 @@ tasks:
     enabled: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     image:
       repository: {{ $c | get "jobs.certs-aws.image.repository" "otomi/otomi-tasks" }}
-      tag: {{ $c | get "jobs.certs-aws.image.tag" "v0.1.1" }}
+      tag: {{ $c | get "jobs.certs-aws.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.certs-aws.image.pullPolicy" "IfNotPresent" }}
     schedule: "0/1 * * * *" # every minute
     # schedule: "0 1 * * *" # every day
     shell: bash
-    config:
+    env:
       REGION: {{ $v.cluster.region }}
       # DOMAINS: '{{ $vars.domains }}'
       # TODO: check why toJson does not work on $vars.domains, so we can remove this workaround

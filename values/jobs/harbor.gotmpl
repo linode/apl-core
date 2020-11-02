@@ -29,14 +29,14 @@ tasks:
       script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
     image:
       repository: {{ $c | get "jobs.harbor.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.harbor.image.tag" "v0.1.1" }}
+      tag: {{ $c | get "jobs.harbor.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.harbor.image.pullPolicy" "IfNotPresent" }}
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
       HARBOR_USER: admin
       OIDC_CLIENT_ID: {{ $o.clientID }}
       OIDC_CLIENT_SECRET: {{ $o.clientSecret }}
-    config:
+    env:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
       TEAM_NAMES: '{{ $teamNames | toJson }}'
       OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}'
