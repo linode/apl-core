@@ -743,6 +743,7 @@ properties:
         type: string
   otomi:
     type: object
+    additionalProperties: false
     properties:
       hasCloudLB:
         type: boolean
@@ -763,6 +764,11 @@ properties:
         type: boolean
         description: Wether this cluster is monitored under a RedKubes Premium SLA. Sends all notifications to RedKubes.
         default: false
+      mode:
+        type: string
+        default: ce
+        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee)
+        enum: [ce, ee]
       pullSecret:
         type: string
         description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
