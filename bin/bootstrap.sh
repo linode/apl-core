@@ -5,9 +5,9 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
 . $ENV_DIR/.secrets
-has_otomi=false
+has_otomi=0
 skip_demo_files=${1-'0'}
-[ -f $ENV_DIR/bin/otomi ] && has_otomi=true
+[ -f $ENV_DIR/bin/otomi ] && has_otomi=1
 
 function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
@@ -21,8 +21,8 @@ bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
 
 # The very first time we use latest image
-img="otomi/core:$(latest)"
-[ $has_otomi ] && img="otomi/core:$(otomi_image_tag)"
+img='otomi/core:latest'
+[[ "$has_otomi" == "1" ]] && img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
@@ -50,7 +50,7 @@ if [ "${OTOMI_PULLSECRET-}" != "" ]; then
   cp -f $PWD/docker-compose.yml $ENV_DIR/
   cp -f $PWD/bin/console.sh $bin_path
 fi
-if [ ! $has_otomi ]; then
+if [[ "$has_otomi" == "0" ]]; then
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"
   echo ". bin/aliases"
