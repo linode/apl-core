@@ -17,6 +17,7 @@
     "ingressgateway",
     "istioctl",
     "istiod",
+    "kubeval",
     "millis",
     "mkilled",
     "nindent",
