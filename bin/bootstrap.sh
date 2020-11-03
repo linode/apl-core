@@ -19,7 +19,10 @@ function generate_loose_schema() {
 # install CLI
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
-img="otomi/core:$(otomi_image_tag)"
+
+# The very first time we use latest image
+img="otomi/core:$(latest)"
+[ $has_otomi ] && img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
