@@ -2,6 +2,8 @@ charts:
     external-dns:
         domainFilters:
             - aks.otomi.cloud
+        azure:
+            region: westeurope
 clouds:
     azure:
         diskType: Standard_LRS
