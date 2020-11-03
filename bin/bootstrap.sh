@@ -5,8 +5,8 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
 . $ENV_DIR/.secrets
-
-skip_demo_files=$1
+has_otomi=false
+skip_demo_files=${1-'0'}
 [ -f $ENV_DIR/bin/otomi ] && has_otomi=true
 
 function generate_loose_schema() {
