@@ -15,83 +15,39 @@ Other parts of the platform:
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): tasks used by core to glue all it's pieces together
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): clients used by the tasks, generated from vendors' openapi specs
 
-This readme is aimed at development and initial deployment. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md)
+This readme is aimed at development. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
 
-This document has the following index:
+To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://redkubes.github.io/otomi/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
 
-1. [Prerequisites for installation](#1-prerequisites)
-2. [Development](#2-development)
-3. [Deployment](#3-deployment)
-
-## 1. Prerequisites
-
-### 1.1 Working k8s cluster(s)
-
-Admin accessible k8s cluster(s). At the moment we support two versions down from 1.19, so at least 1.17.
-
-If you don't have access with kubectl immediately, you have to pull the credentials from the cloud:
-
-- Azure: `az aks get-credentials --resource-group otomi-aks-dev --name otomi-aks-dev --admin`
-- AWS: `aws eks update-kubeconfig --name otomi-eks-dev`
-- Google: `gcloud container clusters get-credentials otomi-gke-dev --region europe-west4 --project otomi-cloud`
-
-If you are not logged in with the correct credentials because you were logged in for another cloud account, then re-login first:
-
-- Azure: `az login`
-- AWS: `aws login eks`
-- Google: `gcloud auth login`
-
-### 1.2 Docker credentials for local tooling
-
-When you are a RedKubes dev, please use the following command to configure Docker to use the correct credentials for pulling the API image (paid license) locally.
-
-```bash
-gcloud auth configure-docker
-```
-
-Otherwise you will have to use the OTOMI_PULLSECRET to do the same:
-
-```bash
-# login with the pull secret's embedded password, which is a google account
-repo="eu.gcr.io"
-pass=$(echo $OTOMI_PULLSECRET | base64 -d | jq '.auths["eu.gcr.io"].password|fromjson')
-docker login -u _json_key -p "$pass" $repo
-```
-
-### 1.3 Values repo
-
-If you don't yet have a values repo, you can start one in a new folder like this:
-
-```bash
-docker run -e ENV_DIR=$PWD -v $PWD:$PWD otomi/stack:latest bin/bootstrap.sh
-```
-
-This will also install the needed artifacts (such as the Otomi CLI) and demo values. If you just want to proceed with the demo values skip to step 3.
-
-Otherwise please read the `README.md` that is exported as it has extensive instructions on initial configuration.
-
-### 1.4 Key Service Account
-
-Please refer to [SOPS](https://github.com/mozilla/sops) to get acquainted and choose / wire up your KMS provider.
-
-### 1.5 Local tooling
-
-- npm@~10.0 binary
-- `npm install` in root
-
-## 2. Development
+## Development
 
 Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies by reading our [special section on go templating](./docs/GO_TEMPLATING.md).
 
-### 2.1 Testing
-
-To test code against running clusters you will need to export at least `ENV_DIR`, `CLOUD` and `CLUSTER` and source the aliases:
+For the next steps please target your values repo and cluster, and source the aliases:
 
 ```bash
-export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo && . bin/aliases
+# assuming you followed the previous steps and created otomi-values repo next to this:
+export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo
+. bin/aliases
 ```
 
-After changing code you can do a diff to see everything still works:
+### 1. Validating changes
+
+You can check wether resulting manifests violate any of our output checks:
+
+```bash
+otomi validate-templates
+```
+
+This will check wether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
+
+We are also integrating another solution based on [conftest](https://www.conftest.dev). It allows to create OPA policies that are used both for statical analysis (at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check wether manifests are conformant.
+
+### 2. Diffing changes
+
+To test changes in code against running clusters you will need to export at least `ENV_DIR`, `CLOUD` and `CLUSTER` and source the aliases:
+
+After changing code you can do a diff to see everything still works and what has changed in the output manifests:
 
 ```bash
 otomi diff
@@ -99,19 +55,22 @@ otomi diff
 otomi diff -l name=prometheus-operator
 ```
 
-## 3. Deployment
+### 3. Deploying changes
 
-It is preferred that deployment is done from the values repo, as it is tied to a values repo, and thus can do least damage.
+It is preferred that deployment is done from the values repo, as it is tied to the clusters listed there only, and thus has a smaller blast radius.
 When you feel that you are in control and want fast iteration you can connect to a values repo directly by exporting `ENV_DIR`. It is mandatory and won't work without it. The CLI will also check that you are targeting `kubectl`'s `current-context` as a failsafe mechanism.
 
 To deploy everything in the stack:
 
 ```bash
+# target your cluster
+export CLOUD=google && CLUSTER=demo
+# and deploy
 otomi deploy
 ```
 
 NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
-Retrying the command usuall works, but we have created an issue to workaround this annoyance ([#178](https://github.com/redkubes/otomi-core/issues/178)).
+Retrying the command usuall works, so do that to work around it for now.
 
 It is also possible to target individual helmfile releases from the stack:
 
