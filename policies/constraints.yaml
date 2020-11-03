@@ -51,3 +51,10 @@ parameters:
       readOnly: true
     - pathPrefix: /tmp/
       readOnly: false
+
+  # must provide all required labels
+  # comment this block to allow any labels
+  labels:
+    # - app.kubernetes.io/managed-by: Helm
+    # - app.kubernetes.io/part-of: otomi
+    # - heritage: Helm

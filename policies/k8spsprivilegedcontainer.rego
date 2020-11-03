@@ -16,3 +16,11 @@ input_containers[c] {
     c := object.spec.initContainers[_]
 }
 
+input_containers[c] {
+    c := object.spec.template.spec.containers[_]
+}
+
+input_containers[c] {
+    c := object.spec.template.spec.initContainers[_]
+}
+
