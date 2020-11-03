@@ -17,3 +17,18 @@ violation[{"msg": msg}] {
   msg := sprintf("container <%v> has an invalid image repo <%v>, allowed repos are %v", [container.name, container.image, parameters.repos])
 }
 
+# enable deployments sts 
+violation[{"msg": msg}] {
+  container := object.spec.template.spec.containers[_]
+  satisfied := [good | repo = parameters.repos[_] ; good = startswith(container.image, repo)]
+  not any(satisfied)
+  msg := sprintf("container <%v> has an invalid image repo <%v>, allowed repos are %v", [container.name, container.image, parameters.repos])
+}
+
+violation[{"msg": msg}] {
+  container := object.spec.template.spec.initContainers[_]
+  satisfied := [good | repo = parameters.repos[_] ; good = startswith(container.image, repo)]
+  not any(satisfied)
+  msg := sprintf("container <%v> has an invalid image repo <%v>, allowed repos are %v", [container.name, container.image, parameters.repos])
+}
+
