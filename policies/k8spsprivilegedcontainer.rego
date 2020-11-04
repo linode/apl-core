@@ -1,6 +1,5 @@
 package k8spspprivileged
-import data.lib.helpers
-import data.lib.helpers.object
+import data.lib.core
 
 violation[{"msg": msg, "details": {}}] {
     c := input_containers[_]
@@ -9,18 +8,19 @@ violation[{"msg": msg, "details": {}}] {
 }
 
 input_containers[c] {
-    c := object.spec.containers[_]
+    c := core.resource.spec.containers[_]
 }
 
 input_containers[c] {
-    c := object.spec.initContainers[_]
+    c := core.resource.spec.initContainers[_]
 }
 
-input_containers[c] {
-    c := object.spec.template.spec.containers[_]
-}
+# enable deploys sts
+# input_containers[c] {
+#     c := object.spec.template.spec.containers[_]
+# }
 
-input_containers[c] {
-    c := object.spec.template.spec.initContainers[_]
-}
+# input_containers[c] {
+#     c := object.spec.template.spec.initContainers[_]
+# }
 

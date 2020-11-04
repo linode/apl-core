@@ -2,11 +2,11 @@ parameters:
   # banned tags
   tags:
     - ''
-    - 0.3.7-debian-10-r103
-    - 5.0.7-debian-10-r32
-    - v1.1.0
-    - latest
-    - master
+    # - 0.3.7-debian-10-r103
+    # - 5.0.7-debian-10-r32
+    # - v1.1.0
+    # - latest
+    # - master
 
   # allowed repos
   repos:
@@ -16,39 +16,41 @@ parameters:
     - quay.io
     - gcr.io
     - ghcr.io
-    - us.gcr.io
-    - busybox
-    - docker.io
-    - angelbarrera92
+    # - us.gcr.io
+    # - busybox
+    # - docker.io
+    # - goharbor
+    # - grafana
+    # - istio
+    # - drone
+    # - prom
     - bats
-    - curlimages
-    - dduportal
-    - drone
-    - goharbor
-    - grafana
-    - istio
-    - kennethreitz
     - kiwigrid
-    - prom
+    - dduportal
     - weaveworks
+    - curlimages
+    - kennethreitz
+    - angelbarrera92
 
   # sec ctx
   runAsUser:
+    # rule: 'RunAsAny'
     rule: 'MustRunAs'
+    # rule: 'MustRunAsNonRoot'
     ranges: # testing
       - min: 1001
         max: 1001
-      - min: 472
-        max: 472
+      - min: 2
+        max: 998
 
   # qos
   cpu: 1000m
-  memory: 1Gi
+  memory: 2Gi
 
   # host access
   allowedHostPaths:
-    - pathPrefix: /var/
-      readOnly: true
+    # - pathPrefix: /var/
+    #   readOnly: true
     - pathPrefix: /tmp/
       readOnly: false
 

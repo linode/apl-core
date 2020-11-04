@@ -23,7 +23,7 @@ spec:
   targets:
     - target: admission.k8s.gatekeeper.sh
       libs:
-        - |
-          {{- readFile "../../policies/lib/helpers.rego" | nindent 10 }}
-      rego: |
+        - |-
+          {{- readFile "../../policies/lib/core.rego" | nindent 10 }}
+      rego: |-
         {{- readFile "../../policies/k8spsphostfilesystem.rego" | nindent 8 }}
