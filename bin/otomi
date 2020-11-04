@@ -135,7 +135,10 @@ function set_otomi_image() {
 }
 
 evaluate_secrets() {
-  [ ! -f "$ENV_DIR/.sops.yaml" ] && (echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"; return 0;)
+  [ ! -f "$ENV_DIR/.sops.yaml" ] && {
+    echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
+    return 0
+  }
   if [ "$CI" == "" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
