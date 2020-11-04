@@ -7,8 +7,8 @@ teamConfig:
                   ksvc:
                       scaleToZero: true
                       image:
-                          repository: otomi/helloworld-nodejs
-                          tag: 1.2.12
+                          repository: otomi/nodejs-helloworld
+                          tag: master
                       env:
                           - name: TARGET
                             value: World, I just woke up
