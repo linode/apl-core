@@ -937,6 +937,8 @@ properties:
             properties:
               cookieSecret:
                 type: string
+                description: Cookie secret must be 16, 24, or 32 bytes to create an AES cipher.
+                pattern: ^([\S]{8}){2,4}$
       otomi-api:
         type: object
         additionalProperties: false
