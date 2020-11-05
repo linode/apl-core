@@ -592,6 +592,9 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
+            default: false
           adminUser:
             type: string
           debug:
