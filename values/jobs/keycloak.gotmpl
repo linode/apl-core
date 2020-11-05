@@ -33,7 +33,7 @@ tasks:
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     env:
-      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
+      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
