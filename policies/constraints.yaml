@@ -16,14 +16,14 @@ parameters:
     - quay.io
     - gcr.io
     - ghcr.io
-    # - us.gcr.io
-    # - busybox
-    # - docker.io
-    # - goharbor
-    # - grafana
-    # - istio
-    # - drone
-    # - prom
+    - us.gcr.io
+    - busybox
+    - docker.io
+    - goharbor
+    - grafana
+    - istio
+    - drone
+    - prom
     - bats
     - kiwigrid
     - dduportal
