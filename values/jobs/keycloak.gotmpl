@@ -24,7 +24,7 @@ tasks:
       script: |
         {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
         printf "Waiting until keycloak is accessible."
-        until $(curl $INSECURE --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
+        until $(curl "$INSECURE" --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
           printf '.'
           sleep 5
         done
