@@ -8,7 +8,7 @@ teamConfig:
                       scaleToZero: true
                       image:
                           repository: otomi/nodejs-helloworld
-                          tag: master
+                          tag: latest
                       env:
                           - name: TARGET
                             value: World, I just woke up
