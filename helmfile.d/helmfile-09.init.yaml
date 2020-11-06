@@ -24,11 +24,11 @@ releases:
       pkg: knative
     values:
       - ../values/knative/knative-serving-raw.gotmpl
-  - name: gatekeeper-operator-artifacts
+  - name: gatekeeper-artifacts
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
     labels:
-      pkg: gatekeeper-operator
+      pkg: gatekeeper
     hooks:
       - events: ["prepare"]
         showlogs: false
