@@ -25,5 +25,6 @@
   },
   "yaml.schemas": {
     "http://json-schema.org/draft/2019-09/schema#": "values-schema.yaml"
-  }
+  },
+  "shellformat.flag": "-i 2 -ci"
 }
