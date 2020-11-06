@@ -2,7 +2,7 @@
 set -eu
 
 echo "Building constraints from local policies"
-generatedArtifactsPath="../values/gatekeeper/artifacts/"
+generatedArtifactsPath="../values/gatekeeper/constraints/"
 
 rm -f "$generatedArtifactsPath/*"
 konstraint create ../policies -o $generatedArtifactsPath
