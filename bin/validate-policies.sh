@@ -7,11 +7,11 @@ EXIT_FAST=${EXIT_FAST:-"1"}
 
 k8sResourcesPath="/tmp/otomi/conftest-fixtures"
 policiesPath="policies"
-exitcode=1
 
 . bin/common.sh
 
 cleanup() {
+  exitcode=$?
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath
   exit $exitcode
@@ -19,7 +19,6 @@ cleanup() {
 trap cleanup EXIT
 
 run_setup() {
-  exitcode=1
   rm -rf $k8sResourcesPath && mkdir -p $k8sResourcesPath
 }
 
@@ -33,7 +32,7 @@ validate_policies() {
 
   # validate_resources
   echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
-  conftest test --fail-on-warn --all-namespaces -d "$policiesPath/constraints.yaml" -p "$policiesPath/lib/core.rego" -p $policiesPath $k8sResourcesPath && exitcode=0
+  conftest test --fail-on-warn --all-namespaces -d "$policiesPath/constraints.yaml" -p "$policiesPath/lib/core.rego" -p $policiesPath $k8sResourcesPath
 
 }
 
