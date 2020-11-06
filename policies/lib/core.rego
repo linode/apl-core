@@ -44,11 +44,14 @@ format_with_id(msg, id) = msg_fmt {
 
 apiVersion = resource.apiVersion
 name = resource.metadata.name
-gkv := split(apiVersion, "/")
-group := gkv[0] {
+gv := split(apiVersion, "/")
+group = gv[0] {
     contains(apiVersion, "/")
 }
-version := gkv[count(gkv) - 1]
+group = "core" {
+    not contains(apiVersion, "/")
+}
+version := gv[count(gv) - 1]
 kind = resource.kind
 labels = resource.metadata.labels
 annotations = resource.metadata.annotations

@@ -5,12 +5,12 @@ parameters:
     # - 0.3.7-debian-10-r103
     # - 5.0.7-debian-10-r32
     # - v1.1.0
-    # - latest
-    # - master
+    - latest
+    - master
 
   # allowed repos
   repos:
-    - otomi
+    # - otomi
     - k8s.gcr
     - eu.gcr.io
     - quay.io
@@ -44,8 +44,8 @@ parameters:
         max: 998
 
   # qos
-  cpu: 1000m
-  memory: 2Gi
+  cpu: 10m
+  memory: 120Mi
 
   # host access
   allowedHostPaths:
@@ -60,3 +60,11 @@ parameters:
     # - app.kubernetes.io/managed-by: Helm
     # - app.kubernetes.io/part-of: otomi
     # - heritage: Helm
+
+  hostNetwork:
+    enabled: true
+    min: 99
+    max: 100
+
+  privilegedContainers:
+    enabled: false
