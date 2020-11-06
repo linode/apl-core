@@ -8,6 +8,7 @@
   "cSpell.enabled": true,
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
+  "prettier.enable": true,
   "files.associations": {
     "*.gotmpl": "helm",
     "*.tmpl": "nginx",
