@@ -18,8 +18,10 @@ ARG HELMFILE_VERSION=v0.128.1
 ARG EKSCTL_VERSION=0.30.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
-# https://github.com/instrumenta/kubeval/releases
+# https://github.com/open-policy-agent/conftest/releases
 ARG CONFTEST_VERSION=0.21.0
+# https://github.com/plexsystems/konstraint/releases
+ARG KONSTRAINT_VERSION=0.9.0
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -106,6 +108,10 @@ RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 # conftest https://github.com/open-policy-agent/conftest/releases
 ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
 RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
+
+# konstraint https://github.com/plexsystems/konstraint/releases/
+ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
+RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
 # node 12 https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -

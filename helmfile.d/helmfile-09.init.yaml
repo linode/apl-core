@@ -29,6 +29,10 @@ releases:
     namespace: gatekeeper-system
     labels:
       pkg: gatekeeper-operator
+    hooks:
+      - events: ["prepare"]
+        showlogs: false
+        command: "../bin/build-constraints.sh"
     <<: *raw
   - name: redis # for oauth2-proxy
     installed: true
