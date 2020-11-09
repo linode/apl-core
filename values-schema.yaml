@@ -164,6 +164,9 @@ definitions:
     required:
       - name
       - type
+  url:
+    type: string
+    pattern: ^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$
   alerts:
     properties:
       groupInterval:
@@ -186,7 +189,7 @@ definitions:
         additionalProperties: false
         properties:
           url:
-            type: string
+            '$ref': '#/definitions/url'
             description: A Slack webhook URL.
           channel:
             type: string
@@ -995,7 +998,7 @@ properties:
                   channel:
                     type: string
                   url:
-                    type: string
+                    '$ref': '#/definitions/url'
           grafana:
             type: object
             additionalProperties: false
