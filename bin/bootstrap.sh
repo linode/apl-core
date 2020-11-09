@@ -31,7 +31,7 @@ cp -r $PWD/.values/.vscode $ENV_DIR/
 
 generate_loose_schema
 
-for f in '.gitattributes' '.sops.yaml'; do
+for f in '.gitattributes' '.sops.yaml.sample'; do
   [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
 done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do

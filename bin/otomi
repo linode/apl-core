@@ -103,13 +103,13 @@ function show_usage() {
 function check_docker_running() {
   set +e
   docker --version &>/dev/null
+  set -e
   if [ "$?" = "0" ]; then
     has_docker=1
   else
     echo "Otomi CLI expects a running docker daemon!"
     exit 1
   fi
-  set -e
 }
 
 function evaluate_k8s_context() {
@@ -266,10 +266,10 @@ function execute() {
     bin/console.sh $@
     ;;
   decrypt)
-    exit_if_sops_file_missing
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
-    if [ $@ ]; then
+    if [ "$@" != "" ]; then
       for f in $@; do
         echo "Decrypting $f"
         drun helm secrets dec ./env/$f >/dev/null
@@ -288,10 +288,10 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfileOutputHide
     ;;
   encrypt)
-    exit_if_sops_file_missing
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
-    if [ $@ ]; then
+    if [ "$@" != "" ]; then
       for f in $@; do
         echo "Encrypting $f"
         drun helm secrets enc ./env/$f >/dev/null
@@ -312,7 +312,7 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
     ;;
   rotate-keys)
-    exit_if_sops_file_missing
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh rotate
