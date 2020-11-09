@@ -74,7 +74,7 @@ resources:
     - kind: ServiceAccount
       name: default
       namespace: team-admin
-  {{- if eq $v.otomi.mode "ee" }}
+  {{- if $v | get "otomi.pullSecret" nil }}
   {{- range $ns := list "drone-pipelines" "shared" "maintenance" }}
   - apiVersion: v1
     kind: Secret
