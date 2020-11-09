@@ -21,7 +21,7 @@ ARG KUBEVAL_VERSION=0.15.0
 # https://github.com/open-policy-agent/conftest/releases
 ARG CONFTEST_VERSION=0.21.0
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.9.0
+ARG KONSTRAINT_VERSION=0.9.1
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
