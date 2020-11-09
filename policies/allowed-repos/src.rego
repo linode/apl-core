@@ -12,8 +12,9 @@ import data.lib.pods
 policyID = "allowedrepos"
 
 violation[{"msg": msg}] {
+  core.parameters.allowedrepos.enabled
   pods.containers[container]
-  satisfied := [good | repo = core.parameters.repos[_] ; good = startswith(container.image, repo)]
+  satisfied := [good | repo = core.parameters.allowedrepos.repos[_] ; good = startswith(container.image, repo)]
   not any(satisfied)
-  msg := sprintf("Policy %s: - container <%v> has an invalid image repo <%v>, allowed repos are %v", [policyID, container.name, container.image, core.parameters.repos])
+  msg := sprintf("Policy %s: - container <%v> has an invalid image repo <%v>, allowed repos are %v", [policyID, container.name, container.image, core.parameters.allowedrepos.repos])
 }

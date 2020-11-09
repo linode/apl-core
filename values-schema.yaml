@@ -681,6 +681,12 @@ properties:
               properties:
                 parameters:
                   type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: true
+                  additionalProperties: true
+                  required: [enabled]
                 policyName:
                   type: string
                   enum:
