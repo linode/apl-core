@@ -667,12 +667,36 @@ properties:
             type: array
             items:
               type: string
-      gatekeeper-operator:
+      gatekeeper:
         type: object
         additionalProperties: false
         properties:
           enabled:
             type: boolean
+          constraints:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                parameters:
+                  type: object
+                policyName:
+                  type: string
+                  enum:
+                    [
+                      allowedrepos,
+                      bannedimagetags,
+                      containerlimits,
+                      requiredlabels,
+                      psphostfilesystem,
+                      psphostnetworkingports,
+                      pspallowedusers,
+                      pspprivileged,
+                    ]
+              required:
+                - policyName
+                - parameters
       harbor:
         type: object
         additionalProperties: false

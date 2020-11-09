@@ -1,0 +1,3 @@
+charts:
+    gatekeeper:
+        enabled: false
