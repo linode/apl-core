@@ -20,15 +20,18 @@ function customer_name() {
   yq r $otomiSettings "customer.name"
 }
 
-function exit_if_sops_file_missing(){
-  [[ ! -f "$ENV_DIR/.sops.yaml" ]] && (echo "Error: The $ENV_DIR/.sops.yaml does not exists"; exit 1;)
+function check_sops_file() {
+  [[ ! -f "$ENV_DIR/.sops.yaml" ]] && (
+    echo "Error: The $ENV_DIR/.sops.yaml does not exists"
+    exit 1
+  )
   return 0
 }
 
-function hf_values(){
+function hf_values() {
   [ "${VERBOSE-0}" == "0" ] && quiet='--quiet'
-  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern | \
-  yq read -P - 'releases[0].values[0]'
+  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
+    yq read -P - 'releases[0].values[0]'
 }
 
 function prepare_crypt() {
