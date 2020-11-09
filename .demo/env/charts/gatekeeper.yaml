@@ -21,6 +21,7 @@ charts:
                 enabled: false
                 repos:
                     - otomi
+                    - mcr.microsoft.com
                     - k8s.gcr
                     - eu.gcr.io
                     - quay.io
