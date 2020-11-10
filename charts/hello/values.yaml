@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: otomi/helloworld-nodejs
-  tag: 1.1.0
+  repository: otomi/nodejs-helloworld
+  tag: master
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

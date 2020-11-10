@@ -22,9 +22,9 @@ tasks:
       image:
         repository: curlimages/curl
       script: |
-        {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem \{{ end }}
-        printf "Waiting until kecloak is accessible."
-        until $(curl --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
+        {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+        printf "Waiting until keycloak is accessible."
+        until $(curl "$INSECURE" --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
           printf '.'
           sleep 5
         done
@@ -33,7 +33,7 @@ tasks:
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     env:
-      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
+      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}

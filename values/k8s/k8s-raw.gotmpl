@@ -74,6 +74,7 @@ resources:
     - kind: ServiceAccount
       name: default
       namespace: team-admin
+  {{- if $v | get "otomi.pullSecret" nil }}
   {{- range $ns := list "drone-pipelines" "shared" "maintenance" }}
   - apiVersion: v1
     kind: Secret
@@ -90,6 +91,7 @@ resources:
       namespace: {{ $ns }}
     imagePullSecrets:
     - name: gcr-json-key
+  {{- end }}
   {{- end }}
   - apiVersion: scheduling.k8s.io/v1beta1
     kind: PriorityClass

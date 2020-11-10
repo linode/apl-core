@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -uo pipefail
-
 EXIT_FAST=${EXIT_FAST:-"1"}
 [[ $EXIT_FAST == "1" ]] && set -e
 
@@ -74,6 +73,8 @@ validate_templates() {
   run_setup
   # generate_manifests
   echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
+
+  $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
   $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   echo "Processing CRD files."
@@ -98,7 +99,9 @@ validate_templates() {
   local skipKinds="CustomResourceDefinition"
   local skipFilenames="crd,knative-services"
   {
-    kubeval --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
+    set +o pipefail
+    kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
+    set -o pipefail
   } && exitcode=0
 
 }
