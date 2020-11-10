@@ -675,19 +675,26 @@ properties:
             type: boolean
           constraints:
             type: array
+            description: |
+              List of {policy: parameter} objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
             items:
               type: object
               additionalProperties: false
               properties:
                 parameters:
                   type: object
+                  description: |
+                    Parameters used in rego policy files by Konstraint library to generate Constraint objects needed for templating
                   properties:
                     enabled:
                       type: boolean
+                      description: |
+                        Allow toggling individual policies on/off
                       default: true
                   additionalProperties: true
                   required: [enabled]
                 policyName:
+                  pattern: ^[a-z0-9]*$
                   type: string
                   enum:
                     [
