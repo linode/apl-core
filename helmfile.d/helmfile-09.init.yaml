@@ -27,8 +27,6 @@ releases:
   - name: gatekeeper-artifacts
     installed: {{ $c | get "gatekeeper.enabled" false }}
     namespace: gatekeeper-system
-    # values:
-    #   - '../values/gatekeeper/gatekeeper-raw.gotmpl'
     labels:
       pkg: gatekeeper
     hooks:
