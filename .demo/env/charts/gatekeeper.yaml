@@ -8,17 +8,17 @@ charts:
                 memory: 120Mi
               policyName: containerlimits
             - parameters:
-                enabled: false
+                enabled: true
                 tags:
                     - ''
-                    - 0.3.7-debian-10-r103
-                    - 5.0.7-debian-10-r32
-                    - v1.1.0
-                    - latest
-                    - master
+                    # - 0.3.7-debian-10-r103
+                    # - 5.0.7-debian-10-r32
+                    # - v1.1.0
+                    # - latest
+                    # - master
               policyName: bannedimagetags
             - parameters:
-                enabled: false
+                enabled: true
                 repos:
                     - otomi
                     - mcr.microsoft.com
@@ -69,8 +69,6 @@ charts:
               policyName: requiredlabels
             - parameters:
                 enabled: false
-                min: 99
-                max: 100
               policyName: psphostnetworkingports
             - parameters:
                 enabled: false

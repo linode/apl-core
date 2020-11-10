@@ -15,7 +15,7 @@ parametersFile=$(mktemp -u)
 cleanup() {
   exitcode=$?
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-  [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath $constraintsFile $parametersFile
+  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $constraintsFile $parametersFile
   exit $exitcode
 }
 trap cleanup EXIT
