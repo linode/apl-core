@@ -694,6 +694,8 @@ properties:
                   additionalProperties: true
                   required: [enabled]
                 policyName:
+                  description: |
+                    Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
                   pattern: ^[a-z0-9]*$
                   type: string
                   enum:
