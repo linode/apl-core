@@ -25,14 +25,17 @@ releases:
     values:
       - ../values/knative/knative-serving-raw.gotmpl
   - name: gatekeeper-artifacts
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
+    installed: {{ $c | get "gatekeeper.enabled" false }}
     namespace: gatekeeper-system
+    # values:
+    #   - '../values/gatekeeper/gatekeeper-raw.gotmpl'
     labels:
       pkg: gatekeeper
     hooks:
       - events: ["prepare"]
         showlogs: false
         command: "../bin/build-constraints.sh"
+        args: [true]
     <<: *raw
   - name: redis # for oauth2-proxy
     installed: true

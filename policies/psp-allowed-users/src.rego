@@ -1,3 +1,9 @@
+# @title Containers must include allowed securityContext
+#
+# Granting containers a securityContext object outisde of the defined
+# parameters is not allowed
+#
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package pspallowedusers
 import data.lib.core
 import data.lib.pods

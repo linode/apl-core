@@ -1,3 +1,7 @@
+# @title Containers
+#
+#
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package bannedimagetags
 import data.lib.core
 import data.lib.pods

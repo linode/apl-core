@@ -1,3 +1,7 @@
+# @title Containers
+#
+#
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package containerlimits
 import data.lib.core
 import data.lib.pods
