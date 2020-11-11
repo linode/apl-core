@@ -1,0 +1,6 @@
+charts:
+    otomi-console:
+        image:
+            pullPolicy: Always
+            tag: v0.4.24
+

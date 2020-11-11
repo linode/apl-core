@@ -63,14 +63,7 @@ spec:
           subPath: nginx.conf
         {{- if .Values.internalTLS.enabled }}
         - name: portal-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: portal-internal-certs
-          mountPath: /etc/harbor/tls/portal.crt
-          subPath: tls.crt
-        - name: portal-internal-certs
-          mountPath: /etc/harbor/tls/portal.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/portal
         {{- end }}
       volumes:
       - name: portal-config

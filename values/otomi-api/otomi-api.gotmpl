@@ -2,24 +2,19 @@
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-api" dict }}
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
+# so we get package.json version in two regexFind steps:
+{{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 
 replicaCount: 1
 
-priorityClassName: "otomi-critical"
+{{- if (hasKey $o "resources.api") }}
 resources:
-  {{- if (hasKey $o "resources.api") }}
-    {{- $o.resources.api | toYaml | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 300m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+  {{- $o.resources.api | toYaml | nindent 2 }}
+{{- end }}
+
 image:
   registry: eu.gcr.io
-  repository: otomi-cloud/otomi-stack-api
+  repository: otomi-cloud/otomi-api
   tag: {{ $o.image.tag }}
   pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
@@ -27,18 +22,22 @@ secrets:
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
+  {{- if $v.sops.enabled }}
   GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
+  {{- end }}
   OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
   GIT_REPO_URL: {{ $o.git.repoUrl }}
-  GIT_BRANCH: {{ $o.git.branch | default "master" }}
+  GIT_BRANCH: {{ $o | get "git.branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
+  USE_SOPS: {{ $v.sops.enabled }}
+  CORE_VERSION: '{{ $version }}'
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -46,17 +45,13 @@ core:
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:
+  enabled: {{ $v.sops.enabled }}
+  {{- if $v.sops.enabled }}
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
+  {{- if (hasKey $o "resources.tools") }}
   resources:
-    {{- if (hasKey $o "resources.tools") }}
-      {{- $o.resources.tools | toYaml | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    {{- end }}
+    {{- $o.resources.tools | toYaml | nindent 4 }}
+  {{- end }}
+  {{- end }}

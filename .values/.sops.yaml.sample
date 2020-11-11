@@ -1,0 +1,9 @@
+---
+# see https://github.com/mozilla/sops
+creation_rules:
+    # Encrypt with AWS KMS (comma separated arn list):
+    # - kms: 'arn:aws:kms:*,arn:aws:kms*'
+    # Encrypt with Azure Key Vault's (comma separated vault endpoint list)
+    # - azure_keyvault: 'https://sops.vault.azure.net/keys/sops-key/some-string'
+    # Google KMS
+    - gcp_kms: projects/demo/locations/europe-west4/keyRings/demo/cryptoKeys/vault

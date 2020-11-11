@@ -1,11 +1,15 @@
 {{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 tasks:
   ingress-azure:
     type: cronjob
     enabled: false
-    image: otomi/tools:{{ $v.toolsVersion }}
-    config:
+    image:
+      repository: {{ $c | get "jobs.ingress-azure.image.repository" "otomi/tools" }}
+      tag: {{ $c | get "jobs.ingress-azure.image.tag" $v.toolsVersion }}
+      pullPolicy: {{ $c | get "jobs.ingress-azure.image.pullPolicy" "IfNotPresent" }}
+    env:
       LABELS: "app=ingress-azure"
       NS: ingress
     schedule: "0 * * * *" # once an hour!

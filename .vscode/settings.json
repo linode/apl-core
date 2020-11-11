@@ -2,12 +2,13 @@
   "[docker,shell]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[js,json,md,yaml]": {
+  "[ejs,js,json,md,yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "cSpell.enabled": true,
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
+  "prettier.enable": true,
   "files.associations": {
     "*.gotmpl": "helm",
     "*.tmpl": "nginx",
@@ -18,9 +19,12 @@
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",
     "otomi": "shellscript",
-    "bin/hooks/*": "shellscript"
+    "bin/hooks/*": "shellscript",
+    "CODE_OF_CONDUCT": "markdown",
+    "CONTRIBUTING": "markdown"
   },
   "yaml.schemas": {
     "http://json-schema.org/draft/2019-09/schema#": "values-schema.yaml"
-  }
+  },
+  "shellformat.flag": "-i 2 -ci"
 }

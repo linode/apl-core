@@ -4,7 +4,6 @@
     {"type": "revert", "section":"Reverts", "hidden": false},
     {"type": "feat", "section": "Features", "hidden": false},
     {"type": "fix", "section": "Bug Fixes", "hidden": false},
-    {"type": "improvement", "section": "Feature Improvements", "hidden": false},
     {"type": "docs", "section":"Docs", "hidden": false},
     {"type": "style", "section":"Styling", "hidden": false},
     {"type": "refactor", "section":"Code Refactoring", "hidden": false},

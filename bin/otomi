@@ -2,18 +2,17 @@
 #####################################################################################
 ##
 ## NOTE:
-## This is a command line tool to operate on otomi-stack.
+## This is a command line tool to operate on otomi-core.
 ## All commands are executed in docker container.
 ## Keep this file as simple as possible:
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
-## - only Docker is needed to run otomi-stack image
+## - only Docker is needed to run otomi-core image
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
 set -e
 
-script=$0
 command=$1
 [ "$ENV_DIR" == "" ] && env_unset=1
 ENV_DIR=${ENV_DIR:-$PWD}
@@ -37,6 +36,8 @@ function verbose_env() {
 VERBOSE=${VERBOSE:-"0"}
 # MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
 MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
+# EXIT_FAST - export this varaibale to exit the script on error
+EXIT_FAST=${EXIT_FAST:-"1"}
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -48,16 +49,16 @@ mount_stack_dir=0
 stack_dir='/home/app/stack'
 customer=$(customer_name)
 cmd_image=''
-docker_terminal_params='-it'
+docker_terminal_params='-t'
 helm_config=''
-readme_url='https://github.com/redkubes/otomi-stack'
+readme_url='https://github.com/redkubes/otomi-core'
 
 function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
   [ "$VERBOSE" == "1" ] && echo "CWD: $cwd"
-  if [[ "$cwd" == "otomi-stack" ]]; then
+  if [[ "$cwd" == "otomi-core" ]]; then
     [ "$env_unset" == "1" ] && echo "Error: The ENV_DIR environment variable is not set" && exit 1
-    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-stack dir"
+    [ "$VERBOSE" == "1" ] && echo "Mounting otomi-core dir"
     stack_dir=$PWD
     mount_stack_dir=1
   fi
@@ -72,38 +73,43 @@ function set_helm_config() {
 
 function show_usage() {
   echo "otomi usage:
-    apply      apply k8s resources (use labels like '-l name=prometheus-operator')
-    bash       run interactive bash shell in otomi-stack container
-    bootstrap  bootstrap values repo with artifacts corresponding to the cluster's stack version
-    commit     wrapper for encrypt > generate pipelines > git commit changed files
-    console    starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
-    decrypt    decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
-    deploy     execute otomi-stack deploy script
-    diff       diff k8s resources (use labels like '-l name=prometheus-operator')
-    encrypt    encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
-    help       print this help
-    hf         run helmfile with CLUSTER and CLOUD already set
-    lint       runs a linter that will check OPA rules on templates (coming soon!)
-    pull       wrapper for git pull && bootstrap
-    switch     switches context to the target cluster and boostraps
-    template   export k8s resources (use labels like '-l name=prometheus-operator')
-    test       runs some tests againts the target cluster
-    values     show helmfile values for CLOUD and CLUSTER
-    validate   validate values for each cluster against JSON schema
-    x          execute command in container
+    apply               apply k8s resources (use labels like '-l name=prometheus-operator')
+    bash                run interactive bash shell in otomi-core container
+    bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
+    commit              wrapper for encrypt > generate pipelines > git commit changed files
+    console             starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
+    deploy              execute otomi-core deploy script
+    diff                diff k8s resources (use labels like '-l name=prometheus-operator')
+    encrypt             encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
+    help                print this help
+    hf                  run helmfile with CLUSTER and CLOUD already set
+    pull                wrapper for git pull && bootstrap
+    switch              switches context to the target cluster and boostraps
+    template            export k8s resources (use labels like '-l name=prometheus-operator')
+    test                runs some tests againts the target cluster
+    values              show helmfile values for CLOUD and CLUSTER
+    validate-templates  validate generated manifests against supported k8s versions/CRDs and defined OPA rules
+    validate-values     validate values for each cluster against JSON schema
+    x                   execute command in container
+
+  Extra environment variables:
+    VERBOSE=1; otomi <cmd>          Run otomi CLI in verbose mode
+    MOUNT_TMP_DIR=1; otomi <cmd>    Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
+    EXIT_FAST=1; otomi <cmd>        Exit the script after an error is returned
   "
 }
 
 function check_docker_running() {
   set +e
   docker --version &>/dev/null
+  set -e
   if [ "$?" = "0" ]; then
     has_docker=1
   else
     echo "Otomi CLI expects a running docker daemon!"
     exit 1
   fi
-  set -e
 }
 
 function evaluate_k8s_context() {
@@ -124,11 +130,15 @@ function validate_k8s_context() {
 }
 
 function set_otomi_image() {
-  cmd_image="eu.gcr.io/otomi-cloud/otomi-stack:$(otomi_image_tag)"
+  cmd_image="otomi/core:$(otomi_image_tag)"
   return 0
 }
 
 evaluate_secrets() {
+  [ ! -f "$ENV_DIR/.sops.yaml" ] && {
+    echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
+    return 0
+  }
   if [ "$CI" == "" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
@@ -146,7 +156,7 @@ validate_cluster_env() {
 }
 
 is_repo() {
-  [[ "$(basename "$PWD")" == "otomi-stack" ]] && echo "Error: Should not be ran from otomi-stack" && exit 2
+  [[ "$(basename "$PWD")" == "otomi-core" ]] && echo "Error: Should not be ran from otomi-core" && exit 2
   return 0
 }
 
@@ -208,6 +218,7 @@ function drun() {
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
+      -e EXIT_FAST="$EXIT_FAST" \
       -w $stack_dir \
       $cmd_image \
       $command
@@ -218,16 +229,13 @@ function drun() {
 }
 
 function execute() {
-  local helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
-  local helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
   shift 2
   case $command in
   values)
     check_kube_context=0
     validate_cluster_env
     set -o pipefail
-    otomi_values
-    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e 's@../env@'"${ENV_DIR}"'@g'
+    drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern
     ;;
   test)
     validate_cluster_env
@@ -258,9 +266,10 @@ function execute() {
     bin/console.sh $@
     ;;
   decrypt)
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
-    if [ $@ ]; then
+    if [ "$@" != "" ]; then
       for f in $@; do
         echo "Decrypting $f"
         drun helm secrets dec ./env/$f >/dev/null
@@ -271,7 +280,7 @@ function execute() {
     ;;
   deploy)
     validate_cluster_env
-    drun bin/deploy.sh
+    drun bin/deploy.sh | grep -Ev $helmfileOutputHide
     ;;
   diff)
     validate_cluster_env
@@ -279,12 +288,13 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfileOutputHide
     ;;
   encrypt)
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
-    if [ $@ ]; then
+    if [ "$@" != "" ]; then
       for f in $@; do
         echo "Encrypting $f"
-        drun && helm secrets enc ./env/$f >/dev/null
+        drun helm secrets enc ./env/$f >/dev/null
       done
       exit
     fi
@@ -302,6 +312,7 @@ function execute() {
     drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
     ;;
   rotate-keys)
+    check_sops_file
     check_kube_context=0
     evaluate_secrets
     drun bin/crypt.sh rotate
@@ -316,6 +327,10 @@ function execute() {
     drun bin/test.sh
     drun $@
     ;;
+  validate-templates)
+    evaluate_secrets
+    drun bin/validate-templates.sh
+    ;;
   x)
     check_kube_context=0
     drun $@
@@ -325,7 +340,8 @@ function execute() {
     is_repo
     evaluate_secrets
     git -C $ENV_DIR pull
-    drun bin/validate-all.sh && bin/pre-commit.sh
+    drun bin/validate-all.sh
+    drun bin/pre-commit.sh
     git add . && git commit -m 'Manual commit' --no-verify
     ;;
   pull)
@@ -335,7 +351,7 @@ function execute() {
     git -C $ENV_DIR pull
     drun bin/bootstrap.sh 1
     ;;
-  validate)
+  validate-values)
     check_kube_context=0
     evaluate_secrets
     drun bin/validate-all.sh

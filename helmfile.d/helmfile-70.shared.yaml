@@ -11,10 +11,6 @@ releases:
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
     <<: *default
-  - name: harbor-artifacts
-    installed: {{ $c | get "harbor.enabled" false }}
-    namespace: harbor
-    <<: *raw
   - name: oauth2-proxy
     installed: true
     namespace: istio-system
@@ -30,10 +26,10 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: true
+    installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
     namespace: shared
     <<: *default
-  - name: otomi-web
+  - name: otomi-console
     installed: true
     namespace: shared
     <<: *default

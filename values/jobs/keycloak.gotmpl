@@ -12,14 +12,28 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $idp := $v.oidc.idp }}
-{{- $otomiTasksImage :=  "eu.gcr.io/otomi-cloud/otomi-stack-tasks:v0.1.0" -}}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 tasks:
   keycloak:
     type: job
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     enabled: true
-    image: {{ $otomiTasksImage }}
+    init:
+      image:
+        repository: curlimages/curl
+      script: |
+        {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+        printf "Waiting until keycloak is accessible."
+        until $(curl "$INSECURE" --output /dev/null --silent --head --fail https://keycloak.{{ $v.cluster.domain }}); do 
+          printf '.'
+          sleep 5
+        done
+    image:
+      repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
+      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
+      pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
+    env:
+      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}

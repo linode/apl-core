@@ -42,19 +42,27 @@ spec:
       - name: core
         image: {{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        startupProbe:
+          httpGet:
+            path: /api/v2.0/ping
+            scheme: {{ include "harbor.component.scheme" . | upper }}
+            port: {{ template "harbor.core.containerPort" . }}
+          failureThreshold: 360
+          initialDelaySeconds: {{ .Values.core.startupProbe.initialDelaySeconds }}
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /api/v2.0/ping
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.core.containerPort" . }}
-          initialDelaySeconds: {{ .Values.core.livenessProbe.initialDelaySeconds }}
+          failureThreshold: 2
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/v2.0/ping
             scheme: {{ include "harbor.component.scheme" . | upper }}
             port: {{ template "harbor.core.containerPort" . }}
-          initialDelaySeconds: 20
+          failureThreshold: 2
           periodSeconds: 10
         envFrom:
         - configMapRef:
@@ -76,11 +84,11 @@ spec:
           - name: INTERNAL_TLS_ENABLED
             value: "true"
           - name: INTERNAL_TLS_KEY_PATH
-            value: /etc/harbor/ssl/core.key
+            value: /etc/harbor/ssl/core/tls.key
           - name: INTERNAL_TLS_CERT_PATH
-            value: /etc/harbor/ssl/core.crt
+            value: /etc/harbor/ssl/core/tls.crt
           - name: INTERNAL_TLS_TRUST_CA_PATH
-            value: /harbor_cust_cert/harbor_internal_ca.crt
+            value: /etc/harbor/ssl/core/ca.crt
          {{- end }}
         ports:
         - containerPort: {{ template "harbor.core.containerPort" . }}
@@ -105,14 +113,7 @@ spec:
         {{- end }}
         {{- if .Values.internalTLS.enabled }}
         - name: core-internal-certs
-          mountPath: /harbor_cust_cert/harbor_internal_ca.crt
-          subPath: ca.crt
-        - name: core-internal-certs
-          mountPath: /etc/harbor/ssl/core.crt
-          subPath: tls.crt
-        - name: core-internal-certs
-          mountPath: /etc/harbor/ssl/core.key
-          subPath: tls.key
+          mountPath: /etc/harbor/ssl/core
         {{- end }}
         - name: psc
           mountPath: /etc/core/token
@@ -146,12 +147,12 @@ spec:
       {{- if .Values.expose.tls.enabled }}
       - name: ca-download
         secret:
-        {{- if eq (include "harbor.autoGenCertForIngress" .) "true" }}
+        {{- if .Values.caSecretName }}
+          secretName: {{ .Values.caSecretName }}
+        {{- else if eq (include "harbor.autoGenCertForIngress" .) "true" }}
           secretName: "{{ template "harbor.ingress" . }}"
         {{- else if eq (include "harbor.autoGenCertForNginx" .) "true" }}
-          secretName: {{ template "harbor.nginx" . }}
-        {{- else }}
-          secretName: {{ .Values.expose.tls.secretName }}
+          secretName: {{ template "harbor.tlsSecretForNginx" . }}
         {{- end }}
       {{- end }}
       {{- if .Values.uaaSecretName }}

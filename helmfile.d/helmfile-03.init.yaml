@@ -4,7 +4,7 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
-{{- $knativeVersion := 0.16 }}
+{{- $knativeVersion := print "0." ((min (int ($v.cluster.k8sVersion | replace "1." "")) 18 ) | toString) }}
 
 releases:
   - name: jobs-artifacts

@@ -1,4 +1,5 @@
 otomi:
+    mode: ce
     isManaged: true
     isMultitenant: true
     isRedkubesMonitored: true
@@ -15,3 +16,5 @@ oidc:
         adminGroupID: someAdminGroupID
         teamAdminGroupID: someTeamAdminGroupID
     scope: openid email profile
+alerts:
+    receiver: slack

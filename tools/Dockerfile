@@ -15,8 +15,9 @@ ARG HELM_SECRETS_VERSION=v2.0.2
 ARG SOPS_VERSION=v3.6.0
 ARG HELMFILE_VERSION=v0.128.1
 # https://github.com/weaveworks/eksctl/releases
-ARG EKSCTL_VERSION=0.27.0
-ARG YAML2JSON_VERSION=0.4.0
+ARG EKSCTL_VERSION=0.30.0
+# https://github.com/instrumenta/kubeval/releases
+ARG KUBEVAL_VERSION=0.15.0
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -96,10 +97,9 @@ ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-
 RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk && rm -rf /tmp/*
 ENV PATH $PATH:$APP_HOME/gsdk
 
-# yaml2json \/releases/download/0.4.0/yaml2json-linux-amd64
-ADD https://github.com/wakeful/yaml2json/releases/download/${YAML2JSON_VERSION}/yaml2json-linux-amd64 yaml2json
-RUN chmod +x yaml2json
-
+# kubeval https://github.com/instrumenta/kubeval/releases/download/0.15.0/kubeval-linux-amd64.tar.gz
+ADD https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 
 # node 12 https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -

@@ -19,7 +19,8 @@ spec:
         spec:
           serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
           containers:
-            - image: "{{ $spec.image }}"
+            - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
+              imagePullPolicy: "{{ $spec.image.pullPolicy }}"
               name: {{ $name }}
               command: ["bash", "-c"]
               args:
@@ -37,7 +38,7 @@ spec:
               - secretRef:
                   name: {{ $name }}
               {{- end }}
-              {{- if $spec.config }}
+              {{- if $spec.env }}
               - configMapRef:
                   name: {{ $name }}
               {{- end }}

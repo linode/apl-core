@@ -45,7 +45,7 @@ controller:
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: {{ $n | get "autoscaling.minReplicas" 2 }}
+    minReplicas: {{ $n | get "autoscaling.minReplicas" 1 }}
     maxReplicas: {{ $n | get "autoscaling.maxReplicas" 6 }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
@@ -78,7 +78,7 @@ controller:
     serviceMonitor:
       enabled: true
       additionalLabels: # needed to be picked up by our one and only prometheus-operator:
-        release: prometheus-operator
+        prometheus: system
   service:
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true

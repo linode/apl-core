@@ -10,7 +10,7 @@ tasks: {}
   # someTask:
   #   enabled: true
   #   shell: bash # default sh
-  #   config:
+  #   env:
   #     BLA: somebla
   #   secret:
   #     DIDA: somedida

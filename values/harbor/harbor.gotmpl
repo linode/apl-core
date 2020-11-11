@@ -6,16 +6,22 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-logLevel: debug
+ # logLevel - debug, info, warning, error or fatal
+logLevel: info
 nameOverride: harbor
 fullnameOverride: harbor
 notary:
   enabled: false
   secretName: {{ $notarySecretName }}
+trivy:
+  automountServiceAccountToken: true
 expose:
   type: clusterIP
   tls:
     enabled: false
+internalTLS:
+  # we use istio with mTLS enabled for harbor namespace
+  enabled: false
 nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
@@ -106,9 +112,6 @@ persistence:
     {{ $imageChartStorageType := $hp.imageChartStorage | get "type" "filesystem" }}
     type: {{ $imageChartStorageType }}
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
- 
- # debug, info, warning, error or fatal
-logLevel: info
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
 harborAdminPassword: '{{ $h | get "adminPassword" "bladibla" }}'

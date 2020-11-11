@@ -1,38 +1,68 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
-ENV_DIR=${ENV_DIR:-'./env'}
-. $ENV_DIR/env/clouds/$CLOUD/clusters/$CLUSTER/.env
+[[ -z $ENV_DIR ||  -z $CLUSTER ]] && echo "ENV_DIR and CLUSTER must be set" && exit 1
+
+readonly ENV_DIR
+readonly CLUSTER
+readonly METERING_SET=${METERING_SET:-otomi_metering}
+readonly VERBOSE=${VERBOSE:-0}
+
+readonly PROJECT_ID=${PROJECT_ID:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.projectId)}
+readonly GOOGLE_REGION=${GOOGLE_REGION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.region)}
+readonly CUSTOMER=${CUSTOMER:-$(yq read $ENV_DIR/env/settings.yaml customer.name)}
+readonly K8S_VERSION=${K8S_VERSION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sVersion)}
+
+print_envs() {
+  echo "ENV_DIR: $ENV_DIR"
+  echo "CLUSTER: $CLUSTER"
+  echo "PROJECT_ID: $PROJECT_ID"
+  echo "GOOGLE_REGION: $GOOGLE_REGION"
+  echo "K8S_VERSION: $K8S_VERSION"
+  echo "CUSTOMER: $CUSTOMER"
+  echo "METERING_SET: $METERING_SET"
+}
+
+[ $VERBOSE -eq "1" ] && print_envs
 
 # create the cluster
-gcloud container --project "$PROJECT" clusters create "otomi-gke-$CLUSTER" --region "$GOOGLE_REGION" \
-  --no-enable-basic-auth --cluster-version "1.16.13-gke.1" --machine-type "n1-standard-4" \
-  --image-type "COS" --disk-type "pd-standard" --disk-size "100" --node-labels customer=$CUSTOMER \
-  --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
-  --num-nodes "1" --no-enable-stackdriver-kubernetes \
-  --enable-ip-alias --network "projects/$PROJECT/global/networks/default" \
-  --subnetwork "projects/$PROJECT/regions/$GOOGLE_REGION/subnetworks/default" \
-  --enable-autoscaling --min-nodes "1" --max-nodes "7" \
-  --enable-network-policy --addons HorizontalPodAutoscaling,HttpLoadBalancing --enable-autoupgrade --enable-autorepair \
-  --maintenance-window "01:00" --labels customer=$CUSTOMER --enable-tpu \
-  --enable-autoprovisioning --min-cpu 4 --max-cpu 8 --min-memory 8 --max-memory 32 \
-  --resource-usage-bigquery-dataset "$METERING_SET" --enable-network-egress-metering --enable-resource-consumption-metering
+gcloud container clusters create "otomi-gke-$CLUSTER" \
+  --project "$PROJECT_ID" \
+  --addons HorizontalPodAutoscaling,HttpLoadBalancing \
+  --cluster-version $PROJECT_ID \
+  --disk-size "100" \
+  --disk-type "pd-standard" \
+  --enable-autoprovisioning \
+  --enable-autorepair \
+  --enable-autoscaling \
+  --enable-autoupgrade \
+  --enable-ip-alias \
+  --enable-network-egress-metering \
+  --enable-network-policy \
+  --enable-resource-consumption-metering \
+  --enable-tpu \
+  --image-type "COS" \
+  --labels customer=$CUSTOMER \
+  --machine-type "n1-standard-4" \
+  --maintenance-window "01:00" \
+  --max-cpu 8 \
+  --max-memory 32 \
+  --max-nodes "7" \
+  --metadata disable-legacy-endpoints=true \
+  --min-cpu 4 \
+  --min-memory 8 \
+  --min-nodes "1" \
+  --network "projects/$PROJECT_ID/global/networks/default" \
+  --no-enable-basic-auth \
+  --no-enable-stackdriver-kubernetes \
+  --node-labels customer=$CUSTOMER \
+  --num-nodes "1" \
+  --region "$GOOGLE_REGION" \
+  --resource-usage-bigquery-dataset "$METERING_SET" \
+  --scopes "https://www.googleapis.com/auth/cloud-platform" \
+  --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default"
 # --enable-pod-security-policy
 
-gcloud container clusters get-credentials otomi-gke-$CLUSTER --region $GOOGLE_REGION --project $PROJECT
+gcloud container clusters get-credentials otomi-gke-$CLUSTER --region $GOOGLE_REGION --project $PROJECT_ID
 
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
-
-# # ADDITIONAL FIREWALL RULES FOR PRIVATE CLUSTER:
-# SOURCE=$(gcloud container clusters describe $CLUSTER --region $GOOGLE_REGION | grep clusterIpv4CidrBlock | cut -d ':' -f 2 | tr -d ' ')
-# # 1) Retrieve the network tag automatically given to the worker nodes
-# # NOTE: this only works if you have only one cluster in your GCP project. You will have to manually inspect the result of this command to find the tag for the cluster you want to target
-# WORKER_NODES_TAG=$(gcloud compute instances list --format='text(tags.items[0])' --filter='metadata.kubelet-config:*' | grep tags | awk '{print $2}' | sort | uniq)
-# # 2) Take note of the VPC network in which you deployed your cluster
-# # NOTE this only works if you have only one network in which you deploy your clusters
-# NETWORK=$(gcloud compute instances list --format='text(networkInterfaces[0].network)' --filter='metadata.kubelet-config:*' | grep networks | awk -F'/' '{print $NF}' | sort | uniq)
-# # 3) Create the firewall rule targeting the tag above
-# gcloud compute firewall-rules create k8s-cert-manager \
-#   --source-ranges $SOURCE \
-#   --target-tags $WORKER_NODES_TAG \
-#   --allow TCP:6443 --network $NETWORK
