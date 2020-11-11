@@ -34,18 +34,19 @@ keycloak:
   startupScripts:
     install-theme.sh: |
       #!/bin/sh
-      cp -Rv /theme/otomi /opt/jboss/keycloak/themes/
+      cp -Rv /themes/* /opt/jboss/keycloak/themes/
   extraInitContainers: |
     - name: keycloak-otomi-branding
-      image: "cdrocker/keycloak-otomi-branding:0.1.1"
+      image: "otomi/console:{{ $v | get "charts.otomi-console.image.tag" "master" }}"
+      imagePullPolicy: "{{ $v | get "charts.otomi-console.image.pullPolicy" "IfNotPresent" }}"
       command:
         - sh
       args:
         - -c
         - |
           echo "Copying Otomi theme..."
-          mkdir -p /theme/otomi
-          cp -Rv /source/* /theme/otomi
+          mkdir -p /themes
+          cp -Rv /app/keycloak/themes/* /themes/
       resources:
         requests:
           cpu: 50m
@@ -55,7 +56,7 @@ keycloak:
           memory: 16Mi
       volumeMounts:
         - name: theme
-          mountPath: /theme
+          mountPath: /themes
 
   extraVolumes: |
     - name: theme
@@ -63,7 +64,7 @@ keycloak:
 
   extraVolumeMounts: |
     - name: theme
-      mountPath: /theme
+      mountPath: /themes
 
 postgresql:
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
