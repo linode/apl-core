@@ -35,7 +35,7 @@ keycloak:
     install-theme.sh: |
       #!/bin/sh
       cp -Rv /themes/* /opt/jboss/keycloak/themes/
-  extraInitContainers: |
+  extraInitContainers:
     - name: keycloak-otomi-branding
       image: "otomi/console:{{ $v | get "charts.otomi-console.image.tag" "master" }}"
       imagePullPolicy: "{{ $v | get "charts.otomi-console.image.pullPolicy" "IfNotPresent" }}"
@@ -58,11 +58,11 @@ keycloak:
         - name: theme
           mountPath: /themes
 
-  extraVolumes: |
+  extraVolumes:
     - name: theme
       emptyDir: {}
 
-  extraVolumeMounts: |
+  extraVolumeMounts: 
     - name: theme
       mountPath: /themes
 
