@@ -66,13 +66,13 @@ keycloak:
   basepath: auth
 
   ## Additional init containers, e. g. for providing custom themes
-  extraInitContainers: |
+  extraInitContainers:
 
   ## Additional sidecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy
-  extraContainers: |
+  extraContainers:
 
   ## lifecycleHooks defines the container lifecycle hooks
-  lifecycleHooks: |
+  lifecycleHooks:
     # postStart:
     #   exec:
     #     command: ["/bin/sh", "-c", "ls"]
@@ -108,7 +108,7 @@ keycloak:
     -XX:MaxRAMPercentage=50.0
 
   ## Allows the specification of additional environment variables for Keycloak
-  extraEnv: |
+  extraEnv:
     # - name: KEYCLOAK_LOGLEVEL
     #   value: DEBUG
     # - name: WILDFLY_LOGLEVEL
@@ -158,18 +158,19 @@ keycloak:
   ## Extra Annotations to be added to pod
   podAnnotations: {}
 
-  livenessProbe: |
-    httpGet:
-      path: {{ if ne .Values.keycloak.basepath "" }}/{{ .Values.keycloak.basepath }}{{ end }}/
-      port: http
-    initialDelaySeconds: 300
-    timeoutSeconds: 5
-  readinessProbe: |
-    httpGet:
-      path: {{ if ne .Values.keycloak.basepath "" }}/{{ .Values.keycloak.basepath }}{{ end }}/realms/master
-      port: http
-    initialDelaySeconds: 30
-    timeoutSeconds: 1
+  # We don't expect you should need to override any probes, but you can:
+  livenessProbe:
+    # httpGet:
+    #   path: /
+    #   port: http
+    # initialDelaySeconds: 300
+    # timeoutSeconds: 5
+  readinessProbe:
+    # httpGet:
+    #   path: /realms/master
+    #   port: http
+    # initialDelaySeconds: 30
+    # timeoutSeconds: 1
 
   resources: {}
     # limits:
@@ -196,7 +197,7 @@ keycloak:
       {{ .Files.Get "scripts/datasource.cli" }}
 
     # Custom CLI script
-    custom: |
+    custom:
 
   ## Custom startup scripts to run before Keycloak starts up
   startupScripts: {}
@@ -206,11 +207,11 @@ keycloak:
     #   echo 'Hello from my custom startup script!'
 
   ## Add additional volumes and mounts, e. g. for custom themes
-  extraVolumes: |
-  extraVolumeMounts: |
+  extraVolumes:
+  extraVolumeMounts:
 
   ## Add additional ports, eg. for custom admin console
-  extraPorts: |
+  extraPorts:
 
   podDisruptionBudget: {}
     # maxUnavailable: 1
@@ -243,7 +244,7 @@ keycloak:
     jgroupsPort: 7600
 
     ## Add additional ports, eg. for custom admin console
-    extraPorts: |
+    extraPorts:
 
   ## Ingress configuration.
   ## ref: https://kubernetes.io/docs/user-guide/ingress/
