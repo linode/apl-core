@@ -5,11 +5,13 @@
 package bannedimagetags
 import data.lib.core
 import data.lib.pods
+import data.lib.exceptions
 
 policyID = "bannedimagetags"
 
 violation[{"msg": msg}] {
   core.parameters.bannedimagetags.enabled
+  not exceptions.is_exception(policyID)
   pods.containers[container]
   img_split := split(container.image, ":")
   tag := img_split[count(img_split) - 1]

@@ -41,7 +41,7 @@ validate_policies() {
 
   # validate_resources
   echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
-  conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p "$policiesPath/lib/core.rego" -p $policiesPath $k8sResourcesPath
+  conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p $policiesPath $k8sResourcesPath
 
 }
 
