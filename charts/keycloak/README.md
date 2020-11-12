@@ -60,12 +60,12 @@ Parameter | Description | Default
 `keycloak.jgroups.discoveryProperties` | Properties for JGroups discovery. Passed through the `tpl` function | `"dns_query={{ template "keycloak.fullname" . }}-headless.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}"`
 `keycloak.jgroups.exposePort` | Specifies whether to expose the JGroups port in container and service | `true`
 `keycloak.javaToolOptions` | Java tool options | `"-XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0"`
-`keycloak.extraInitContainers` | Additional init containers, e. g. for providing themes, etc. Passed through the `tpl` function and thus to be configured a string | `""`
-`keycloak.extraContainers` | Additional sidecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy. Passed through the `tpl` function and thus to be configured a string | `""`
-`keycloak.extraEnv` | Allows the specification of additional environment variables for Keycloak. Passed through the `tpl` function and thus to be configured a string. | `""`
-`keycloak.extraVolumeMounts` | Add additional volumes mounts, e. g. for custom themes. Passed through the `tpl` function and thus to be configured a string | `""`
-`keycloak.extraVolumes` | Add additional volumes, e. g. for custom themes. Passed through the `tpl` function and thus to be configured a string | `""`
-`keycloak.extraPorts` | Add additional ports, e. g. for custom admin console port. Passed through the `tpl` function and thus to be configured a string | `""`
+`keycloak.extraInitContainers` | Additional init containers, e. g. for providing themes, etc | `""`
+`keycloak.extraContainers` | Additional sidecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy | `""`
+`keycloak.extraEnv` | Allows the specification of additional environment variables for Keycloak. | `""`
+`keycloak.extraVolumeMounts` | Add additional volumes mounts, e. g. for custom themes | `""`
+`keycloak.extraVolumes` | Add additional volumes, e. g. for custom themes | `""`
+`keycloak.extraPorts` | Add additional ports, e. g. for custom admin console port | `""`
 `keycloak.podDisruptionBudget` | Pod disruption budget | `{}`
 `keycloak.priorityClassName` | Pod priority classname | `{}`
 `keycloak.resources` | Pod resource requests and limits | `{}`
@@ -85,7 +85,7 @@ Parameter | Description | Default
 `keycloak.securityContext` | Security context for the entire pod. Every container running in the pod will inherit this security context. This might be relevant when other components of the environment inject additional containers into running pods (service meshs are the most prominent example for this) | `{fsGroup: 1000}`
 `keycloak.containerSecurityContext` | Security context for containers running in the pod. Will not be inherited by additionally injected containers | `{runAsUser: 1000, runAsNonRoot: true}`
 `keycloak.startupScripts` | Custom startup scripts to run before Keycloak starts up | `[]`
-`keycloak.lifecycleHooks` | Container lifecycle hooks. Passed through the `tpl` function and thus to be configured a string | ``
+`keycloak.lifecycleHooks` | Container lifecycle hooks | ``
 `keycloak.terminationGracePeriodSeconds` | Termination grace period in seconds for Keycloak shutdown. Clusters with a large cache might need to extend this to give Infinispan more time to rebalance | `60`
 `keycloak.extraArgs` | Additional arguments to the start command | ``
 `keycloak.livenessProbe` | Liveness probe configuration. Passed through the `tpl` function and thus to be configured as string | See `values.yaml`
@@ -102,7 +102,7 @@ Parameter | Description | Default
 `keycloak.service.httpsPort` | The https service port | `8443`
 `keycloak.service.httpNodePort` | The http node port used if the service is of type `NodePort` | `""`
 `keycloak.service.httpsNodePort` | The https node port used if the service is of type `NodePort` | `""`
-`keycloak.service.extraPorts` | Add additional ports, e. g. for custom admin console port. Passed through the `tpl` function and thus to be configured a string | `""`
+`keycloak.service.extraPorts` | Add additional ports, e. g. for custom admin console port | `""`
 `keycloak.ingress.enabled` | if `true`, an ingress is created | `false`
 `keycloak.ingress.annotations` | annotations for the ingress | `{}`
 `keycloak.ingress.labels` | Additional labels for the Keycloak ingress | `{}`
@@ -161,14 +161,7 @@ $ helm install --name keycloak -f values.yaml codecentric/keycloak
 The `tpl` function allows us to pass string values from `values.yaml` through the templating engine.
 It is used for the following values:
 
-* `keycloak.extraInitContainers`
-* `keycloak.extraContainers`
-* `keycloak.extraEnv`
 * `keycloak.affinity`
-* `keycloak.extraVolumeMounts`
-* `keycloak.extraVolumes`
-* `keycloak.livenessProbe`
-* `keycloak.readinessProbe`
 
 It is important that these values be configured as strings.
 Otherwise, installation will fail. See example for Google Cloud Proxy or default affinity configuration in `values.yaml`.
@@ -222,7 +215,7 @@ See also:
 
 ```yaml
 keycloak:
-  extraEnv: |
+  extraEnv:
     - name: KEYCLOAK_LOGLEVEL
       value: DEBUG
     - name: WILDFLY_LOGLEVEL
@@ -253,7 +246,7 @@ In combination with an `emptyDir` that is shared with the Keycloak container, co
 
 ```yaml
 keycloak:
-  extraInitContainers: |
+  extraInitContainers:
     - name: theme-provider
       image: myuser/mytheme:1
       imagePullPolicy: IfNotPresent
@@ -268,11 +261,11 @@ keycloak:
         - name: theme
           mountPath: /theme
 
-  extraVolumeMounts: |
+  extraVolumeMounts:
     - name: theme
       mountPath: /opt/jboss/keycloak/themes/mytheme
 
-  extraVolumes: |
+  extraVolumes:
     - name: theme
       emptyDir: {}
 ```
@@ -285,12 +278,12 @@ First we could create a Secret from a json file using `kubectl create secret gen
 
 ```yaml
 keycloak:
-  extraVolumes: |
+  extraVolumes:
     - name: realm-secret
       secret:
         secretName: realm-secret
 
-  extraVolumeMounts: |
+  extraVolumeMounts:
     - name: realm-secret
       mountPath: "/realm/"
       readOnly: true
@@ -319,7 +312,7 @@ cloudsql:
   instance: my-instance
 
 keycloak:
-  extraContainers: |
+  extraContainers:
     - name: cloudsql-proxy
       image: gcr.io/cloudsql-docker/gce-proxy:1.11
       command:
@@ -332,7 +325,7 @@ keycloak:
           mountPath: /secrets/cloudsql
           readOnly: true
 
-  extraVolumes: |
+  extraVolumes:
     - name: cloudsql-creds
       secret:
         secretName: cloudsql-instance-credentials
@@ -390,7 +383,7 @@ If `keycloak.replicas > 1`, JGroups' DNS_PING is configured for cluster discover
 
 It is possible to monitor Keycloak with Prometheus through the use of plugins such as [keycloak-metrics-spi](https://github.com/aerogear/keycloak-metrics-spi). The plugin can be added with configuration like this:
 ```
-  extraInitContainers: |
+  extraInitContainers:
     - name: extensions
       image: busybox
       imagePullPolicy: IfNotPresent
@@ -405,11 +398,11 @@ It is possible to monitor Keycloak with Prometheus through the use of plugins su
         - name: deployments
           mountPath: /deployments
 
-  extraVolumeMounts: |
+  extraVolumeMounts:
     - name: deployments
       mountPath: /opt/jboss/keycloak/standalone/deployments
 
-  extraVolumes: |
+  extraVolumes:
     - name: deployments
       emptyDir: {}
 ```
