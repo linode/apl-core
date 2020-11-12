@@ -2,4 +2,5 @@ charts:
     otomi-console:
         image:
             pullPolicy: Always
-            tag: v0.4.16
+            tag: v0.4.24
+

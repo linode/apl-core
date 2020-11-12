@@ -1,4 +1,5 @@
 otomi:
+    mode: ce
     isManaged: true
     isMultitenant: true
     isRedkubesMonitored: true

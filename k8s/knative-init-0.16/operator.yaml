@@ -639,13 +639,6 @@ spec:
           ports:
             - name: metrics
               containerPort: 9090
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
 
 ---
 # Copyright 2020 The Knative Authors

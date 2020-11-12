@@ -7,35 +7,41 @@ EXIT_FAST=${EXIT_FAST:-"1"}
 
 k8sResourcesPath="/tmp/otomi/conftest-fixtures"
 policiesPath="policies"
-exitcode=1
+constraintsFile=$(mktemp -u)
+parametersFile=$(mktemp -u)
 
 . bin/common.sh
 
 cleanup() {
-    [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-    [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $k8sResourcesPath
-    exit $exitcode
+  exitcode=$?
+  [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $constraintsFile $parametersFile
+  exit $exitcode
 }
 trap cleanup EXIT
 
 run_setup() {
-    exitcode=1
-    rm -rf $k8sResourcesPath && mkdir -p $k8sResourcesPath
+  rm -rf $k8sResourcesPath $constraintsFile $parametersFile && mkdir -p $k8sResourcesPath
 }
 
 validate_policies() {
-    local hf="helmfile -e $CLOUD-$CLUSTER"
+  local hf="helmfile -e $CLOUD-$CLUSTER"
 
-    run_setup
-    # generate_manifests
-    echo "Generating Kubernetes Manifests for ${CLOUD}-${CLUSTER}."
-    $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  run_setup
+  # generate_manifests
+  echo "Generating Kubernetes Manifests for ${CLOUD}-${CLUSTER}."
+  $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
-    # validate_resources
-    echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
-    {
-        conftest test --fail-on-warn --all-namespaces -d "$policiesPath/constraints.yaml" -p "$policiesPath/lib/helpers.rego" -p $policiesPath $k8sResourcesPath
-    } && exitcode=0
+  # generate parameter constraints file from values
+  policies=$(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c '.constraints[] | {(.policyName):.parameters}')
+  for policy in $policies; do
+    echo $policy | yq r -P - >>$constraintsFile
+  done
+  yq r -j $constraintsFile | jq '{parameters: .}' | yq r -P - >$parametersFile
+
+  # validate_resources
+  echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
+  conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p $policiesPath $k8sResourcesPath
 
 }
 

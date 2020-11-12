@@ -32,7 +32,7 @@ resources:
 image:
   registry: docker.io
   repository: otomi/console
-  tag: {{ $o.image.tag }}
+  tag: {{ $o | get "image.tag" "v0.4.24" }}
   pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
 
 env:

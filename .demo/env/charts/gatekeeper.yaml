@@ -1,0 +1,75 @@
+charts:
+    gatekeeper:
+        enabled: false
+        constraints:
+            - parameters:
+                enabled: false
+                cpu: 10m
+                memory: 120Mi
+              policyName: containerlimits
+            - parameters:
+                enabled: true
+                tags:
+                    - ''
+                    # - 0.3.7-debian-10-r103
+                    # - 5.0.7-debian-10-r32
+                    # - v1.1.0
+                    # - latest
+                    # - master
+              policyName: bannedimagetags
+            - parameters:
+                enabled: true
+                repos:
+                    - otomi
+                    - mcr.microsoft.com
+                    - k8s.gcr
+                    - eu.gcr.io
+                    - quay.io
+                    - gcr.io
+                    - ghcr.io
+                    - us.gcr.io
+                    - busybox
+                    - docker.io
+                    - goharbor
+                    - grafana
+                    - istio
+                    - drone
+                    - prom
+                    - bats
+                    - kiwigrid
+                    - dduportal
+                    - weaveworks
+                    - curlimages
+                    - kennethreitz
+                    - angelbarrera92
+              policyName: allowedrepos
+            - parameters:
+                enabled: false
+                runAsUser:
+                    # rule: 'RunAsAny'
+                    rule: 'MustRunAs'
+                    # rule: 'MustRunAsNonRoot'
+                    ranges: # testing
+                        - min: 1001
+                          max: 1001
+                        - min: 2
+                          max: 998
+              policyName: pspallowedusers
+            - parameters:
+                enabled: false
+                allowedHostPaths:
+                    # - pathPrefix: /var/
+                    #   readOnly: true
+                    - pathPrefix: /tmp/
+                      readOnly: false
+              policyName: psphostfilesystem
+            - parameters:
+                enabled: false
+                labels: {}
+              policyName: requiredlabels
+            - parameters:
+                enabled: false
+              policyName: psphostnetworkingports
+            - parameters:
+                enabled: false
+              policyName: pspprivileged

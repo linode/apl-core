@@ -1,0 +1,6 @@
+{{- $v := .Environment.Values }}
+{{- $constraints := (exec "bash" (list "-c" "find  constraints -name '*.yaml'")) | splitList "\n" }}
+resources:
+{{- range $constraint := $constraints }}{{ if ne $constraint "" }}
+  - {{ tpl (readFile $constraint) . | nindent 4  }}
+{{- end }}{{ end }}

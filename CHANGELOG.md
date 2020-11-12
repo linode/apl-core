@@ -2,23 +2,58 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.11.35](https://github.com/redkubes/otomi-core/compare/v0.11.34...v0.11.35) (2020-10-30)
-
+### [0.11.36](https://github.com/redkubes/otomi-core/compare/v0.11.35...v0.11.36) (2020-11-10)
 
 ### Features
 
-* **values:** added cluster.enabled toggle ([4cc3303](https://github.com/redkubes/otomi-core/commit/4cc3303ae076679bc83f053ee4475ea97f822d08))
-
+- make drone optional ([#199](https://github.com/redkubes/otomi-core/issues/199)) ([5756c4c](https://github.com/redkubes/otomi-core/commit/5756c4c0c1888b8639bdefe15cf7ab5d51aed86f))
+- require pullSecret only for enterprise edition ([#198](https://github.com/redkubes/otomi-core/issues/198)) ([beabc4e](https://github.com/redkubes/otomi-core/commit/beabc4e2c58c2af598b6860f4f801e97adb142f6))
+- validate url ([8c9ed1d](https://github.com/redkubes/otomi-core/commit/8c9ed1d7eeaf943d8cddfd68a04a632005eb8195))
 
 ### Bug Fixes
 
-* **keycloak:** theme config needed for tasks ([6658359](https://github.com/redkubes/otomi-core/commit/665835939380d5553e6f4670ff23131f516d7cb6))
-* charts to use new public images ([0b9f2d6](https://github.com/redkubes/otomi-core/commit/0b9f2d6e9bc7a0335665c9bf4cd0de36b4cece65))
-* dependabot issues ([9cb9022](https://github.com/redkubes/otomi-core/commit/9cb9022069129f51d96aa5f4e1411d156872102b))
-* gen drone for development [ci skip] ([2990c8a](https://github.com/redkubes/otomi-core/commit/2990c8aa952bc975b4dcbd2798be395d6957762c))
-* grafana istio token removed, restarting api+web on push ([ddbc003](https://github.com/redkubes/otomi-core/commit/ddbc00348d53beb58aa0d581393923e818c75728))
-* removed harbor-init ([f90980c](https://github.com/redkubes/otomi-core/commit/f90980c6704547abcb30ef83f2daa2e5326e5a52))
-* workflow ([13b2934](https://github.com/redkubes/otomi-core/commit/13b29349cef1826cddaa7dc4d243dec8c3bf185c))
+- demo gitattributes for sops ([9bf2c6f](https://github.com/redkubes/otomi-core/commit/9bf2c6f28ae0139486f76ba3ccd6ecb005c565de))
+- demo sops file to match online docs ([3f005cb](https://github.com/redkubes/otomi-core/commit/3f005cb083d24b38c7dcd1a1bde8c51f54e3546d))
+- edge case template validation ([#202](https://github.com/redkubes/otomi-core/issues/202)) ([b3b51db](https://github.com/redkubes/otomi-core/commit/b3b51db10a0d960ebca9b82e299ed2f58e5e6c8c))
+- prettier force enabled [ci skip] ([f75a878](https://github.com/redkubes/otomi-core/commit/f75a87893950bb6793fba663ecea0845297b569d))
+- remove redundant harbor logLevel ([#182](https://github.com/redkubes/otomi-core/issues/182)) ([917a37d](https://github.com/redkubes/otomi-core/commit/917a37d1d527cfb82960814be0947a053a7d4e7e))
+
+### Docs
+
+- pruned and updated to link to external docs [ci skip] ([2a5e1f0](https://github.com/redkubes/otomi-core/commit/2a5e1f091804a7d47723af45666045be6f9187f6))
+
+### Code Refactoring
+
+- bad naming [ci skip] ([c1748ba](https://github.com/redkubes/otomi-core/commit/c1748bacf8eba48e5bde4dccd3849af49dc26125))
+
+### Others
+
+- **docs:** pruned values readme to link to online docs ([9d22da1](https://github.com/redkubes/otomi-core/commit/9d22da12ec7274df88854302a0923547998c4436))
+- **release:** 0.11.35 ([f51a9f8](https://github.com/redkubes/otomi-core/commit/f51a9f8abe322b5f2cf662b9dfc2dc2e24472a14))
+
+### Styling
+
+- **bash:** added decision to start using bash style guide [ci skip] ([e43b4e3](https://github.com/redkubes/otomi-core/commit/e43b4e37d7e214fe9b93fd8e833f7a044357b3d7))
+
+### CI
+
+- release step fix [ci skip] ([8f5eb06](https://github.com/redkubes/otomi-core/commit/8f5eb061d9a3535e315115dc45ef2e3631633c2c))
+
+### [0.11.35](https://github.com/redkubes/otomi-core/compare/v0.11.34...v0.11.35) (2020-10-30)
+
+### Features
+
+- **values:** added cluster.enabled toggle ([4cc3303](https://github.com/redkubes/otomi-core/commit/4cc3303ae076679bc83f053ee4475ea97f822d08))
+
+### Bug Fixes
+
+- **keycloak:** theme config needed for tasks ([6658359](https://github.com/redkubes/otomi-core/commit/665835939380d5553e6f4670ff23131f516d7cb6))
+- charts to use new public images ([0b9f2d6](https://github.com/redkubes/otomi-core/commit/0b9f2d6e9bc7a0335665c9bf4cd0de36b4cece65))
+- dependabot issues ([9cb9022](https://github.com/redkubes/otomi-core/commit/9cb9022069129f51d96aa5f4e1411d156872102b))
+- gen drone for development [ci skip] ([2990c8a](https://github.com/redkubes/otomi-core/commit/2990c8aa952bc975b4dcbd2798be395d6957762c))
+- grafana istio token removed, restarting api+web on push ([ddbc003](https://github.com/redkubes/otomi-core/commit/ddbc00348d53beb58aa0d581393923e818c75728))
+- removed harbor-init ([f90980c](https://github.com/redkubes/otomi-core/commit/f90980c6704547abcb30ef83f2daa2e5326e5a52))
+- workflow ([13b2934](https://github.com/redkubes/otomi-core/commit/13b29349cef1826cddaa7dc4d243dec8c3bf185c))
 
 ### [0.11.34](https://github.com/redkubes/otomi-core/compare/v0.11.33...v0.11.34) (2020-10-27)
 
