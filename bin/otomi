@@ -329,6 +329,11 @@ function execute() {
       kubectl config use $K8S_CONTEXT
       drun bin/bootstrap.sh 1
       ;;
+    gen-drone)
+      check_kube_context=0
+      evaluate_secrets
+      drun bin/gen-drone.sh
+      ;;
     test)
       validate_cluster_env
       evaluate_secrets
