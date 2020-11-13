@@ -11,7 +11,7 @@ mkdir -p $tmp_path >/dev/null
 
 cleanup() {
   local exitcode=$?
-  [[ "$MOUNT_TMP_DIR" != "1" ]] && rm -rf $tmp_path
+  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $tmp_path
   return $exitcode
 }
 trap cleanup EXIT ERR
