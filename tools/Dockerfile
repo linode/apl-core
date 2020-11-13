@@ -51,6 +51,10 @@ ENV PATH $PATH:$APP_HOME
 ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl
 RUN chmod +x kubectl
 
+# aws-iam-authenticator
+ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+RUN chmod +x aws-iam-authenticator
+
 # sops
 ADD https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux sops
 RUN chmod +x sops
