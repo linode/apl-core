@@ -37,7 +37,7 @@ done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
-if [ "$skip_demo_files" != "true" ]; then
+if [ "$skip_demo_files" != "false" ]; then
   echo "Installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
