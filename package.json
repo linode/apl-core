@@ -37,7 +37,7 @@
   },
   "license": "Apache-2.0",
   "lint-staged": {
-    "*.{json,yml,yaml}": [
+    "*.{json,yml,yaml,md}": [
       "prettier --write"
     ]
   },
@@ -61,7 +61,7 @@
     "lint:all": "run-p spellcheck lint",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
-    "spellcheck": "cspell \"**/*\" \".**/**\"",
+    "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/README.md' '/.values/README.md'",
     "un-release": "sh -c 'git tag -d $1 && git push origin :refs/tags/$1' sh"
   },
   "standard-version": {

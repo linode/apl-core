@@ -3,7 +3,6 @@
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
-  "ignorePaths": ["./**", "./.**/**", "!/docs/**/**.md", "!/values-schema.yaml", "!/README.md", "!/.values/README.md"],
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "appgw",
