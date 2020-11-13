@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
-hf="helmfile -e $CLOUD-$CLUSTER"
 
-$hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps >/dev/null # no sensitive output please
-$hf diff --skip-deps
+. bin/common.sh
+prepare_crypt
+
+bin/validate-templates.sh 1
+hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps | kubectl apply --dry-run -f -
+hf diff --skip-deps | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern

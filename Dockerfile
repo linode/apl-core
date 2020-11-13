@@ -19,10 +19,10 @@ COPY . .
 RUN cp -r .demo/ env/ 
 
 RUN bin/validate-values.sh
-RUN bin/validate-templates.sh
+RUN EXIT_FAST=1 bin/validate-templates.sh
 
 #-----------------------------
-FROM otomi/tools:1.4.7 as prod
+FROM otomi/tools:1.4.8 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
