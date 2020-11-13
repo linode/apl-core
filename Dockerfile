@@ -18,7 +18,7 @@ WORKDIR $APP_HOME
 COPY . .
 RUN cp -r .demo/ env/ 
 
-RUN bin/validate-all.sh
+RUN bin/validate-values.sh
 RUN bin/validate-templates.sh
 
 #-----------------------------
