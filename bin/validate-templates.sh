@@ -67,15 +67,14 @@ process_crd() {
 }
 
 validate_templates() {
-  local hf="helmfile -e $CLOUD-$CLUSTER"
   local version="v$(get_k8s_version).0"
 
   run_setup
   # generate_manifests
   echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
 
-  $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-  $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   echo "Processing CRD files."
   # generate canonical schemas
@@ -103,7 +102,14 @@ validate_templates() {
     kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
     set -o pipefail
   } && exitcode=0
-
 }
 
-for_each_cluster validate_templates
+if [ "${1-}" != "" ]; then
+  validate_templates
+  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
+  # hf lint
+else
+  for_each_cluster validate_templates
+  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
+  # for_each_cluster hf lint
+fi
