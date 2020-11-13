@@ -124,7 +124,13 @@ function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [[ "$K8S_CONTEXT" != "$context" ]]; then
     echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
-    echo "Please run 'otomi switch' to switch to target"
+    read -p "Would you like to switch kube context to target first? Yn" oki
+    if [ "${oki:-y}" = "y" ]; then
+      kubectl config use $K8S_CONTEXT
+      drun bin/bootstrap.sh 1
+    else
+      exit
+    fi
   fi
   return 0
 }
@@ -163,7 +169,6 @@ is_repo() {
 function drun() {
   local command=$@
   local tmp_volume=''
-  local docker_vars=''
   local stack_volume=''
   local socket_volume=''
 
