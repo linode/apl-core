@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.38](https://github.com/redkubes/otomi-core/compare/v0.11.37...v0.11.38) (2020-11-13)
+
+
+### Bug Fixes
+
+* bootstrap flag for demo files ([978eb0e](https://github.com/redkubes/otomi-core/commit/978eb0e5f859d74c07f8d7b69beae31124fdf0ff))
+* drone gen [ci skip] ([ba29779](https://github.com/redkubes/otomi-core/commit/ba297795212ad0b6961948017721d6807a65384c))
+
 ### [0.11.37](https://github.com/redkubes/otomi-core/compare/v0.11.36...v0.11.37) (2020-11-13)
 
 
