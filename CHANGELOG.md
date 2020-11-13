@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.37](https://github.com/redkubes/otomi-core/compare/v0.11.36...v0.11.37) (2020-11-13)
+
+
+### Features
+
+* otomi branding for Keycloak (PoC) ([#193](https://github.com/redkubes/otomi-core/issues/193)) ([5b25cf8](https://github.com/redkubes/otomi-core/commit/5b25cf8ff48a7600f10636813ddb83d9c728046a))
+
+
+### Bug Fixes
+
+* avoid unset var triggering -e ([1752385](https://github.com/redkubes/otomi-core/commit/1752385a65870764954e1a235a16d7d2bb5aabba))
+* renaming validate-all ([f891d31](https://github.com/redkubes/otomi-core/commit/f891d314c77b6ccc9a56f575900a20506cd16d13))
+
+
+### Reverts
+
+* aws authenticator needed for kubectl ([ad5ffdf](https://github.com/redkubes/otomi-core/commit/ad5ffdf1a02325714e13f8a6baa9a9a7fb5bcb83))
+* skip-cleanup not working as expected, drone re-enabled ([561b235](https://github.com/redkubes/otomi-core/commit/561b23541fce97e96e167123fc7f205b296a10b4))
+
+
+### Code Refactoring
+
+* common code, validate-templates now also for target cluster ([b858c1e](https://github.com/redkubes/otomi-core/commit/b858c1e46db24cab0ae63397d0202846887b17c3))
+* invalid context now asks for implicit switch ([2a9ecb4](https://github.com/redkubes/otomi-core/commit/2a9ecb487bc3c59766edbaeae6d348ba4a8b9652))
+* validate script, schema improved ([24d9659](https://github.com/redkubes/otomi-core/commit/24d9659d12fde9bf190160cc18ec3d16a784c481))
+
 ### [0.11.36](https://github.com/redkubes/otomi-core/compare/v0.11.35...v0.11.36) (2020-11-10)
 
 
