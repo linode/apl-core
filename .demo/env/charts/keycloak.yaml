@@ -1,6 +1,7 @@
 charts:
     keycloak:
         enabled: true
+        theme: otomi
         realm: master
         idp:
             alias: redkubes-azure
