@@ -13,6 +13,8 @@ function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
   local sourcePath="$PWD/values-schema.yaml"
   yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' >$targetPath
+  # also put a copy in the .values folder for local hinting of .demo/env/*.yaml files:
+  [ "$PWD" != "/home/app/stack" ] && cp $targetPath .values/
   echo "Stored JSON schema at: $targetPath"
 }
 

@@ -316,7 +316,7 @@ function execute() {
       check_kube_context=0
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHide
+      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
       ;;
     rotate-keys)
       check_sops_file

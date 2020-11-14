@@ -901,7 +901,7 @@ properties:
             type: string
           theme:
             type: string
-            enum: [default]
+            enum: [default, otomi]
       loki:
         type: object
         additionalProperties: false
