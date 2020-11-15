@@ -4,7 +4,12 @@ set -eu
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
-. $ENV_DIR/.secrets
+if [ -f "$ENV_DIR/.secrets" ]; then
+  source $ENV_DIR/.secrets
+else
+  touch $ENV_DIR/.secrets
+fi
+
 has_otomi='false'
 skip_demo_files=${1-'false'}
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
