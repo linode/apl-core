@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.39](https://github.com/redkubes/otomi-core/compare/v0.11.38...v0.11.39) (2020-11-16)
+
+
+### Bug Fixes
+
+* bootstrap detecting secrets ([7b1f498](https://github.com/redkubes/otomi-core/commit/7b1f49877f453a959e06ac29e499c7d859e0c645))
+
+
+### Others
+
+* added theme to schema, demo files, silenced output ([90827a9](https://github.com/redkubes/otomi-core/commit/90827a95ffa361e8a369a0cee60cf98f8e180b48))
+
 ### [0.11.38](https://github.com/redkubes/otomi-core/compare/v0.11.37...v0.11.38) (2020-11-13)
 
 
