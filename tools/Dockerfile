@@ -74,22 +74,6 @@ RUN helm plugin install https://github.com/futuresimple/helm-secrets --version $
 ADD https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
 RUN chmod +x helmfile
 
-# eksctl
-ADD https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/eksctl_Linux_amd64.tar.gz -C /tmp && mv /tmp/eksctl eksctl && rm -rf /tmp/*
-
-# aws
-RUN pip3 install --upgrade --no-cache-dir awscli
-
-# aws-iam-authenticator
-ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
-RUN chmod +x aws-iam-authenticator
-
-# gcloud
-ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
-RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk/bin $APP_HOME/gsdk && rm -rf /tmp/*
-ENV PATH $PATH:$APP_HOME/gsdk
-
 # kubeval https://github.com/instrumenta/kubeval/releases
 ADD https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval

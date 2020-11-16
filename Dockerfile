@@ -10,7 +10,7 @@ RUN npm install
 COPY ./.cspell.json .
 RUN npm run spellcheck
 
-FROM otomi/tools:1.4.8 as test
+FROM otomi/tools:1.4.9 as test
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
@@ -23,7 +23,7 @@ RUN EXIT_FAST=1 bin/validate-templates.sh
 RUN EXIT_FAST=1 bin/validate-policies.sh
 
 #-----------------------------
-FROM otomi/tools:1.4.8 as prod
+FROM otomi/tools:1.4.9 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
