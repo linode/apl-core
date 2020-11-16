@@ -348,8 +348,11 @@ function execute() {
       drun bin/validate-templates.sh $@
       ;;
     validate-policies)
+      if [ "$@" != "" ]; then
+        validate_cluster_env
+      fi
       evaluate_secrets
-      drun bin/validate-policies.sh
+      drun bin/validate-policies.sh $@
       ;;
     x)
       check_kube_context=0

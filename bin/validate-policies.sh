@@ -48,4 +48,12 @@ validate_policies() {
 
 }
 
-for_each_cluster validate_policies
+conftest_enabled() {
+  $(yq r $otomiSettings "otomi.addons.conftest.enabled") == "true"
+}
+
+if [ "${1-}" != "" ]; then
+  conftest_enabled && validate_policies || echo "skipping"
+else
+  conftest_enabled && for_each_cluster validate_policies || echo "skipping"
+fi
