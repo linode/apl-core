@@ -4,7 +4,12 @@ set -eu
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
-. $ENV_DIR/.secrets
+if [ -f "$ENV_DIR/.secrets" ]; then
+  source $ENV_DIR/.secrets
+else
+  touch $ENV_DIR/.secrets
+fi
+
 has_otomi='false'
 skip_demo_files=${1-'false'}
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
@@ -13,6 +18,8 @@ function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
   local sourcePath="$PWD/values-schema.yaml"
   yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' >$targetPath
+  # also put a copy in the .values folder for local hinting of .demo/env/*.yaml files:
+  [ "$PWD" != "/home/app/stack" ] && cp $targetPath .values/
   echo "Stored JSON schema at: $targetPath"
 }
 
@@ -37,7 +44,7 @@ done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
-if [ "$skip_demo_files" != "true" ]; then
+if [ "$skip_demo_files" = "false" ]; then
   echo "Installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi

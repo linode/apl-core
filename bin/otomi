@@ -90,14 +90,14 @@ function show_usage() {
     test                runs some tests againts the target cluster
     values              show helmfile values for CLOUD and CLUSTER
     validate-policies   validate generated manifests against defined OPA rules
-    validate-templates  validate generated manifests against supported k8s versions/CRDs
+    validate-templates  validate generated manifests against supported k8s versions/CRDs, best practices, and defined OPA rules, (provide any arg to limit to the selected cluster)
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
 
-  Extra environment variables:
-    VERBOSE=1; otomi <cmd>          Run otomi CLI in verbose mode
-    MOUNT_TMP_DIR=1; otomi <cmd>    Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
-    EXIT_FAST=1; otomi <cmd>        Exit the script after an error is returned
+  Env flags:
+    VERBOSE=1;          Run otomi CLI in verbose mode
+    MOUNT_TMP_DIR=1     Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
+    EXIT_FAST=1         Exit the script after first error
   "
 }
 
@@ -125,7 +125,13 @@ function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [[ "$K8S_CONTEXT" != "$context" ]]; then
     echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
-    echo "Please run 'otomi switch' to switch to target"
+    read -p "Would you like to switch kube context to target first? Yn" oki
+    if [ "${oki:-y}" = "y" ]; then
+      kubectl config use $K8S_CONTEXT
+      drun bin/bootstrap.sh 1
+    else
+      exit
+    fi
   fi
   return 0
 }
@@ -164,7 +170,6 @@ is_repo() {
 function drun() {
   local command=$@
   local tmp_volume=''
-  local docker_vars=''
   local stack_volume=''
   local socket_volume=''
 
@@ -276,8 +281,9 @@ function execute() {
           drun helm secrets dec ./env/$f >/dev/null
         done
         exit
+      else
+        drun bin/crypt.sh decrypt
       fi
-      drun bin/crypt.sh decrypt
       ;;
     deploy)
       validate_cluster_env
@@ -298,8 +304,9 @@ function execute() {
           drun helm secrets enc ./env/$f >/dev/null
         done
         exit
+      else
+        drun bin/crypt.sh encrypt
       fi
-      drun bin/crypt.sh encrypt
       ;;
     sync)
       validate_cluster_env
@@ -323,14 +330,22 @@ function execute() {
       kubectl config use $K8S_CONTEXT
       drun bin/bootstrap.sh 1
       ;;
+    gen-drone)
+      check_kube_context=0
+      evaluate_secrets
+      drun bin/gen-drone.sh
+      ;;
     test)
       validate_cluster_env
+      evaluate_secrets
       drun bin/test.sh
-      drun $@
       ;;
     validate-templates)
+      if [ "$@" != "" ]; then
+        validate_cluster_env
+      fi
       evaluate_secrets
-      drun bin/validate-templates.sh
+      drun bin/validate-templates.sh $@
       ;;
     validate-policies)
       evaluate_secrets
@@ -345,7 +360,7 @@ function execute() {
       is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
-      drun bin/validate-all.sh
+      drun bin/validate-values.sh
       drun bin/pre-commit.sh
       git add . && git commit -m 'Manual commit' --no-verify
       ;;
@@ -359,7 +374,7 @@ function execute() {
     validate-values)
       check_kube_context=0
       evaluate_secrets
-      drun bin/validate-all.sh
+      drun bin/validate-values.sh
       ;;
     *)
       show_usage

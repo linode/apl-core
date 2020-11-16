@@ -7,20 +7,20 @@ readonly helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replacePathsPattern="s@../env@${ENV_DIR}@g"
 
-function get_k8s_version() {
+get_k8s_version() {
   yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
 }
 
-function otomi_image_tag() {
+otomi_image_tag() {
   local otomiVersion=$(yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
   [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
 }
 
-function customer_name() {
+customer_name() {
   yq r $otomiSettings "customer.name"
 }
 
-function check_sops_file() {
+check_sops_file() {
   [[ ! -f "$ENV_DIR/.sops.yaml" ]] && (
     echo "Error: The $ENV_DIR/.sops.yaml does not exists"
     exit 1
@@ -28,21 +28,25 @@ function check_sops_file() {
   return 0
 }
 
-function hf_values() {
+hf() {
+  helmfile --quiet -e $CLOUD-$CLUSTER $@
+}
+
+hf_values() {
   [ "${VERBOSE-0}" == "0" ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
     yq read -P - 'releases[0].values[0]'
 }
 
-function prepare_crypt() {
+prepare_crypt() {
   [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
 }
 
-function for_each_cluster() {
-  # Perform a command from function argument for each cluster
+for_each_cluster() {
+  # Perform a command from argument for each cluster
   executable=$1
   [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
