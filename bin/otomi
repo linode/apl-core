@@ -47,7 +47,9 @@ has_docker=0
 dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-customer=$(customer_name)
+set +e
+customer=$(customer_name || $CUSTOMER || "unknown")
+set -e
 cmd_image=''
 docker_terminal_params='-t'
 helm_config=''
@@ -155,10 +157,11 @@ evaluate_secrets() {
 }
 
 validate_cluster_env() {
+  [ "$customer" = "unknown" ] && exit # first time bootstrap
   evaluate_secrets
-  [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && exit 2
-  [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
-  return 0
+  [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && err=1
+  [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && err=1
+  [ "$err" != "" ] && exit 2
 }
 
 is_repo() {
@@ -263,7 +266,6 @@ function execute() {
       ;;
     bootstrap)
       check_kube_context=0
-      validate_cluster_env
       drun bin/bootstrap.sh 1
       ;;
     console)
