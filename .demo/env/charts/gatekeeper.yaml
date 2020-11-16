@@ -2,22 +2,17 @@ charts:
     gatekeeper:
         enabled: false
         constraints:
-            - parameters:
+            containerlimits:
                 enabled: false
-                cpu: 10m
-                memory: 120Mi
-              policyName: containerlimits
-            - parameters:
+                cpu: 2
+                memory: 2Gi
+            bannedimagetags:
                 enabled: true
                 tags:
                     - ''
-                    # - 0.3.7-debian-10-r103
-                    # - 5.0.7-debian-10-r32
-                    # - v1.1.0
                     # - latest
                     # - master
-              policyName: bannedimagetags
-            - parameters:
+            allowedrepos:
                 enabled: true
                 repos:
                     - otomi
@@ -42,34 +37,23 @@ charts:
                     - curlimages
                     - kennethreitz
                     - angelbarrera92
-              policyName: allowedrepos
-            - parameters:
+            pspallowedusers:
                 enabled: false
                 runAsUser:
                     # rule: 'RunAsAny'
-                    rule: 'MustRunAs'
                     # rule: 'MustRunAsNonRoot'
-                    ranges: # testing
-                        - min: 1001
-                          max: 1001
-                        - min: 2
-                          max: 998
-              policyName: pspallowedusers
-            - parameters:
+                    rule: 'MustRunAs'
+                    ranges: 
+                        - min: 0
+                          max: 65534
+            psphostfilesystem:
                 enabled: false
                 allowedHostPaths:
                     # - pathPrefix: /var/
                     #   readOnly: true
                     - pathPrefix: /tmp/
                       readOnly: false
-              policyName: psphostfilesystem
-            - parameters:
+            psphostnetworkingports:
                 enabled: false
-                labels: {}
-              policyName: requiredlabels
-            - parameters:
+            pspprivileged:
                 enabled: false
-              policyName: psphostnetworkingports
-            - parameters:
-                enabled: false
-              policyName: pspprivileged

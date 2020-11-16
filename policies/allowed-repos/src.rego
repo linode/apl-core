@@ -13,7 +13,7 @@ import data.lib.exceptions
 policyID = "allowedrepos"
 
 violation[{"msg": msg}] {
-  core.parameters.allowedrepos.enabled
+  exceptions.parameters(policyID).enabled
   not exceptions.is_exception(policyID)
   pods.containers[container]
   satisfied := [good | repo = exceptions.parameters(policyID).repos[_] ; good = startswith(container.image, repo)]

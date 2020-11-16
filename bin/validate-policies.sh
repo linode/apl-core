@@ -15,7 +15,8 @@ parametersFile=$(mktemp -u)
 cleanup() {
   exitcode=$?
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $constraintsFile $parametersFile
+  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath
+  rm -f $constraintsFile $parametersFile
   exit $exitcode
 }
 trap cleanup EXIT
@@ -29,18 +30,20 @@ validate_policies() {
 
   run_setup
   # generate_manifests
-  echo "Generating Kubernetes Manifests for ${CLOUD}-${CLUSTER}."
+  echo "Generating manifests for ${CLOUD}-${CLUSTER} cluster."
   $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   # generate parameter constraints file from values
-  policies=$(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c '.constraints[] | {(.policyName):.parameters}')
+  local parseConstraintsExpression='.constraints as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
+  policies=$(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c "$parseConstraintsExpression")
   for policy in $policies; do
     echo $policy | yq r -P - >>$constraintsFile
   done
   yq r -j $constraintsFile | jq '{parameters: .}' | yq r -P - >$parametersFile
 
   # validate_resources
-  echo "Run Policy validation for ${CLOUD}-${CLUSTER} template resources"
+  echo "Validating manifests against cluster policies for ${CLOUD}-${CLUSTER} cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p $policiesPath $k8sResourcesPath
 
 }

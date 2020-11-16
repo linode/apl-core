@@ -9,11 +9,12 @@ package pspprivileged
 import data.lib.core
 import data.lib.pods
 import data.lib.security
+import data.lib.exceptions
 
 policyID = "pspprivileged"
 
 violation[msg] {
-  core.parameters.pspprivileged.enabled
+  exceptions.parameters(policyID).enabled
   pods.containers[container]
   container_is_privileged(container)
   msg := sprintf("Policy: %s - Privileged container is not allowed: %s/%s, securityContext: %v", [policyID, core.kind, core.name, container.securityContext])

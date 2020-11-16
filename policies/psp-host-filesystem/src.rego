@@ -5,29 +5,30 @@
 package psphostfilesystem
 import data.lib.core
 import data.lib.pods
+import data.lib.exceptions
 
 policyID = "psphostfilesystem"
 
 violation[{"msg": msg, "details": {}}] {
-  core.parameters.psphostfilesystem.enabled
+  exceptions.parameters(policyID).enabled
   volume := input_hostpath_volumes[_]
   not input_hostpath_allowed(volume)
-  msg := sprintf("Policy: %s - HostPath volume %v is not allowed, pod: %v. Allowed path: %v", [policyID, volume, core.review.object.metadata.name, core.parameters.psphostfilesystem.allowedHostPaths])
+  msg := sprintf("Policy: %s - HostPath volume %v is not allowed, pod: %v. Allowed path: %v", [policyID, volume, core.review.object.metadata.name, exceptions.parameters(policyID).allowedHostPaths])
 }
 
 input_hostpath_allowed(volume) {
   # An empty list means there is no restriction on host paths used
-  core.parameters.psphostfilesystem.allowedHostPaths == []
+  exceptions.parameters(policyID).allowedHostPaths == []
 }
 
 input_hostpath_allowed(volume) {
-  allowedHostPath := core.parameters.psphostfilesystem.allowedHostPaths[_]
+  allowedHostPath := exceptions.parameters(policyID).allowedHostPaths[_]
   path_matches(allowedHostPath.pathPrefix, volume.hostPath.path)
   not allowedHostPath.readOnly == true
 }
 
 input_hostpath_allowed(volume) {
-  allowedHostPath := core.parameters.psphostfilesystem.allowedHostPaths[_]
+  allowedHostPath := exceptions.parameters(policyID).allowedHostPaths[_]
   path_matches(allowedHostPath.pathPrefix, volume.hostPath.path)
   allowedHostPath.readOnly
   not writeable_input_volume_mounts(volume.name)

@@ -5,6 +5,11 @@ otomi:
     isRedkubesMonitored: true
     teamPrefix: team-
     hasCloudLB: false
+
+    addons:
+        conftest:
+            enabled: true
+
 customer:
     name: demo
 oidc:

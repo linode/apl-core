@@ -3,6 +3,18 @@
 type: object
 additionalProperties: false
 definitions:
+  policy:
+    description: |
+      Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
+      Parameters are used in rego policy files by Konstraint library to generate Constraint objects needed for templating. Also used by Conftest to pass parameters through the Data document
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        description: |
+          Allow toggling individual policies on/off
+        default: true
+      additionalProperties: true
   k8sVersion:
     type: string
     default: '1.18'
@@ -674,44 +686,25 @@ properties:
           enabled:
             type: boolean
           constraints:
-            type: array
+            type: object
             description: |
-              List of {policy: parameter} objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
-            items:
-              type: object
-              additionalProperties: false
-              properties:
-                parameters:
-                  type: object
-                  description: |
-                    Parameters used in rego policy files by Konstraint library to generate Constraint objects needed for templating
-                  properties:
-                    enabled:
-                      type: boolean
-                      description: |
-                        Allow toggling individual policies on/off
-                      default: true
-                  additionalProperties: true
-                  required: [enabled]
-                policyName:
-                  description: |
-                    Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
-                  pattern: ^[a-z0-9]*$
-                  type: string
-                  enum:
-                    [
-                      allowedrepos,
-                      bannedimagetags,
-                      containerlimits,
-                      requiredlabels,
-                      psphostfilesystem,
-                      psphostnetworkingports,
-                      pspallowedusers,
-                      pspprivileged,
-                    ]
-              required:
-                - policyName
-                - parameters
+              List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
+            additionalProperties: false
+            properties:
+              allowedrepos:
+                '$ref': '#/definitions/policy'
+              bannedimagetags:
+                '$ref': '#/definitions/policy'
+              containerlimits:
+                '$ref': '#/definitions/policy'
+              psphostfilesystem:
+                '$ref': '#/definitions/policy'
+              psphostnetworkingports:
+                '$ref': '#/definitions/policy'
+              pspallowedusers:
+                '$ref': '#/definitions/policy'
+              pspprivileged:
+                '$ref': '#/definitions/policy'
       harbor:
         type: object
         additionalProperties: false
@@ -1164,6 +1157,18 @@ properties:
         default: team-
         description: The prefix to use in URLs for team domains.
         pattern: ^[a-z]+[-]{1}$
+      addons:
+        description: Manage addon configuration
+        type: object
+        additionalProperties: false
+        properties:
+          conftest:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                description: Use this flag to enable conftest for policy validation
   sops:
     description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:

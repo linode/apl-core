@@ -8,7 +8,7 @@ runFromHook=$1
 
 gatekeeperArtifactsPath="./values/gatekeeper/constraints"
 function build() {
-  echo "Building constraints artifacts from stack policies."
+  echo "Building constraints artifacts from policies."
   local policiesPath="./policies"
   rm -f "$gatekeeperArtifactsPath/*"
   konstraint create $policiesPath -o $gatekeeperArtifactsPath
@@ -16,8 +16,9 @@ function build() {
 
 function decorate() {
   echo "Decorating constraints files with parameters."
-  for constraint in $(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c '.constraints[]  | {(.policyName):.parameters}'); do
-    local key=$(echo $constraint | jq '. | keys[0]' | sed 's/"//g')
+  local parseConstraintsExpression='.constraints as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
+  for constraint in $(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c "$parseConstraintsExpression"); do
+    local key=$(echo $constraint | jq --raw-output '. | keys[0]')
     local constraintsFile=$(ls $gatekeeperArtifactsPath/constraint_* | grep -i "$key.yaml")
     local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {"${key}"} }}")
     local constraints=$(yq r -P -j $constraintsFile | jq --raw-output -c '.')

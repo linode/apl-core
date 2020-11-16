@@ -9,13 +9,14 @@ outputPath="/tmp/otomi/generated-crd-schemas"
 schemasBundleFile="$outputPath/all.json"
 k8sResourcesPath="/tmp/otomi/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
+kubevalLogPath=$(mktemp -u)
 exitcode=1
 
 . bin/common.sh
 
 cleanup() {
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-  rm -rf $extractCrdSchemaJQFile
+  rm -rf $extractCrdSchemaJQFile $kubevalLogPath
   [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   exit $exitcode
 }
@@ -74,6 +75,7 @@ validate_templates() {
   # generate_manifests
   echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
 
+  prepare_crypt
   $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
   $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
@@ -96,13 +98,20 @@ validate_templates() {
   # validate_resources
   echo "Validating resources against Kubernetes version: $version"
   local kubevalSchemaLocation="file://${schemaOutputPath}"
-  local skipKinds="CustomResourceDefinition"
-  local skipFilenames="crd,knative-services"
-  {
-    set +o pipefail
-    kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
-    set -o pipefail
-  } && exitcode=0
+  local constraintsKinds="AllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged"
+  local skipKinds="CustomResourceDefinition,$constraintsKinds"
+  local skipFilenames="crd,knative-services,constraint"
+  # ^constraint_\w+\.yaml
+
+  kubeval --quiet --skip-kinds $skipKinds \
+    --ignored-filename-patterns "$skipFilenames" \
+    --force-color -d $k8sResourcesPath \
+    --schema-location $kubevalSchemaLocation \
+    --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b' | tee $kubevalLogPath
+
+  # check for errors from log file
+  noErrors=$(wc -l <(grep -E 'ERR\b' $kubevalLogPath) | awk '{print $1}')
+  [[ $noErrors -eq 0 ]] && exitcode=0
 
 }
 
