@@ -20,7 +20,7 @@ RUN cp -r .demo/ env/
 
 RUN bin/validate-values.sh
 RUN EXIT_FAST=1 bin/validate-templates.sh
-RUN EXIT_FAST=1 bin/validate-policies.sh
+RUN EXIT_FAST=0 bin/validate-policies.sh
 
 #-----------------------------
 FROM otomi/tools:1.4.9 as prod

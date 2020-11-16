@@ -37,6 +37,7 @@ charts:
                     - curlimages
                     - kennethreitz
                     - angelbarrera92
+                    - badouralix
             pspallowedusers:
                 enabled: false
                 runAsUser:
