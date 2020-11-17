@@ -14,6 +14,7 @@ policyID = "pspallowedusers"
 
 violation[{"msg": msg}] {
   exceptions.parameters(policyID).enabled
+  not exceptions.is_exception(policyID)
   rule := exceptions.parameters(policyID).runAsUser.rule
   input_containers[input_container]
   provided_user := run_as_user(input_container.securityContext, core.review)
@@ -22,6 +23,7 @@ violation[{"msg": msg}] {
 }
 violation[{"msg": msg}] {
   exceptions.parameters(policyID).enabled
+  not exceptions.is_exception(policyID)
   rule := exceptions.parameters(policyID).runAsUser.rule
   input_containers[input_container]
   not run_as_user(input_container.securityContext, core.review)

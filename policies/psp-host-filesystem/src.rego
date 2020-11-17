@@ -11,6 +11,7 @@ policyID = "psphostfilesystem"
 
 violation[{"msg": msg, "details": {}}] {
   exceptions.parameters(policyID).enabled
+  not exceptions.is_exception(policyID)
   volume := input_hostpath_volumes[_]
   not input_hostpath_allowed(volume)
   msg := sprintf("Policy: %s - HostPath volume %v is not allowed, pod: %v. Allowed path: %v", [policyID, volume, core.review.object.metadata.name, exceptions.parameters(policyID).allowedHostPaths])

@@ -99,7 +99,6 @@ validate_templates() {
   local constraintsKinds="AllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged"
   local skipKinds="CustomResourceDefinition,$constraintsKinds"
   local skipFilenames="crd,knative-services,constraint"
-  # ^constraint_\w+\.yaml
 
   kubeval --quiet --skip-kinds $skipKinds \
     --ignored-filename-patterns "$skipFilenames" \
