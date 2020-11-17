@@ -15,17 +15,16 @@ function build() {
 }
 
 function decorate() {
-  echo "Decorating constraints files with parameters."
+  echo "Decorating template/constraints files with properties."
   local parseConstraintsExpression='.constraints as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
   for constraint in $(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c "$parseConstraintsExpression"); do
     local key=$(echo $constraint | jq --raw-output '. | keys[0]')
-    # decorate resource constraints
+    # decorate constraints
     local constraintsFile=$(ls $gatekeeperArtifactsPath/constraint_* | grep -i "$key.yaml")
     local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {"${key}"} }}")
     local constraints=$(yq r -P -j $constraintsFile | jq --raw-output -c '.')
     jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraintsFile
-    # decorate resource constraints_template
-    echo "Decorating PRAMETERS"
+    # decorate constraint templates
     local mapPropertiesExpr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
     local properties=$(yq -j r values-schema.yaml "properties.charts.properties.gatekeeper.properties.constraints.properties[${key}]" | jq -c --raw-output "$mapPropertiesExpr")
     local ctemplatesFile=$(ls $gatekeeperArtifactsPath/template_* | grep -i "$key.yaml")
