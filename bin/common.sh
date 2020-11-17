@@ -8,7 +8,7 @@ readonly helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replacePathsPattern="s@../env@${ENV_DIR}@g"
 
 get_k8s_version() {
-  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
+  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion" >/dev/null
 }
 
 otomi_image_tag() {
