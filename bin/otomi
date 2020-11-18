@@ -162,6 +162,7 @@ validate_cluster_env() {
   [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && err=1
   [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && err=1
   [ "$err" != "" ] && exit 2
+  return 0
 }
 
 is_repo() {
