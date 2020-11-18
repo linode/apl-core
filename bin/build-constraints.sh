@@ -26,7 +26,8 @@ function decorate() {
     jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraintsFile
     # decorate constraint templates
     local mapPropertiesExpr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
-    local properties=$(yq -j r values-schema.yaml "properties.charts.properties.gatekeeper.properties.constraints.properties[${key}]" | jq -c --raw-output "$mapPropertiesExpr")
+    local policyPropertiesPath="properties.charts.properties.gatekeeper.properties.constraints.properties[${key}]"
+    local properties=$(yq -j r values-schema.yaml $policyPropertiesPath | jq -c --raw-output "$mapPropertiesExpr")
     local ctemplatesFile=$(ls $gatekeeperArtifactsPath/template_* | grep -i "$key.yaml")
     local template=$(yq r -P -j $ctemplatesFile | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplatesFile
