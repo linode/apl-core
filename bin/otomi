@@ -34,8 +34,6 @@ function verbose_env() {
 
 # VERBOSE - export this varibale to run this script in verbose mode
 VERBOSE=${VERBOSE:-"0"}
-# MOUNT_TMP_DIR - export this varaibale to mount yout /tmp directory
-MOUNT_TMP_DIR=${MOUNT_TMP_DIR:-0}
 # EXIT_FAST - export this varaibale to exit the script on error
 EXIT_FAST=${EXIT_FAST:-"1"}
 
@@ -51,7 +49,7 @@ set +e
 customer=$(customer_name || $CUSTOMER || "unknown")
 set -e
 cmd_image=''
-docker_terminal_params='-t'
+docker_terminal_params='-ti'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
@@ -79,7 +77,7 @@ function show_usage() {
     bash                run interactive bash shell in otomi-core container
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit              wrapper for encrypt > generate pipelines > git commit changed files
-    console             starts the otomi console on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    console             starts Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script
     diff                diff k8s resources (use labels like '-l name=prometheus-operator')
@@ -97,7 +95,6 @@ function show_usage() {
 
   Env flags:
     VERBOSE=1;          Run otomi CLI in verbose mode
-    MOUNT_TMP_DIR=1     Access otomi CLI artifacts by mounting local /tmp directory to a Docker container
     EXIT_FAST=1         Exit the script after first error
   "
 }
@@ -149,7 +146,7 @@ evaluate_secrets() {
   }
   if [ "$CI" == "" ]; then
     local secrets_path="$ENV_DIR/.secrets"
-    [[ ! -r "$secrets_path" ]] && echo "Error: Unable to evaluate the '$secrets_path' file.\nRefer to documentation: $readme_url" && exit 2
+    [[ ! -r "$secrets_path" ]] && echo "Error: Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     source $secrets_path
   fi
   prepare_crypt
@@ -167,6 +164,22 @@ validate_cluster_env() {
 is_repo() {
   [[ "$(basename "$PWD")" == "otomi-core" ]] && echo "Error: Should not be ran from otomi-core" && exit 2
   return 0
+}
+
+run_console() {
+  [ "$1" != "" ] && docker-compose down --remove-orphans && exit
+  # this will create /tmp/otomi-env:
+  drun bin/check-console.sh
+  # now source the fresh env we created for docker-compose
+  . /tmp/otomi-env
+  # try to login with the pull secret
+  set -o pipefail
+  pass=$(echo "$PULL_SECRET" | base64 --decode | jq '.auths["eu.gcr.io"].password|fromjson')
+  docker login -u _json_key -p "$pass" "eu.gcr.io"
+  echo "Starting Otomi Console at http://127.0.0.1:3000"
+  sh -c "sleep 7 && open http://127.0.0.1:3000" &
+  docker-compose up
+  rm /tmp/otomi-env
 }
 
 function drun() {
@@ -189,10 +202,6 @@ function drun() {
     kubectl version >/dev/null
   fi
 
-  if [ $MOUNT_TMP_DIR -eq 1 ]; then
-    tmp_volume="-v /tmp:/tmp"
-  fi
-
   if [ $mount_stack_dir -eq 1 ]; then
     stack_volume="-v ${stack_dir}:${stack_dir}"
   fi
@@ -207,7 +216,7 @@ function drun() {
   if [[ ("$CI" == "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
     [ "$VERBOSE" == "1" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
-      $tmp_volume $stack_volume $socket_volume \
+      $stack_volume $socket_volume -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
@@ -224,7 +233,6 @@ function drun() {
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
-      -e MOUNT_TMP_DIR="$MOUNT_TMP_DIR" \
       -e EXIT_FAST="$EXIT_FAST" \
       -w $stack_dir \
       $cmd_image \
@@ -269,7 +277,8 @@ function execute() {
       ;;
     console)
       check_kube_context=0
-      bin/console.sh $@
+      evaluate_secrets
+      run_console $@
       ;;
     decrypt)
       check_sops_file
