@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 set -uo pipefail
-EXIT_FAST=${EXIT_FAST:-"1"}
-[[ $EXIT_FAST == "1" ]] && set -e
+EXIT_FAST=${EXIT_FAST:-'true'}
+[ $EXIT_FAST = 'true' ] && set -e
 
 schemaOutputPath="/tmp/otomi/kubernetes-json-schema/master"
 outputPath="/tmp/otomi/generated-crd-schemas"
@@ -14,9 +14,9 @@ exitcode=1
 . bin/common.sh
 
 cleanup() {
-  [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+  [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile
-  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+  rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   exit $exitcode
 }
 trap cleanup EXIT ERR
@@ -62,7 +62,7 @@ process_crd() {
       jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
   } || {
     echo "ERROR Processing: $document"
-    [[ $EXIT_FAST == "1" ]] && exit 1
+    [ $EXIT_FAST = 'true' ] && exit 1
   }
 }
 
