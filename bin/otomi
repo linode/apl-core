@@ -45,7 +45,9 @@ has_docker=0
 dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-customer=$(customer_name)
+set +e
+customer=$(customer_name || $CUSTOMER || "unknown")
+set -e
 cmd_image=''
 docker_terminal_params='-ti'
 helm_config=''
