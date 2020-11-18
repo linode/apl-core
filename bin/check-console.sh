@@ -12,7 +12,12 @@ api_settings="$ENV_DIR/env/charts/otomi-api.yaml"
 api_secrets="$ENV_DIR/env/charts/secrets.otomi-api.yaml"
 
 # decrypt secrets if needed
-[ -f "$ENV_DIR/.sops.yaml" ] && set +e && helm secrets dec $api_secrets $settings_secrets >/dev/null && set -e
+if [ -f "$ENV_DIR/.sops.yaml" ]; then
+  set +e
+  helm secrets dec $api_secrets >/dev/null
+  helm secrets dec $settings_secrets >/dev/null
+  set -e
+fi
 [ -f "$api_secrets.dec" ] && api_secrets="$api_secrets.dec"
 [ -f "$settings_secrets.dec" ] && settings_secrets="$settings_secrets.dec"
 pull_secret="$(yq m $settings $settings_secrets | yq r - 'otomi.pullSecret')"
@@ -23,11 +28,11 @@ user=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.user')
 password=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.password')
 
 # all present?
-[ "$pull_secret" == "" ] && echo "Error: otomi.pullSecret not set in $ENV_DIR/env/secrets.settings.yaml!" >&2 && err=1
-[ "$repo_url" == "" ] || [ "$repo_url" == "github.com/redkubes/otomi-values-demo.git" ] && error="\nrepoUrl: $repo_url "
-[ "$email" == "" ] || [ "$email" == "some@secret.value" ] && error="$error\nemail: $email"
-[ "$user" == "" ] || [ "$user" == "somesecretvalue" ] && error="$error\nuser: $user"
-[ "$password" == "" ] || [ "$password" == "somesecretvalue" ] && error="$error\npassword: $password"
+[ "$pull_secret" = "" ] && echo "Error: otomi.pullSecret not set in $ENV_DIR/env/secrets.settings.yaml!" >&2 && err=1
+[ "$repo_url" = "" ] || [ "$repo_url" = "github.com/redkubes/otomi-values-demo.git" ] && error="\nrepoUrl: $repo_url "
+[ "$email" = "" ] || [ "$email" = "some@secret.value" ] && error="$error\nemail: $email"
+[ "$user" = "" ] || [ "$user" = "somesecretvalue" ] && error="$error\nuser: $user"
+[ "$password" = "" ] || [ "$password" = "somesecretvalue" ] && error="$error\npassword: $password"
 [ "$error" != "" ] && printf "Error: Make sure the git details are correctly added to 'charts/*otomi-api.yaml'. Incorrect values found for git: $error\n" >&2
 [ "$err" != "" ] || [ "$error" != "" ] && exit 1
 
