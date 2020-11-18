@@ -209,7 +209,6 @@ function drun() {
     docker run $docker_terminal_params --rm \
       $tmp_volume $stack_volume $socket_volume \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
-      -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
       -v ${helm_config}:/home/app/.config/helm \
