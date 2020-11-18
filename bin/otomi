@@ -47,9 +47,7 @@ has_docker=0
 dind=0
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-set +e
-customer=$(customer_name || $CUSTOMER || "unknown")
-set -e
+customer=$(customer_name)
 cmd_image=''
 docker_terminal_params='-t'
 helm_config=''
@@ -158,11 +156,10 @@ evaluate_secrets() {
 }
 
 validate_cluster_env() {
-  [ "$customer" = "unknown" ] && exit # first time bootstrap
   evaluate_secrets
-  [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && err=1
-  [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && err=1
-  [ "$err" != "" ] && exit 2
+  [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" && exit 2
+  [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" && exit 2
+  return 0
 }
 
 is_repo() {
@@ -210,7 +207,6 @@ function drun() {
     docker run $docker_terminal_params --rm \
       $tmp_volume $stack_volume $socket_volume \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
-      -v ${HOME}/.gitconfig:/home/app/.gitconfig \
       -v ${HOME}/.kube/config:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
       -v ${helm_config}:/home/app/.config/helm \
@@ -267,6 +263,7 @@ function execute() {
       ;;
     bootstrap)
       check_kube_context=0
+      validate_cluster_env
       drun bin/bootstrap.sh 1
       ;;
     console)
