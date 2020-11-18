@@ -7,7 +7,7 @@ ENV_DIR=${ENV_DIR:-./env}
 if [ -f "$ENV_DIR/.secrets" ]; then
   source $ENV_DIR/.secrets
 else
-  touch $ENV_DIR/.secrets
+  cp $PWD/.values/.secrets.sample $ENV_DIR/.secrets
 fi
 
 has_otomi='false'
@@ -38,7 +38,7 @@ cp -r $PWD/.values/.vscode $ENV_DIR/
 
 generate_loose_schema
 
-for f in '.gitattributes' '.sops.yaml.sample'; do
+for f in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
   [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
 done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
@@ -50,14 +50,14 @@ if [ "$skip_demo_files" = "false" ]; then
 fi
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 [ "${GCLOUD_SERVICE_KEY-}" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
-if [ "${OTOMI_PULLSECRET-}" != "" ]; then
+secrets_file="$ENV_DIR/env/secrets.settings.yaml"
+if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != "" ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
   cp -f $PWD/core.yaml $ENV_DIR/
   cp -f $PWD/docker-compose.yml $ENV_DIR/
-  cp -f $PWD/bin/console.sh $bin_path
 fi
-if [[ "$has_otomi" == "false" ]]; then
+if [ "$has_otomi" = "false" ]; then
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"
   echo ". bin/aliases"

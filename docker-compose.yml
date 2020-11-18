@@ -9,14 +9,13 @@ services:
       - 8080
     ports:
       - 8080:8080
-    depends_on:
-      - tools
     volumes:
       - ${PWD}/core.yaml:/etc/otomi/core.yaml
       - data:/tmp
     environment:
       TOOLS_HOST: tools
       CLUSTER_ID: ${CLUSTER_ID:-google/dev}
+      GIT_LOCAL_PATH: /tmp/otomi
       GIT_REPO_URL: ${GIT_REPO_URL:-github.com/redkubes/otomi-values.git}
       GIT_BRANCH: ${GIT_BRANCH:-master}
       GIT_USER: ${GIT_USER}
@@ -29,6 +28,8 @@ services:
     image: otomi/core:${TOOLS_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     command: bin/server.sh
+    depends_on:
+      - api
     expose:
       - 17771
     ports:
@@ -44,6 +45,8 @@ services:
     container_name: web
     expose:
       - 80
+    environment:
+      CONSOLE_MODE: ee
 
   proxy:
     image: nginx:latest
