@@ -3,7 +3,6 @@ clouds:
         domain: eks.otomi.cloud
         clusters:
             demo:
-                enabled: false
                 apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
                 apiServer: 1.1.1.1
                 k8sVersion: '1.16'
@@ -14,7 +13,6 @@ clouds:
         domain: gke.otomi.cloud
         clusters:
             demo:
-                enabled: true
                 apiName: gke_otomi-cloud_europe-west4_otomi-gke-demo
                 apiServer: 1.1.1.1
                 k8sVersion: '1.17'
@@ -24,7 +22,6 @@ clouds:
         domain: aks.otomi.cloud
         clusters:
             demo:
-                enabled: false
                 apiName: aks_otomi-cloud_westeurope_otomi-aks-demo
                 apiServer: 1.1.1.1
                 k8sVersion: '1.17'
@@ -34,7 +31,6 @@ clouds:
         domain: onprem.otomi.cloud
         clusters:
             demo:
-                enabled: false
                 dnsProvider: google
                 apiName: onprem_otomi-cloud
                 apiServer: 1.1.1.1
