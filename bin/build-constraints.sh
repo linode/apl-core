@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-runFromHook=$1
+runFromHook=${1:-"false"}
 [[ $runFromHook == "true" ]] && cd ..
 
 . ./bin/common.sh

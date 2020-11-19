@@ -2,8 +2,8 @@
 
 set -uo pipefail
 
-EXIT_FAST=${EXIT_FAST:-"1"}
-[[ $EXIT_FAST == "1" ]] && set -e
+EXIT_FAST=${EXIT_FAST:-"true"}
+[[ $EXIT_FAST == "true" ]] && set -e
 
 k8sResourcesPath="/tmp/otomi/conftest-fixtures"
 policiesPath="policies"
