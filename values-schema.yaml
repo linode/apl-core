@@ -3,11 +3,6 @@
 type: object
 additionalProperties: false
 definitions:
-  # policyDescription:
-  #   description: |
-  #     Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
-  #     Parameters are used in rego policy files by Konstraint library to generate Constraint objects needed for templating. Also used by Conftest to pass parameters through the Data document
-  #   type: object
   k8sVersion:
     type: string
     default: '1.18'
@@ -746,7 +741,7 @@ properties:
                     properties:
                       rule:
                         type: string
-                        enum: [RunAsAny, MustRunAsNonRoot, MustRunAs, MustRunAsRange]
+                        enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
                       ranges:
                         type: array
                         items:
