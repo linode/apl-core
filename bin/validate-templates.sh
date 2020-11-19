@@ -17,7 +17,7 @@ exitcode=1
 cleanup() {
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile $kubevalLogPath
-  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+  [[ ${MOUNT_TMP_DIR-'false'} != "false" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   exit $exitcode
 }
 trap cleanup EXIT ERR
