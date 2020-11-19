@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 set -uo pipefail
-EXIT_FAST=${EXIT_FAST:-"1"}
-[[ $EXIT_FAST == "1" ]] && set -e
+EXIT_FAST=${EXIT_FAST:-'true'}
+[ $EXIT_FAST = 'true' ] && set -e
 
 schemaOutputPath="/tmp/otomi/kubernetes-json-schema/master"
 outputPath="/tmp/otomi/generated-crd-schemas"
@@ -63,7 +63,7 @@ process_crd() {
       jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
   } || {
     echo "ERROR Processing: $document"
-    [[ $EXIT_FAST == "1" ]] && exit 1
+    [ $EXIT_FAST = 'true' ] && exit 1
   }
 }
 

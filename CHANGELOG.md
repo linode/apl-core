@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.40](https://github.com/redkubes/otomi-core/compare/v0.11.39...v0.11.40) (2020-11-18)
+
+### Bug Fixes
+
+- console docker compose [ci skip] ([866038c](https://github.com/redkubes/otomi-core/commit/866038c533b707e587c5a89c2ffb0a9664f805cc))
+- disabling -e for retrieving customer name ([98f3048](https://github.com/redkubes/otomi-core/commit/98f3048527af338db490e1c0c7617cbd7ffc5aff))
+- otomi console command ([353bbbc](https://github.com/redkubes/otomi-core/commit/353bbbc550778966e49c5852e0677acde9547aa3))
+- otomi script modifies .gitconfig ([#205](https://github.com/redkubes/otomi-core/issues/205)) ([58d98e3](https://github.com/redkubes/otomi-core/commit/58d98e319f9971255ebc21e6f0c9a902936baf7a))
+- the README.md refers to dead links ([#206](https://github.com/redkubes/otomi-core/issues/206)) ([ee37ca3](https://github.com/redkubes/otomi-core/commit/ee37ca3efe6148e4df72c86c9e1dd5885b0d084b))
+
 ### [0.11.39](https://github.com/redkubes/otomi-core/compare/v0.11.38...v0.11.39) (2020-11-16)
 
 ### Bug Fixes

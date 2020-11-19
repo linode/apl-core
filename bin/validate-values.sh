@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 set -uo pipefail
-EXIT_FAST=${EXIT_FAST:-"1"}
-[[ $EXIT_FAST == "1" ]] && set -e
+EXIT_FAST=${EXIT_FAST:-'true'}
+[ $EXIT_FAST = 'true' ] && set -e
 
 . bin/common.sh
 
@@ -11,7 +11,7 @@ mkdir -p $tmp_path >/dev/null
 
 cleanup() {
   local exitcode=$?
-  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $tmp_path
+  rm -rf $tmp_path
   return $exitcode
 }
 trap cleanup EXIT ERR

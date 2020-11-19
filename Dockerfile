@@ -1,26 +1,22 @@
 FROM node:14-slim as ci
 
+ARG SKIP_TESTS='false'
+ENV EXIT_FAST='true'
+
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY package*.json ./
 COPY . .
-RUN npm install
 COPY ./.cspell.json .
-RUN npm run spellcheck
-
-FROM otomi/tools:1.4.9 as test
-ENV APP_HOME=/home/app/stack
-RUN mkdir -p $APP_HOME
-WORKDIR $APP_HOME
-
-COPY . .
 RUN cp -r .demo/ env/ 
 
-RUN bin/validate-values.sh
-RUN EXIT_FAST=1 bin/validate-templates.sh
-RUN EXIT_FAST=0 bin/validate-policies.sh
+RUN [ "$SKIP_TESTS" = 'false' ] && \
+  npm install && \
+  npm run spellcheck && \
+  bin/validate-values.sh && \
+  bin/validate-templates.sh || true
 
 #-----------------------------
 FROM otomi/tools:1.4.9 as prod
