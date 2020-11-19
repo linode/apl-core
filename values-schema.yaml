@@ -3,18 +3,11 @@
 type: object
 additionalProperties: false
 definitions:
-  policy:
-    description: |
-      Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
-      Parameters are used in rego policy files by Konstraint library to generate Constraint objects needed for templating. Also used by Conftest to pass parameters through the Data document
-    type: object
-    properties:
-      enabled:
-        type: boolean
-        description: |
-          Allow toggling individual policies on/off
-        default: true
-      additionalProperties: true
+  # policyDescription:
+  #   description: |
+  #     Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
+  #     Parameters are used in rego policy files by Konstraint library to generate Constraint objects needed for templating. Also used by Conftest to pass parameters through the Data document
+  #   type: object
   k8sVersion:
     type: string
     default: '1.18'
@@ -692,19 +685,95 @@ properties:
             additionalProperties: false
             properties:
               allowedrepos:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  repos:
+                    type: array
+                    items:
+                      type: string
               bannedimagetags:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  tags:
+                    type: array
+                    items:
+                      type: string
               containerlimits:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  cpu:
+                    '$ref': '#/definitions/cpuQuantity'
+                  memory:
+                    '$ref': '#/definitions/memoryQuantity'
               psphostfilesystem:
-                '$ref': '#/definitions/policy'
-              psphostnetworkingports:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  allowedHostPaths:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        required: [pathPrefix, readOnly]
+                        pathPrefix:
+                          type: string
+                        readOnly:
+                          type: boolean
+                      additionalProperties: false
               pspallowedusers:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  runAsUser:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      required: [rule]
+                      rule:
+                        type: string
+                        pattern: 'RunAsAny|MustRunAsNonRoot|MustRunAs|MustRunAsRange'
+                      ranges:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            min:
+                              type: integer
+                            max:
+                              type: integer
+              psphostnetworkingports:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
               pspprivileged:
-                '$ref': '#/definitions/policy'
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
       harbor:
         type: object
         additionalProperties: false
