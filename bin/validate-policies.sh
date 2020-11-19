@@ -35,7 +35,7 @@ validate_policies() {
   $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   # generate parameter constraints file from values
-  local parseConstraintsExpression='.constraints as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
+  local parseConstraintsExpression='.constraints as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
   policies=$(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c "$parseConstraintsExpression")
   for policy in $policies; do
     echo $policy | yq r -P - >>$constraintsFile
