@@ -1,4 +1,5 @@
-FROM node:14-slim as ci
+FROM otomi/tools:1.4.9  as ci
+# yq/jq missing in node image. using otomi/tools
 
 ARG SKIP_TESTS='false'
 ENV EXIT_FAST='true'
