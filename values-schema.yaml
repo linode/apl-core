@@ -688,78 +688,79 @@ properties:
                 additionalProperties: false
                 required: [enabled]
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   repos:
                     type: array
                     items:
                       type: string
+                  enabled:
+                    type: boolean
+                    default: true
               bannedimagetags:
                 additionalProperties: false
                 required: [enabled]
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   tags:
                     type: array
                     items:
                       type: string
+                  enabled:
+                    type: boolean
+                    default: true
               containerlimits:
                 additionalProperties: false
                 required: [enabled]
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   cpu:
                     '$ref': '#/definitions/cpuQuantity'
                   memory:
                     '$ref': '#/definitions/memoryQuantity'
+                  enabled:
+                    type: boolean
+                    default: true
               psphostfilesystem:
                 additionalProperties: false
                 required: [enabled]
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   allowedHostPaths:
                     type: array
                     items:
                       type: object
+                      required: [pathPrefix, readOnly]
                       properties:
-                        required: [pathPrefix, readOnly]
                         pathPrefix:
                           type: string
                         readOnly:
                           type: boolean
                       additionalProperties: false
+                  enabled:
+                    type: boolean
+                    default: true
               pspallowedusers:
                 additionalProperties: false
                 required: [enabled]
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   runAsUser:
                     type: object
                     additionalProperties: false
+                    required: [rule]
                     properties:
-                      required: [rule]
                       rule:
                         type: string
-                        pattern: 'RunAsAny|MustRunAsNonRoot|MustRunAs|MustRunAsRange'
+                        enum: [RunAsAny, MustRunAsNonRoot, MustRunAs, MustRunAsRange]
                       ranges:
                         type: array
                         items:
                           type: object
                           additionalProperties: false
+                          required: [min, max]
                           properties:
                             min:
                               type: integer
                             max:
                               type: integer
+                  enabled:
+                    type: boolean
+                    default: true
               psphostnetworkingports:
                 additionalProperties: false
                 required: [enabled]
