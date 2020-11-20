@@ -9,15 +9,10 @@
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:
-  tag: "v6.0.0"
+  tag: "v6.1.1"
   repository: quay.io/oauth2-proxy/oauth2-proxy
-  # tag: latest
-  # pullPolicy: Always
 
 config:
-  # clientID: oidc-auth-client
-  # clientSecret: bladibladi
-  # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
   clientID: {{ $o.clientID }}
   clientSecret: {{ $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}

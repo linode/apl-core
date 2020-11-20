@@ -33,7 +33,7 @@ hf() {
 }
 
 hf_values() {
-  [ "${VERBOSE-'true'}" = 'true' ] && quiet='--quiet'
+  [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
     yq read -P - 'releases[0].values[0]'
 }

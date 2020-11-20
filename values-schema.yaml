@@ -11,6 +11,11 @@ definitions:
   domain:
     type: string
     pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
+  droneGit:
+    clientID:
+      type: string
+    clientSecretValue:
+      type: string
   registry:
     type: string
     pattern: ^[a-z0-9]+(?:[._-][a-z0-9]+)*$
@@ -169,6 +174,12 @@ definitions:
     pattern: ^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$
   alerts:
     properties:
+      drone:
+        type: string
+        enum:
+          - slack
+          - msteams
+        default: slack
       groupInterval:
         type: string
         default: 5m
@@ -177,13 +188,13 @@ definitions:
         type: string
         default: 3h
         description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
-      receiver:
-        type: string
+      receivers:
+        type: array
         enum:
           - slack
           - msteams
-        default: slack
-        description: A notification receiver. You can only choose one of Slack or MS Teams in simple configuration mode.
+          - email
+        description: Notification receivers.
       slack:
         type: object
         additionalProperties: false
@@ -194,7 +205,11 @@ definitions:
           channel:
             type: string
             default: mon-otomi
-            description: 'The Slack channel for non-critical notifications. This channel, as well as one with the suffix "-crit" (for criticals) should exist.'
+            description: 'The Slack channel for non-critical notifications.'
+          channelCrit:
+            type: string
+            default: mon-otomi
+            description: 'The Slack channel for critical notifications.'
         required: [url]
       msteams:
         type: object
@@ -207,7 +222,27 @@ definitions:
             type: string
             description: The high prio web hook
         required: [highPrio, lowPrio]
-    required: [receiver]
+      email:
+        type: object
+        properties:
+          from:
+            type: string
+          to:
+            type: string
+          smarthost:
+            type: string
+          hello:
+            type: string
+          auth_username:
+            type: string
+          auth_password:
+            type: string
+          auth_secret:
+            type: string
+          auth_identity:
+            type: string
+
+    required: [receivers]
   cloud:
     description: A common cloud configuration
     type: object
@@ -240,6 +275,15 @@ definitions:
             Standard_RAGZRS,
           ]
         description: An azure disk type (SKU Type)
+      monitor:
+        type: object
+        properties:
+          clientId:
+            type: string
+            description: An azure client id
+          clientSecret:
+            type: string
+            description: An azure client secret
       resourceGroup:
         type: string
         description: An azure resource group
@@ -311,8 +355,14 @@ definitions:
     type: object
     additionalProperties: false
     properties:
+      alerts:
+        '$ref': '#/definitions/alerts'
       azure:
-        type: object
+        '$ref': '#/definitions/cloudAzure'
+        additionalProperties:
+          useAdmin:
+            type: boolean
+            default: true
       id:
         '$ref': '#/definitions/idName'
         description: Must be the same as the name.
@@ -367,6 +417,10 @@ definitions:
               description: Details for a knative service that will be deployed and operated.
               additionalProperties: false
               properties:
+                predeployed:
+                  description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
+                  type: boolean
+                  default: false
                 scaleToZero:
                   title: Scale to zero
                   description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
@@ -485,6 +539,10 @@ definitions:
 properties:
   alerts:
     '$ref': '#/definitions/alerts'
+    additionalProperties:
+      home:
+        description: Configuration to phone home. Used when otomi.isHomeMonitored is set.
+        '$ref': '#/definitions/alerts'
   charts:
     type: object
     additionalProperties: false
@@ -632,17 +690,52 @@ properties:
             additionalProperties: false
             properties:
               github:
-                type: object
-                additionalProperties: false
-                properties:
-                  clientID:
-                    type: string
-                  clientSecretValue:
-                    type: string
+                '$ref': '#/definitions/droneGit'
+                additionalProperties:
                   server:
                     type: string
+                    default: https://github.com
+              gitlab:
+                '$ref': '#/definitions/droneGit'
+                additionalProperties:
+                  server:
+                    type: string
+              gitea:
+                '$ref': '#/definitions/droneGit'
+                additionalProperties:
+                  server:
+                    type: string
+              gogs:
+                properties:
+                  server:
+                    type: string
+              bitbucketCloud:
+                '$ref': '#/definitions/droneGit'
+              bitbucketServer:
+                properties:
+                  server:
+                    type: string
+                  consumerKey:
+                    type: string
+                    default: consumerKey
+                  privateKey:
+                    type: string
+                    default: privateKey
+                  username:
+                    type: string
+                  passwordKey:
+                    type: string
+                    default: password
               provider:
                 type: string
+                enum:
+                  - github
+                  - gitlab
+                  - gitea
+                  - gogs
+                  - bitbucketCloud
+                  - bitbucketServer
+                default: github
       external-dns:
         type: object
         additionalProperties: false
@@ -720,6 +813,10 @@ properties:
               name:
                 description: A name of the Application Gateway
                 type: string
+              usePrivateIP:
+                description: Wether to use a private ip range or not
+                type: boolean
+                default: false
               resourceGroup:
                 description: A name of the Azure Resource Group in which Application Gateway was created
                 type: string
@@ -934,6 +1031,7 @@ properties:
             properties:
               enabled:
                 type: boolean
+                default: true
           resources:
             '$ref': '#/definitions/resources'
       oauth2-proxy:
@@ -988,24 +1086,6 @@ properties:
         type: object
         properties:
           additionalProperties: false
-          alertmanager:
-            type: object
-            additionalProperties: false
-            properties:
-              groupInterval:
-                type: string
-              receiver:
-                type: string
-              repeatInterval:
-                type: string
-              slack:
-                additionalProperties: false
-                type: object
-                properties:
-                  channel:
-                    type: string
-                  url:
-                    '$ref': '#/definitions/url'
           grafana:
             type: object
             additionalProperties: false
@@ -1112,13 +1192,13 @@ properties:
         type: boolean
         description: Wether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         default: true
-      isRedkubesMonitored:
+      isHomeMonitored:
         type: boolean
-        description: Wether this cluster is monitored under a RedKubes Premium SLA. Sends all notifications to RedKubes.
+        description: Wether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         default: false
       mode:
         type: string
-        default: ce
+        default: ee
         description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee)
         enum: [ce, ee]
       pullSecret:
