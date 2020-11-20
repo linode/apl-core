@@ -173,6 +173,7 @@ definitions:
     type: string
     pattern: ^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$
   alerts:
+    type: object
     properties:
       drone:
         type: string
@@ -190,10 +191,12 @@ definitions:
         description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
       receivers:
         type: array
-        enum:
-          - slack
-          - msteams
-          - email
+        items:
+          type: string
+          enum:
+            - slack
+            - msteams
+            - email
         description: Notification receivers.
       slack:
         type: object
@@ -241,7 +244,7 @@ definitions:
             type: string
           auth_identity:
             type: string
-
+        required: [smarthost, to]
     required: [receivers]
   cloud:
     description: A common cloud configuration
@@ -537,12 +540,10 @@ definitions:
           required: [id, name]
     required: [id]
 properties:
+  home:
+    '$ref': '#/definitions/alerts'
   alerts:
     '$ref': '#/definitions/alerts'
-    additionalProperties:
-      home:
-        description: Configuration to phone home. Used when otomi.isHomeMonitored is set.
-        '$ref': '#/definitions/alerts'
   charts:
     type: object
     additionalProperties: false
@@ -994,6 +995,10 @@ properties:
             properties:
               alias:
                 type: string
+              clientID:
+                type: string
+              clientSecret:
+                type: string
           realm:
             type: string
           theme:
@@ -1155,23 +1160,15 @@ properties:
         type: string
       clientSecret:
         type: string
-      idp:
-        type: object
-        additionalProperties: false
-        properties:
-          adminGroupID:
-            type: string
-          clientID:
-            type: string
-          clientSecret:
-            type: string
-          issuer:
-            type: string
-          teamAdminGroupID:
-            type: string
-          tenantID:
-            type: string
+      issuer:
+        type: string
+      tenantID:
+        type: string
       scope:
+        type: string
+      adminGroupID:
+        type: string
+      teamAdminGroupID:
         type: string
   otomi:
     type: object

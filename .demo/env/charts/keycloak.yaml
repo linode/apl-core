@@ -4,4 +4,5 @@ charts:
         theme: otomi
         realm: master
         idp:
+            clientID: otomi
             alias: redkubes-azure

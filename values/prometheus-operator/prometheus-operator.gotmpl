@@ -167,13 +167,15 @@ grafana:
   service:
     portName: http-service
   grafana.ini:
+  {{ if not $hasOIDC }}
     "auth.anonymous":
-      enabled: {{ not $hasOIDC }}
+      enabled: true
       org_role: Admin
       org_name: Main Org.
+  {{- else }}
     "auth.generic_oauth":
       tls_skip_verify_insecure: {{ eq ($v.charts | get "cert-manager.stage") "staging" }}
-      enabled: {{ $hasOIDC }}
+      enabled: true
       name: OAuth
       org_role: Admin
       allow_sign_up: true
@@ -186,6 +188,7 @@ grafana:
       token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($v.oidc | getOrNil "grafana.tokenUrl") }}
       api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($v.oidc | getOrNil "grafana.apiUrl") }}
       role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+  {{- end }}
     log:
       level: error
     server:

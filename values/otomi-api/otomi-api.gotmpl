@@ -39,7 +39,7 @@ env:
   {{- end }}
   USE_SOPS: {{ $v.sops.enabled }}
   CORE_VERSION: '{{ $version }}'
-  {{- if (not $v.charts.keycloak | get "enabled" false) }}
+  {{- if (not ($v.charts.keycloak | get "enabled" false)) }}
   NO_AUTHZ: true
   {{- end }}
 
