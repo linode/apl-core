@@ -26,7 +26,7 @@ releases:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         charts: {{- $v.charts | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        hasKeycloak: {{ $v.charts.keycloak | get "enabled" true }}
+        oidc: {{- $v.oidc | toYaml | nindent 10 }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
         knative:

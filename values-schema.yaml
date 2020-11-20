@@ -1153,6 +1153,7 @@ properties:
       name:
         type: string
   oidc:
+    description: Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.
     type: object
     additionalProperties: false
     properties:
@@ -1162,6 +1163,14 @@ properties:
         type: string
       issuer:
         type: string
+      jwksUri:
+        type: string
+      authUrl:
+        '$ref': '#/definitions/url'
+      tokenUrl:
+        '$ref': '#/definitions/url'
+      apiUrl:
+        '$ref': '#/definitions/url'
       tenantID:
         type: string
       scope:
@@ -1170,17 +1179,6 @@ properties:
         type: string
       teamAdminGroupID:
         type: string
-      oauth2:
-        description: Can be used in case no keycloak is chosen, to fall back to oauth2 urls. Handy for apps like grafana.
-        type: object
-        properties:
-          authUrl:
-            '$ref': '#/definitions/url'
-          tokenUrl:
-            '$ref': '#/definitions/url'
-          apiUrl:
-            '$ref': '#/definitions/url'
-        required: [authUrl, tokenUrl]
   otomi:
     type: object
     additionalProperties: false

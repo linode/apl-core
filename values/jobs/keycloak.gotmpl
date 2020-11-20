@@ -39,7 +39,7 @@ tasks:
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
       KEYCLOAK_REALM: master
-      KEYCLOAK_CLIENT_ID: {{ $k.idp | get "clientID" "otomi" }}
+      KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
       KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
       TENANT_ID: {{ $v.oidc.tenantID }}
       TENANT_CLIENT_ID: {{ $v.oidc.clientID }}

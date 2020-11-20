@@ -31,30 +31,30 @@
 {{- end }}
 
 # apps.* that need their path rewritten to /
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi "isApps" true "hasForward" false "hasAuth" true "services" $private "hasKeycloak" $hasKeycloak) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
 ---
 
 # apps.* that need their path forwarded instead of rewritten to /
 {{- if gt (len $privateForward) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" true "hasForward" true "hasAuth" true "services" $privateForward "hasKeycloak" $hasKeycloak) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
 ---
 {{- end }}
 
 # apps with custom domains
 {{- if gt (len $privateCustom) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom "hasKeycloak" $hasKeycloak) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
 ---
 {{- end }}
 
 # public services
 {{- if gt (len $public) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $public "hasKeycloak" $hasKeycloak) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
 {{- end }}
 
 {{- if $v.otomi.hasCloudLB }}
 # external LB ingress
-{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $v.services "hasKeycloak" $hasKeycloak) }}
+{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
 ---
 {{- end }}
 

@@ -16,6 +16,7 @@
   },
   "prettier.enable": true,
   "sops.defaults.gcpCredentialsPath": "gcp-key.json",
+  "sops.enabled": true,
   "yaml.schemas": {
     "http://json-schema.org/draft/2019-09/schema#": ".vscode/values-schema.yaml",
     ".vscode/values-schema.yaml": "env/*.yaml"
