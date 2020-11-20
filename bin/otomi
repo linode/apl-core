@@ -157,7 +157,7 @@ validate_cluster_env() {
   local err
   [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" >&2 && err=1
   [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" >&2 && err=1
-  [[ ! -z "$err" ]] && exit 2
+  [[ -n "$err" ]] && exit 2
   return 0
 }
 

@@ -7,7 +7,8 @@ bases:
 {{- $c := $v.charts }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
-{{- $slackTpl := tpl (readFile "../values/prometheus-operator/slack-configs.gotmpl") $v | toString }}
+{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+
 releases:
   {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
@@ -24,6 +25,7 @@ releases:
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
+        hasKeycloak: {{ $v.charts.keycloak | get "enabled" true }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
         knative:
@@ -62,43 +64,7 @@ releases:
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
-          config:
-            {{- $receiver := ($team | get "receiver" ($v.alerts | get "receiver" "slack")) }}
-            {{- if eq $receiver "slack" }}
-            global:
-              slack_api_url: {{ $team | get "slack.url" ($v.alerts.slack.url) }}
-            {{- end }}
-            receivers:
-              - name: "null"
-              {{- $channel := $team | get "slack.channel" "mon-otomi" }}
-              {{- if eq $receiver "slack" }}
-              - name: default
-                slack_configs:
-                  - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}"
-                    {{- $slackTpl | nindent 20 }}
-              - name: critical
-                slack_configs:
-                  - channel: "#{{ $team | get "slack.channel" "mon-otomi" }}-crit"
-                    {{- $slackTpl | nindent 20 }}
-              {{- else }}
-              {{ $suffix := (hasKey $team "receiver") | ternary "" ".monitoring.svc.cluster.local" }}
-              - name: default
-                webhook_configs:
-                  - url: "http://prometheus-msteams{{ $suffix }}:2000/low_priority_channel"
-                    send_resolved: true
-              - name: critical
-                webhook_configs:
-                  - url: "http://prometheus-msteams{{ $suffix }}:2000/high_priority_channel"
-                    send_resolved: true
-              {{- end }}
-              - name: critical-redkubes
-              {{- if and $v.otomi.isRedkubesMonitored }}
-                # sending team criticals also to redkubes to be aware of team issues
-                slack_configs:
-                  - channel: "#{{ $v.alerts | get "slack.channel" "mon-otomi" }}-crit"
-                    api_url: {{ $v.alerts.slack.url }}
-                    {{- $slackTpl | nindent 20 }}
-              {{- end }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl) | nindent 12 }}
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
@@ -152,11 +118,6 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $appsDomain }}/grafana
-            {{- if ($team | get "oidc.custom" false) }}
-            "auth.generic_oauth":
-              client_id: {{ $team.oidc.clientID }}
-              client_secret: {{ $team.oidc.clientSecret }}
-            {{- end }}
           additionalDataSources:
             - name: Prometheus-admin
               editable: false
@@ -183,18 +144,19 @@ releases:
               access: proxy
               url: http://graphite.monitoring:80
             {{- end }}
-            {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" false) }}
-            {{- $monitor := (($team | get "azure.monitor.useAdmin" false) | ternary ($v.azure | getOrNil "monitor") ($team | getOrNil "azure.monitor")) }}
+            {{- if and (eq $v.cluster.provider "azure") }}
+            {{- $monitor := ($team | get "azure.monitor" ($v.clouds.azure | get "monitor" nil)) }}
             {{- with $monitor }}
+            {{- $a := $v.clouds.azure }}
             - name: Azure Monitor
               type: grafana-azure-monitor-datasource
               access: proxy
               jsonData:
                 cloudName: azuremonitor
-                subscriptionId: {{ $v.azure.subscriptionId }}
-                tenantId: {{ $v.azure.tenantId }}
+                subscriptionId: {{ $a.subscriptionId }}
+                tenantId: {{ $a.tenantId }}
                 clientId: {{ .clientId }}
-                logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
+                logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $a.tenantId }}
                 logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
                 logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
                 appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
@@ -208,7 +170,7 @@ releases:
               editable: false
             {{- end }}
             {{- end }}
-  {{ if eq ($team | get "receiver" "slack") "msteams" }}
+  {{ if has "msteams" ($team | get "receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -225,8 +187,8 @@ releases:
             additionalLabels:
               release: prometheus-{{ $teamId }}
         connectors:
-          - high_priority_channel: {{ $team | get "msteams.highPrio" ($po | get "alertmanager.msteams.highPrio") }}
-          - low_priority_channel: {{ $team | get "msteams.lowPrio" ($po | get "alertmanager.msteams.lowPrio") }}
+          - high_priority_channel: {{ $team | get "msteams.highPrio" }}
+          - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
   {{- end }}
 
   - name: grafana-dashboards-{{ $teamId }}

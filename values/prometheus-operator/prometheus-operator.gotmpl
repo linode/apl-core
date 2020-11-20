@@ -5,10 +5,9 @@
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
-{{- $o := $v.oidc }}
-{{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
+{{- $hasOIDC := or $hasKeycloak (hasKey $v.oidc "grafana") }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
-{{- $slackTpl := tpl (readFile "./slack-configs.gotmpl") $v | toString }}
+{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -66,9 +65,6 @@ prometheus:
     priorityClassName: "otomi-critical"
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.customer.name $v.cluster.provider $v.cluster.name | lower | quote }}
-    # podMetadata:
-    #   annotations:
-    #     sidecar.istio.io/inject: "false"
     portName: http-web
     storageSpec:
       volumeClaimTemplate:
@@ -82,10 +78,12 @@ prometheus:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
-  additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}      
+  additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
+{{ if eq $v.cluster.provider "aws" }}  
 additionalPrometheusRules:
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
+{{- end }}
 alertmanager:
   alertmanagerSpec:
     priorityClassName: "otomi-critical"
@@ -96,73 +94,9 @@ alertmanager:
       limits:
         memory: 256Mi
         cpu: 500m
-    # podMetadata:
-    #   annotations:
-    #     sidecar.istio.io/inject: "false"
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
-  config:
-    {{- $hasSlack := eq ($p.alertmanager | get "receiver" "slack") "slack" }}
-    global:
-      slack_api_url: {{ $p.alertmanager | get "slack.url" }}
-    route:
-      receiver: default
-      group_by: [alertname]
-      group_interval: {{ $p.alertmanager.groupInterval }}
-      repeat_interval: {{ $p.alertmanager.repeatInterval }}
-      routes:
-        - match:
-            alertname: Watchdog
-          receiver: "null"
-        - match:
-            alertname: CPUThrottlingHigh
-          receiver: "null"
-        {{- if eq $v.cluster.provider "azure" }}
-        - match:
-            alertname: KubeAPILatencyHigh
-          receiver: "null"
-        {{- end }}
-        # redkubes monitoring: only alerts that are for teams AND non-critical should go to the configured receiver
-        # > so NO config here for admins
-        - match:
-            severity: critical
-          receiver: critical
-        {{- if $v.otomi.isRedkubesMonitored }}
-          continue: true
-        - match:
-            severity: critical
-          receiver: critical-redkubes
-        {{- end }}
-    receivers:
-      - name: "null"
-      {{- $channel := $p.alertmanager | get "slack.channel" "mon-otomi" }}
-      {{- if or $v.otomi.isRedkubesMonitored $hasSlack }}
-      - name: default
-        slack_configs:
-          - channel: "#{{ $channel }}"
-            {{ $slackTpl | nindent 12 }}
-      - name: critical
-        slack_configs:
-          - channel: "#{{ $channel }}-crit"
-            {{ $slackTpl | nindent 12  }}
-      {{- else }}
-      - name: default
-        webhook_configs:
-          - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/low_priority_channel"
-            send_resolved: true
-      - name: critical
-        webhook_configs:
-          - url: "http://prometheus-msteams.monitoring.svc.cluster.local:2000/high_priority_channel"
-            send_resolved: true
-      {{- end }}
-      {{- if $v.otomi.isRedkubesMonitored }}
-      - name: critical-redkubes
-        # sending criticals also to redkubes to be aware of customer issues
-        slack_configs:
-          - channel: "#{{ $channel }}-crit"
-            api_url: {{ $v.alerts.slack.url }}
-            {{ $slackTpl | nindent 12  }}
-      {{- end }}
+  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
 grafana:
   image:
     tag: 7.1.5
@@ -199,16 +133,17 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
-    {{- with $v | getOrNil "azure.monitor" }}
+    {{- with $v | getOrNil "clouds.azure.monitor" }}
+    {{- $a := $v.clouds.azure }}
     - name: Azure Monitor
       type: grafana-azure-monitor-datasource
       access: proxy
       jsonData:
         cloudName: azuremonitor
-        subscriptionId: {{ $v.azure.subscriptionId }}
-        tenantId: {{ $v.azure.tenantId }}
+        subscriptionId: {{ $a.subscriptionId }}
+        tenantId: {{ $a.tenantId }}
         clientId: {{ .clientId }}
-        logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $v.azure.tenantId }}
+        logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $a.tenantId }}
         logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
         logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
         appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
@@ -233,14 +168,12 @@ grafana:
     portName: http-service
   grafana.ini:
     "auth.anonymous":
-      enabled: false
-      # enabled: true
+      enabled: {{ not $hasOIDC }}
       org_role: Admin
       org_name: Main Org.
     "auth.generic_oauth":
       tls_skip_verify_insecure: {{ eq ($v.charts | get "cert-manager.stage") "staging" }}
-      # enabled: false
-      enabled: true
+      enabled: {{ $hasOIDC }}
       name: OAuth
       org_role: Admin
       allow_sign_up: true
@@ -249,9 +182,9 @@ grafana:
       client_id: {{ $v.oidc.clientID }}
       client_secret: {{ $v.oidc.clientSecret }}
       scopes: openid
-      auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($o | getOrNil "grafana.authUrl") }}
-      token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($o | getOrNil "grafana.tokenUrl") }}
-      api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
+      auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($v.oidc | getOrNil "grafana.authUrl") }}
+      token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($v.oidc | getOrNil "grafana.tokenUrl") }}
+      api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($v.oidc | getOrNil "grafana.apiUrl") }}
       role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
     log:
       level: error

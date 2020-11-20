@@ -31,10 +31,10 @@ resources:
                 {{- $i.resources.pilot | toYaml | nindent 14 }}
               {{- else }}
               requests:
-                memory: 128Mi
+                memory: 192Mi
                 cpu: 100m
               limits:
-                memory: 256Mi
+                memory: 768Mi
                 cpu: 500m
               {{- end }}
         ingressGateways:
