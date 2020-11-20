@@ -60,7 +60,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end }}
 {{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .otomi.hasCloudLB) (eq .provider "nginx")) }}
-{{- if and $internetFacing .isApps }}
+{{- if and $internetFacing }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}
