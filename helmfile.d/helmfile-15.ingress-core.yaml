@@ -18,6 +18,7 @@ releases:
     values:
       - name: admin
         teamId: admin
+        charts: {{- $v.charts | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $adminDomain }}

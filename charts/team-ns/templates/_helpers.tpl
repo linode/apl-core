@@ -108,7 +108,9 @@ metadata:
   {{- end }}
 {{- end }}
 {{- if .hasAuth }}
+  {{- if .hasKeycloak }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+  {{- end }}
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .cluster.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end }}
