@@ -6,6 +6,7 @@ package containerlimits
 import data.lib.core
 import data.lib.pods
 import data.lib.exceptions
+import data.lib.parameters.parameters
 
 policyID = "containerlimits"
 
@@ -102,7 +103,6 @@ canonify_mem(orig) = new {
   new := to_number(raw) * mem_multiple(suffix)
 }
 violation[{"msg": msg}] {
-  exceptions.parameters(policyID).enabled
   not exceptions.is_exception(policyID)
   general_violation[{"msg": msg}]
 }
@@ -145,7 +145,7 @@ general_violation[{"msg": msg}] {
   pods.containers[container]
   cpu_orig := container.resources.limits.cpu
   cpu := canonify_cpu(cpu_orig)
-  max_cpu_orig := exceptions.parameters(policyID).cpu
+  max_cpu_orig := parameters(policyID).cpu
   max_cpu := canonify_cpu(max_cpu_orig)
   cpu > max_cpu
   msg := sprintf("Policy: %s - container <%v> cpu limit <%v> is higher than the maximum allowed of <%v>", [policyID, container.name, cpu_orig, max_cpu_orig])
@@ -154,7 +154,7 @@ general_violation[{"msg": msg}] {
   pods.containers[container]
   mem_orig := container.resources.limits.memory
   mem := canonify_mem(mem_orig)
-  max_mem_orig := exceptions.parameters(policyID).memory
+  max_mem_orig := parameters(policyID).memory
   max_mem := canonify_mem(max_mem_orig)
   mem > max_mem
   msg := sprintf("Policy: %s - container <%v> memory limit <%v> is higher than the maximum allowed of <%v>", [policyID, container.name, mem_orig, max_mem_orig])

@@ -10,11 +10,11 @@ import data.lib.core
 import data.lib.pods
 import data.lib.security
 import data.lib.exceptions
+import data.lib.parameters.parameters
 
 policyID = "pspprivileged"
 
 violation[msg] {
-  exceptions.parameters(policyID).enabled
   not exceptions.is_exception(policyID)
   pods.containers[container]
   container_is_privileged(container)

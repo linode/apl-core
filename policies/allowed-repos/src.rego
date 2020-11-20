@@ -9,15 +9,14 @@ package allowedrepos
 import data.lib.core
 import data.lib.pods
 import data.lib.exceptions
+import data.lib.parameters.parameters
 
 policyID = "allowedrepos"
 
 violation[{"msg": msg}] {
-  parameters := exceptions.parameters(policyID)
-  parameters.enabled
   not exceptions.is_exception(policyID)
   pods.containers[container]
-  satisfied := [good | repo = parameters.repos[_] ; good = startswith(container.image, repo)]
+  satisfied := [good | repo = parameters(policyID).repos[_] ; good = startswith(container.image, repo)]
   not any(satisfied)
-  msg := sprintf("Policy %s: - container <%v> has an invalid image repo <%v>, allowed repos are %v", [policyID, container.name, container.image, parameters.repos])
+  msg := sprintf("Policy %s: - container <%v> has an invalid image repo <%v>, allowed repos are %v", [policyID, container.name, container.image, parameters(policyID).repos])
 }
