@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.43](https://github.com/redkubes/otomi-core/compare/v0.11.42...v0.11.43) (2020-11-20)
+
+
+### Bug Fixes
+
+* azure exposure was missing apps domain [ci skip] ([410ca0f](https://github.com/redkubes/otomi-core/commit/410ca0f7d28ea102e3b2deb9c068330a532b780b))
+
 ### [0.11.42](https://github.com/redkubes/otomi-core/compare/v0.11.41...v0.11.42) (2020-11-20)
 
 
