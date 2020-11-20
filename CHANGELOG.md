@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.42](https://github.com/redkubes/otomi-core/compare/v0.11.41...v0.11.42) (2020-11-20)
+
+
+### Code Refactoring
+
+* **oidc:** moved oidc.idp props to oidc, added home [ci skip] ([e6a2c64](https://github.com/redkubes/otomi-core/commit/e6a2c646d8a35f7e65b5fb0fb2373a36a458b12a))
+
 ### [0.11.41](https://github.com/redkubes/otomi-core/compare/v0.11.40...v0.11.41) (2020-11-20)
 
 
