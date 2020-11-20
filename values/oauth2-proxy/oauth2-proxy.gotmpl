@@ -76,7 +76,7 @@ extraArgs:
   # Provider specifics:
   ###
   {{- if eq $provider "oidc" }}
-  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}
+  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}
   insecure-oidc-allow-unverified-email: true
   {{- else if eq $provider "azure" }}
   azure-tenant: {{ $o.azure.tenantID }}

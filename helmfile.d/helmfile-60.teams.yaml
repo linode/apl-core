@@ -50,7 +50,7 @@ releases:
         {{- end }}
   {{- if $v.otomi.isMultitenant }}        
   - name: prometheus-{{ $teamId }}
-    installed: true
+    installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-operator
     labels:
@@ -172,7 +172,7 @@ releases:
             {{- end }}
   {{ if has "msteams" ($team | get "receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: true
+    installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -192,7 +192,7 @@ releases:
   {{- end }}
 
   - name: grafana-dashboards-{{ $teamId }}
-    installed: true
+    installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
@@ -205,7 +205,7 @@ releases:
         folders:
           - k8s
           - istio
-          {{- if and (eq $v.cluster.provider "azure") (hasKey $azure "monitor") }}
+          {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" ($v.clouds | get "azure.monitor" nil)) }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}

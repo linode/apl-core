@@ -11,7 +11,6 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
-{{- $idp := $v.oidc.idp }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 tasks:
   keycloak:
@@ -40,15 +39,16 @@ tasks:
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
       KEYCLOAK_REALM: master
-      KEYCLOAK_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
-      TENANT_ID: {{ $idp.tenantID }}
-      TENANT_CLIENT_ID: {{ $idp.clientID }}
-      TENANT_CLIENT_SECRET: {{ $idp.clientSecret }}
+      KEYCLOAK_CLIENT_ID: {{ $k.idp | get "clientID" "otomi" }}
+      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+      TENANT_ID: {{ $v.oidc.tenantID }}
+      TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
+      TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
       IDP_ALIAS: {{ $k.idp.alias }}
-      IDP_GROUP_OTOMI_ADMIN: {{ $idp.adminGroupID }}
-      IDP_GROUP_TEAM_ADMIN: {{ $idp.teamAdminGroupID }}
+      IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
+      IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-      IDP_OIDC_URL: {{ $idp.issuer }}
+      IDP_OIDC_URL: {{ $v.oidc.issuer }}
       REDIRECT_URIS: '[
           "https://otomi.{{ $v.cluster.domain }}",
           "https://auth.{{ $v.cluster.domain }}/*",

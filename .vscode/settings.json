@@ -24,7 +24,8 @@
     "CONTRIBUTING": "markdown"
   },
   "yaml.schemas": {
-    "http://json-schema.org/draft/2019-09/schema#": "values-schema.yaml",
+    "http://json-schema.org/draft/2019-09/schema#": "./values-schema.yaml",
+    "http://json-schema.org/draft/2019-09/schema#": ".vscode/values-schema.yaml",
     ".values/values-schema.yaml": ".demo/env/*.yaml"
   },
   "shellformat.flag": "-i 2 -ci"
