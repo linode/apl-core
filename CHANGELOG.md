@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.45](https://github.com/redkubes/otomi-core/compare/v0.11.44...v0.11.45) (2020-11-20)
+
+
+### Code Refactoring
+
+* simplified oidc, overloading with keycloak if exists [ci skip] ([4519656](https://github.com/redkubes/otomi-core/commit/4519656b490a87d4fc77ce615e37877b2ef84596))
+
 ### [0.11.44](https://github.com/redkubes/otomi-core/compare/v0.11.43...v0.11.44) (2020-11-20)
 
 
