@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.41](https://github.com/redkubes/otomi-core/compare/v0.11.40...v0.11.41) (2020-11-20)
+
+
+### Features
+
+* email receiver for alertmanager ([b8b4198](https://github.com/redkubes/otomi-core/commit/b8b41981f2f39c2d751efb46de97f9fcde1ad6e9))
+
+
+### Bug Fixes
+
+* demo clusters enabled flag [ci skip] ([9276235](https://github.com/redkubes/otomi-core/commit/92762353dd76e11a10501490cd9a9dc93cd814c8))
+* docker build tests can be skipped with build arg SKIP_TESTS [ci skip] ([edb31f7](https://github.com/redkubes/otomi-core/commit/edb31f70fe9936c42caa40a9a61f3ad3ea4ca142))
+
+
+### Others
+
+* **release:** 0.11.40 ([e74b235](https://github.com/redkubes/otomi-core/commit/e74b235346b5ac9f6e9d77b6f808cb82290c3996))
+
 ### [0.11.40](https://github.com/redkubes/otomi-core/compare/v0.11.39...v0.11.40) (2020-11-18)
 
 ### Bug Fixes
