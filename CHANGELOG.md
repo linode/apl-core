@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.44](https://github.com/redkubes/otomi-core/compare/v0.11.43...v0.11.44) (2020-11-20)
+
+
+### Code Refactoring
+
+* grafana ini oidc [ci skip] ([165dd1a](https://github.com/redkubes/otomi-core/commit/165dd1a7c2b74fb5dace4cdb5a9b1b148f900b8a))
+
 ### [0.11.43](https://github.com/redkubes/otomi-core/compare/v0.11.42...v0.11.43) (2020-11-20)
 
 
