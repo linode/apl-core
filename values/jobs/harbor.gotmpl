@@ -34,8 +34,8 @@ tasks:
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
       HARBOR_USER: admin
-      OIDC_CLIENT_ID: {{ $o.clientID }}
-      OIDC_CLIENT_SECRET: {{ $o.clientSecret }}
+      OIDC_CLIENT_ID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+      OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
     env:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
       TEAM_NAMES: '{{ $teamNames | toJson }}'

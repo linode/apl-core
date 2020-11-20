@@ -12,8 +12,8 @@ image:
   repository: quay.io/oauth2-proxy/oauth2-proxy
 
 config:
-  clientID: {{ $o.clientID }}
-  clientSecret: {{ $o.clientSecret }}
+  clientID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+  clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
 replicas: 2

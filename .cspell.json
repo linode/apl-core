@@ -29,6 +29,7 @@
     "oo",
     "oo mkilled",
     "RAGRS",
+    "jwks",
     "RAGZRS",
     "registr",
     "roboll",
@@ -99,5 +100,6 @@
     "sitespeed",
     "testmode",
     "untrusted"
-  ]
+  ],
+  "language": "en"
 }

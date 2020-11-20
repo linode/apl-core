@@ -10,9 +10,8 @@
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $o := $v.oidc }}
-{{- $hasOauth2 := or $hasKeycloak (hasKey $o "oauth2") }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "hasOauth2" $hasOauth2 "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
