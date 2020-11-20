@@ -5,13 +5,12 @@ charts:
             containerlimits:
                 enabled: false
                 cpu: 2
-                memory: 2Gi
+                memory: 4Gi
             bannedimagetags:
                 enabled: true
                 tags:
-                    - ''
-                    # - latest
-                    # - master
+                    - latest
+                    - master
             allowedrepos:
                 enabled: true
                 repos:
@@ -41,17 +40,13 @@ charts:
             pspallowedusers:
                 enabled: false
                 runAsUser:
-                    # rule: 'RunAsAny'
-                    # rule: 'MustRunAsNonRoot'
                     rule: 'MustRunAs'
                     ranges: 
-                        - min: 0
+                        - min: 1
                           max: 65534
             psphostfilesystem:
                 enabled: false
                 allowedHostPaths:
-                    # - pathPrefix: /var/
-                    #   readOnly: true
                     - pathPrefix: /tmp/
                       readOnly: false
             psphostnetworkingports:
