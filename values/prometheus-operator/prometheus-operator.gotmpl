@@ -2,12 +2,14 @@
 {{- $c := $v.charts }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $p := $v.charts | get "prometheus-operator" dict }}
+{{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
-{{- $hasOIDC := or $hasKeycloak (hasKey $v.oidc "grafana") }}
+{{- $hasOauth2 := or $hasKeycloak (hasKey $v.oidc "oauth2") }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "hasOauth2" $hasOauth2 "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -166,37 +168,9 @@ grafana:
   adminPassword: {{ $p.grafana.adminPassword }}
   service:
     portName: http-service
-  grafana.ini:
-  {{ if not $hasOIDC }}
-    "auth.anonymous":
-      enabled: true
-      org_role: Admin
-      org_name: Main Org.
-  {{- else }}
-    "auth.generic_oauth":
-      tls_skip_verify_insecure: {{ eq ($v.charts | get "cert-manager.stage") "staging" }}
-      enabled: true
-      name: OAuth
-      org_role: Admin
-      allow_sign_up: true
-      # allow_sign_up: false
-      oauth_auto_login: true # false = so we can login with admin / bladibla
-      client_id: {{ $v.oidc.clientID }}
-      client_secret: {{ $v.oidc.clientSecret }}
-      scopes: openid
-      auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($v.oidc | getOrNil "grafana.authUrl") }}
-      token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($v.oidc | getOrNil "grafana.tokenUrl") }}
-      api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($v.oidc | getOrNil "grafana.apiUrl") }}
-      role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
-  {{- end }}
-    log:
-      level: error
+  grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $appsDomain }}/grafana
-    users:
-      allow_sign_up: false
-      auto_assign_org: true
-      auto_assign_org_role: Viewer
 
 kube-state-metrics:
   # image:

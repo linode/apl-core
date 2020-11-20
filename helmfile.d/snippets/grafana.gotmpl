@@ -1,0 +1,33 @@
+{{- if not .hasOauth2 }}
+"auth.anonymous":
+  enabled: true
+  org_role: Admin
+  org_name: Main Org.
+{{- else }}
+"auth.generic_oauth":
+  tls_skip_verify_insecure: {{ eq .stage "staging" }}
+  enabled: true
+  name: OAuth
+  org_role: Admin
+  allow_sign_up: true
+  # allow_sign_up: false
+  oauth_auto_login: true # false = so we can login with admin / bladibla
+  client_id: {{ .keycloak.clientID }}
+  client_secret: {{ .keycloak.clientSecret }}
+  scopes: openid
+  auth_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" .keycloakBase) (.oidc | getOrNil "oauth2.authUrl") }}
+  token_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" .keycloakBase) (.oidc | getOrNil "oauth2.tokenUrl") }}
+  api_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" .keycloakBase) (.oidc | get "oauth2.apiUrl" (.oidc | getOrNil "oauth2.tokenUrl")) }}
+  {{- if .hasKeycloak }}
+  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+  {{- else }}
+  role_attribute_path: 'Admin'
+  {{- end }}
+{{- end }}
+log:
+  level: error
+users:
+  allow_sign_up: true
+  auto_assign_org: true
+  # fall back to admin for anonymous when no auth is available
+  auto_assign_org_role: {{ if .hasKeycloak }}Viewer{{ else }}Admin{{ end }}

@@ -1170,6 +1170,17 @@ properties:
         type: string
       teamAdminGroupID:
         type: string
+      oauth2:
+        description: Can be used in case no keycloak is chosen, to fall back to oauth2 urls. Handy for apps like grafana.
+        type: object
+        properties:
+          authUrl:
+            '$ref': '#/definitions/url'
+          tokenUrl:
+            '$ref': '#/definitions/url'
+          apiUrl:
+            '$ref': '#/definitions/url'
+        required: [authUrl, tokenUrl]
   otomi:
     type: object
     additionalProperties: false

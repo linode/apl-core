@@ -24,6 +24,7 @@ releases:
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        charts: {{- $v.charts | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         hasKeycloak: {{ $v.charts.keycloak | get "enabled" true }}
         domain: {{ $domain }}
