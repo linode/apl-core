@@ -35,6 +35,7 @@ tasks:
     env:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
+      # DEBUG: '*'
       KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
