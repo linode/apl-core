@@ -8,8 +8,10 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 . bin/colors.sh
 
+prepare_crypt
 readonly values=$(hf_values)
-readonly receiver=$(echo "$values" | yq r - alerts.receiver)
+readonly raw_receiver=$(echo "$values" | yq r - alerts.drone)
+readonly receiver=${raw_receiver:-'slack'}
 readonly templatePath=$PWD/tpl/.drone.tpl.$receiver.yml
 readonly customer_name=$(customer_name)
 

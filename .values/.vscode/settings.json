@@ -2,20 +2,23 @@
   "[docker,shell]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[json,md,yaml,enc]": {
+  "[json,md,yaml,dec]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
   "files.associations": {
     "*.yml": "yaml",
-    "*.yaml.enc": "yaml",
+    "*.yaml.dec": "yaml",
     ".secrets*": "shellscript",
     "otomi": "shellscript",
     "aliases": "shellscript"
   },
+  "prettier.enable": true,
   "sops.defaults.gcpCredentialsPath": "gcp-key.json",
+  "sops.enabled": true,
   "yaml.schemas": {
+    "http://json-schema.org/draft/2019-09/schema#": ".vscode/values-schema.yaml",
     ".vscode/values-schema.yaml": "env/*.yaml"
   }
 }

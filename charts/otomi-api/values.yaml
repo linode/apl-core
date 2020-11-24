@@ -73,7 +73,6 @@ secrets:
   GIT_USER: 
   GIT_EMAIL:
   GIT_PASSWORD:
-  OIDC_CLIENT_SECRET:
 
 env:
   GIT_REPO_URL:

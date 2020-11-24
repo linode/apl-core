@@ -25,9 +25,9 @@ secrets:
   {{- if $v.sops.enabled }}
   GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
   {{- end }}
-  OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
+  DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
@@ -38,6 +38,9 @@ env:
   {{- end }}
   USE_SOPS: {{ $v.sops.enabled }}
   CORE_VERSION: '{{ $version }}'
+  {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
+  NO_AUTHZ: true
+  {{- end }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}

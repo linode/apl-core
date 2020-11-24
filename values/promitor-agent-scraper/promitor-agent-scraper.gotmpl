@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $a := $v.azure }}
+{{- $a := $v.clouds.azure }}
 azureMetadata:
   tenantId: {{ $a.tenantId }}
   subscriptionId: {{ $a.subscriptionId }}

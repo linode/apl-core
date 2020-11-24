@@ -12,6 +12,7 @@ environments:
   # toYaml | fromYaml avoids bug that does not let us do a merge in a simple way: https://github.com/roboll/helmfile/issues/1275
   {{- $values := $v | toYaml | fromYaml -}}
   {{- $clusterSettings := $c | toYaml | fromYaml -}}
+  {{- $clusterSettings = set $clusterSettings "id" (printf "%s/%s" $provider $clusterName) -}}
   {{- $clusterSettings = set $clusterSettings "provider" $provider -}}
   {{- $clusterSettings = set $clusterSettings "name" $clusterName -}}
   {{- $clusterSettings = set $clusterSettings "domain" (printf "%s.%s" $clusterName $p.domain) -}}

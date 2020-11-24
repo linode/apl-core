@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.45](https://github.com/redkubes/otomi-core/compare/v0.11.44...v0.11.45) (2020-11-20)
+
+
+### Code Refactoring
+
+* simplified oidc, overloading with keycloak if exists [ci skip] ([4519656](https://github.com/redkubes/otomi-core/commit/4519656b490a87d4fc77ce615e37877b2ef84596))
+
+### [0.11.44](https://github.com/redkubes/otomi-core/compare/v0.11.43...v0.11.44) (2020-11-20)
+
+
+### Code Refactoring
+
+* grafana ini oidc [ci skip] ([165dd1a](https://github.com/redkubes/otomi-core/commit/165dd1a7c2b74fb5dace4cdb5a9b1b148f900b8a))
+
+### [0.11.43](https://github.com/redkubes/otomi-core/compare/v0.11.42...v0.11.43) (2020-11-20)
+
+
+### Bug Fixes
+
+* azure exposure was missing apps domain [ci skip] ([410ca0f](https://github.com/redkubes/otomi-core/commit/410ca0f7d28ea102e3b2deb9c068330a532b780b))
+
+### [0.11.42](https://github.com/redkubes/otomi-core/compare/v0.11.41...v0.11.42) (2020-11-20)
+
+
+### Code Refactoring
+
+* **oidc:** moved oidc.idp props to oidc, added home [ci skip] ([e6a2c64](https://github.com/redkubes/otomi-core/commit/e6a2c646d8a35f7e65b5fb0fb2373a36a458b12a))
+
+### [0.11.41](https://github.com/redkubes/otomi-core/compare/v0.11.40...v0.11.41) (2020-11-20)
+
+
+### Features
+
+* email receiver for alertmanager ([b8b4198](https://github.com/redkubes/otomi-core/commit/b8b41981f2f39c2d751efb46de97f9fcde1ad6e9))
+
+
+### Bug Fixes
+
+* demo clusters enabled flag [ci skip] ([9276235](https://github.com/redkubes/otomi-core/commit/92762353dd76e11a10501490cd9a9dc93cd814c8))
+* docker build tests can be skipped with build arg SKIP_TESTS [ci skip] ([edb31f7](https://github.com/redkubes/otomi-core/commit/edb31f70fe9936c42caa40a9a61f3ad3ea4ca142))
+
+
+### Others
+
+* **release:** 0.11.40 ([e74b235](https://github.com/redkubes/otomi-core/commit/e74b235346b5ac9f6e9d77b6f808cb82290c3996))
+
 ### [0.11.40](https://github.com/redkubes/otomi-core/compare/v0.11.39...v0.11.40) (2020-11-18)
 
 ### Bug Fixes

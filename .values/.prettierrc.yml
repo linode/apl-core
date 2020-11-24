@@ -5,8 +5,8 @@ singleQuote: true
 printWidth: 120
 overrides:
   - files:
-      - '*.yaml'
-      - '*.dec'
+      - 'env/**/*.yaml'
+      - 'env/**/*.dec'
     options:
       tabWidth: 4
       useTabs: true

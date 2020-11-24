@@ -123,6 +123,7 @@ function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [[ "$K8S_CONTEXT" != "$context" ]]; then
     echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
+    echo ""
     read -p "Would you like to switch kube context to target first? Yn" oki
     if [ "${oki:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
@@ -158,7 +159,7 @@ validate_cluster_env() {
   local err
   [[ -z "$CLOUD" ]] && echo "Error: The CLOUD environment variable is not set" >&2 && err=1
   [[ -z "$CLUSTER" ]] && echo "Error: The CLUSTER environment variable is not set" >&2 && err=1
-  [[ ! -z "$err" ]] && exit 2
+  [[ -n "$err" ]] && exit 2
   return 0
 }
 
@@ -309,7 +310,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [ "$@" != "" ]; then
+      if [[ "$@" != "" ]]; then
         for f in $@; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null

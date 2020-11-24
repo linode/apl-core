@@ -34,6 +34,7 @@
     "psphostnetworkingports",
     "pspprivileged",
     "RAGRS",
+    "jwks",
     "RAGZRS",
     "registr",
     "rego",
@@ -64,7 +65,9 @@
     "esbenp",
     "foxundermoon",
     "gcloud",
+    "gitea",
     "gitops",
+    "gogs",
     "grafana",
     "grpc",
     "helmfile",
@@ -104,5 +107,6 @@
     "sitespeed",
     "testmode",
     "untrusted"
-  ]
+  ],
+  "language": "en"
 }

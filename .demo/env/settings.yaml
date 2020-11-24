@@ -2,7 +2,7 @@ otomi:
     mode: ce
     isManaged: true
     isMultitenant: true
-    isRedkubesMonitored: true
+    isHomeMonitored: true
     teamPrefix: team-
     hasCloudLB: false
 
@@ -13,13 +13,21 @@ otomi:
 customer:
     name: demo
 oidc:
-    clientID: demo
-    idp:
-        issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695
-        tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
-        clientID: someClientID
-        adminGroupID: someAdminGroupID
-        teamAdminGroupID: someTeamAdminGroupID
+    clientID: someClientID
+    clientSecret: someClientSecret
+    issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695
+    tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+    adminGroupID: someAdminGroupID
+    teamAdminGroupID: someTeamAdminGroupID
     scope: openid email profile
+home:
+    receivers: [slack]
+    slack:
+        channel: mon-otomi
+        channelCrit: mon-otomi-crit
 alerts:
-    receiver: slack
+    drone: slack
+    receivers: [slack, email]
+    email:
+        from: admins@your.cloud
+        smarthost: some.smtp.host

@@ -6,4 +6,5 @@ creation_rules:
     # Encrypt with Azure Key Vault's (comma separated vault endpoint list)
     # - azure_keyvault: 'https://sops.vault.azure.net/keys/sops-key/some-string'
     # Google KMS
-    - gcp_kms: projects/demo/locations/europe-west4/keyRings/demo/cryptoKeys/vault
+    - path_regex: secrets.*.yaml
+      gcp_kms: projects/demo/locations/europe-west4/keyRings/demo/cryptoKeys/vault

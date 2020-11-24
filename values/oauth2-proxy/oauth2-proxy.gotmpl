@@ -3,23 +3,17 @@
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $oauth2 := $v.charts | get "oauth2-proxy" dict }}
 {{- $o := $v.oidc }}
-{{- $provider := ($o | get "provider" "oidc") }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:
-  tag: "v6.0.0"
+  tag: "v6.1.1"
   repository: quay.io/oauth2-proxy/oauth2-proxy
-  # tag: latest
-  # pullPolicy: Always
 
 config:
-  # clientID: oidc-auth-client
-  # clientSecret: bladibladi
-  # cookieSecret: QkVwdy9MSkU0N3VYS2haZkVqZTdyUzExeFZheTM3YXk=
-  clientID: {{ $o.clientID }}
-  clientSecret: {{ $o.clientSecret }}
+  clientID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+  clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
   cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
 
 replicas: 2
@@ -57,7 +51,7 @@ resources:
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github
-  provider: {{ $provider }}
+  provider: oidc
   whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
@@ -70,21 +64,12 @@ extraArgs:
   # cookie-httponly: true
   reverse-proxy: true
   cookie-refresh: 0h60m0s
-  pass-authorization-header: true
+  pass-authorization-header: {{ $hasKeycloak }}
   # pass-basic-auth: true
   skip-auth-regex: /healthz,/metrics,/api/datasources,/api/dashboards,/api/topology,/api/authenticate,/hook
   silence-ping-logging: true
   # exclude-logging-paths: /ping
   set-authorization-header: true
   # set-xauthrequest: true
-  ###
-  # Provider specifics:
-  ###
-  {{- if eq $provider "oidc" }}
-  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.idp.issuer }}
+  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}
   insecure-oidc-allow-unverified-email: true
-  {{- else if eq $provider "azure" }}
-  azure-tenant: {{ $o.azure.tenantID }}
-  {{- else if eq $provider "github" }}
-  github-org: {{ $o | getOrNil "github.org" }}
-  {{- end }}

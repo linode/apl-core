@@ -1,5 +1,6 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
+{{- $hasKeycloak := $v.charts.keycloak.enabled }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $authSvc := (eq $v.teamId "admin" | ternary "oauth2-proxy" (printf "oauth2-proxy-team-%s" $v.teamId)) }}

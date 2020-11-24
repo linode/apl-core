@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $k := $v.charts.keycloak | default dict }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
@@ -80,6 +81,7 @@ spec:
                 X-Forwarded-Proto: https
 ---
 {{- if and (not (hasKey $s "isPublic")) (hasKey $s "authz") }}
+# grrr
 {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
@@ -90,12 +92,19 @@ spec:
   selector:
     matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
+  {{- if $k.enabled }}
     - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
       jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
-      forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
       audiences:
-        - otomi
+        - {{ $k.idp.clientID }}
+  {{- else }}
+    - issuer: {{ $v.oidc.issuer }}
+      # jwksUri: {{ $v.oidc.jwksUri }}
+  {{- end }}
+      forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
+{{- if $k.enabled }}
+{{- $principal := printf "https://keycloak.%s/realms/master/*" $v.cluster.domain }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -110,7 +119,7 @@ spec:
       # {}
       from: 
         - source:
-            requestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
+            requestPrincipals: [{{ $principal }}]
       {{- if not $s.isShared }}
       when:
         - key: request.auth.claims[groups]
@@ -130,8 +139,9 @@ spec:
             {{- end }}
     - from:
         - source:
-            notRequestPrincipals: ['https://keycloak.{{ $v.cluster.domain }}/realms/master/*']
+            notRequestPrincipals: [{{ $principal }}]
 ---
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
