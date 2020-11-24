@@ -8,21 +8,22 @@
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-jq": "^1.11.3"
+  },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@hkdobrev/run-if-changed": "^0.3.1",
     "commitizen": "^4.2.2",
-    "cspell": "^4.1.2",
+    "cspell": "^4.2.2",
     "cz-conventional-changelog": "^3.3.0",
     "github-release-from-changelog": "^2.1.1",
     "husky": "^4.3.0",
-    "jq": "^1.7.2",
-    "lint-staged": "^10.5.0",
+    "lint-staged": "^10.5.2",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.1.2",
+    "prettier": "^2.2.0",
     "standard-version": "^9.0.0",
     "yq": "0.0.1"
   },
