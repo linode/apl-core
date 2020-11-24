@@ -19,6 +19,17 @@ RUN [ "$SKIP_TESTS" = 'false' ] && \
   bin/validate-templates.sh || true
 
 #-----------------------------
+FROM bats/bats:latest as unit-tests
+
+ENV APP_HOME=/home/app/stack
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
+
+COPY . .
+
+RUN bats bin/tests
+
+#-----------------------------
 FROM otomi/tools:1.4.8 as prod
 
 ENV APP_HOME=/home/app/stack
