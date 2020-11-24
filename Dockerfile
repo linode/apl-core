@@ -3,7 +3,8 @@ FROM node:14-slim as build
 ARG SKIP_TESTS='false'
 ENV EXIT_FAST='true'
 
-RUN apt-get update && apt-get install --no-install-recommends autoconf build-essential python -y
+# Necessary for node-gyp and some node modules 
+RUN apt-get update && apt-get install --no-install-recommends autoconf build-essential git python -y
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
