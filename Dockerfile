@@ -4,7 +4,7 @@ ARG SKIP_TESTS='false'
 ENV EXIT_FAST='true'
 
 # Necessary for node-gyp and some node modules 
-RUN apt-get update && apt-get install --no-install-recommends autoconf libtool build-essential git python -y
+RUN apt-get update && apt-get install --no-install-recommends automake libtool build-essential git python -y
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
