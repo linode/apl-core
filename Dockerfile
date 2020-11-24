@@ -1,7 +1,9 @@
-FROM node:14-slim as ci
+FROM node:14-slim as build
 
 ARG SKIP_TESTS='false'
 ENV EXIT_FAST='true'
+
+RUN apt-get update && apt-get install autoconf build-essential python -y
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
