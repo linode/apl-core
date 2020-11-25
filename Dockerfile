@@ -19,7 +19,7 @@ RUN [ "$SKIP_TESTS" = 'false' ] && \
   npm install && \
   npm run spellcheck && \
   bin/validate-values.sh && \
-  bin/validate-templates.sh || true
+  bin/validate-templates.sh
 
 #-----------------------------
 FROM otomi/tools:1.4.8 as prod
