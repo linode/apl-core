@@ -10,7 +10,7 @@ import data.lib.core
 import data.lib.pods
 import data.lib.security
 import data.lib.exceptions
-import data.lib.parameters.parameters
+import data.lib.parameters
 
 policyID = "pspprivileged"
 
@@ -27,4 +27,8 @@ container_is_privileged(container) {
 
 container_is_privileged(container) {
   security.added_capability(container, "CAP_SYS_ADMIN")
+}
+
+container_is_privileged(container) {
+  container.securityContext.allowPrivilegeEscalation
 }

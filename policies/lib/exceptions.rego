@@ -12,14 +12,13 @@ package lib.exceptions
 # 
 
 import data.lib.core
-import data.lib.parameters.parameters
+import data.lib.parameters
 
- 
 default ignoreAnnotationField = "policies.otomi.io/ignore"
 
 is_exception(policyID) = true  {
   ignoreList := split(core.annotations[ignoreAnnotationField],",")
   ignoreList[_] == policyID
 } {
-  not parameters(policyID).enabled
+  not parameters.parameters(policyID).enabled
 }

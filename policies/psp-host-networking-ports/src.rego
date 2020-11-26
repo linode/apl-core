@@ -7,7 +7,7 @@ package psphostnetworkingports
 import data.lib.core
 import data.lib.pods
 import data.lib.exceptions
-import data.lib.parameters.parameters
+import data.lib.parameters
 
 policyID = "psphostnetworkingports"
 

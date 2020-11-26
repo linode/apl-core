@@ -6,7 +6,7 @@ package bannedimagetags
 import data.lib.core
 import data.lib.pods
 import data.lib.exceptions
-import data.lib.parameters.parameters
+import data.lib.parameters
 
 
 policyID = "bannedimagetags"
@@ -16,7 +16,7 @@ violation[{"msg": msg}] {
   pods.containers[container]
   img_split := split(container.image, ":")
   tag := img_split[count(img_split) - 1]
-  banned := {s | s = parameters(policyID).tags[_]}
+  banned := {s | s = parameters.parameters(policyID).tags[_]}
   banned[tag]
   msg := sprintf("Policy: %s - container <%v> has banned image tag <%v>, banned tags are %v", [policyID, container.name, tag, banned])
 }

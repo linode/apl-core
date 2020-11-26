@@ -773,17 +773,6 @@ properties:
               List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
             additionalProperties: false
             properties:
-              allowedrepos:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  repos:
-                    type: array
-                    items:
-                      type: string
-                  enabled:
-                    type: boolean
-                    default: true
               bannedimagetags:
                 additionalProperties: false
                 required: [enabled]
@@ -847,6 +836,65 @@ properties:
                               type: integer
                             max:
                               type: integer
+                  runAsGroup:
+                    type: object
+                    properties:
+                      rule:
+                        type: string
+                        enum: [RunAsAny, MayRunAs, MustRunAs]
+                      ranges:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          required: [min, max]
+                          properties:
+                            min:
+                              type: integer
+                            max:
+                              type: integer
+                  supplementalGroups:
+                    type: object
+                    properties:
+                      rule:
+                        type: string
+                        enum: [RunAsAny, MayRunAs, MustRunAs]
+                      ranges:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          required: [min, max]
+                          properties:
+                            min:
+                              type: integer
+                            max:
+                              type: integer
+                  fsGroup:
+                    type: object
+                    properties:
+                      rule:
+                        type: string
+                        enum: [RunAsAny, MayRunAs, MustRunAs]
+                      ranges:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          required: [min, max]
+                          properties:
+                            min:
+                              type: integer
+                            max:
+                              type: integer
+
+                  enabled:
+                    type: boolean
+                    default: true
+              psphostsecurity:
+                additionalProperties: false
+                required: [enabled]
+                properties:
                   enabled:
                     type: boolean
                     default: true
@@ -864,6 +912,28 @@ properties:
                   enabled:
                     type: boolean
                     default: true
+              pspcapabilities:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  allowedCapabilities:
+                    type: array
+                    items:
+                      type: string
+              pspforbiddensysctls:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  forbiddenSysctls:
+                    type: array
+                    items:
+                      type: string
       harbor:
         type: object
         additionalProperties: false

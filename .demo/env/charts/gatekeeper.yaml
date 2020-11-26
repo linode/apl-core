@@ -1,55 +1,67 @@
+---
 charts:
-    gatekeeper:
+  gatekeeper:
+    enabled: false
+    constraints:
+      containerlimits:
         enabled: false
-        constraints:
-            containerlimits:
-                enabled: false
-                cpu: 2
-                memory: 4Gi
-            bannedimagetags:
-                enabled: true
-                tags:
-                    - latest
-                    - master
-            allowedrepos:
-                enabled: true
-                repos:
-                    - otomi
-                    - mcr.microsoft.com
-                    - k8s.gcr
-                    - eu.gcr.io
-                    - quay.io
-                    - gcr.io
-                    - ghcr.io
-                    - us.gcr.io
-                    - busybox
-                    - docker.io
-                    - goharbor
-                    - grafana
-                    - istio
-                    - drone
-                    - prom
-                    - bats
-                    - kiwigrid
-                    - dduportal
-                    - weaveworks
-                    - curlimages
-                    - kennethreitz
-                    - angelbarrera92
-                    - badouralix
-            pspallowedusers:
-                enabled: false
-                runAsUser:
-                    rule: 'MustRunAs'
-                    ranges: 
-                        - min: 1
-                          max: 65534
-            psphostfilesystem:
-                enabled: false
-                allowedHostPaths:
-                    - pathPrefix: /tmp/
-                      readOnly: false
-            psphostnetworkingports:
-                enabled: false
-            pspprivileged:
-                enabled: false
+        cpu: '2'
+        memory: 2000Mi
+      bannedimagetags:
+        enabled: false
+        tags:
+          - latest
+          - master
+      psphostfilesystem:
+        enabled: true
+        allowedHostPaths:
+          - pathPrefix: /tmp/
+            readOnly: false
+          - pathPrefix: /var/
+            readOnly: false
+          - pathPrefix: /run/
+            readOnly: false
+          - pathPrefix: /sys/
+            readOnly: false
+          - pathPrefix: /proc/
+            readOnly: false
+      pspallowedusers:
+        enabled: true
+        runAsUser:
+          rule: RunAsAny
+        runAsGroup:
+          rule: MayRunAs
+          ranges:
+            - min: 0
+              max: 65535
+        supplementalGroups:
+          rule: MayRunAs
+          ranges:
+            - min: 0
+              max: 65535
+        fsGroup:
+          rule: MayRunAs
+          ranges:
+            - min: 0
+              max: 65535
+      psphostsecurity:
+        enabled: true
+      psphostnetworkingports:
+        enabled: true
+      pspprivileged:
+        enabled: true
+      pspcapabilities:
+        enabled: true
+        allowedCapabilities:
+          - NET_BIND_SERVICE
+          - NET_RAW
+      pspforbiddensysctls:
+        enabled: true
+        forbiddenSysctls:
+          - kernel.*
+          - net.*
+          - abi.*
+          - fs.*
+          - sunrpc.*
+          - user.*
+          - vm.*
