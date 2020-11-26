@@ -16,15 +16,17 @@ teardown () {
 @test "executing bootstrap.sh should pass with env folder" {
     mkdir -p "$ENV_DIR" && git init "$ENV_DIR"
     bin/bootstrap.sh
+    assert_success
 }
 
 @test "executing bootstrap.sh should fail without env folder" {
     run bin/bootstrap.sh
-    [ "$status" -eq 1 ]
+    assert_failure
 }
 
 @test "executing bootstrap.sh multiple times should pass" {
     mkdir -p "$ENV_DIR" && git init "$ENV_DIR"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
+    assert_success
 }
