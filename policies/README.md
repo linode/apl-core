@@ -4,7 +4,7 @@ The Otomi platform enforces Kubernetes security best practices through `Security
 
 ### Security in-depth
 
-OPA policies are a replacement for the native `PodSecurityPolicies` and all defined policies are modeled after the m ost common `psp` setups.
+OPA policies are a replacement for the native `PodSecurityPolicies` and all defined policies are modeled after the most common `psp` setups.
 
 By allowing the policies to be evaluated by Conftest, platform developers can test manifests with `Local Policy Validation`.
 YAML Resources are verified against defined `.rego` policy rules, using one of the defined constraint value presets as parameters.
@@ -13,10 +13,13 @@ The `Values` repository structure allows for a default set of parameters to be s
 ## Constraint Presets and Parameters
 
 Any custom settings can be provided to allow controlling the admission of resources.
-The following predefined Strategies will enforce most common security use-cases by allowing admission of resources from the most restrictive to the most permissive preset
-`Restricted ->> Hostnetwork ->> Hostaccess ->> Non-root ->> Hostmount-anyuid ->> Anyuid ->> Privileged`
+The following predefined strategies will enforce most common security use-cases by allowing admission of resources from the most restrictive to the most permissive access level.
 
-Firt choose one of the following **Constraint presets** and create the according values file in `env/charts/gatekeeper.yaml`, to load these parameters into the policy engine and run evaluation using selected level Constraints:
+```
+Restricted ->> Hostnetwork ->> Hostaccess ->> Non-root ->> Hostmount-anyuid ->> Anyuid ->> Privileged
+```
+
+First choose one of the following **Constraint presets** and create the according values file in `env/charts/gatekeeper.yaml`, to load these parameters into the policy engine and run evaluation using selected level Constraints:
 
 To start policy evaluation statically from a development workstation, run the following:
 
@@ -233,7 +236,7 @@ charts:
 
 ### Hostmount-anyuid
 
-Provides all the features of the restricted SCC but allows host mounts and any UID by a pod. Allows host file system access as any UID, including UID 0.
+Provides all the features of the restricted Constraint but allows host mounts and any UID by a pod. Allows host file system access as any UID, including UID 0.
 
 ```yaml
 charts:
