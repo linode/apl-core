@@ -1,4 +1,4 @@
-FROM node:14-slim as ci
+FROM node:14-slim as build
 
 ARG SKIP_TESTS='false'
 ENV EXIT_FAST='true'
@@ -19,7 +19,7 @@ RUN [ "$SKIP_TESTS" = 'false' ] && \
   bin/validate-templates.sh || true
 
 #-----------------------------
-FROM bats/bats:latest as unit-tests
+FROM bats/bats:latest as test
 
 RUN apk add curl git
 
