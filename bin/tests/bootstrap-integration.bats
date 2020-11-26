@@ -5,16 +5,17 @@ load 'test_helper/bats-assert/load'
 load 'test_helper/bats-file/load'
 
 setup () {
-    export ENV_DIR="/tmp/otomi-values"
+    TEST_TEMP_DIR="$(temp_make --prefix 'otomi-values-')"
+    export ENV_DIR="$TEST_TEMP_DIR"
 }
 
 teardown () {
-    rm -rf "$ENV_DIR"
+    temp_del "$TEST_TEMP_DIR"
     unset ENV_DIR
 }
 
 @test "executing bootstrap.sh should pass with env folder" {
-    mkdir -p "$ENV_DIR" && git init "$ENV_DIR"
+    git init "$ENV_DIR"
     bin/bootstrap.sh
     assert_success
 }
@@ -25,7 +26,7 @@ teardown () {
 }
 
 @test "executing bootstrap.sh multiple times should pass" {
-    mkdir -p "$ENV_DIR" && git init "$ENV_DIR"
+    mkdir -p "$TEST_TEMP_DIR" && git init "$TEST_TEMP_DIR"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
     assert_success
