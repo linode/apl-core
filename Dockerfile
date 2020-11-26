@@ -21,18 +21,17 @@ RUN [ "$SKIP_TESTS" = 'false' ] && \
 #-----------------------------
 FROM bats/bats:latest as test
 
-RUN apk add curl git
+WORKDIR /tmp
+COPY . .
 
-RUN wget $(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | \
+RUN apk add curl git && \
+  wget $(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | \
   grep browser_download_url | \
   grep linux_amd64 | cut -d '"' -f 4) -O /usr/bin/yq && \
-  chmod +x /usr/bin/yq
-
-ENV APP_HOME=/home/app/stack
-RUN mkdir -p $APP_HOME
-WORKDIR $APP_HOME
-
-COPY . .
+  chmod +x /usr/bin/yq && \
+  git clone https://github.com/ztombol/bats-support bin/tests/test_helper/bats-support && \
+  git clone https://github.com/ztombol/bats-assert.git bin/tests/test_helper/bats-assert && \ 
+  git clone https://github.com/ztombol/bats-file.git bin/tests/test_helper/bats-file
 
 RUN bats bin/tests
 
