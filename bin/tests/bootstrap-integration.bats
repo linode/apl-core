@@ -26,7 +26,7 @@ teardown () {
 }
 
 @test "executing bootstrap.sh multiple times should pass" {
-    mkdir -p "$TEST_TEMP_DIR" && git init "$TEST_TEMP_DIR"
+    git init "$TEST_TEMP_DIR"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
     assert_success
