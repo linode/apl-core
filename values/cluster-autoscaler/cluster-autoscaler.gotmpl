@@ -12,7 +12,7 @@ autoDiscovery:
 cloudProvider: {{ $v.cluster.provider }}
 
 {{- if eq $v.cluster.provider "azure" }}
-{{- $a := $v.clouds.azure }}
+{{- $a := $v.azure }}
 azureClientID: {{ $a.clientId }}
 azureClientSecret: {{ $a.clientSecret }}
 azureResourceGroup: {{ $a.resourceGroup }}

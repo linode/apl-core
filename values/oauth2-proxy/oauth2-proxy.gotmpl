@@ -63,8 +63,8 @@ extraArgs:
   cookie-secure: true
   # cookie-httponly: true
   reverse-proxy: true
-  cookie-refresh: 0h60m0s
-  pass-authorization-header: {{ $hasKeycloak }}
+  cookie-refresh: 0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
+  pass-authorization-header: true
   # pass-basic-auth: true
   skip-auth-regex: /healthz,/metrics,/api/datasources,/api/dashboards,/api/topology,/api/authenticate,/hook
   silence-ping-logging: true

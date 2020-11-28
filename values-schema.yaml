@@ -12,10 +12,12 @@ definitions:
     type: string
     pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
   droneGit:
-    clientID:
-      type: string
-    clientSecretValue:
-      type: string
+    type: object
+    properties:
+      clientID:
+        type: string
+      clientSecretValue:
+        type: string
   registry:
     type: string
     pattern: ^[a-z0-9]+(?:[._-][a-z0-9]+)*$
@@ -246,10 +248,36 @@ definitions:
             type: string
         required: [smarthost, to]
     required: [receivers]
+  azureMonitor:
+    type: object
+    properties:
+      clientId:
+        type: string
+        description: An Azure client id
+      clientSecret:
+        type: string
+        description: An Azure client secret
+      appInsightsAppId:
+        type: string
+        description: An Azure AppInsights client id (defaults to clientId)
+      appInsightsApiKey:
+        type: string
+        description: An Azure AppInsights client secret (defaults to clientSecret)
+      logAnalyticsTenantId:
+        type: string
+        description: An Azure tenant id (defaults to tenantId)
+      logAnalyticsClientId:
+        type: string
+        description: An Azure client secret (defaults to clientSecret)
+      logAnalyticsClientSecret:
+        type: string
+        description: An Azure client secret (defaults to clientSecret)
+      logAnalyticsWorkspace:
+        type: string
+        description: An Azure monitor log analytics workspace
   cloud:
     description: A common cloud configuration
     type: object
-    additionalProperties: false
     properties:
       domain:
         '$ref': '#/definitions/domain'
@@ -259,56 +287,6 @@ definitions:
             '$ref': '#/definitions/cluster'
         additionalProperties: false
     required: [domain, clusters]
-  cloudAzure:
-    description: An azure cloud specific configuration
-    type: object
-    additionalProperties: false
-    properties:
-      diskType:
-        type: string
-        enum:
-          [
-            Standard_LRS,
-            Standard_GRS,
-            Standard_RAGRS,
-            Standard_ZRS,
-            Premium_LRS,
-            Premium_ZRS,
-            Standard_GZRS,
-            Standard_RAGZRS,
-          ]
-        description: An azure disk type (SKU Type)
-      monitor:
-        type: object
-        properties:
-          clientId:
-            type: string
-            description: An azure client id
-          clientSecret:
-            type: string
-            description: An azure client secret
-      resourceGroup:
-        type: string
-        description: An azure resource group
-      subscriptionId:
-        type: string
-        description: An azure subscription ID
-      tenantId:
-        type: string
-        description: An azure tenant ID
-    required: [diskType, resourceGroup, subscriptionId, tenantId]
-  cloudGoogle:
-    description: A google cloud specific configuration
-    type: object
-    additionalProperties: false
-    properties:
-      cloudDnsKey:
-        type: integer
-        description: A service account key for managing a DNS zone
-      projectId:
-        type: string
-        description: A Google Cloud project ID for accessing DNS zone
-    required: [cloudDnsKey, projectId]
   cluster:
     type: object
     additionalProperties: false
@@ -360,12 +338,8 @@ definitions:
     properties:
       alerts:
         '$ref': '#/definitions/alerts'
-      azure:
-        '$ref': '#/definitions/cloudAzure'
-        additionalProperties:
-          useAdmin:
-            type: boolean
-            default: true
+      azureMonitor:
+        '$ref': '#/definitions/azureMonitor'
       id:
         '$ref': '#/definitions/idName'
         description: Must be the same as the name.
@@ -540,6 +514,45 @@ definitions:
           required: [id, name]
     required: [id]
 properties:
+  azure:
+    description: Azure specific configuration
+    type: object
+    properties:
+      diskType:
+        type: string
+        enum:
+          - Standard_LRS
+          - Standard_GRS
+          - Standard_RAGRS
+          - Standard_ZRS
+          - Premium_LRS
+          - Premium_ZRS
+          - Standard_GZRS
+          - Standard_RAGZRS
+        description: An Azure disk type (SKU Type)
+      monitor:
+        '$ref': '#/definitions/azureMonitor'
+      resourceGroup:
+        type: string
+        description: An Azure resource group
+      subscriptionId:
+        type: string
+        description: An Azure subscription ID
+      tenantId:
+        type: string
+        description: An Azure tenant ID
+    required: [diskType, resourceGroup, subscriptionId, tenantId]
+  google:
+    description: Google specific configuration
+    type: object
+    properties:
+      cloudDnsKey:
+        type: string
+        description: A service account key for managing a DNS zone
+      projectId:
+        type: string
+        description: A Google Cloud project ID for accessing DNS zone
+    required: [cloudDnsKey, projectId]
   home:
     '$ref': '#/definitions/alerts'
   alerts:
@@ -691,21 +704,24 @@ properties:
             additionalProperties: false
             properties:
               github:
-                '$ref': '#/definitions/droneGit'
-                additionalProperties:
-                  server:
-                    type: string
-                    default: https://github.com
+                allOf:
+                  - '$ref': '#/definitions/droneGit'
+                  - properties:
+                      server:
+                        type: string
+                        default: https://github.com
               gitlab:
-                '$ref': '#/definitions/droneGit'
-                additionalProperties:
-                  server:
-                    type: string
+                allOf:
+                  - '$ref': '#/definitions/droneGit'
+                  - properties:
+                      server:
+                        type: string
               gitea:
-                '$ref': '#/definitions/droneGit'
-                additionalProperties:
-                  server:
-                    type: string
+                allOf:
+                  - '$ref': '#/definitions/droneGit'
+                  - properties:
+                      server:
+                        type: string
               gogs:
                 properties:
                   server:
@@ -1137,13 +1153,9 @@ properties:
       aws:
         '$ref': '#/definitions/cloud'
       azure:
-        allOff:
-          - '$ref': '#/definitions/cloud'
-          - '$ref': '#/definitions/cloudAzure'
+        '$ref': '#/definitions/cloud'
       google:
-        allOff:
-          - '$ref': '#/definitions/cloud'
-          - '$ref': '#/definitions/cloudGoogle'
+        '$ref': '#/definitions/cloud'
       onprem:
         '$ref': '#/definitions/cloud'
   customer:
@@ -1162,9 +1174,9 @@ properties:
       clientSecret:
         type: string
       issuer:
-        type: string
+        '$ref': '#/definitions/url'
       jwksUri:
-        type: string
+        '$ref': '#/definitions/url'
       authUrl:
         '$ref': '#/definitions/url'
       tokenUrl:
