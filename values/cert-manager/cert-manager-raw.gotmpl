@@ -19,7 +19,7 @@ resources:
     metadata:
       name: cloud-dns-key
     data:
-      key.json: "{{ $v | getOrNil "clouds.google.cloudDnsKey" | b64enc }}"
+      key.json: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
 {{- end }}
 {{- range $stage := (list "staging" "production") }}
   - apiVersion: cert-manager.io/v1alpha2
