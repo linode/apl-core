@@ -14,7 +14,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   npm install cspell && npm run spellcheck; fi
 
 #-----------------------------
-FROM otomi/tools:1.4.8 as prod
+FROM otomi/tools:1.4.9 as prod
 
 ARG SKIP_TESTS='false'
 ENV CI=true
