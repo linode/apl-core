@@ -134,28 +134,8 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
-    {{- with $v | getOrNil "clouds.azure.monitor" }}
-    {{- $a := $v.clouds.azure }}
-    - name: Azure Monitor
-      type: grafana-azure-monitor-datasource
-      access: proxy
-      jsonData:
-        cloudName: azuremonitor
-        subscriptionId: {{ $a.subscriptionId }}
-        tenantId: {{ $a.tenantId }}
-        clientId: {{ .clientId }}
-        logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $a.tenantId }}
-        logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
-        logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
-        appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
-        azureLogAnalyticsSameAs: true
-        keepCookies: []
-      secureJsonData:
-        clientSecret: {{ .clientSecret }}
-        logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" .clientSecret }}
-        appInsightsAppSecret : {{ . | get "appInsightsAppSecret" .clientSecret }}
-      version: 4
-      editable: false
+    {{- with $v | get "azure.monitor" nil }}
+    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
     {{- end }}
     {{- if $c.sitespeed.enabled }}
     - name: Graphite

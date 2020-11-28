@@ -10,7 +10,6 @@ clouds:
                 otomiVersion: 'master'
                 region: eu-central-1
     google:
-        projectId: otomi-cloud
         domain: gke.otomi.cloud
         clusters:
             demo:

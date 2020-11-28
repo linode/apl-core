@@ -118,10 +118,6 @@ metadata:
       rewrite ^/$ https://otomi.{{ .cluster.domain }}/ permanent;
       rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
-  {{- if .hasAuth }}
-      # TODO: remove once we have groups support via oidc
-      proxy_set_header Auth-Group "{{ .teamId }}";
-  {{- end }}
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
   name: {{ $.provider }}-team-{{ .teamId }}-{{ .name }}
