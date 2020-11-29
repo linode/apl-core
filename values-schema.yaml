@@ -225,7 +225,6 @@ definitions:
             type: string
             default: mon-otomi
             description: 'The Slack channel for critical notifications.'
-        required: [url]
       msteams:
         type: object
         additionalProperties: false
@@ -236,9 +235,9 @@ definitions:
           lowPrio:
             type: string
             description: The high prio web hook
-        required: [highPrio, lowPrio]
       email:
         type: object
+        additionalProperties: false
         properties:
           nonCritical:
             description: One or more email addresses (comma separated) for non-critical events.
@@ -247,6 +246,8 @@ definitions:
             description: One or more email addresses (comma separated) for critical events.
             '$ref': '#/definitions/email'
           smtp:
+            type: object
+            additionalProperties: false
             properties:
               from:
                 description: The "from" address. Defaults to alerts@$clusterDomain.
