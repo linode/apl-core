@@ -89,9 +89,20 @@ receivers:
         send_resolved: true
   {{- end }}
   {{- if has "email" $receivers  }}
+    {{- $criticalTo := .root | get "home.email.critical" nil }}
+    {{- $nonCriticalTo := .root | get "home.email.nonCritical" nil }}
     email_configs:
-      - to: {{ .root | get "home.email.to" }}
-        from: {{ .root | get "home.email.from" (print "alerts@" .root.cluster.domain) }}
-        send_resolved: true
+    {{- if $nonCriticalTo }}
+      - name: default
+        email_configs:
+          - to: {{ $nonCriticalTo }}
+            send_resolved: true
+    {{- end }}
+    {{- if $criticalTo }}
+      - name: critical
+        email_configs:
+          - to: {{ $criticalTo }}
+            send_resolved: true
+    {{- end }}
   {{- end }}
 {{- end }}
