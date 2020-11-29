@@ -6,12 +6,13 @@ global:
   slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
 {{- end }}
 {{- if or (has "email" $receivers) (and .root.otomi.isHomeMonitored (has "email" $homeReceivers))  }}
-  smtp_smarthost: {{ .instance | get "alerts.email.smarthost" (.root | get "alerts.email.smarthost" (.root | get "home.email.smarthost" nil)) }}
-  smtp_hello: {{ .instance | get "alerts.email.hello" (.root | get "alerts.email.hello" .root.cluster.domain) }}
-  smtp_auth_username: {{ .instance | get "alerts.email.auth_username" (.root | get "alerts.email.auth_username" (.root | get "home.email.auth_username" nil)) }}
-  smtp_auth_password: {{ .instance | get "alerts.email.auth_password" (.root | get "alerts.email.auth_password" (.root | get "home.email.auth_password" nil)) }}
-  smtp_auth_secret: {{ .instance | get "alerts.email.auth_secret" (.root | get "alerts.email.auth_secret" (.root | get "home.email.auth_secret" nil)) }}
-  smtp_auth_identity: {{ .instance | get "alerts.email.auth_identity" (.root | get "alerts.email.auth_identity" (.root | get "home.email.auth_identity" nil)) }}
+  smtp_smarthost: {{ .instance | get "alerts.email.smtp.smarthost" (.root | get "alerts.email.smtp.smarthost" (.root | get "home.email.smtp.smarthost" nil)) }}
+  smtp_hello: {{ .instance | get "alerts.email.smtp.hello" (.root | get "alerts.email.smtp.hello" .root.cluster.domain) }}
+  smtp_from: {{ .instance | get "alerts.email.smtp.from" (.root | get "alerts.email.smtp.from" (print "alerts@" .root.cluster.domain)) }}
+  smtp_auth_username: {{ .instance | get "alerts.email.smtp.auth_username" (.root | get "alerts.email.smtp.auth_username" (.root | get "home.email.smtp.auth_username" nil)) }}
+  smtp_auth_password: {{ .instance | get "alerts.email.smtp.auth_password" (.root | get "alerts.email.smtp.auth_password" (.root | get "home.email.smtp.auth_password" nil)) }}
+  smtp_auth_secret: {{ .instance | get "alerts.email.smtp.auth_secret" (.root | get "alerts.email.smtp.auth_secret" (.root | get "home.email.smtp.auth_secret" nil)) }}
+  smtp_auth_identity: {{ .instance | get "alerts.email.smtp.auth_identity" (.root | get "alerts.email.smtp.auth_identity" (.root | get "home.email.smtp.auth_identity" nil)) }}
 {{- end }}
 route:
   receiver: default
@@ -62,17 +63,15 @@ receivers:
         send_resolved: true
 {{- end }}
 {{- if has "email" $receivers }}
-  {{- $to := .instance | get "alerts.email.to" (.root | get "alerts.email.to") }}
-  {{- $from := .instance | get "alerts.email.from" (.root | get "alerts.email.from" (print "alerts@" .root.cluster.domain)) }}
+  {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical") }}
+  {{- $nonCriticalTo := .instance | get "alerts.email.nonCritical" (.root | get "alerts.email.nonCritical") }}
   - name: default
     email_configs:
-      - to: {{ $to }}
-        from: {{ $from }}
+      - to: {{ $nonCriticalTo }}
         send_resolved: true
   - name: critical
     email_configs:
-      - to: {{ $to }}
-        from: {{ $from }}
+      - to: {{ $criticalTo }}
         send_resolved: true
 {{- end }}
 {{- if .root.otomi.isHomeMonitored }}
