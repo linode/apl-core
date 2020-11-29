@@ -1,8 +1,5 @@
 alerts:
     drone: slack
-    email:
-        from: admins@your.cloud
-        smarthost: some.smtp.host
     receivers:
         - slack
         - email

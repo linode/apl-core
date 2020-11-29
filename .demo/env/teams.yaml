@@ -1,6 +1,9 @@
 teamConfig:
     teams:
         demo:
+            alerts:
+                receivers:
+                    - email
             id: demo
             clusters:
                 - aws/demo
