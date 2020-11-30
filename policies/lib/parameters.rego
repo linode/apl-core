@@ -13,9 +13,26 @@ import data.lib.pods
 
 default paramsAnnotationField = "policies.otomi.io/parameters"
 
-resource_annotations = annotations {
-  annotations := object.union(core.annotations, pods.pod.metadata.annotations)
+default emptyAnnotations = {}
+
+get_default(object, field, _default) = output {
+	core.has_field(object, field)
+  object[field] != null
+	output = object[field]
 }
+
+get_default(object, field, _default) = output {
+	core.has_field(object, field) == false
+	output = _default
+}
+
+resource_annotations = annotations {
+  resourceAnnotations := get_default(core.resource.metadata, "annotations", emptyAnnotations)
+  templateAnnotations := get_default(pods.pod.metadata, "annotations", emptyAnnotations)
+  annotations := object.union(resourceAnnotations, templateAnnotations)
+
+}
+
 
 extra_parameters(policyID) = params {
   annotations := resource_annotations()

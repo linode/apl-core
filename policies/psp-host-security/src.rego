@@ -24,17 +24,17 @@ policyID := "psphostsecurity"
 violation[msg] {
     not exceptions.is_exception(policyID)
     pod_has_hostpid
-    msg := core.format_with_id(sprintf("Policy: %s - %s/%s: Pod allows for accessing the host PID namespace", [policyID, core.kind, core.name]), policyID)
+    msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host PID namespace", [policyID, core.kind, core.name])
 }
 violation[msg] {
     not exceptions.is_exception(policyID)
     pod_has_hostipc
-    msg := core.format_with_id(sprintf("Policy: %s - %s/%s: Pod allows for accessing the host IPC", [policyID, core.kind, core.name]), policyID)
+    msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host IPC", [policyID, core.kind, core.name])
 }
 violation[msg] {
     not exceptions.is_exception(policyID)
     pod_host_alias
-    msg := core.format_with_id(sprintf("Policy: %s - %s/%s: Pod has hostAliases defined", [policyID, core.kind, core.name]), policyID)
+    msg := sprintf("Policy: %s - %s/%s: Pod has hostAliases defined", [policyID, core.kind, core.name])
 }
 pod_has_hostpid {
     pods.pod.spec.hostPID

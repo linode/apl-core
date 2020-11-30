@@ -27,6 +27,17 @@ To start policy evaluation statically from a development workstation, run the fo
 otomi validate-policies true
 ```
 
+### Policy Exclusions and Parameter overrides
+
+The policy engine is aware of the following annotations for a workload, which will extend the default parameters passed to the rule.
+
+```
+annotations:
+  policies.otomi.io/ignore: policyID
+  policies.otomi.io/parameters.policyID: '{"extra":"parameters"}'
+
+```
+
 ### Restricted
 
 Denies access to all host features and requires pods to be run with a UID. This is the most restrictive policy setup.
