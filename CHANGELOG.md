@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.47](https://github.com/redkubes/otomi-core/compare/v0.11.46...v0.11.47) (2020-11-30)
+
+
+### Bug Fixes
+
+* alertmanager template [ci skip] ([62683af](https://github.com/redkubes/otomi-core/commit/62683af7e94fb16f89b0dab3a5867b9d5d48e618))
+
 ### [0.11.46](https://github.com/redkubes/otomi-core/compare/v0.11.45...v0.11.46) (2020-11-30)
 
 
