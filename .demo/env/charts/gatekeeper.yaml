@@ -1,14 +1,14 @@
 ---
 charts:
   gatekeeper:
-    enabled: false
+    enabled: true
     constraints:
       containerlimits:
         enabled: false
         cpu: '2'
         memory: 2000Mi
       bannedimagetags:
-        enabled: false
+        enabled: true
         tags:
           - latest
           - master
@@ -28,7 +28,7 @@ charts:
       pspallowedusers:
         enabled: true
         runAsUser:
-          rule: RunAsAny
+          rule: MustRunAsNonRoot
         runAsGroup:
           rule: MayRunAs
           ranges:

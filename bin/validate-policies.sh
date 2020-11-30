@@ -9,11 +9,11 @@ k8sResourcesPath="/tmp/otomi/conftest-fixtures"
 policiesPath="policies"
 constraintsFile=$(mktemp -u)
 parametersFile=$(mktemp -u)
+exitcode=1
 
 . bin/common.sh
 
 cleanup() {
-  exitcode=$?
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   [[ ${MOUNT_TMP_DIR-'false'} != "false" ]] && rm -rf $k8sResourcesPath
   rm -f $constraintsFile $parametersFile
@@ -23,6 +23,7 @@ trap cleanup EXIT
 
 run_setup() {
   rm -rf $k8sResourcesPath $constraintsFile $parametersFile && mkdir -p $k8sResourcesPath
+  exitcode=1
 }
 
 validate_policies() {
@@ -45,11 +46,12 @@ validate_policies() {
   # validate_resources
   echo "Validating manifests against cluster policies for ${CLOUD}-${CLUSTER} cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p $policiesPath $k8sResourcesPath
+  exitcode=$?
 
 }
 
 conftest_enabled() {
-  $(yq r $otomiSettings "otomi.addons.conftest.enabled") == "true"
+  $(yq r $otomiSettings "otomi.addons.conftest.enabled")
 }
 
 if [ "${1-}" != "" ]; then
