@@ -8,7 +8,7 @@ global:
 {{- if or (has "email" $receivers) (and .root.otomi.isHomeMonitored (has "email" $homeReceivers))  }}
   smtp_smarthost: {{ .instance | get "alerts.email.smtp.smarthost" (.root | get "alerts.email.smtp.smarthost" (.root | get "home.email.smtp.smarthost" nil)) }}
   smtp_hello: {{ .instance | get "alerts.email.smtp.hello" (.root | get "alerts.email.smtp.hello" .root.cluster.domain) }}
-  smtp_from: {{ .instance | get "alerts.email.smtp.from" (.root | get "alerts.email.smtp.from" (print "alerts@" .root.cluster.domain)) }}
+  smtp_from: {{ .instance | get "alerts.email.smtp.from" (.root | get "alerts.email.smtp.from" (.root | get "home.email.smtp.from" (print "alerts@" .root.cluster.domain))) }}
   smtp_auth_username: {{ .instance | get "alerts.email.smtp.auth_username" (.root | get "alerts.email.smtp.auth_username" (.root | get "home.email.smtp.auth_username" nil)) }}
   smtp_auth_password: {{ .instance | get "alerts.email.smtp.auth_password" (.root | get "alerts.email.smtp.auth_password" (.root | get "home.email.smtp.auth_password" nil)) }}
   smtp_auth_secret: {{ .instance | get "alerts.email.smtp.auth_secret" (.root | get "alerts.email.smtp.auth_secret" (.root | get "home.email.smtp.auth_secret" nil)) }}
@@ -73,7 +73,7 @@ receivers:
         send_resolved: true
 {{- end }}
 {{- if has "email" $receivers }}
-  {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical") }}
+  {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical" nil) }}
     {{- if $criticalTo }}
     email_configs:
       - to: {{ $criticalTo }}
@@ -96,8 +96,10 @@ receivers:
   {{- end }}
   {{- if has "email" $receivers  }}
     {{- $criticalTo := .root | get "home.email.critical" nil }}
+    {{- if $criticalTo }}
     email_configs:
       - to: {{ $criticalTo }}
         send_resolved: true
+    {{- end }}
   {{- end }}
 {{- end }}
