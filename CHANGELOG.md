@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.50](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.50) (2020-11-30)
+
+
+### Bug Fixes
+
+* demo values [ci skip] ([5af6dc7](https://github.com/redkubes/otomi-core/commit/5af6dc7c9a733445cbed43926db3f4baa739e8d4))
+
+
+### Code Refactoring
+
+* smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
+
+
+### Others
+
+* **release:** 0.11.49 ([136e4be](https://github.com/redkubes/otomi-core/commit/136e4be8ad6671623082ef73a5e956deb159fa74))
+
 ### [0.11.49](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.49) (2020-11-30)
 
 
