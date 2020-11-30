@@ -42,37 +42,43 @@ route:
     {{- end }}
 receivers:
   - name: "null"
-{{- if has "slack" $receivers  }}
   - name: default
+{{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"
         {{- .slackTpl | nindent 8 }}
+{{- end }}
+{{- if has "msteams" $receivers }}
+    webhook_configs:
+      - url: "http://prometheus-msteams{{ $suffix }}:800/low_priority_channel"
+        send_resolved: true
+{{- end }}
+{{- if has "email" $receivers }}
+  {{- $nonCriticalTo := .instance | get "alerts.email.nonCritical" (.root | get "alerts.email.nonCritical") }}
+    {{- if $nonCriticalTo }}
+    email_configs:
+      - to: {{ $nonCriticalTo }}
+        send_resolved: true
+    {{- end }}
+{{- end }}
   - name: critical
+{{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "mon-otomi-crit") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
-  - name: default
-    webhook_configs:
-      - url: "http://prometheus-msteams{{ $suffix }}:800/low_priority_channel"
-        send_resolved: true
-  - name: critical
     webhook_configs:
       - url: "http://prometheus-msteams{{ $suffix }}:800/high_priority_channel"
         send_resolved: true
 {{- end }}
 {{- if has "email" $receivers }}
   {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical") }}
-  {{- $nonCriticalTo := .instance | get "alerts.email.nonCritical" (.root | get "alerts.email.nonCritical") }}
-  - name: default
-    email_configs:
-      - to: {{ $nonCriticalTo }}
-        send_resolved: true
-  - name: critical
+    {{- if $criticalTo }}
     email_configs:
       - to: {{ $criticalTo }}
         send_resolved: true
+    {{- end }}
 {{- end }}
 {{- if .root.otomi.isHomeMonitored }}
   - name: critical-home
@@ -90,19 +96,8 @@ receivers:
   {{- end }}
   {{- if has "email" $receivers  }}
     {{- $criticalTo := .root | get "home.email.critical" nil }}
-    {{- $nonCriticalTo := .root | get "home.email.nonCritical" nil }}
     email_configs:
-    {{- if $nonCriticalTo }}
-      - name: default
-        email_configs:
-          - to: {{ $nonCriticalTo }}
-            send_resolved: true
-    {{- end }}
-    {{- if $criticalTo }}
-      - name: critical
-        email_configs:
-          - to: {{ $criticalTo }}
-            send_resolved: true
-    {{- end }}
+      - to: {{ $criticalTo }}
+        send_resolved: true
   {{- end }}
 {{- end }}
