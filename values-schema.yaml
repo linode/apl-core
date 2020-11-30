@@ -245,27 +245,6 @@ definitions:
           critical:
             description: One or more email addresses (comma separated) for critical events.
             '$ref': '#/definitions/email'
-          smtp:
-            type: object
-            additionalProperties: false
-            properties:
-              from:
-                description: The "from" address. Defaults to alerts@$clusterDomain.
-                '$ref': '#/definitions/email'
-              smarthost:
-                description: The smtp host:port combination.
-                '$ref': '#/definitions/hostPort'
-              hello:
-                type: string
-              auth_username:
-                type: string
-              auth_password:
-                type: string
-              auth_secret:
-                type: string
-              auth_identity:
-                type: string
-            required: [smarthost]
   azureMonitor:
     type: object
     properties:
@@ -1364,6 +1343,27 @@ properties:
         - name
         - namespace
         - svc
+  smtp:
+    type: object
+    additionalProperties: false
+    properties:
+      from:
+        description: The "from" address. Defaults to alerts@$clusterDomain.
+        '$ref': '#/definitions/email'
+      smarthost:
+        description: The smtp host:port combination.
+        '$ref': '#/definitions/hostPort'
+      hello:
+        type: string
+      auth_username:
+        type: string
+      auth_password:
+        type: string
+      auth_secret:
+        type: string
+      auth_identity:
+        type: string
+    required: [smarthost]
 
   toolsVersion:
     type: string
