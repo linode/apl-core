@@ -33,3 +33,8 @@ otomi:
     isMultitenant: true
     mode: ce
     teamPrefix: team-
+smtp:
+    smarthost: smtp-relay.gmail.com:587
+    hello: doma.in
+    from: no-reply@doma.in
+    auth_username: no-reply@doma.in
