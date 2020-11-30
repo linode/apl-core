@@ -1,16 +1,18 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
+{{- $homeReceivers := .root | get "home.receivers" (list "slack") }}
 global:
-{{- if or (has "slack" $receivers ) (and .root.otomi.isHomeMonitored (.root | get "home.receivers" (list "slack"))) }}
-  slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url")) }}
+{{- if or (has "slack" $receivers ) (and .root.otomi.isHomeMonitored (has "slack" $homeReceivers)) }}
+  slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
 {{- end }}
-{{- if has "email" $receivers }}
-  smtp_smarthost: {{ .instance | get "alerts.email.smarthost" (.root | get "alerts.email.smarthost") }}
-  smtp_hello: {{ .instance | get "alerts.email.hello" (.root | get "alerts.email.hello" .root.cluster.domain) }}
-  smtp_auth_username: {{ .instance | get "alerts.email.auth_username" (.root | get "alerts.email.auth_username" nil) }}
-  smtp_auth_password: {{ .instance | get "alerts.email.auth_password" (.root | get "alerts.email.auth_password" nil) }}
-  smtp_auth_secret: {{ .instance | get "alerts.email.auth_secret" (.root | get "alerts.email.auth_secret" nil) }}
-  smtp_auth_identity: {{ .instance | get "alerts.email.auth_identity" (.root | get "alerts.email.auth_identity" nil) }}
+{{- if or (has "email" $receivers) (and .root.otomi.isHomeMonitored (has "email" $homeReceivers))  }}
+  smtp_smarthost: {{ .root | get "smtp.smarthost" }}
+  smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domain }}
+  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domain) }}
+  smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
+  smtp_auth_password: {{ .root | get "smtp.auth_password" nil }}
+  smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil }}
+  smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
   receiver: default
@@ -40,39 +42,43 @@ route:
     {{- end }}
 receivers:
   - name: "null"
-{{- if has "slack" $receivers  }}
   - name: default
+{{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"
         {{- .slackTpl | nindent 8 }}
+{{- end }}
+{{- if has "msteams" $receivers }}
+    webhook_configs:
+      - url: "http://prometheus-msteams{{ $suffix }}:800/low_priority_channel"
+        send_resolved: true
+{{- end }}
+{{- if has "email" $receivers }}
+  {{- $nonCriticalTo := .instance | get "alerts.email.nonCritical" (.root | get "alerts.email.nonCritical") }}
+    {{- if $nonCriticalTo }}
+    email_configs:
+      - to: {{ $nonCriticalTo }}
+        send_resolved: true
+    {{- end }}
+{{- end }}
   - name: critical
+{{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "mon-otomi-crit") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
-  - name: default
-    webhook_configs:
-      - url: "http://prometheus-msteams{{ $suffix }}:800/low_priority_channel"
-        send_resolved: true
-  - name: critical
     webhook_configs:
       - url: "http://prometheus-msteams{{ $suffix }}:800/high_priority_channel"
         send_resolved: true
 {{- end }}
 {{- if has "email" $receivers }}
-  {{- $to := .instance | get "alerts.email.to" (.root | get "alerts.email.to") }}
-  {{- $from := .instance | get "alerts.email.from" (.root | get "alerts.email.from" (print "alerts@" .root.cluster.domain)) }}
-  - name: default
+  {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical" nil) }}
+    {{- if $criticalTo }}
     email_configs:
-      - to: {{ $to }}
-        from: {{ $from }}
+      - to: {{ $criticalTo }}
         send_resolved: true
-  - name: critical
-    email_configs:
-      - to: {{ $to }}
-        from: {{ $from }}
-        send_resolved: true
+    {{- end }}
 {{- end }}
 {{- if .root.otomi.isHomeMonitored }}
   - name: critical-home
@@ -89,9 +95,11 @@ receivers:
         send_resolved: true
   {{- end }}
   {{- if has "email" $receivers  }}
+    {{- $criticalTo := .root | get "home.email.critical" nil }}
+    {{- if $criticalTo }}
     email_configs:
-      - to: {{ .root | get "home.email.to" }}
-        from: {{ .root | get "home.email.from" (print "alerts@" .root.cluster.domain) }}
+      - to: {{ $criticalTo }}
         send_resolved: true
+    {{- end }}
   {{- end }}
 {{- end }}

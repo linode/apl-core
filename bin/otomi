@@ -14,7 +14,8 @@
 set -e
 
 command=$1
-[ "$ENV_DIR" = "" ] && env_unset=1
+env_unset='false'
+[ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 
@@ -32,10 +33,8 @@ function verbose_env() {
   echo "command=$command"
 }
 
-# VERBOSE - export this varibale to run this script in verbose mode
-VERBOSE=${VERBOSE:-'true'}
-# EXIT_FAST - export this varaibale to exit the script on error
-EXIT_FAST=${EXIT_FAST:-'true'}
+# VERBOSE - set this variable to run this script in verbose mode
+VERBOSE=${VERBOSE:-''}
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=1
@@ -55,10 +54,10 @@ readme_url='https://github.com/redkubes/otomi-core'
 
 function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
-  [ "$VERBOSE" = "1" ] && echo "CWD: $cwd"
+  [ "$VERBOSE" != "" ] && echo "CWD: $cwd"
   if [ "$cwd" = "otomi-core" ]; then
-    [ "$env_unset" = "1" ] && echo "Error: The ENV_DIR environment variable is not set" >&2 && exit 1
-    [ "$VERBOSE" = "1" ] && echo "Mounting otomi-core dir"
+    [ "$env_unset" = 'true' ] && echo "Error: The ENV_DIR environment variable is not set" >&2 && exit 1
+    [ "$VERBOSE" != "" ] && echo "Mounting otomi-core dir"
     stack_dir=$PWD
     mount_stack_dir=1
   fi
@@ -96,7 +95,7 @@ function show_usage() {
 
   Env flags:
     VERBOSE=1;          Run otomi CLI in verbose mode
-    EXIT_FAST=1         Exit the script after first error
+    CI=true             Exit the script after first error
   "
 }
 
@@ -122,9 +121,7 @@ function evaluate_k8s_context() {
 function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [[ "$K8S_CONTEXT" != "$context" ]]; then
-    echo "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT"
-    echo ""
-    read -p "Would you like to switch kube context to target first? Yn" oki
+    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? Yn" oki
     if [ "${oki:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
       drun bin/bootstrap.sh 1
@@ -190,8 +187,8 @@ function drun() {
   local stack_volume=''
   local socket_volume=''
 
+  [ "$VERBOSE" != "" ] && echo "Running in CI: $CI"
   if [ "$CI" != "" ]; then
-    [ "$VERBOSE" = "1" ] && echo "Running in CI: $CI"
     check_kube_context=0
   else
     socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
@@ -215,7 +212,7 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [[ ("$CI" = "") && $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
+  if [[ $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
     [ "$VERBOSE" = "1" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
@@ -235,7 +232,7 @@ function drun() {
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
-      -e EXIT_FAST="$EXIT_FAST" \
+      -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
       $command
@@ -270,7 +267,7 @@ function execute() {
       ;;
     bash)
       check_kube_context=0
-      docker_terminal_params='-it'
+      docker_terminal_params='-t'
       drun bash
       ;;
     bootstrap)
@@ -287,7 +284,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [ "$@" != "" ]; then
+      if [[ "$@" != "" ]]; then
         for f in $@; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
@@ -356,6 +353,7 @@ function execute() {
       if [ "$@" != "" ]; then
         validate_cluster_env
       fi
+      check_kube_context=0
       evaluate_secrets
       drun bin/validate-templates.sh $@
       ;;

@@ -18,6 +18,9 @@ resources:
         {{- end }}
         kubernetes.io/ingress.class: nginx
         ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+        {{- if $hasKeycloak }}
+        nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+        {{- end }}
         nginx.ingress.kubernetes.io/configuration-snippet: |
           # rewrite auth redirects to original hosts
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
