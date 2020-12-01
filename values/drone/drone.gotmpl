@@ -14,6 +14,8 @@ fullnameOverride: drone
 sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
+  annotations:
+    policies.otomi.io/ignore: pspallowedusers
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -60,6 +62,9 @@ kubernetes:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
     DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
+  annotations:
+    policies.otomi.io/ignore: pspallowedusers,pspprivileged,psphostfilesystem,bannedimagetags
+
 persistence:
   enabled: true
   storageClass: fast

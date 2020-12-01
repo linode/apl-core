@@ -62,3 +62,5 @@ tasks:
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+    annotations:
+      policies.otomi.io/ignore: bannedimagetags,pspallowedusers

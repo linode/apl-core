@@ -27,6 +27,7 @@ serviceMonitor:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
+  policies.otomi.io/ignore: "pspallowedusers,psphostfilesystem"
 
 pipelineStages:
   - docker: {}

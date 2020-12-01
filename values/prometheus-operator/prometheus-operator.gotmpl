@@ -183,3 +183,6 @@ prometheus-node-exporter:
   rbac:
     pspEnabled: false
   priorityClassName: "otomi-critical"
+  podAnnotations:
+    policies.otomi.io/ignore: "psphostfilesystem,psphostnetworkingports,psphostsecurity"
+

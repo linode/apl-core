@@ -80,8 +80,13 @@ keycloak:
   extraVolumeMounts: 
     - name: theme
       mountPath: /themes
+  podAnnotations: 
+    policies.otomi.io/ignore: pspallowedusers,bannedimagetags
 
 postgresql:
+  commonAnnotations: 
+    policies.otomi.io/ignore: pspallowedusers
+
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlDatabase: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}

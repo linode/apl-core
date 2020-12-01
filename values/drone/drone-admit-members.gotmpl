@@ -21,3 +21,6 @@ github:
 
 env:
   DRONE_DEBUG: {{ $d | get "debug" false }}
+
+podAnnotations:
+  policies.otomi.io/ignore: bannedimagetags

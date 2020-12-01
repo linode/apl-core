@@ -19,3 +19,7 @@ resources:
     cpu: 100m
     memory: 64Mi
   {{- end }}
+
+
+podAnnotations:
+  policies.otomi.io/ignore: pspallowedusers

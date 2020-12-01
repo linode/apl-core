@@ -42,3 +42,6 @@ deschedulerPolicy:
         - requiredDuringSchedulingIgnoredDuringExecution
     RemovePodsViolatingNodeTaints:
       enabled: true
+
+podAnnotations:
+  policies.otomi.io/ignore: pspallowedusers

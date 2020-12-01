@@ -1,9 +1,9 @@
 package lib.annotations
 # Annotations helper library used to extract policy metadata information from annotation fields
-# import data.lib.annotations
-# 
+# Usage:
+#
+# import data.lib.annotations 
 # annotations = annotations.policy_annotations()
-# 
 # 
 import data.lib.core
 import data.lib.pods

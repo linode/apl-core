@@ -14,6 +14,11 @@ spec:
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
+        {{- if $spec.annotations }}
+        {{- range $key, $value := $spec.annotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
     spec:
       serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
       {{- if $spec.init }}

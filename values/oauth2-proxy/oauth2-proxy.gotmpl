@@ -48,6 +48,11 @@ resources:
 {{- end }}
 {{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
 
+# disable policies
+podAnnotations:
+  policies.otomi.io/ignore: pspallowedusers
+
+
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github

@@ -26,6 +26,9 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
+  podAnnotations:
+    policies.otomi.io/ignore: pspallowedusers
+
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
@@ -53,6 +56,9 @@ jobservice:
       memory: 512Mi
       cpu: 100m
     {{- end }}
+  podAnnotations:
+    policies.otomi.io/ignore: pspallowedusers
+
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
 persistence:
@@ -131,6 +137,9 @@ proxy:
 
 registry:
   secret: q1g9gwm35g8k458b
+  podAnnotations:
+    policies.otomi.io/ignore: pspallowedusers
+
   registry:
     image:
       repository: goharbor/registry-photon
@@ -172,6 +181,8 @@ registry:
 
 database:
   type: internal
+  podAnnotations:
+    policies.otomi.io/ignore: "pspallowedusers"
   internal:
     image:
       repository: goharbor/harbor-db
@@ -190,6 +201,8 @@ database:
       {{- end }}
 
 clair:
+  podAnnotations:
+    policies.otomi.io/ignore: "pspallowedusers"
   clair:
     resources:
       {{- if (hasKey $h "resources.clair") }}
@@ -227,6 +240,8 @@ chartmuseum:
       cpu: 400m
       memory: 256Mi
     {{- end }}
+  podAnnotations:
+    policies.otomi.io/ignore: "pspallowedusers"
 
 portal:
   resources:
@@ -240,8 +255,13 @@ portal:
       cpu: 400m
       memory: 128Mi
     {{- end }}
+  podAnnotations: 
+    policies.otomi.io/ignore: "pspallowedusers"
 
 redis:
+  podAnnotations:
+    policies.otomi.io/ignore: "pspallowedusers"
+
   internal:
     resources:
       requests:
