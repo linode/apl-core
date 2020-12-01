@@ -1,6 +1,6 @@
 package lib.parameters
 # Using  wrapper logic to obtain extra parameters from annotations 
-# Usage:
+# Match by policyID and merge default parameters passed as data object with extra parameters from annotations
 # 
 # import data.lib.parameters
 # policyID = ...
@@ -10,40 +10,17 @@ package lib.parameters
 
 import data.lib.core
 import data.lib.pods
-
-default paramsAnnotationField = "policies.otomi.io/parameters"
-
-default emptyAnnotations = {}
-
-get_default(object, field, _default) = output {
-	core.has_field(object, field)
-  object[field] != null
-	output = object[field]
-}
-
-get_default(object, field, _default) = output {
-	core.has_field(object, field) == false
-	output = _default
-}
-
-resource_annotations = annotations {
-  resourceAnnotations := get_default(core.resource.metadata, "annotations", emptyAnnotations)
-  templateAnnotations := get_default(pods.pod.metadata, "annotations", emptyAnnotations)
-  annotations := object.union(resourceAnnotations, templateAnnotations)
-
-}
-
-
-extra_parameters(policyID) = params {
-  annotations := resource_annotations()
-  policyAnnotationField := sprintf("%s.%s", [paramsAnnotationField, policyID])
-  core.has_field(annotations, policyAnnotationField)
-  params := json.unmarshal(annotations[policyAnnotationField])
-} else = params {
-  params := {}
-}
+import data.lib.annotations
 
 parameters(policyID) = params {
   params := object.union(core.parameters[policyID], extra_parameters(policyID))
 }
 
+extra_parameters(policyID) = params {
+  meta_annotations := annotations.policy_annotations()
+  policyAnnotationField := sprintf("%s.%s", [annotations.paramsAnnotationField, policyID])
+  core.has_field(meta_annotations, policyAnnotationField)
+  params := json.unmarshal(meta_annotations[policyAnnotationField])
+} else = params {
+  params := {}
+}

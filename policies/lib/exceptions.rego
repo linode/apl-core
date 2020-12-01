@@ -6,18 +6,20 @@ package lib.exceptions
 # policyID = ...
 # 
 # violation[{"msg": msg}] {
-#     exceptions.is_exception(policyID)
+#     not exceptions.is_exception(policyID)
 #     ...
 # }
 # 
 
 import data.lib.core
 import data.lib.parameters
-
-default ignoreAnnotationField = "policies.otomi.io/ignore"
+import data.lib.annotations
 
 is_exception(policyID) = true  {
-  ignoreList := split(core.annotations[ignoreAnnotationField],",")
+  annotations_object := annotations.policy_annotations()
+  core.has_field(annotations_object, annotations.ignoreAnnotationField)
+  annotations_object[annotations.ignoreAnnotationField] != null
+  ignoreList := split(annotations_object[annotations.ignoreAnnotationField],",")
   ignoreList[_] == policyID
 } {
   not parameters.parameters(policyID).enabled
