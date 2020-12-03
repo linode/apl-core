@@ -946,6 +946,52 @@ properties:
                     type: array
                     items:
                       type: string
+              pspapparmor:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  allowedProfiles:
+                    type: array
+                    items:
+                      type: string
+              pspseccomp:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  allowedProfiles:
+                    type: array
+                    items:
+                      type: string
+              pspselinux:
+                additionalProperties: false
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  seLinuxContext:
+                    type: string
+                    enum: [MustRunAs, RunAsAny]
+                  allowedSELinuxOptions:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        level:
+                          type: string
+                        role:
+                          type: string
+                        type:
+                          type: string
+                        user:
+                          type: string
       harbor:
         type: object
         additionalProperties: false

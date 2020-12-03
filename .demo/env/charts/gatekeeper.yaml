@@ -65,3 +65,24 @@ charts:
           - sunrpc.*
           - user.*
           - vm.*
+      pspapparmor:
+        enabled: true
+        allowedProfiles:
+          - runtime/default
+          # - docker/default
+          # - unconfined
+          # - localhost/<profile-name>
+      pspselinux:
+        enabled: true
+        allowedSELinuxOptions:
+          - level: s0:c123,c456
+            role: object_r
+            type: svirt_sandbox_file_t
+            user: system_u
+      pspseccomp:
+        enabled: true
+        allowedProfiles:
+          - runtime/default
+          # - docker/default
+          # - unconfined
+          # - localhost/<profile-name>

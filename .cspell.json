@@ -30,12 +30,15 @@
     "oo",
     "oo mkilled",
     "pspallowedusers",
+    "pspapparmor",
     "pspcapabilities",
     "pspforbiddensysctls",
     "psphostfilesystem",
     "psphostnetworkingports",
     "psphostsecurity",
     "pspprivileged",
+    "pspseccomp",
+    "pspselinux",
     "RAGRS",
     "jwks",
     "RAGZRS",
@@ -111,6 +114,5 @@
     "sitespeed",
     "testmode",
     "untrusted"
-  ],
-  "language": "en"
+  ]
 }
