@@ -79,6 +79,15 @@ RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli
 
+# bats https://github.com/bats-core/bats-core
+RUN git clone https://github.com/bats-core/bats-core.git && \ 
+  cd bats-core && \
+  ./install.sh /usr/local && \
+  cd /usr/local/lib && \
+  git clone https://github.com/ztombol/bats-support.git && \
+  git clone https://github.com/ztombol/bats-assert.git && \ 
+  git clone https://github.com/ztombol/bats-file.git 
+
 RUN chown -R app:app /home/app
 USER app
 

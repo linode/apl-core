@@ -1,8 +1,10 @@
-#!/usr/sbin/bats
+#!/usr/local/bin/bats
 
-load 'test_helper/bats-support/load'
-load 'test_helper/bats-assert/load'
-load 'test_helper/bats-file/load'
+lib_dir="/usr/local/lib"
+
+load "$lib_dir/bats-support/load.bash"
+load "$lib_dir/bats-assert/load.bash"
+load "$lib_dir/bats-file/load.bash"
 
 setup () {
     TEST_TEMP_DIR="$(temp_make --prefix 'otomi-values-')"
