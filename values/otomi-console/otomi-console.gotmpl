@@ -44,3 +44,7 @@ env:
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
+
+
+podAnnotations:
+  policies.otomi.io/ignore: "bannedimagetags"

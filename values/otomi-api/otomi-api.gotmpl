@@ -58,3 +58,6 @@ tools:
     {{- $o.resources.tools | toYaml | nindent 4 }}
   {{- end }}
   {{- end }}
+
+podAnnotations:
+  policies.otomi.io/ignore: "bannedimagetags"
