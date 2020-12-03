@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.50](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.50) (2020-11-30)
+
+
+### Bug Fixes
+
+* demo values [ci skip] ([5af6dc7](https://github.com/redkubes/otomi-core/commit/5af6dc7c9a733445cbed43926db3f4baa739e8d4))
+
+
+### Code Refactoring
+
+* smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
+
+
+### Others
+
+* **release:** 0.11.49 ([136e4be](https://github.com/redkubes/otomi-core/commit/136e4be8ad6671623082ef73a5e956deb159fa74))
+
+### [0.11.49](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.49) (2020-11-30)
+
+
+### Code Refactoring
+
+* smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
+
+### [0.11.48](https://github.com/redkubes/otomi-core/compare/v0.11.47...v0.11.48) (2020-11-30)
+
+
+### Bug Fixes
+
+* alertmanager template [ci skip] ([48a4169](https://github.com/redkubes/otomi-core/commit/48a41698dcbee89b621840ef28d1dbd81c870f76))
+
+### [0.11.47](https://github.com/redkubes/otomi-core/compare/v0.11.46...v0.11.47) (2020-11-30)
+
+
+### Bug Fixes
+
+* alertmanager template [ci skip] ([62683af](https://github.com/redkubes/otomi-core/commit/62683af7e94fb16f89b0dab3a5867b9d5d48e618))
+
+### [0.11.46](https://github.com/redkubes/otomi-core/compare/v0.11.45...v0.11.46) (2020-11-30)
+
+
+### Features
+
+* added email+home receiver, moved cloud settings to own props ([8392c47](https://github.com/redkubes/otomi-core/commit/8392c4749948330341c93519450a36f11c953427))
+* multiple alert endpoints ([b5aa63c](https://github.com/redkubes/otomi-core/commit/b5aa63c86f379b7eb8b4ad078af3b6b3168d3066))
+
+
+### Bug Fixes
+
+* alertmanager email conf ([36f5558](https://github.com/redkubes/otomi-core/commit/36f5558ad64c9adef5fe396dc851d38a85b760ce))
+* alertmanager email conf home fallback ([adbf699](https://github.com/redkubes/otomi-core/commit/adbf69915f5405efdcaf217b5fee333e497171cf))
+* dns config, cli invocation for single cluster validation ([36e2a03](https://github.com/redkubes/otomi-core/commit/36e2a0349ccecdd28dc6264fb3beb808e5678fae))
+* home email alert config ([85df7ee](https://github.com/redkubes/otomi-core/commit/85df7ee58a96ac496b9900d469ad9dca3ca10a9a))
+* msteams pipeline [ci skip] ([f7c2640](https://github.com/redkubes/otomi-core/commit/f7c2640630bf9e097bbad155ceac14c215d7344d))
+* non required props ([b6bac19](https://github.com/redkubes/otomi-core/commit/b6bac192b3e9c889ad21c8b0c808ce7061a8c10b))
+
 ### [0.11.45](https://github.com/redkubes/otomi-core/compare/v0.11.44...v0.11.45) (2020-11-20)
 
 

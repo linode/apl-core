@@ -145,31 +145,8 @@ releases:
               access: proxy
               url: http://graphite.monitoring:80
             {{- end }}
-            {{- if and (eq $v.cluster.provider "azure") }}
-            {{- $monitor := ($team | get "azure.monitor" ($v.clouds.azure | get "monitor" nil)) }}
-            {{- with $monitor }}
-            {{- $a := $v.clouds.azure }}
-            - name: Azure Monitor
-              type: grafana-azure-monitor-datasource
-              access: proxy
-              jsonData:
-                cloudName: azuremonitor
-                subscriptionId: {{ $a.subscriptionId }}
-                tenantId: {{ $a.tenantId }}
-                clientId: {{ .clientId }}
-                logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" $a.tenantId }}
-                logAnalyticsClientId: {{ . | get "logAnalyticsClientId" .clientId }}
-                logAnalyticsDefaultWorkspace: {{ .logAnalyticsWorkspace }}
-                appInsightsAppId: {{ . | get "appInsightsAppId" .clientId }}
-                azureLogAnalyticsSameAs: true
-                keepCookies: []
-              secureJsonData:
-                clientSecret: {{ .clientSecret }}
-                logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" .clientSecret }}
-                appInsightsAppSecret : {{ . | get "appInsightsAppSecret" .clientSecret }}
-              version: 4
-              editable: false
-            {{- end }}
+            {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" ($v | get "azure.monitor" nil)) }}
+            - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" ($team | get "azureMonitor" dict) "azure" $v.azure) | toString | nindent 14 }}
             {{- end }}
   {{ if has "msteams" ($team | get "receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
@@ -210,6 +187,7 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
+
   {{- end }}
   {{- end }}
   {{- end }}

@@ -223,6 +223,7 @@ resources:
           #   resources: {{/*- $iga | get "istio-egressgateway.resources" | toYaml | nindent 14 */}}
           #   {{/*- end */}}
         global:
+          imagePullPolicy: IfNotPresent
           sds:
             enabled: {{ $ig | get "sds.enabled" false }}
           mtls:

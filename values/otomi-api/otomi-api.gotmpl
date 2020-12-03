@@ -27,7 +27,7 @@ secrets:
   {{- end }}
 
 env:
-  DEBUG: '*'
+  # DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}

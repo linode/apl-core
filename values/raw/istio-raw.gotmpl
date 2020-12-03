@@ -32,7 +32,7 @@ resources:
                     if status == "403" then
                       local oauth_host = "https://auth.{{ $v.cluster.domain }}/oauth2/start?rd=/oauth2/redirect/"
                       local redirect_url = "https://auth.{{ $v.cluster.domain }}/oauth2/sign_in"
-                      response_handle:logWarn("Caught 403 Unauthorized! Redirecting to: "..redirect_url)
+                      response_handle:logWarn("Caught 403 Forbidden! Redirecting to: "..redirect_url)
                       response_handle:headers():replace(":status", 302)
                       response_handle:headers():replace("location", redirect_url)
                     end

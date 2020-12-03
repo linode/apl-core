@@ -67,7 +67,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
-      - maintenance
+      - deploy
     settings:
       webhook: __WEBHOOK
       content:
@@ -84,7 +84,7 @@ steps:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
     depends_on:
-      - maintenance
+      - deploy
     settings:
       webhook: __WEBHOOK
       content:
@@ -94,20 +94,3 @@ steps:
     when:
       status:
         - failure
-
-  # - name: slack-RedKubes-error
-  #   image: plugins/slack
-  #   environment:
-  #     CLUSTER: __CLUSTER
-  #     CLOUD: __CLOUD
-  #   depends_on:
-  #     - maintenance
-  #   settings:
-  #     webhook: __WEBHOOK_REDKUBES
-  #     channel: mon-otomi
-  #     username: Drone
-  #     template: >
-  #       Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
-  #   when:
-  #     status:
-  #       - failure
