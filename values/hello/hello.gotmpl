@@ -15,12 +15,12 @@ resources:
     cpu: 100m
     memory: 64Mi
 
-podSecurityContext:   
-  seLinuxOptions:
-    - level: s3:c223,c456
-      role: object_w
-      type: svirt_sandbox_file_w
-      user: system_admin
+# podSecurityContext:   
+#   seLinuxOptions:
+#     - level: s3:c223,c456
+#       role: object_w
+#       type: svirt_sandbox_file_w
+#       user: system_admin
 
 podAnnotations:
-  policies.otomi.io/ignore: "bannedimagetags"
+  policies.otomi.io/ignore: "pspallowedusers,bannedimagetags"

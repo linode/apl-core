@@ -2,3 +2,5 @@
 {{- $i := $v.charts | get "istio" dict }}
 hub: istio
 tag: {{ $i | get "version" "1.6.5" }}
+podAnnotations: 
+  policies.otomi.io/ignore: "pspallowedusers"

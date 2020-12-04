@@ -37,3 +37,14 @@ releases:
     labels:
       pkg: gatekeeper
     <<: *default
+  - name: gatekeeper-artifacts
+    installed: {{ $c | get "gatekeeper.enabled" false }}
+    namespace: gatekeeper-system
+    labels:
+      pkg: gatekeeper
+    hooks:
+      - events: ["prepare"]
+        showlogs: false
+        command: "../bin/build-constraints.sh"
+        args: [true]
+    <<: *raw

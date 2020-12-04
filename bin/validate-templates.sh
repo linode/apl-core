@@ -95,7 +95,8 @@ validate_templates() {
   # validate_resources
   echo "Validating resources against Kubernetes version: $version"
   local kubevalSchemaLocation="file://${schemaOutputPath}"
-  local constraintsKinds="AllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged"
+  local constraintsKinds="BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts"
+  constraintsKinds+=",PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   local skipKinds="CustomResourceDefinition,$constraintsKinds"
   local skipFilenames="crd,knative-services,constraint"
 

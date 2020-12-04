@@ -6,6 +6,8 @@ metadata:
 {{ include "hello.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test-success
+    policies.otomi.io/ignore: pspallowedusers
+
 spec:
   containers:
     - name: wget

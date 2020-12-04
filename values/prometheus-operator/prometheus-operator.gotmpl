@@ -119,6 +119,16 @@ grafana:
     pspEnabled: false
   # podAnnotations:
   #   sidecar.istio.io/inject: "false"
+
+  testFramework:
+    # enabled: true
+    # image: "bats/bats"
+    # tag: "v1.1.0"
+    # imagePullPolicy: IfNotPresent
+    securityContext: 
+      runAsNonRoot: true
+      runAsUser: 1000
+    
   plugins:
     - grafana-piechart-panel
   additionalDataSources:

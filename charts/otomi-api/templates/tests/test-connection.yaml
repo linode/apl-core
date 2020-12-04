@@ -6,6 +6,8 @@ metadata:
 {{ include "otomi-api.labels" . | indent 4 }}
   annotations:
     "helm.sh/hook": test-success
+    policies.otomi.io/ignore: pspallowedusers
+
 spec:
   containers:
     - name: wget
