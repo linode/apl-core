@@ -22,6 +22,8 @@ WORKDIR $APP_HOME
 
 COPY . .
 
+RUN bats bin/tests
+
 #-----------------------------
 FROM otomi/tools:1.4.8 as prod
 

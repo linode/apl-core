@@ -7,23 +7,23 @@ load "$lib_dir/bats-assert/load.bash"
 load "$lib_dir/bats-file/load.bash"
 
 setup () {
-    TEST_TEMP_DIR="$(temp_make --prefix 'otomi-values-')"
-    export ENV_DIR="$TEST_TEMP_DIR"
-    export ENV_PATH="$ENV_DIR/env"
+    test_temp_dir="$(temp_make --prefix 'otomi-values-')"
+    export ENV_DIR="$test_temp_dir"
+    env_path="$ENV_DIR/env"
 }
 
 teardown () {
-    temp_del "$TEST_TEMP_DIR"
+    temp_del "$test_temp_dir"
     unset ENV_DIR
-    unset ENV_PATH
+    unset env_path
 }
 
 @test "the env folder should not exist without bootstrap.sh" { 
-    assert_file_not_exist "$ENV_PATH"
+    assert_file_not_exist "$env_path"
 }
 
 @test "the env folder should exist after bootstrap.sh" {
     git init "$ENV_DIR"
     bin/bootstrap.sh
-    assert_file_exist "$ENV_PATH"
+    assert_file_exist "$env_path"
 }

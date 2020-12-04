@@ -7,12 +7,12 @@ load "$lib_dir/bats-assert/load.bash"
 load "$lib_dir/bats-file/load.bash"
 
 setup () {
-    TEST_TEMP_DIR="$(temp_make --prefix "otomi-values-")"
-    export ENV_DIR="$TEST_TEMP_DIR"
+    test_temp_dir="$(temp_make --prefix "otomi-values-")"
+    export ENV_DIR="$test_temp_dir"
 }
 
 teardown () {
-    temp_del "$TEST_TEMP_DIR"
+    temp_del "$test_temp_dir"
     unset ENV_DIR
 }
 
@@ -28,7 +28,7 @@ teardown () {
 }
 
 @test "executing bootstrap.sh multiple times should pass" {
-    git init "$TEST_TEMP_DIR"
+    git init "$test_temp_dir"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
     assert_success
