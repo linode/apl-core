@@ -16,7 +16,10 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then \
 #-----------------------------
 FROM otomi/tools:bats as test
 
-WORKDIR /tmp
+ENV APP_HOME=/home/app/stack
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
+
 COPY . .
 
 #-----------------------------
