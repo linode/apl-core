@@ -12,14 +12,14 @@ default paramsAnnotationField = "policies.otomi.io/parameters"
 default ignoreAnnotationField = "policies.otomi.io/ignore"
 
 get_default(object, field, _default) = output {
-	core.has_field(object, field)
+  core.has_field(object, field)
   object[field] != null
-	output = object[field]
+  output = object[field]
 }
 
 get_default(object, field, _default) = output {
-	core.has_field(object, field) == false
-	output = _default
+  core.has_field(object, field) == false
+  output = _default
 }
 
 policy_annotations = return {
