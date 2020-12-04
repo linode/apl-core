@@ -10,11 +10,12 @@ policiesPath="policies"
 constraintsFile=$(mktemp -u)
 parametersFile=$(mktemp -u)
 exitcode=1
+validationResult=0
 
 . bin/common.sh
 
 cleanup() {
-  [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+  [[ $validationResult -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   [[ ${MOUNT_TMP_DIR-'false'} != "false" ]] && rm -rf $k8sResourcesPath
   rm -f $constraintsFile $parametersFile
   exit $exitcode
@@ -23,6 +24,7 @@ trap cleanup EXIT
 
 run_setup() {
   rm -rf $k8sResourcesPath $constraintsFile $parametersFile && mkdir -p $k8sResourcesPath
+  ((validationResult += $exitcode))
   exitcode=1
 }
 
@@ -47,7 +49,6 @@ validate_policies() {
   echo "Validating manifests against cluster policies for ${CLOUD}-${CLUSTER} cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parametersFile" -p $policiesPath $k8sResourcesPath
   exitcode=$?
-
 }
 
 conftest_enabled() {

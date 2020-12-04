@@ -12,3 +12,6 @@ deployments:
       requests:
         cpu: {{ $o | get "cpu" $defaultCpu }}
         memory: {{ $o | get "memory" $defaultMem }}
+    annotations:
+      policies.otomi.io/ignore: pspallowedusers
+
