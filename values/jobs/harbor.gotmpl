@@ -46,4 +46,4 @@ tasks:
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
     annotations:
-      policy.otomi.io/ignore: bannedimagetags,pspallowedusers
+      policy.otomi.io/ignore: banned-image-tags,pspallowedusers

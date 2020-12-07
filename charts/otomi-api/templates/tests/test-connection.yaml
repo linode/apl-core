@@ -6,7 +6,7 @@ metadata:
 {{ include "otomi-api.labels" . | indent 4 }}
   annotations:
     "helm.sh/hook": test-success
-    policy.otomi.io/ignore: pspallowedusers
+    policy.otomi.io/ignore: psp-allowed-users
 
 spec:
   containers:

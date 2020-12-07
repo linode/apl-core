@@ -9,7 +9,7 @@ global:
 
 weave-scope-frontend:
   annotations:
-    policy.otomi.io/ignore: pspallowedusers
+    policy.otomi.io/ignore: psp-allowed-users
   resources:
     requests:
       cpu: 200m
@@ -20,11 +20,11 @@ weave-scope-frontend:
 
 weave-scope:
   annotations:
-    policy.otomi.io/ignore: pspallowedusers
+    policy.otomi.io/ignore: psp-allowed-users
     
 weave-scope-agent:
   annotations:
-    policy.otomi.io/ignore: psphostfilesystem,pspallowedusers,pspprivileged,psphostsecurity,psphostnetworkingports
+    policy.otomi.io/ignore: psp-host-filesystem,psp-allowed-users,pspprivileged,psphostsecurity,psphostnetworkingports
   resources:
     requests:
       cpu: 200m
@@ -34,8 +34,8 @@ weave-scope-agent:
       memory: 256Mi
 
 weave-scope-cluster-agent:
-  annotations:
-    policy.otomi.io/ignore: pspallowedusers
+  annotations:gatekeeper-operator 
+    policy.otomi.io/ignore: psp-allowed-users
   resources:
     requests:
       cpu: 200m

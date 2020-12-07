@@ -10,4 +10,4 @@ deployments:
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
     annotations:
-      policy.otomi.io/ignore: pspallowedusers
+      policy.otomi.io/ignore: psp-allowed-users

@@ -27,7 +27,7 @@ serviceMonitor:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  policy.otomi.io/ignore: pspallowedusers,psphostfilesystem
+  policy.otomi.io/ignore: psp-allowed-users,psphostfilesystem
 
 pipelineStages:
   - docker: {}

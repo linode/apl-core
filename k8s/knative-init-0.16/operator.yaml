@@ -613,7 +613,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
-        policy.otomi.io/ignore: pspallowedusers
+        policy.otomi.io/ignore: psp-allowed-users
       labels:
         name: knative-operator
     spec:

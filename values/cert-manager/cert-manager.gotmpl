@@ -11,7 +11,7 @@ prometheus:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
-  policy.otomi.io/ignore: pspallowedusers,pspprivileged,psphostsecurity
+  policy.otomi.io/ignore: psp-allowed-users,pspprivileged,psphostsecurity
 
 installCRDs: true
 
@@ -32,11 +32,11 @@ cainjector:
       cpu: 200m
       memory: 384Mi
   podAnnotations:
-    policy.otomi.io/ignore: pspallowedusers,pspprivileged,psphostsecurity
+    policy.otomi.io/ignore: psp-allowed-users,pspprivileged,psphostsecurity
 
 webhook:
   podAnnotations:
-    policy.otomi.io/ignore: pspallowedusers
+    policy.otomi.io/ignore: psp-allowed-users
   resources:
     requests:
       cpu: 50m
