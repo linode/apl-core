@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.51](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.51) (2020-12-07)
+
+
+### Features
+
+* support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
+
+
+### Bug Fixes
+
+* demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
+* oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
+* set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
+
+
+### Code Refactoring
+
+* resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
+
 ### [0.11.50](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.50) (2020-11-30)
 
 
