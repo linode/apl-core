@@ -53,6 +53,13 @@ charts:
                 requests:
                     cpu: 10m
                     memory: 100Mi
+            prometheus:
+                requests:
+                    cpu: 200m
+                    memory: 500Mi
+                limits:
+                    cpu: 500m
+                    memory: 1Gi
             proxy:
                 limits:
                     cpu: 500m

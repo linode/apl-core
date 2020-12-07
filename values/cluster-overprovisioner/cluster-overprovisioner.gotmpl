@@ -4,7 +4,7 @@
 deployments:
   - name: default
     resources:
-      {{- $type := range (list "limits" "requests") }}
+      {{- range $type := (list "limits" "requests") }}
       {{ $type }}:
         cpu: {{ $o | get "cpu" "1000m" }}
         memory: {{ $o | get "memory" "1000Mi" }}
