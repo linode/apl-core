@@ -24,7 +24,7 @@ weave-scope:
     
 weave-scope-agent:
   annotations:
-    policy.otomi.io/ignore: psp-host-filesystem,psp-allowed-users,pspprivileged,psphostsecurity,psphostnetworkingports
+    policy.otomi.io/ignore: psp-host-filesystem,psp-allowed-users,psp-privileged,psp-host-security,psp-host-networking-ports
   resources:
     requests:
       cpu: 200m
@@ -34,7 +34,7 @@ weave-scope-agent:
       memory: 256Mi
 
 weave-scope-cluster-agent:
-  annotations:gatekeeper-operator 
+  annotations:
     policy.otomi.io/ignore: psp-allowed-users
   resources:
     requests:
