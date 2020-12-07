@@ -1,10 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
-{{- $cluster := $v.cluster }}
 folders:
   # - k8s
   # - istio
-  {{- if and (eq $cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
+  {{- if and (eq $v.cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
   - azure
   {{- end }}
   {{- if $c.sitespeed.enabled }}

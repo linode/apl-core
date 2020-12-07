@@ -7,9 +7,9 @@
 
 replicaCount: 1
 
-{{- if (hasKey $o "resources.api") }}
+{{- with $o | get "resources.api" nil }}
 resources:
-  {{- $o.resources.api | toYaml | nindent 2 }}
+  {{- toYaml . | nindent 2 }}
 {{- end }}
 
 image:
@@ -53,8 +53,8 @@ tools:
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
-  {{- if (hasKey $o "resources.tools") }}
-  resources:
-    {{- $o.resources.tools | toYaml | nindent 4 }}
-  {{- end }}
+    {{- with $o | get "resources.tools" nil }}
+    resources:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}
