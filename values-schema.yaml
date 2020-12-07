@@ -3,6 +3,9 @@
 type: object
 additionalProperties: false
 definitions:
+  expertValues:
+    description: Values for expert mode, which overwrite all previously defined settings for a given chart
+    type: object
   alerts:
     properties:
       drone:
@@ -614,6 +617,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           azureClientSecret:
             type: string
           email:
@@ -697,6 +702,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
           memory:
@@ -707,6 +714,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
             default: false
@@ -797,6 +806,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           aws:
             type: object
             properties:
@@ -821,12 +832,16 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
       harbor:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           adminPassword:
             type: string
           enabled:
@@ -877,6 +892,8 @@ properties:
         description: A chart for Azure Application Gateway
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           appgw:
             additionalProperties: false
             description: Application Gateway
@@ -926,6 +943,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           addonComponents:
             additionalProperties: false
             properties:
@@ -1017,6 +1036,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
             default: true
@@ -1027,6 +1048,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
           idp:
@@ -1055,6 +1078,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           adminPassword:
             type: string
           persistence:
@@ -1077,6 +1102,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           autoscaling:
             type: object
             additionalProperties: false
@@ -1090,6 +1117,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           config:
             type: object
             properties:
@@ -1144,6 +1173,8 @@ properties:
       prometheus-operator:
         type: object
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           additionalProperties: false
           grafana:
             type: object
@@ -1168,6 +1199,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           resources:
             additionalProperties: false
             properties:
@@ -1181,6 +1214,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
           resources:
@@ -1196,6 +1231,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
           pvc:
@@ -1211,8 +1248,13 @@ properties:
           schedule:
             type: string
       weave-scope:
-        enabled: boolean
-        default: false
+        type: object
+        properties:
+          _values:
+            '$ref': '#/definitions/expertValues'
+          enabled:
+            type: boolean
+            default: false
   clouds:
     additionalProperties: false
     type: object
