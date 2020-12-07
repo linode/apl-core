@@ -182,7 +182,7 @@ registry:
 database:
   type: internal
   podAnnotations:
-    policy.otomi.io/ignore: "pspallowedusers"
+    policy.otomi.io/ignore: pspallowedusers
   internal:
     image:
       repository: goharbor/harbor-db
@@ -202,7 +202,7 @@ database:
 
 clair:
   podAnnotations:
-    policy.otomi.io/ignore: "pspallowedusers"
+    policy.otomi.io/ignore: pspallowedusers
   clair:
     resources:
       {{- if (hasKey $h "resources.clair") }}
@@ -241,7 +241,7 @@ chartmuseum:
       memory: 256Mi
     {{- end }}
   podAnnotations:
-    policy.otomi.io/ignore: "pspallowedusers"
+    policy.otomi.io/ignore: pspallowedusers
 
 portal:
   resources:
@@ -256,11 +256,11 @@ portal:
       memory: 128Mi
     {{- end }}
   podAnnotations: 
-    policy.otomi.io/ignore: "pspallowedusers"
+    policy.otomi.io/ignore: pspallowedusers
 
 redis:
   podAnnotations:
-    policy.otomi.io/ignore: "pspallowedusers"
+    policy.otomi.io/ignore: pspallowedusers
 
   internal:
     resources:
