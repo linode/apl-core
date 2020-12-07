@@ -9,7 +9,7 @@ k8sResourcesPath="/tmp/otomi/conftest-fixtures"
 policiesPath="policies"
 constraintsFile=$(mktemp -u)
 parametersFile=$(mktemp -u)
-exitcode=1
+exitcode=0
 validationResult=0
 
 . bin/common.sh
