@@ -54,10 +54,9 @@ charts:
                     cpu: 10m
                     memory: 100Mi
             proxy:
-                resources:
-                    limits:
-                        cpu: 500m
-                        memory: 1Gi
-                    requests:
-                        cpu: 20m
-                        memory: 80Mi
+                limits:
+                    cpu: 500m
+                    memory: 1Gi
+                requests:
+                    cpu: 20m
+                    memory: 80Mi
