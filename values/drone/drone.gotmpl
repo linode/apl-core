@@ -22,8 +22,8 @@ server:
   dind:
     enabled: false
   resources:
-    {{- if (hasKey $d "resources.server") }}
-      {{- $d.resources.server | toYaml | nindent 4 }}
+    {{- with $d | get "resources.server" nil }}
+      {{- toYaml .| nindent 4 }}
     {{- else }}
     requests:
       memory: 32Mi
@@ -40,16 +40,16 @@ server:
     DRONE_LOGS_PRETTY: false
     DRONE_RPC_DEBUG: {{ $debug }}
     DRONE_ORGS: {{ $d.orgsFilter }}
-    {{- if $d.repoFilter }}
-    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
+    {{- with $d.repoFilter }}
+    DRONE_REPOSITORY_FILTER: {{ . }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 kubernetes:
   resources:
-    {{- if (hasKey $d "resources.runner") }}
-      {{- $d.resources.runner | toYaml | nindent 4 }}
+    {{- with $d | get "resources.runner" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       memory: 32Mi

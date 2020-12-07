@@ -54,10 +54,10 @@ readme_url='https://github.com/redkubes/otomi-core'
 
 function set_env_and_stack_dir() {
   local cwd=$(basename "$PWD")
-  [ "$VERBOSE" != "" ] && echo "CWD: $cwd"
+  [ -n "$VERBOSE" ] && echo "CWD: $cwd"
   if [ "$cwd" = "otomi-core" ]; then
     [ "$env_unset" = 'true' ] && echo "Error: The ENV_DIR environment variable is not set" >&2 && exit 1
-    [ "$VERBOSE" != "" ] && echo "Mounting otomi-core dir"
+    [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
     stack_dir=$PWD
     mount_stack_dir=1
   fi
@@ -166,7 +166,7 @@ is_repo() {
 }
 
 run_console() {
-  [ "$1" != "" ] && docker-compose down --remove-orphans && exit
+  [ -n "$1" ] && docker-compose down --remove-orphans && exit
   # this will create /tmp/otomi-env:
   drun bin/check-console.sh
   # now source the fresh env we created for docker-compose
@@ -187,8 +187,8 @@ function drun() {
   local stack_volume=''
   local socket_volume=''
 
-  [ "$VERBOSE" != "" ] && echo "Running in CI: $CI"
-  if [ "$CI" != "" ]; then
+  [ -n "$VERBOSE" ] && echo "Running in CI: $CI"
+  if [ -n "$CI" ]; then
     check_kube_context=0
   else
     socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
@@ -205,7 +205,7 @@ function drun() {
     stack_volume="-v ${stack_dir}:${stack_dir}"
   fi
 
-  if [ "$VERBOSE" = "1" ]; then
+  if [ -n "$VERBOSE" ]; then
     verbose_env
   fi
 
@@ -213,7 +213,7 @@ function drun() {
   # - not in docker
   # - in docker AND force docker
   if [[ $has_docker -eq 1 && ("$IN_DOCKER" != "1" || $dind -eq 1) ]]; then
-    [ "$VERBOSE" = "1" ] && echo "Running dockerized version of command: $command"
+    [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
@@ -237,7 +237,7 @@ function drun() {
       $cmd_image \
       $command
   else
-    [ "$VERBOSE" = "1" ] && echo "Running native version of command: $command"
+    [ -n "$VERBOSE" ] && echo "Running native version of command: $command"
     $command
   fi
 }
@@ -284,7 +284,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != "" ]]; then
+      if [ -n "$@" ]; then
         for f in $@; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
@@ -307,7 +307,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != "" ]]; then
+      if [ -n "$@" ]; then
         for f in $@; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
@@ -350,7 +350,7 @@ function execute() {
       drun bin/test.sh
       ;;
     validate-templates)
-      if [ "$@" != "" ]; then
+      if [ -n "$@" ]; then
         validate_cluster_env
       fi
       check_kube_context=0
@@ -392,12 +392,12 @@ function execute() {
       ;;
     *)
       show_usage
-      [ "$1" != "" ] && echo "Error: Unknown command: $@" >&2 && exit 1
+      [ -z "$1" ] && echo "Error: Unknown command: $@" >&2 && exit 1
       ;;
   esac
 }
 
-[[ -z "$command" ]] && echo "Error: Missing command argument" >&2 && show_usage && exit 2
+[ -z "$command" ] && echo "Error: Missing command argument" >&2 && show_usage && exit 2
 
 set_env_and_stack_dir
 set_otomi_image

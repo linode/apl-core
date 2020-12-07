@@ -65,8 +65,8 @@ persistence:
 # priorityClassName:
 
 resources:
-  {{- if (hasKey $l "resources") }}
-    {{- $l.resources | toYaml | nindent 2 }}
+  {{- with $l | get "resources" nil }}
+    {{- toYaml . | nindent 2 }}
   {{- else }}
   limits:
     cpu: 800m

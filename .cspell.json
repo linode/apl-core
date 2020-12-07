@@ -3,6 +3,7 @@
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
+  "ignorePaths": ["/CHANGELOG.md"],
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "appgw",
@@ -22,6 +23,7 @@
     "istioctl",
     "istiod",
     "konstraint",
+    "kubes",
     "kubeval",
     "millis",
     "mkilled",

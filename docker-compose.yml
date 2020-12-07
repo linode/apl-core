@@ -11,11 +11,11 @@ services:
       - 8080:8080
     volumes:
       - ${PWD}/core.yaml:/etc/otomi/core.yaml
-      - data:/tmp
+      - tmp:/tmp
     environment:
       TOOLS_HOST: tools
       CLUSTER_ID: ${CLUSTER_ID:-google/dev}
-      GIT_LOCAL_PATH: /tmp/otomi
+      GIT_LOCAL_PATH: /tmp/otomi-values-core
       GIT_REPO_URL: ${GIT_REPO_URL:-github.com/redkubes/otomi-values.git}
       GIT_BRANCH: ${GIT_BRANCH:-master}
       GIT_USER: ${GIT_USER}
@@ -35,9 +35,10 @@ services:
     ports:
       - 17771:17771
     volumes:
-      - data:/tmp
+      - tmp:/tmp
+      - $PWD:/home/app/stack
     environment:
-      ENV_DIR: /tmp/otomi
+      ENV_DIR: /tmp/otomi-values-core
       GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
 
   web:
@@ -62,7 +63,7 @@ services:
       - ./docker-compose/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
-  data:
+  tmp:
     driver: local
     driver_opts:
       type: None

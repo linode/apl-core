@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=v1.18.12
+ARG KUBECTL_VERSION=v1.19.4
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=v3.4.1
 # https://github.com/databus23/helm-diff/releases
@@ -21,6 +21,12 @@ ARG CONFTEST_VERSION=0.21.0
 ARG KONSTRAINT_VERSION=0.9.1
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
+
+# https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
+ARG BATS_VERSION=1.2.1
+ARG BATS_ASSERT_VERSION=0.3.0
+ARG BATS_SUPPORT_VERSION=0.3.0
+ARG BATS_FILE_VERSION=0.2.0
 
 WORKDIR /
 
@@ -91,6 +97,20 @@ RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli
+
+# bats
+ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_VERSION} -C /tmp && /tmp/bats-core-${BATS_VERSION}/install.sh /usr/local
+
+# bats libs
+ADD https://codeload.github.com/ztombol/bats-assert/tar.gz/v${BATS_ASSERT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_ASSERT_VERSION} -C /tmp && mv /tmp/bats-assert-${BATS_ASSERT_VERSION} /usr/local/lib/bats-assert
+
+ADD https://codeload.github.com/ztombol/bats-support/tar.gz/v${BATS_SUPPORT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_SUPPORT_VERSION} -C /tmp && mv /tmp/bats-support-${BATS_SUPPORT_VERSION} /usr/local/lib/bats-support
+
+ADD https://codeload.github.com/ztombol/bats-file/tar.gz/v${BATS_FILE_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_FILE_VERSION} -C /tmp && mv /tmp/bats-file-${BATS_FILE_VERSION} /usr/local/lib/bats-file
 
 RUN chown -R app:app /home/app
 USER app

@@ -5,6 +5,8 @@ global:
     domain: {{ $domain }}
     https: true
 
+{{- if eq $v.cluster.provider "google" }}
 nodeSelector:
   cloud.google.com/gke-nodepool: nodes
+{{- end }}
   
