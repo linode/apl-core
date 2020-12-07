@@ -55,7 +55,7 @@ extraArgs:
   whitelist-domain: {{ $domainList }}
   scope: {{ $o.scope }}
   session-store-type: redis
-  redis-connection-url: redis://redis-master
+  redis-connection-url: redis://oauth2-proxy-redis-master
   redirect-url: https://auth.{{ $v.cluster.domain }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}
