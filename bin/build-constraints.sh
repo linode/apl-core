@@ -33,7 +33,6 @@ function decorate() {
     local template=$(yq r -P -j $ctemplatesFile | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplatesFile
   done
-
 }
 
 build && decorate
