@@ -81,11 +81,11 @@ keycloak:
     - name: theme
       mountPath: /themes
   podAnnotations: 
-    policies.otomi.io/ignore: pspallowedusers,bannedimagetags
+    policy.otomi.io/ignore: pspallowedusers,bannedimagetags
 
 postgresql:
   commonAnnotations: 
-    policies.otomi.io/ignore: pspallowedusers
+    policy.otomi.io/ignore: pspallowedusers
 
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}

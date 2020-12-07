@@ -8,7 +8,7 @@ https://github.com/plexsystems/konstraint/
 
 Konstraint is used to generate yaml manifests (ConstraintTemplates, Constraint) from source `.rego` files, that get deployed in the `gatekeer-artifacts` chart.
 
-`$ otomi validate-policies` uses Conftest under the hood to check all defined policies against the generated resources
+Conftest makes use of these same `.rego` files to check all defined policies against the generated resources.
 
 ### Motivation:
 

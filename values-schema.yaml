@@ -776,222 +776,10 @@ properties:
               type: string
       gatekeeper:
         type: object
-        additionalProperties: false
+        additionalProperties: true
         properties:
           enabled:
             type: boolean
-          constraints:
-            type: object
-            description: |
-              List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
-            additionalProperties: false
-            properties:
-              bannedimagetags:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  tags:
-                    type: array
-                    items:
-                      type: string
-                  enabled:
-                    type: boolean
-                    default: true
-              containerlimits:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  cpu:
-                    '$ref': '#/definitions/cpuQuantity'
-                  memory:
-                    '$ref': '#/definitions/memoryQuantity'
-                  enabled:
-                    type: boolean
-                    default: true
-              psphostfilesystem:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  allowedHostPaths:
-                    type: array
-                    items:
-                      type: object
-                      required: [pathPrefix, readOnly]
-                      properties:
-                        pathPrefix:
-                          type: string
-                        readOnly:
-                          type: boolean
-                      additionalProperties: false
-                  enabled:
-                    type: boolean
-                    default: true
-              pspallowedusers:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  runAsUser:
-                    type: object
-                    additionalProperties: false
-                    required: [rule]
-                    properties:
-                      rule:
-                        type: string
-                        enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
-                      ranges:
-                        type: array
-                        items:
-                          type: object
-                          additionalProperties: false
-                          required: [min, max]
-                          properties:
-                            min:
-                              type: integer
-                            max:
-                              type: integer
-                  runAsGroup:
-                    type: object
-                    properties:
-                      rule:
-                        type: string
-                        enum: [RunAsAny, MayRunAs, MustRunAs]
-                      ranges:
-                        type: array
-                        items:
-                          type: object
-                          additionalProperties: false
-                          required: [min, max]
-                          properties:
-                            min:
-                              type: integer
-                            max:
-                              type: integer
-                  supplementalGroups:
-                    type: object
-                    properties:
-                      rule:
-                        type: string
-                        enum: [RunAsAny, MayRunAs, MustRunAs]
-                      ranges:
-                        type: array
-                        items:
-                          type: object
-                          additionalProperties: false
-                          required: [min, max]
-                          properties:
-                            min:
-                              type: integer
-                            max:
-                              type: integer
-                  fsGroup:
-                    type: object
-                    properties:
-                      rule:
-                        type: string
-                        enum: [RunAsAny, MayRunAs, MustRunAs]
-                      ranges:
-                        type: array
-                        items:
-                          type: object
-                          additionalProperties: false
-                          required: [min, max]
-                          properties:
-                            min:
-                              type: integer
-                            max:
-                              type: integer
-                  enabled:
-                    type: boolean
-                    default: true
-              psphostsecurity:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              psphostnetworkingports:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              pspprivileged:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              pspcapabilities:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-                  allowedCapabilities:
-                    type: array
-                    items:
-                      type: string
-              pspforbiddensysctls:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-                  forbiddenSysctls:
-                    type: array
-                    items:
-                      type: string
-              pspapparmor:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-                  allowedProfiles:
-                    type: array
-                    items:
-                      type: string
-              pspseccomp:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-                  allowedProfiles:
-                    type: array
-                    items:
-                      type: string
-              pspselinux:
-                additionalProperties: false
-                required: [enabled]
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-                  seLinuxContext:
-                    type: string
-                    enum: [MustRunAs, RunAsAny]
-                  allowedSELinuxOptions:
-                    type: array
-                    items:
-                      type: object
-                      additionalProperties: false
-                      properties:
-                        level:
-                          type: string
-                        role:
-                          type: string
-                        type:
-                          type: string
-                        user:
-                          type: string
       harbor:
         type: object
         additionalProperties: false
@@ -1482,7 +1270,218 @@ properties:
             - name
     required:
       - namespaces
-
+  policies:
+    type: object
+    description: |
+      List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
+    additionalProperties: false
+    properties:
+      bannedimagetags:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          tags:
+            type: array
+            items:
+              type: string
+          enabled:
+            type: boolean
+            default: true
+      containerlimits:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          cpu:
+            '$ref': '#/definitions/cpuQuantity'
+          memory:
+            '$ref': '#/definitions/memoryQuantity'
+          enabled:
+            type: boolean
+            default: true
+      psphostfilesystem:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          allowedHostPaths:
+            type: array
+            items:
+              type: object
+              required: [pathPrefix, readOnly]
+              properties:
+                pathPrefix:
+                  type: string
+                readOnly:
+                  type: boolean
+              additionalProperties: false
+          enabled:
+            type: boolean
+            default: true
+      pspallowedusers:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          runAsUser:
+            type: object
+            additionalProperties: false
+            required: [rule]
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          runAsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          supplementalGroups:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          fsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          enabled:
+            type: boolean
+            default: true
+      psphostsecurity:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      psphostnetworkingports:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      pspprivileged:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      pspcapabilities:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedCapabilities:
+            type: array
+            items:
+              type: string
+      pspforbiddensysctls:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          forbiddenSysctls:
+            type: array
+            items:
+              type: string
+      pspapparmor:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      pspseccomp:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      pspselinux:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          seLinuxContext:
+            type: string
+            enum: [MustRunAs, RunAsAny]
+          allowedSELinuxOptions:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                level:
+                  type: string
+                role:
+                  type: string
+                type:
+                  type: string
+                user:
+                  type: string
   proxies:
     type: array
     items:

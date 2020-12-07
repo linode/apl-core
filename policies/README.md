@@ -33,8 +33,8 @@ The policy engine is aware of the following annotations for a workload, which wi
 
 ```
 annotations:
-  policies.otomi.io/ignore: policyID
-  policies.otomi.io/parameters.policyID: '{"extra":"parameters"}'
+  policy.otomi.io/ignore: policyID
+  policy.otomi.io/parameters.policyID: '{"extra":"parameters"}'
 
 ```
 

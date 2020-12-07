@@ -8,8 +8,8 @@ package lib.annotations
 import data.lib.core
 import data.lib.pods
 
-default paramsAnnotationField = "policies.otomi.io/parameters"
-default ignoreAnnotationField = "policies.otomi.io/ignore"
+default paramsAnnotationField = "policy.otomi.io/parameters"
+default ignoreAnnotationField = "policy.otomi.io/ignore"
 
 get_default(object, field, _default) = output {
   core.has_field(object, field)

@@ -652,7 +652,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
-        policies.otomi.io/ignore: pspallowedusers
+        policy.otomi.io/ignore: pspallowedusers
 
       labels:
         name: knative-operator
