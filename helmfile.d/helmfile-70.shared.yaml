@@ -10,6 +10,8 @@ releases:
   - name: harbor
     installed: {{ $c | get "harbor.enabled" false }}
     namespace: harbor
+    labels:
+      pkg: harbor
     <<: *default
   - name: oauth2-proxy
     installed: true

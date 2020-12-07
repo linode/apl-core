@@ -1,4 +1,4 @@
-toolsVersion: 1.4.5
+toolsVersion: 1.4.9
 
 k8s:
   namespaces:
@@ -101,7 +101,7 @@ services:
     authz:
       workload:
         app: grafana
-        chart: grafana
+        release: istio
   - name: prometheus
     svc: po-prometheus
     port: 9090

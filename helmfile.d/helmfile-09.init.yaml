@@ -30,7 +30,13 @@ releases:
     labels:
       pkg: gatekeeper-operator
     <<: *default
-  - name: redis # for oauth2-proxy
+  - name: oauth2-proxy-redis
     installed: true
+    namespace: istio-system
+    chart: ../charts/redis
+    values:
+      - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
+  - name: redis # made obsolete by oauth2-proxy-redis, keeping here to erase on next deploy
+    installed: false
     namespace: istio-system
     <<: *default

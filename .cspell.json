@@ -3,7 +3,7 @@
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
-  "ignorePaths": ["./**", "./.**/**", "!/docs/**/**.md", "!/values-schema.yaml", "!/README.md", "!/.values/README.md"],
+  "ignorePaths": ["/CHANGELOG.md"],
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "appgw",
@@ -21,6 +21,7 @@
     "ingressgateway",
     "istioctl",
     "istiod",
+    "kubes",
     "kubeval",
     "millis",
     "mkilled",
