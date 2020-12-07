@@ -71,7 +71,7 @@ validate_templates() {
 
   run_setup
   # generate_manifests
-  echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
+  echo "Generating Kubernetes ${version} Manifests for $(cluster_env)."
 
   hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
   hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null

@@ -5,10 +5,11 @@ set -uo pipefail
 EXIT_FAST=${EXIT_FAST:-"true"}
 [[ $EXIT_FAST == "true" ]] && set -e
 
-k8sResourcesPath="/tmp/otomi/conftest-fixtures"
-policiesPath="policies"
-constraintsFile=$(mktemp -u)
-parametersFile=$(mktemp -u)
+readonly k8sResourcesPath="/tmp/otomi/conftest-fixtures"
+readonly policiesPath="policies"
+readonly policiesFile="$ENV_DIR/env/policies.yaml"
+readonly constraintsFile=$(mktemp -u)
+readonly parametersFile=$(mktemp -u)
 exitcode=0
 validationResult=0
 
@@ -37,8 +38,8 @@ validate_policies() {
   hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   # generate parameter constraints file from values
-  local parseConstraintsExpression='.constraints as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
-  policies=$(hf_values | yq r -j - 'charts.gatekeeper' | jq --raw-output -S -c "$parseConstraintsExpression")
+  local parseConstraintsExpression='.policies as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
+  policies=$(yq r $policiesFile -j | jq --raw-output -S -c "$parseConstraintsExpression")
   for policy in $policies; do
     echo $policy | yq r -P - >>$constraintsFile
   done
