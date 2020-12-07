@@ -18,12 +18,22 @@ teardown () {
     unset env_path
 }
 
-@test "the env folder should not exist without bootstrap.sh" { 
-    assert_file_not_exist "$env_path"
+@test "the env folder should not be overwritten" {
+    git init "$ENV_DIR"
+    cluster_path="$env_path/clusters.yaml"
+    mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
+    bin/bootstrap.sh 
+
+    assert_file_not_exist "$env_path/charts"
+    assert_file_not_exist "$env_path/clouds"
+    assert_file_not_exist "$env_path/teams"
 }
 
-@test "the env folder should exist after bootstrap.sh" {
+@test "the env folder should be created after bootstrap.sh" {
     git init "$ENV_DIR"
     bin/bootstrap.sh
-    assert_file_exist "$env_path"
+
+    assert_file_exist "$env_path/charts"
+    assert_file_exist "$env_path/clouds"
+    assert_file_exist "$env_path/teams"
 }
