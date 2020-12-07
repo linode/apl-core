@@ -11,7 +11,6 @@ else
 fi
 
 has_otomi='false'
-skip_demo_files=${1-'false'}
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
 
 function generate_loose_schema() {
@@ -44,8 +43,8 @@ done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
-if [ "$skip_demo_files" = "false" ]; then
-  echo "Installing demo files"
+if [ -z "$(ls -A $ENV_DIR/env)" ]; then
+  echo "No files found in env, installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
