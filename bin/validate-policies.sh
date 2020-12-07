@@ -5,15 +5,15 @@ set -uo pipefail
 EXIT_FAST=${EXIT_FAST:-"true"}
 [[ $EXIT_FAST == "true" ]] && set -e
 
+. bin/common.sh
+
 readonly k8sResourcesPath="/tmp/otomi/conftest-fixtures"
-readonly policiesPath="policies"
 readonly policiesFile="$ENV_DIR/env/policies.yaml"
+readonly policiesPath="policies"
 readonly constraintsFile=$(mktemp -u)
 readonly parametersFile=$(mktemp -u)
 exitcode=0
 validationResult=0
-
-. bin/common.sh
 
 cleanup() {
   [[ $validationResult -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
