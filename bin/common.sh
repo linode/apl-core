@@ -29,11 +29,11 @@ check_sops_file() {
 }
 
 cluster_env() {
-  echo "${CLOUD}-${CLUSTER}"
+  printf "${CLOUD}-${CLUSTER}"
 }
 
 hf() {
-  helmfile --quiet -e cluster_env $@
+  helmfile --quiet -e "$(cluster_env)" $@
 }
 
 hf_values() {

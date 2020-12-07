@@ -32,7 +32,7 @@ validate_policies() {
 
   run_setup
   # generate_manifests
-  echo "Generating manifests for ${cluster_env} cluster."
+  echo "Generating manifests for $(cluster_env) cluster."
   hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
   hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
