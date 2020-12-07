@@ -29,13 +29,12 @@ run_setup() {
 }
 
 validate_policies() {
-  local hf="helmfile -e $CLOUD-$CLUSTER"
 
   run_setup
   # generate_manifests
-  echo "Generating manifests for ${CLOUD}-${CLUSTER} cluster."
-  $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-  $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  echo "Generating manifests for ${cluster_env} cluster."
+  hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   # generate parameter constraints file from values
   local parseConstraintsExpression='.constraints as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
