@@ -4,11 +4,14 @@ Integrated Konstraint library to support Common Rego Language definitions.
 
 https://github.com/plexsystems/konstraint/
 
-### Components
+### Considerations
 
-Konstraint is used to generate yaml manifests (ConstraintTemplates, Constraint) from source `.rego` files, that get deployed in the `gatekeer-artifacts` chart.
+We have run into the following problems when using the default Gatekeeper OPA policies:
+It is hard to integrate with other tools such as conftest and wee need two versions of the policies: local vs online
 
-Conftest makes use of these same `.rego` files to check all defined policies against the generated resources.
+We have investigated different library references including Raspernetes policy library, RedHat's policy library, Kubesec.io references, Gatekeeper policy library and Konstraint library
+
+We have found that the best choice for writing OPA policies is to use Konstraint library, which has compatible `.rego` definitions for both Conftest and Gatekeeper
 
 ### Motivation:
 
@@ -18,3 +21,9 @@ Using `Konstraint` library introduces common abstractions for evaluating policie
 
 Users can write policies directly in the `policies` folder and evaluate the components statically, without the need to deploy any resources.
 Common Language Definitions include: `core.resource` `core.parameters` objects.
+
+### Components
+
+Konstraint is used to generate yaml manifests (ConstraintTemplates, Constraint) from source `.rego` files, that get deployed in the `gatekeer-artifacts` chart.
+
+Conftest makes use of these same `.rego` files to check all defined policies against the generated resources.
