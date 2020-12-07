@@ -8,7 +8,7 @@ import data.lib.pods
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "pspseccomp"
+policyID = "psp-seccomp"
 
 violation[{"msg": msg, "details": {}}] {
   not exceptions.is_exception(policyID)

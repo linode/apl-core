@@ -1276,7 +1276,7 @@ properties:
       List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
     additionalProperties: false
     properties:
-      bannedimagetags:
+      banned-image-tags:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1287,7 +1287,7 @@ properties:
           enabled:
             type: boolean
             default: true
-      containerlimits:
+      container-limits:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1298,7 +1298,7 @@ properties:
           enabled:
             type: boolean
             default: true
-      psphostfilesystem:
+      psp-host-filesystem:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1316,7 +1316,7 @@ properties:
           enabled:
             type: boolean
             default: true
-      pspallowedusers:
+      psp-allowed-users:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1393,28 +1393,28 @@ properties:
           enabled:
             type: boolean
             default: true
-      psphostsecurity:
+      psp-host-security:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
             default: true
-      psphostnetworkingports:
+      psp-host-networking-ports:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
             default: true
-      pspprivileged:
+      psp-privileged:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
             default: true
-      pspcapabilities:
+      psp-capabilities:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1425,7 +1425,7 @@ properties:
             type: array
             items:
               type: string
-      pspforbiddensysctls:
+      psp-forbidden-sysctls:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1436,7 +1436,7 @@ properties:
             type: array
             items:
               type: string
-      pspapparmor:
+      psp-apparmor:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1447,7 +1447,7 @@ properties:
             type: array
             items:
               type: string
-      pspseccomp:
+      psp-seccomp:
         additionalProperties: false
         required: [enabled]
         properties:
@@ -1458,7 +1458,7 @@ properties:
             type: array
             items:
               type: string
-      pspselinux:
+      psp-selinux:
         additionalProperties: false
         required: [enabled]
         properties:

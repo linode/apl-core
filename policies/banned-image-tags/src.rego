@@ -9,7 +9,7 @@ import data.lib.exceptions
 import data.lib.parameters
 
 
-policyID = "bannedimagetags"
+policyID = "banned-image-tags"
 
 violation[{"msg": msg}] {
   not exceptions.is_exception(policyID)

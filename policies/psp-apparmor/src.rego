@@ -10,7 +10,7 @@ import data.lib.pods
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "pspapparmor"
+policyID = "psp-apparmor"
 
 default appArmorAnnotation = "container.apparmor.security.beta.kubernetes.io"
 

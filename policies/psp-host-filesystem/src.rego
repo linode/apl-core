@@ -8,7 +8,7 @@ import data.lib.pods
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "psphostfilesystem"
+policyID = "psp-host-filesystem"
 
 violation[{"msg": msg, "details": {}}] {
   not exceptions.is_exception(policyID)

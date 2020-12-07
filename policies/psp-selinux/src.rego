@@ -7,7 +7,7 @@ import data.lib.pods
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "pspselinux"
+policyID = "psp-selinux"
 
 # Disallow top level custom SELinux options
 violation[{"msg": msg, "details": {}}] {

@@ -13,7 +13,7 @@ import data.lib.security
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "pspforbiddensysctls"
+policyID = "psp-forbidden-sysctls"
 
 violation[{"msg": msg, "details": {}}] {
   not exceptions.is_exception(policyID)

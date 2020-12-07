@@ -12,7 +12,7 @@ import data.lib.security
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "pspprivileged"
+policyID = "psp-privileged"
 
 violation[msg] {
   not exceptions.is_exception(policyID)

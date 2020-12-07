@@ -1,14 +1,14 @@
 policies:
-    containerlimits:
+    container-limits:
         enabled: false
         cpu: '2'
         memory: 2000Mi
-    bannedimagetags:
+    banned-image-tags:
         enabled: true
         tags:
             - latest
             - master
-    psphostfilesystem:
+    psp-host-filesystem:
         enabled: true
         allowedHostPaths:
             - pathPrefix: /tmp/
@@ -21,7 +21,7 @@ policies:
             #   readOnly: false
             # - pathPrefix: /proc/
             #   readOnly: false
-    pspallowedusers:
+    psp-allowed-users:
         enabled: true
         runAsUser:
             rule: MustRunAsNonRoot
@@ -40,18 +40,18 @@ policies:
             ranges:
                 - min: 1
                   max: 65535
-    psphostsecurity:
+    psp-host-security:
         enabled: true
-    psphostnetworkingports:
+    psp-host-networking-ports:
         enabled: true
-    pspprivileged:
+    psp-privileged:
         enabled: true
-    pspcapabilities:
+    psp-capabilities:
         enabled: true
         allowedCapabilities:
             - NET_BIND_SERVICE
             - NET_RAW
-    pspforbiddensysctls:
+    psp-forbidden-sysctls:
         enabled: true
         forbiddenSysctls:
             - kernel.*
@@ -61,14 +61,14 @@ policies:
             - sunrpc.*
             - user.*
             - vm.*
-    pspapparmor:
+    psp-apparmor:
         enabled: true
         allowedProfiles:
             - runtime/default
             # - docker/default
             # - unconfined
             # - localhost/<profile-name>
-    pspselinux:
+    psp-selinux:
         enabled: true
         seLinuxContext: RunAsAny
         # allowedSELinuxOptions:
@@ -76,7 +76,7 @@ policies:
         #     role: object_r
         #     type: svirt_sandbox_file_t
         #     user: system_u
-    pspseccomp:
+    psp-seccomp:
         enabled: false
         allowedProfiles:
             - runtime/default

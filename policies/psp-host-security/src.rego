@@ -19,7 +19,7 @@ import data.lib.pods
 import data.lib.parameters
 import data.lib.exceptions
 
-policyID := "psphostsecurity"
+policyID := "psp-host-security"
 
 violation[msg] {
     not exceptions.is_exception(policyID)

@@ -23,9 +23,7 @@ get_default(object, field, _default) = output {
 }
 
 policy_annotations = return {
-  return := object.union(
-    get_default(core.resource.metadata, "annotations", {}), 
-    get_default(pods.pod.metadata, "annotations", {}))
+  return := object.union( get_default(core.resource.metadata, "annotations", {}), get_default(pods.pod.metadata, "annotations", {}))
 } else = return {
   return :=  get_default(pods.pod.metadata, "annotations", {})
   return != null

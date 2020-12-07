@@ -20,16 +20,21 @@ function decorate() {
   local mapConstraintsExpr='.policies as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
   for constraint in $(yq r $policiesFile -j | jq --raw-output -S -c "$mapConstraintsExpr"); do
     local key=$(echo $constraint | jq --raw-output '. | keys[0]')
+    # NOTE:
+    # Konstraint library is generating filenames from folder names using the dash symbol "-" as uppercase markup. Example:  file-name => FileName
+    # Policy names can be defined using dashes, so we need to strip dashes from filenames expression
+    local filename=$(sed s/-//g <<<$key)
     # decorate constraints with parameters
-    local constraintsFile=$(ls $outputPath/constraint_* | grep -i "$key.yaml")
-    local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {"${key}"} }}")
+    local constraintsFile=$(ls $outputPath/constraint_* | grep -i "$filename.yaml")
+    local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {\"${key}\"} }}")
     local constraints=$(yq r -P -j $constraintsFile | jq --raw-output -c '.')
     jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraintsFile
     # decorate constraint templates with openAPI schema properties
     local mapPropertiesExpr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
     local policyJSONPath="properties.policies.properties[${key}]"
     local properties=$(yq -j r values-schema.yaml $policyJSONPath | yq d - '**.required.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$mapPropertiesExpr")
-    local ctemplatesFile=$(ls $outputPath/template_* | grep -i "$key.yaml")
+
+    local ctemplatesFile=$(ls $outputPath/template_* | grep -i "$filename.yaml")
     local template=$(yq r -P -j $ctemplatesFile | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplatesFile
   done

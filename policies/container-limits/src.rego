@@ -8,7 +8,7 @@ import data.lib.pods
 import data.lib.exceptions
 import data.lib.parameters
 
-policyID = "containerlimits"
+policyID = "container-limits"
 
 missing(obj, field) = true {
   not obj[field]
