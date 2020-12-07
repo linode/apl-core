@@ -18,6 +18,12 @@ ARG KUBEVAL_VERSION=0.15.0
 
 ARG HELM_FILE_NAME=helm-${HELM_VERSION}-linux-amd64.tar.gz
 
+# https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
+ARG BATS_VERSION=1.2.1
+ARG BATS_ASSERT_VERSION=0.3.0
+ARG BATS_SUPPORT_VERSION=0.3.0
+ARG BATS_FILE_VERSION=0.2.0
+
 WORKDIR /
 
 RUN apt-get update -qq \
@@ -79,14 +85,19 @@ RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli
 
-# bats https://github.com/bats-core/bats-core
-RUN git clone https://github.com/bats-core/bats-core.git && \ 
-  cd bats-core && \
-  ./install.sh /usr/local && \
-  cd /usr/local/lib && \
-  git clone https://github.com/ztombol/bats-support.git && \
-  git clone https://github.com/ztombol/bats-assert.git && \ 
-  git clone https://github.com/ztombol/bats-file.git 
+# bats
+ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_VERSION} -C /tmp && /tmp/bats-core-${BATS_VERSION}/install.sh /usr/local
+
+# bats libs
+ADD https://codeload.github.com/ztombol/bats-assert/tar.gz/v${BATS_ASSERT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_ASSERT_VERSION} -C /tmp && mv /tmp/bats-assert-${BATS_ASSERT_VERSION} /usr/local/lib/bats-assert
+
+ADD https://codeload.github.com/ztombol/bats-support/tar.gz/v${BATS_SUPPORT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_SUPPORT_VERSION} -C /tmp && mv /tmp/bats-support-${BATS_SUPPORT_VERSION} /usr/local/lib/bats-support
+
+ADD https://codeload.github.com/ztombol/bats-file/tar.gz/v${BATS_FILE_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_FILE_VERSION} -C /tmp && mv /tmp/bats-file-${BATS_FILE_VERSION} /usr/local/lib/bats-file
 
 RUN chown -R app:app /home/app
 USER app
