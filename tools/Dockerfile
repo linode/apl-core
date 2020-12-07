@@ -40,6 +40,7 @@ RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
   groff \
   jq \
   yq \
+  awscli \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/app
