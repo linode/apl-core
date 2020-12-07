@@ -3,150 +3,315 @@
 type: object
 additionalProperties: false
 definitions:
-  k8sVersion:
-    type: string
-    default: '1.18'
-    enum: ['1.16', '1.17', '1.18']
-    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
-  domain:
-    type: string
-    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
-  droneGit:
+  alerts:
+    properties:
+      drone:
+        default: slack
+        enum:
+          - slack
+          - msteams
+        type: string
+      email:
+        additionalProperties: false
+        properties:
+          critical:
+            $ref: '#/definitions/email'
+            description: One or more email addresses (comma separated) for critical events.
+          nonCritical:
+            $ref: '#/definitions/email'
+            description: One or more email addresses (comma separated) for non-critical events.
+        type: object
+      groupInterval:
+        default: 5m
+        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
+        type: string
+      msteams:
+        additionalProperties: false
+        properties:
+          highPrio:
+            description: The low prio web hook
+            type: string
+          lowPrio:
+            description: The high prio web hook
+            type: string
+        type: object
+      receivers:
+        description: Notification receivers.
+        items:
+          enum:
+            - slack
+            - msteams
+            - email
+          type: string
+        type: array
+      repeatInterval:
+        default: 3h
+        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
+        type: string
+      slack:
+        additionalProperties: false
+        properties:
+          channel:
+            default: mon-otomi
+            description: The Slack channel for non-critical notifications.
+            type: string
+          channelCrit:
+            default: mon-otomi
+            description: The Slack channel for critical notifications.
+            type: string
+          url:
+            $ref: '#/definitions/url'
+            description: A Slack webhook URL.
+        type: object
     type: object
+  annotations:
+    $ref: '#/definitions/labelsAnnotations'
+    description: A set of annotations.
+  azureMonitor:
+    properties:
+      appInsightsApiKey:
+        description: An Azure AppInsights client secret (defaults to clientSecret)
+        type: string
+      appInsightsAppId:
+        description: An Azure AppInsights client id (defaults to clientId)
+        type: string
+      clientId:
+        description: An Azure client id
+        type: string
+      clientSecret:
+        description: An Azure client secret
+        type: string
+      logAnalyticsClientId:
+        description: An Azure client secret (defaults to clientSecret)
+        type: string
+      logAnalyticsClientSecret:
+        description: An Azure client secret (defaults to clientSecret)
+        type: string
+      logAnalyticsTenantId:
+        description: An Azure tenant id (defaults to tenantId)
+        type: string
+      logAnalyticsWorkspace:
+        description: An Azure monitor log analytics workspace
+        type: string
+    type: object
+  cloud:
+    description: A common cloud configuration
+    properties:
+      clusters:
+        additionalProperties: false
+        patternProperties:
+          '^[a-z-]+$':
+            $ref: '#/definitions/cluster'
+      domain:
+        $ref: '#/definitions/domain'
+    required:
+      - domain
+      - clusters
+    type: object
+  cluster:
+    additionalProperties: false
+    properties:
+      apiName:
+        description: Only used for API/UI to show in app.
+        type: string
+      apiServer:
+        description: Used by kubectl for local deployment to target cluster.
+        type: string
+      dnsProvider:
+        description: Only set it if you want DNS provider to be different than cloud provider ot this cluster.
+        enum:
+          - azure
+          - google
+          - aws
+        type: string
+      dnsZones:
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
+        items:
+          $ref: '#/definitions/domain'
+        type: array
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
+      enabled:
+        default: true
+        type: boolean
+      entrypoint:
+        description: A Kubernetes API public IP address (onprem only)
+        type: string
+      k8sVersion:
+        $ref: '#/definitions/k8sVersion'
+      otomiVersion:
+        default: latest
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
+        type: string
+      region:
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
+        type: string
+      vpcID:
+        description: AWS only. If provided will override autodiscovery from metadata.
+        type: string
+    required:
+      - apiServer
+      - k8sVersion
+      - otomiVersion
+      - region
+    type: object
+  cpuQuantity:
+    description: 'Amount of cores, or slice of cpu in millis.'
+    examples:
+      - '1'
+      - 200m
+    pattern: '^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$'
+    type: string
+  domain:
+    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+    type: string
+  droneGit:
     properties:
       clientID:
         type: string
       clientSecretValue:
         type: string
+    type: object
   email:
+    pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
-    pattern: ^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$
+  env:
+    pattern: '^[a-zA-Z0-9_]*$'
+    type: string
   hostPort:
+    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
-    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$
-  registry:
+  idName:
+    description: A lowercase name that starts with a letter and may contain dashes.
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
     type: string
-    pattern: ^[a-z0-9]+(?:[._-][a-z0-9]+)*$
-  repository:
+  image:
+    additionalProperties: false
+    properties:
+      pullPolicy:
+        default: IfNotPresent
+        enum:
+          - IfNotPresent
+          - Always
+        type: string
+      repository:
+        $ref: '#/definitions/repository'
+      tag:
+        type: string
+    title: Container image
+    type: object
+  imageSimple:
+    additionalProperties: false
+    properties:
+      pullPolicy:
+        default: IfNotPresent
+        enum:
+          - IfNotPresent
+          - Always
+        type: string
+      tag:
+        type: string
+    title: Container image
+    type: object
+  k8sVersion:
+    default: '1.18'
+    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
+    enum:
+      - '1.16'
+      - '1.17'
+      - '1.18'
     type: string
-    pattern: ^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$
-    description: A container image repository
+  labels:
+    $ref: '#/definitions/labelsAnnotations'
+    description: A set of labels.
+  labelsAnnotations:
+    additionalProperties: false
+    patternProperties:
+      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
+      : pattern: '^((.){1,253}\/)?(.){1,63}$'
+        type: string
+    type: object
   memoryQuantity:
-    type: string
-    pattern: ^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
     description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki
     examples:
       - 1Mi
       - 0.5M
-  cpuQuantity:
+    pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
-    pattern: ^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$
-    description: Amount of cores, or slice of cpu in millis.
-    examples:
-      - '1'
-      - 200m
-  env:
-    type: string
-    pattern: ^[a-zA-Z0-9_]*$
-  labelsAnnotations:
-    type: object
-    additionalProperties: false
-    patternProperties:
-      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
-      : type: string
-        pattern: ^((.){1,253}\/)?(.){1,63}$
-  annotations:
-    '$ref': '#/definitions/labelsAnnotations'
-    description: A set of annotations.
-  labels:
-    '$ref': '#/definitions/labelsAnnotations'
-    description: A set of labels.
-  idName:
-    type: string
-    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
-    description: A lowercase name that starts with a letter and may contain dashes.
-  imageSimple:
-    title: Container image
-    type: object
-    additionalProperties: false
-    properties:
-      pullPolicy:
-        type: string
-        enum: [IfNotPresent, Always]
-        default: IfNotPresent
-      tag:
-        type: string
-  image:
-    title: Container image
-    type: object
-    additionalProperties: false
-    properties:
-      pullPolicy:
-        type: string
-        enum: [IfNotPresent, Always]
-        default: IfNotPresent
-      repository:
-        '$ref': '#/definitions/repository'
-      tag:
-        type: string
   portNumber:
-    type: number
-    minimum: 80
     maximum: 32768
+    minimum: 80
+    type: number
+  registry:
+    pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
+    type: string
+  repoUrl:
+    description: Path to a remote git repo without protocol. Will use https to access.
+    pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
+    type: string
+  repository:
+    description: A container image repository
+    pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
+    type: string
   resource:
-    type: object
     additionalProperties: false
     properties:
       cpu:
-        '$ref': '#/definitions/cpuQuantity'
+        $ref: '#/definitions/cpuQuantity'
       memory:
-        '$ref': '#/definitions/memoryQuantity'
-    required: [cpu, memory]
+        $ref: '#/definitions/memoryQuantity'
+    required:
+      - cpu
+      - memory
+    type: object
   resources:
-    title: Pod resources
-    description: Compute resources for containers
-    type: object
     additionalProperties: false
+    description: Compute resources for containers
     properties:
-      requests:
-        description: Requested resources (guaranteed)
-        '$ref': '#/definitions/resource'
       limits:
+        $ref: '#/definitions/resource'
         description: Requested resources (best effort)
-        '$ref': '#/definitions/resource'
-  secret:
+      requests:
+        $ref: '#/definitions/resource'
+        description: Requested resources (guaranteed)
+    title: Pod resources
     type: object
+  scaling:
+    description: Min and max nr of replicas
     properties:
-      id:
-        type: string
-        readOnly: true
-      name:
-        '$ref': '#/definitions/idName'
+      maxReplicas:
+        type: number
+      minReplicas:
+        type: number
+    type: object
+  secret:
     oneOf:
-      - title: Docker Registry
-        properties:
-          type:
-            type: string
-            enum: [docker-registry]
-            default: docker-registry
-          server:
-            '$ref': '#/definitions/registry'
-          username:
-            type: string
+      - properties:
           password:
             type: string
-        required: [server, username, password]
-      - title: Generic
-        properties:
+          server:
+            $ref: '#/definitions/registry'
           type:
+            default: docker-registry
+            enum:
+              - docker-registry
             type: string
-            enum: [generic]
-            default: generic
+          username:
+            type: string
+        required:
+          - server
+          - username
+          - password
+        title: Docker Registry
+      - properties:
           entries:
-            type: array
             description: Key names and their values
             items:
-              type: object
               properties:
                 key:
                   description: Key or file name
@@ -156,360 +321,238 @@ definitions:
                   description: Value to be encrypted
                   example: password=yoursecretpassword
                   type: string
-              required: [key, value]
-        required: [entries]
-      - title: TLS
-        properties:
+              required:
+                - key
+                - value
+              type: object
+            type: array
           type:
+            default: generic
+            enum:
+              - generic
             type: string
-            enum: [tls]
-            default: tls
+        required:
+          - entries
+        title: Generic
+      - properties:
+          ca:
+            description: The CA certificate content
+            type: string
           crt:
             description: The PEM encoded public key certificate content
             type: string
           key:
             description: The private key certificate content
             type: string
-          ca:
-            description: The CA certificate content
+          type:
+            default: tls
+            enum:
+              - tls
             type: string
-        required: [crt, key]
+        required:
+          - crt
+          - key
+        title: TLS
+    properties:
+      id:
+        readOnly: true
+        type: string
+      name:
+        $ref: '#/definitions/idName'
     required:
       - name
       - type
-  url:
-    type: string
-    pattern: ^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$
-  repoUrl:
-    type: string
-    description: Path to a remote git repo without protocol. Will use https to access.
-    pattern: ^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$
-  alerts:
     type: object
-    properties:
-      drone:
-        type: string
-        enum:
-          - slack
-          - msteams
-        default: slack
-      groupInterval:
-        type: string
-        default: 5m
-        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
-      repeatInterval:
-        type: string
-        default: 3h
-        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
-      receivers:
-        type: array
-        items:
-          type: string
-          enum:
-            - slack
-            - msteams
-            - email
-        description: Notification receivers.
-      slack:
-        type: object
-        additionalProperties: false
-        properties:
-          url:
-            '$ref': '#/definitions/url'
-            description: A Slack webhook URL.
-          channel:
-            type: string
-            default: mon-otomi
-            description: 'The Slack channel for non-critical notifications.'
-          channelCrit:
-            type: string
-            default: mon-otomi
-            description: 'The Slack channel for critical notifications.'
-      msteams:
-        type: object
-        additionalProperties: false
-        properties:
-          highPrio:
-            type: string
-            description: The low prio web hook
-          lowPrio:
-            type: string
-            description: The high prio web hook
-      email:
-        type: object
-        additionalProperties: false
-        properties:
-          nonCritical:
-            description: One or more email addresses (comma separated) for non-critical events.
-            '$ref': '#/definitions/email'
-          critical:
-            description: One or more email addresses (comma separated) for critical events.
-            '$ref': '#/definitions/email'
-  azureMonitor:
-    type: object
-    properties:
-      clientId:
-        type: string
-        description: An Azure client id
-      clientSecret:
-        type: string
-        description: An Azure client secret
-      appInsightsAppId:
-        type: string
-        description: An Azure AppInsights client id (defaults to clientId)
-      appInsightsApiKey:
-        type: string
-        description: An Azure AppInsights client secret (defaults to clientSecret)
-      logAnalyticsTenantId:
-        type: string
-        description: An Azure tenant id (defaults to tenantId)
-      logAnalyticsClientId:
-        type: string
-        description: An Azure client secret (defaults to clientSecret)
-      logAnalyticsClientSecret:
-        type: string
-        description: An Azure client secret (defaults to clientSecret)
-      logAnalyticsWorkspace:
-        type: string
-        description: An Azure monitor log analytics workspace
-  cloud:
-    description: A common cloud configuration
-    type: object
-    properties:
-      domain:
-        '$ref': '#/definitions/domain'
-      clusters:
-        patternProperties:
-          '^[a-z-]+$':
-            '$ref': '#/definitions/cluster'
-        additionalProperties: false
-    required: [domain, clusters]
-  cluster:
-    type: object
-    additionalProperties: false
-    properties:
-      enabled:
-        type: boolean
-        default: true
-      apiName:
-        type: string
-        description: Only used for API/UI to show in app.
-      apiServer:
-        type: string
-        description: Used by kubectl for local deployment to target cluster.
-      dnsProvider:
-        type: string
-        description: Only set it if you want DNS provider to be different than cloud provider ot this cluster.
-        enum: [azure, google, aws]
-      dnsZones:
-        type: array
-        items:
-          '$ref': '#/definitions/domain'
-        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
-      domain:
-        '$ref': '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
-      entrypoint:
-        type: string
-        description: A Kubernetes API public IP address (onprem only)
-      k8sVersion:
-        '$ref': '#/definitions/k8sVersion'
-      otomiVersion:
-        type: string
-        default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-      region:
-        type: string
-        description: Dependent on provider.
-        examples:
-          - europe-west4
-          - eu-central-1
-          - westeurope
-      vpcID:
-        type: string
-        description: AWS only. If provided will override autodiscovery from metadata.
-    required: [apiServer, k8sVersion, otomiVersion, region]
   team:
-    type: object
     additionalProperties: false
     properties:
       alerts:
-        '$ref': '#/definitions/alerts'
+        $ref: '#/definitions/alerts'
       azureMonitor:
-        '$ref': '#/definitions/azureMonitor'
-      id:
-        '$ref': '#/definitions/idName'
-        description: Must be the same as the name.
+        $ref: '#/definitions/azureMonitor'
       clusters:
-        type: array
         items:
           type: string
+        type: array
+      id:
+        $ref: '#/definitions/idName'
+        description: Must be the same as the name.
       oidc:
-        type: object
         additionalProperties: false
         properties:
           groupMapping:
-            type: string
             description: IDP group id to map onto this team.
+            type: string
+        type: object
       password:
-        type: string
         description: Will be used to separate team resources.
+        type: string
       secrets:
-        type: array
         items:
-          '$ref': '#/definitions/secret'
+          $ref: '#/definitions/secret'
+        type: array
       services:
-        type: array
         items:
-          type: object
           additionalProperties: false
           properties:
-            id:
-              type: string
-              description: Unique identifier created by and used in API. Optional.
-            isPublic:
-              type: boolean
-              description: If true then no SSO will be used.
-              default: false
-            internal:
-              type: boolean
-              description: If true, service is not going to be exposed to the public domain
-              default: false
-            domain:
-              type: string
-              description: A custom service domain name
-            name:
-              '$ref': '#/definitions/idName'
-              description: Short name. Will be used for generation of knative service name, as well as service URL.
-            ownHost:
-              type: boolean
-              description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
-              default: true
-              # deprecated: true
-            ksvc:
-              type: object
-              description: Details for a knative service that will be deployed and operated.
+            authz:
               additionalProperties: false
+              description: Identifies a workload to authorize.
               properties:
-                predeployed:
-                  description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
-                  type: boolean
+                forwardOriginalToken:
                   default: false
-                scaleToZero:
-                  title: Scale to zero
-                  description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
+                  description: If true istio will forward the bearer token instead of removing it from the headers.
                   type: boolean
-                  default: false
-                image:
-                  '$ref': '#/definitions/image'
-                secrets:
-                  type: array
-                  title: Secrets
-                  nullable: true
-                  items:
-                    type: object
-                    additionalProperties: false
-                    properties:
-                      name:
-                        type: string
-                      entries:
-                        title: Entries
-                        type: array
-                        items:
-                          type: string
-                        uniqueItems: true
-                    required: [name]
-                env:
-                  title: Environment variables
-                  # description: Environment variables for containers
-                  type: array
-                  nullable: true
-                  items:
-                    type: object
-                    additionalProperties: false
-                    properties:
-                      name:
-                        '$ref': '#/definitions/env'
-                      value:
-                        type: string
-                        maxLength: 131072
-                    required: [name, value]
-                resources:
-                  '$ref': '#/definitions/resources'
+                workload:
+                  $ref: '#/definitions/labelsAnnotations'
+              type: object
+            domain:
+              description: A custom service domain name
+              type: string
+            forwardPath:
+              default: false
+              description: "Wether to forward the path into the service, or 'terminate' it."
+              type: boolean
+            id:
+              description: Unique identifier created by and used in API. Optional.
+              type: string
+            internal:
+              default: false
+              description: 'If true, service is not going to be exposed to the public domain'
+              type: boolean
+            isPublic:
+              default: false
+              description: If true then no SSO will be used.
+              type: boolean
+            isShared:
+              description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+              type: boolean
+            ksvc:
+              additionalProperties: false
+              description: Details for a knative service that will be deployed and operated.
+              properties:
                 annotations:
-                  '$ref': '#/definitions/annotations'
+                  $ref: '#/definitions/annotations'
                 autoCD:
-                  title: Continuous delivery pipeline
-                  description: NOT IN USE YET! Deploys new images based on a tagging strategy.
-                  type: object
                   additionalProperties: false
+                  description: NOT IN USE YET! Deploys new images based on a tagging strategy.
                   oneOf:
-                    - title: 'Off'
+                    - additionalProperties: false
                       nullable: true
-                      additionalProperties: false
-                    - title: Semver versioning
-                      nullable: true
+                      title: 'Off'
+                    - nullable: true
                       properties:
                         additionalProperties: false
-                        tagMatcher:
-                          type: string
-                          enum: [semver]
-                          default: semver
                         semver:
+                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
+                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
                           title: Semver version pattern
                           type: string
-                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
-                          description:
-                            'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.:
-                            PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
-                      required: [semver]
-                    - title: Glob pattern matching
-                      properties:
                         tagMatcher:
+                          default: semver
+                          enum:
+                            - semver
                           type: string
-                          enum: [glob]
-                          default: glob
+                      required:
+                        - semver
+                      title: Semver versioning
+                    - additionalProperties: false
+                      properties:
                         glob:
+                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
+                          example: master-v1.*.*
                           title: Glob string pattern
                           type: string
-                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
-                          example: 'master-v1.*.*'
-                      required: [glob]
-                      additionalProperties: false
-            svc:
-              '$ref': '#/definitions/idName'
-              description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
-            isShared:
+                        tagMatcher:
+                          default: glob
+                          enum:
+                            - glob
+                          type: string
+                      required:
+                        - glob
+                      title: Glob pattern matching
+                  title: Continuous delivery pipeline
+                  type: object
+                env:
+                  items:
+                    additionalProperties: false
+                    properties:
+                      name:
+                        $ref: '#/definitions/env'
+                      value:
+                        maxLength: 131072
+                        type: string
+                    required:
+                      - name
+                      - value
+                    type: object
+                  nullable: true
+                  title: Environment variables
+                  type: array
+                image:
+                  $ref: '#/definitions/image'
+                predeployed:
+                  default: false
+                  description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
+                  type: boolean
+                resources:
+                  $ref: '#/definitions/resources'
+                scaleToZero:
+                  default: false
+                  description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
+                  title: Scale to zero
+                  type: boolean
+                secrets:
+                  items:
+                    additionalProperties: false
+                    properties:
+                      entries:
+                        items:
+                          type: string
+                        title: Entries
+                        type: array
+                        uniqueItems: true
+                      name:
+                        type: string
+                    required:
+                      - name
+                    type: object
+                  nullable: true
+                  title: Secrets
+                  type: array
+              type: object
+            name:
+              $ref: '#/definitions/idName'
+              description: 'Short name. Will be used for generation of knative service name, as well as service URL.'
+            ownHost:
+              default: true
+              description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
               type: boolean
-              description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
             paths:
-              type: array
               items:
-                type: string
                 description: |
                   Path mapping to only let this path go to the service. This allows micro services to operate on the same domain and port.
                   When left empty all paths will go to this service.
-            forwardPath:
-              type: boolean
-              description: Wether to forward the path into the service, or 'terminate' it.
-              default: false
+                type: string
+              type: array
             port:
-              '$ref': '#/definitions/portNumber'
-              description: Points to the backing k8s service (only used when 'svc' is set).
+              $ref: '#/definitions/portNumber'
               default: 80
-            authz:
-              type: object
-              description: Identifies a workload to authorize.
-              additionalProperties: false
-              properties:
-                forwardOriginalToken:
-                  type: boolean
-                  description: If true istio will forward the bearer token instead of removing it from the headers.
-                  default: false
-                workload:
-                  '$ref': '#/definitions/labelsAnnotations'
-          required: [id, name]
-    required: [id]
+              description: Points to the backing k8s service (only used when 'svc' is set).
+            svc:
+              $ref: '#/definitions/idName'
+              description: 'When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.'
+          required:
+            - id
+            - name
+          type: object
+        type: array
+    required:
+      - id
+    type: object
+  url:
+    pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
+    type: string
 properties:
   azure:
     description: Azure specific configuration
@@ -774,11 +817,6 @@ properties:
             type: array
             items:
               type: string
-      gatekeeper:
-        type: object
-        properties:
-          enabled:
-            type: boolean
       gatekeeper-operator:
         type: object
         additionalProperties: false
@@ -813,6 +851,25 @@ properties:
                         type: string
                   type:
                     type: string
+          resources:
+            additionalProperties: false
+            properties:
+              adapter:
+                '$ref': '#/definitions/resources'
+              chartmuseum:
+                '$ref': '#/definitions/resources'
+              clair:
+                '$ref': '#/definitions/resources'
+              controller:
+                '$ref': '#/definitions/resources'
+              core:
+                '$ref': '#/definitions/resources'
+              database:
+                '$ref': '#/definitions/resources'
+              jobservice:
+                '$ref': '#/definitions/resources'
+              portal:
+                '$ref': '#/definitions/resources'
           secretKey:
             type: string
       ingress-azure:
@@ -870,122 +927,92 @@ properties:
         additionalProperties: false
         properties:
           addonComponents:
-            type: object
             additionalProperties: false
             properties:
               grafana:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
+                type: object
               kiali:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
+                type: object
               prometheus:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
+                type: object
               tracing:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-          gateways:
+                type: object
             type: object
-            additionalProperties: false
+          autoscaling:
             properties:
-              istio-egressgateway:
-                type: object
-                additionalProperties: false
-                properties:
-                  resources:
-                    '$ref': '#/definitions/resources'
-              istio-ingressgateway:
-                type: object
-                additionalProperties: false
-                properties:
-                  resources:
-                    '$ref': '#/definitions/resources'
-          global:
+              egressgateway:
+                $ref: '#/definitions/scaling'
+              gateway-local:
+                $ref: '#/definitions/scaling'
+              ingressgateway:
+                $ref: '#/definitions/scaling'
+              ingressgateway-auth:
+                $ref: '#/definitions/scaling'
+              pilot:
+                $ref: '#/definitions/scaling'
             type: object
+          egressGateway:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: false
+          global:
             additionalProperties: false
             properties:
               logging:
-                type: object
                 properties:
                   level:
                     type: string
+                type: object
               mtls:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
+                type: object
               proxy:
-                type: object
                 additionalProperties: false
                 properties:
                   resources:
-                    '$ref': '#/definitions/resources'
+                    $ref: '#/definitions/resources'
+                type: object
               sds:
-                type: object
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-          mixer:
+                type: object
             type: object
-            additionalProperties: false
+          resources:
             properties:
-              policy:
-                type: object
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-                  resources:
-                    '$ref': '#/definitions/resources'
-              telemetry:
-                type: object
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-                  resources:
-                    type: object
-                    additionalProperties: false
-                    properties:
-                      limits:
-                        type: object
-                        additionalProperties: false
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-                      requests:
-                        type: object
-                        additionalProperties: false
-                        properties:
-                          cpu:
-                            type: string
-                          memory:
-                            type: string
-          pilot:
+              egressgateway:
+                $ref: '#/definitions/resources'
+              gateway-local:
+                $ref: '#/definitions/resources'
+              ingressgateway:
+                $ref: '#/definitions/resources'
+              ingressgateway-auth:
+                $ref: '#/definitions/resources'
+              pilot:
+                $ref: '#/definitions/resources'
             type: object
-            additionalProperties: false
-            properties:
-              resources:
-                '$ref': '#/definitions/resources'
-              traceSampling:
-                type: number
       kube-descheduler:
         type: object
         additionalProperties: false
@@ -1014,6 +1041,13 @@ properties:
                 type: string
           realm:
             type: string
+          resources:
+            additionalProperties: false
+            properties:
+              keycloak:
+                '$ref': '#/definitions/resources'
+              postgresql:
+                '$ref': '#/definitions/resources'
           theme:
             type: string
             enum: [default, otomi]
@@ -1085,6 +1119,13 @@ properties:
                 type: string
           image:
             '$ref': '#/definitions/imageSimple'
+          resources:
+            additionalProperties: false
+            properties:
+              api:
+                '$ref': '#/definitions/resources'
+              tools:
+                '$ref': '#/definitions/resources'
           tools:
             type: object
             additionalProperties: false
@@ -1116,12 +1157,41 @@ properties:
             properties:
               storageSize:
                 type: string
+          resources:
+            additionalProperties: false
+            properties:
+              prometheus:
+                '$ref': '#/definitions/resources'
+              grafana:
+                '$ref': '#/definitions/resources'
+      oauth2-proxy-redis:
+        type: object
+        additionalProperties: false
+        properties:
+          resources:
+            additionalProperties: false
+            properties:
+              master:
+                '$ref': '#/definitions/resources'
+              sentinel:
+                '$ref': '#/definitions/resources'
+              slave:
+                '$ref': '#/definitions/resources'
       redis-shared:
         type: object
         additionalProperties: false
         properties:
           enabled:
             type: boolean
+          resources:
+            additionalProperties: false
+            properties:
+              master:
+                '$ref': '#/definitions/resources'
+              sentinel:
+                '$ref': '#/definitions/resources'
+              slave:
+                '$ref': '#/definitions/resources'
       sitespeed:
         type: object
         additionalProperties: false

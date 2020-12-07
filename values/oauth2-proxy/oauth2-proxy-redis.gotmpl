@@ -1,16 +1,16 @@
 {{- $v := .Environment.Values }}
-{{- $redis := $v.charts | get "redis" dict }}
+{{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
 
 cluster:
-  enabled: false
+  enabled: {{ $r | get "cluster.enabled" false }}
 persistence:
   size: 1Gi
 usePassword: false
 
 sentinel:
   resources:
-  {{- if (hasKey $redis "resources.sentinel") }}
-    {{- $redis.resources.sentinel | toYaml | nindent 4 }}
+  {{- with $r | get "resources.sentinel" nil }}
+    {{- toYaml . | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m
@@ -23,8 +23,8 @@ sentinel:
 master:
   priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "resources.master") }}
-    {{- $redis.resources.master | toYaml | nindent 4 }}
+  {{- with $r | get "resources.master" nil }}
+    {{- toYaml . | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m
@@ -37,8 +37,8 @@ master:
 slave:
   priorityClassName: "otomi-critical"
   resources:
-  {{- if (hasKey $redis "resources.slave") }}
-    {{- $redis.resources.slave | toYaml | nindent 4 }}
+  {{- with $r | get "resources.slave" nil }}
+    {{- toYaml . | nindent 4 }}
   {{- else }}
     requests:
       cpu: 200m

@@ -35,8 +35,8 @@ keycloak:
   priorityClassName: "otomi-critical"
   proxyAddressForwarding: true
   resources:
-    {{- if (hasKey $k "resources.keycloak") }}
-      {{- $k.resources.keycloak | toYaml | nindent 4 }}
+    {{- with $k | get "resources.keycloak" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
       cpu: 1
@@ -94,8 +94,8 @@ postgresql:
       additionalLabels:
         prometheus: po-prometheus
   resources:
-    {{- if (hasKey $k "resources.postgresql") }}
-      {{- $k.resources.postgresql | toYaml | nindent 4 }}
+    {{- with $k | get "resources.postgresql" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
       cpu: 1

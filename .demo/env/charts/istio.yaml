@@ -9,63 +9,55 @@ charts:
                 enabled: true
             tracing:
                 enabled: true
-        gateways:
-            istio-egressgateway:
-                resources:
-                    limits:
-                        cpu: 200m
-                        memory: 256Mi
-                    requests:
-                        cpu: 20m
-                        memory: 80Mi
-            istio-ingressgateway:
-                resources:
-                    limits:
-                        cpu: 200m
-                        memory: 256Mi
-                    requests:
-                        cpu: 20m
-                        memory: 80Mi
+        autoscaling:
+            ingressgateway:
+                maxReplicas: 5
+                minReplicas: 1
+            ingressgateway-auth:
+                maxReplicas: 5
+                minReplicas: 1
+            pilot:
+                maxReplicas: 5
+                minReplicas: 1
+            proxy:
+                maxReplicas: 5
+                minReplicas: 1
+        egressGateway:
+            enabled: false
         global:
             logging:
                 level: default:debug
             mtls:
                 enabled: false
-            proxy:
-                resources:
-                    limits:
-                        cpu: 200m
-                        memory: 256Mi
-                    requests:
-                        cpu: 20m
-                        memory: 80Mi
             sds:
                 enabled: true
-        mixer:
-            policy:
-                enabled: true
-                resources:
-                    limits:
-                        cpu: 100m
-                        memory: 100Mi
-                    requests:
-                        cpu: 10m
-                        memory: 100Mi
-            telemetry:
-                enabled: true
-                resources:
-                    limits:
-                        cpu: 100m
-                        memory: 100Mi
-                    requests:
-                        cpu: 50m
-                        memory: 100Mi
-        pilot:
-            resources:
+        resources:
+            ingressgateway:
+                requests:
+                    memory: 128Mi
+                    cpu: 100m
+                limits:
+                    memory: 256Mi
+                    cpu: 500m
+            ingressgateway-auth:
+                requests:
+                    memory: 128Mi
+                    cpu: 100m
+                limits:
+                    memory: 256Mi
+                    cpu: 500m
+            pilot:
                 limits:
                     cpu: 100m
-                    memory: 200Mi
+                    memory: 256Mi
                 requests:
                     cpu: 10m
                     memory: 100Mi
-            traceSampling: 100
+            proxy:
+                resources:
+                    limits:
+                        cpu: 500m
+                        memory: 1Gi
+                    requests:
+                        cpu: 20m
+                        memory: 80Mi
