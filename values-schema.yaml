@@ -774,7 +774,7 @@ properties:
             type: array
             items:
               type: string
-      gatekeeper:
+      gatekeeper-operator:
         type: object
         additionalProperties: true
         properties:

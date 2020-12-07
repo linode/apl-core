@@ -31,14 +31,14 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: gatekeeper
-    installed: {{ $c | get "gatekeeper.enabled" false }}
+  - name: gatekeeper-operator
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
     labels:
       pkg: gatekeeper
     <<: *default
-  - name: gatekeeper-artifacts
-    installed: {{ $c | get "gatekeeper.enabled" false }}
+  - name: gatekeeper-operator-artifacts
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
     labels:
       pkg: gatekeeper
