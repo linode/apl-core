@@ -53,8 +53,8 @@ prometheus:
       matchLabels:
         prometheus: system
     resources:
-      {{- if (hasKey $p "resources.prometheus") }}
-        {{- $p.resources.prometheus | toYaml | nindent 6 }}
+      {{- with $p | get "resources.prometheus" nil }}
+        {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
         cpu: 100m
@@ -102,8 +102,8 @@ grafana:
   image:
     tag: 7.1.5
   resources:
-    {{- if (hasKey $p "resources.grafana") }}
-      {{- $p.resources.grafana | toYaml | nindent 4 }}
+    {{- with $p | get "resources.grafana" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       memory: 128Mi
@@ -144,7 +144,7 @@ grafana:
       {{- else }}
       url: http://loki:3100
       {{- end }}
-    {{- with $v | get "azure.monitor" nil }}
+    {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
     {{- end }}
     {{- if $c.sitespeed.enabled }}

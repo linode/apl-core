@@ -15,4 +15,6 @@ releases:
   - name: keycloak
     installed: {{ $c | get "keycloak.enabled" true }}
     namespace: keycloak
+    labels:
+      pkg: keycloak
     <<: *default

@@ -33,8 +33,8 @@ core:
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
   resources:
-    {{- if (hasKey $h "resources.core") }}
-      {{- $h.resources.core | toYaml | nindent 4 }}
+    {{- with $h | get "resources.core" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       memory: 256Mi
@@ -46,8 +46,8 @@ core:
 jobservice:
   secret: {{ $h | get "jobservice.secret" "mnf9adfgjwr23m4d" }}
   resources:
-    {{- if (hasKey $h "resources.jobservice") }}
-      {{- $h.resources.jobservice | toYaml | nindent 2 }}
+    {{- with $h | get "resources.jobservice" nil }}
+      {{- toYaml . | nindent 2 }}
     {{- else }}
     requests:
       memory: 256Mi
@@ -156,8 +156,8 @@ registry:
       repository: goharbor/harbor-registryctl
       tag: v2.0.0
     resources:
-      {{- if (hasKey $h "resources.controller") }}
-        {{- $h.resources.controller | toYaml | nindent 6 }}
+      {{- with $h | get "resources.controller" nil }}
+        {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
         memory: 256Mi
@@ -189,8 +189,8 @@ database:
       tag: v2.0.0
     # password: "sd83jf7s"
     resources:
-      {{- if (hasKey $h "resources.database") }}
-        {{- $h.resources.database | toYaml | nindent 6 }}
+      {{- with $h | get "resources.database" nil }}
+        {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
         memory: 256Mi
@@ -205,8 +205,8 @@ clair:
     policy.otomi.io/ignore: pspallowedusers
   clair:
     resources:
-      {{- if (hasKey $h "resources.clair") }}
-        {{- $h.resources.clair | toYaml | nindent 6 }}
+      {{- with $h | get "resources.clair" nil }}
+        {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
         cpu: 100m 
@@ -217,8 +217,8 @@ clair:
       {{- end }}
   adapter:
     resources:
-      {{- if (hasKey $h "resources.adapter") }}
-        {{- $h.resources.adapter | toYaml | nindent 6 }}
+      {{- with $h | get "resources.adapter" nil }}
+        {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
         cpu: 100m 
@@ -230,8 +230,8 @@ clair:
 
 chartmuseum:
   resources:
-    {{- if (hasKey $h "resources.chartmuseum") }}
-      {{- $h.resources.chartmuseum | toYaml | nindent 4 }}
+    {{- with $h | get "resources.chartmuseum" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 100m 
@@ -245,8 +245,8 @@ chartmuseum:
 
 portal:
   resources:
-    {{- if (hasKey $h "resources.portal") }}
-      {{- $h.resources.portal | toYaml | nindent 4 }}
+    {{- with $h | get "resources.portal" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 100m 
