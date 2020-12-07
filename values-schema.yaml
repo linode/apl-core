@@ -819,7 +819,7 @@ properties:
               type: string
       gatekeeper-operator:
         type: object
-        additionalProperties: true
+        additionalProperties: false
         properties:
           enabled:
             type: boolean
