@@ -28,7 +28,7 @@ serviceMonitor:
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") | nindent 2 }}
 
 pipelineStages:
   - docker: {}

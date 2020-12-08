@@ -3,10 +3,10 @@
 {{- $activatePolicies := list -}}
 
 {{- range $i, $policyID := . }}
-    {{- $enabled := ($policies | get $policyID) | get "enabled" false }}
-    {{ if $enabled }} {{ $activatePolicies = append $activatePolicies $policyID }}  {{ end }} 
+{{- $enabled := ($policies | get $policyID) | get "enabled" false }}
+{{- if $enabled }} {{ $activatePolicies = append $activatePolicies $policyID }}  {{ end -}} 
 {{ end -}} 
 
 {{- with $activatePolicies }}
-  policy.otomi.io/ignore: {{ tpl $joinTpl (dict "list" . "sep" ",") | quote }}
+policy.otomi.io/ignore: {{ tpl $joinTpl (dict "list" . "sep" ",") | quote }}
 {{- end }}

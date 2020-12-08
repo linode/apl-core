@@ -17,4 +17,4 @@ resources:
     memory: 64Mi
 
 podAnnotations:
-  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}

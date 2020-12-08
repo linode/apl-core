@@ -64,4 +64,4 @@ tasks:
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
     annotations:
-      {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 6 }}

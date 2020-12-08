@@ -4,4 +4,4 @@
 hub: istio
 tag: {{ $i | get "version" "1.6.5" }}
 podAnnotations: 
-  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}

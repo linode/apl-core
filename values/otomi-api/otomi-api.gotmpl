@@ -61,4 +61,4 @@ tools:
 
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  {{ tpl $addIgnorePolicyAnnotation (list "banned-image-tags") }}
+{{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 2 }}

@@ -11,4 +11,4 @@ deployments:
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
     annotations:
-      {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 6}}

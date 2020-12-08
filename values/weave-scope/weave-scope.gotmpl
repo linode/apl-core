@@ -10,7 +10,7 @@ global:
 
 weave-scope-frontend:
   annotations:
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   resources:
     requests:
       cpu: 200m
@@ -21,11 +21,11 @@ weave-scope-frontend:
 
 weave-scope:
   annotations:
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
     
 weave-scope-agent:
   annotations:
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-allowed-users" "psp-privileged" "psp-host-security" "psp-host-networking-ports") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-allowed-users" "psp-privileged" "psp-host-security" "psp-host-networking-ports") | nindent 4 }}
   resources:
     requests:
       cpu: 200m
@@ -36,7 +36,7 @@ weave-scope-agent:
 
 weave-scope-cluster-agent:
   annotations:
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   resources:
     requests:
       cpu: 200m

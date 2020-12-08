@@ -51,7 +51,7 @@ resources:
 
 # disable policies
 podAnnotations:
-  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}
 
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}

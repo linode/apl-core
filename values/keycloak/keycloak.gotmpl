@@ -83,11 +83,11 @@ keycloak:
     - name: theme
       mountPath: /themes
   podAnnotations: 
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 4 }}
 
 postgresql:
   commonAnnotations: 
-    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
+{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 4}}
 
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}

@@ -24,4 +24,4 @@ env:
   DRONE_DEBUG: {{ $d | get "debug" false }}
 
 podAnnotations:
-  {{ tpl $addIgnorePolicyAnnotation (list "banned-image-tags") }}
+{{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 2 }}
