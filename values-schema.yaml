@@ -4,7 +4,7 @@ type: object
 additionalProperties: false
 definitions:
   expertValues:
-    description: Values for expert mode, which overwrite all previously defined settings for a given chart
+    description: Define custom configuration for a given chart. Values defined in this section take priority over all other chart values.
     type: object
   alerts:
     properties:
@@ -1130,6 +1130,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _expert:
+            '$ref': '#/definitions/expertValues'
           git:
             type: object
             additionalProperties: false
@@ -1168,6 +1170,8 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          _expert:
+            '$ref': '#/definitions/expertValues'
           image:
             '$ref': '#/definitions/imageSimple'
       prometheus-operator:
