@@ -1,5 +1,6 @@
 charts:
     sitespeed:
+        _expert: {}
         enabled: false
         pvc:
             graphite: 2Gi

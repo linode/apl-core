@@ -1,3 +1,4 @@
 charts:
     redis-shared:
+        _expert: {}
         enabled: false

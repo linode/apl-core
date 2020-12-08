@@ -1,5 +1,6 @@
 charts:
     cert-manager:
+        _expert: {}
         email: admins@redkubes.com
         stage: staging
         provider:

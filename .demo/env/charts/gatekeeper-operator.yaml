@@ -1,3 +1,4 @@
 charts:
     gatekeeper-operator:
+        _expert: {}
         enabled: false

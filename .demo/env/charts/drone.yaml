@@ -1,5 +1,6 @@
 charts:
     drone:
+        _expert: {}
         enabled: false
         debug: false
         orgsFilter: redkubes

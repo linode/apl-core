@@ -1,5 +1,6 @@
 charts:
     prometheus-operator:
+        _expert: {}
         alertmanager:
             groupInterval: 5m
             receiver: slack

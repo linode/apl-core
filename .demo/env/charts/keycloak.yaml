@@ -1,5 +1,6 @@
 charts:
     keycloak:
+        _expert: {}
         enabled: true
         theme: otomi
         realm: master

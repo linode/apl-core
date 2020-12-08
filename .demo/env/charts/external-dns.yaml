@@ -1,5 +1,6 @@
 charts:
     external-dns:
+        _expert: {}
         domainFilters:
             - otomi.cloud
         zoneIdFilters:

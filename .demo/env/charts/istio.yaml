@@ -1,5 +1,6 @@
 charts:
     istio:
+        _expert: {}
         addonComponents:
             grafana:
                 enabled: true
