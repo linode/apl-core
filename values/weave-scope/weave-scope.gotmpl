@@ -25,7 +25,7 @@ weave-scope:
     
 weave-scope-agent:
   annotations:
-    {{ tpl $addIgnorePolicyAnnotation (list"psp-host-filesystem" "psp-allowed-users" "psp-privileged" "psp-host-security" "psp-host-networking-ports") }}
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-allowed-users" "psp-privileged" "psp-host-security" "psp-host-networking-ports") }}
   resources:
     requests:
       cpu: 200m
