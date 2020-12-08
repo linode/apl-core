@@ -46,5 +46,6 @@ env:
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
 
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  policy.otomi.io/ignore: banned-image-tags,psp-allowed-users
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}

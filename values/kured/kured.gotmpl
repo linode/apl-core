@@ -14,5 +14,6 @@ resources:
     cpu: 20m
     memory: 32Mi
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations: 
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") }}

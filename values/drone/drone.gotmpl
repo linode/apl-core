@@ -2,6 +2,8 @@
 {{- $d := $v.charts | get "drone" dict }}
 {{- $debug := $d | get "debug" false }}
 {{- $host := printf "drone.%s" $v.cluster.domain }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 images:
   server:
     tag: 1.9.0
@@ -15,7 +17,7 @@ sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -63,7 +65,7 @@ kubernetes:
     # DRONE_DEBUG: true
     DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged ""psp-host-filesystem ""banned-image-tags") }}
 
 persistence:
   enabled: true

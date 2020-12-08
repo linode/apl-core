@@ -7,6 +7,7 @@
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 image:
   tag: "v6.1.1"
   repository: quay.io/oauth2-proxy/oauth2-proxy
@@ -50,8 +51,7 @@ resources:
 
 # disable policies
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
-
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}

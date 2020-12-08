@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $w := $v.charts | get "weaveScope" dict }}
-
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+  
 global:
   image:
     tag: 1.12.0
@@ -9,7 +10,7 @@ global:
 
 weave-scope-frontend:
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   resources:
     requests:
       cpu: 200m
@@ -20,11 +21,11 @@ weave-scope-frontend:
 
 weave-scope:
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
     
 weave-scope-agent:
   annotations:
-    policy.otomi.io/ignore: psp-host-filesystem,psp-allowed-users,psp-privileged,psp-host-security,psp-host-networking-ports
+    {{ tpl $addIgnorePolicyAnnotation (list"psp-host-filesystem" "psp-allowed-users" "psp-privileged" "psp-host-security" "psp-host-networking-ports") }}
   resources:
     requests:
       cpu: 200m
@@ -35,7 +36,7 @@ weave-scope-agent:
 
 weave-scope-cluster-agent:
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   resources:
     requests:
       cpu: 200m

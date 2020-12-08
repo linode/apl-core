@@ -9,6 +9,8 @@
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -194,5 +196,6 @@ prometheus-node-exporter:
     pspEnabled: false
   priorityClassName: "otomi-critical"
   podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
-
+    
+     
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security") }}

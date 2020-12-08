@@ -25,9 +25,10 @@ securityContext:
 serviceMonitor:
   enabled: true
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") }}
 
 pipelineStages:
   - docker: {}

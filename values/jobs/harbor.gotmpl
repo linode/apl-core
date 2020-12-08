@@ -14,6 +14,7 @@
 {{- range $teams -}}
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 tasks:
   harbor:
@@ -46,4 +47,4 @@ tasks:
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
     annotations:
-      policy.otomi.io/ignore: banned-image-tags,psp-allowed-users
+      {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}

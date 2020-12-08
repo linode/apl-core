@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values -}}
 {{- $o := $v.charts | get "cluster-overprovisioner" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 deployments:
   - name: default
@@ -10,4 +11,4 @@ deployments:
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
     annotations:
-      policy.otomi.io/ignore: psp-allowed-users
+      {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}

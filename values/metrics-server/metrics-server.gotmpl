@@ -21,5 +21,6 @@ resources:
   {{- end }}
 
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}

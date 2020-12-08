@@ -59,5 +59,6 @@ tools:
     {{- end }}
   {{- end }}
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  policy.otomi.io/ignore: banned-image-tags
+  {{ tpl $addIgnorePolicyAnnotation (list "banned-image-tags") }}

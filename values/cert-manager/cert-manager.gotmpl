@@ -1,5 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 global:
   priorityClassName: "otomi-critical"
 
@@ -11,8 +13,7 @@ prometheus:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
-
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") }}
 installCRDs: true
 
 resources:
@@ -32,11 +33,11 @@ cainjector:
       cpu: 200m
       memory: 384Mi
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") }}
 
 webhook:
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   resources:
     requests:
       cpu: 50m

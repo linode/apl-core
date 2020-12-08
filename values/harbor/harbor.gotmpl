@@ -6,6 +6,8 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
  # logLevel - debug, info, warning, error or fatal
 logLevel: info
 nameOverride: harbor
@@ -27,7 +29,7 @@ nginx:
     sidecar.istio.io/inject: "false"
 core:
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
@@ -57,7 +59,7 @@ jobservice:
       cpu: 100m
     {{- end }}
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
@@ -138,7 +140,7 @@ proxy:
 registry:
   secret: q1g9gwm35g8k458b
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
   registry:
     image:
@@ -182,7 +184,7 @@ registry:
 database:
   type: internal
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   internal:
     image:
       repository: goharbor/harbor-db
@@ -202,7 +204,7 @@ database:
 
 clair:
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
   clair:
     resources:
       {{- with $h | get "resources.clair" nil }}
@@ -241,7 +243,7 @@ chartmuseum:
       memory: 256Mi
     {{- end }}
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
 portal:
   resources:
@@ -256,11 +258,11 @@ portal:
       memory: 128Mi
     {{- end }}
   podAnnotations: 
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
 redis:
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
   internal:
     resources:

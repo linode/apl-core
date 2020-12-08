@@ -1,13 +1,12 @@
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 {{- $policies := (readFile "../../env/env/policies.yaml" | fromYaml) | get "policies" dict }}
-{{- $desiredPolicies := . -}}
 {{- $activatePolicies := list -}}
 
-{{- range $i, $policyID := $desiredPolicies }}
+{{- range $i, $policyID := . }}
     {{- $enabled := ($policies | get $policyID) | get "enabled" false }}
     {{ if $enabled }} {{ $activatePolicies = append $activatePolicies $policyID }}  {{ end }} 
 {{ end -}} 
 
 {{- with $activatePolicies }}
-  policy.otomi.io/ignore: {{ tpl $joinTpl (dict "list" $activatePolicies "sep" ",") | quote }}
+  policy.otomi.io/ignore: {{ tpl $joinTpl (dict "list" . "sep" ",") | quote }}
 {{- end }}

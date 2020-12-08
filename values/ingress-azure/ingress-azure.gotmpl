@@ -30,5 +30,6 @@ rbac:
   enabled: true
 verbosityLevel: 5
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  policy.otomi.io/ignore: psp-host-filesystem,psp-allowed-users
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") }}

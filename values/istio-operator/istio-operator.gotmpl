@@ -1,6 +1,7 @@
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts | get "istio" dict }}
 hub: istio
 tag: {{ $i | get "version" "1.6.5" }}
 podAnnotations: 
-  policy.otomi.io/ignore: psp-allowed-users
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}

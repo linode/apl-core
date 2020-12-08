@@ -52,5 +52,6 @@ serviceMonitor:
 extraArgs:
   expander: least-waste
 
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}

@@ -1,6 +1,8 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 init:
   resources:
     limits:
@@ -81,11 +83,11 @@ keycloak:
     - name: theme
       mountPath: /themes
   podAnnotations: 
-    policy.otomi.io/ignore: psp-allowed-users,banned-image-tags
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}
 
 postgresql:
   commonAnnotations: 
-    policy.otomi.io/ignore: psp-allowed-users
+    {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") }}
 
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
