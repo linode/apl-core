@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.52](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.52) (2020-12-07)
+
+
+### Features
+
+* bats test framework ([#216](https://github.com/redkubes/otomi-core/issues/216)) ([19952a6](https://github.com/redkubes/otomi-core/commit/19952a6308806e95200656b3e2db917f4e3ad59b))
+* bumped versions, both dockerfiles ([#227](https://github.com/redkubes/otomi-core/issues/227)) ([3ecc99b](https://github.com/redkubes/otomi-core/commit/3ecc99bdb4da5c80c24e7f58df62a3754e438e69))
+* support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
+
+
+### Bug Fixes
+
+* cluter overprovisioner [ci skip] ([00dfcc1](https://github.com/redkubes/otomi-core/commit/00dfcc12905e4c42c210f343082f55f894e97c14))
+* demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
+* oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
+* set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
+
+
+### Code Refactoring
+
+* resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
+
+
+### Others
+
+* **release:** 0.11.51 ([e54434e](https://github.com/redkubes/otomi-core/commit/e54434e3a8f8df9545ea5ec4c66e95c7eabd4596))
+
 ### [0.11.51](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.51) (2020-12-07)
 
 
