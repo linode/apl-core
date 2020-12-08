@@ -30,7 +30,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   bin/validate-values.sh && \
   bin/validate-templates.sh && \
   bin/validate-policies.sh && \
-  bats bin/tests \
+  bats bin/tests && \
   rm -rf env/*; fi
 
 #-----------------------------
