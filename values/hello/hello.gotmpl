@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $httpbin := $v | get "charts.hello" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: hello
 fullnameOverride: hello
@@ -16,4 +17,4 @@ resources:
     memory: 64Mi
 
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users,banned-image-tags
+  {{ tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") }}
