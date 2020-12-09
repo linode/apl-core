@@ -14,7 +14,7 @@ This example command assumes that tests are found in the container directory `ot
 
 ## How should I add tests?
 
-By convention, append new test files or create new test files in the \$root/bin/tests folder. Follow [this Shell Style Guide](https://github.com/google/styleguide/blob/gh-pages/shellguide.md) and apply the following rules:
+By convention, add a new test to an existing test file or create new test files in the \$root/bin/tests folder. Follow [this Shell Style Guide](https://github.com/google/styleguide/blob/gh-pages/shellguide.md) and apply the following rules:
 
 - use 'true' and 'false' strings for boolean flags, and always compare them as strings `[[ "$var" == "false" ]]`
 - use capital case for environment variables naming and for the others use lower case.
