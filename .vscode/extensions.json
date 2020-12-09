@@ -6,6 +6,7 @@
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
     "foxundermoon.shell-format",
+    "jetmartin.bats",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "pascalreitermann93.vscode-yaml-sort",
