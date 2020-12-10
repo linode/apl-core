@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- range $name, $spec := $v.tasks }}
-{{- if and $spec.enabled (eq $spec.type "cronjob") }}
+{{- if and $spec.enabled (eq $spec.jobType "cronjob") }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:

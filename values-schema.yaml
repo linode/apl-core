@@ -242,6 +242,9 @@ definitions:
               $ref: '#/definitions/secret'
             type: array
         type: object
+      jobType:
+        pattern: (job|cronjob)
+        type: string
     type: object
   k8sVersion:
     default: '1.18'
