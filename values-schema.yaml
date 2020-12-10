@@ -1,5 +1,5 @@
 ---
-'$schema': 'http://json-schema.org/draft-07/schema'
+$schema: http://json-schema.org/draft-07/schema#
 type: object
 additionalProperties: false
 definitions:
@@ -218,6 +218,40 @@ definitions:
         type: string
     title: Container image
     type: object
+  jobs:
+    description: |
+      You may pass an array of Job objects. The Kubernetes API accepts a Job specification, 
+      which is meant for run-to-completion apps (e.g. batch Jobs).
+    items:
+      description: |
+        You may pass a Job object. You must pass the following properties:
+
+          enabled: (type boolean)
+          env: (type array of strings, pattern-matched)
+          image: (type string, pattern-matched)
+          init: (type object)
+            image: (type string, pattern-matched)
+            script: (type string)
+      properties:
+        enabled:
+          type: boolean
+        env:
+          items:
+            $ref: '#/definitions/env'
+          type: array
+        image:
+          $ref: '#/definitions/image'
+        init:
+          properties:
+            image:
+              $ref: '#/definitions/image'
+            script:
+              description: |
+                You must pass a non-empty string containing an executable script. This script is executed first.
+          type: object
+      type: object
+    minItems: 0
+    type: array
   k8sVersion:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
@@ -377,6 +411,10 @@ definitions:
       id:
         $ref: '#/definitions/idName'
         description: Must be the same as the name.
+      jobs:
+        items:
+          $ref: '#/definitions/jobs'
+        type: array
       oidc:
         additionalProperties: false
         properties:
@@ -602,14 +640,13 @@ properties:
     additionalProperties: false
     properties:
       jobs:
-        type: object
-        additionalProperties: false
+        $ref: '#/definitions/jobs'
         patternProperties:
-          'certs-aws|harbor|ingress-azure|keycloak':
+          certs-aws|harbor|ingress-azure|keycloak:
             type: object
             properties:
               image:
-                '$ref': '#/definitions/image'
+                $ref: '#/definitions/image'
       cert-manager:
         type: object
         additionalProperties: false
