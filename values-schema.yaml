@@ -218,40 +218,44 @@ definitions:
         type: string
     title: Container image
     type: object
-  jobs:
+  job:
+    additionalProperties: false
     description: |
       You may pass an array of Job objects. The Kubernetes API accepts a Job specification, 
       which is meant for run-to-completion apps (e.g. batch Jobs).
-    items:
       description: |
         You may pass a Job object. You must pass the following properties:
 
           enabled: (type boolean)
-          env: (type array of strings, pattern-matched)
+          env: (type strings[], pattern-matched)
           image: (type string, pattern-matched)
           init: (type object)
             image: (type string, pattern-matched)
             script: (type string)
-      properties:
-        enabled:
-          type: boolean
-        env:
-          items:
-            $ref: '#/definitions/env'
-          type: array
-        image:
-          $ref: '#/definitions/image'
-        init:
-          properties:
-            image:
-              $ref: '#/definitions/image'
-            script:
-              description: |
-                You must pass a non-empty string containing an executable script. This script is executed first.
-          type: object
-      type: object
-    minItems: 0
-    type: array
+            secret: (type string[])
+    properties:
+      enabled:
+        type: boolean
+      env:
+        items:
+          $ref: '#/definitions/env'
+        type: array
+      image:
+        $ref: '#/definitions/image'
+      init:
+        properties:
+          image:
+            $ref: '#/definitions/image'
+          script:
+            description: |
+              You must pass a non-empty string containing an executable script. This script is executed first.
+            type: string
+          secrets:
+            items:
+              $ref: '#/definitions/secret'
+            type: array
+        type: object
+    type: object
   k8sVersion:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
@@ -413,7 +417,7 @@ definitions:
         description: Must be the same as the name.
       jobs:
         items:
-          $ref: '#/definitions/jobs'
+          $ref: '#/definitions/job'
         type: array
       oidc:
         additionalProperties: false
@@ -640,13 +644,14 @@ properties:
     additionalProperties: false
     properties:
       jobs:
-        $ref: '#/definitions/jobs'
+        additionalProperties: false
         patternProperties:
           certs-aws|harbor|ingress-azure|keycloak:
             type: object
             properties:
               image:
                 $ref: '#/definitions/image'
+        type: object
       cert-manager:
         type: object
         additionalProperties: false
