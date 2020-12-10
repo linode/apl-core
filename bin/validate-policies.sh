@@ -19,7 +19,7 @@ cleanup() {
   [[ $validationResult -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   [[ ${DEBUG-'false'} != "true" ]] && rm -rf $k8sResourcesPath
   rm -f $constraintsFile $parametersFile
-  exit $exitcode
+  exit $validationResult
 }
 trap cleanup EXIT
 
