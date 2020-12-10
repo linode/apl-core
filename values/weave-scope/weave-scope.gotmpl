@@ -9,8 +9,9 @@ global:
     name: weave-scope
 
 weave-scope-frontend:
-  annotations:
-    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podSecurityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
   resources:
     requests:
       cpu: 200m
@@ -20,12 +21,13 @@ weave-scope-frontend:
       memory: 256Mi
 
 weave-scope:
-  annotations:
-    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
-    
+  podSecurityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
+
+# container requires "privileged: true", thus we cannot add a securityContext and remove "psp-allowed-users" policy annotation exception
 weave-scope-agent:
-  annotations:
-    # container requires "privileged: true", thus we cannot add a securityContext and remove "psp-allowed-users" policy annotation exception
+  podAnnotations:
     {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem" "psp-privileged" "psp-host-security" "psp-host-networking-ports") | nindent 4 }}
   resources:
     requests:
@@ -36,8 +38,9 @@ weave-scope-agent:
       memory: 256Mi
 
 weave-scope-cluster-agent:
-  annotations:
-    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podSecurityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
   resources:
     requests:
       cpu: 200m

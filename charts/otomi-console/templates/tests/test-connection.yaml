@@ -6,7 +6,9 @@ metadata:
 {{ include "otomi-console.labels" . | indent 4 }}
   annotations:
     "helm.sh/hook": test-success
-    policy.otomi.io/ignore: psp-allowed-users
+    {{- range $key, $value :=  .Values.podAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   containers:
     - name: wget
@@ -14,3 +16,7 @@ spec:
       command: ['wget']
       args:  ['{{ include "otomi-console.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
+  {{- with .Values.podSecurityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

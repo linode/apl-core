@@ -18,7 +18,6 @@ cloud.weave.works/launcher-info: |-
     "source-app": "weave-scope",
     "weave-cloud-component": "scope"
   }
-{{ toYaml .Values.annotations }}
 {{- end }}
 
 {{/*

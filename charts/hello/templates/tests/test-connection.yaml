@@ -6,8 +6,9 @@ metadata:
 {{ include "hello.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test-success
-    policy.otomi.io/ignore: psp-allowed-users
-
+    {{- with .Values.podAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   containers:
     - name: wget
@@ -15,3 +16,7 @@ spec:
       command: ['wget']
       args:  ['{{ include "hello.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
+  {{- with .Values.podSecurityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

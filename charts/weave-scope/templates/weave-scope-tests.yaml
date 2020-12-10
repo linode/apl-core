@@ -1,10 +1,15 @@
+{{- $w := index .Values "weave-scope" -}}
 apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ .Release.Name }}-ui-test-{{ randAlphaNum 5 | lower }}"
   annotations:
     "helm.sh/hook": test-success
-    policy.otomi.io/ignore: psp-allowed-users
+    {{- with $w.podAnnotations }}
+    {{- range $key, $value := .  }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
   labels:
     {{- include "weave-scope.helm_std_labels" . | indent 4 }}
 spec:
@@ -38,3 +43,7 @@ spec:
   - name: tools
     emptyDir: {}
   restartPolicy: Never
+  {{- with $w.podSecurityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
