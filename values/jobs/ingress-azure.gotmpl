@@ -3,7 +3,7 @@
 
 tasks:
   ingress-azure:
-    type: cronjob
+    jobType: cronjob
     enabled: false
     image:
       repository: {{ $c | get "jobs.ingress-azure.image.repository" "otomi/tools" }}

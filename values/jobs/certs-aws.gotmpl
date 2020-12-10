@@ -5,7 +5,7 @@
 
 tasks:
   certs-aws:
-    type: job
+    jobType: job
     description: Import certs into ACM
     enabled: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     image:

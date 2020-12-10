@@ -17,7 +17,7 @@
 
 tasks:
   harbor:
-    type: job
+    jobType: job
     enabled: {{ $hasHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     init:
