@@ -220,9 +220,6 @@ definitions:
     type: object
   job:
     additionalProperties: false
-    description: |
-      You may pass a Job object. You must pass the following properties:
-
     properties:
       enabled:
         type: boolean
