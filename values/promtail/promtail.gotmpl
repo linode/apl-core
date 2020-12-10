@@ -26,9 +26,15 @@ serviceMonitor:
   enabled: true
 
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 podAnnotations:
   sidecar.istio.io/inject: "false"
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") | nindent 2 }}
+  # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") | nindent 2 }}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
 
 pipelineStages:
   - docker: {}

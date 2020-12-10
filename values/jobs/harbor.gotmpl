@@ -47,4 +47,7 @@ tasks:
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
     annotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 6 }}
+      {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
+    securityContext:
+      runAsUser: 1001
+      runAsNonRoot: true

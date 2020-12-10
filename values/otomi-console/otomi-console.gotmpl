@@ -48,4 +48,8 @@ env:
 
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}
+  {{- tpl $addIgnorePolicyAnnotation (list  "banned-image-tags") | nindent 2 }}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001

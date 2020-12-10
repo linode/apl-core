@@ -43,6 +43,6 @@ deschedulerPolicy:
     RemovePodsViolatingNodeTaints:
       enabled: true
 
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001

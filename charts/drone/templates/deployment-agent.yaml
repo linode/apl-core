@@ -28,6 +28,10 @@ spec:
         release: "{{ .Release.Name }}"
         component: agent
     spec:
+{{- with .Values.kubernetes.securityContext }}
+      securityContext: 
+        {{- toYaml . | indent 8 }}
+{{- end }}
 {{- if .Values.kubernetes.schedulerName }}
       schedulerName: "{{ .Values.kubernetes.schedulerName }}"
 {{- end }}

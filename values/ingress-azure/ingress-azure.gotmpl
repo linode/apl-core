@@ -31,5 +31,10 @@ rbac:
 verbosityLevel: 5
 
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") | nindent 2 }}
+
+kubernetes:
+  securityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
+  podAnnotations:
+    {{- tpl $addIgnorePolicyAnnotation (list  "psp-host-filesystem") | nindent 2 }}

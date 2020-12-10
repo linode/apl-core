@@ -49,9 +49,9 @@ resources:
 {{- end }}
 {{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
 
-# disable policies
-podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}
+securityContext:
+  enabled: true
+  runAsNonRoot: true
 
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}

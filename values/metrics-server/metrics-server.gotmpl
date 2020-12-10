@@ -21,6 +21,6 @@ resources:
   {{- end }}
 
 
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}
+securityContext:
+  runAsUser: 1001
+  runAsNonRoot: true

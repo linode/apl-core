@@ -12,13 +12,15 @@ spec:
     metadata:
       labels:
         name: istio-operator
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- range $key, $value := . }}
+        {{- range $key, $value := .Values.podAnnotations  }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
-      {{- end }}
     spec:
+      {{- with .Values.securityContext }}
+      securityContext: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: istio-operator
       containers:
         - name: istio-operator

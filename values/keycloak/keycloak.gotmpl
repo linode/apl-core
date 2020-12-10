@@ -56,6 +56,10 @@ keycloak:
     - name: keycloak-otomi-branding
       image: "otomi/console:{{ $v | get "charts.otomi-console.image.tag" "master" }}"
       imagePullPolicy: "{{ $v | get "charts.otomi-console.image.pullPolicy" "IfNotPresent" }}"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       command:
         - sh
       args:
@@ -82,13 +86,20 @@ keycloak:
   extraVolumeMounts: 
     - name: theme
       mountPath: /themes
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
   podAnnotations: 
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 4 }}
 
 postgresql:
   commonAnnotations: 
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 4}}
-
+    {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 4}}
+  securityContext:
+    enabled: true
+    fsGroup: 1000
+    runAsUser: 1000
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlDatabase: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
@@ -96,6 +107,10 @@ postgresql:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
     enabled: true
+    securityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsNonRoot: true
     serviceMonitor:
       enabled: true
       additionalLabels:

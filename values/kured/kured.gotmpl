@@ -14,6 +14,8 @@ resources:
     cpu: 20m
     memory: 32Mi
 
+
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+# the container's securityContext must have "privileged:true" thus we cannot set a non-root user for this chart
 podAnnotations: 
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") | nindent 2 }}
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") | nindent 2 }}

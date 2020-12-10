@@ -16,8 +16,6 @@ fullnameOverride: drone
 sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
-  annotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -64,8 +62,11 @@ kubernetes:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
     DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
+  securityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
   annotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (list  "psp-privileged" "psp-host-filesystem" "banned-image-tags") | nindent 4 }}
 
 persistence:
   enabled: true

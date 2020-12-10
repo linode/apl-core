@@ -28,9 +28,8 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
-
+  securityContext:
+    runAsUser: 10000
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
@@ -58,8 +57,8 @@ jobservice:
       memory: 512Mi
       cpu: 100m
     {{- end }}
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  securityContext:
+    runAsUser: 10000
 
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
@@ -139,8 +138,8 @@ proxy:
 
 registry:
   secret: q1g9gwm35g8k458b
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  securityContext:
+    runAsUser: 10000
 
   registry:
     image:
@@ -184,7 +183,7 @@ registry:
 database:
   type: internal
   podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   internal:
     image:
       repository: goharbor/harbor-db
@@ -203,8 +202,8 @@ database:
       {{- end }}
 
 clair:
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  securityContext:
+    runAsUser: 10000
   clair:
     resources:
       {{- with $h | get "resources.clair" nil }}
@@ -242,9 +241,8 @@ chartmuseum:
       cpu: 400m
       memory: 256Mi
     {{- end }}
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
-
+  securityContext: 
+    runAsUser: 10000
 portal:
   resources:
     {{- with $h | get "resources.portal" nil }}
@@ -257,13 +255,13 @@ portal:
       cpu: 400m
       memory: 128Mi
     {{- end }}
-  podAnnotations: 
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  securityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
 
 redis:
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
-
+  securityContext:
+    runAsUser: 999
   internal:
     resources:
       requests:

@@ -13,7 +13,12 @@ prometheus:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") | nindent 2}}
+  {{- tpl $addIgnorePolicyAnnotation (list  "psp-privileged" "psp-host-security") | nindent 2}}
+
+securityContext:
+  enabled: true
+  runAsUser: 1001
+
 installCRDs: true
 
 resources:
@@ -33,11 +38,14 @@ cainjector:
       cpu: 200m
       memory: 384Mi
   podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-security") | nindent 4 }}
-
+    {{- tpl $addIgnorePolicyAnnotation (list  "psp-privileged" "psp-host-security") | nindent 4 }}
+  securityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
 webhook:
-  podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  securityContext:
+    runAsUser: 1001
+    runAsNonRoot: true
   resources:
     requests:
       cpu: 50m
