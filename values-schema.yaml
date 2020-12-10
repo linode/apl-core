@@ -3,7 +3,7 @@
 type: object
 additionalProperties: false
 definitions:
-  expertValues:
+  rawValues:
     description: Define custom configuration for a given chart. Values defined in this section take priority over all other chart values.
     type: object
   alerts:
@@ -618,7 +618,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           azureClientSecret:
             type: string
           email:
@@ -703,7 +703,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
           memory:
@@ -715,7 +715,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -807,7 +807,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           aws:
             type: object
             properties:
@@ -833,7 +833,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
       harbor:
@@ -841,7 +841,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           adminPassword:
             type: string
           enabled:
@@ -893,7 +893,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           appgw:
             additionalProperties: false
             description: Application Gateway
@@ -944,7 +944,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           addonComponents:
             additionalProperties: false
             properties:
@@ -1037,7 +1037,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -1049,7 +1049,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
           idp:
@@ -1079,7 +1079,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           adminPassword:
             type: string
           persistence:
@@ -1103,7 +1103,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           autoscaling:
             type: object
             additionalProperties: false
@@ -1118,7 +1118,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           config:
             type: object
             properties:
@@ -1131,7 +1131,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           git:
             type: object
             additionalProperties: false
@@ -1171,14 +1171,14 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           image:
             '$ref': '#/definitions/imageSimple'
       prometheus-operator:
         type: object
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           additionalProperties: false
           grafana:
             type: object
@@ -1204,7 +1204,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
@@ -1219,7 +1219,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
           resources:
@@ -1236,7 +1236,7 @@ properties:
         additionalProperties: false
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
           pvc:
@@ -1255,7 +1255,7 @@ properties:
         type: object
         properties:
           _rawValues:
-            '$ref': '#/definitions/expertValues'
+            '$ref': '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
