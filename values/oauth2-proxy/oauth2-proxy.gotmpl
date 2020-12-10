@@ -52,7 +52,8 @@ resources:
 securityContext:
   enabled: true
   runAsNonRoot: true
-
+  runAsUser: 1001
+  
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github

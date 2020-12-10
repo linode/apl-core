@@ -36,5 +36,5 @@ kubernetes:
   securityContext:
     runAsUser: 1001
     runAsNonRoot: true
-  podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (list  "psp-host-filesystem") | nindent 2 }}
+podAnnotations:
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem") | nindent 2 }}

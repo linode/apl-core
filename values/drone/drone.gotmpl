@@ -46,6 +46,9 @@ server:
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+  securityContext: 
+    runAsUser: 1001
+    runAsNonRoot: true
 kubernetes:
   resources:
     {{- with $d | get "resources.runner" nil }}
@@ -62,11 +65,8 @@ kubernetes:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
     DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
-  securityContext:
-    runAsUser: 1001
-    runAsNonRoot: true
   annotations:
-    {{- tpl $addIgnorePolicyAnnotation (list  "psp-privileged" "psp-host-filesystem" "banned-image-tags") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags") | nindent 4 }}
 
 persistence:
   enabled: true

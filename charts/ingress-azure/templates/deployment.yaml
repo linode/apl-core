@@ -27,8 +27,8 @@ spec:
         checksum/config: {{ print .Values | sha256sum }}
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.kubernetes.httpServicePort | quote}}
-        {{- range $key, $value := .Values.kubernetes.podAnnotations }}
-        {{ $key }}: {{ $value | quote }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
       {{- with .Values.kubernetes.securityContext }}
