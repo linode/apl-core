@@ -1,6 +1,6 @@
 charts:
     harbor:
-        _expert: {}
+        _rawValues: {}
         enabled: true
         persistence:
             imageChartStorage:

@@ -1,6 +1,6 @@
 charts:
     loki:
-        _expert: {}
+        _rawValues: {}
         persistence:
             size: 20Gi
         retention:

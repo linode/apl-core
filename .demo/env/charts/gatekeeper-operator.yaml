@@ -1,4 +1,4 @@
 charts:
     gatekeeper-operator:
-        _expert: {}
+        _rawValues: {}
         enabled: false

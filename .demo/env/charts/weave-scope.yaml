@@ -1,4 +1,4 @@
 charts:
     weave-scope:
-        _expert: {}
+        _rawValues: {}
         enabled: false

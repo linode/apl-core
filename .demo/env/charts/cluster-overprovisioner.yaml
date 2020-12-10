@@ -1,4 +1,4 @@
 charts:
   cluster-overprovisioner:
-    _expert: {}
+    _rawValues: {}
     enabled: true

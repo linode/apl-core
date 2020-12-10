@@ -1,6 +1,6 @@
 charts:
     otomi-console:
-        _expert: {}
+        _rawValues: {}
         image:
             pullPolicy: Always
             tag: v0.4.24

@@ -1,4 +1,4 @@
 charts:
     redis-shared:
-        _expert: {}
+        _rawValues: {}
         enabled: false

@@ -1,6 +1,6 @@
 charts:
     nginx-ingress:
-        _expert: {}
+        _rawValues: {}
         resources:
             limits:
                 cpu: 200m

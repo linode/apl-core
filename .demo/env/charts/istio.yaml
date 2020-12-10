@@ -1,6 +1,6 @@
 charts:
     istio:
-        _expert: {}
+        _rawValues: {}
         addonComponents:
             grafana:
                 enabled: true

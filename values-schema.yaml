@@ -617,7 +617,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           azureClientSecret:
             type: string
@@ -702,7 +702,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -714,7 +714,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -806,7 +806,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           aws:
             type: object
@@ -832,7 +832,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -840,7 +840,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           adminPassword:
             type: string
@@ -892,7 +892,7 @@ properties:
         description: A chart for Azure Application Gateway
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           appgw:
             additionalProperties: false
@@ -943,7 +943,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           addonComponents:
             additionalProperties: false
@@ -1036,7 +1036,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -1048,7 +1048,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -1078,7 +1078,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           adminPassword:
             type: string
@@ -1102,7 +1102,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           autoscaling:
             type: object
@@ -1117,7 +1117,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           config:
             type: object
@@ -1130,7 +1130,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           git:
             type: object
@@ -1170,14 +1170,14 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           image:
             '$ref': '#/definitions/imageSimple'
       prometheus-operator:
         type: object
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           additionalProperties: false
           grafana:
@@ -1203,7 +1203,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           resources:
             additionalProperties: false
@@ -1218,7 +1218,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -1235,7 +1235,7 @@ properties:
         type: object
         additionalProperties: false
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean
@@ -1254,7 +1254,7 @@ properties:
       weave-scope:
         type: object
         properties:
-          _expert:
+          _rawValues:
             '$ref': '#/definitions/expertValues'
           enabled:
             type: boolean

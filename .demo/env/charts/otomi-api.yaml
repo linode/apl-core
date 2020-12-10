@@ -1,6 +1,6 @@
 charts:
     otomi-api:
-        _expert: {}
+        _rawValues: {}
         git:
             localPath: /tmp/otomi-values
             repoUrl: github.com/redkubes/otomi-values-demo.git
