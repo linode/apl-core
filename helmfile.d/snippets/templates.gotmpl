@@ -4,7 +4,7 @@ templates:
     chart: ../charts/{{ .Release.Name }}
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
-      - ../values/{{ .Release.Name }}/{{ .Release.Name }}-expert.gotmpl
+      - ../values/_rawValues.gotmpl
   raw: &raw
     chart: ../charts/raw
     values:
