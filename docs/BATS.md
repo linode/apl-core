@@ -14,22 +14,15 @@ This example command assumes that tests are found in the container directory `ot
 
 ## How should I add tests?
 
-By convention, add a new test to an existing test file or create new test files in the \$root/bin/tests folder. Follow [this Shell Style Guide](https://github.com/google/styleguide/blob/gh-pages/shellguide.md) and apply the following rules:
-
-- use 'true' and 'false' strings for boolean flags, and always compare them as strings `[[ "$var" == "false" ]]`
-- use capital case for environment variables naming and for the others use lower case.
-
-These rules also apply to Shell Scripts.
-
 The test files should have the .bats extension, otherwise they will not be executed.
 
 ## How should I name the test files?
 
-First of all, use the .bats file extension. Next, indicate the kind of test by including it in the file name. Finally, include at least one of names used in the Shell Scripts you're testing.
+First of all, use the .bats file extension. Include at least one of names used in the Shell Scripts you're testing.
 
 Example with a bootstrap.sh file:
 
-`bootstrap-unit.bats`
+`bootstrap.bats`
 
 ## How do I use the BATS libraries?
 
