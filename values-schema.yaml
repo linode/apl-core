@@ -221,18 +221,8 @@ definitions:
   job:
     additionalProperties: false
     description: |
-      You may pass an array of Job objects. The Kubernetes API accepts a Job specification, 
-      which is meant for run-to-completion apps (e.g. batch Jobs).
-      description: |
-        You may pass a Job object. You must pass the following properties:
+      You may pass a Job object. You must pass the following properties:
 
-          enabled: (type boolean)
-          env: (type strings[], pattern-matched)
-          image: (type string, pattern-matched)
-          init: (type object)
-            image: (type string, pattern-matched)
-            script: (type string)
-            secret: (type string[])
     properties:
       enabled:
         type: boolean
@@ -416,8 +406,20 @@ definitions:
         $ref: '#/definitions/idName'
         description: Must be the same as the name.
       jobs:
+        description: |
+          You may pass an array of Job objects. The Kubernetes API accepts a Job specification, 
+          which is meant for run-to-completion apps (e.g. batch Jobs).
+
+              enabled: (type boolean)
+                  env: (type strings[], pattern-matched)
+                  image: (type string, pattern-matched)
+                  init: (type object)
+                    image: (type string, pattern-matched)
+                    script: (type string)
+                    secret: (type string[])
         items:
           $ref: '#/definitions/job'
+        title: Batch/v1 job
         type: array
       oidc:
         additionalProperties: false
