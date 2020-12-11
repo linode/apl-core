@@ -232,6 +232,7 @@ function drun() {
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e CI="$CI" \
+      -e ENV_DIR=$ENV_DIR \
       -w $stack_dir \
       $cmd_image \
       $command
@@ -284,6 +285,7 @@ function execute() {
       check_kube_context=0
       evaluate_secrets
       if [ -n "$@" ]; then
+        echo "xx$@xx"
         for f in $@; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
