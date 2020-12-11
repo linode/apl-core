@@ -1,6 +1,6 @@
 # BATS testing framework
 
-This is relevant starting from [v0.11.52](https://github.com/redkubes/otomi-core/releases/tag/v0.11.52).
+This document is relevant starting from [v0.11.52](https://github.com/redkubes/otomi-core/releases/tag/v0.11.52).
 
 ## Where can I find BATS?
 
@@ -14,7 +14,7 @@ This example command assumes that tests are found in the container directory `ot
 
 ## How should I add tests?
 
-The test files should have the .bats extension, otherwise they will not be executed.
+Test files should have the .bats extension, otherwise they will not be executed.
 
 ## How should I name the test files?
 

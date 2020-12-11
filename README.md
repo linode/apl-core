@@ -84,9 +84,3 @@ This will first do a `diff` and then a `sync`. But if you expect the helm bookke
 # or:
 otomi sync -l name=prometheus-operator
 ```
-
-## Testing
-
-### 1. Testing shell scripts
-
-We use the [bats](https://github.com/bats-core/bats-core) testing framework (`bin/tests`) to test shell scripts in the `bin` directory. Use our [BATS documentation](./docs/BATS.md) when you provide tests with new features.
