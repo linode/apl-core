@@ -7,7 +7,6 @@
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "appgw",
-    "allowedrepos",
     "auths",
     "azuredns",
     "bladibla",

@@ -196,5 +196,5 @@ prometheus-node-exporter:
     pspEnabled: false
   priorityClassName: "otomi-critical"
   podAnnotations:
-{{- tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security") | nindent 4 }}
 
