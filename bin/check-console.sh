@@ -36,8 +36,8 @@ password=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.passw
 [ "$error" != "" ] && printf "Error: Make sure the git details are correctly added to 'charts/*otomi-api.yaml'. Incorrect values found for git: $error\n" >&2
 [ "$err" != "" ] || [ "$error" != "" ] && exit 1
 
-echo "PULL_SECRET=$pull_secret" >/tmp/otomi-env
-echo "GIT_REPO_URL=$repo_url" >>/tmp/otomi-env
-echo "GIT_BRANCH=$branch" >>/tmp/otomi-env
-echo "GIT_EMAIL=$email" >>/tmp/otomi-env
-echo "GIT_PASSWORD=$password" >>/tmp/otomi-env
+echo "export PULL_SECRET=$pull_secret" >/tmp/otomi-env
+echo "export GIT_REPO_URL=$repo_url" >>/tmp/otomi-env
+echo "export GIT_BRANCH=$branch" >>/tmp/otomi-env
+echo "export GIT_EMAIL=$email" >>/tmp/otomi-env
+echo "export GIT_PASSWORD=$password" >>/tmp/otomi-env
