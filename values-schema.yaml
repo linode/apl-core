@@ -1525,7 +1525,7 @@ properties:
         patternProperties:
           ^[a-z-]+$:
             $ref: '#/definitions/team'
-        type: object
+        type: array
     type: object
   toolsVersion:
     type: string
