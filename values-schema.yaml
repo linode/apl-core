@@ -556,10 +556,7 @@ definitions:
               items:
                 description: 'Path mapping to only let this path go to the service.
                   This allows micro services to operate on the same domain and port.
-
-                  When left empty all paths will go to this service.
-
-                  '
+                  When left empty all paths will go to this service.'
                 type: string
               type: array
             port:
