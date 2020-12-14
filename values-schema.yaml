@@ -745,7 +745,8 @@ properties:
                 type: string
             required:
               - region
-          azure: null
+          azure:
+            type: object
           domainFilters:
             items:
               type: string
