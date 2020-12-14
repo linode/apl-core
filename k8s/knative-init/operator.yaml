@@ -15,7 +15,200 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: knativeeventings.operator.knative.dev
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
+spec:
+  additionalPrinterColumns:
+    - JSONPath: .status.version
+      name: Version
+      type: string
+    - JSONPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Reason
+      type: string
+  group: operator.knative.dev
+  names:
+    kind: KnativeEventing
+    listKind: KnativeEventingList
+    plural: knativeeventings
+    singular: knativeeventing
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      type: object
+      description: Schema for the knativeeventings API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: Spec defines the desired state of KnativeEventing
+          properties:
+            version:
+              description: The version of Knative Eventing to be installed
+              type: string
+            manifests:
+              description: A list of eventing manifests, which will be installed by the operator
+              type: array
+              items:
+                type: object
+                properties:
+                  URL:
+                    description: The link of the manifest URL
+                    type: string
+            config:
+              additionalProperties:
+                additionalProperties:
+                  type: string
+                type: object
+              description: A means to override the corresponding entries in the upstream configmaps
+              type: object
+            registry:
+              description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              type: object
+              properties:
+                default:
+                  description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                  type: string
+                override:
+                  description: A map of a container name or image name to the full image location of the individual knative image.
+                  type: object
+                  additionalProperties:
+                    type: string
+                imagePullSecrets:
+                  description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-eventing deployments, and not the namespace of this resource.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the secret.
+                        type: string
+            defaultBrokerClass:
+              description: The default broker type to use for the brokers Knative creates. If no value is provided, MTChannelBasedBroker will be used.
+              type: string
+            resources:
+              description: A mapping of deployment name to resource requirements
+              type: array
+              items:
+                type: object
+                properties:
+                  container:
+                    description: The name of the container
+                    type: string
+                  requests:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                  limits:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+            sinkBindingSelectionMode:
+              description: Specifies the selection mode for the sinkbinding webhook. If the value is `inclusion`, only namespaces/objects labelled as `bindings.knative.dev/include:true` will be considered. If `exclusion` is selected, only `bindings.knative.dev/exclude:true` label is checked and these will NOT be considered. The default is `exclusion`.
+              type: string
+          type: object
+        status:
+          properties:
+            observedGeneration:
+              description: The generation last processed by the controller
+              type: integer
+            conditions:
+              description: The latest available observations of a resource's current state.
+              items:
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                    type: string
+                  message:
+                    description: A human readable message indicating details about the transition.
+                    type: string
+                  reason:
+                    description: The reason for the condition's last transition.
+                    type: string
+                  severity:
+                    description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                    type: string
+                  status:
+                    description: Status of the condition, one of True, False, Unknown.
+                    type: string
+                  type:
+                    description: Type of condition.
+                    type: string
+                required:
+                  - type
+                  - status
+                type: object
+              type: array
+            version:
+              description: The version of the installed release
+              type: string
+            manifests:
+              description: The list of eventing manifests, which have been installed by the operator
+              type: array
+              items:
+                type: string
+          type: object
+  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
   name: knativeservings.operator.knative.dev
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 spec:
   additionalPrinterColumns:
     - JSONPath: .status.version
@@ -43,27 +236,34 @@ spec:
       description: Schema for the knativeservings API
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
           description: Spec defines the desired state of KnativeServing
           properties:
+            version:
+              description: The version of Knative Serving to be installed
+              type: string
+            manifests:
+              description: A list of serving manifests, which will be installed by the operator
+              type: array
+              items:
+                type: object
+                properties:
+                  URL:
+                    description: The link of the manifest URL
+                    type: string
             config:
               additionalProperties:
                 additionalProperties:
                   type: string
                 type: object
-              description: A means to override the corresponding entries in the upstream
-                configmaps
+              description: A means to override the corresponding entries in the upstream configmaps
               type: object
             knative-ingress-gateway:
               description: A means to override the knative-ingress-gateway
@@ -84,24 +284,19 @@ spec:
                   additionalProperties:
                     type: string
             registry:
-              description: A means to override the corresponding deployment images
-                in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+              description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
               type: object
               properties:
                 default:
-                  description: The default image reference template to use for all
-                    knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                  description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
                   type: string
                 override:
-                  description: A map of a container name or image name to the full
-                    image location of the individual knative image.
+                  description: A map of a container name or image name to the full image location of the individual knative image.
                   type: object
                   additionalProperties:
                     type: string
                 imagePullSecrets:
-                  description: A list of secrets to be used when pulling the knative
-                    images. The secret must be created in the same namespace as the
-                    knative-serving deployments, and not the namespace of this resource.
+                  description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-serving deployments, and not the namespace of this resource.
                   type: array
                   items:
                     type: object
@@ -110,8 +305,7 @@ spec:
                         description: The name of the secret.
                         type: string
             controller-custom-certs:
-              description: Enabling the controller to trust registries with self-signed
-                certificates
+              description: Enabling the controller to trust registries with self-signed certificates
               type: object
               properties:
                 type:
@@ -129,8 +323,7 @@ spec:
               type: object
               properties:
                 replicas:
-                  description: The number of replicas that HA parts of the control
-                    plane will be scaled to
+                  description: The number of replicas that HA parts of the control plane will be scaled to
                   type: integer
                   minimum: 1
             resources:
@@ -176,27 +369,24 @@ spec:
         status:
           description: Status defines the observed state of KnativeServing
           properties:
+            observedGeneration:
+              description: The generation last processed by the controller
+              type: integer
             conditions:
-              description: The latest available observations of a resource's current
-                state.
+              description: The latest available observations of a resource's current state.
               items:
                 properties:
                   lastTransitionTime:
-                    description: LastTransitionTime is the last time the condition
-                      transitioned from one status to another. We use VolatileTime
-                      in place of metav1.Time to exclude this from creating equality.Semantic
-                      differences (all other things held constant).
+                    description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                     type: string
                   message:
-                    description: A human readable message indicating details about
-                      the transition.
+                    description: A human readable message indicating details about the transition.
                     type: string
                   reason:
                     description: The reason for the condition's last transition.
                     type: string
                   severity:
-                    description: Severity with which to treat failures of this type
-                      of condition. When this is not specified, it defaults to Error.
+                    description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
                     type: string
                   status:
                     description: Status of the condition, one of True, False, Unknown.
@@ -212,6 +402,11 @@ spec:
             version:
               description: The version of the installed release
               type: string
+            manifests:
+              description: The list of serving manifests, which have been installed by the operator
+              type: array
+              items:
+                type: string
           type: object
   version: v1alpha1
   versions:
@@ -238,8 +433,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-logging
+  namespace: default
   labels:
-    serving.knative.dev/release: devel
+    operator.knative.dev/release: 'v0.19.0'
 data:
   _example: |
     ################################
@@ -299,8 +495,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-observability
+  namespace: default
   labels:
-    serving.knative.dev/release: devel
+    operator.knative.dev/release: 'v0.19.0'
 data:
   _example: |
     ################################
@@ -399,37 +596,38 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: knative-serving-operator
+  name: knative-operator
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: knative-serving-operator
+      name: knative-operator
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
       labels:
-        name: knative-serving-operator
+        name: knative-operator
     spec:
-      serviceAccountName: knative-serving-operator
+      serviceAccountName: knative-operator
       containers:
-        - name: knative-serving-operator
-          image: gcr.io/knative-releases/knative.dev/serving-operator/cmd/manager@sha256:16e7c267645b77e0fb8f2adb7c2706288647d6ce8d25d585b2b91c36dbef81e5
+        - name: knative-operator
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:e15834faad8d2f98aca11b015c2ba49d34efcc22a18c18618b666f351fa9c6bf
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: 'knative-serving-operator'
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: METRICS_DOMAIN
-              value: knative.dev/serving-operator
+              value: knative.dev/operator
             - name: CONFIG_LOGGING_NAME
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
@@ -456,12 +654,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: knative-serving-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 aggregationRule:
   clusterRoleSelectors:
-    - # This (along with escalate below) allows the Operator to pick up any
-      # roles that are provided to the admin of the cluster by knative serving
-      # automatically.
-      matchExpressions:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative serving
+    # automatically.
+    - matchExpressions:
         - { key: serving.knative.dev/release, operator: Exists }
 rules: [] # Rules are automatically filled in by the controller manager.
 ---
@@ -469,6 +669,8 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 rules:
   - apiGroups:
       - operator.knative.dev
@@ -476,10 +678,10 @@ rules:
       - '*'
     verbs:
       - '*'
-  - # Bootstrapping permissions.
-    # Roles that are explicitly bound buch which are specified by this Operator
-    # MUST be specified here with 'get' and 'bind'.
-    apiGroups:
+  # Bootstrapping permissions.
+  # Roles that are explicitly bound buch which are specified by this Operator
+  # MUST be specified here with 'get' and 'bind'.
+  - apiGroups:
       - rbac.authorization.k8s.io
     resources:
       - clusterroles
@@ -523,9 +725,193 @@ rules:
       - list
       - get
       - update
-  - # Permissions required for Knative controller
-    # infra.
-    apiGroups:
+  # Permissions required for Knative controller
+  # infra.
+  - apiGroups:
+      - apiregistration.k8s.io
+    resources:
+      - apiservices
+    verbs:
+      - update
+  - apiGroups:
+      - ''
+    resources:
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - caching.internal.knative.dev
+    resources:
+      - images
+    verbs:
+      - '*'
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - update
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - events
+    verbs:
+      - create
+      - update
+      - patch
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - security.istio.io
+      - apps
+      - policy
+    resources:
+      - poddisruptionbudgets
+      - peerauthentications
+      - deployments
+      - daemonsets
+      - replicasets
+      - statefulsets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+      - update
+  - apiGroups:
+      - apiregistration.k8s.io
+    resources:
+      - apiservices
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - '*'
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - '*'
+  # Old resources that need cleaning up that are not in the knative-serving
+  # namespace.
+  - apiGroups:
+      - ''
+    resources:
+      - services
+      - deployments
+      - horizontalpodautoscalers
+    resourceNames:
+      - knative-ingressgateway
+    verbs:
+      - delete
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    resourceNames:
+      - config-controller
+    verbs:
+      - delete
+  - apiGroups:
+      - ''
+    resources:
+      - serviceaccounts
+    resourceNames:
+      - knative-serving-operator
+    verbs:
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative eventing
+    # automatically.
+    - matchExpressions:
+        - { key: eventing.knative.dev/release, operator: Exists }
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-eventing-operator
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
+rules:
+  - apiGroups:
+      - operator.knative.dev
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  # Bootstrapping permissions.
+  # Roles that are explicitly bound buch which are specified by this Operator
+  # MUST be specified here with 'get' and 'bind'.
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterroles
+      - roles
+    verbs:
+      - create
+      - delete
+      # Escalate is necessary in order to create a role using cluster role aggregation,
+      # and to allow the Operator to bootstrap itself into the necessary set of
+      # permissions, even as those continue to evolve upstream.
+      - escalate
+      - get
+      - list
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - list
+      - get
+      - update
+  # Permissions required for Knative controller
+  # infra.
+  - apiGroups:
       - apiregistration.k8s.io
     resources:
       - apiservices
@@ -587,17 +973,6 @@ rules:
       - list
       - watch
   - apiGroups:
-      - batch
-    resources:
-      - jobs
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - update
-      - watch
-  - apiGroups:
       - apiregistration.k8s.io
     resources:
       - apiservices
@@ -613,6 +988,7 @@ rules:
     verbs:
       - create
       - delete
+      - update
       - get
       - list
   - apiGroups:
@@ -627,24 +1003,25 @@ rules:
       - customresourcedefinitions
     verbs:
       - '*'
-  - # Old resources that need cleaning up that are not in the knative-serving
-    # namespace.
-    apiGroups:
-      - ''
+  - apiGroups:
+      - batch
     resources:
-      - services
-      - deployments
-      - horizontalpodautoscalers
-    resourceNames:
-      - knative-ingressgateway
+      - jobs
     verbs:
+      - create
       - delete
+      - update
+      - get
+      - list
+      - watch
+      # Old resources that need cleaning up that are not in the knative-eventing
+      # namespace.
   - apiGroups:
       - ''
     resources:
-      - configmaps
+      - serviceaccounts
     resourceNames:
-      - config-controller
+      - knative-eventing-operator
     verbs:
       - delete
 
@@ -667,26 +1044,61 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: knative-serving-operator
 subjects:
   - kind: ServiceAccount
-    name: knative-serving-operator
+    name: knative-operator
     namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: knative-serving-operator-aggregated
 subjects:
   - kind: ServiceAccount
-    name: knative-serving-operator
+    name: knative-operator
+    namespace: default
+---
+# TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
     namespace: default
 
 ---
@@ -707,7 +1119,10 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: knative-serving-operator
+  name: knative-operator
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v0.19.0'
 
 ---
 
