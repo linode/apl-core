@@ -17,6 +17,5 @@ spec:
       args:  ['{{ include "otomi-api.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
   {{- with .Values.podSecurityContext }}
-  securityContext:
-    {{- toYaml . | nindent 4 }}
+  securityContext: {{- toYaml . | nindent 4 }}
   {{- end }}

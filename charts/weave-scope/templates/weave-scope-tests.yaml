@@ -5,10 +5,8 @@ metadata:
   name: "{{ .Release.Name }}-ui-test-{{ randAlphaNum 5 | lower }}"
   annotations:
     "helm.sh/hook": test-success
-    {{- with $w.podAnnotations }}
-    {{- range $key, $value := .  }}
+    {{- range $key, $value := $w.podAnnotations }}
     {{ $key }}: {{ $value | quote }}
-    {{- end }}
     {{- end }}
   labels:
     {{- include "weave-scope.helm_std_labels" . | indent 4 }}
@@ -44,6 +42,5 @@ spec:
     emptyDir: {}
   restartPolicy: Never
   {{- with $w.podSecurityContext }}
-  securityContext:
-    {{- toYaml . | nindent 4 }}
+  securityContext: {{- toYaml . | nindent 4 }}
   {{- end }}

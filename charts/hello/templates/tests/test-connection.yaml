@@ -6,8 +6,8 @@ metadata:
 {{ include "hello.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test-success
-    {{- with .Values.podAnnotations }}
-    {{- toYaml . | nindent 4 }}
+    {{- range $key, $value :=  .Values.podAnnotations }}
+    {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
   containers:
@@ -17,6 +17,5 @@ spec:
       args:  ['{{ include "hello.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
   {{- with .Values.podSecurityContext }}
-  securityContext:
-    {{- toYaml . | nindent 4 }}
+  securityContext: {{- toYaml . | nindent 4 }}
   {{- end }}
