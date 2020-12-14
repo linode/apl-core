@@ -306,7 +306,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [ -n "$@" ]; then
+      if [ "$@" != '' ]; then
         for f in $@; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
@@ -349,7 +349,7 @@ function execute() {
       drun bin/test.sh
       ;;
     validate-templates)
-      if [ -n "$@" ]; then
+      if [ "$@" != '' ]; then
         validate_cluster_env
       fi
       check_kube_context=0
