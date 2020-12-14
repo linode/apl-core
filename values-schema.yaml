@@ -1322,7 +1322,7 @@ properties:
         $ref: '#/definitions/email'
         description: The "from" address. Defaults to alerts@$clusterDomain.
       hello:
-        type: string
+        type: boolean
       smarthost:
         $ref: '#/definitions/hostPort'
         description: 'The smtp host:port combination.'
