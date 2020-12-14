@@ -1,5 +1,5 @@
 ---
-$schema: http://json-schema.org/draft-07/schema
+$schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: false
 definitions:
   alerts:
@@ -15,18 +15,13 @@ definitions:
         properties:
           critical:
             $ref: '#/definitions/email'
-            description: One or more email addresses (comma separated) for critical
-              events.
+            description: One or more email addresses (comma separated) for critical events.
           nonCritical:
             $ref: '#/definitions/email'
-            description: One or more email addresses (comma separated) for non-critical
-              events.
-        type: object
+            description: One or more email addresses (comma separated) for non-critical events.
       groupInterval:
         default: 5m
-        description: How long to wait before sending a notification about new alerts
-          that are added to a group of alerts for which an initial notification has
-          already been sent. (Usually ~5m or more.)
+        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
         type: string
       msteams:
         additionalProperties: false
@@ -37,7 +32,6 @@ definitions:
           lowPrio:
             description: The high prio web hook
             type: string
-        type: object
       receivers:
         description: Notification receivers.
         items:
@@ -49,8 +43,7 @@ definitions:
         type: array
       repeatInterval:
         default: 3h
-        description: How long to wait before sending a notification again if it has
-          already been sent successfully for an alert. (Usually ~3h or more).
+        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
         type: string
       slack:
         additionalProperties: false
@@ -66,8 +59,6 @@ definitions:
           url:
             $ref: '#/definitions/url'
             description: A Slack webhook URL.
-        type: object
-    type: object
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -97,21 +88,19 @@ definitions:
       logAnalyticsWorkspace:
         description: An Azure monitor log analytics workspace
         type: string
-    type: object
   cloud:
     description: A common cloud configuration
     properties:
       clusters:
         additionalProperties: false
         patternProperties:
-          ^[a-z-]+$:
+          '^[a-z-]+$':
             $ref: '#/definitions/cluster'
       domain:
         $ref: '#/definitions/domain'
     required:
       - domain
       - clusters
-    type: object
   cluster:
     additionalProperties: false
     properties:
@@ -122,23 +111,20 @@ definitions:
         description: Used by kubectl for local deployment to target cluster.
         type: string
       dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud
-          provider ot this cluster.
+        description: Only set it if you want DNS provider to be different than cloud provider ot this cluster.
         enum:
           - azure
           - google
           - aws
         type: string
       dnsZones:
-        description: Extra dns zones that the cluster can administer (see dns). Team
-          services can use this to publish their URLs on.
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
         items:
           $ref: '#/definitions/domain'
         type: array
       domain:
         $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list
-          of dns zones in the Otomi Console.
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       enabled:
         default: true
         type: boolean
@@ -149,8 +135,7 @@ definitions:
         $ref: '#/definitions/k8sVersion'
       otomiVersion:
         default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion:
-          try the most recent stable version.'
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
         type: string
       region:
         description: Dependent on provider.
@@ -167,16 +152,15 @@ definitions:
       - k8sVersion
       - otomiVersion
       - region
-    type: object
   cpuQuantity:
-    description: Amount of cores, or slice of cpu in millis.
+    description: 'Amount of cores, or slice of cpu in millis.'
     examples:
       - '1'
       - 200m
-    pattern: ^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$
+    pattern: '^([0-9]+\.[0-9]{1,2})|([0-9]{2,3}m)?$'
     type: string
   domain:
-    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
+    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
     type: string
   droneGit:
     properties:
@@ -184,19 +168,18 @@ definitions:
         type: string
       clientSecretValue:
         type: string
-    type: object
   email:
-    pattern: ^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$
+    pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
   env:
-    pattern: ^[a-zA-Z0-9_]*$
+    pattern: '^[a-zA-Z0-9_]*$'
     type: string
   hostPort:
-    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$
+    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
-    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
     type: string
   image:
     additionalProperties: false
@@ -212,7 +195,6 @@ definitions:
       tag:
         type: string
     title: Container image
-    type: object
   imageSimple:
     additionalProperties: false
     properties:
@@ -225,11 +207,9 @@ definitions:
       tag:
         type: string
     title: Container image
-    type: object
   k8sVersion:
     default: '1.18'
-    description: The cluster k8s version. Otomi supports 2 minor versions backwards
-      compatibility from the suggested default.
+    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
       - '1.16'
       - '1.17'
@@ -241,31 +221,30 @@ definitions:
   labelsAnnotations:
     additionalProperties: false
     patternProperties:
-      ? ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$
-      : pattern: ^((.){1,253}\/)?(.){1,63}$
+      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
+      : pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
-    type: object
   memoryQuantity:
     description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki
     examples:
       - 1Mi
       - 0.5M
-    pattern: ^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+    pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
   portNumber:
     maximum: 32768
     minimum: 80
     type: number
   registry:
-    pattern: ^[a-z0-9]+(?:[._-][a-z0-9]+)*$
+    pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
   repoUrl:
     description: Path to a remote git repo without protocol. Will use https to access.
-    pattern: ^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$
+    pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
     description: A container image repository
-    pattern: ^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$
+    pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
     type: string
   resource:
     additionalProperties: false
@@ -277,7 +256,6 @@ definitions:
     required:
       - cpu
       - memory
-    type: object
   resources:
     additionalProperties: false
     description: Compute resources for containers
@@ -289,7 +267,6 @@ definitions:
         $ref: '#/definitions/resource'
         description: Requested resources (guaranteed)
     title: Pod resources
-    type: object
   scaling:
     description: Min and max nr of replicas
     properties:
@@ -297,7 +274,6 @@ definitions:
         type: number
       minReplicas:
         type: number
-    type: object
   secret:
     oneOf:
       - properties:
@@ -333,7 +309,6 @@ definitions:
               required:
                 - key
                 - value
-              type: object
             type: array
           type:
             default: generic
@@ -371,7 +346,6 @@ definitions:
     required:
       - name
       - type
-    type: object
   team:
     additionalProperties: false
     properties:
@@ -392,7 +366,6 @@ definitions:
           groupMapping:
             description: IDP group id to map onto this team.
             type: string
-        type: object
       password:
         description: Will be used to separate team resources.
         type: string
@@ -410,47 +383,40 @@ definitions:
               properties:
                 forwardOriginalToken:
                   default: false
-                  description: If true istio will forward the bearer token instead
-                    of removing it from the headers.
+                  description: If true istio will forward the bearer token instead of removing it from the headers.
                   type: boolean
                 workload:
                   $ref: '#/definitions/labelsAnnotations'
-              type: object
             domain:
               description: A custom service domain name
               type: string
             forwardPath:
               default: false
-              description: Wether to forward the path into the service, or 'terminate'
-                it.
+              description: "Wether to forward the path into the service, or 'terminate' it."
               type: boolean
             id:
               description: Unique identifier created by and used in API. Optional.
               type: string
             internal:
               default: false
-              description: If true, service is not going to be exposed to the public
-                domain
+              description: 'If true, service is not going to be exposed to the public domain'
               type: boolean
             isPublic:
               default: false
               description: If true then no SSO will be used.
               type: boolean
             isShared:
-              description: When true the service will get it's own domain by prefixing
-                the app name to the cluster domain. Mostly used by core apps.
+              description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
               type: boolean
             ksvc:
               additionalProperties: false
-              description: Details for a knative service that will be deployed and
-                operated.
+              description: Details for a knative service that will be deployed and operated.
               properties:
                 annotations:
                   $ref: '#/definitions/annotations'
                 autoCD:
                   additionalProperties: false
-                  description: NOT IN USE YET! Deploys new images based on a tagging
-                    strategy.
+                  description: NOT IN USE YET! Deploys new images based on a tagging strategy.
                   oneOf:
                     - additionalProperties: false
                       nullable: true
@@ -459,11 +425,8 @@ definitions:
                       properties:
                         additionalProperties: false
                         semver:
-                          description: 'Use this filter if your images tags follow semantic
-                            versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only:
-                            "~1.1", MINOR and PATCH only "~1", ALL "*"'
-                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL
-                            "*",  ">=1.2.3-0"'
+                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
+                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
                           title: Semver version pattern
                           type: string
                         tagMatcher:
@@ -477,8 +440,7 @@ definitions:
                     - additionalProperties: false
                       properties:
                         glob:
-                          description: 'Use this filter if you want to make simple non-standard
-                            patterns. E.g.: "master-v1.*.*"'
+                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
                           example: master-v1.*.*
                           title: Glob string pattern
                           type: string
@@ -491,7 +453,6 @@ definitions:
                         - glob
                       title: Glob pattern matching
                   title: Continuous delivery pipeline
-                  type: object
                 env:
                   items:
                     additionalProperties: false
@@ -504,7 +465,6 @@ definitions:
                     required:
                       - name
                       - value
-                    type: object
                   nullable: true
                   title: Environment variables
                   type: array
@@ -512,15 +472,13 @@ definitions:
                   $ref: '#/definitions/image'
                 predeployed:
                   default: false
-                  description: Has this service been predeployed? Otherwise otomi
-                    will start it with the configuration given.
+                  description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
                   type: boolean
                 resources:
                   $ref: '#/definitions/resources'
                 scaleToZero:
                   default: false
-                  description: Scales to zero after 60 seconds and needs approximately
-                    8 seconds to start back up.
+                  description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
                   title: Scale to zero
                   type: boolean
                 secrets:
@@ -537,47 +495,38 @@ definitions:
                         type: string
                     required:
                       - name
-                    type: object
                   nullable: true
                   title: Secrets
                   type: array
-              type: object
             name:
               $ref: '#/definitions/idName'
-              description: Short name. Will be used for generation of knative service
-                name, as well as service URL.
+              description: 'Short name. Will be used for generation of knative service name, as well as service URL.'
             ownHost:
               default: true
-              description: When true the service will get it's own domain by prefixing
-                the app name to the team domain. Mostly set to true. This will probably
-                be removed soon.
+              description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
               type: boolean
             paths:
               items:
-                description: 'Path mapping to only let this path go to the service.
-                  This allows micro services to operate on the same domain and port.
-                  When left empty all paths will go to this service.'
+                description: |
+                  Path mapping to only let this path go to the service. This allows micro services to operate on the same domain and port.
+                  When left empty all paths will go to this service.
                 type: string
               type: array
             port:
               $ref: '#/definitions/portNumber'
               default: 80
-              description: Points to the backing k8s service (only used when 'svc'
-                is set).
+              description: Points to the backing k8s service (only used when 'svc' is set).
             svc:
               $ref: '#/definitions/idName'
-              description: When given a backing k8s service is expected to be deployed
-                with this name, which will be exposed through this team service.
+              description: 'When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.'
           required:
             - id
             - name
-          type: object
         type: array
     required:
       - id
-    type: object
   url:
-    pattern: ^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$
+    pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
 properties:
   alerts:
@@ -613,7 +562,6 @@ properties:
       - resourceGroup
       - subscriptionId
       - tenantId
-    type: object
   charts:
     additionalProperties: false
     properties:
@@ -635,8 +583,6 @@ properties:
                     properties:
                       region:
                         type: string
-                    type: object
-                type: object
               azure:
                 additionalProperties: false
                 properties:
@@ -655,7 +601,6 @@ properties:
                         required:
                           - name
                           - key
-                        type: object
                       hostedZoneName:
                         type: string
                       resourceGroupName:
@@ -671,8 +616,6 @@ properties:
                       - subscriptionID
                       - resourceGroupName
                       - hostedZoneName
-                    type: object
-                type: object
               google:
                 additionalProperties: false
                 properties:
@@ -688,25 +631,15 @@ properties:
                             type: string
                           name:
                             type: string
-                        type: object
-                    type: object
-                type: object
-            type: object
           stage:
-            description: "The Let’s Encrypt environment that is used for issuing certificates.
-
-              The 'production' environment issues trusted certificates but has narrow
-              rate limits, whereas the 'staging' environment issues untrusted certificates
-              but provides broader rate limits.
-
+            description: |
+              The Let’s Encrypt environment that is used for issuing certificates.
+              The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
               Read more about rate limits: https://letsencrypt.org/docs/rate-limits/
-
-              "
             enum:
               - staging
               - production
             type: string
-        type: object
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -716,7 +649,6 @@ properties:
             type: boolean
           memory:
             $ref: '#/definitions/memoryQuantity'
-        type: object
       drone:
         additionalProperties: false
         properties:
@@ -737,7 +669,6 @@ properties:
                 type: string
               token:
                 type: string
-            type: object
           orgsFilter:
             type: string
           repoFilter:
@@ -783,7 +714,7 @@ properties:
                   - $ref: '#/definitions/droneGit'
                   - properties:
                       server:
-                        default: https://github.com
+                        default: 'https://github.com'
                         type: string
               gitlab:
                 allOf:
@@ -805,8 +736,6 @@ properties:
                   - bitbucketCloud
                   - bitbucketServer
                 type: string
-            type: object
-        type: object
       external-dns:
         additionalProperties: false
         properties:
@@ -816,9 +745,7 @@ properties:
                 type: string
             required:
               - region
-            type: object
-          azure:
-            type: object
+          azure: null
           domainFilters:
             items:
               type: string
@@ -835,13 +762,11 @@ properties:
             items:
               type: string
             type: array
-        type: object
       gatekeeper-operator:
         additionalProperties: false
         properties:
           enabled:
             type: boolean
-        type: object
       harbor:
         additionalProperties: false
         properties:
@@ -864,11 +789,8 @@ properties:
                         type: string
                       rootdirectory:
                         type: string
-                    type: object
                   type:
                     type: string
-                type: object
-            type: object
           resources:
             additionalProperties: false
             properties:
@@ -890,7 +812,6 @@ properties:
                 $ref: '#/definitions/resources'
           secretKey:
             type: string
-        type: object
       ingress-azure:
         additionalProperties: false
         description: A chart for Azure Application Gateway
@@ -903,8 +824,7 @@ properties:
                 description: A name of the Application Gateway
                 type: string
               resourceGroup:
-                description: A name of the Azure Resource Group in which Application
-                  Gateway was created
+                description: A name of the Azure Resource Group in which Application Gateway was created
                 type: string
               subnetName:
                 description: A subnet of the application gateway
@@ -915,8 +835,7 @@ properties:
                   - 10.1.0.0/16
                 type: string
               subscriptionId:
-                description: The Azure Subscription ID in which Application Gateway
-                  resides
+                description: The Azure Subscription ID in which Application Gateway resides
                 type: string
               usePrivateIP:
                 default: false
@@ -930,19 +849,16 @@ properties:
               - subnetPrefix
           armAuth:
             additionalProperties: false
-            description: A service Principal secret ey An explanation about the purpose
-              of this instance.
+            description: A service Principal secret ey An explanation about the purpose of this instance.
             properties:
               secretJSON:
                 description: A service Principal secret JSON key (base64 encoded)
                 type: string
             required:
               - secretJSON
-            type: object
         required:
           - armAuth
           - appgw
-        type: object
       istio:
         additionalProperties: false
         properties:
@@ -954,26 +870,21 @@ properties:
                 properties:
                   enabled:
                     type: boolean
-                type: object
               kiali:
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-                type: object
               prometheus:
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-                type: object
               tracing:
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-                type: object
-            type: object
           autoscaling:
             properties:
               egressgateway:
@@ -986,13 +897,11 @@ properties:
                 $ref: '#/definitions/scaling'
               pilot:
                 $ref: '#/definitions/scaling'
-            type: object
           egressGateway:
             properties:
               enabled:
                 default: false
                 type: boolean
-            type: object
           global:
             additionalProperties: false
             properties:
@@ -1000,26 +909,21 @@ properties:
                 properties:
                   level:
                     type: string
-                type: object
               mtls:
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-                type: object
               proxy:
                 additionalProperties: false
                 properties:
                   resources:
                     $ref: '#/definitions/resources'
-                type: object
               sds:
                 additionalProperties: false
                 properties:
                   enabled:
                     type: boolean
-                type: object
-            type: object
           resources:
             properties:
               egressgateway:
@@ -1032,8 +936,6 @@ properties:
                 $ref: '#/definitions/resources'
               pilot:
                 $ref: '#/definitions/resources'
-            type: object
-        type: object
       jobs:
         additionalProperties: false
         patternProperties:
@@ -1041,8 +943,6 @@ properties:
             properties:
               image:
                 $ref: '#/definitions/image'
-            type: object
-        type: object
       keycloak:
         additionalProperties: false
         properties:
@@ -1057,7 +957,6 @@ properties:
                 type: string
               clientSecret:
                 type: string
-            type: object
           realm:
             type: string
           resources:
@@ -1072,7 +971,6 @@ properties:
               - default
               - otomi
             type: string
-        type: object
       kube-descheduler:
         additionalProperties: false
         properties:
@@ -1082,7 +980,6 @@ properties:
           schedule:
             default: '*/30 * * * *'
             type: string
-        type: object
       loki:
         additionalProperties: false
         properties:
@@ -1093,7 +990,6 @@ properties:
             properties:
               size:
                 type: string
-            type: object
           retention:
             additionalProperties: false
             properties:
@@ -1101,10 +997,8 @@ properties:
                 type: string
               period:
                 type: string
-            type: object
           storageType:
             type: string
-        type: object
       nginx-ingress:
         additionalProperties: false
         properties:
@@ -1114,10 +1008,8 @@ properties:
               enabled:
                 default: true
                 type: boolean
-            type: object
           resources:
             $ref: '#/definitions/resources'
-        type: object
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1125,10 +1017,8 @@ properties:
             properties:
               cookieSecret:
                 description: Cookie secret must be 128 bit base64 encoded string.
-                pattern: ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
+                pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
-            type: object
-        type: object
       oauth2-proxy-redis:
         additionalProperties: false
         properties:
@@ -1141,7 +1031,6 @@ properties:
                 $ref: '#/definitions/resources'
               slave:
                 $ref: '#/definitions/resources'
-        type: object
       otomi-api:
         additionalProperties: false
         properties:
@@ -1160,7 +1049,6 @@ properties:
                 $ref: '#/definitions/repoUrl'
               user:
                 type: string
-            type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -1177,14 +1065,11 @@ properties:
                 type: string
               image:
                 $ref: '#/definitions/imageSimple'
-            type: object
-        type: object
       otomi-console:
         additionalProperties: false
         properties:
           image:
             $ref: '#/definitions/imageSimple'
-        type: object
       prometheus-operator:
         properties:
           additionalProperties: false
@@ -1193,13 +1078,11 @@ properties:
             properties:
               adminPassword:
                 type: string
-            type: object
           prometheus:
             additionalProperties: false
             properties:
               storageSize:
                 type: string
-            type: object
           resources:
             additionalProperties: false
             properties:
@@ -1207,7 +1090,6 @@ properties:
                 $ref: '#/definitions/resources'
               prometheus:
                 $ref: '#/definitions/resources'
-        type: object
       redis-shared:
         additionalProperties: false
         properties:
@@ -1222,7 +1104,6 @@ properties:
                 $ref: '#/definitions/resources'
               slave:
                 $ref: '#/definitions/resources'
-        type: object
       sitespeed:
         additionalProperties: false
         properties:
@@ -1235,16 +1116,13 @@ properties:
                 type: string
               results:
                 type: string
-            type: object
           retention:
             type: string
           schedule:
             type: string
-        type: object
       weave-scope:
         default: false
         enabled: boolean
-    type: object
   clouds:
     additionalProperties: false
     properties:
@@ -1256,16 +1134,13 @@ properties:
         $ref: '#/definitions/cloud'
       onprem:
         $ref: '#/definitions/cloud'
-    type: object
   cluster:
     description: An internal otomi object (do not edit it)
-    type: object
   customer:
     additionalProperties: false
     properties:
       name:
         type: string
-    type: object
   google:
     description: Google specific configuration
     properties:
@@ -1278,7 +1153,6 @@ properties:
     required:
       - cloudDnsKey
       - projectId
-    type: object
   home:
     $ref: '#/definitions/alerts'
   k8s:
@@ -1294,15 +1168,12 @@ properties:
               type: string
           required:
             - name
-          type: object
         type: array
     required:
       - namespaces
-    type: object
   oidc:
     additionalProperties: false
-    description: Holds many parts used in different locations. Please see keycloak,
-      istio and oauth-proxy all consuming parts.
+    description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
     properties:
       adminGroupID:
         type: string
@@ -1326,52 +1197,41 @@ properties:
         type: string
       tokenUrl:
         $ref: '#/definitions/url'
-    type: object
   otomi:
     additionalProperties: false
     properties:
       hasCloudLB:
         default: false
-        description: Set this to true when an external LB exists or needs to be started
-          (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through
-          ingress controllers. Expects existing LBs to terminate https. Currently
-          this is only working correctly for Azure, and not for AWS and Google. AWS
-          is close to completion.
+        description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
         type: boolean
       isHomeMonitored:
         default: false
-        description: Wether this cluster is home monitored (like when under a Premium
-          SLA). Sends criticals home.
+        description: Wether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isManaged:
         default: true
-        description: Wether masters are managed and not under control. Set this to
-          false when onprem.
+        description: Wether masters are managed and not under control. Set this to false when onprem.
         type: boolean
       isMultitenant:
         default: true
-        description: Wether to separate team metrics and logs. Disabling this lets
-          everybody be admin and see everything.
+        description: Wether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       mode:
         default: ee
-        description: The otomi-core edition. Either community edition (ce) or enterprise
-          edition (ee)
+        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee)
         enum:
           - ce
           - ee
         type: string
       pullSecret:
         default: ''
-        description: The pullsecret to deploy the Otomi API and Console. Requires
-          an Otomi license.
+        description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
         type: string
       teamPrefix:
         default: team-
         description: The prefix to use in URLs for team domains.
-        pattern: ^[a-z]+[-]{1}$
+        pattern: '^[a-z]+[-]{1}$'
         type: string
-    type: object
   proxies:
     items:
       additionalProperties: false
@@ -1386,7 +1246,6 @@ properties:
         - name
         - namespace
         - path
-      type: object
     type: array
   services:
     items:
@@ -1406,10 +1265,8 @@ properties:
                   type: string
                 component:
                   type: string
-              type: object
           required:
             - workload
-          type: object
         forwardPath:
           type: boolean
         hide:
@@ -1426,7 +1283,6 @@ properties:
               type: string
           required:
             - name
-          type: object
         name:
           type: string
         namespace:
@@ -1449,7 +1305,6 @@ properties:
         - name
         - namespace
         - svc
-      type: object
     type: array
   smtp:
     additionalProperties: false
@@ -1469,13 +1324,11 @@ properties:
         type: string
       smarthost:
         $ref: '#/definitions/hostPort'
-        description: The smtp host:port combination.
+        description: 'The smtp host:port combination.'
     required:
       - smarthost
-    type: object
   sops:
-    description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists
-      here only to avoid warnings in console.
+    description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:
     additionalProperties: false
     properties:
@@ -1485,10 +1338,8 @@ properties:
       teams:
         additionalProperties: false
         patternProperties:
-          ^[a-z-]+$:
+          '^[a-z-]+$':
             $ref: '#/definitions/team'
-        type: object
-    type: object
   toolsVersion:
     type: string
 required:
@@ -1501,4 +1352,3 @@ required:
   - k8s
   - services
   - toolsVersion
-type: object
