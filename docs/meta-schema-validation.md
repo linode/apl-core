@@ -4,7 +4,7 @@ We validate `values-schema.yaml` using JSON Schema. Refer to `values-schema.yaml
 
 ## Guidelines for describing strings
 
-By having accurate and consistent descriptions (refer to `description` keys in `values-schema.yaml`), we can provide a better experience in configuring `otomi-values`. Refer to the [Kubernetes API documentation](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#validation) on how to approach API objects.
+By having accurate and consistent descriptions (refer to `description` keys in `values-schema.yaml`), we can provide a better experience in configuring `otomi-values`. Refer to the [Kubernetes API documentation](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#validation) on conventions for description writing.
 
 ### Examples
 
