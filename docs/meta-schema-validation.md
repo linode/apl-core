@@ -33,7 +33,7 @@ Seeing a small improvement:
 armAuth:
    type: object
    additionalProperties: false
-   description: A service Principal secret ey An explanation about the purpose of this instance.
+   description: A service Principal secret
    properties:
    secretJSON:
       description: A service Principal secret JSON key (base64 encoded)
@@ -48,7 +48,7 @@ This could be modified to:
 armAuth:
    type: object
    additionalProperties: false
-   description: A service Principal secret ey An explanation about the purpose of this instance.
+   description: A service Principal secret
    properties:
    secretJSON:
       description: **Must be** a service Principal secret JSON key (base64 encoded)
