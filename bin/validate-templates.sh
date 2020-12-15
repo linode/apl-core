@@ -3,6 +3,7 @@
 [ "$CI" != "" ] && set -e
 set -uo pipefail
 
+DEBUG=${DEBUG:-'false'}
 schemaOutputPath="/tmp/otomi/kubernetes-json-schema/master"
 outputPath="/tmp/otomi/generated-crd-schemas"
 schemasBundleFile="$outputPath/all.json"
@@ -16,7 +17,7 @@ exitcode=1
 cleanup() {
   [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile $kubevalLogPath
-  [[ ${DEBUG-'false'} != "true" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+  [[ $DEBUG != 'true' ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   exit $exitcode
 }
 trap cleanup EXIT ERR

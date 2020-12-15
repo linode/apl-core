@@ -51,8 +51,7 @@ resources:
 
 securityContext:
   enabled: true
-  runAsNonRoot: true
-  runAsUser: 1001
+  runAsUser: 2000
   
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}

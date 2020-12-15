@@ -20,5 +20,4 @@ podAnnotations:
   {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 2 }}
 
 podSecurityContext:
-  runAsUser: 1001
-  runAsNonRoot: true
+  runAsUser: 1000

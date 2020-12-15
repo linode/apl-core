@@ -13,7 +13,4 @@ resources:
     cpu: 50m
     memory: 64Mi
 podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 2 }}
-podSecurityContext:
-  runAsUser: 1001
-  runAsNonRoot: true
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}

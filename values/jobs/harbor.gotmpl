@@ -49,5 +49,4 @@ tasks:
     annotations:
       {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
     securityContext:
-      runAsUser: 1001
-      runAsNonRoot: true
+      runAsUser: 1000

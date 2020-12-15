@@ -16,6 +16,7 @@ fullnameOverride: drone
 sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
+  annotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -46,9 +47,6 @@ server:
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
-  securityContext: 
-    runAsUser: 1001
-    runAsNonRoot: true
 kubernetes:
   resources:
     {{- with $d | get "resources.runner" nil }}

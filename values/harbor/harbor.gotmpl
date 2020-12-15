@@ -256,8 +256,7 @@ portal:
       memory: 128Mi
     {{- end }}
   securityContext:
-    runAsUser: 1001
-    runAsNonRoot: true
+    runAsUser: 10000
 
 redis:
   securityContext:
