@@ -18,7 +18,7 @@ Test files should have the .bats extension, otherwise they will not be executed.
 
 ## How should I name the test files?
 
-First of all, use the .bats file extension. Include at least one of names used in the Shell Scripts you're testing.
+Usually you will name the test file after the shell file holding the code you are testing, but with the `.bats` extension.
 
 Example with a bootstrap.sh file:
 
