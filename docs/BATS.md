@@ -26,7 +26,7 @@ Example with a bootstrap.sh file:
 
 ## How do I use the BATS libraries?
 
-In the Dockerfile, they will be available in `/usr/local/lib/bats-*`. Use these commands to call the libraries to include them in the test file:
+The tests will run in the otomi-core container, which has bats libs in `/usr/local/lib/bats-*`. The following snippet will include them in a test file:
 
 ```
 lib_dir="/usr/local/lib"
