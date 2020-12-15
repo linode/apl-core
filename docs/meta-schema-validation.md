@@ -51,7 +51,7 @@ armAuth:
    description: A service Principal secret
    properties:
    secretJSON:
-      description: **Must be** a service Principal secret JSON key (base64 encoded)
+      description: Must be a service Principal secret JSON key (base64 encoded)
       type: string
 
 ```
