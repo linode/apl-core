@@ -3,6 +3,4 @@
 {{- $i := $v.charts | get "istio" dict }}
 hub: istio
 tag: {{ $i | get "version" "1.6.5" }}
-securityContext:
-  runAsUser: 1001
-  runAsNonRoot: true
+podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}

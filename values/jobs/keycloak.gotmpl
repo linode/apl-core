@@ -24,12 +24,14 @@ tasks:
         repository: badouralix/curl-http2
       script: |
         {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-        echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domain }}"
-        until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domain }}); do 
+        echo "Waiting until keycloak is accessible at http://keycloak-http.keycloak.svc.cluster.local"
+        until $(curl $INSECURE --output /dev/null --silent --head --fail -I http://keycloak-http.keycloak.svc.cluster.local); do 
           printf '.'
           sleep 5
         done
         echo READY!
+      securityContext:
+        runAsUser: 1000
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
@@ -38,7 +40,7 @@ tasks:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
       # DEBUG: '*'
-      KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+      KEYCLOAK_ADDRESS: http://keycloak-http.keycloak.svc.cluster.local
       KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
       KEYCLOAK_REALM: master
@@ -64,7 +66,5 @@ tasks:
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
     annotations:
-      {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
-    securityContext:
-      runAsUser: 1001
-      runAsNonRoot: true
+      {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 6 }}
+    

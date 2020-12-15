@@ -3,6 +3,7 @@
 set -uo pipefail
 
 EXIT_FAST=${EXIT_FAST:-"true"}
+DEBUG=${DEBUG:-'false'}
 [[ $EXIT_FAST == "true" ]] && set -e
 
 . bin/common.sh
@@ -17,7 +18,7 @@ validationResult=0
 
 cleanup() {
   [[ $validationResult -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
-  [[ ${DEBUG-'false'} != "true" ]] && rm -rf $k8sResourcesPath
+  [[ $DEBUG != "true" ]] && rm -rf $k8sResourcesPath
   rm -f $constraintsFile $parametersFile
   exit $validationResult
 }

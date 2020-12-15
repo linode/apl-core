@@ -31,6 +31,9 @@ spec:
         args:
           - |
             {{- toString $spec.init.script | nindent 12 }}
+        {{- with $spec.init.securityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- end }}
       containers:
       - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"

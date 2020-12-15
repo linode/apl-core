@@ -10,5 +10,4 @@ deployments:
         cpu: {{ $o | get "cpu" "1000m" }}
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
-podSecurityContext:
-  runAsUser: 1001
+    annotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 6}}

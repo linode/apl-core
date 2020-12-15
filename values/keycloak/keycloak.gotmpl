@@ -59,7 +59,7 @@ keycloak:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
-        fsGroup: 1000
+        runAsGroup: 1000
       command:
         - sh
       args:
@@ -98,8 +98,8 @@ postgresql:
     {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 4}}
   securityContext:
     enabled: true
-    fsGroup: 1000
-    runAsUser: 1000
+    fsGroup: 1001
+    runAsUser: 1001
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
   postgresqlDatabase: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
@@ -109,7 +109,7 @@ postgresql:
     enabled: true
     securityContext:
       enabled: true
-      runAsUser: 1000
+      runAsUser: 1001
       runAsNonRoot: true
     serviceMonitor:
       enabled: true

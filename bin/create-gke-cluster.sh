@@ -8,10 +8,11 @@ readonly CLUSTER
 readonly METERING_SET=${METERING_SET:-otomi_metering}
 readonly VERBOSE=${VERBOSE:-0}
 
-readonly PROJECT_ID=${PROJECT_ID:-$(yq read $ENV_DIR/env/clusters.yaml google.projectId)}
+readonly PROJECT_ID=${PROJECT_ID:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.projectId)}
 readonly GOOGLE_REGION=${GOOGLE_REGION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.region)}
 readonly CUSTOMER=${CUSTOMER:-$(yq read $ENV_DIR/env/settings.yaml customer.name)}
 readonly K8S_VERSION=${K8S_VERSION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sVersion)}
+readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.releaseChannel)}
 
 print_envs() {
   echo "ENV_DIR: $ENV_DIR"
@@ -21,6 +22,7 @@ print_envs() {
   echo "K8S_VERSION: $K8S_VERSION"
   echo "CUSTOMER: $CUSTOMER"
   echo "METERING_SET: $METERING_SET"
+  echo "RELEASE_CHANNEL: $RELEASE_CHANNEL"
 }
 
 [ $VERBOSE -eq "1" ] && print_envs
@@ -29,7 +31,7 @@ print_envs() {
 gcloud container clusters create "otomi-gke-$CLUSTER" \
   --project "$PROJECT_ID" \
   --addons HorizontalPodAutoscaling,HttpLoadBalancing \
-  --cluster-version $PROJECT_ID \
+  --cluster-version $K8S_VERSION \
   --disk-size "100" \
   --disk-type "pd-standard" \
   --enable-autoprovisioning \
@@ -61,6 +63,7 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --resource-usage-bigquery-dataset "$METERING_SET" \
   --scopes "https://www.googleapis.com/auth/cloud-platform" \
   --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default"
+# --release-channel "$RELEASE_CHANNEL"
 # --enable-pod-security-policy
 
 gcloud container clusters get-credentials otomi-gke-$CLUSTER --region $GOOGLE_REGION --project $PROJECT_ID
