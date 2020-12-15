@@ -10,7 +10,7 @@ Example of calling the binary:
 
 `docker run --rm otomi/tools:1.4.10 bats bin/tests`
 
-This example command assumes that tests are found in the container directory `otomi-core/bin/tests`. You can call bats with a directory as parameter and it will execute any file with the .bats extension. Note that these files can be found in the container directory \$WORKDIR/bin/tests.
+This example assumes tests exist in the container directory `otomi-core/bin/tests`. You can call bats with a directory as parameter and it will execute any `*.bats` file.
 
 ## How should I add tests?
 
