@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.53](https://github.com/redkubes/otomi-core/compare/v0.11.52...v0.11.53) (2020-12-15)
+
+
+### Features
+
+* upgrade knative-serving version ([#230](https://github.com/redkubes/otomi-core/issues/230)) ([528eb07](https://github.com/redkubes/otomi-core/commit/528eb07d73a57ee373f661e1ee13c67fa5e5c626))
+
+
+### Bug Fixes
+
+* format & sort values-schema.yaml ([#242](https://github.com/redkubes/otomi-core/issues/242)) ([bdd6188](https://github.com/redkubes/otomi-core/commit/bdd61888f6a5a837c624d9e8da4353e478b7059b))
+* modify check empty parameters ([#247](https://github.com/redkubes/otomi-core/issues/247)) ([02c1687](https://github.com/redkubes/otomi-core/commit/02c1687936c0e4355778c9dc0dcbe84dace4c503))
+* removed 403 redirect ([83fffcc](https://github.com/redkubes/otomi-core/commit/83fffcc2110b0db3fbae574a227611c708ddc316))
+* without export not available ([#229](https://github.com/redkubes/otomi-core/issues/229)) ([c231527](https://github.com/redkubes/otomi-core/commit/c231527b4fa384529c3a65e5dedb9d3f289146df))
+
+
+### Others
+
+* **deps:** bump ini from 1.3.5 to 1.3.8 ([#245](https://github.com/redkubes/otomi-core/issues/245)) ([50a877f](https://github.com/redkubes/otomi-core/commit/50a877ff00d6572787269f6f3352df85615fcead))
+
 ### [0.11.52](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.52) (2020-12-07)
 
 
