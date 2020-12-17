@@ -1235,11 +1235,9 @@ properties:
         type: string
       addons:
         description: Manage addon configuration
-        type: object
         additionalProperties: false
         properties:
           conftest:
-            type: object
             properties:
               enabled:
                 type: boolean
