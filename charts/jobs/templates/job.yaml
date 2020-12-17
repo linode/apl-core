@@ -19,7 +19,7 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
-      {{- with $spec.securityContext }}
+      {{- with $spec.podSecurityContext }}
       securityContext: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if $spec.init }}
@@ -60,6 +60,9 @@ spec:
           {{- if $spec.mounts }}
           {{- $spec.mounts | toYaml | nindent 10 }}
           {{- end }}
+        {{- with $spec.securityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
       restartPolicy: Never
       volumes:
         - name: fakeroot

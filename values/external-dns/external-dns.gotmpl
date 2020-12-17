@@ -8,9 +8,9 @@ sources:
 provider: {{ $dnsProvider }}
 {{- if eq $dnsProvider "google" }}
 google:
-  project: {{ $v | get "clouds.google.projectId" ""}}
+  project: {{ $v.google.projectId }}
   serviceAccountKey: |
-    {{- $v | get "clouds.google.cloudDnsKey" "" | nindent 4 }}
+    {{- $v.google.cloudDnsKey | nindent 4 }}
 {{- else if and (eq $dnsProvider "aws") (hasKey $dns "aws") }}
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}

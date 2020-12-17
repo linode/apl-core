@@ -15,6 +15,8 @@
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 replicaCount: 1
 
 resources:
@@ -46,7 +48,6 @@ env:
   TEAMS: '{{ keys $v.teamConfig.teams | toJson }}'
 
 
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 podAnnotations:
   {{- tpl $addIgnorePolicyAnnotation (list  "banned-image-tags") | nindent 2 }}
 

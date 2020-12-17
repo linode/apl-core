@@ -30,8 +30,8 @@ tasks:
           sleep 5
         done
         echo READY!
-      # securityContext:
-      #   runAsUser: 1000
+      securityContext:
+        runAsUser: 1000
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}

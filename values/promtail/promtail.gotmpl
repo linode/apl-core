@@ -1,6 +1,8 @@
 {{- $v := .Environment.Values }}
 {{- $promtail := $v.charts | get "promtail" dict }}
 {{- $t := $v.teamConfig }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 nameOverride: promtail
@@ -25,7 +27,6 @@ securityContext:
 serviceMonitor:
   enabled: true
 
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
