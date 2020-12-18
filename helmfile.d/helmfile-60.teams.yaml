@@ -187,6 +187,24 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
+    
+  - name: jobs-{{ $teamId }}
+    installed: {{ has $v.cluster.id $team.clusters }}
+    namespace: team-{{ $teamId }}
+    chart: ../charts/jobs
+    labels:
+      tag: teams
+      team: {{ $teamId }}
+    values:
+      - tasks:
+          my-job:
+            enabled: true
+            type: job
+            image:
+              repository: busybox
+              tag: latest
+              pullPolicy: IfNotPresent
+              script: echo "Hello World"
 
   {{- end }}
   {{- end }}
