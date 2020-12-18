@@ -198,7 +198,6 @@ releases:
     values:
       - jobs:
           my-job:
-            enabled: true
             type: job
             image:
               repository: busybox
