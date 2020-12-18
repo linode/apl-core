@@ -13,7 +13,6 @@
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 jobs:
-
   keycloak:
     type: job
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
