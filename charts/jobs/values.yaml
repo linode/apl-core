@@ -6,7 +6,7 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-tasks: {}
+jobs: {}
   # someTask:
   #   enabled: true
   #   shell: bash # default sh

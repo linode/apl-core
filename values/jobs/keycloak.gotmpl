@@ -12,7 +12,7 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-tasks:
+jobs:
 
   keycloak:
     type: job
@@ -61,4 +61,4 @@ tasks:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
-    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run jobs:keycloak

@@ -15,7 +15,7 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-tasks:
+jobs:
   harbor:
     type: job
     enabled: {{ $hasHarbor }} 
@@ -44,5 +44,5 @@ tasks:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
-    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
+    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run jobs:harbor
 

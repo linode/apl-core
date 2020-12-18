@@ -196,7 +196,7 @@ releases:
       tag: teams
       team: {{ $teamId }}
     values:
-      - tasks:
+      - jobs:
           my-job:
             enabled: true
             type: job

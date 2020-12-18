@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $ := . }}
-{{- range $name, $spec := $v.tasks }}
+{{- range $name, $spec := $v.jobs }}
 {{- if and $spec.enabled (eq $spec.type "job") }}
 apiVersion: batch/v1
 kind: Job
