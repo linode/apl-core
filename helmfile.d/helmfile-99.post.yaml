@@ -10,7 +10,6 @@ releases:
     installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB }}
     <<: *jobs
     labels:
-      tag: ingress
       pkg: ingress-azure
   - name: jobs-harbor
     installed: {{ $c | get "harbor.enabled" false }}
