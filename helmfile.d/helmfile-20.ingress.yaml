@@ -32,6 +32,7 @@ releases:
     namespace: ingress
     labels:
       tag: ingress
+      pkg: ingress-azure
     <<: *default
   - name: ingress-merge
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
