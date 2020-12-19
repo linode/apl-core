@@ -37,7 +37,7 @@
   },
   "license": "Apache-2.0",
   "lint-staged": {
-    "*.{json,yml,yaml,md}": [
+    "*.{json,yml,yaml}": [
       "prettier --write"
     ]
   },

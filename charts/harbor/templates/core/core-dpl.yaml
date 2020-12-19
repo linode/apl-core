@@ -31,6 +31,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
+        runAsUser: {{ default 10000 .Values.core.securityContext.runAsUser  }}
 {{- if .Values.core.serviceAccountName }}
       serviceAccountName: {{ .Values.core.serviceAccountName }}
 {{- end -}}

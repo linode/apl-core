@@ -12,8 +12,9 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-tasks:
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
+tasks:
   keycloak:
     type: job
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
@@ -62,3 +63,6 @@ tasks:
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+    annotations: {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
+    podSecurityContext:
+      runAsUser: 1000

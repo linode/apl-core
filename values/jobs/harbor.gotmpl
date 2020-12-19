@@ -14,6 +14,7 @@
 {{- range $teams -}}
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 tasks:
   harbor:
@@ -45,4 +46,6 @@ tasks:
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
-
+    annotations: {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
+    podSecurityContext:
+      runAsUser: 1000

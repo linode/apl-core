@@ -1,6 +1,8 @@
 {{- $v := .Environment.Values }}
 {{- $promtail := $v.charts | get "promtail" dict }}
 {{- $t := $v.teamConfig }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 nameOverride: promtail
@@ -25,8 +27,11 @@ securityContext:
 serviceMonitor:
   enabled: true
 
+
 podAnnotations:
   sidecar.istio.io/inject: "false"
+  # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem") | nindent 2 }}
 
 pipelineStages:
   - docker: {}

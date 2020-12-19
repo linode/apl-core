@@ -33,6 +33,9 @@ otomi:
     isMultitenant: true
     mode: ce
     teamPrefix: team-
+    addons:
+        conftest:
+            enabled: true
 smtp:
     smarthost: smtp-relay.gmail.com:587
     hello: doma.in

@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $httpbin := $v.charts | get "httpbin" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: httpbin
 fullnameOverride: httpbin
@@ -11,3 +12,5 @@ resources:
   limits:
     cpu: 50m
     memory: 64Mi
+podAnnotations:
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}

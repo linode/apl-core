@@ -6,31 +6,21 @@ package lib.exceptions
 # policyID = ...
 # 
 # violation[{"msg": msg}] {
-#     not is_exception(policyID)
+#     not exceptions.is_exception(policyID)
+#     ...
 # }
-# 
-# parameters = exceptions.parameters(policyID)
 # 
 
 import data.lib.core
-import data.lib.utils
-
-default ignoreAnnotation = "policies.otomi.io/ignore"
-default paramsAnnotation = "policies.otomi.io/parameters"
-
-extra_parameters(policyID) = params {
-    core.annotations != null
-    core.has_field(core.annotations, sprintf("%s.%s",[paramsAnnotation, policyID]))
-	params := json.unmarshal( core.annotations[policyAnnotation] )
-} else = params {
-    params := {}
-}
-
-parameters(policyID) = params {
-    params := utils.merge(data.parameters[policyID], extra_parameters(policyID))
-}
+import data.lib.parameters
+import data.lib.annotations
 
 is_exception(policyID) = true  {
-    ignoreList := split(core.annotations[ignoreAnnotation],",")
-    ignoreList[_] == policyID
+  annotations_object := annotations.policy_annotations()
+  core.has_field(annotations_object, annotations.ignoreAnnotationField)
+  annotations_object[annotations.ignoreAnnotationField] != null
+  ignoreList := split(annotations_object[annotations.ignoreAnnotationField],",")
+  ignoreList[_] == policyID
+} {
+  not parameters.parameters(policyID).enabled
 }

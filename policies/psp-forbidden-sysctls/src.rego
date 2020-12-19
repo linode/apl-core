@@ -1,0 +1,33 @@
+# @title Containers must not allow sysctls
+#
+# Deny using sysctls
+#
+# Sysctls can disable security mechanisms or affect all containers on a host, 
+# and should be disallowed except for an allowed "safe" subset.
+#
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+package k8spspforbiddensysctls
+import data.lib.core
+import data.lib.pods
+import data.lib.security
+import data.lib.exceptions
+import data.lib.parameters
+
+policyID = "psp-forbidden-sysctls"
+
+violation[{"msg": msg, "details": {}}] {
+  not exceptions.is_exception(policyID)
+  sysctl := core.resource.securityContext.sysctls[_].name
+  forbidden_sysctl(sysctl)
+  msg := sprintf("Policy: %s - The sysctl %v is not allowed, pod: %v. Forbidden sysctls: %v", [policyID, sysctl, core.resource.metadata.name, parameters.parameters(policyID).forbiddenSysctls])
+}
+# * may be used to forbid all sysctls
+forbidden_sysctl(sysctl) {
+  parameters.parameters(policyID).forbiddenSysctls[_] == "*"
+}
+forbidden_sysctl(sysctl) {
+  parameters.parameters(policyID).forbiddenSysctls[_] == sysctl
+}
+forbidden_sysctl(sysctl) {
+  startswith(sysctl, trim(parameters.parameters(policyID).forbiddenSysctls[_], "*"))
+}

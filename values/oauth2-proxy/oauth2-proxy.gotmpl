@@ -7,6 +7,7 @@
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 image:
   tag: "v6.1.1"
   repository: quay.io/oauth2-proxy/oauth2-proxy
@@ -48,6 +49,10 @@ resources:
 {{- end }}
 {{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
 
+securityContext:
+  enabled: true
+  runAsUser: 2000
+  
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github

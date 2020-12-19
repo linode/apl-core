@@ -9,20 +9,26 @@ package pspprivileged
 import data.lib.core
 import data.lib.pods
 import data.lib.security
+import data.lib.exceptions
+import data.lib.parameters
 
-policyID = "pspprivileged"
+policyID = "psp-privileged"
 
 violation[msg] {
-  core.parameters.pspprivileged.enabled
+  not exceptions.is_exception(policyID)
   pods.containers[container]
   container_is_privileged(container)
   msg := sprintf("Policy: %s - Privileged container is not allowed: %s/%s, securityContext: %v", [policyID, core.kind, core.name, container.securityContext])
 }
 
 container_is_privileged(container) {
-    container.securityContext.privileged
+  container.securityContext.privileged
 }
 
 container_is_privileged(container) {
-    security.added_capability(container, "CAP_SYS_ADMIN")
+  security.added_capability(container, "CAP_SYS_ADMIN")
+}
+
+container_is_privileged(container) {
+  container.securityContext.allowPrivilegeEscalation
 }

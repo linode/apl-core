@@ -1,0 +1,14 @@
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $policies := (readFile "../../env/env/policies.yaml" | fromYaml) | get "policies" dict }}
+{{- $activatePolicies := list -}}
+
+# iterating over list of provided policy names and rendering only the enabled policies
+{{- range $i, $policyID := . }}
+{{- $enabled := ($policies | get $policyID) | get "enabled" false }}
+{{- if $enabled }} {{ $activatePolicies = append $activatePolicies $policyID }}  {{ end -}} 
+{{ end -}} 
+
+# append annotation field with list of excluded policy names
+{{- with $activatePolicies }}
+policy.otomi.io/ignore: {{ tpl $joinTpl (dict "list" . "sep" ",") | quote }}
+{{- end }}

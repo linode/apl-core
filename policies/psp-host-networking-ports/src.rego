@@ -6,12 +6,13 @@
 package psphostnetworkingports
 import data.lib.core
 import data.lib.pods
+import data.lib.exceptions
+import data.lib.parameters
 
-policyID = "psphostnetworkingports"
-
+policyID = "psp-host-networking-ports"
 
 violation[msg] {
-  core.parameters.psphostnetworkingports.enabled
+  not exceptions.is_exception(policyID)
   pod_has_hostnetwork
   msg := sprintf("Policy: %s - HostNetwork not allowed, pod/%v", [policyID, core.name])
 }

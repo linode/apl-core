@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values -}}
 {{- $o := $v.charts | get "cluster-overprovisioner" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 deployments:
   - name: default
@@ -9,3 +10,4 @@ deployments:
         cpu: {{ $o | get "cpu" "1000m" }}
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
+    annotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 6}}
