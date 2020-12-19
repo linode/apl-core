@@ -48,7 +48,7 @@ set +e
 customer=$(customer_name || $CUSTOMER || "unknown")
 set -e
 cmd_image=''
-docker_terminal_params='-ti'
+docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
@@ -283,7 +283,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [ "$@" != '' ]; then
+      if [[ "$@" != '' ]]; then
         for f in $@; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
@@ -306,7 +306,7 @@ function execute() {
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [ "$@" != '' ]; then
+      if [[ "$@" != '' ]]; then
         for f in $@; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
@@ -349,7 +349,7 @@ function execute() {
       drun bin/test.sh
       ;;
     validate-templates)
-      if [ "$@" != '' ]; then
+      if [[ "$@" != '' ]]; then
         validate_cluster_env
       fi
       check_kube_context=0
