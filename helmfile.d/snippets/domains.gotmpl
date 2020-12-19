@@ -5,7 +5,6 @@
 {{- $domains := list }}
 {{- $domainNames := list }}
 {{- $teams := set $tc.teams "admin" dict }}
-# {{ $tc.teams | toJson }}
 {{- range $teamId, $team := $tc.teams }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domain }}
   {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
