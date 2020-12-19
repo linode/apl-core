@@ -211,9 +211,9 @@ definitions:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
-      - '1.16'
       - '1.17'
       - '1.18'
+      - '1.19'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'

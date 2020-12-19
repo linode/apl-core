@@ -48,7 +48,7 @@ set +e
 customer=$(customer_name || $CUSTOMER || "unknown")
 set -e
 cmd_image=''
-docker_terminal_params='-ti'
+docker_terminal_params='-t'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
