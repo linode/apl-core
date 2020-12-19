@@ -7,9 +7,9 @@
 
 replicaCount: 1
 
-{{- if (hasKey $o "resources.api") }}
+{{- with $o | get "resources.api" nil }}
 resources:
-  {{- $o.resources.api | toYaml | nindent 2 }}
+  {{- toYaml . | nindent 2 }}
 {{- end }}
 
 image:
@@ -25,9 +25,9 @@ secrets:
   {{- if $v.sops.enabled }}
   GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
   {{- end }}
-  OIDC_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
 
 env:
+  # DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
@@ -38,6 +38,9 @@ env:
   {{- end }}
   USE_SOPS: {{ $v.sops.enabled }}
   CORE_VERSION: '{{ $version }}'
+  {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
+  NO_AUTHZ: true
+  {{- end }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -50,8 +53,8 @@ tools:
   image:
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     tag: {{ $o | get "tools.image.tag" "latest" }}
-  {{- if (hasKey $o "resources.tools") }}
-  resources:
-    {{- $o.resources.tools | toYaml | nindent 4 }}
-  {{- end }}
+    {{- with $o | get "resources.tools" nil }}
+    resources:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}

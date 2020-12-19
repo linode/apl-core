@@ -24,7 +24,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
 {{- define "dockercfg" -}}
-{"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"not@val.id","auth":"{{ .password | b64enc}}"}}}
+{"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"not@val.id","auth":"{{ print .username ":" .password | b64enc}}"}}}
 {{- end -}}
 
 {{- define "itemsByName" -}}
@@ -60,7 +60,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end }}
 {{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .otomi.hasCloudLB) (eq .provider "nginx")) }}
-{{- if and $internetFacing .isApps }}
+{{- if and $internetFacing }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}
@@ -117,10 +117,6 @@ metadata:
   {{- if .isApps }}
       rewrite ^/$ https://otomi.{{ .cluster.domain }}/ permanent;
       rewrite ^(/tracing)$ $1/ permanent;
-  {{- end }}
-  {{- if .hasAuth }}
-      # TODO: remove once we have groups support via oidc
-      proxy_set_header Auth-Group "{{ .teamId }}";
   {{- end }}
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}

@@ -5,12 +5,13 @@
 {{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
+{{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
 {{- $o := $v.oidc }}
-{{- $hasOIDC := or $hasKeycloak (hasKey $o "grafana") }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -27,14 +28,14 @@ resources:
               minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 2 }}
               maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 6 }}
             resources:
-              {{- if hasKey $i "resources.pilot" }}
-                {{- $i.resources.pilot | toYaml | nindent 14 }}
+              {{- with $i | get "resources.pilot" nil }}
+                {{- toYaml . | nindent 14 }}
               {{- else }}
               requests:
-                memory: 128Mi
+                memory: 192Mi
                 cpu: 100m
               limits:
-                memory: 256Mi
+                memory: 768Mi
                 cpu: 500m
               {{- end }}
         ingressGateways:
@@ -43,8 +44,8 @@ resources:
             k8s:
               priorityClassName: "otomi-critical"
               resources:
-              {{- if hasKey $i "resources.ingressgateway-public" }}
-                {{- $i.resources.ingressgateway | toYaml | nindent 16 }}
+              {{- with $i | get "resources.ingressgateway" nil }}
+                {{- toYaml . | nindent 16 }}
               {{- else }}
                 requests:
                   memory: 128Mi
@@ -54,8 +55,8 @@ resources:
                   cpu: 500m
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway-public.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway-public.maxReplicas" 6 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 6 }}
               service:
                 type: ClusterIP
                 ports:
@@ -80,8 +81,8 @@ resources:
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-                {{- if hasKey $i "resources.ingressgateway-auth" }}
-                  {{- $i | get "resources.ingressgateway-auth" | toYaml | nindent 16 }}
+                {{- with $i | get "resources.ingressgateway-auth" nil }}
+                  {{- toYaml . | nindent 16 }}
                 {{- else }}
                 requests:
                   memory: 128Mi
@@ -114,8 +115,8 @@ resources:
                 maxReplicas: {{ $i | get "autoscaling.gateway-local.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
-                {{- if (hasKey $i "resources.gateway-local") }}
-                  {{- $i | get "resources.gateway-local" | toYaml | nindent 16 }}
+                {{- with $i | get "resources.gateway-local" nil }}
+                  {{- toYaml . | nindent 16 }}
                 {{- else }}
                 requests:
                   memory: 128Mi
@@ -133,19 +134,48 @@ resources:
                   name: http2
                 - port: 443
                   name: https
+        {{ if $i | get "egressGateway.enabled" false }}
         egressGateways:
           - name: istio-egressgateway
-            enabled: false
-        # cni:
-        #   enabled: true # not working with SDS yet, see: https://github.com/istio/istio/issues/15701
+            enabled: true
+            k8s:
+              priorityClassName: "otomi-critical"
+              resources:
+              {{- with $i | get "resources.egressgateway" nil }}
+                {{- toYaml . | nindent 16 }}
+              {{- else }}
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+                  cpu: 500m
+              {{- end }}
+              hpaSpec:
+                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 2 }}
+                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 6 }}
+              service:
+                type: ClusterIP
+                ports:
+                - port: 15020
+                  name: status-port
+                - port: 80
+                  name: http2
+                - port: 443
+                  name: https
+            {{- if eq $v.cluster.provider "azure" }}
+              readinessProbe:
+                failureThreshold: 20
+            {{- end }}
+        {{- end }}  
       addonComponents:
         grafana:
           enabled: {{ $ia | get "grafana.enabled" true }}
           k8s:
             priorityClassName: "otomi-critical"
             resources:
-              {{- if hasKey $i "resources.grafana" }}
-                {{- $i.resources.grafana | toYaml | nindent 14 }}
+              {{- with $i | get "resources.grafana" nil }}
+                {{- toYaml . | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -159,8 +189,8 @@ resources:
           k8s:
             priorityClassName: "otomi-critical"
             resources:
-              {{- if hasKey $i "resources.prometheus" }}
-                {{- $i.resources.prometheus | toYaml | nindent 14 }}
+              {{- with $i | get "resources.prometheus" nil }}
+                {{- toYaml . | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -174,8 +204,8 @@ resources:
           k8s:
             priorityClassName: "otomi-critical"
             resources:
-              {{- if hasKey $i "resources.tracing" }}
-                {{- $i.resources.tracing | toYaml | nindent 14 }}
+              {{- with $i | get "resources.tracing" nil }}
+                {{- toYaml . | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -189,8 +219,8 @@ resources:
           k8s:
             priorityClassName: "otomi-critical"
             resources:
-              {{- if hasKey $i "resources.kiali" }}
-                {{- $i.resources.kiali | toYaml | nindent 14 }}
+              {{- with $i | get "resources.kiali" nil }}
+                {{- toYaml . | nindent 14 }}
               {{- else }}
               requests:
                 cpu: 100m
@@ -214,14 +244,8 @@ resources:
           istio-ingressgateway:
             sds:
               enabled: {{ $ig | get "sds.enabled" false }}
-            {{- if hasKey $iga "resources.istio-ingressgateway" }}
-            resources: {{- $iga | get "resources.istio-ingressgateway" | toYaml | nindent 14 }}
-            {{- end }}
-          # istio-egressgateway:
-          #   {{/*- if hasKey $iga "istio-egressgateway.resources" */}}
-          #   resources: {{/*- $iga | get "istio-egressgateway.resources" | toYaml | nindent 14 */}}
-          #   {{/*- end */}}
         global:
+          imagePullPolicy: IfNotPresent
           sds:
             enabled: {{ $ig | get "sds.enabled" false }}
           mtls:
@@ -230,8 +254,9 @@ resources:
           logging:
             level: {{ $ig | get "logging.level" "default:info" }}
           proxy:
-            {{- if (hasKey $ig "proxy.resources") }}
-            resources: {{- $ig.proxy.resources | toYaml | nindent 14 }}
+            resources:
+            {{- with $i | get "resources.proxy" nil }}
+              {{- toYaml . | nindent 14 }}
             {{- end }}
             autoInject: enabled
           useMCP: false
@@ -239,27 +264,7 @@ resources:
           env:
             GF_SERVER_ROOT_URL: /grafana-istio/
           contextPath: '/grafana-istio'
-          grafana.ini:
-            "auth.anonymous":
-              enabled: {{ not $hasOIDC }}
-              # enabled: true
-              org_role: Admin
-              org_name: Main Org.
-            "auth.generic_oauth":
-              # enabled: false
-              enabled: {{ $hasOIDC }}
-              name: OAuth
-              org_role: Admin
-              allow_sign_up: true
-              # allow_sign_up: false
-              oauth_auto_login: true # false = so we can login with admin / bladibla
-              client_id: {{ $o.clientID }}
-              client_secret: {{ $o.clientSecret }}
-              scopes: openid
-              auth_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" $keycloakBase) ($o | getOrNil "grafana.authUrl") }}
-              token_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" $keycloakBase) ($o | getOrNil "grafana.tokenUrl") }}
-              api_url: {{ $hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" $keycloakBase) ($o | getOrNil "grafana.apiUrl") }}
-              role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+          grafana.ini: {{- $grafanaIni | nindent 12 }}
         meshConfig:
           enableAutoMtls: true
           accessLogFile: "/dev/stdout"

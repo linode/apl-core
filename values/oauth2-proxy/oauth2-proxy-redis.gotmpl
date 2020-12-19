@@ -1,0 +1,60 @@
+{{- $v := .Environment.Values }}
+{{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
+
+cluster:
+  enabled: {{ $r | get "cluster.enabled" false }}
+persistence:
+  size: 1Gi
+usePassword: false
+
+sentinel:
+  resources:
+  {{- with $r | get "resources.sentinel" nil }}
+    {{- toYaml . | nindent 4 }}
+  {{- else }}
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  {{- end }}
+
+master:
+  priorityClassName: "otomi-critical"
+  resources:
+  {{- with $r | get "resources.master" nil }}
+    {{- toYaml . | nindent 4 }}
+  {{- else }}
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  {{- end }}
+
+slave:
+  priorityClassName: "otomi-critical"
+  resources:
+  {{- with $r | get "resources.slave" nil }}
+    {{- toYaml . | nindent 4 }}
+  {{- else }}
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  {{- end }}
+
+metrics:
+  priorityClassName: "otomi-critical"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 256Mi
+# password: bla

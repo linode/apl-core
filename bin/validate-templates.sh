@@ -1,35 +1,34 @@
 #!/usr/bin/env bash
 
+[ "$CI" != "" ] && set -e
 set -uo pipefail
-EXIT_FAST=${EXIT_FAST:-"1"}
-[[ $EXIT_FAST == "1" ]] && set -e
 
-schemaOutputPath="/tmp/otomi/kubernetes-json-schema/master"
+schemaOutputPath="/tmp/otomi/kubernetes-json-schema"
 outputPath="/tmp/otomi/generated-crd-schemas"
 schemasBundleFile="$outputPath/all.json"
 k8sResourcesPath="/tmp/otomi/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
-exitcode=1
+exitcode=0
 
 . bin/common.sh
 
+readonly k8s_version="v$(get_k8s_version)"
+
 cleanup() {
-  [[ $exitcode -eq 0 ]] && echo "Validation Success" || echo "Validation Failed"
+  [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile
-  [[ "${MOUNT_TMP_DIR-0}" != "1" ]] && rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
+  rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
   exit $exitcode
 }
 trap cleanup EXIT ERR
 
 run_setup() {
-  exitcode=1
-  local version="v$(get_k8s_version).0"
   rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
   echo "" >$schemasBundleFile
   # use standalone schemas
-  tar -xzf "schemas/${version}-standalone.tar.gz" -C $schemaOutputPath
-  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$version-standalone"
+  tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schemaOutputPath/"
+  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$k8s_version-standalone"
 
   # loop over .spec.versions[] and generate one file for each version
   cat <<'EOF' >$extractCrdSchemaJQFile
@@ -62,20 +61,18 @@ process_crd() {
       jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
   } || {
     echo "ERROR Processing: $document"
-    [[ $EXIT_FAST == "1" ]] && exit 1
+    [ "$CI" != "" ] && exit 1
   }
 }
 
 validate_templates() {
-  local hf="helmfile -e $CLOUD-$CLUSTER"
-  local version="v$(get_k8s_version).0"
 
   run_setup
   # generate_manifests
-  echo "Generating Kubernetes ${version} Manifests for ${CLOUD}-${CLUSTER}."
+  echo "Generating Kubernetes $k8s_version Manifests for ${CLOUD}-${CLUSTER}."
 
-  $hf -f helmfile.tpl/helmfile-init.yaml --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-  $hf --quiet template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
+  hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
 
   echo "Processing CRD files."
   # generate canonical schemas
@@ -90,20 +87,30 @@ validate_templates() {
   done
   # create schema in canonical format for each extracted file
   for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
-    jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$version-standalone/$json"
+    jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$k8s_version-standalone/$json"
   done
 
   # validate_resources
-  echo "Validating resources against Kubernetes version: $version"
+  echo "Validating resources against Kubernetes version: $k8s_version"
   local kubevalSchemaLocation="file://${schemaOutputPath}"
   local skipKinds="CustomResourceDefinition"
   local skipFilenames="crd,knative-services"
-  {
-    set +o pipefail
-    kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation --kubernetes-version $(echo $version | sed 's/v//') | grep -Ev 'PASS\b'
-    set -o pipefail
-  } && exitcode=0
-
+  local tmp_out=$(mktemp -u)
+  set +o pipefail
+  kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames \
+    --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation \
+    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
+  set -o pipefail
+  grep -q "ERROR" $tmp_out && exitcode=1
+  rm $tmp_out
 }
 
-for_each_cluster validate_templates
+if [ "${1-}" != "" ]; then
+  validate_templates
+  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
+  # hf lint
+else
+  for_each_cluster validate_templates
+  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
+  # for_each_cluster hf lint
+fi

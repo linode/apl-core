@@ -73,7 +73,6 @@ secrets:
   GIT_USER: 
   GIT_EMAIL:
   GIT_PASSWORD:
-  OIDC_CLIENT_SECRET:
 
 env:
   GIT_REPO_URL:
@@ -82,8 +81,8 @@ env:
   CLUSTER_NAME:
   CLUSTER_APISERVER:
   DISABLE_SYNC: false
-  GIT_LOCAL_PATH: /tmp/otomi
-  ENV_DIR: /tmp/otomi
+  GIT_LOCAL_PATH: /tmp/otomi-values
+  ENV_DIR: /tmp/otomi-values
   GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
 
 core: {}

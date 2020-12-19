@@ -7,11 +7,11 @@ bases:
 
 releases:
   - name: drone
-    installed: {{ $c | get "drone.enabled" false }}
+    installed: {{ $c | get "drone.enabled" true }}
     namespace: team-admin
     <<: *default
   - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider") "github") }}
+    installed: {{ and ($c | get "drone.enabled" true) (eq ($c | get "drone.sourceControl.provider" "github") "github") }}
     namespace: team-admin
     chart: ../charts/drone-admit-members
     values:

@@ -12,11 +12,12 @@ autoDiscovery:
 cloudProvider: {{ $v.cluster.provider }}
 
 {{- if eq $v.cluster.provider "azure" }}
-azureClientID: {{ $v.azure.clientId }}
-azureClientSecret: {{ $v.azure.clientSecret }}
-azureResourceGroup: {{ $v.azure.resourceGroup }}
-azureSubscriptionID: {{ $v.azure.subscriptionId }}
-azureTenantID: {{ $v.azure.tenantId }}
+{{- $a := $v.azure }}
+azureClientID: {{ $a.clientId }}
+azureClientSecret: {{ $a.clientSecret }}
+azureResourceGroup: {{ $a.resourceGroup }}
+azureSubscriptionID: {{ $a.subscriptionId }}
+azureTenantID: {{ $a.tenantId }}
 # if using AKS azureVMType should be set to "AKS"
 azureVMType: "AKS"
 azureClusterName: {{ $v.clusterName }}

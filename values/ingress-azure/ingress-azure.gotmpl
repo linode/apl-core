@@ -24,7 +24,7 @@ appgw:
   name: {{ $i.appgw.name }}
   subnetName: {{ $i.appgw.subnetName }}
   subnetPrefix: {{ $i.appgw.subnetPrefix }}
-  usePrivateIP: false
+  usePrivateIP: {{ $i.appgw | get "usePrivateIP" false }}
 
 rbac:
   enabled: true

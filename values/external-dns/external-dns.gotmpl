@@ -1,9 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $dns := $v.charts | get "external-dns" dict }}
 {{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
-{{- $google := $v | get "clouds.google" dict }}
-{{- $aws := $v | get "clouds.aws" dict }}
-{{- $azure := $v | get "clouds.azure" dict }}
 sources:
 - ingress
 - istio-gateway
@@ -11,16 +8,16 @@ sources:
 provider: {{ $dnsProvider }}
 {{- if eq $dnsProvider "google" }}
 google:
-  project: {{ $google.projectId }}
+  project: {{ $v.google.projectId }}
   serviceAccountKey: |
-    {{- $google.cloudDnsKey | nindent 4 }}
+    {{- $v.google.cloudDnsKey | nindent 4 }}
 {{- else if and (eq $dnsProvider "aws") (hasKey $dns "aws") }}
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
-  tenantId: {{ $azure.tenantId }}
-  subscriptionId: {{ $azure.subscriptionId }}
+  tenantId: {{ $v.azure.tenantId }}
+  subscriptionId: {{ $v.azure.subscriptionId }}
 {{- end }}  
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}

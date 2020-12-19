@@ -1,7 +1,9 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: istio-operator
@@ -11,6 +13,8 @@ releases:
       pkg: istio-operator
     <<: *default
   - name: keycloak
-    installed: true
+    installed: {{ $c | get "keycloak.enabled" true }}
     namespace: keycloak
+    labels:
+      pkg: keycloak
     <<: *default

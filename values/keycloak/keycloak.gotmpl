@@ -11,17 +11,32 @@ init:
       memory: "32Mi"
 
 keycloak:
+  # image:
+  #   repository: docker.io/jboss/keycloak
+  #   tag: "11.0.3"
   username: {{ $k | get "admin.username" "admin" }}
   password: {{ $k | get "admin.password" "bladibla" }}
   basepath: ""
+  cli:
+    custom: |
+      # redirect socket binding to https port 
+      /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=proxy-address-forwarding, value=true)
+      /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=socket-binding, value=http)
+      /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=redirect-socket, value=proxy-https)
+      /socket-binding-group=standard-sockets/socket-binding=proxy-https:add(port=443)
+      # hostname SPI modification
+      /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.frontendUrl,value="https://keycloak.{{ $v.cluster.domain }}/")
+      /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=true)
+      
   persistence:
     dbVendor: {{ $dbVendor }}
     dbHost: {{ $k | getOrNil "persistence.dbHost" }}
     deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
   priorityClassName: "otomi-critical"
+  proxyAddressForwarding: true
   resources:
-    {{- if (hasKey $k "resources.keycloak") }}
-      {{- $k.resources.keycloak | toYaml | nindent 4 }}
+    {{- with $k | get "resources.keycloak" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
       cpu: 1
@@ -31,6 +46,40 @@ keycloak:
       memory: 1Gi
     {{- end }}
   replicas: 1
+  startupScripts:
+    install-theme.sh: |
+      #!/bin/sh
+      cp -Rv /themes/* /opt/jboss/keycloak/themes/
+  extraInitContainers:
+    - name: keycloak-otomi-branding
+      image: "otomi/console:{{ $v | get "charts.otomi-console.image.tag" "master" }}"
+      imagePullPolicy: "{{ $v | get "charts.otomi-console.image.pullPolicy" "IfNotPresent" }}"
+      command:
+        - sh
+      args:
+        - -c
+        - |
+          echo "Copying Otomi theme..."
+          mkdir -p /themes
+          cp -Rv /app/keycloak/themes/* /themes/
+      resources:
+        requests:
+          cpu: 50m
+          memory: 16Mi
+        limits:
+          cpu: 500m
+          memory: 16Mi
+      volumeMounts:
+        - name: theme
+          mountPath: /themes
+
+  extraVolumes:
+    - name: theme
+      emptyDir: {}
+
+  extraVolumeMounts: 
+    - name: theme
+      mountPath: /themes
 
 postgresql:
   postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
@@ -45,8 +94,8 @@ postgresql:
       additionalLabels:
         prometheus: po-prometheus
   resources:
-    {{- if (hasKey $k "resources.postgresql") }}
-      {{- $k.resources.postgresql | toYaml | nindent 4 }}
+    {{- with $k | get "resources.postgresql" nil }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
       cpu: 1

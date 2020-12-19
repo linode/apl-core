@@ -1,14 +1,11 @@
 {{- $v := .Environment.Values -}}
 {{- $o := $v.charts | get "cluster-overprovisioner" dict }}
-{{- $defaultCpu := "1000m" }}
-{{- $defaultMem := "1000Mi" }}
 
 deployments:
   - name: default
     resources:
-      limits:
-        cpu: {{ $o | get "cpu" $defaultCpu }}
-        memory: {{ $o | get "memory" $defaultMem }}
-      requests:
-        cpu: {{ $o | get "cpu" $defaultCpu }}
-        memory: {{ $o | get "memory" $defaultMem }}
+      {{- range $type := (list "limits" "requests") }}
+      {{ $type }}:
+        cpu: {{ $o | get "cpu" "1000m" }}
+        memory: {{ $o | get "memory" "1000Mi" }}
+      {{- end }}

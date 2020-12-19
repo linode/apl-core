@@ -33,15 +33,17 @@ export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo
 
 ### 1. Validating changes
 
-You can check wether resulting manifests violate any of our output checks:
+You can check whether resulting manifests violate any of our output checks:
 
 ```bash
 otomi validate-templates
 ```
 
-This will check wether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
+This will check whether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
 
-We are also integrating another solution based on [conftest](https://www.conftest.dev). It allows to create OPA policies that are used both for statical analysis (at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check wether manifests are conformant.
+We are also integrating another solution based on [conftest](https://www.conftest.dev). It allows to create OPA policies that are used both for statical analysis (at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
+
+There is in-built meta-schema validation for editing `otomi-values`-files. Refer to [meta-schema documentation](./docs/meta-schema-validation.md).
 
 ### 2. Diffing changes
 

@@ -1,20 +1,40 @@
-otomi:
-    mode: ce
-    isManaged: true
-    isMultitenant: true
-    isRedkubesMonitored: true
-    teamPrefix: team-
-    hasCloudLB: false
+alerts:
+    drone: slack
+    receivers:
+        - slack
+        - email
+azure:
+    diskType: Standard_LRS
+    resourceGroup: somevalue
+    subscriptionId: somevalue
+    tenantId: somevalue
 customer:
     name: demo
+google:
+    projectId: otomi-cloud
+home:
+    receivers:
+        - slack
+    slack:
+        channel: mon-otomi
+        channelCrit: mon-otomi-crit
 oidc:
-    clientID: demo
-    idp:
-        issuer: https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695
-        tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
-        clientID: someClientID
-        adminGroupID: someAdminGroupID
-        teamAdminGroupID: someTeamAdminGroupID
+    adminGroupID: someAdminGroupID
+    clientID: someClientID
+    clientSecret: someClientSecret
+    issuer: 'https://login.microsoftonline.com/57a3f6ea-7e70-4260-acb4-e06ce452f695'
     scope: openid email profile
-alerts:
-    receiver: slack
+    teamAdminGroupID: someTeamAdminGroupID
+    tenantID: 57a3f6ea-7e70-4260-acb4-e06ce452f695
+otomi:
+    hasCloudLB: false
+    isHomeMonitored: true
+    isManaged: true
+    isMultitenant: true
+    mode: ce
+    teamPrefix: team-
+smtp:
+    smarthost: smtp-relay.gmail.com:587
+    hello: doma.in
+    from: no-reply@doma.in
+    auth_username: no-reply@doma.in

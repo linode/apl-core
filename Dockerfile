@@ -1,29 +1,39 @@
-FROM node:14-slim as ci
+FROM node:14-slim as npm
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-COPY package*.json ./
+ARG SKIP_TESTS='false'
+ENV CI=true
+
 COPY . .
-RUN npm install
 COPY ./.cspell.json .
-RUN npm run spellcheck
 
-FROM otomi/tools:1.4.8 as test
-ENV APP_HOME=/home/app/stack
-RUN mkdir -p $APP_HOME
-WORKDIR $APP_HOME
-
-COPY . .
-RUN cp -r .demo/ env/ 
-
-RUN bin/validate-all.sh
-RUN bin/validate-templates.sh
-RUN bin/validate-policies.sh
+RUN if [ "$SKIP_TESTS" = 'false' ]; then \
+  npm install cspell && npm run spellcheck; fi
 
 #-----------------------------
-FROM otomi/tools:1.4.8 as prod
+FROM otomi/tools:1.4.10 as test
+
+ENV APP_HOME=/home/app/stack
+RUN mkdir -p $APP_HOME
+WORKDIR $APP_HOME
+
+ARG SKIP_TESTS='false'
+ENV CI=true
+
+COPY . .
+
+RUN if [ "$SKIP_TESTS" = 'false' ]; then \
+  cp -r .demo/ env/ && \
+  bin/validate-values.sh && \
+  bats bin/tests \
+  bin/validate-templates.sh && \
+  bin/validate-policies.sh; fi
+
+#-----------------------------
+FROM otomi/tools:1.4.10 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME

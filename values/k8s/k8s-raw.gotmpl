@@ -8,10 +8,11 @@ resources:
       name: {{ $ns.name }}
       labels:
         name: {{ $ns.name }}
-        istio-injection: {{ if $ns | getOrNil "disableIstioInjection" }}disabled{{ else }}enabled{{ end }}
+        istio-injection: {{ if $ns | get "disableIstioInjection" false }}disabled{{ else }}enabled{{ end }}
   {{- end }}
   {{- range $id, $team := $t.teams }}
-  {{- $ns := printf "team-%s" $id }}
+    {{- $ns := printf "team-%s" $id }}
+    {{- if has $v.cluster.id $team.clusters }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -19,24 +20,25 @@ resources:
       labels:
         name: {{ $ns }}
         istio-injection: enabled
-  {{- $pullSecrets := list }}
-  {{- range $s := $team.secrets }}
-    {{- if eq $s.type "docker-registry" }}
-      {{- $pullSecrets = (append $pullSecrets $s) }}
-    {{- end }}
-  {{- end }}
+      {{- $pullSecrets := list }}
+      {{- range $s := $team.secrets }}
+        {{- if eq $s.type "docker-registry" }}
+          {{- $pullSecrets = (append $pullSecrets $s) }}
+        {{- end }}
+      {{- end }}
   # patching service account here as helm does not recognize it as it's own
   - apiVersion: v1
     kind: ServiceAccount
     metadata:
       name: default
       namespace: {{ $ns }}
-  {{- if gt (len $pullSecrets) 0 }}
+      {{- if gt (len $pullSecrets) 0 }}
     imagePullSecrets:
-  {{- range $s := $pullSecrets }}
-      - name: {{ $s.name }}
-  {{- end }}
-  {{- end }}
+        {{- range $s := $pullSecrets }}
+        - name: {{ $s.name }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
@@ -93,7 +95,7 @@ resources:
     - name: gcr-json-key
   {{- end }}
   {{- end }}
-  - apiVersion: scheduling.k8s.io/v1beta1
+  - apiVersion: scheduling.k8s.io/v1
     kind: PriorityClass
     metadata:
       name: otomi-critical
