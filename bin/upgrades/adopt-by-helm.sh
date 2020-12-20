@@ -8,7 +8,7 @@ echo NAMESPACE=$NAMESPACE
 echo RUNNING_NS=$RUNNING_NS
 
 useNS="-n $RUNNING_NS"
-[ "$1" != "" ] && useNS=''
+[ "$1" != '' ] && useNS=''
 kubectl $useNS annotate --overwrite $KIND $NAME meta.helm.sh/release-name=$RELEASE
 kubectl $useNS annotate --overwrite $KIND $NAME meta.helm.sh/release-namespace=$NAMESPACE
 kubectl $useNS label --overwrite $KIND $NAME app.kubernetes.io/managed-by=Helm

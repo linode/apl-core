@@ -6,8 +6,10 @@ Important features:
 - **Single Sign On**: Bring your own IDP or use Keycloak
 - **Multi Tenancy**: Create admins and teams to allow self service of deployments
 - **Automatic Ingress Configuration**: Easily configure ingress for team services or core apps, allowing access within minutes.
+- **Input/output validation**: Configuration and output manifests are checked statically for validity and best practices.
+- **Policy enforcement**: Manifests are checked both statically and on the cluster at runtime for obedience to OPA policies.
 - **Automatic Vulnerability Scanning**: All configured team service containers get scanned in Harbor.
-- and many more (for a full list see [redkubes.com](https://redkubes.com))
+- and many more (for a full list see [otomi.io](https://otomi.io))
 
 This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
 Other parts of the platform:
@@ -17,33 +19,51 @@ Other parts of the platform:
 
 This readme is aimed at development. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
 
-To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://redkubes.github.io/otomi/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
+To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://otomi.io). It lists all the prerequisites and tooling expected, so please read up before continuing here.
 
 ## Development
 
+### Editing source files
+
 Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies by reading our [special section on go templating](./docs/GO_TEMPLATING.md).
 
-For the next steps please target your values repo and cluster, and source the aliases:
+For editing the `values-schema.yaml` please refer to the [meta-schema documentation](./docs/meta-schema-validation.md).
+
+For working with `bats` and adding tests to `bin/tests/*` please refer to the [online bats documentation](https://bats-core.readthedocs.io/en/latest/)
+
+You can define OPA policies in `policies/*.rego` files that are used both for statical analysis (also at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
+
+### 1. Validating changes
+
+For the next steps you will need to export at least `ENV_DIR`, `CLOUD` and `CLUSTER`, and source the aliases:
 
 ```bash
-# assuming you followed the previous steps and created otomi-values repo next to this:
+# assuming you created otomi-values repo next to this:
 export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo
 . bin/aliases
 ```
 
-### 1. Validating changes
-
-You can check whether resulting manifests violate any of our output checks:
+Start by checking all the values against the `values-schema.yaml` with:
 
 ```bash
+otomi validate-values
+```
+
+Any changes made to the meta-schema will then also be automatically validated.
+
+You can check whether resulting manifests are conform our specs with:
+
+```
 otomi validate-templates
 ```
 
 This will check whether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
 
-We are also integrating another solution based on [conftest](https://www.conftest.dev). It allows to create OPA policies that are used both for statical analysis (at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
+And to run the policy checks run the following:
 
-There is in-built meta-schema validation for editing `otomi-values`-files. Refer to [meta-schema documentation](./docs/meta-schema-validation.md).
+```bash
+otomi validate-policies
+```
 
 ### 2. Diffing changes
 

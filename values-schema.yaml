@@ -228,7 +228,7 @@ definitions:
     examples:
       - 1Mi
       - 0.5M
-    pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
   portNumber:
     maximum: 32768
@@ -783,7 +783,7 @@ properties:
           zoneIdFilters:
             items:
               type: string
-      gatekeeper:
+      gatekeeper-operator:
         additionalProperties: false
         properties:
           enabled:
@@ -813,14 +813,14 @@ properties:
                   type: string
                   enum:
                     [
-                      allowedrepos,
-                      bannedimagetags,
-                      containerlimits,
-                      requiredlabels,
-                      psphostfilesystem,
-                      psphostnetworkingports,
-                      pspallowedusers,
-                      pspprivileged,
+                      allowed-repos,
+                      banned-image-tags,
+                      container-limits,
+                      required-labels,
+                      psp-host-filesystem,
+                      psp-host-networking-ports,
+                      psp-allowed-users,
+                      psp-privileged,
                     ]
               required:
                 - policyName
@@ -1290,6 +1290,229 @@ properties:
         description: The prefix to use in URLs for team domains.
         pattern: '^[a-z]+[-]{1}$'
         type: string
+      addons:
+        description: Manage addon configuration
+        additionalProperties: false
+        properties:
+          conftest:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                description: Use this flag to enable conftest for policy validation
+
+  policies:
+    type: object
+    description: |
+      List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
+    additionalProperties: false
+    properties:
+      banned-image-tags:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          tags:
+            type: array
+            items:
+              type: string
+          enabled:
+            type: boolean
+            default: true
+      container-limits:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          cpu:
+            '$ref': '#/definitions/cpuQuantity'
+          memory:
+            '$ref': '#/definitions/memoryQuantity'
+          enabled:
+            type: boolean
+            default: true
+      psp-host-filesystem:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          allowedHostPaths:
+            type: array
+            items:
+              type: object
+              required: [pathPrefix, readOnly]
+              properties:
+                pathPrefix:
+                  type: string
+                readOnly:
+                  type: boolean
+              additionalProperties: false
+          enabled:
+            type: boolean
+            default: true
+      psp-allowed-users:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          runAsUser:
+            type: object
+            additionalProperties: false
+            required: [rule]
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          runAsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          supplementalGroups:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          fsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          enabled:
+            type: boolean
+            default: true
+      psp-host-security:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      psp-host-networking-ports:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      psp-privileged:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+      psp-capabilities:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedCapabilities:
+            type: array
+            items:
+              type: string
+      psp-forbidden-sysctls:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          forbiddenSysctls:
+            type: array
+            items:
+              type: string
+      psp-apparmor:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      psp-seccomp:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      psp-selinux:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          seLinuxContext:
+            type: string
+            enum: [MustRunAs, RunAsAny]
+          allowedSELinuxOptions:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                level:
+                  type: string
+                role:
+                  type: string
+                type:
+                  type: string
+                user:
+                  type: string
   proxies:
     items:
       additionalProperties: false
