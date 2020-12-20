@@ -26,7 +26,7 @@ run_setup() {
 
 validate_policies() {
 
-  readonly k8s_version="v$(get_k8s_version)"
+  local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
   run_setup
   # generate_manifests
