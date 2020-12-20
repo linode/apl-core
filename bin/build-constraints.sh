@@ -15,7 +15,6 @@ function build() {
   local policies_path="./policies"
   rm -f "$output_path/*"
   konstraint create $policies_path -o $output_path
-  echo 'xxxx'
 }
 function decorate() {
   echo "Decorating template/constraints files with properties."

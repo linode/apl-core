@@ -14,8 +14,7 @@ exitcode=0
 
 cleanup() {
   [ $exitcode -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
-  [ "${DEBUG-}" != '' ] && rm -rf $jq_file
-  rm -rf $k8s_resources_path -rf $output_path $schema_output_path
+  [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
   exit $exitcode
 }
 trap cleanup EXIT ERR
@@ -107,12 +106,12 @@ validate_templates() {
 }
 
 if [ "${1-}" != '' ]; then
-  echo "Validating one cluster"
+  echo "Validating templates for one cluster"
   validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # hf lint
 else
-  echo "Validating all clusters"
+  echo "Validating templates for all clusters"
   for_each_cluster validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint

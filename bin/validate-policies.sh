@@ -14,7 +14,7 @@ exitcode=0
 
 cleanup() {
   [ $exitcode -eq 0 ] && echo "Policy checks PASSED" || echo "Policy checks FAILED"
-  [ "${DEBUG-}" != '' ] && rm -rf $k8s_resources_path
+  [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
   exit $exitcode
 }
@@ -52,9 +52,9 @@ validate_policies() {
 ! $(yq r $otomiSettings "otomi.addons.conftest.enabled") && echo "skipping"
 
 if [ "${1-}" != "" ]; then
-  echo "Validating one cluster"
+  echo "Checking policies for one cluster"
   validate_policies
 else
-  echo "Validating all clusters"
+  echo "Checking policies for all clusters"
   for_each_cluster validate_policies
 fi

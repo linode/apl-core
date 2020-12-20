@@ -235,6 +235,7 @@ function drun() {
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
+      -e DEBUG="$DEBUG" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
