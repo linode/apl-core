@@ -8,4 +8,4 @@ teamConfig:
                         repository: busybox
                         tag: latest
                         pullPolicy: IfNotPresent
-                        script: echo "Hello World"
+                    script: echo "Hello World"
