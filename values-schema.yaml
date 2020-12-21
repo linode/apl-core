@@ -244,7 +244,7 @@ definitions:
         $ref: '#/definitions/mounts'
       name:
         description: Must specify an unique name in this object.
-        pattern: ^[a-z-]+$'
+        pattern: ^[a-z-]+$
         type: string
       resources:
         $ref: '#/definitions/resources'
