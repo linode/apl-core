@@ -260,6 +260,8 @@ definitions:
         description: |
           May be a non-empty string containing the name of the Kubernetes Service Account.
         type: string
+      shell:
+        $ref: '#/definitions/shell'
       ttlSecondsAfterFinished:
         default: 86400
         pattern: ^[0-9]*$
