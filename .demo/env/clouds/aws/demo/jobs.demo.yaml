@@ -3,7 +3,6 @@ teamConfig:
         demo:
             jobs:
                 my-job:
-                    name: my-job
                     type: job
                     image:
                         repository: busybox
