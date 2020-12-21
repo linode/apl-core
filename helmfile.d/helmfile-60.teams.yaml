@@ -198,7 +198,5 @@ releases:
       team: {{ $teamId }}
     values:
       - {{- $team | toYaml | nindent 8 }}
-
-  
   {{- end }}
   {{- end }}
