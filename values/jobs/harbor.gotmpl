@@ -38,7 +38,7 @@ jobs:
       OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
     env:
       HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
-      TEAM_NAMES: '{{ $teamNames | toJson }}'
+      TEAM_NAMES: '{{ $teamNames | sortAlpha | toJson }}'
       OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
       OIDC_GROUPS_CLAIM: 'groups'
       OIDC_NAME: 'keycloak'
