@@ -199,7 +199,7 @@ releases:
     values:
       - jobs:
           my-job:
-            type: job
+            type: cronjob
             image:
               repository: busybox
               tag: latest

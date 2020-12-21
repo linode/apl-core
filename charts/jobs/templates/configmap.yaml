@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- range $name, $spec := $v.tasks }}
+{{- range $name, $spec := $v.jobs }}
 {{- if and $spec.enabled $spec.env }}
 apiVersion: v1
 kind: ConfigMap
