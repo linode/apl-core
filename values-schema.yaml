@@ -242,10 +242,6 @@ definitions:
             $ref: '#/definitions/shell'
       mounts:
         $ref: '#/definitions/mounts'
-      name:
-        description: Must specify an unique name in this object.
-        pattern: ^[a-z-]+$
-        type: string
       resources:
         $ref: '#/definitions/resources'
       schedule:
@@ -276,7 +272,6 @@ definitions:
         $ref: '#/definitions/volumes'
     required:
       - image
-      - name
       - script
       - type
   jobs:
