@@ -10,4 +10,3 @@ node_modules/
 !.cspell.json
 *.DS_Store
 .values/values-schema.yaml
-.demo
