@@ -197,13 +197,8 @@ releases:
       tag: teams
       team: {{ $teamId }}
     values:
-      - jobs:
-          my-job:
-            type: cronjob
-            image:
-              repository: busybox
-              tag: latest
-              pullPolicy: IfNotPresent
-              script: echo "Hello World"
+      - {{- $team | toYaml | nindent 8 }}
+
+  
   {{- end }}
   {{- end }}
