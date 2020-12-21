@@ -11,6 +11,7 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
+  {{- if $v.otomi.isMultitenant }}        
   {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
@@ -49,7 +50,6 @@ releases:
           port: 9115
         {{- end }}
         {{- end }}
-  {{- if $v.otomi.isMultitenant }}        
   - name: prometheus-{{ $teamId }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
@@ -168,7 +168,6 @@ releases:
           - high_priority_channel: {{ $team | get "msteams.highPrio" }}
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
   {{- end }}
-
   - name: grafana-dashboards-{{ $teamId }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
@@ -187,7 +186,9 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
-    
+  {{- end }}
+  {{- end }}
+  {{- if hasKey $team "jobs" }}
   - name: jobs-{{ $teamId }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
@@ -204,7 +205,5 @@ releases:
               tag: latest
               pullPolicy: IfNotPresent
               script: echo "Hello World"
-
-  {{- end }}
   {{- end }}
   {{- end }}
