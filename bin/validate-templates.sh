@@ -93,8 +93,9 @@ validate_templates() {
   # validate_resources
   echo "Validating resources for $cluster_env cluster"
   local kubeval_schema_location="file://${schema_output_path}"
-  local skip_kinds="CustomResourceDefinition"
-  local skip_filenames="crd,knative-services"
+  local constraint_kinds="BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
+  local skip_kinds="CustomResourceDefinition,$constraint_kinds"
+  local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   set +o pipefail
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
