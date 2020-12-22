@@ -77,13 +77,13 @@ validate_templates() {
 
   echo "Processing CRD files"
   # generate canonical schemas
-  local targetYamlFiles="*.yaml"
+  local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8s_resources_path" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+  for file in $(find "$k8s_resources_path" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # schemas for chart crds
-  for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+  for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # create schema in canonical format for each extracted file

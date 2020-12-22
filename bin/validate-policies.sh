@@ -49,7 +49,7 @@ validate_policies() {
   [ $? -ne 0 ] && exitcode=1
 }
 
-! $(yq r $otomiSettings "otomi.addons.conftest.enabled") && echo "skipping"
+! $(yq r $otomiSettings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 if [ "${1-}" != "" ]; then
   echo "Validating one cluster"

@@ -798,43 +798,6 @@ properties:
         properties:
           enabled:
             type: boolean
-          constraints:
-            type: array
-            description: |
-              List of {policy: parameter} objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
-            items:
-              additionalProperties: false
-              properties:
-                parameters:
-                  description: |
-                    Parameters used in rego policy files by Konstraint library to generate Constraint objects needed for templating
-                  properties:
-                    enabled:
-                      type: boolean
-                      description: |
-                        Allow toggling individual policies on/off
-                      default: true
-                  additionalProperties: true
-                  required: [enabled]
-                policyName:
-                  description: |
-                    Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
-                  pattern: ^[a-z0-9]*$
-                  type: string
-                  enum:
-                    [
-                      allowed-repos,
-                      banned-image-tags,
-                      container-limits,
-                      required-labels,
-                      psp-host-filesystem,
-                      psp-host-networking-ports,
-                      psp-allowed-users,
-                      psp-privileged,
-                    ]
-              required:
-                - policyName
-                - parameters
       harbor:
         additionalProperties: false
         properties:
