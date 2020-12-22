@@ -48,7 +48,5 @@ env:
 
 
 podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (list  "banned-image-tags") | nindent 2 }}
+  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}
 
-podSecurityContext:
-  runAsUser: 1000
