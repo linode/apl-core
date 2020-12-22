@@ -34,19 +34,22 @@ RUN apt-get update -qq \
   && apt install apt-transport-https ca-certificates curl software-properties-common -qqy --no-install-recommends
 RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
   && apt-get install -qqy --no-install-recommends \
+  awscli \
   coreutils \
   gettext \
   git \
   gnupg2 \
-  netcat \
-  openssh-server \
-  rlwrap \
-  vim \
-  nano \
   groff \
   jq \
+  nano \
+  netcat \
+  openssh-server \
+  python3 \
+  python3-pip \
+  python3-setuptools \
+  rlwrap \
+  vim \
   yq \
-  awscli \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/app
@@ -61,10 +64,6 @@ ENV PATH $PATH:$APP_HOME
 # kubectl
 ADD https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl
 RUN chmod +x kubectl
-
-# aws-iam-authenticator
-ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
-RUN chmod +x aws-iam-authenticator
 
 # sops
 ADD https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux sops
@@ -81,22 +80,29 @@ RUN helm plugin install https://github.com/futuresimple/helm-secrets --version $
 ADD https://github.com/roboll/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
 RUN chmod +x helmfile
 
-# kubeval https://github.com/instrumenta/kubeval/releases
+# aws
+RUN pip3 install --upgrade --no-cache-dir awscli
+
+# aws-iam-authenticator
+ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+RUN chmod +x aws-iam-authenticator
+
+# kubeval
 ADD https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 
-# conftest https://github.com/open-policy-agent/conftest/releases
+# conftest
 ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
 RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
 
-# konstraint https://github.com/plexsystems/konstraint/releases/
+# konstraint
 ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
 RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
-# node 12 https://github.com/nodesource/distributions/blob/master/README.md
+# node lts
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
-  npm install -g ajv-cli
+  npm install -g ajv-cli@3
 
 # bats
 ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp

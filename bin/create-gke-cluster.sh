@@ -6,14 +6,13 @@ set -eo pipefail
 readonly ENV_DIR
 readonly CLUSTER
 readonly METERING_SET=${METERING_SET:-otomi_metering}
-readonly VERBOSE=${VERBOSE:-0}
 
 readonly PROJECT_ID=${PROJECT_ID:-$(yq read $ENV_DIR/env/clusters.yaml google.projectId)}
 readonly GOOGLE_REGION=${GOOGLE_REGION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.region)}
 readonly CUSTOMER=${CUSTOMER:-$(yq read $ENV_DIR/env/settings.yaml customer.name)}
 readonly K8S_VERSION=${K8S_VERSION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sVersion)}
 readonly K8S_NODE_VERSION=${K8S_NODE_VERSION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sNodeVersion)}
-readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.releaseChannel)}
+readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-stable}
 
 print_envs() {
   echo "ENV_DIR: $ENV_DIR"
@@ -64,7 +63,7 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --region "$GOOGLE_REGION" \
   --resource-usage-bigquery-dataset "$METERING_SET" \
   --scopes "https://www.googleapis.com/auth/cloud-platform" \
-  --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default" # --cluster-version $K8S_VERSION \
+  --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default"
 # --release-channel "$RELEASE_CHANNEL"
 # --enable-pod-security-policy
 

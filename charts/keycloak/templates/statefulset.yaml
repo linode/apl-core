@@ -68,7 +68,7 @@ spec:
             - sh
             - -c
             - |
-              until printf "." && nc -z -w 2 {{ include "keycloak.postgresql.fullname" . }} {{ .Values.postgresql.service.port }}; do
+              until printf "." && nc -z -w 2 {{ include "keycloak.postgresql.fullname" . }}.{{ .Release.Namespace }} {{ .Values.postgresql.service.port }}; do
                   sleep 2;
               done;
 

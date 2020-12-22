@@ -1,5 +1,3 @@
----
 charts:
-  gatekeeper-operator:
-    enabled: true
-    
+    gatekeeper-operator:
+        enabled: true

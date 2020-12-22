@@ -46,7 +46,7 @@ RUNNING_NS=gatekeeper-system
 RELEASE=gatekeeper-operator-config
 NAMESPACE=gatekeeper-system
 KIND=constrainttemplates.templates.gatekeeper.sh
-for NAME in k8sallowedrepos k8sbannedimagetags k8scontainerlimits k8spspallowedusers k8spsphostfilesystem k8spsphostnetworkingports k8spsprivilegedcontainer k8srequiredlabels; do
+for NAME in k8sallowed-repos k8sbanned-image-tags k8scontainerlimits k8spsp-allowed-users k8spsp-host-filesystem k8spsp-host-networking-ports k8spsprivilegedcontainer k8srequiredlabels; do
   . bin/upgrades/adopt-by-helm.sh 1
 done
 

@@ -1,42 +1,44 @@
 #!/usr/bin/env bash
 set -eu
 
-runFromHook=${1:-"false"}
-[[ $runFromHook == "true" ]] && cd ..
+run_from_hook=${1:-''}
+[ "$run_from_hook" != '' ] && cd ..
 
 . ./bin/common.sh
 
-readonly policiesFile="$ENV_DIR/env/policies.yaml"
-readonly outputPath="/tmp/otomi/constraints"
+readonly policies_file="$ENV_DIR/env/policies.yaml"
+readonly output_path="/tmp/otomi/constraints"
 
 function build() {
   echo "Building constraints artifacts from policies."
-  local policiesPath="./policies"
-  rm -f "$outputPath/*"
-  konstraint create $policiesPath -o $outputPath
+  which konstraint
+  local policies_path="./policies"
+  rm -f "$output_path/*"
+  konstraint create $policies_path -o $output_path
+  echo 'xxxx'
 }
 function decorate() {
   echo "Decorating template/constraints files with properties."
-  local mapConstraintsExpr='.policies as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
-  for constraint in $(yq r $policiesFile -j | jq --raw-output -S -c "$mapConstraintsExpr"); do
+  local map_constraints_expr='.policies as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
+  for constraint in $(yq r $policies_file -j | jq --raw-output -S -c "$map_constraints_expr"); do
     local key=$(echo $constraint | jq --raw-output '. | keys[0]')
     # NOTE:
     # Konstraint library is generating filenames from folder names using the dash symbol "-" as uppercase markup. Example:  file-name => FileName
     # Policy names can be defined using dashes, so we need to strip dashes from filenames expression
     local filename=$(sed s/-//g <<<$key)
     # decorate constraints with parameters
-    local constraintsFile=$(ls $outputPath/constraint_* | grep -i "$filename.yaml")
+    local constraints_file=$(ls $output_path/constraint_* | grep -i "$filename.yaml")
     local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {\"${key}\"} }}")
-    local constraints=$(yq r -P -j $constraintsFile | jq --raw-output -c '.')
-    jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraintsFile
+    local constraints=$(yq r -P -j $constraints_file | jq --raw-output -c '.')
+    jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraints_file
     # decorate constraint templates with openAPI schema properties
-    local mapPropertiesExpr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
-    local policyJSONPath="properties.policies.properties[${key}]"
-    local properties=$(yq -j r values-schema.yaml $policyJSONPath | yq d - '**.required.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$mapPropertiesExpr")
+    local map_properties_expr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
+    local policy_json_path="properties.policies.properties[${key}]"
+    local properties=$(yq -j r values-schema.yaml $policy_json_path | yq d - '**.required.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$map_properties_expr")
 
-    local ctemplatesFile=$(ls $outputPath/template_* | grep -i "$filename.yaml")
-    local template=$(yq r -P -j $ctemplatesFile | jq --raw-output -c '.')
-    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplatesFile
+    local ctemplates_file=$(ls $output_path/template_* | grep -i "$filename.yaml")
+    local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
+    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
   done
 }
 

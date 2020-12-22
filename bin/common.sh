@@ -37,13 +37,13 @@ hf() {
 }
 
 hf_values() {
-  [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
+  [ "${VERBOSE-}" = '' ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
     yq read -P - 'releases[0].values[0]'
 }
 
 prepare_crypt() {
-  [[ -z "$GCLOUD_SERVICE_KEY" ]] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  [ "${GCLOUD_SERVICE_KEY}" = "" ] && echo "Error: The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS

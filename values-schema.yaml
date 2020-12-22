@@ -1,4 +1,3 @@
----
 $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: false
 definitions:
@@ -221,9 +220,9 @@ definitions:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
-      - '1.16'
       - '1.17'
       - '1.18'
+      - '1.19'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -239,7 +238,7 @@ definitions:
     examples:
       - 1Mi
       - 0.5M
-    pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
   portNumber:
     maximum: 32768
@@ -756,7 +755,29 @@ properties:
             required:
               - region
           azure:
-            type: object
+            properties:
+              cloud:
+                type: string
+                description: Azure Cloud to use
+              resourceGroup:
+                type: string
+                description: Azure resource group to use
+              tenantId:
+                type: string
+                description: Azure tenant ID to use (will default to global value)
+              subscriptionId:
+                type: string
+                description: Azure subscription ID to use (will default to global value)
+              aadClientId:
+                type: string
+                description: Azure Application Client ID to use
+              aadClientSecret:
+                type: string
+                description: Azure Application Client Secret to use
+              useManagedIdentityExtension:
+                type: boolean
+                description: If you use Azure MSI, this should be set to true
+                default: false
           domainFilters:
             items:
               type: string
@@ -772,12 +793,48 @@ properties:
           zoneIdFilters:
             items:
               type: string
-            type: array
       gatekeeper-operator:
         additionalProperties: false
         properties:
           enabled:
             type: boolean
+          constraints:
+            type: array
+            description: |
+              List of {policy: parameter} objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
+            items:
+              additionalProperties: false
+              properties:
+                parameters:
+                  description: |
+                    Parameters used in rego policy files by Konstraint library to generate Constraint objects needed for templating
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: |
+                        Allow toggling individual policies on/off
+                      default: true
+                  additionalProperties: true
+                  required: [enabled]
+                policyName:
+                  description: |
+                    Policy name used for mapping paraneters and constraints objects (lowercase only - must match the "policyID" property in the rego file)
+                  pattern: ^[a-z0-9]*$
+                  type: string
+                  enum:
+                    [
+                      allowed-repos,
+                      banned-image-tags,
+                      container-limits,
+                      required-labels,
+                      psp-host-filesystem,
+                      psp-host-networking-ports,
+                      psp-allowed-users,
+                      psp-privileged,
+                    ]
+              required:
+                - policyName
+                - parameters
       harbor:
         additionalProperties: false
         properties:

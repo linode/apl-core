@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ "$CI" != "" ] && set -e
+[ "$CI" = 'true' ] && set -e
 set -uo pipefail
 
 . bin/common.sh
@@ -10,6 +10,7 @@ mkdir -p $tmp_path >/dev/null
 
 cleanup() {
   local exitcode=$?
+  [ $exitcode -eq 0 ] && echo "Values validation SUCCESS" || echo "Values validation FAILED"
   rm -rf $tmp_path
   return $exitcode
 }

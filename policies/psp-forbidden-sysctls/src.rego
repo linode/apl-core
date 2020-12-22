@@ -6,7 +6,7 @@
 # and should be disallowed except for an allowed "safe" subset.
 #
 # @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
-package k8spspforbiddensysctls
+package pspforbiddensysctls
 import data.lib.core
 import data.lib.pods
 import data.lib.security
