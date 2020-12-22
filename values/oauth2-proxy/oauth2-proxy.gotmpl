@@ -49,10 +49,10 @@ resources:
 {{- end }}
 {{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
 
-securityContext:
-  enabled: true
-  runAsUser: 2000
-  
+# securityContext:
+#   enabled: true
+  # runAsUser: 2000
+podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 2 }}
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github

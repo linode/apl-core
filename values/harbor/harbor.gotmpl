@@ -28,8 +28,9 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  securityContext:
-    runAsUser: 10000
+  # securityContext:
+  #   runAsUser: 1337
+  podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
@@ -182,8 +183,7 @@ registry:
 
 database:
   type: internal
-  podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   internal:
     image:
       repository: goharbor/harbor-db

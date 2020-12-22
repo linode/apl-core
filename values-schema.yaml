@@ -133,6 +133,8 @@ definitions:
         type: string
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
+      k8sNodeVersion:
+        $ref: '#/definitions/k8sNodeVersion'
       otomiVersion:
         default: latest
         description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
@@ -207,6 +209,14 @@ definitions:
       tag:
         type: string
     title: Container image
+  k8sNodeVersion:
+    default: '1.18.12-gke.1200'
+    description: The cluster node version. Each cloud provider supports different tags of the node version and k8s api. (Please consult cloud vendor specific references)
+    enum:
+      - '1.16.15-gke.4901'
+      - '1.17.14-gke.1200'
+      - '1.18.12-gke.1200'
+    type: string
   k8sVersion:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
