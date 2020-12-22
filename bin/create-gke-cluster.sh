@@ -2,6 +2,7 @@
 set -eo pipefail
 
 [[ -z $ENV_DIR || -z $CLUSTER ]] && echo "ENV_DIR and CLUSTER must be set" && exit 1
+[[ -z $K8S_NODE_VERSION || -z $RELEASE_CHANNEL ]] && echo "K8S_NODE_VERSION and RELEASE_CHANNEL must be set" && exit 1
 
 readonly ENV_DIR
 readonly CLUSTER
@@ -18,6 +19,7 @@ print_envs() {
   echo "CLUSTER: $CLUSTER"
   echo "PROJECT_ID: $PROJECT_ID"
   echo "GOOGLE_REGION: $GOOGLE_REGION"
+  echo "K8S_NODE_VERSION: $K8S_NODE_VERSION"
   echo "K8S_VERSION: $K8S_VERSION"
   echo "CUSTOMER: $CUSTOMER"
   echo "METERING_SET: $METERING_SET"
@@ -30,7 +32,7 @@ print_envs() {
 gcloud container clusters create "otomi-gke-$CLUSTER" \
   --project "$PROJECT_ID" \
   --addons HorizontalPodAutoscaling,HttpLoadBalancing \
-  --cluster-version $K8S_VERSION \
+  --cluster-version $K8S_NODE_VERSION \
   --disk-size "100" \
   --disk-type "pd-standard" \
   --enable-autoprovisioning \
@@ -61,7 +63,9 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --region "$GOOGLE_REGION" \
   --resource-usage-bigquery-dataset "$METERING_SET" \
   --scopes "https://www.googleapis.com/auth/cloud-platform" \
+  --release-channel "$RELEASE_CHANNEL" \
   --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default"
+# --enable-pod-security-policy
 
 gcloud container clusters get-credentials otomi-gke-$CLUSTER --region $GOOGLE_REGION --project $PROJECT_ID
 
