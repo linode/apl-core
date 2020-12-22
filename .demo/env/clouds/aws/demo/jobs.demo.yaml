@@ -2,10 +2,15 @@ teamConfig:
     teams:
         demo:
             jobs:
-                my-job:
-                    type: job
-                    image:
-                        repository: busybox
-                        tag: latest
-                        pullPolicy: IfNotPresent
-                    script: echo "Hello World"
+                - type: job
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  script: echo "Hello World"
+                - type: job
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  script: echo "Hello World too"

@@ -279,9 +279,9 @@ definitions:
       a Job specification, which is meant for run-to-completion apps (e.g. batch
       Jobs).
     additionalProperties: false
-    patternProperties:
-      '^[a-z-]+$':
-        $ref: '#/definitions/job'
+    items:
+      $ref: '#/definitions/job'
+    type: array
   k8sVersion:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
