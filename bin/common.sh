@@ -1,23 +1,23 @@
 #!/usr/local/env bash
 ENV_DIR=${ENV_DIR:-./env}
 
-readonly otomiSettings="$ENV_DIR/env/settings.yaml"
-readonly clustersFile="$ENV_DIR/env/clusters.yaml"
-readonly helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
-readonly helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
-readonly replacePathsPattern="s@../env@${ENV_DIR}@g"
+readonly otomi_settings="$ENV_DIR/env/settings.yaml"
+readonly clusters_file="$ENV_DIR/env/clusters.yaml"
+readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
+readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
+readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
 get_k8s_version() {
-  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
+  yq r $clusters_file "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
 }
 
 otomi_image_tag() {
-  local otomiVersion=$(yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
-  [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
+  local otomi_version=$(yq r $clusters_file "clouds.$CLOUD.clusters.$CLUSTER.otomi_version")
+  [[ -n $otomi_version ]] && echo $otomi_version || echo 'latest'
 }
 
 customer_name() {
-  yq r $otomiSettings "customer.name"
+  yq r $otomi_settings "customer.name"
 }
 
 check_sops_file() {
@@ -38,7 +38,7 @@ hf() {
 
 hf_values() {
   [ "${VERBOSE-}" = '' ] && quiet='--quiet'
-  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
+  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern |
     yq read -P - 'releases[0].values[0]'
 }
 
@@ -51,14 +51,19 @@ prepare_crypt() {
 
 for_each_cluster() {
   # Perform a command from argument for each cluster
-  executable=$1
+  local executable=$1
   [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
-  local clustersPath="$ENV_DIR/env/clusters.yaml"
-  clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
+  local clusters_path="$ENV_DIR/env/clusters.yaml"
+  local clouds=$(yq r -j $clusters_path clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -rc '. | keys[]'))
+    mapfile -t clusters < <(yq r -j $clusters_path clouds.${cloud}.clusters | jq -rc '. | keys[]')
     for cluster in "${clusters[@]}"; do
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
+}
+
+hf_templates() {
+  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$1" >/dev/null
+  hf template --skip-deps --output-dir="$1" >/dev/null
 }

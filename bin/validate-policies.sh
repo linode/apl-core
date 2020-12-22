@@ -13,7 +13,7 @@ readonly parameters_file=$(mktemp -u)
 exitcode=0
 
 cleanup() {
-  [ $exitcode -eq 0 ] && echo "Policy checks PASSED" || echo "Policy checks FAILED"
+  [ $exitcode -eq 0 ] || echo "Policy checks FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
   exit $exitcode
@@ -30,14 +30,13 @@ validate_policies() {
   local cluster_env=$(cluster_env)
   run_setup
   # generate_manifests
-  echo "Generating k8s $k8s_version manifests for $cluster_env cluster"
-  hf template --skip-deps --output-dir="$k8s_resources_path" >/dev/null
-  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8s_resources_path" >/dev/null
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  hf_templates $k8s_resources_path
 
   echo "Processing templates"
   # generate parameter constraints file from values
   local parse_constraints_expression='.policies as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
-  policies=$(yq r $policies_file -j | jq --raw-output -S -c "$parse_constraints_expression")
+  local policies=$(yq r $policies_file -j | jq --raw-output -S -c "$parse_constraints_expression")
   for policy in $policies; do
     echo $policy | yq r -P - >>$constraints_file
   done
@@ -52,9 +51,10 @@ validate_policies() {
 ! $(yq r $otomiSettings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 if [ "${1-}" != "" ]; then
-  echo "Checking policies for one cluster"
+  echo "Checking policies for cluster '$cluster_env'"
   validate_policies
 else
   echo "Checking policies for all clusters"
   for_each_cluster validate_policies
 fi
+[ $exitcode -eq 0 ] && echo "Template validation SUCCESS"

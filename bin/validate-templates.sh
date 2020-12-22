@@ -8,12 +8,12 @@ set -uo pipefail
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
-readonly k8s_resources_path="/tmp/otomi/kubeval-fixtures"
+readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 exitcode=0
 
 cleanup() {
-  [ $exitcode -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
+  [ $exitcode -eq 0 ] || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
   exit $exitcode
 }
@@ -69,10 +69,8 @@ validate_templates() {
   local cluster_env=$(cluster_env)
 
   run_setup $k8s_version
-  # generate_manifests
-  echo "Generating k8s $k8s_version manifests for $cluster_env cluster"
-  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8s_resources_path" >/dev/null
-  hf template --skip-deps --output-dir="$k8s_resources_path" >/dev/null
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  hf_templates $k8s_resources_path
 
   echo "Processing CRD files"
   # generate canonical schemas
@@ -91,7 +89,7 @@ validate_templates() {
   done
 
   # validate_resources
-  echo "Validating resources for $cluster_env cluster"
+  echo "Validating resources for cluster '$cluster_env'"
   local kubeval_schema_location="file://${schema_output_path}"
   local skip_kinds="CustomResourceDefinition"
   local skip_filenames="crd,knative-services"
@@ -101,12 +99,12 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  grep -q "ERROR" $tmp_out && exitcode=1
+  [ "$(cat $tmp_out | grep -e "\[31mERR ")" != "" ] && exitcode=1
   rm $tmp_out
 }
 
 if [ "${1-}" != '' ]; then
-  echo "Validating templates for one cluster"
+  echo "Validating templates for cluster '$cluster_env'"
   validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # hf lint
@@ -116,3 +114,4 @@ else
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint
 fi
+[ $exitcode -eq 0 ] && echo "Template validation SUCCESS"
