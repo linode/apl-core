@@ -12,6 +12,12 @@ releases:
     labels:
       pkg: istio-operator
     <<: *default
+  - name: kiali-operator
+    installed: true
+    namespace: default
+    labels:
+      pkg: kiali-operator
+    <<: *default
   - name: keycloak
     installed: {{ $c | get "keycloak.enabled" true }}
     namespace: keycloak
