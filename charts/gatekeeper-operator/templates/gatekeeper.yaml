@@ -1,16 +1,16 @@
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   labels:
-#     admission.gatekeeper.sh/ignore: no-self-managing
-#     app: '{{ template "gatekeeper-operator.name" . }}'
-#     chart: '{{ template "gatekeeper-operator.name" . }}'
-#     control-plane: controller-manager
-#     gatekeeper.sh/system: "yes"
-#     heritage: '{{ .Release.Service }}'
-#     release: '{{ .Release.Name }}'
-#     istio-injection: disabled
-#   name: gatekeeper-system
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    admission.gatekeeper.sh/ignore: no-self-managing
+    app: '{{ template "gatekeeper-operator.name" . }}'
+    chart: '{{ template "gatekeeper-operator.name" . }}'
+    control-plane: controller-manager
+    gatekeeper.sh/system: "yes"
+    heritage: '{{ .Release.Service }}'
+    release: '{{ .Release.Name }}'
+    istio-injection: disabled
+  name: gatekeeper-system
 ---
 apiVersion: v1
 kind: ServiceAccount

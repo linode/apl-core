@@ -8,7 +8,7 @@ run_from_hook=${1:-''}
 
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly output_path="/tmp/otomi/constraints"
-readonly artifacts_path="charts/gatekeeper"
+readonly artifacts_path="charts/gatekeeper-artifacts"
 
 function build() {
   echo "Building constraints artifacts from policies."
