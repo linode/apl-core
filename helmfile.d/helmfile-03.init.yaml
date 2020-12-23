@@ -27,13 +27,19 @@ releases:
     <<: *raw
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
-    namespace: default
+    namespace: gatekeeper-system
+    # verify: false
+    # force: true
+    # atomic: false
     labels:
       pkg: gatekeeper
     <<: *default
   - name: gatekeeper-artifacts
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
+    # verify: false
+    # force: true
+    # atomic: false
     labels:
       pkg: gatekeeper
     hooks:

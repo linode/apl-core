@@ -10,6 +10,8 @@ readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
+readonly cluster_env=$(cluster_env)
+
 exitcode=0
 
 cleanup() {
@@ -66,7 +68,6 @@ process_crd() {
 validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
-  local cluster_env=$(cluster_env)
 
   run_setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"

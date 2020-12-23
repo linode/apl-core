@@ -3,27 +3,38 @@
 {{- $gk := $v.charts | get "gatekeeper-operator" dict }}
 
 image:
-  repository: quay.io/open-policy-agent/gatekeeper
+  repository: openpolicyagent/gatekeeper
   release: v3.3.0-beta.2
   pullPolicy: IfNotPresent
+
+replicas: 1
 
 emitAuditEvents: false
 emitAdmissionEvents: false
 constraintViolationsLimit: 20
 auditInterval: 60
-disableValidatingWebhook: false
+logLevel: INFO
+
+controllerManager:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+audit:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 customResourceDefinitions:
   create: true
 
-logLevel: INFO
-
-resources:
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
 
 # enable data sync
-auditFromCache: false
+auditFromCache: true
+disableValidatingWebhook: false

@@ -34,7 +34,7 @@ function decorate() {
     # decorate constraint templates with openAPI schema properties
     local map_properties_expr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
     local policy_json_path="properties.policies.properties[${key}]"
-    local properties=$(yq -j r values-schema.yaml $policy_json_path | yq d - '**.required.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$map_properties_expr")
+    local properties=$(yq -j r values-schema.yaml $policy_json_path | yq d - '**.required.' | yq d - '**.default.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$map_properties_expr")
 
     local ctemplates_file=$(ls $output_path/template_* | grep -i "$filename.yaml")
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
