@@ -9,5 +9,6 @@ node_modules/
 !package*.json
 !.cspell.json
 *.DS_Store
-values/gatekeeper/constraints/*
+charts/gatekeeper/templates
+charts/gatekeeper/crds
 .values/values-schema.yaml
