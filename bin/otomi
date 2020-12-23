@@ -253,7 +253,7 @@ function execute() {
       check_kube_context=0
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern
+      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replacePathsPattern
       ;;
     test)
       validate_cluster_env
@@ -262,12 +262,12 @@ function execute() {
     hf)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ | grep -Ev $helmfileOutputHide
+      drun helmfile -e $CLOUD-$CLUSTER $@ | grep -Ev $helmfile_output_hide
       ;;
     apply)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ apply --skip-deps | grep -Ev $helmfileOutputHide
+      drun helmfile -e $CLOUD-$CLUSTER $@ apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
       check_kube_context=0
@@ -300,12 +300,12 @@ function execute() {
       ;;
     deploy)
       validate_cluster_env
-      drun bin/deploy.sh | grep -Ev $helmfileOutputHide
+      drun bin/deploy.sh | grep -Ev $helmfile_output_hide
       ;;
     diff)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfileOutputHide
+      drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
@@ -324,13 +324,13 @@ function execute() {
     sync)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ sync --skip-deps | grep -Ev $helmfileOutputHide
+      drun helmfile -e $CLOUD-$CLUSTER $@ sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
       check_kube_context=0
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfileOutputHideTpl
+      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfile_output_hide_tpl
       ;;
     rotate-keys)
       check_sops_file
