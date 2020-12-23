@@ -14,7 +14,8 @@ function build() {
   echo "Building constraints artifacts from policies."
   which konstraint
   local policies_path="./policies"
-  rm -f $output_path/* $artifacts_path/{crds,templates}/*
+  rm -f $output_path/*
+  #  $artifacts_path/{crds,templates}/*
   konstraint create $policies_path -o $output_path
 }
 function decorate() {
@@ -40,8 +41,8 @@ function decorate() {
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
   done
-  mv -f $output_path/template_* $artifacts_path/crds
-  mv -f $output_path/constraint_* $artifacts_path/templates
+  # mv -f $output_path/template_* $artifacts_path/crds
+  # mv -f $output_path/constraint_* $artifacts_path/templates
 }
 
 build && decorate

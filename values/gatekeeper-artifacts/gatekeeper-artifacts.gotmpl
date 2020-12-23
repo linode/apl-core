@@ -1,0 +1,15 @@
+
+{{- $v := .Environment.Values }}
+{{- $gk := $v.charts | get "gatekeeper-operator" dict }}
+
+{{- $constraintsTpl := (exec "bash" (list "-c" "find /tmp/otomi/constraints -name 'template_*.yaml'")) | splitList "\n" }}
+constraintTemplateFiles:
+{{- range $constraintTpl := $constraintsTpl }}{{ if ne $constraintTpl "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
+  - {{ tpl (readFile $constraintTpl) . | nindent 4  }}
+{{- end }}{{ end }}
+
+{{- $constraints := (exec "bash" (list "-c" "find /tmp/otomi/constraints -name 'constraint_*.yaml'")) | splitList "\n" }}
+constraintFiles:
+{{- range $constraint := $constraints }}{{ if ne $constraint "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
+  - {{ tpl (readFile $constraint) . | nindent 4  }}
+{{- end }}{{ end }}
