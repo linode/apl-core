@@ -1,0 +1,19 @@
+{{ if .Values.cr.create }}
+---
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  {{- if .Values.watchNamespace }}
+  namespace: {{ .Values.watchNamespace }}
+  {{- else if .Values.cr.namespace }}
+  namespace: {{ .Values.cr.namespace }}
+  {{- end }}
+  name: {{ .Values.cr.name }}
+  labels:
+  {{- include "kiali-operator.labels" . | nindent 4 }}
+annotations:
+  ansible.operator-sdk/verbosity: {{ .Values.debug.verbosity | quote }}
+spec:
+  {{- toYaml .Values.cr.spec | nindent 2 }}
+...
+{{ end }}

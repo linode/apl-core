@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kiali-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "kiali-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+    {{- include "kiali-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: {{ include "kiali-operator.fullname" . }}
+      namespace: {{ .Release.Namespace }}
+      labels:
+        # required for the operator SDK metric service selector
+        name: {{ include "kiali-operator.fullname" . }}
+      {{- include "kiali-operator.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: {{ .Values.metrics.enabled | quote }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      serviceAccountName: {{ include "kiali-operator.fullname" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+      {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: operator
+        image: "{{ .Values.image.repo }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
+        args:
+        - "--zap-level=info"
+        volumeMounts:
+        - mountPath: /tmp/ansible-operator/runner
+          name: runner
+        env:
+        - name: WATCH_NAMESPACE
+          value: {{ .Values.watchNamespace | default "\"\""  }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: OPERATOR_NAME
+          value: {{ include "kiali-operator.fullname" . }}
+        - name: ANSIBLE_DEBUG_LOGS
+          value: {{ .Values.debug.enabled | quote }}
+        - name: ANSIBLE_VERBOSITY_KIALI_KIALI_IO
+          value: {{ .Values.debug.verbosity | quote }}
+        - name: ANSIBLE_CONFIG
+        {{- if .Values.debug.enableProfiler }}
+          value: "/opt/ansible/ansible-profiler.cfg"
+        {{- else }}
+          value: "/etc/ansible/ansible.cfg"
+        {{- end }}
+        {{- if .Values.env }}
+        {{- toYaml .Values.env | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: http-metrics
+          containerPort: 8383
+        - name: cr-metrics
+          containerPort: 8686
+        {{- if .Values.resources }}
+        resources:
+        {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: runner
+        emptyDir: {}
+      affinity:
+      {{- toYaml .Values.affinity | nindent 8 }}
+...
