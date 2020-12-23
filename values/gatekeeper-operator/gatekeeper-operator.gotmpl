@@ -1,0 +1,29 @@
+
+{{- $v := .Environment.Values }}
+{{- $gk := $v.charts | get "gatekeeper-operator" dict }}
+
+image:
+  repository: quay.io/open-policy-agent/gatekeeper
+  release: v3.3.0-beta.2
+  pullPolicy: IfNotPresent
+
+emitAuditEvents: false
+emitAdmissionEvents: false
+constraintViolationsLimit: 20
+auditInterval: 60
+disableValidatingWebhook: false
+customResourceDefinitions:
+  create: true
+
+logLevel: INFO
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# enable data sync
+auditFromCache: false
