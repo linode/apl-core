@@ -10,7 +10,6 @@ readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
-readonly cluster_env=$(cluster_env)
 
 exitcode=0
 
@@ -70,7 +69,7 @@ validate_templates() {
   local k8s_version="v$(get_k8s_version)"
 
   run_setup $k8s_version
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  echo "Generating k8s $k8s_version manifests for cluster '$(cluster_env)'"
   hf_templates $k8s_resources_path
 
   echo "Processing CRD files"
@@ -91,7 +90,7 @@ validate_templates() {
   done
 
   # validate_resources
-  echo "Validating resources for cluster '$cluster_env'"
+  echo "Validating resources for cluster '$(cluster_env)'"
   local kubeval_schema_location="file://${schema_output_path}"
   local constraint_kinds="BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   local skip_kinds="CustomResourceDefinition,$constraint_kinds"
@@ -107,7 +106,7 @@ validate_templates() {
 }
 
 if [ "${1-}" != '' ]; then
-  echo "Validating templates for cluster '$cluster_env'"
+  echo "Validating templates for cluster '$(cluster_env)'"
   validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # hf lint
