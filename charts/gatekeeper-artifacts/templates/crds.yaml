@@ -1,0 +1,8 @@
+{{- if .Values.installCRDs }}
+{{- with .Values.constraintTemplateFiles }}
+{{- range $file := . }}
+    {{- $file | toYaml }}
+---
+{{- end }}
+{{- end }}
+{{- end}}
