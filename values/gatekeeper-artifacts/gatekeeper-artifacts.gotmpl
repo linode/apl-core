@@ -13,3 +13,5 @@ constraintFiles:
 {{- range $constraint := $constraints }}{{ if ne $constraint "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
   - {{ tpl (readFile $constraint) . | nindent 4  }}
 {{- end }}{{ end }}
+
+dataSync: true
