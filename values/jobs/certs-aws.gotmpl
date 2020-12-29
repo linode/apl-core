@@ -20,7 +20,7 @@ jobs:
       # DOMAINS: '{{ $vars.domains }}'
       # TODO: check why toJson does not work on $vars.domains, so we can remove this workaround
       DOMAINS: '[{{ $f := true }}{{ range $domInfo := $vars.domains }}{{ if not $f }},{{ end }}{"domain":"{{ $domInfo.domain }}","certName":"{{ $domInfo.certName }}","certArn":"{{ $domInfo.certArn }}","hasCert":{{ $domInfo.hasCert }}}{{ $f = false }}{{ end }}]'
-    script: cat 'strict-ssl = true' > ~/.npmrc && npm run jobs:certs-aws
+    script: cat 'strict-ssl = true' > ~/.npmrc && npm run tasks:certs-aws
 
 
 
