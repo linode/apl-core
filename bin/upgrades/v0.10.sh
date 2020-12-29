@@ -46,7 +46,8 @@ RUNNING_NS=gatekeeper-system
 RELEASE=gatekeeper-operator-config
 NAMESPACE=gatekeeper-system
 KIND=constrainttemplates.templates.gatekeeper.sh
-for NAME in k8sallowed-repos k8sbanned-image-tags k8scontainerlimits k8spsp-allowed-users k8spsp-host-filesystem k8spsp-host-networking-ports k8spsprivilegedcontainer k8srequiredlabels; do
+
+for NAME in "container-limits" "banned-image-tags" "psp-host-filesystem" "psp-allowed-users" "psp-host-security" "psp-host-networking-ports" "psp-privileged" "psp-capabilities" "psp-forbidden-sysctls" "psp-apparmor" "psp-selinux" "psp-seccomp" "psp-allowed-repos"; do
   . bin/upgrades/adopt-by-helm.sh 1
 done
 

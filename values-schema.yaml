@@ -1292,6 +1292,17 @@ properties:
           enabled:
             type: boolean
             default: true
+      psp-allowed-repos:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          repos:
+            type: array
+            items:
+              type: string
+          enabled:
+            type: boolean
+            default: true
       psp-host-filesystem:
         additionalProperties: false
         required: [enabled]
