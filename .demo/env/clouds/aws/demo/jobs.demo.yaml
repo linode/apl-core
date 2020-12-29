@@ -8,9 +8,10 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   script: echo "Hello World"
-                - type: job
+                - type: cronjob
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  script: echo "Hello World too"
+                  schedule: 0 1 * * *
+                  script: echo "Hello World every day"
