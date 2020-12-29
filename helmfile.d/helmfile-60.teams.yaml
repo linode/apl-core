@@ -11,7 +11,6 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- if $v.otomi.isMultitenant }}        
   {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
@@ -50,6 +49,7 @@ releases:
           port: 9115
         {{- end }}
         {{- end }}
+  {{- if $v.otomi.isMultitenant }}  
   - name: prometheus-{{ $teamId }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
