@@ -83,3 +83,7 @@ policies:
             # - docker/default
             # - unconfined
             # - localhost/<profile-name>
+    psp-allowed-repos:
+        enabled: false
+        repos:
+            - harbor.otomi.cloud
