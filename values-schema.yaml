@@ -1280,7 +1280,7 @@ properties:
               type: string
           enabled:
             type: boolean
-            default: true
+            default: false
       container-limits:
         additionalProperties: false
         required: [enabled]
@@ -1291,7 +1291,7 @@ properties:
             '$ref': '#/definitions/memoryQuantity'
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-allowed-repos:
         additionalProperties: false
         required: [enabled]
@@ -1302,7 +1302,7 @@ properties:
               type: string
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-host-filesystem:
         additionalProperties: false
         required: [enabled]
@@ -1320,7 +1320,7 @@ properties:
               additionalProperties: false
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-allowed-users:
         additionalProperties: false
         required: [enabled]
@@ -1397,35 +1397,35 @@ properties:
                       type: integer
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-host-security:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-host-networking-ports:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-privileged:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
       psp-capabilities:
         additionalProperties: false
         required: [enabled]
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           allowedCapabilities:
             type: array
             items:
@@ -1436,7 +1436,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           forbiddenSysctls:
             type: array
             items:
@@ -1447,7 +1447,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           allowedProfiles:
             type: array
             items:
@@ -1458,7 +1458,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           allowedProfiles:
             type: array
             items:
@@ -1469,7 +1469,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           seLinuxContext:
             type: string
             enum: [MustRunAs, RunAsAny]
