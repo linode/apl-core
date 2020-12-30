@@ -24,8 +24,6 @@ ARG SKIP_TESTS='false'
 ENV CI=true
 
 COPY . .
-RUN sudo chmod a+rw /home/app/stack/charts/gatekeeper-artifacts/crds
-
 
 RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   cp -r .demo/ env/ && bin/test-build.sh; fi
@@ -38,6 +36,5 @@ RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY . .
-RUN sudo chmod a+rw /home/app/stack/charts/gatekeeper-artifacts/crds
 
 CMD ["bin/otomi"]
