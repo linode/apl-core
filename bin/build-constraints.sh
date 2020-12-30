@@ -12,8 +12,8 @@ readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 
 function build() {
   echo "Building constraints artifacts from policies."
-  mkdir -p $crd_artifacts_path && chmod a+rx $crd_artifacts_path
   local policies_path="./policies"
+  ls -al $crd_artifacts_path
   rm -f $output_path/* $crd_artifacts_path/template_*
   konstraint create $policies_path -o $output_path
 }
@@ -40,7 +40,7 @@ function decorate() {
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
   done
-  cp -f $output_path/template_* $crd_artifacts_path
+  mv -f $output_path/template_* $crd_artifacts_path
 }
 
 build && decorate
