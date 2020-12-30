@@ -1,2 +1,2 @@
-installCRDs: false
-dataSync: true
+installCRDs: true
+dataSync: false    
