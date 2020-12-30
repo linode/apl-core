@@ -27,7 +27,7 @@ releases:
     <<: *raw
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
-    namespace: gatekeeper-system
+    namespace: default
     labels:
       pkg: gatekeeper
     <<: *default

@@ -8,9 +8,7 @@
       "path": "./node_modules/cz-conventional-changelog"
     }
   },
-  "dependencies": {
-    "ajv-cli": "^3.3.0"
-  },
+  "dependencies": {},
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",

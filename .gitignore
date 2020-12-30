@@ -10,3 +10,4 @@ node_modules/
 !.cspell.json
 *.DS_Store
 .values/values-schema.yaml
+charts/gatekeeper-artifacts/crds/*
