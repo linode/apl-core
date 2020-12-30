@@ -4,7 +4,7 @@
 
 image:
   repository: openpolicyagent/gatekeeper
-  release: v3.3.0-beta.2
+  release: v3.2.2
   pullPolicy: IfNotPresent
 
 replicas: 1
@@ -18,7 +18,7 @@ logLevel: INFO
 controllerManager:
   resources:
     limits:
-      cpu: 1000m
+      cpu: 500m
       memory: 512Mi
     requests:
       cpu: 100m
@@ -26,7 +26,7 @@ controllerManager:
 audit:
   resources:
     limits:
-      cpu: 1000m
+      cpu: 500m
       memory: 512Mi
     requests:
       cpu: 100m
