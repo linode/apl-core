@@ -12,9 +12,7 @@ readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 
 function build() {
   echo "Building constraints artifacts from policies."
-  echo "CWD Path: $PWD"
-
-  mkdir -p $crd_artifacts_path
+  mkdir -p $crd_artifacts_path && chmod a+rx $crd_artifacts_path
   local policies_path="./policies"
   rm -f $output_path/* $crd_artifacts_path/template_*
   konstraint create $policies_path -o $output_path
