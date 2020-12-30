@@ -8,10 +8,12 @@ run_from_hook=${1:-''}
 
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly output_path="/tmp/otomi/constraints"
-readonly crd_artifacts_path="charts/gatekeeper-artifacts/crds"
+readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 
 function build() {
   echo "Building constraints artifacts from policies."
+  echo "CWD Path: $PWD"
+
   mkdir -p $crd_artifacts_path
   local policies_path="./policies"
   rm -f $output_path/* $crd_artifacts_path/template_*
