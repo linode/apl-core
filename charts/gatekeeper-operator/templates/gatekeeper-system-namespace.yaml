@@ -9,4 +9,5 @@ metadata:
     gatekeeper.sh/system: "yes"
     heritage: '{{ .Release.Service }}'
     release: '{{ .Release.Name }}'
+    istio-injection: disabled
   name: gatekeeper-system

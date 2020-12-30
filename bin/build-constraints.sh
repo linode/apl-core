@@ -13,7 +13,6 @@ readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 function build() {
   echo "Building constraints artifacts from policies."
   local policies_path="./policies"
-  ls -al $crd_artifacts_path
   sudo rm -f $output_path/* $crd_artifacts_path/template_*
   konstraint create $policies_path -o $output_path
 }
