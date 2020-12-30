@@ -11,7 +11,7 @@ readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 
-exitcode=0
+exitcode=1
 
 cleanup() {
   [ $exitcode -eq 0 ] || echo "Template validation FAILED"
@@ -21,6 +21,7 @@ cleanup() {
 trap cleanup EXIT ERR
 
 run_setup() {
+  exitcode=1
   local k8s_version="$1"
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
@@ -100,7 +101,7 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(cat $tmp_out | grep -e "\[31mERR ")" != "" ] && exitcode=1
+  [ "$(cat $tmp_out | grep -e "\[31mERR ")" != "" ] || exitcode=0
   rm $tmp_out
 }
 

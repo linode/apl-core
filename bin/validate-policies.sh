@@ -10,7 +10,7 @@ readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly policies_path="policies"
 readonly constraints_file=$(mktemp -u)
 readonly parameters_file=$(mktemp -u)
-exitcode=0
+exitcode=1
 
 cleanup() {
   [ $exitcode -eq 0 ] || echo "Policy checks FAILED"
@@ -22,6 +22,7 @@ trap cleanup EXIT
 
 run_setup() {
   rm -rf $k8s_resources_path $constraints_file $parameters_file && mkdir -p $k8s_resources_path
+  exitcode=1
 }
 
 validate_policies() {
@@ -45,7 +46,7 @@ validate_policies() {
   # validate_resources
   echo "Validating manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path $k8s_resources_path
-  [ $? -ne 0 ] && exitcode=1
+  [ $? -eq 0 ] && exitcode=0
 }
 
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
