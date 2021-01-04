@@ -178,7 +178,6 @@ definitions:
       patternProperties:
         '^[a-zA-Z0-9_]*$':
           type: string
-      type: object
     nullable: true
     title: Environment variables
     type: array
@@ -216,7 +215,6 @@ definitions:
       tag:
         type: string
     title: Container image
-    type: object
   jobs:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
