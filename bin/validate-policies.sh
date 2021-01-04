@@ -15,7 +15,7 @@ exitcode=0
 validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
 
 cleanup() {
-  ((validationResult += $exitcode))
+  validationResult=$((($validationResult + $exitcode)))
   [ $validationResult -eq 0 ] && echo "Policy checks SUCCESS" || echo "Policy checks FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
@@ -50,7 +50,7 @@ validate_policies() {
   echo "Validating manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path $k8s_resources_path
   [ $? -eq 0 ] && exitcode=0
-  ((validationResult += $exitcode))
+  validationResult=$((($validationResult + $exitcode)))
 }
 
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
