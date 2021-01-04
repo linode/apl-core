@@ -31,3 +31,7 @@ releases:
     installed: {{ eq $v.cluster.provider "onprem" | ternary false ($v | get "charts.cluster-overprovisioner.enabled" true) }}
     namespace: overprovisioner
     <<: *default
+  - name: vault-operator
+    installed: true
+    namespace: shared
+    <<: *default
