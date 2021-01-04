@@ -11,12 +11,14 @@ readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 
-exitcode=1
+exitcode=0
+validationResult=0 # using $validationResult as final exit code (assuming there is an error prior to finishing all template validation, the script should exit with an error)
 
 cleanup() {
-  [ $exitcode -eq 0 ] || echo "Template validation FAILED"
+  ((validationResult += $exitcode))
+  [ $validationResult -eq 0 ] || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
-  exit $exitcode
+  exit $validationResult
 }
 trap cleanup EXIT ERR
 
@@ -68,9 +70,10 @@ process_crd() {
 validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
+  local cluster_env=$(cluster_env)
 
   run_setup $k8s_version
-  echo "Generating k8s $k8s_version manifests for cluster '$(cluster_env)'"
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates $k8s_resources_path
 
   echo "Processing CRD files"
@@ -90,7 +93,7 @@ validate_templates() {
   done
 
   # validate_resources
-  echo "Validating resources for cluster '$(cluster_env)'"
+  echo "Validating resources for cluster '$cluster_env'"
   local kubeval_schema_location="file://${schema_output_path}"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   local skip_kinds="CustomResourceDefinition,$constraint_kinds"
@@ -102,6 +105,7 @@ validate_templates() {
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
   [ "$(cat $tmp_out | grep -e "\[31mERR ")" != "" ] || exitcode=0
+  ((validationResult += $exitcode))
   rm $tmp_out
 }
 
@@ -116,4 +120,4 @@ else
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint
 fi
-[ $exitcode -eq 0 ] && echo "Template validation SUCCESS"
+[ $validationResult -eq 0 ] && echo "Template validation SUCCESS"

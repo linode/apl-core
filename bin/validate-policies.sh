@@ -10,19 +10,22 @@ readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly policies_path="policies"
 readonly constraints_file=$(mktemp -u)
 readonly parameters_file=$(mktemp -u)
-exitcode=1
+
+exitcode=0
+validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
 
 cleanup() {
-  [ $exitcode -eq 0 ] || echo "Policy checks FAILED"
+  ((validationResult += $exitcode))
+  [ $validationResult -eq 0 ] || echo "Policy checks FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
-  exit $exitcode
+  exit $validationResult
 }
 trap cleanup EXIT
 
 run_setup() {
-  rm -rf $k8s_resources_path $constraints_file $parameters_file && mkdir -p $k8s_resources_path
   exitcode=1
+  rm -rf $k8s_resources_path $constraints_file $parameters_file && mkdir -p $k8s_resources_path
 }
 
 validate_policies() {
@@ -47,15 +50,16 @@ validate_policies() {
   echo "Validating manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path $k8s_resources_path
   [ $? -eq 0 ] && exitcode=0
+  ((validationResult += $exitcode))
 }
 
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 if [ "${1-}" != "" ]; then
-  echo "Checking policies for cluster '$cluster_env'"
+  echo "Checking policies for cluster '$(cluster_env)'"
   validate_policies
 else
   echo "Checking policies for all clusters"
   for_each_cluster validate_policies
 fi
-[ $exitcode -eq 0 ] && echo "Template validation SUCCESS"
+[ $validationResult -eq 0 ] && echo "Policy checks SUCCESS"

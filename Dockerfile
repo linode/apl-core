@@ -23,7 +23,7 @@ WORKDIR $APP_HOME
 ARG SKIP_TESTS='false'
 ENV CI=true
 
-COPY . .
+COPY --chown=app . .
 
 RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   cp -r .demo/ env/ && bin/test-build.sh; fi
@@ -35,6 +35,6 @@ ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-COPY . .
+COPY --chown=app . .
 
 CMD ["bin/otomi"]
