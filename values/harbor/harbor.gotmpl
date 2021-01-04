@@ -28,9 +28,7 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  # securityContext:
-  #   runAsUser: 1337
-  podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
@@ -58,8 +56,7 @@ jobservice:
       memory: 512Mi
       cpu: 100m
     {{- end }}
-  securityContext:
-    runAsUser: 10000
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
 
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
@@ -139,8 +136,7 @@ proxy:
 
 registry:
   secret: q1g9gwm35g8k458b
-  securityContext:
-    runAsUser: 10000
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
 
   registry:
     image:
@@ -202,8 +198,7 @@ database:
       {{- end }}
 
 clair:
-  securityContext:
-    runAsUser: 10000
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   clair:
     resources:
       {{- with $h | get "resources.clair" nil }}
@@ -241,8 +236,8 @@ chartmuseum:
       cpu: 400m
       memory: 256Mi
     {{- end }}
-  securityContext: 
-    runAsUser: 10000
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+
 portal:
   resources:
     {{- with $h | get "resources.portal" nil }}
@@ -255,12 +250,10 @@ portal:
       cpu: 400m
       memory: 128Mi
     {{- end }}
-  securityContext:
-    runAsUser: 10000
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
 
 redis:
-  securityContext:
-    runAsUser: 999
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
   internal:
     resources:
       requests:
