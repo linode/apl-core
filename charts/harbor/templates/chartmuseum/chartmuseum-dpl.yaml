@@ -37,7 +37,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
-        runAsUser: {{ default 10000 .Values.chartmuseum.securityContext.runAsUser  }}
+        {{- with .Values.chartmuseum.securityContext.runAsUser }}
+        runAsUser: {{ default 10000 .  }}
+        {{- end -}}
 {{- if .Values.chartmuseum.serviceAccountName }}
       serviceAccountName: {{ .Values.chartmuseum.serviceAccountName }}
 {{- end -}}

@@ -26,7 +26,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 999
-        runAsUser: {{ default 999 .Values.redis.securityContext.runAsUser  }}
+        {{- with .Values.redis.securityContext.runAsUser }}
+        runAsUser: {{ default 999 . }}
+        {{- end -}}
 {{- if .Values.redis.internal.serviceAccountName }}
       serviceAccountName: {{ .Values.redis.internal.serviceAccountName }}
 {{- end -}}

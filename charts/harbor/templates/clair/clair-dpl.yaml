@@ -30,7 +30,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
-        runAsUser: {{ default 10000 .Values.clair.securityContext.runAsUser  }}
+        {{- with .Values.clair.securityContext.runAsUser }}
+        runAsUser: {{ default 10000 . }}
+        {{- end -}}
 {{- if .Values.clair.serviceAccountName }}
       serviceAccountName: {{ .Values.clair.serviceAccountName }}
 {{- end -}}

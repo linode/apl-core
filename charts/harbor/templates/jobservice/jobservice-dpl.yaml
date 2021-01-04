@@ -37,7 +37,9 @@ spec:
     spec:
       securityContext:
         fsGroup: 10000
-        runAsUser: {{ default 10000 .Values.jobservice.securityContext.runAsUser  }}
+        {{- with .Values.jobservice.securityContext.runAsUser }}
+        runAsUser: {{ default 10000 . }}
+        {{- end -}}
 {{- if .Values.jobservice.serviceAccountName }}
       serviceAccountName: {{ .Values.jobservice.serviceAccountName }}
 {{- end -}}
