@@ -3,7 +3,7 @@ $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: false
 definitions:
   rawValues:
-    description: Define custom configuration for a given chart. Values defined in this section take priority over all other chart values.
+    May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here.
     type: object
   alerts:
     properties:
