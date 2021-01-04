@@ -27,10 +27,10 @@ definitions:
         additionalProperties: false
         properties:
           highPrio:
-            description: The low prio web hook
+            description: The low prio web hook.
             type: string
           lowPrio:
-            description: The high prio web hook
+            description: The high prio web hook.
             type: string
       receivers:
         description: Notification receivers.
@@ -66,31 +66,31 @@ definitions:
     readOnly: false
     properties:
       appInsightsApiKey:
-        description: An Azure AppInsights client secret (defaults to clientSecret)
+        description: An Azure AppInsights client secret (defaults to clientSecret).
         type: string
       appInsightsAppId:
-        description: An Azure AppInsights client id (defaults to clientId)
+        description: An Azure AppInsights client id (defaults to clientId).
         type: string
       clientId:
-        description: An Azure client id
+        description: An Azure client id.
         type: string
       clientSecret:
-        description: An Azure client secret
+        description: An Azure client secret.
         type: string
       logAnalyticsClientId:
-        description: An Azure client secret (defaults to clientSecret)
+        description: An Azure client secret (defaults to clientSecret).
         type: string
       logAnalyticsClientSecret:
-        description: An Azure client secret (defaults to clientSecret)
+        description: An Azure client secret (defaults to clientSecret).
         type: string
       logAnalyticsTenantId:
-        description: An Azure tenant id (defaults to tenantId)
+        description: An Azure tenant id (defaults to tenantId).
         type: string
       logAnalyticsWorkspace:
-        description: An Azure monitor log analytics workspace
+        description: An Azure monitor log analytics workspace.
         type: string
   cloud:
-    description: A common cloud configuration
+    description: A common cloud configuration.
     properties:
       clusters:
         additionalProperties: false
@@ -112,7 +112,7 @@ definitions:
         description: Used by kubectl for local deployment to target cluster.
         type: string
       dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider ot this cluster.
+        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
         enum:
           - azure
           - google
@@ -130,7 +130,7 @@ definitions:
         default: true
         type: boolean
       entrypoint:
-        description: A Kubernetes API public IP address (onprem only)
+        description: A Kubernetes API public IP address (onprem only).
         type: string
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
@@ -279,7 +279,7 @@ definitions:
       : pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   memoryQuantity:
-    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki
+    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki.
     examples:
       - 1Mi
       - 0.5M
@@ -312,7 +312,7 @@ definitions:
     pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
-    description: A container image repository
+    description: A container image repository.
     pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
     type: string
   resource:
@@ -327,17 +327,17 @@ definitions:
       - memory
   resources:
     additionalProperties: false
-    description: Compute resources for containers
+    description: Compute resources for containers.
     properties:
       limits:
         $ref: '#/definitions/resource'
-        description: Requested resources (best effort)
+        description: Requested resources (best effort).
       requests:
         $ref: '#/definitions/resource'
-        description: Requested resources (guaranteed)
+        description: Requested resources (guaranteed).
     title: Pod resources
   scaling:
-    description: Min and max nr of replicas
+    description: Min and max number of replicas.
     properties:
       maxReplicas:
         type: number
@@ -367,15 +367,15 @@ definitions:
         title: Docker Registry
       - properties:
           entries:
-            description: Key names and their values
+            description: Key names and their values.
             items:
               properties:
                 key:
-                  description: Key or file name
+                  description: Key or file name.
                   example: secretstuff.conf
                   type: string
                 value:
-                  description: Value to be encrypted
+                  description: Value to be encrypted.
                   example: password=yoursecretpassword
                   type: string
               required:
@@ -392,13 +392,13 @@ definitions:
         title: Generic
       - properties:
           ca:
-            description: The CA certificate content
+            description: The CA certificate content.
             type: string
           crt:
-            description: The PEM encoded public key certificate content
+            description: The PEM encoded public key certificate content.
             type: string
           key:
-            description: The private key certificate content
+            description: The private key certificate content.
             type: string
           type:
             default: tls
@@ -462,18 +462,18 @@ definitions:
                 workload:
                   $ref: '#/definitions/labelsAnnotations'
             domain:
-              description: A custom service domain name
+              description: A custom service domain name.
               type: string
             forwardPath:
               default: false
-              description: "Wether to forward the path into the service, or 'terminate' it."
+              description: "Whether to forward the path into the service, or 'terminate' it."
               type: boolean
             id:
               description: Unique identifier created by and used in API. Optional.
               type: string
             internal:
               default: false
-              description: 'If true, service is not going to be exposed to the public domain'
+              description: 'If true, service is not going to be exposed to the public domain.'
               type: boolean
             isPublic:
               default: false
@@ -499,7 +499,7 @@ definitions:
                       properties:
                         additionalProperties: false
                         semver:
-                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
+                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
                           example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
                           title: Semver version pattern
                           type: string
@@ -514,7 +514,7 @@ definitions:
                     - additionalProperties: false
                       properties:
                         glob:
-                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
+                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
                           example: master-v1.*.*
                           title: Glob string pattern
                           type: string
@@ -605,10 +605,10 @@ properties:
   alerts:
     $ref: '#/definitions/alerts'
   azure:
-    description: Azure specific configuration
+    description: Azure specific configuration.
     properties:
       diskType:
-        description: An Azure disk type (SKU Type)
+        description: An Azure disk type (SKU Type).
         enum:
           - Standard_LRS
           - Standard_GRS
@@ -622,13 +622,13 @@ properties:
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
-        description: An Azure resource group
+        description: An Azure resource group.
         type: string
       subscriptionId:
-        description: An Azure subscription ID
+        description: An Azure subscription ID.
         type: string
       tenantId:
-        description: An Azure tenant ID
+        description: An Azure tenant ID.
         type: string
     required:
       - diskType
@@ -708,7 +708,7 @@ properties:
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
-              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/
+              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/.
             enum:
               - staging
               - production
@@ -754,7 +754,7 @@ properties:
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
-            description: A secret used by drone-admit-members plugin
+            description: A secret used by drone-admit-members plugin.
             type: string
           sourceControl:
             additionalProperties: false
@@ -888,32 +888,32 @@ properties:
             type: string
       ingress-azure:
         additionalProperties: false
-        description: A chart for Azure Application Gateway
+        description: A chart for Azure Application Gateway.
         properties:
           appgw:
             additionalProperties: false
-            description: Application Gateway
+            description: Application Gateway.
             properties:
               name:
-                description: A name of the Application Gateway
+                description: A name of the Application Gateway.
                 type: string
               resourceGroup:
-                description: A name of the Azure Resource Group in which Application Gateway was created
+                description: A name of the Azure Resource Group in which Application Gateway was created.
                 type: string
               subnetName:
-                description: A subnet of the application gateway
+                description: A subnet of the application gateway.
                 type: string
               subnetPrefix:
-                description: A subnet in CIDR notation
+                description: A subnet in CIDR notation.
                 examples:
                   - 10.1.0.0/16
                 type: string
               subscriptionId:
-                description: The Azure Subscription ID in which Application Gateway resides
+                description: The Azure Subscription ID in which Application Gateway resides.
                 type: string
               usePrivateIP:
                 default: false
-                description: Wether to use a private ip range or not
+                description: Whether to use a private ip range or not.
                 type: boolean
             required:
               - subscriptionId
@@ -926,7 +926,7 @@ properties:
             description: A service Principal secret.
             properties:
               secretJSON:
-                description: A service Principal secret JSON key (base64 encoded)
+                description: A service Principal secret JSON key (base64 encoded).
                 type: string
             required:
               - secretJSON
@@ -1202,20 +1202,20 @@ properties:
       onprem:
         $ref: '#/definitions/cloud'
   cluster:
-    description: An internal otomi object (do not edit it)
+    description: An internal otomi object (do not edit it).
   customer:
     additionalProperties: false
     properties:
       name:
         type: string
   google:
-    description: Google specific configuration
+    description: Google specific configuration.
     properties:
       cloudDnsKey:
-        description: A service account key for managing a DNS zone
+        description: A service account key for managing a DNS zone.
         type: string
       projectId:
-        description: A Google Cloud project ID for accessing DNS zone
+        description: A Google Cloud project ID for accessing DNS zone.
         type: string
     required:
       - cloudDnsKey
@@ -1273,19 +1273,19 @@ properties:
         type: boolean
       isHomeMonitored:
         default: false
-        description: Wether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
+        description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isManaged:
         default: true
-        description: Wether masters are managed and not under control. Set this to false when onprem.
+        description: Whether masters are managed and not under control. Set this to false when onprem.
         type: boolean
       isMultitenant:
         default: true
-        description: Wether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
+        description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       mode:
         default: ee
-        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee)
+        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee).
         enum:
           - ce
           - ee
@@ -1400,7 +1400,7 @@ properties:
     additionalProperties: false
     properties:
       services:
-        description: An internal otomi object (do not edit it)
+        description: An internal otomi object (do not edit it).
         type: array
       teams:
         additionalProperties: false
