@@ -20,7 +20,7 @@ cleanup() {
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
   exit $validationResult
 }
-trap cleanup EXIT ERR
+trap cleanup EXIT
 
 run_setup() {
   exitcode=1
@@ -99,13 +99,14 @@ validate_templates() {
   local skip_kinds="CustomResourceDefinition,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  set +o pipefail
+  set +eo pipefail
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-  set -o pipefail
-  [ "$(cat $tmp_out | grep -e "\[31mERR ")" != "" ] || exitcode=0
+  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] || exitcode=0
   ((validationResult += $exitcode))
+  [ "$CI" = 'true' ] && set -e
+  set -o pipefail
   rm $tmp_out
 }
 
