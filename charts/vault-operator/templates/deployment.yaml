@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vault-operator.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "vault-operator.chart" . }}
+    app.kubernetes.io/name: {{ include "vault-operator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.labels }}
+{{ toYaml .Values.labels | indent 4 }}
+    {{- end }}
+spec:
+  strategy:
+    type: Recreate
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "vault-operator.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "vault-operator.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.podAnnotations }}
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      initContainers:
+      {{- if index .Values "etcd-operator" "enabled" }}
+      - name: check-etcd-crd
+        image: lachlanevenson/k8s-kubectl
+        command: ['kubectl', 'get', 'customresourcedefinitions', 'etcdclusters.etcd.database.coreos.com']
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ include "vault-operator.bank-vaults.version" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - vault-operator
+            - -sync_period
+            - {{ .Values.syncPeriod }}
+          env:
+            - name: WATCH_NAMESPACE
+              value: {{ .Values.watchNamespace }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: {{ include "vault-operator.name" . }}
+            - name: OPERATOR_LOG_LEVEL
+              value: debug
+            - name: BANK_VAULTS_IMAGE
+              value: "{{ .Values.image.bankVaultsRepository }}:{{ include "vault-operator.bank-vaults.version" . }}"
+          ports:
+          - containerPort: {{ .Values.service.internalPort }}
+          - containerPort: 8383
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: {{ .Values.service.internalPort }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+{{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- end }}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+      serviceAccountName: {{ include "vault-operator.fullname" . }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+{{- include "vault-operator.imagePullSecrets" . | indent 6 }}
