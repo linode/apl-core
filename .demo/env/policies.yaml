@@ -86,4 +86,6 @@ policies:
     psp-allowed-repos:
         enabled: false
         repos:
-            - harbor.otomi.cloud
+            - harbor.demo.gke.otomi.cloud
+            - harbor.demo.aks.otomi.cloud
+            - harbor.demo.eks.otomi.cloud

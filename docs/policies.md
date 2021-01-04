@@ -24,7 +24,8 @@ The following predefined strategies will enforce most common security use-cases 
 Restricted ->> Hostnetwork ->> Hostaccess ->> Non-root ->> Hostmount-anyuid ->> Anyuid ->> Privileged
 ```
 
-First choose one of the following **Constraint presets** and create the according values file in `env/charts/gatekeeper.yaml`, to load these parameters into the policy engine and run evaluation using selected level Constraints:
+Some example Policy and Constraint definitions can be found in `.demo/env/policies.yaml` file.
+First choose one of the example **Constraint presets**, then to load these parameters into the policy engine and run evaluation using selected level Constraints, create the according values in the `policies.yaml` file.
 
 To start policy evaluation statically from a development workstation, run the following:
 
@@ -50,61 +51,64 @@ Parameters will be merged with the default parameters passed to the rule (as def
 Denies access to all host features and requires pods to run with a UID. This is the most restrictive policy setup.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: true
-        allowedHostPaths:
-          - pathPrefix: /tmp/
-            readOnly: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        runAsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        supplementalGroups:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        fsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-      psp-host-security:
-        enabled: true
-      psp-host-networking-ports:
-        enabled: true
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - NET_BIND_SERVICE
-          - NET_RAW
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: true
+    allowedHostPaths:
+      - pathPrefix: /tmp/
+        readOnly: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    runAsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    supplementalGroups:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    fsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+  psp-host-security:
+    enabled: true
+  psp-host-networking-ports:
+    enabled: true
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - NET_BIND_SERVICE
+      - NET_RAW
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
 
 ### Privileged
@@ -112,36 +116,39 @@ charts:
 Allows access to all privileged and host features and the ability to run as any user, any group, any fsGroup. This is the most relaxed policy setup.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
+    enabled: false
+  banned-image-tags:
+    enabled: false
+  psp-host-filesystem:
+    enabled: false
+  psp-allowed-users:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: false
-      banned-image-tags:
-        enabled: false
-      psp-host-filesystem:
-        enabled: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: RunAsAny
-        runAsGroup:
-          rule: RunAsAny
-        supplementalGroups:
-          rule: RunAsAny
-        fsGroup:
-          rule: RunAsAny
-      psp-host-security:
-        enabled: false
-      psp-host-networking-ports:
-        enabled: false
-      psp-privileged:
-        enabled: false
-      psp-capabilities:
-        enabled: false
-      psp-forbidden-sysctls:
-        enabled: false
+    runAsUser:
+      rule: RunAsAny
+    runAsGroup:
+      rule: RunAsAny
+    supplementalGroups:
+      rule: RunAsAny
+    fsGroup:
+      rule: RunAsAny
+  psp-host-security:
+    enabled: false
+  psp-host-networking-ports:
+    enabled: false
+  psp-privileged:
+    enabled: false
+  psp-capabilities:
+    enabled: false
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: false
 ```
 
 ### Non-root
@@ -149,58 +156,61 @@ charts:
 Provides all features of the restricted Constraint but allows users to run with any non-root UID. The user must specify the UID.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: true
-        allowedHostPaths:
-          - pathPrefix: /tmp/
-            readOnly: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: MustRunAsNonRoot
-        runAsGroup:
-          rule: MayRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        supplementalGroups:
-          rule: MayRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        fsGroup:
-          rule: MayRunAs
-          ranges:
-            - min: 1
-              max: 65535
-      psp-host-security:
-        enabled: true
-      psp-host-networking-ports:
-        enabled: true
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - NET_BIND_SERVICE
-          - NET_RAW
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: true
+    allowedHostPaths:
+      - pathPrefix: /tmp/
+        readOnly: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: MustRunAsNonRoot
+    runAsGroup:
+      rule: MayRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    supplementalGroups:
+      rule: MayRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    fsGroup:
+      rule: MayRunAs
+      ranges:
+        - min: 1
+          max: 65535
+  psp-host-security:
+    enabled: true
+  psp-host-networking-ports:
+    enabled: true
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - NET_BIND_SERVICE
+      - NET_RAW
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
 
 ### Anyuid
@@ -208,48 +218,51 @@ charts:
 Provides all features of the restricted Constraint but allows users to run with any UID and any GID.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: true
-        allowedHostPaths:
-          - pathPrefix: /tmp/
-            readOnly: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: RunAsAny
-        runAsGroup:
-          rule: RunAsAny
-        supplementalGroups:
-          rule: RunAsAny
-        fsGroup:
-          rule: RunAsAny
-      psp-host-security:
-        enabled: true
-      psp-host-networking-ports:
-        enabled: true
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - '*'
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: true
+    allowedHostPaths:
+      - pathPrefix: /tmp/
+        readOnly: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: RunAsAny
+    runAsGroup:
+      rule: RunAsAny
+    supplementalGroups:
+      rule: RunAsAny
+    fsGroup:
+      rule: RunAsAny
+  psp-host-security:
+    enabled: true
+  psp-host-networking-ports:
+    enabled: true
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - '*'
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
 
 ### Hostmount-anyuid
@@ -257,46 +270,49 @@ charts:
 Provides all the features of the restricted Constraint but allows host mounts and any UID by a pod. Allows host file system access as any UID, including UID 0.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: RunAsAny
-        runAsGroup:
-          rule: RunAsAny
-        supplementalGroups:
-          rule: RunAsAny
-        fsGroup:
-          rule: RunAsAny
-      psp-host-security:
-        enabled: true
-      psp-host-networking-ports:
-        enabled: true
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - NET_BIND_SERVICE
-          - NET_RAW
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: RunAsAny
+    runAsGroup:
+      rule: RunAsAny
+    supplementalGroups:
+      rule: RunAsAny
+    fsGroup:
+      rule: RunAsAny
+  psp-host-security:
+    enabled: true
+  psp-host-networking-ports:
+    enabled: true
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - NET_BIND_SERVICE
+      - NET_RAW
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
 
 ### Hostnetwork
@@ -304,61 +320,64 @@ charts:
 Allows using host networking and host ports but still requires pods to be run with a UID.
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: true
-        allowedHostPaths:
-          - pathPrefix: /tmp/
-            readOnly: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        runAsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        supplementalGroups:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        fsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-      psp-host-security:
-        enabled: false
-      psp-host-networking-ports:
-        enabled: false
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - NET_BIND_SERVICE
-          - NET_RAW
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: true
+    allowedHostPaths:
+      - pathPrefix: /tmp/
+        readOnly: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    runAsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    supplementalGroups:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    fsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+  psp-host-security:
+    enabled: false
+  psp-host-networking-ports:
+    enabled: false
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - NET_BIND_SERVICE
+      - NET_RAW
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
 
 ### Hostaccess
@@ -366,56 +385,59 @@ charts:
 Allows access to all host namespaces but still requires pods to be run with a UID. Allows host access to namespaces, file systems, and PIDS
 
 ```yaml
-charts:
-  gatekeeper:
+policies:
+  container-limits:
     enabled: true
-    constraints:
-      container-limits:
-        enabled: true
-        cpu: '2'
-        memory: 2000Mi
-      banned-image-tags:
-        enabled: true
-        tags:
-          - latest
-          - master
-      psp-host-filesystem:
-        enabled: false
-      psp-allowed-users:
-        enabled: true
-        runAsUser:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        runAsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        supplementalGroups:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-        fsGroup:
-          rule: MustRunAs
-          ranges:
-            - min: 1
-              max: 65535
-      psp-host-security:
-        enabled: false
-      psp-host-networking-ports:
-        enabled: false
-      psp-privileged:
-        enabled: true
-      psp-capabilities:
-        enabled: true
-        allowedCapabilities:
-          - NET_BIND_SERVICE
-          - NET_RAW
-      psp-forbidden-sysctls:
-        enabled: true
-        forbiddenSysctls:
-          - '*'
+    cpu: '2'
+    memory: 2000Mi
+  banned-image-tags:
+    enabled: true
+    tags:
+      - latest
+      - master
+  psp-host-filesystem:
+    enabled: false
+  psp-allowed-users:
+    enabled: true
+    runAsUser:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    runAsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    supplementalGroups:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+    fsGroup:
+      rule: MustRunAs
+      ranges:
+        - min: 1
+          max: 65535
+  psp-host-security:
+    enabled: false
+  psp-host-networking-ports:
+    enabled: false
+  psp-privileged:
+    enabled: true
+  psp-capabilities:
+    enabled: true
+    allowedCapabilities:
+      - NET_BIND_SERVICE
+      - NET_RAW
+  psp-allowed-repos:
+    enabled: false
+    repos:
+      - harbor.demo.gke.otomi.cloud
+      - harbor.demo.aks.otomi.cloud
+      - harbor.demo.eks.otomi.cloud
+  psp-forbidden-sysctls:
+    enabled: true
+    forbiddenSysctls:
+      - '*'
 ```
