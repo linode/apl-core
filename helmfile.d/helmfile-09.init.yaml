@@ -40,3 +40,7 @@ releases:
     installed: false
     namespace: istio-system
     <<: *default
+  - name: vault-operator-artifacts
+    installed: true
+    namespace: shared
+    <<: *raw
