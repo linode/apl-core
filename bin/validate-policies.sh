@@ -16,7 +16,7 @@ validationResult=0 # using $validationResult as final exit code result (assuming
 
 cleanup() {
   ((validationResult += $exitcode))
-  [ $validationResult -eq 0 ] || echo "Policy checks FAILED"
+  [ $validationResult -eq 0 ] && echo "Policy checks SUCCESS" || echo "Policy checks FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
   exit $validationResult
@@ -62,4 +62,3 @@ else
   echo "Checking policies for all clusters"
   for_each_cluster validate_policies
 fi
-[ $validationResult -eq 0 ] && echo "Policy checks SUCCESS"

@@ -15,8 +15,8 @@ exitcode=0
 validationResult=0 # using $validationResult as final exit code (assuming there is an error prior to finishing all template validation, the script should exit with an error)
 
 cleanup() {
-  ((validationResult += $exitcode))
-  [ $validationResult -eq 0 ] || echo "Template validation FAILED"
+  validationResult=$((($validationResult + $exitcode)))
+  [ $validationResult -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
   exit $validationResult
 }
@@ -99,14 +99,13 @@ validate_templates() {
   local skip_kinds="CustomResourceDefinition,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  set +eo pipefail
+  set +o pipefail
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] || exitcode=0
-  ((validationResult += $exitcode))
-  [ "$CI" = 'true' ] && set -e
   set -o pipefail
+  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] || exitcode=0
+  validationResult=$((($validationResult + $exitcode)))
   rm $tmp_out
 }
 
@@ -121,4 +120,3 @@ else
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint
 fi
-[ $validationResult -eq 0 ] && echo "Template validation SUCCESS"
