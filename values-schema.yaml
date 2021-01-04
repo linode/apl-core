@@ -217,53 +217,51 @@ definitions:
         type: string
     title: Container image
     type: object
-  job:
-    additionalProperties: false
-    properties:
-      enabled:
-        type: boolean
-      env:
-        $ref: '#/definitions/env'
-      image:
-        $ref: '#/definitions/image'
-      init:
-        properties:
-          image:
-            $ref: '#/definitions/image'
-          script:
-            $ref: '#/definitions/script'
-      mounts:
-        $ref: '#/definitions/mounts'
-      resources:
-        $ref: '#/definitions/resources'
-      schedule:
-        description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
-        type: string
-      script:
-        $ref: '#/definitions/script'
-      ttlSecondsAfterFinished:
-        default: 86400
-        pattern: ^[0-9]*$
-        type: number
-      type:
-        default: job
-        enum:
-          - job
-          - cronjob
-        type: string
-      volumes:
-        $ref: '#/definitions/volumes'
-    required:
-      - image
-      - script
-      - type
   jobs:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
       Jobs).
     additionalProperties: false
     items:
-      $ref: '#/definitions/job'
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        env:
+          $ref: '#/definitions/env'
+        image:
+          $ref: '#/definitions/image'
+        init:
+          properties:
+            image:
+              $ref: '#/definitions/image'
+            script:
+              $ref: '#/definitions/script'
+        mounts:
+          $ref: '#/definitions/mounts'
+        resources:
+          $ref: '#/definitions/resources'
+        schedule:
+          description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
+          type: string
+        script:
+          $ref: '#/definitions/script'
+        ttlSecondsAfterFinished:
+          default: 86400
+          pattern: ^[0-9]*$
+          type: number
+        type:
+          default: job
+          enum:
+            - job
+            - cronjob
+          type: string
+        volumes:
+          $ref: '#/definitions/volumes'
+    required:
+      - image
+      - script
+      - type
     type: array
   k8sVersion:
     default: '1.18'
