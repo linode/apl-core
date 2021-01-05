@@ -12,18 +12,15 @@ readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 
 exitcode=0
-validationResult=0 # using $validationResult as final exit code (assuming there is an error prior to finishing all template validation, the script should exit with an error)
 
 cleanup() {
-  validationResult=$((($validationResult + $exitcode)))
-  [ $validationResult -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
+  [ $exitcode -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
-  exit $validationResult
+  exit $exitcode
 }
 trap cleanup EXIT
 
 run_setup() {
-  exitcode=1
   local k8s_version="$1"
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
@@ -104,8 +101,7 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] || exitcode=0
-  validationResult=$((($validationResult + $exitcode)))
+  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1
   rm $tmp_out
 }
 
