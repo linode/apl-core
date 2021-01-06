@@ -47,6 +47,5 @@ env:
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
 
 
-podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}
+podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "banned-image-tags") | nindent 2 }}
 
