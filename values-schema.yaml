@@ -534,6 +534,12 @@ properties:
   azure:
     description: Azure specific configuration
     properties:
+      appgw:
+        properties:
+          isManaged:
+            default: true
+            description: Is this appgw installed as AKS addon?
+            type: boolean
       diskType:
         description: An Azure disk type (SKU Type)
         enum:
@@ -813,6 +819,18 @@ properties:
                 $ref: '#/definitions/resources'
           secretKey:
             type: string
+      hello:
+        properties:
+          enabled:
+            description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
+            type: boolean
+            default: false
+      httpbin:
+        properties:
+          enabled:
+            description: The famous httpbin application.
+            type: boolean
+            default: false
       ingress-azure:
         additionalProperties: false
         description: A chart for Azure Application Gateway
