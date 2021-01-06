@@ -6,18 +6,24 @@ readonly clustersFile="$ENV_DIR/env/clusters.yaml"
 readonly helmfileOutputHide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfileOutputHideTpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replacePathsPattern="s@../env@${ENV_DIR}@g"
+readonly yqDockerImage="mikefarah/yq:3"
+
+function dyq() {
+  local command=$@
+  docker run --rm -v ${ENV_DIR}:${ENV_DIR} ${yqDockerImage} yq ${command}
+}
 
 get_k8s_version() {
-  yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
+  dyq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
 }
 
 otomi_image_tag() {
-  local otomiVersion=$(yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
+  local otomiVersion=$(dyq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
   [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
 }
 
 customer_name() {
-  yq r $otomiSettings "customer.name"
+  dyq r $otomiSettings "customer.name"
 }
 
 check_sops_file() {
@@ -35,7 +41,7 @@ hf() {
 hf_values() {
   [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfileOutputHide | sed -e $replacePathsPattern |
-    yq read -P - 'releases[0].values[0]'
+    dyq read -P - 'releases[0].values[0]'
 }
 
 prepare_crypt() {
@@ -50,9 +56,9 @@ for_each_cluster() {
   executable=$1
   [[ -z "$executable" ]] && echo "ERROR: the positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
-  clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
+  clouds=$(dyq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -rc '. | keys[]'))
+    clusters=($(dyq r -j $clustersPath clouds.${cloud}.clusters | jq -rc '. | keys[]'))
     for cluster in "${clusters[@]}"; do
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
