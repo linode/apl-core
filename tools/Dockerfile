@@ -12,7 +12,7 @@ ARG HELM_DIFF_VERSION=v3.1.3
 ARG HELM_SECRETS_VERSION=v2.0.2
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=v3.6.1
-ARG HELMFILE_VERSION=v0.128.1
+ARG HELMFILE_VERSION=v0.136.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
 # https://github.com/open-policy-agent/conftest/releases
