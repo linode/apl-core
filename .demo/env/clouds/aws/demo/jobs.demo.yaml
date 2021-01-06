@@ -2,25 +2,20 @@ teamConfig:
     teams:
         demo:
             jobs:
-                - type: job
-                  deployment: once
+                - deployAlways: true
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
+                  name: hello-world
                   script: echo "Hello World"
-                - type: job
-                  deployment: always
+                  type: job
+                - deployAlways: true
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  script: echo "Hello World always"
-                - type: cronjob
-                  deployment: onSpecChange
-                  image:
-                      repository: busybox
-                      tag: latest
-                      pullPolicy: IfNotPresent
-                  schedule: 0 1 * * *
-                  script: echo "Hello World every day"
+                  name: hello-world
+                  schedule: '0 * * * *'
+                  script: echo "Hello World"
+                  type: cronjob

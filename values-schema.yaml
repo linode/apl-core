@@ -222,12 +222,11 @@ definitions:
     items:
       additionalProperties: false
       properties:
-        deployment:
-          default: once
-          enum:
-            - once
-            - always
-            - onSpecChange
+        deployAlways:
+          description: |
+            May give a boolean value. This is false by default.
+            If true, this job will run every `helmfile apply`.
+          type: boolean
         enabled:
           type: boolean
         env:
@@ -243,7 +242,7 @@ definitions:
         mounts:
           $ref: '#/definitions/mounts'
         name:
-          description: Must give a name for 'spec.metadata.name' identification.
+          description: Must give a name for 'spec.metadata.name' identification. Must be unique.
           type: string
         resources:
           $ref: '#/definitions/resources'
