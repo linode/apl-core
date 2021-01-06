@@ -49,7 +49,7 @@ tasks:
       IDP_ALIAS: {{ $k.idp.alias }}
       IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
       IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-      IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | sortAlpha | toJson }}'
+      IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
       IDP_OIDC_URL: {{ $v.oidc.issuer }}
       REDIRECT_URIS: '[
           "https://otomi.{{ $v.cluster.domain }}",
