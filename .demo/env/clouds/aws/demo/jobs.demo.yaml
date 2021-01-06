@@ -3,12 +3,21 @@ teamConfig:
         demo:
             jobs:
                 - type: job
+                  deployment: once
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
                   script: echo "Hello World"
+                - type: job
+                  deployment: always
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  script: echo "Hello World always"
                 - type: cronjob
+                  deployment: onSpecChange
                   image:
                       repository: busybox
                       tag: latest

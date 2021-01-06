@@ -222,6 +222,12 @@ definitions:
     items:
       additionalProperties: false
       properties:
+        deployment:
+          default: once
+          enum:
+            - once
+            - always
+            - onSpecChange
         enabled:
           type: boolean
         env:
