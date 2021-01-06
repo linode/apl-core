@@ -31,6 +31,7 @@ jobs:
       repository: {{ $c | get "jobs.harbor.image.repository" "otomi/tasks" }}
       tag: {{ $c | get "jobs.harbor.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.harbor.image.pullPolicy" "IfNotPresent" }}
+    name: harbor
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
       HARBOR_USER: admin

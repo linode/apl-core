@@ -12,6 +12,7 @@ jobs:
       repository: {{ $c | get "jobs.certs-aws.image.repository" "otomi/otomi-tasks" }}
       tag: {{ $c | get "jobs.certs-aws.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.certs-aws.image.pullPolicy" "IfNotPresent" }}
+    name: certs-aws
     schedule: "0/1 * * * *" # every minute
     # schedule: "0 1 * * *" # every day
     shell: bash

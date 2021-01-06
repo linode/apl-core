@@ -32,6 +32,7 @@ jobs:
       repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
       tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
+    name: keycloak
     env:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:

@@ -242,6 +242,9 @@ definitions:
               $ref: '#/definitions/script'
         mounts:
           $ref: '#/definitions/mounts'
+        name:
+          description: Must give a name for 'spec.metadata.name' identification.
+          type: string
         resources:
           $ref: '#/definitions/resources'
         schedule:
@@ -263,6 +266,7 @@ definitions:
           $ref: '#/definitions/volumes'
     required:
       - image
+      - name
       - script
       - type
     type: array
