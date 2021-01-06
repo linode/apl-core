@@ -27,6 +27,7 @@ parameters = input.parameters {
     is_gatekeeper
 }
 
+opa_upstream_bug_1046 = true
 parameters = data.parameters {
     not is_gatekeeper
 }

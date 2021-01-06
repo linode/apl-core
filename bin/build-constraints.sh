@@ -10,12 +10,15 @@ readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly output_path="/tmp/otomi/constraints"
 readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 
+# build yaml resources from policy files
 function build() {
   echo "Building constraints artifacts from policies."
   local policies_path="./policies"
   rm -f $output_path/* $crd_artifacts_path/template_*
   konstraint create $policies_path -o $output_path
 }
+
+# decorate resources with parameters schema
 function decorate() {
   echo "Decorating template/constraints files with properties."
   local map_constraints_expr='.policies as $constraints |  $constraints | keys[] | {(.): $constraints[.]}'
@@ -39,7 +42,20 @@ function decorate() {
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
   done
+  clear_disallowed_refs
   mv -f $output_path/template_* $crd_artifacts_path
+}
+
+# hardcoded workaround for Disallowed data.X References
+# disable after upstream OPA issue is resolved
+# https://github.com/open-policy-agent/gatekeeper/issues/1046
+function clear_disallowed_refs() {
+  echo "Clearing disallowed refs"
+  for file in $(find $output_path -name "template_*" -exec bash -c "ls {}" \;); do
+    local tmp_file=$(mktemp -u)
+    sed -e '/opa_upstream_bug_1046 /{N;N;N;N;d;}' $file >$tmp_file
+    mv -f $tmp_file $file
+  done
 }
 
 build && decorate
