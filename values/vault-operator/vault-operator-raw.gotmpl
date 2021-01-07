@@ -98,6 +98,7 @@ resources:
           # The preFlightChecks flag enables unseal and root token storage tests
           # This is true by default
           preFlightChecks: true
+        # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
         kubernetes:
           secretNamespace: shared
 
