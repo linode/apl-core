@@ -9,8 +9,15 @@ readonly replacePathsPattern="s@../env@${ENV_DIR}@g"
 readonly yqDockerImage="mikefarah/yq:3"
 
 function dyq() {
-  local command=$@
-  docker run --rm -v ${ENV_DIR}:${ENV_DIR} ${yqDockerImage} yq ${command}
+  local yqcommand=$@
+  if [ -x "$(command -v yq)" ] && [[ "$(yq --version 2>&1 | sed 's/yq version //g')" == "3."* ]] ; then
+    yq ${yqcommand}
+  elif [ -x "$(command -v docker)" ]; then
+    docker run --rm -v ${ENV_DIR}:${ENV_DIR} ${yqDockerImage} yq ${yqcommand}
+  else
+    echo "Either docker needs to be installed, or yq@3 needs to be installed."
+    exit 1
+  fi
 }
 
 get_k8s_version() {
