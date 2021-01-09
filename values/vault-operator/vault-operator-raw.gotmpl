@@ -137,7 +137,8 @@ resources:
               # Allow every pod in the shared namespace to use the secret kv store
               - name: default
                 bound_service_account_names: ["default", "vault-secrets-webhook", "vault"]
-                bound_service_account_namespaces: ["shared", "vswh"]
+                # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
+                bound_service_account_namespaces: ["shared", "vault-secrets-webhook"]
                 policies: ["allow_secrets", "allow_pki"]
                 ttl: 1h
 
