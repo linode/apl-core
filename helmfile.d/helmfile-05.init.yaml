@@ -18,3 +18,7 @@ releases:
     labels:
       pkg: keycloak
     <<: *default
+  - name: vault-operator-artifacts
+    installed: true
+    namespace: shared
+    <<: *raw
