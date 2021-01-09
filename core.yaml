@@ -19,6 +19,8 @@ k8s:
     - name: team-admin
     - name: overprovisioner
       disableIstioInjection: true
+    - name: vault-secrets-webhook
+      disableIstioInjection: true
 
 services:
   - name: keycloak
