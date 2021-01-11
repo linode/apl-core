@@ -16,3 +16,7 @@ releases:
     installed: true
     namespace: vault-secrets-webhook
     <<: *default
+  - name: kubernetes-external-secrets
+    installed: true
+    namespace: vault
+    <<: *default
