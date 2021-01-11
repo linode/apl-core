@@ -19,6 +19,7 @@ k8s:
     - name: team-admin
     - name: overprovisioner
       disableIstioInjection: true
+    - name: vault
     - name: vault-secrets-webhook
       disableIstioInjection: true
 

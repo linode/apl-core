@@ -91,6 +91,7 @@ resources:
       # Define a list of namespaces or use ["*"] for all namespaces.
       caNamespaces:
         - "vswh"
+        - "vault-secrets-webhook"
 
       # Describe where you would like to store the Vault unseal keys and root token.
       unsealConfig:
@@ -100,7 +101,7 @@ resources:
           preFlightChecks: true
         # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
         kubernetes:
-          secretNamespace: shared
+          secretNamespace: vault
 
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
@@ -134,11 +135,11 @@ resources:
         auth:
           - type: kubernetes
             roles:
-              # Allow every pod in the shared namespace to use the secret kv store
+              # Allow every pod in the vault namespace to use the secret kv store
               - name: default
                 bound_service_account_names: ["default", "vault-secrets-webhook", "vault"]
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
-                bound_service_account_namespaces: ["shared", "vault-secrets-webhook"]
+                bound_service_account_namespaces: ["shared", "vault", "vault-secrets-webhook"]
                 policies: ["allow_secrets", "allow_pki"]
                 ttl: 1h
 
@@ -287,4 +288,4 @@ resources:
     subjects:
       - kind: ServiceAccount
         name: vault
-        namespace: shared
+        namespace: vault
