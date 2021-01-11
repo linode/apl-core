@@ -20,5 +20,5 @@ releases:
     <<: *default
   - name: vault-operator-artifacts
     installed: true
-    namespace: shared
+    namespace: vault
     <<: *raw

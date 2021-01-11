@@ -33,5 +33,5 @@ releases:
     <<: *default
   - name: vault-operator
     installed: true
-    namespace: shared
+    namespace: vault
     <<: *default
