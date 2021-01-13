@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-[[ -z $ENV_DIR || -z $CLUSTER ]] && echo "ENV_DIR and CLUSTER must be set" && exit 1
-
-readonly ENV_DIR
-readonly CLUSTER
+readonly CLUSTER=${CLUSTER:-dev}
 readonly METERING_SET=${METERING_SET:-otomi_metering}
-readonly VERBOSE=${VERBOSE:-0}
+readonly VERBOSE=${VERBOSE:-}
 
-readonly PROJECT_ID=${PROJECT_ID:-$(yq read $ENV_DIR/env/clusters.yaml google.projectId)}
-readonly GOOGLE_REGION=${GOOGLE_REGION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.region)}
-readonly CUSTOMER=${CUSTOMER:-$(yq read $ENV_DIR/env/settings.yaml customer.name)}
-readonly K8S_VERSION=${K8S_VERSION:-$(yq read $ENV_DIR/env/clusters.yaml clouds.google.clusters.$CLUSTER.k8sVersion)}
+readonly PROJECT_ID=${PROJECT_ID:-otomi-cloud}
+readonly GOOGLE_REGION=${GOOGLE_REGION:-europe-west4}
+readonly CUSTOMER=${CUSTOMER:-otomi}
+readonly K8S_VERSION=${K8S_VERSION:-'1.17.14-gke.1600'}
 
 print_envs() {
-  echo "ENV_DIR: $ENV_DIR"
   echo "CLUSTER: $CLUSTER"
   echo "PROJECT_ID: $PROJECT_ID"
   echo "GOOGLE_REGION: $GOOGLE_REGION"
@@ -23,13 +19,13 @@ print_envs() {
   echo "METERING_SET: $METERING_SET"
 }
 
-[ $VERBOSE -eq "1" ] && print_envs
+[ -n "$VERBOSE" ] && print_envs
 
 # create the cluster
 gcloud container clusters create "otomi-gke-$CLUSTER" \
   --project "$PROJECT_ID" \
   --addons HorizontalPodAutoscaling,HttpLoadBalancing \
-  --cluster-version $PROJECT_ID \
+  --cluster-version "$K8S_VERSION" \
   --disk-size "100" \
   --disk-type "pd-standard" \
   --enable-autoprovisioning \
@@ -42,7 +38,7 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --enable-resource-consumption-metering \
   --enable-tpu \
   --image-type "COS" \
-  --labels customer=$CUSTOMER \
+  --labels customer="$CUSTOMER" \
   --machine-type "n1-standard-4" \
   --maintenance-window "01:00" \
   --max-cpu 8 \
@@ -55,7 +51,7 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --network "projects/$PROJECT_ID/global/networks/default" \
   --no-enable-basic-auth \
   --no-enable-stackdriver-kubernetes \
-  --node-labels customer=$CUSTOMER \
+  --node-labels customer="$CUSTOMER" \
   --num-nodes "1" \
   --region "$GOOGLE_REGION" \
   --resource-usage-bigquery-dataset "$METERING_SET" \
