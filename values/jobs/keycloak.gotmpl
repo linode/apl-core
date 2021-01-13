@@ -31,7 +31,7 @@ tasks:
         echo READY!
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
+      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     env:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
