@@ -31,10 +31,11 @@ ARG BATS_FILE_VERSION=0.2.0
 WORKDIR /
 
 RUN apt-get update -qq \
-  && apt install apt-transport-https ca-certificates curl software-properties-common -qqy --no-install-recommends
-RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
-  && apt-get install -qqy --no-install-recommends \
+  && apt install -qqy --no-install-recommends \
+  apt-transport-https \
   awscli \
+  ca-certificates \
+  curl \
   coreutils \
   gettext \
   git \
@@ -49,8 +50,9 @@ RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
   python3-setuptools \
   rlwrap \
   vim \
-  yq \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
 RUN groupadd -r app &&\

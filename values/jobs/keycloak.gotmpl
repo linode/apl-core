@@ -32,7 +32,7 @@ tasks:
         echo READY!
     image:
       repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.1" }}
+      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
       pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
     env:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
@@ -50,6 +50,7 @@ tasks:
       IDP_ALIAS: {{ $k.idp.alias }}
       IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
       IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
+      IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.email}" }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
       IDP_OIDC_URL: {{ $v.oidc.issuer }}
       REDIRECT_URIS: '[
