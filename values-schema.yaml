@@ -1216,6 +1216,8 @@ properties:
         type: string
       tokenUrl:
         $ref: '#/definitions/url'
+      usernameClaimMapper:
+        type: string
   otomi:
     additionalProperties: false
     properties:
