@@ -72,18 +72,20 @@ function set_helm_config() {
 
 function show_usage() {
   echo "otomi usage:
-    apply               apply k8s resources (use labels like '-l name=prometheus-operator')
+    apply               apply (first diff then sync if release changed) k8s resources (use labels like '-l name=prometheus-operator')
     bash                run interactive bash shell in otomi-core container
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit              wrapper for encrypt > generate pipelines > git commit changed files
     console             starts Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script
+    destroy             destroy all or some charts (use labels like '-l name=prometheus-operator')
     diff                diff k8s resources (use labels like '-l name=prometheus-operator')
     encrypt             encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help                print this help
     hf                  run helmfile with CLUSTER and CLOUD already set
     pull                wrapper for git pull && bootstrap
+    sync                sync k8s resources (use labels like '-l name=prometheus-operator')
     switch              switches context to the target cluster and boostraps
     template            export k8s resources (use labels like '-l name=prometheus-operator')
     test                runs some tests againts the target cluster
@@ -306,6 +308,11 @@ function execute() {
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfile_output_hide
+      ;;
+    destroy)
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER $@ destroy | grep -Ev $helmfileOutputHide
       ;;
     encrypt)
       check_sops_file
