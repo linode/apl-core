@@ -17,9 +17,9 @@ function print_error() {
 }
 
 function _shadow() {
-  local cmd=$1
+  local cmd="$1"
   shift
-  local args=$@
+  local args="$@"
   if [[ $has_docker -eq 1 && ("${IN_DOCKER}" != "1" || $dind -eq 1) ]]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
@@ -36,14 +36,14 @@ function _shadow() {
 }
 
 function yq() {
-  local yq_args=$@
-  _shadow yq $yq_args
+  local yq_args="$@"
+  _shadow yq "${yq_args}"
 }
 
-function jq() {
-  local jq_args=$@
-  _shadow jq $jq_args
-}
+# function jq() {
+#   local jq_args="$@"
+#   _shadow jq "${jq_args}"
+# }
 
 function get_k8s_version() {
   yq r $clustersFile "clouds.$CLOUD.clusters.$CLUSTER.k8sVersion"
