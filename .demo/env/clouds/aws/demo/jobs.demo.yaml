@@ -8,14 +8,21 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: hello-world
-                  script: echo "Hello World"
+                  script: echo "Hello World every time"
                   type: job
-                - deployAlways: true
+                - image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: hello-world
+                  schedule: '0 1 * * *'
+                  script: echo "Hello World every day"
+                  type: cronjob
+                - deployAlways: false
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: hello-world
-                  schedule: '0 * * * *'
-                  script: echo "Hello World"
-                  type: cronjob
+                  script: echo "Hello World one time"
+                  type: job
