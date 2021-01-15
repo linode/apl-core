@@ -175,7 +175,8 @@ definitions:
     items:
       additionalProperties: false
       patternProperties:
-        '^[a-zA-Z0-9_]*$':
+        '[a-zA-Z_]{1,}[a-zA-Z0-9_]{0,}':
+          maxLength: 131072
           type: string
     nullable: true
     title: Environment variables
@@ -223,9 +224,9 @@ definitions:
       additionalProperties: false
       properties:
         deployAlways:
+          default: false
           description: |
-            May give a boolean value. This is false by default.
-            If true, this job will run every `helmfile apply`.
+            If true, this job will run every deployment.
           type: boolean
         enabled:
           type: boolean
@@ -253,7 +254,6 @@ definitions:
           $ref: '#/definitions/script'
         ttlSecondsAfterFinished:
           default: 86400
-          pattern: ^[0-9]*$
           type: number
         type:
           default: job
