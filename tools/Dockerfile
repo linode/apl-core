@@ -12,6 +12,7 @@ ARG HELM_DIFF_VERSION=v3.1.3
 ARG HELM_SECRETS_VERSION=v2.0.2
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=v3.6.1
+# https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=v0.136.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
@@ -45,8 +46,8 @@ RUN add-apt-repository ppa:rmescandon/yq && apt-get update -qq \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
-    echo 'af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44  /usr/bin/jq' | sha256sum -c && \
-    chmod +x /usr/bin/jq
+  echo 'af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44  /usr/bin/jq' | sha256sum -c && \
+  chmod +x /usr/bin/jq
 
 RUN mkdir -p /home/app
 RUN groupadd -r app &&\
