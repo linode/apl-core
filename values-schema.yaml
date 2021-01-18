@@ -1216,6 +1216,9 @@ properties:
         type: string
       tokenUrl:
         $ref: '#/definitions/url'
+      usernameClaimMapper:
+        type: string
+        description: 'Claim name used by Keycloak to identify incoming users from identity provider'
   otomi:
     additionalProperties: false
     properties:
