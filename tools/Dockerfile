@@ -90,7 +90,7 @@ RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 # node 12 https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
-  npm install -g ajv-cli
+  npm install -g ajv-cli@v3.3.0
 
 # bats
 ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
