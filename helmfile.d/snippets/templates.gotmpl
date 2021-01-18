@@ -2,25 +2,21 @@ templates:
   default: &default
     missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
-    disableValidationOnInstall: true
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
   raw: &raw
     chart: ../charts/raw
-    disableValidationOnInstall: true
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
   jobs: &jobs
     namespace: maintenance
     chart: ../charts/jobs
-    disableValidationOnInstall: true
     labels:
       tag: jobs
     values:
       - ../values/jobs/{{ .Release.Name | replace "jobs-" "" }}.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
-    disableValidationOnInstall: true
     hooks:
       - events: ["prepare"]
         showlogs: false
