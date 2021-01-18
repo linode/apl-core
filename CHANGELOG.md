@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.55](https://github.com/redkubes/otomi-core/compare/v0.11.54...v0.11.55) (2021-01-05)
+
+
+### Bug Fixes
+
+* downgrade knative-serving ([1b0c684](https://github.com/redkubes/otomi-core/commit/1b0c6848d826c09e2e9114cff7339c18dcc7859c))
+
 ### [0.11.54](https://github.com/redkubes/otomi-core/compare/v0.11.53...v0.11.54) (2020-12-19)
 
 

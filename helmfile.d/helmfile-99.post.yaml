@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: jobs-ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB }}
+    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
     <<: *jobs
     labels:
       pkg: ingress-azure

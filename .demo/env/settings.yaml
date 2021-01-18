@@ -8,6 +8,13 @@ azure:
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
+    appgw:
+        isManaged: true
+charts:
+    hello:
+        enabled: true
+    httpbin:
+        enabled: true
 customer:
     name: demo
 google:
