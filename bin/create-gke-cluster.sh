@@ -4,7 +4,7 @@ set -eo pipefail
 readonly VERBOSE=${VERBOSE:-}
 readonly PROJECT_ID=${PROJECT_ID:-otomi-cloud}
 readonly GOOGLE_REGION=${GOOGLE_REGION:-europe-west4}
-readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-default}
+readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-'stable'}
 readonly K8S_VERSION=${K8S_VERSION:-'1.17.14-gke.1600'}
 readonly CLUSTER=${CLUSTER:-dev}
 readonly METERING_SET=${METERING_SET:-otomi_metering}

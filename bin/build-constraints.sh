@@ -8,13 +8,13 @@ run_from_hook=${1:-''}
 
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly output_path="/tmp/otomi/constraints"
-readonly crd_artifacts_path="$PWD/charts/gatekeeper-artifacts/crds"
 
 # build yaml resources from policy files
 function build() {
   echo "Building constraints artifacts from policies."
   local policies_path="./policies"
-  rm -f $output_path/* $crd_artifacts_path/template_*
+  mkdir -p $output_path
+  rm -f $output_path/*
   konstraint create $policies_path -o $output_path
 }
 
@@ -43,7 +43,6 @@ function decorate() {
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
   done
   clear_disallowed_refs
-  mv -f $output_path/template_* $crd_artifacts_path
 }
 
 # hardcoded workaround for Disallowed data.X References
