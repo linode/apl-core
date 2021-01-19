@@ -28,7 +28,7 @@ user=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.user')
 password=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.password')
 
 # all present?
-[ "$pull_secret" = "" ] && print_error "otomi.pullSecret not set in $ENV_DIR/env/secrets.settings.yaml!" && err=1
+[ "$pull_secret" = "" ] && err "otomi.pullSecret not set in $ENV_DIR/env/secrets.settings.yaml!" && err=1
 [ "$repo_url" = "" ] || [ "$repo_url" = "github.com/redkubes/otomi-values-demo.git" ] && error="\nrepoUrl: $repo_url "
 [ "$email" = "" ] || [ "$email" = "some@secret.value" ] && error="$error\nemail: $email"
 [ "$user" = "" ] || [ "$user" = "somesecretvalue" ] && error="$error\nuser: $user"
