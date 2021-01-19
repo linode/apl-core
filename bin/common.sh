@@ -21,20 +21,11 @@ function err() {
     echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERROR: $*" >&2
 }
 
-function read_pipe() {
-  local pipe # Read pipe: https://stackoverflow.com/a/53393169/14982291
-  if [ ! -t 0 ];then
-      pipe=$(cat -)
-      exec 0<&-   ## close current pipeline input
-  fi
-  echo "${pipe:-''}"
-}
-
 function _rind() {
   local cmd="$1"
   shift
   if [[ "${has_docker}" == 'true' && "${IN_DOCKER}" != '1' ]]; then
-    read_pipe | docker run --rm \
+    docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
@@ -42,7 +33,7 @@ function _rind() {
       ${otomi_tools_image} ${cmd} "$@"
       return $?
   elif command -v ${cmd} &>/dev/null; then
-    read_pipe | command ${cmd} "$@"
+    command ${cmd} "$@"
     return $?
   else
     err "Docker is not available and ${cmd} is not installed locally"
@@ -54,12 +45,12 @@ function _rind() {
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting
 #######################################
 function yq() {
-  read_pipe | _rind "${FUNCNAME[0]}" "$@"
+  _rind "${FUNCNAME[0]}" "$@"
   return $?
 }
 
 function jq() {
-  read_pipe | _rind "${FUNCNAME[0]}" "$@"
+  _rind "${FUNCNAME[0]}" "$@"
   return $?
 }
 
