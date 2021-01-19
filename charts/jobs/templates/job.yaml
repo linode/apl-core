@@ -33,12 +33,13 @@ spec:
       containers:
       - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
         imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-        name: "{{ $name }}"
+        name: "{{ $spec.name }}"
         command: ["{{ $spec.shell | default "sh" }}", "-c"]
         args:
           - |
             {{- toString $spec.script | nindent 12 }}
         resources: {{- if $spec.resources}}{{ toYaml $spec.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
+        {{- if or $spec.secret $spec.env }}
         envFrom:
         {{- if $spec.secret }}
         - secretRef:
@@ -47,6 +48,7 @@ spec:
         {{- if $spec.env }}
         - configMapRef:
             name: {{ $name }}
+        {{- end }}
         {{- end }}
         volumeMounts:
           - name: fakeroot

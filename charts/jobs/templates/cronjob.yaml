@@ -21,7 +21,7 @@ spec:
           containers:
             - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
               imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-              name: {{ $name }}
+              name: "{{ $spec.name }}"
               command: ["bash", "-c"]
               args:
                 - |
@@ -33,6 +33,7 @@ spec:
                 requests:
                   cpu: 100m
                   memory: 128Mi
+              {{- if or $spec.secret $spec.env }}
               envFrom:
               {{- if $spec.secret }}
               - secretRef:
@@ -41,6 +42,7 @@ spec:
               {{- if $spec.env }}
               - configMapRef:
                   name: {{ $name }}
+              {{- end }}
               {{- end }}
           restartPolicy: Never
 ---
