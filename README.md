@@ -15,9 +15,9 @@ Other parts of the platform:
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): tasks used by core to glue all it's pieces together
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): clients used by the tasks, generated from vendors' openapi specs
 
-This readme is aimed at development. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
+This readme is aimed at development. If you wish to contribute please read our [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
 
-To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://redkubes.github.io/otomi/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
+To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://otomi.io/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
 
 ## Development
 
