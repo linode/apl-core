@@ -141,6 +141,11 @@ services:
       workload:
         app: drone
         component: server
+  - name: vault
+    namespace: vault
+    svc: vault-0
+    port: 8200
+    ownHost: true
 
 proxies:
   - name: drone
