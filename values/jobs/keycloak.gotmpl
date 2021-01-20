@@ -60,6 +60,7 @@ tasks:
           {{- range $name, $team := $teams }}
           "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
           {{- end }}
-          "https://harbor.{{ $v.cluster.domain }}/*"
+          "https://harbor.{{ $v.cluster.domain }}/*",
+          "https://vault.{{ $v.cluster.domain }}/*"
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
