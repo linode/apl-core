@@ -36,6 +36,7 @@ jobs:
           registry: ${{ env.CACHE_REGISTRY }}
           image_name: ${{ env.CACHE_REPO }}
           image_tag: ${{ env.TAG }}
+          pull_image_and_stages: false
       - name: Retag from cache and push
         run: |
           docker login -u otomi -p $DOCKER_PASSWORD
