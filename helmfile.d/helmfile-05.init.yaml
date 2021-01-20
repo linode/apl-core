@@ -10,7 +10,7 @@ releases:
     installed: true
     namespace: default
     labels:
-      pkg: istio-operator
+      pkg: istio
     <<: *default
   - name: keycloak
     installed: {{ $c | get "keycloak.enabled" true }}
