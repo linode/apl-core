@@ -12,7 +12,8 @@ ARG HELM_DIFF_VERSION=v3.1.3
 ARG HELM_SECRETS_VERSION=v2.0.2
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=v3.6.1
-ARG HELMFILE_VERSION=v0.128.1
+# https://github.com/roboll/helmfile/releases
+ARG HELMFILE_VERSION=v0.136.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.15.0
 
@@ -41,9 +42,12 @@ RUN apt-get update -qq \
   vim \
   nano \
   groff \
-  jq \
   awscli \
   && rm -rf /var/lib/apt/lists/*
+
+RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
+  echo 'af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44  /usr/bin/jq' | sha256sum -c && \
+  chmod +x /usr/bin/jq
 
 COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
 
@@ -86,7 +90,7 @@ RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
 # node 12 https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
-  npm install -g ajv-cli
+  npm install -g ajv-cli@v3.3.0
 
 # bats
 ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
