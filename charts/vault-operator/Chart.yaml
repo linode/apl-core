@@ -1,19 +1,15 @@
 apiVersion: v2
-appVersion: 1.8.0
-dependencies:
-- condition: etcd-operator.enabled
-  name: etcd-operator
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.11.0
+type: application
+name: vault-operator
+version: 1.11.0
+appVersion: 1.11.0
 description: A Helm chart for banzaicloud/bank-vaults Vault operator
 home: https://banzaicloud.com/products/bank-vaults/
-maintainers:
-- email: info@banzaicloud.com
-  name: Banzai Cloud
-name: vault-operator
 sources:
-- https://github.com/hashicorp/vault
-- https://github.com/banzaicloud/bank-vaults
-- https://github.com/banzaicloud/banzai-charts
-type: application
-version: 1.8.1
+  - https://github.com/hashicorp/vault
+  - https://github.com/banzaicloud/bank-vaults
+  - https://github.com/banzaicloud/banzai-charts
+maintainers:
+  - name: Banzai Cloud
+    email: info@banzaicloud.com
+
