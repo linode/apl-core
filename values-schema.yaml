@@ -223,7 +223,7 @@ definitions:
     items:
       additionalProperties: false
       properties:
-        deployAlways:
+        runOnSpecChange:
           default: false
           description: |
             If true, this job will run every deployment.

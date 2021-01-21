@@ -2,7 +2,7 @@ teamConfig:
     teams:
         demo:
             jobs:
-                - deployAlways: true
+                - runOnSpecChange: true
                   image:
                       repository: busybox
                       tag: latest
@@ -18,7 +18,7 @@ teamConfig:
                   schedule: '0 1 * * *'
                   script: echo "Hello World every day"
                   type: cronjob
-                - deployAlways: false
+                - runOnSpecChange: false
                   image:
                       repository: busybox
                       tag: latest

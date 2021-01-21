@@ -5,7 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  {{- if (default false $spec.deployAlways) }}
+  {{- if (default false $spec.runOnSpecChange) }}
   name: {{ join "-" (list $spec.name uuidv4) | trunc 63 }}
   {{- else }}
   name: {{ $spec.name }}
