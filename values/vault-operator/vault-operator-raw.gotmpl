@@ -1,4 +1,5 @@
 {{- $v := .Environment.Values }}
+{{- $k := $v | get "charts.keycloak" dict }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -132,18 +133,19 @@ resources:
           - name: team_secrets
             rules: path "secret/teams/{{`{{identity.groups.ids.team-otomi.name}}`}}/*" {capabilities = ["create", "update", "read", "delete"]}
         auth:
-          - type: jwt
-            path: oidc
+          - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.cluster.domain }}/realms/master/
+              oidc_discovery_url: https://keycloak.{{ $v.cluster.domain }}/realms/master
+              oidc_client_id: {{ $k.idp.clientID }}
+              namespace_in_state: true
             roles:
             - name: team
-              user_claim: https://vault/user
-              groups_claim: https://vault/groups
+              user_claim: sub
+              groups_claim: groups
               policies: team_secrets
               ttl: 1h
+              allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.cluster.domain }}/ui/vault/auth/oidc/oidc/callback"
           - type: kubernetes
-            path: kubernetes
             roles:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
