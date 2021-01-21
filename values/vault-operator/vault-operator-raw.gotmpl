@@ -178,6 +178,17 @@ resources:
                 token_policies: ["allow_secrets", "allow_pki"]
                 ttl: 1h
 
+        groups:
+          - name: team-dev
+            type: external
+            policies: [sandbox]
+            metadata: {}
+
+        group-aliases:
+          - name: team-dev
+            group: team-dev
+            mountpath: oidc/
+
         secrets:
           - path: secret
             type: kv
