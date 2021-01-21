@@ -62,4 +62,5 @@ jobs:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
+    fakeroot: true
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak

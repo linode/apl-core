@@ -50,21 +50,25 @@ spec:
             name: {{ $name }}
         {{- end }}
         {{- end }}
+        {{- if $spec.mounts }}
         volumeMounts:
+          {{- if $spec.fakeroot }}
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
-          {{- if $spec.mounts }}
-          {{- $spec.mounts | toYaml | nindent 10 }}
           {{- end }}
+          {{- $spec.mounts | toYaml | nindent 10 }}
+        {{- end }}
       restartPolicy: Never
+      {{- if $spec.volumes }}
       volumes:
+        {{- if $spec.fakeroot }}
         - name: fakeroot
           configMap:
             name: fakeroot
-        {{- if $spec.volumes }}
-        {{- $spec.volumes | toYaml | nindent 8 }}
         {{- end }}
+        {{- $spec.volumes | toYaml | nindent 8 }}
+      {{- end }}
   backoffLimit: 3
   ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
 ---

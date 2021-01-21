@@ -46,5 +46,6 @@ jobs:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
+    fakeroot: true
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
 
