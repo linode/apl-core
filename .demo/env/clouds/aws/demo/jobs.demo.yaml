@@ -2,13 +2,21 @@ teamConfig:
     teams:
         demo:
             jobs:
-                - runOnSpecChange: true
+                - runPolicy: Always
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: hello-world
                   script: echo "Hello World every time"
+                  type: job
+                - runPolicy: OnSpecChange
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: hello-world-too
+                  script: echo "Hello World one time"
                   type: job
                 - image:
                       repository: busybox
@@ -18,11 +26,3 @@ teamConfig:
                   schedule: '0 1 * * *'
                   script: echo "Hello World every day"
                   type: cronjob
-                - runOnSpecChange: false
-                  image:
-                      repository: busybox
-                      tag: latest
-                      pullPolicy: IfNotPresent
-                  name: hello-world
-                  script: echo "Hello World one time"
-                  type: job

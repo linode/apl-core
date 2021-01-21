@@ -5,9 +5,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  {{- if (default false $spec.runOnSpecChange) }}
+  {{- if eq $spec.runPolicy "OnSpecChange" }}
   name: {{ $spec.name }}
-  {{- else }}
+  {{- else if eq $spec.runPolicy "Always" }}
   name: {{ join "-" (list $spec.name uuidv4) | trunc 63 }}
   {{- end }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}

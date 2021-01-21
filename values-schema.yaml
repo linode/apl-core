@@ -223,11 +223,14 @@ definitions:
     items:
       additionalProperties: false
       properties:
-        runOnSpecChange:
-          default: false
+        runPolicy:
           description: |
-            If true, this job will run every deployment.
-          type: boolean
+            If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
+            If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
+          enum:
+            - Always
+            - OnSpecChange
+          type: string
         enabled:
           type: boolean
         env:
