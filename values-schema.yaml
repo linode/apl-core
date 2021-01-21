@@ -175,7 +175,7 @@ definitions:
     items:
       additionalProperties: false
       patternProperties:
-        '[a-zA-Z_]{1,}[a-zA-Z0-9_]{0,}':
+        '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
           maxLength: 131072
           type: string
     nullable: true
