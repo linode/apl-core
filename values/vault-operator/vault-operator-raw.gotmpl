@@ -128,16 +128,27 @@ resources:
       externalConfig:
         policies:
           - name: allow_secrets
-            rules: path "secret/*" {capabilities = ["create", "read", "update", "delete", "list"]}
+            rules: path "secret/*" {
+                    capabilities = ["create", "read", "update", "delete", "list"]
+                  }
+          - name: allow_secrets
+            rules: path "secret/*" {
+                    capabilities = ["create", "read", "update", "delete", "list"]
+                  }
           - name: allow_pki
-            rules: path "pki/*" {capabilities = ["create", "read", "update", "delete", "list"]}
+            rules: path "pki/*" {
+                    capabilities = ["create", "read", "update", "delete", "list"]
+                  }
           - name: team_secrets
-            rules: path "secret/teams/{{`{{identity.groups.ids.team-otomi.name}}`}}/*" {capabilities = ["create", "update", "read", "delete"]}
+            rules: path "secret/teams/{{`{{identity.groups.ids.team-otomi.name}}`}}/*" {
+                    capabilities = ["create", "update", "read", "delete"]
+                  }
         auth:
           - type: oidc
             config:
               oidc_discovery_url: https://keycloak.{{ $v.cluster.domain }}/realms/master
               oidc_client_id: {{ $k.idp.clientID }}
+              oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true
             roles:
             - name: team
