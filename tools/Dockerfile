@@ -112,7 +112,7 @@ RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 # node lts
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs && \
-  npm install -g ajv-cli@v3.3.0
+  npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2
 
 # bats
 ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp

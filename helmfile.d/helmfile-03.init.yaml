@@ -28,12 +28,14 @@ releases:
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
+    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     <<: *default
   - name: gatekeeper-artifacts
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
+    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     hooks:
