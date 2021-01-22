@@ -264,8 +264,6 @@ definitions:
             - job
             - cronjob
           type: string
-        volumes:
-          $ref: '#/definitions/volumes'
     required:
       - image
       - name
@@ -296,20 +294,33 @@ definitions:
       - 0.5M
     pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
-  mount:
-    properties:
-      mountPath:
-        description: Must specify path to mount the file(s) in the container.
-        type: string
-      name:
-        description: Must match relevant spec.volumes[].name.
-        type: string
-      subPath:
-        description: May specify path to mount the file(s) in the Pod's volume.
-        type: string
   mounts:
     items:
-      $ref: '#/definitions/mount'
+      properties:
+        entries:
+          items:
+            properties:
+              key:
+                default: my-key
+                type: string
+              path:
+                default: /path/to/value
+                type: string
+              subPath:
+                default: /optional/subpath
+                type: string
+            type: array
+        name:
+          default: my-new-mount
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          type: string
+        type:
+          default: config
+          enum:
+            - config
+            - secret
+          type: string
+      uniqueItems: true
     type: array
   portNumber:
     maximum: 32768
