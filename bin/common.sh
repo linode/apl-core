@@ -1,18 +1,20 @@
 #!/usr/local/env bash
 ENV_DIR=${ENV_DIR:-./env}
 
+# Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
+readonly otomi_tools_image="otomi/tools:latest"
+
+# Mutliple files vars
 readonly clusters_file="$ENV_DIR/env/clusters.yaml"
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
-readonly otomi_tools_image="otomi/tools:latest"
 
 has_docker='false'
 if docker --version &>/dev/null ; then
   has_docker='true'
 fi
-cmd_image=''
 
 #######################################
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
@@ -27,9 +29,9 @@ function _rind() {
   if [[ "${has_docker}" == 'true' && "${IN_DOCKER}" != '1' ]]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
-      -e CLOUD="$CLOUD" \
-      -e IN_DOCKER="1" \
-      -e CLUSTER="$CLUSTER" \
+      -e CLOUD="${CLOUD}" \
+      -e IN_DOCKER='1' \
+      -e CLUSTER="${CLUSTER}" \
       ${otomi_tools_image} ${cmd} "$@"
       return $?
   elif command -v ${cmd} &>/dev/null; then

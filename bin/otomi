@@ -25,6 +25,8 @@ if [ "${has_docker}" == "false" ]; then
   err "Otomi CLI expects a running docker daemon!" && exit 1
 fi
 
+cmd_image=''
+
 function verbose_env() {
   echo "has_docker=$has_docker"
   echo "ENV_DIR=$ENV_DIR"
