@@ -4,6 +4,7 @@ helmDefaults:
   timeout: 1200
   force: false
   cleanupOnFail: true
+  disableValidation: true
 {{- $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
 environments:
   {{- range $provider, $p := $v.clouds -}}
