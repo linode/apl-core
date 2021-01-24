@@ -4,14 +4,6 @@
 
 # Otomi Core
 
-<p align="center">
-    <a href="https://github.com/redkubes/otomi-core/releases" alt="GitHub release">
-        <img src="https://img.shields.io/github/contributors/badges/shields" /></a>
-    <a href="https://twitter.com/intent/follow?screen_name=RedKubes">
-        <img src="https://img.shields.io/twitter/follow/shields_io?style=social&logo=twitter"
-            alt="follow on Twitter"></a>
-</p>
-
 Otomi Core is the Heart of the Otomi Container Platform. Otomi Container Platform offers an out-of-the-box enterprise container management platform (on top of Kubernetes) to increase developer efficiency and reduce complexity. It is a turnkey cloud native solution that integrates upstream Kubernetes with proven open source components. Otomi is made available as a single deployable package with curated industry proven applications and policies for better governance and security. With carefully crafted sane defaults at every step, it minimizes configuration effort and time to market. Otomi automates most (if not all) of your cluster operations and includes application lifecycle management at its core. It is open source and transparent, allowing customization but also extensibility. Incorporating Open Source standards and best practices, Otomi aims to bring new features and stability with every iteration.
 
 Important features:
