@@ -1,6 +1,6 @@
 teamConfig:
     teams:
-        dev:
+        demo:
             jobs:
                 - image:
                       repository: busybox
