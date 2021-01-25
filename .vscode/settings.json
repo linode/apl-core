@@ -26,6 +26,6 @@
     "https://json-schema.org/draft-07/schema": "values-schema.yaml",
     ".values/values-schema.yaml": ".demo/env/*.yaml"
   },
-  "shellcheck.exclude": ["0216", "0286", "2016", "2046", "2148"],
+  "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci"
 }
