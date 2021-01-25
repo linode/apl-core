@@ -12,6 +12,7 @@
 {{- $o := $v.oidc }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -305,5 +306,6 @@ resources:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
+          injectedAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-capabilities") | nindent 12 }}
         tracing:
           contextPath: '/tracing'
