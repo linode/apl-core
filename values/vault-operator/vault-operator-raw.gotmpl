@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
+{{- $tc := $v.teamConfig }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -127,11 +128,11 @@ resources:
       # The repository also contains a lot examples in the deploy/ and operator/deploy directories.
       externalConfig:
         policies:
-          - name: allow_read_all_secrets
+          - name: allow-read-all-secrets
             rules: path "secret/*" {
                     capabilities = ["read", "list"]
                   }
-          - name: allow_list_secrets
+          - name: allow-list-all-secrets
             rules: path "secret/*" {
                     capabilities = ["list"]
                   }
@@ -139,13 +140,15 @@ resources:
             rules: path "secret/data/sandbox/*" {
                     capabilities = ["create", "read", "update", "delete", "list"]
                   }
-          - name: allow_team_otomi
-            rules: path "secret/data/teams/team-otomi/*" {
-                    capabilities = ["create", "update", "read", "delete"]
+          {{- range $teamId, $team := $tc.teams }}
+          - name: allow-team-{{ $teamId }}
+            rules: path "secret/data/teams/team-{{ $teamId }}/*" {
+                    capabilities = ["create", "update", "read", "delete", "list"]
                   }
-          - name: allow_team_admin
-            rules: path "secret/data/teams/team-admin/*" {
-                    capabilities = ["create", "update", "read", "delete"]
+          {{- end }}
+          - name: allow-all-secrets
+            rules: path "secret/*" {
+                    capabilities = ["create", "update", "read", "delete", "list"]
                   }
         auth:
           - type: oidc
@@ -160,7 +163,7 @@ resources:
               user_claim: email
               groups_claim: groups
               # This policy will be applied to each user that uses this role
-              token_policies: [allow_list_secrets, allow_sandbox]
+              token_policies: [allow-list-all-secrets, allow_sandbox]
               ttl: 1h
               #  http://localhost:8250/oidc/callback - for: vault login -method oidc
               allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.cluster.domain }}/ui/vault/auth/oidc/oidc/callback"
@@ -171,22 +174,26 @@ resources:
                 bound_service_account_names: ["kubernetes-external-secrets", "vault-secrets-webhook", "vault"]
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
                 bound_service_account_namespaces: ["shared", "vault", "vault-secrets-webhook"]
-                token_policies: ["allow_read_all_secrets"]
+                token_policies: ["allow-read-all-secrets"]
                 ttl: 1h
 
         groups:
-          - name: team-otomi
+          {{- range $teamId, $team := $tc.teams }}
+          - name: team-{{ $teamId }}
             type: external
-            policies: [allow_team_otomi]
+            policies: [allow-team-{{ $teamId }}]
             metadata: {}
+          {{- end }}
           - name: team-admin
             type: external
-            policies: [allow_team_admin]
+            policies: [allow-all-secrets]
             metadata: {}
         group-aliases:
-          - name: team-otomi
-            group: team-otomi
+          {{- range $teamId, $team := $tc.teams }}
+          - name: team-{{ $teamId }}
+            group: team-{{ $teamId }}
             mountpath: oidc/
+          {{- end }}
           - name: team-admin
             group: team-admin
             mountpath: oidc/
@@ -200,31 +207,18 @@ resources:
         # Allows writing some secrets to Vault (useful for development purposes).
         # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
         startupSecrets:
+        {{- range $teamId, $team := $tc.teams }}
           - type: kv
-            path: secret/data/accounts/aws
+            path: secret/data/teams/team-{{ $teamId }}/otomi-welcome
             data:
               data:
-                AWS_ACCESS_KEY_ID: secretId
-                AWS_SECRET_ACCESS_KEY: s3cr3t
+                HELLO: "Welcome {{ $teamId }} team"
+        {{- end }}
           - type: kv
-            path: secret/data/sandbox/aaa
+            path: secret/data/teams/team-admin/otomi-welcome
             data:
               data:
-                AWS_ACCESS_KEY_ID: AAA
-                AWS_SECRET_ACCESS_KEY: BBB
-          - type: kv
-            path: secret/data/dockerrepo
-            data:
-              data:
-                DOCKER_REPO_USER: dockerrepouser
-                DOCKER_REPO_PASSWORD: dockerrepopassword
-          - type: kv
-            path: secret/data/mysql
-            data:
-              data:
-                MYSQL_ROOT_PASSWORD: s3cr3t
-                MYSQL_PASSWORD: 3xtr3ms3cr3t
-
+                HELLO: "Welcome admin team"
       vaultEnvsConfig:
         - name: VAULT_LOG_LEVEL
           value: debug
