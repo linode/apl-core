@@ -15,7 +15,7 @@
 jobs:
   keycloak:
     type: job
-    runOnSpecChange: true
+    runPolicy: OnSpecChange
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     enabled: true
     init:

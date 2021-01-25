@@ -1,28 +1,44 @@
 teamConfig:
     teams:
-        demo:
+        dev:
             jobs:
-                - runPolicy: Always
-                  image:
+                - image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: hello-world
-                  script: echo "Hello World every time"
+                  name: regular-job
+                  runPolicy: Always
+                  script: echo "Hello World"
                   type: job
-                - runPolicy: OnSpecChange
+                - env:
+                      this-is: an env
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: hello-world-too
-                  script: echo "Hello World one time"
+                  name: job-with-env-and-secret
+                  runPolicy: OnSpecChange
+                  secret:
+                      this-is: a secret
+                  script: echo "Hello World again"
                   type: job
                 - image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: hello-world
+                  name: regular-cronjob
+                  schedule: '0 1 * * *'
+                  script: echo "Hello World every day"
+                  type: cronjob
+                - env:
+                      cronjob-with: env
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: cronjob-with-env-and-secret
+                  secret:
+                      cronjob-with: secret
                   schedule: '0 1 * * *'
                   script: echo "Hello World every day"
                   type: cronjob

@@ -37,11 +37,11 @@ spec:
               envFrom:
               {{- if $spec.secret }}
               - secretRef:
-                  name: {{ $name }}
+                  name: {{ $spec.name }}
               {{- end }}
               {{- if $spec.env }}
               - configMapRef:
-                  name: {{ $name }}
+                  name: {{ $spec.name }}
               {{- end }}
               {{- end }}
           restartPolicy: Never

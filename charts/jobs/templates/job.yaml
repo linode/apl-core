@@ -7,7 +7,7 @@ kind: Job
 metadata:
   {{- if eq $spec.runPolicy "OnSpecChange" }}
   name: {{ $spec.name }}
-  {{- else if eq $spec.runPolicy "Always" }}
+  {{- else if or (default true $spec.runPolicy) (eq $spec.runPolicy "Always") }}
   name: {{ join "-" (list $spec.name uuidv4) | trunc 63 }}
   {{- end }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
@@ -43,11 +43,11 @@ spec:
         envFrom:
         {{- if $spec.secret }}
         - secretRef:
-            name: {{ $name }}
+            name: {{ $spec.name }}
         {{- end }}
         {{- if $spec.env }}
         - configMapRef:
-            name: {{ $name }}
+            name: {{ $spec.name }}
         {{- end }}
         {{- end }}
         {{- if $spec.mounts }}
