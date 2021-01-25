@@ -1,6 +1,11 @@
+<p align="center">
+	<img src="https://otomi.io/img/otomi-logo.svg" width="40%" align="center" alt="ExternalDNS">
+</p>
+
 # Otomi Core
 
-Heart of the Otomi Container Platform, an opinionated stack of kubernetes apps working in tandem. It offers an out of the box operations stack to utilize kubernetes clusters.
+Otomi Core is the Heart of the Otomi Container Platform. Otomi Container Platform offers an out-of-the-box enterprise container management platform (on top of Kubernetes) to increase developer efficiency and reduce complexity. It is a turnkey cloud native solution that integrates upstream Kubernetes with proven open source components. Otomi is made available as a single deployable package with curated industry proven applications and policies for better governance and security. With carefully crafted sane defaults at every step, it minimizes configuration effort and time to market. Otomi automates most (if not all) of your cluster operations and includes application lifecycle management at its core. It is open source and transparent, allowing customization but also extensibility. Incorporating Open Source standards and best practices, Otomi aims to bring new features and stability with every iteration.
+
 Important features:
 
 - **Single Sign On**: Bring your own IDP or use Keycloak
@@ -15,9 +20,9 @@ Other parts of the platform:
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): tasks used by core to glue all it's pieces together
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): clients used by the tasks, generated from vendors' openapi specs
 
-This readme is aimed at development. If you wish to contribute please read our Developers [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
+This readme is aimed at development. If you wish to contribute please read our [Contributor Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guidelines](./docs/CONTRIBUTING.md).
 
-To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://redkubes.github.io/otomi/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
+To get up and running with the platform please follow the [online documentation for Otomi Container Platform](https://otomi.io/). It lists all the prerequisites and tooling expected, so please read up before continuing here.
 
 ## Development
 
