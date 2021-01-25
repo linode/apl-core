@@ -27,7 +27,7 @@ run_setup() {
   local k8s_version="$1"
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
-  echo "" >$schemasBundleFile
+  echo "" >$schemas_bundle_file
   # use standalone schemas
   tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
   tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
