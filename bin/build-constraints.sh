@@ -27,7 +27,7 @@ function clear_disallowed_refs() {
 function build() {
   echo "Building constraints artifacts from policies."
   local policies_path="./policies"
-  mkdir -p $output_path
+  mkdir -p $output_path $crd_artifacts_path
   rm -f $output_path/*
   konstraint create $policies_path -o $output_path
   json-dereference -s values-schema.yaml -o $compiled_schema_path
