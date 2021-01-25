@@ -11,20 +11,23 @@ readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 
-exitcode=0
+exitcode=1
+validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
 
 cleanup() {
-  [ $exitcode -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
+  validationResult=$((($validationResult + $exitcode)))
+  [ $validationResult -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
-  exit $exitcode
+  exit $validationResult
 }
 trap cleanup EXIT
 
 run_setup() {
+  exitcode=1
   local k8s_version="$1"
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
-  echo "" >$schemas_bundle_file
+  echo "" >$schemasBundleFile
   # use standalone schemas
   tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
   tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
@@ -101,7 +104,8 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1
+  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
+  validationResult=$((($validationResult + $exitcode)))
   rm $tmp_out
 }
 

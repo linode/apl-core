@@ -11,17 +11,20 @@ readonly policies_path="policies"
 readonly constraints_file=$(mktemp -u)
 readonly parameters_file=$(mktemp -u)
 
-exitcode=0
+exitcode=1
+validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
 
 cleanup() {
-  [ $exitcode -eq 0 ] && echo "Policy checks SUCCESS" || echo "Policy checks FAILED"
+  validationResult=$((($validationResult + $exitcode)))
+  [ $validationResult -eq 0 ] && echo "Policy checks SUCCESS" || echo "Policy checks FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $k8s_resources_path
   rm -f $constraints_file $parameters_file
-  exit $exitcode
+  exit $validationResult
 }
 trap cleanup EXIT
 
 run_setup() {
+  exitcode=1
   rm -rf $k8s_resources_path $constraints_file $parameters_file && mkdir -p $k8s_resources_path
 }
 
@@ -46,7 +49,8 @@ validate_policies() {
   # validate_resources
   echo "Validating manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path $k8s_resources_path
-  [ $? -ne 0 ] && exitcode=1
+  [ $? -eq 0 ] && exitcode=0
+  validationResult=$((($validationResult + $exitcode)))
 }
 
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
