@@ -221,14 +221,6 @@ definitions:
     items:
       additionalProperties: false
       properties:
-        runPolicy:
-          description: |
-            If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
-            If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
-          enum:
-            - Always
-            - OnSpecChange
-          type: string
         enabled:
           type: boolean
         env:
@@ -248,9 +240,19 @@ definitions:
           type: string
         resources:
           $ref: '#/definitions/resources'
+        runPolicy:
+          description: |
+            If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
+            If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
+          enum:
+            - Always
+            - OnSpecChange
+          type: string
         schedule:
           description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
           type: string
+        secret:
+          $ref: '#/definitions/env'
         script:
           $ref: '#/definitions/script'
         ttlSecondsAfterFinished:
