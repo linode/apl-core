@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $ := . }}
-{{- range $name, $spec := $v.jobs }}
+{{- range $spec := $v.jobs }}
 {{- if and (default true $spec.enabled) (eq $spec.type "job") }}
 apiVersion: batch/v1
 kind: Job
@@ -24,7 +24,7 @@ spec:
       initContainers:
       - image: "{{ $spec.init.image.repository }}:{{ $spec.init.image.tag | default "latest" }}"
         imagePullPolicy: "{{ $spec.init.image.pullPolicy | default "IfNotPresent"}}"
-        name: "{{ $name }}-init"
+        name: "{{ $spec.name }}-init"
         command: ["{{ $spec.init.shell | default "sh" }}", "-c"]
         args:
           - |
