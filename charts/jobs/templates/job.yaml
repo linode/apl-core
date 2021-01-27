@@ -50,8 +50,8 @@ spec:
             name: {{ $spec.name }}
         {{- end }}
         {{- end }}
-        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
         volumeMounts:
+        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
@@ -62,7 +62,7 @@ spec:
       restartPolicy: Never
       {{- if $spec.volumes }}
       volumes:
-        {{- if $spec.fakeroot }}
+        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
         - name: fakeroot
           configMap:
             name: fakeroot
