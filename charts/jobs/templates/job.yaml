@@ -33,7 +33,7 @@ spec:
       containers:
       - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
         imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-        name: "{{ $spec.name }}"
+        name: {{ $spec.name }}
         command: ["{{ $spec.shell | default "sh" }}", "-c"]
         args:
           - |
