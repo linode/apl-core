@@ -21,7 +21,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-if [ "${has_docker}" == "false" ]; then
+if [ "$has_docker" == "false" ]; then
   err "Otomi CLI expects a running docker daemon!" && exit 1
 fi
 
@@ -105,8 +105,8 @@ function show_usage() {
 }
 
 function evaluate_k8s_context() {
-  local env_path="${ENV_DIR}/env/clouds/${CLOUD}/${CLUSTER}/.env"
-  [ ! -f $env_path ] && err "The file '${env_path}' does not exist" && exit 1
+  local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
+  [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
   source $env_path
   [[ -z "$K8S_CONTEXT" ]] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
   return 0

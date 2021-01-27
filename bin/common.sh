@@ -26,19 +26,19 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [[ "${has_docker}" == 'true' && "${IN_DOCKER}" != '1' ]]; then
+  if [[ "$has_docker" == 'true' && "$IN_DOCKER" != '1' ]]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
-      -e CLOUD="${CLOUD}" \
+      -e CLOUD="$CLOUD" \
       -e IN_DOCKER='1' \
-      -e CLUSTER="${CLUSTER}" \
-      ${otomi_tools_image} ${cmd} "$@"
+      -e CLUSTER="$CLUSTER" \
+      $otomi_tools_image $cmd "$@"
       return $?
-  elif command -v ${cmd} &>/dev/null; then
-    command ${cmd} "$@"
+  elif command -v $cmd &>/dev/null; then
+    command $cmd "$@"
     return $?
   else
-    err "Docker is not available and ${cmd} is not installed locally"
+    err "Docker is not available and $cmd is not installed locally"
     exit 1
   fi
 }
@@ -78,12 +78,14 @@ function check_sops_file() {
 }
 
 function hf() {
-  helmfile --quiet -e $CLOUD-$CLUSTER $@
+  helmfile --quiet -e $CLOUD-$CLUSTER "$@"
 }
 
 function hf_values() {
   [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
-  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern |
+  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | 
+    grep -Ev $helmfile_output_hide | 
+    sed -e $replace_paths_pattern |
     yq read -P - 'releases[0].values[0]'
 }
 
@@ -101,7 +103,7 @@ function for_each_cluster() {
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -rc '. | keys[]'))
+    clusters=($(yq r -j $clustersPath clouds.$cloud.clusters | jq -rc '. | keys[]'))
     for cluster in "${clusters[@]}"; do
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
