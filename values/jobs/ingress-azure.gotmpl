@@ -2,8 +2,7 @@
 {{- $c := $v.charts }}
 
 jobs:
-  ingress-azure:
-    type: cronjob
+  - type: cronjob
     enabled: false
     image:
       repository: {{ $c | get "jobs.ingress-azure.image.repository" "otomi/tools" }}

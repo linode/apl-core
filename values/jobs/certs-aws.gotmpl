@@ -4,8 +4,7 @@
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}
 
 jobs:
-  certs-aws:
-    type: job
+  - type: job
     description: Import certs into ACM
     enabled: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     image:

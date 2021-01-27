@@ -1051,12 +1051,7 @@ properties:
               pilot:
                 $ref: '#/definitions/resources'
       jobs:
-        additionalProperties: false
-        patternProperties:
-          'certs-aws|harbor|ingress-azure|keycloak':
-            properties:
-              image:
-                $ref: '#/definitions/image'
+        $ref: '#/definitions/jobs'
       keycloak:
         additionalProperties: false
         properties:
