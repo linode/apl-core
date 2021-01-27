@@ -14,7 +14,7 @@
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 jobs:
   - type: job
-    runPolicy: OnSpecChange
+    runPolicy: Always
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     enabled: true
     init:
@@ -62,5 +62,4 @@ jobs:
           {{- end }}
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
-    fakeroot: true
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak

@@ -7,7 +7,7 @@ kind: Job
 metadata:
   {{- if eq $spec.runPolicy "OnSpecChange" }}
   name: {{ $spec.name }}
-  {{- else if or (default true $spec.runPolicy) (eq $spec.runPolicy "Always") }}
+  {{- else if eq $spec.runPolicy "Always" }}
   name: {{ join "-" (list $spec.name uuidv4) | trunc 63 }}
   {{- end }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
@@ -50,13 +50,13 @@ spec:
             name: {{ $spec.name }}
         {{- end }}
         {{- end }}
-        {{- if $spec.mounts }}
+        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
         volumeMounts:
-          {{- if $spec.fakeroot }}
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
-          {{- end }}
+        {{- end }}
+        {{- if $spec.mounts }}
           {{- $spec.mounts | toYaml | nindent 10 }}
         {{- end }}
       restartPolicy: Never

@@ -17,7 +17,7 @@
 
 jobs:
   - type: job
-    runPolicy: OnSpecChange
+    runPolicy: Always
     enabled: {{ $hasHarbor }} 
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
     init:
@@ -45,6 +45,5 @@ jobs:
       OIDC_NAME: 'keycloak'
       OIDC_SCOPE: 'openid'
       OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
-    fakeroot: true
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
 
