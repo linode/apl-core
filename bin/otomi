@@ -218,6 +218,9 @@ function drun() {
       -v ${HOME}/.aws:/home/app/.aws \
       -v ${HOME}/.azure:/home/app/.azure \
       -v ${ENV_DIR}:${stack_dir}/env \
+      -e AZURE_TENANT_ID=$AZURE_TENANT_ID \
+      -e AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
+      -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
@@ -266,7 +269,9 @@ function execute() {
       ;;
     bootstrap)
       check_kube_context=0
-      validate_cluster_env
+      if [[ "$@" != '' ]]; then
+        validate_cluster_env
+      fi
       drun bin/bootstrap.sh 1
       ;;
     console)
