@@ -20,8 +20,6 @@ k8s:
     - name: overprovisioner
       disableIstioInjection: true
     - name: vault
-    - name: vault-secrets-webhook
-      disableIstioInjection: true
 
 services:
   - name: keycloak
