@@ -251,8 +251,24 @@ definitions:
         schedule:
           description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
           type: string
-        secret:
-          $ref: '#/definitions/env'
+        secrets:
+          entries:
+            description: Key names and their values.
+            items:
+              properties:
+                key:
+                  description: Key or file name.
+                  example: secretstuff.conf
+                  type: string
+                value:
+                  description: Value to be encrypted.
+                  example: password=yoursecretpassword
+                  type: string
+              required:
+                - key
+                - value
+            type: array
+          type: array
         script:
           $ref: '#/definitions/script'
         ttlSecondsAfterFinished:
