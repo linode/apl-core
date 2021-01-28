@@ -14,7 +14,7 @@ releases:
     - ../values/istio-operator/istio-operator-raw.gotmpl
   - name: vault-secrets-webhook
     installed: true
-    namespace: vault-secrets-webhook
+    namespace: vault
     <<: *default
   - name: kubernetes-external-secrets
     installed: true

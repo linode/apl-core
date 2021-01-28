@@ -92,9 +92,7 @@ resources:
 
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
-      caNamespaces:
-        - "vswh"
-        - "vault-secrets-webhook"
+      caNamespaces: []
 
       # Describe where you would like to store the Vault unseal keys and root token.
       unsealConfig:
