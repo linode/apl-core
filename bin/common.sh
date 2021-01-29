@@ -29,7 +29,7 @@ check_sops_file() {
 }
 
 hf() {
-  helmfile --quiet -e $CLOUD-$CLUSTER $@
+  helmfile --quiet -e $CLOUD-$CLUSTER "$@"
 }
 
 hf_values() {
@@ -52,7 +52,7 @@ for_each_cluster() {
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
-    clusters=($(yq r -j $clustersPath clouds.${cloud}.clusters | jq -rc '. | keys[]'))
+    clusters=($(yq r -j $clustersPath clouds.$cloud.clusters | jq -rc '. | keys[]'))
     for cluster in "${clusters[@]}"; do
       CLOUD=$cloud CLUSTER=$cluster $executable
     done

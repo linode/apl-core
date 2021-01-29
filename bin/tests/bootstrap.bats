@@ -62,20 +62,8 @@ teardown () {
     run bin/bootstrap.sh
     assert_success
     assert_file_exist "$ENV_DIR/.vscode/values-schema.yaml"
-    assert_file_exist "$PWD/values-schema.yaml"
-
-    result=$(yq r "$PWD/values-schema.yaml" '**.required.' | wc -l)
-    [ "$result" -ne 0 ]
-    result=$(yq r "$PWD/values-schema.yaml" 'properties.toolsVersion' | wc -l)
-    [ "$result" -ne 0 ]
-    result=$(yq r "$PWD/values-schema.yaml" 'properties.cluster' | wc -l)
-    [ "$result" -ne 0 ]
 
     result=$(yq r "$ENV_DIR/.vscode/values-schema.yaml" '**.required.' | wc -l)
-    [ "$result" -eq 0 ]
-    result=$(yq r "$ENV_DIR/.vscode/values-schema.yaml" 'properties.toolsVersion' | wc -l)
-    [ "$result" -eq 0 ]
-    result=$(yq r "$ENV_DIR/.vscode/values-schema.yaml" 'properties.cluster' | wc -l)
     [ "$result" -eq 0 ]
     
 }
