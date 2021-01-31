@@ -21,7 +21,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-[ $has_docker = 'false' ] && [ -n "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -175,8 +175,8 @@ function drun() {
   [ -n "$VERBOSE" ] && echo "Running in CI: $CI"
   if [ -n "$CI" ]; then
     check_kube_context=0
-  else
-    socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
+  # else
+  #   socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
   fi
 
   # execute any kubectl command to refresh access token
