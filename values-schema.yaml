@@ -1240,7 +1240,7 @@ properties:
         type: boolean
       mode:
         default: ee
-        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee)
+        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee).
         enum:
           - ce
           - ee

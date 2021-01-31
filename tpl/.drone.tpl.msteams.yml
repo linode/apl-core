@@ -41,8 +41,6 @@ steps:
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
     depends_on:
       - prepare-env
     commands:
@@ -54,8 +52,6 @@ steps:
     environment:
       CLUSTER: __CLUSTER
       CLOUD: __CLOUD
-      GCLOUD_SERVICE_KEY:
-        from_secret: GCLOUD_SERVICE_KEY
     commands:
       - cd .. && bin/otomi deploy
     depends_on:

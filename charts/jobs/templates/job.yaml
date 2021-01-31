@@ -5,7 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ join "-" (list $name  uuidv4) | trunc 63 }}
+  name: {{ $name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   template:
