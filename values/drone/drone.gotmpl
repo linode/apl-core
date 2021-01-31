@@ -57,7 +57,7 @@ kubernetes:
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
-    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }},GCLOUD_SERVICE_KEY:'{{ $v | get "google.kmsAccount" "" | nospace }}'"
+    DRONE_RUNNER_ENVIRON: 'CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }},GCLOUD_SERVICE_KEY:{{ $v | get "google.kmsAccount" "" | nospace }}'
 persistence:
   enabled: true
   storageClass: fast
