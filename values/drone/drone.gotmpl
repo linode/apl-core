@@ -33,6 +33,7 @@ server:
   env:
     CLOUD: {{ $v.cluster.provider }}
     CLUSTER: {{ $v.cluster.name }}
+    GCLOUD_SERVICE_KEY: '{{ $v | get "google.kmsAccount" "" | nospace }}'
     DRONE_LOGS_DEBUG: {{ $debug }}
     DRONE_LOGS_TRACE: {{ $debug }}
     DRONE_LOGS_PRETTY: false

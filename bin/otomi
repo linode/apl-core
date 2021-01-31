@@ -106,8 +106,6 @@ function check_docker_running() {
   set -e
   if [ "$?" = "0" ]; then
     has_docker=1
-  else
-    echo "Otomi CLI expects a running docker daemon!" >&2 && exit 1
   fi
 }
 
@@ -406,4 +404,5 @@ set_env_and_stack_dir
 set_otomi_image
 set_helm_config
 check_docker_running
+[ -z "$CI" ] && echo "Otomi CLI expects a running docker daemon!" >&2 && exit 1
 execute $command $@
