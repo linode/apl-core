@@ -76,6 +76,8 @@ spec:
         volumeMounts:
           - mountPath: /var/run/docker.sock
             name: docker-socket
+          - name: keys
+            mountPath: /etc/gcp-key.json
       {{- with .Values.kubernetes.volumeMounts }}
           {{- toYaml . | nindent 10 }}
       {{- end }}
@@ -83,6 +85,9 @@ spec:
         - name: docker-socket
           hostPath:
             path: /var/run/docker.sock
+        - name: keys
+          secret:
+            secretName: {{ template "drone.fullname" . }}-keys
 {{- else }}
       {{- with .Values.kubernetes.volumeMounts }}
         volumeMounts:
@@ -98,12 +103,12 @@ spec:
         args: {{ .Values.dind.args }}
 {{ end }}
         env:
-        - name: DOCKER_DRIVER
-          value: {{ .Values.dind.driver }}
-        {{ range $key, $value := .Values.dind.env }}
-        - name: {{ $key }}
-          value: {{ $value | quote }}
-        {{ end }}
+          - name: DOCKER_DRIVER
+            value: {{ .Values.dind.driver }}
+          {{ range $key, $value := .Values.dind.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{ end }}
         securityContext:
           privileged: true
         resources:
@@ -115,9 +120,9 @@ spec:
           {{- toYaml . | nindent 10 }}
       {{- end }}
       volumes:
-      - name: docker-graph-storage
-        emptyDir: {}
+        - name: docker-graph-storage
+          emptyDir: {}
 {{- end }}
-    {{- with .Values.kubernetes.volumes }}
+      {{- with .Values.kubernetes.volumes }}
         {{- toYaml . | nindent 6 }}
-    {{- end }}
+      {{- end }}

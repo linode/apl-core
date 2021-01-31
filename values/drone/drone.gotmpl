@@ -54,10 +54,12 @@ kubernetes:
       memory: 2Gi
       cpu: 1
     {{- end }}
+  gcpKey: '{{ $v | get "google.kmsAccount" }}'
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
-    DRONE_RUNNER_ENVIRON: 'CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }},GCLOUD_SERVICE_KEY:{{ $v | get "google.kmsAccount" "" | nospace }}'
+    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }},GOOGLE_APPLICATION_CREDENTIALS:/etc/gcp-key.json"
+
 persistence:
   enabled: true
   storageClass: fast
