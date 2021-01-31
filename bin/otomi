@@ -21,11 +21,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-if [ "$has_docker" == "false" ]; then
-  err "Otomi CLI expects a running docker daemon!" && exit 1
-fi
-
-cmd_image=''
+[ $has_docker = 'false' ] && [ -n "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -51,8 +47,8 @@ stack_dir='/home/app/stack'
 set +e
 customer=$(customer_name || $CUSTOMER || "unknown")
 set -e
-cmd_image=''
-docker_terminal_params='-t'
+cmd_image="otomi/core:$(otomi_image_tag)"
+docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
@@ -104,15 +100,6 @@ function show_usage() {
   "
 }
 
-function check_docker_running() {
-  set +e
-  docker --version &>/dev/null
-  set -e
-  if [ "$?" = "0" ]; then
-    has_docker=1
-  fi
-}
-
 function evaluate_k8s_context() {
   local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
   [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
@@ -132,11 +119,6 @@ function validate_k8s_context() {
       exit
     fi
   fi
-  return 0
-}
-
-function set_otomi_image() {
-  cmd_image="otomi/core:$(otomi_image_tag)"
   return 0
 }
 
@@ -405,8 +387,5 @@ function execute() {
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
 
 set_env_and_stack_dir
-set_otomi_image
 set_helm_config
-check_docker_running
-[ -z "$CI" ] && echo "Otomi CLI expects a running docker daemon!" >&2 && exit 1
 execute $command $@
