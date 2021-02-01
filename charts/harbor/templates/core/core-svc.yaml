@@ -12,6 +12,7 @@ spec:
     - port: {{ template "harbor.core.servicePort" . }}
       # appProtocol: http
       targetPort: {{ template "harbor.core.containerPort" . }}
+      name: http-core
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: core
