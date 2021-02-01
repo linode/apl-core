@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.57](https://github.com/redkubes/otomi-core/compare/v0.11.56...v0.11.57) (2021-02-01)
+
+
+### Features
+
+* drone job ([#298](https://github.com/redkubes/otomi-core/issues/298)) ([ab7402b](https://github.com/redkubes/otomi-core/commit/ab7402baeecb1c3fd0987c4c474f3afee2ad8594))
+
 ### [0.11.56](https://github.com/redkubes/otomi-core/compare/v0.11.55...v0.11.56) (2021-02-01)
 
 
