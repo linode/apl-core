@@ -20,7 +20,7 @@ releases:
     installed: {{ eq $v.cluster.provider "aws" }}
     <<: *jobs
   - name: jobs-drone
-    installed: {{ $c.drone.enabled }}
+    installed: false # {{ $c.drone.enabled }}
     labels:
       pkg: drone
     <<: *jobs
