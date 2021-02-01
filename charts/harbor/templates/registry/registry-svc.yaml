@@ -6,10 +6,10 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
-    - name: registry
+    - name: http-registry
       # appProtocol: http
       port: {{ template "harbor.registry.servicePort" . }}
-    - name: controller
+    - name: http-controller
       # appProtocol: http
       port: {{ template "harbor.registryctl.servicePort" . }}
   selector:
