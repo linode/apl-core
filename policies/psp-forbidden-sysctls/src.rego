@@ -7,27 +7,31 @@
 #
 # @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package pspforbiddensysctls
+
 import data.lib.core
-import data.lib.pods
-import data.lib.security
 import data.lib.exceptions
 import data.lib.parameters
+import data.lib.pods
+import data.lib.security
 
 policyID = "psp-forbidden-sysctls"
 
 violation[{"msg": msg, "details": {}}] {
-  not exceptions.is_exception(policyID)
-  sysctl := core.resource.securityContext.sysctls[_].name
-  forbidden_sysctl(sysctl)
-  msg := sprintf("Policy: %s - The sysctl %v is not allowed, pod: %v. Forbidden sysctls: %v", [policyID, sysctl, core.resource.metadata.name, parameters.parameters(policyID).forbiddenSysctls])
+	not exceptions.is_exception(policyID)
+	sysctl := core.resource.securityContext.sysctls[_].name
+	forbidden_sysctl(sysctl)
+	msg := sprintf("Policy: %s - The sysctl %v is not allowed, pod: %v. Forbidden sysctls: %v", [policyID, sysctl, core.resource.metadata.name, parameters.policy_parameters(policyID).forbiddenSysctls])
 }
+
 # * may be used to forbid all sysctls
 forbidden_sysctl(sysctl) {
-  parameters.parameters(policyID).forbiddenSysctls[_] == "*"
+	parameters.policy_parameters(policyID).forbiddenSysctls[_] == "*"
 }
+
 forbidden_sysctl(sysctl) {
-  parameters.parameters(policyID).forbiddenSysctls[_] == sysctl
+	parameters.policy_parameters(policyID).forbiddenSysctls[_] == sysctl
 }
+
 forbidden_sysctl(sysctl) {
-  startswith(sysctl, trim(parameters.parameters(policyID).forbiddenSysctls[_], "*"))
+	startswith(sysctl, trim(parameters.policy_parameters(policyID).forbiddenSysctls[_], "*"))
 }

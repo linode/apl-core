@@ -25,6 +25,6 @@ config:
     #   kind: "Service"
   # Exempted Namespaces
   match:
-    - excludedNamespaces: ["gatekeeper-system"]
+    - excludedNamespaces: ["gatekeeper-system", "kube-system"]
       processes: ["*"]
 

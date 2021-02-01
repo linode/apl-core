@@ -306,6 +306,7 @@ resources:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
-          injectedAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-capabilities") | nindent 12 }}
+          injectedAnnotations: 
+            policy.otomi.io/ignore-sidecar: "psp-allowed-users,psp-capabilities"
         tracing:
           contextPath: '/tracing'

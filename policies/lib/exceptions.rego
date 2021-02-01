@@ -1,4 +1,5 @@
 package lib.exceptions
+
 # Using resource wrapper logic to obtain exceptions metadata from annotations 
 # Usage:
 # 
@@ -11,16 +12,25 @@ package lib.exceptions
 # }
 # 
 
+import data.lib.annotations
 import data.lib.core
 import data.lib.parameters
-import data.lib.annotations
 
-is_exception(policyID) = true  {
-  annotations_object := annotations.policy_annotations()
-  core.has_field(annotations_object, annotations.ignoreAnnotationField)
-  annotations_object[annotations.ignoreAnnotationField] != null
-  ignoreList := split(annotations_object[annotations.ignoreAnnotationField],",")
-  ignoreList[_] == policyID
-} {
-  not parameters.parameters(policyID).enabled
+get_safe_annotation[return] {
+	all_annotations := annotations.merge_annotations()
+	policy_list := sprintf("%s,%s", [
+		object.get(all_annotations, annotations.ignoreAnnotationField, ""),
+		object.get(all_annotations, annotations.sidecarAnnotationField, ""),
+	])
+
+	return := split(policy_list, ",")
+}
+
+is_exception(policyID) {
+	get_safe_annotation[ignore_list]
+	ignore_list[_] == policyID
+}
+
+is_exception(policyID) {
+	not parameters.policy_parameters(policyID).enabled
 }

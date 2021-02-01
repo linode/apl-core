@@ -1,4 +1,3 @@
-
 # @title Pods must not run with access to the host 
 #
 # Pods that can access the host's process tree can view and attempt to
@@ -15,33 +14,38 @@
 package psphostsecurity
 
 import data.lib.core
-import data.lib.pods
-import data.lib.parameters
 import data.lib.exceptions
+import data.lib.parameters
+import data.lib.pods
 
 policyID := "psp-host-security"
 
 violation[msg] {
-    not exceptions.is_exception(policyID)
-    pod_has_hostpid
-    msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host PID namespace", [policyID, core.kind, core.name])
+	not exceptions.is_exception(policyID)
+	pod_has_hostpid
+	msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host PID namespace", [policyID, core.kind, core.name])
 }
+
 violation[msg] {
-    not exceptions.is_exception(policyID)
-    pod_has_hostipc
-    msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host IPC", [policyID, core.kind, core.name])
+	not exceptions.is_exception(policyID)
+	pod_has_hostipc
+	msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host IPC", [policyID, core.kind, core.name])
 }
+
 violation[msg] {
-    not exceptions.is_exception(policyID)
-    pod_host_alias
-    msg := sprintf("Policy: %s - %s/%s: Pod has hostAliases defined", [policyID, core.kind, core.name])
+	not exceptions.is_exception(policyID)
+	pod_host_alias
+	msg := sprintf("Policy: %s - %s/%s: Pod has hostAliases defined", [policyID, core.kind, core.name])
 }
+
 pod_has_hostpid {
-    pods.pod.spec.hostPID
+	pods.pod.spec.hostPID
 }
+
 pod_has_hostipc {
-    pods.pod.spec.hostIPC
+	pods.pod.spec.hostIPC
 }
+
 pod_host_alias {
-    pods.pod.spec.hostAliases
+	pods.pod.spec.hostAliases
 }

@@ -8,9 +8,6 @@ metadata:
   name: {{ template "weave-scope-agent.fullname" . }}
   annotations:
     {{- include "weave-scope-agent.annotations" . | indent 4 }}
-    {{- range $key, $value := .Values.podAnnotations  }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -21,6 +18,12 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := .  }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
       labels:
         {{- include "weave-scope-agent.helm_std_labels" . | indent 8 }}
         component: agent
