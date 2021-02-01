@@ -62,6 +62,8 @@ spec:
               secretKeyRef:
                 name: {{ template "drone.fullname" . }}
                 key: secret
+          - name: DRONE_RUNNER_ENV_FILE
+            value: /etc/drone/env      
           - name: DRONE_NAMESPACE_DEFAULT
             value: {{ .Values.kubernetes.namespace }}
           {{- range $key, $value := .Values.kubernetes.env }}
@@ -76,6 +78,8 @@ spec:
         volumeMounts:
           - mountPath: /var/run/docker.sock
             name: docker-socket
+          - name: envfile
+            mountPath: /etc/drone
       {{- with .Values.kubernetes.volumeMounts }}
           {{- toYaml . | nindent 10 }}
       {{- end }}
@@ -83,6 +87,9 @@ spec:
         - name: docker-socket
           hostPath:
             path: /var/run/docker.sock
+        - name: envfile
+          secret:
+            secretName: {{ template "drone.fullname" . }}-envfile
 {{- else }}
       {{- with .Values.kubernetes.volumeMounts }}
         volumeMounts:
@@ -98,12 +105,12 @@ spec:
         args: {{ .Values.dind.args }}
 {{ end }}
         env:
-        - name: DOCKER_DRIVER
-          value: {{ .Values.dind.driver }}
-        {{ range $key, $value := .Values.dind.env }}
-        - name: {{ $key }}
-          value: {{ $value | quote }}
-        {{ end }}
+          - name: DOCKER_DRIVER
+            value: {{ .Values.dind.driver }}
+          {{ range $key, $value := .Values.dind.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{ end }}
         securityContext:
           privileged: true
         resources:
@@ -115,9 +122,9 @@ spec:
           {{- toYaml . | nindent 10 }}
       {{- end }}
       volumes:
-      - name: docker-graph-storage
-        emptyDir: {}
+        - name: docker-graph-storage
+          emptyDir: {}
 {{- end }}
-    {{- with .Values.kubernetes.volumes }}
+      {{- with .Values.kubernetes.volumes }}
         {{- toYaml . | nindent 6 }}
-    {{- end }}
+      {{- end }}
