@@ -7,7 +7,7 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
  # logLevel - debug, info, warning, error or fatal
-logLevel: debug
+logLevel: info
 nameOverride: harbor
 fullnameOverride: harbor
 notary:

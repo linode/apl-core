@@ -1,27 +1,5 @@
 {{- $v := .Environment.Values }}
 resources:
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: harbor-core
-      namespace: team-admin
-    spec:
-      
-      hosts:
-        - harbor-harbor-core
-        - harbor-harbor-core.harbor.svc.cluster.local
-      http:
-        - match:
-            - uri:
-                prefix: '/v2/'
-          route:
-            - destination:
-                host: harbor-harbor-registry
-                port:
-                  number: 5000
-        - route:
-            - destination:
-                host: harbor-harbor-core
 {{- if $v.charts.istio | get "egressGateway.enabled" }}
   - apiVersion: networking.istio.io/v1beta1
     kind: Gateway
