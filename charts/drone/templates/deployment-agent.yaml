@@ -62,6 +62,8 @@ spec:
               secretKeyRef:
                 name: {{ template "drone.fullname" . }}
                 key: secret
+          - name: DRONE_RUNNER_ENV_FILE
+            value: /etc/drone/env      
           - name: DRONE_NAMESPACE_DEFAULT
             value: {{ .Values.kubernetes.namespace }}
           {{- range $key, $value := .Values.kubernetes.env }}
@@ -76,8 +78,8 @@ spec:
         volumeMounts:
           - mountPath: /var/run/docker.sock
             name: docker-socket
-          - name: keys
-            mountPath: /etc/gcp-key.json
+          - name: envfile
+            mountPath: /etc/drone
       {{- with .Values.kubernetes.volumeMounts }}
           {{- toYaml . | nindent 10 }}
       {{- end }}
@@ -85,9 +87,9 @@ spec:
         - name: docker-socket
           hostPath:
             path: /var/run/docker.sock
-        - name: keys
+        - name: envfile
           secret:
-            secretName: {{ template "drone.fullname" . }}-keys
+            secretName: {{ template "drone.fullname" . }}-envfile
 {{- else }}
       {{- with .Values.kubernetes.volumeMounts }}
         volumeMounts:

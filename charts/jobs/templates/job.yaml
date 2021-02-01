@@ -5,7 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $name }}
+  name: job-{{ $name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   template:
@@ -38,11 +38,11 @@ spec:
         envFrom:
         {{- if $spec.secret }}
         - secretRef:
-            name: {{ $name }}
+            name: job-{{ $name }}
         {{- end }}
         {{- if $spec.env }}
         - configMapRef:
-            name: {{ $name }}
+            name: job-{{ $name }}
         {{- end }}
         volumeMounts:
           - name: fakeroot
