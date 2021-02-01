@@ -4,24 +4,12 @@
 # @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package pspallowedusers
 
-import data.lib.annotations
 import data.lib.core
 import data.lib.exceptions
 import data.lib.parameters
 import data.lib.pods
 
 policyID = "psp-allowed-users"
-
-# violation[{"msg": msg}] {
-# 	# not exceptions.is_exception(policyID)
-# 	# fields := ["runAsUser", "runAsGroup", "supplementalGroups", "fsGroup"]
-# 	# field := fields[_]
-# 	# pods.containers[container]
-# 	all_annotations = annotations.merge_annotations()
-
-# 	ignoreList := split(sprintf("%s,%s", [all_annotations[annotations.ignoreAnnotationField], object.get(all_annotations, annotations.sidecarAnnotationField, "")]), ",")
-# 	msg := sprintf("ann %v   , res   %v,  ign %v ", [all_annotations, core.resource, ignoreList])
-# }
 
 violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)

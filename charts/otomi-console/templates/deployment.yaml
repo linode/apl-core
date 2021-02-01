@@ -17,7 +17,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
       {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ template "otomi-console.serviceAccountName" . }}
