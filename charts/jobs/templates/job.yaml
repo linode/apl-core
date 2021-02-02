@@ -56,18 +56,12 @@ spec:
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
         {{- end }}
-        {{- if $spec.mounts }}
-          {{- $spec.mounts | toYaml | nindent 10 }}
-        {{- end }}
       restartPolicy: Never
-      {{- if $spec.volumes }}
+      {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
       volumes:
-        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
         - name: fakeroot
           configMap:
             name: fakeroot
-        {{- end }}
-        {{- $spec.volumes | toYaml | nindent 8 }}
       {{- end }}
   backoffLimit: 3
   ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
