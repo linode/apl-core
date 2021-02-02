@@ -29,6 +29,16 @@ spec:
         args:
           - |
             {{- toString $spec.init.script | nindent 12 }}
+        {{- if $spec.init.secretKeyRefs }}
+        env:
+          {{- range $ref := $spec.init.secretKeyRefs }}
+          - name: {{ $ref.name }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $ref.secretKeyRefName }}
+                key: {{ $ref.key }}
+          {{- end }}
+        {{- end }}
       {{- end }}
       containers:
       - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
@@ -39,13 +49,23 @@ spec:
           - |
             {{- toString $spec.script | nindent 12 }}
         resources: {{- if $spec.resources}}{{ toYaml $spec.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
+        {{- if $spec.secretKeyRefs }}
+        env:
+          {{- range $ref := $spec.secretKeyRefs }}
+          - name: {{ $ref.name }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $ref.secretKeyRefName }}
+                key: {{ $ref.key }}
+          {{- end }}
+        {{- end }}
         {{- if or $spec.secret $spec.env }}
         envFrom:
         {{- if $spec.secret }}
         - secretRef:
             name: {{ $spec.name }}
         {{- end }}
-        {{- if $spec.env }}
+        {{- if or $spec.env }}
         - configMapRef:
             name: {{ $spec.name }}
         {{- end }}
