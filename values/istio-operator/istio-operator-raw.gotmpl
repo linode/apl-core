@@ -12,7 +12,6 @@
 {{- $o := $v.oidc }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -43,7 +42,6 @@ resources:
           - name: istio-ingressgateway
             enabled: true
             k8s:
-              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 16 }}
               priorityClassName: "otomi-critical"
               resources:
               {{- with $i | get "resources.ingressgateway" nil }}
