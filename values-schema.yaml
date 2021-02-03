@@ -1362,6 +1362,10 @@ properties:
         patternProperties:
           '^[a-z-]+$':
             $ref: '#/definitions/team'
+  toolsVersion:
+    description: An internal otomi object (do not edit it)
+    type: string
+    readOnly: true
 required:
   - alerts
   - clouds
@@ -1371,3 +1375,4 @@ required:
   - teamConfig
   - k8s
   - services
+  - toolsVersion
