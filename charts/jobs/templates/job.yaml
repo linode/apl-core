@@ -60,7 +60,7 @@ spec:
         {{- $spec.volumes | toYaml | nindent 8 }}
         {{- end }}
   backoffLimit: 3
-  ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
+  ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 0 }}
 ---
 {{- end }}
 {{- end }}
