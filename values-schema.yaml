@@ -822,6 +822,10 @@ properties:
             type: number
           replicas:
             type: number
+          dataSync:
+            type: array
+            items:
+              type: object
       harbor:
         additionalProperties: false
         properties:

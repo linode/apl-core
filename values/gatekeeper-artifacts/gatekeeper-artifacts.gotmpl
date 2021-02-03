@@ -13,10 +13,16 @@ constraintFiles:
 ### Config Resources for OPA Gatekeeper
 config:  
   # Data Replication  
+  {{- with $gk | get "dataSync" list }}
   dataSync: 
-    - group: ""
-      version: "v1"
-      kind: "Pod"
+  {{- range $kind := . }}
+    - group: {{ $kind.group | quote }}
+      version: {{ $kind.version | quote }}
+      kind: {{ $kind.kind | quote }}
+  {{- end }}
+  {{- end }}
+
+
   # Exempted Namespaces
   match:
     - excludedNamespaces: {{ (concat (list  "gatekeeper-system" "kube-system") ($gk | get "excludedNamespaces" list)) | toJson }}

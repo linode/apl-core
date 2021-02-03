@@ -16,8 +16,9 @@ spec:
   {{- end }}
   {{- with .Values.config.match }}
   match:
-  {{- range $match := . }}
-  -  {{ $match | toYaml | nindent 4}} 
-  {{- end }}
+    {{- range $match := . }}
+    - excludedNamespaces: {{ $match.excludedNamespaces | toJson }} 
+      processes: {{ $match.processes | toJson }} 
+    {{- end }}
   {{- end }}
 {{- end }}
