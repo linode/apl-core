@@ -73,10 +73,6 @@ spec:
             value: {{ template "drone.fullname" . }}.{{ template "drone.namespace" . }}:{{ .Values.service.httpPort }}
           - name: DRONE_SERVER_PROTO
             value: {{ .Values.server.protocol }}
-          {{- if .Values.server.adminUser }}
-          - name: DRONE_USER_CREATE
-            value: username:{{ .Values.server.adminUser }},machine:false,admin:true
-          {{- end }}
           - name: DRONE_RPC_SECRET
             valueFrom:
               secretKeyRef:
@@ -90,6 +86,13 @@ spec:
                 name: {{ $secret }}
                 key: {{ . | quote }}
           {{- end }}
+          {{- end }}
+          {{- if .Values.server.adminUser }}
+          - name: DRONE_USER_CREATE
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "drone.fullname" . }}-envfile
+                key: DRONE_USER_CREATE
           {{- end }}
           {{- range $key, $value := .Values.server.env }}
           - name: {{ $key }}

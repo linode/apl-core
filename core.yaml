@@ -41,7 +41,7 @@ services:
     svc: harbor-harbor-core
     namespace: harbor
     ownHost: true
-    paths: [/api/, /c/, /chartrepo/, /service/]
+    paths: [/api/, /c/, /chartrepo/]
     forwardPath: true
     hide: true
     isShared: true
@@ -49,7 +49,7 @@ services:
     svc: harbor-harbor-core
     namespace: harbor
     ownHost: true
-    paths: [/service/token/, /v1/, /v2/]
+    paths: [/service/, /v1/, /v2/]
     forwardPath: true
     hide: true
     isPublic: true
