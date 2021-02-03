@@ -19,3 +19,8 @@ releases:
   - name: jobs-certs-aws
     installed: {{ eq $v.cluster.provider "aws" }}
     <<: *jobs
+  - name: jobs-drone
+    installed: false # {{ $c.drone.enabled }}
+    labels:
+      pkg: drone
+    <<: *jobs
