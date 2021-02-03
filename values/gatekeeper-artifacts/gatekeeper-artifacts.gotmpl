@@ -17,14 +17,8 @@ config:
     - group: ""
       version: "v1"
       kind: "Pod"
-    # - group: ""
-    #   version: "v1"
-    #   kind: "Namespace"
-    # - group: ""
-    #   version: "v1"
-    #   kind: "Service"
   # Exempted Namespaces
   match:
-    - excludedNamespaces: ["gatekeeper-system", "kube-system"]
+    - excludedNamespaces: {{ (concat (list  "gatekeeper-system" "kube-system") ($gk | get "excludedNamespaces" list)) | toJson }}
       processes: ["*"]
 

@@ -794,6 +794,10 @@ properties:
         properties:
           enabled:
             type: boolean
+          excludedNamespaces:
+            type: array
+            items:
+              type: string
       harbor:
         additionalProperties: false
         properties:
