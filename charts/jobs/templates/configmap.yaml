@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $name }}
+  name: job-{{ $name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data: {{- toYaml $spec.env | nindent 2 }}
 ---

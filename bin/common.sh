@@ -12,7 +12,7 @@ readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
 has_docker='false'
-if docker --version &>/dev/null ; then
+if docker --version &>/dev/null; then
   has_docker='true'
 fi
 
@@ -20,20 +20,20 @@ fi
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #######################################
 function err() {
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERROR: $*" >&2
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERROR: $*" >&2
 }
 
 function _rind() {
   local cmd="$1"
   shift
-  if [[ "$has_docker" == 'true' && "$IN_DOCKER" != '1' ]]; then
+  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER='1' \
       -e CLUSTER="$CLUSTER" \
       $otomi_tools_image $cmd "$@"
-      return $?
+    return $?
   elif command -v $cmd &>/dev/null; then
     command $cmd "$@"
     return $?
@@ -62,7 +62,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomiVersion=$([ -n "${CLOUD+x}${CLUSTER+x}" ] && yq r $clusters_file "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
-  [[ -n $otomiVersion ]] && echo $otomiVersion || echo 'latest'
+  [ -n "$otomiVersion" ] && echo $otomiVersion || echo 'latest'
 }
 
 function customer_name() {
@@ -83,14 +83,14 @@ function hf() {
 
 function hf_values() {
   [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
-  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build | 
-    grep -Ev $helmfile_output_hide | 
+  helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build |
+    grep -Ev $helmfile_output_hide |
     sed -e $replace_paths_pattern |
     yq read -P - 'releases[0].values[0]'
 }
 
 function prepare_crypt() {
-  [[ -z "$GCLOUD_SERVICE_KEY" ]] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  [ -z "$GCLOUD_SERVICE_KEY" ] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
@@ -109,4 +109,3 @@ function for_each_cluster() {
     done
   done
 }
-

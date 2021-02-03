@@ -21,11 +21,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-if [ "$has_docker" == "false" ]; then
-  err "Otomi CLI expects a running docker daemon!" && exit 1
-fi
-
-cmd_image=''
+[ $has_docker = 'false' ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -51,8 +47,8 @@ stack_dir='/home/app/stack'
 set +e
 customer=$(customer_name || $CUSTOMER || "unknown")
 set -e
-cmd_image=''
-docker_terminal_params='-t'
+cmd_image="otomi/core:$(otomi_image_tag)"
+docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
@@ -126,11 +122,6 @@ function validate_k8s_context() {
   return 0
 }
 
-function set_otomi_image() {
-  cmd_image="otomi/core:$(otomi_image_tag)"
-  return 0
-}
-
 function evaluate_secrets() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && {
     echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
@@ -184,8 +175,8 @@ function drun() {
   [ -n "$VERBOSE" ] && echo "Running in CI: $CI"
   if [ -n "$CI" ]; then
     check_kube_context=0
-  else
-    socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
+  # else
+  #   socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
   fi
 
   # execute any kubectl command to refresh access token
@@ -392,6 +383,5 @@ function execute() {
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
 
 set_env_and_stack_dir
-set_otomi_image
 set_helm_config
 execute $command "$@"
