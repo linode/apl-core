@@ -15,7 +15,7 @@ exitcode=1
 validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
 
 cleanup() {
-  validationResult=$((($validationResult + $exitcode)))
+  validationResult=$(($validationResult + $exitcode))
   [ $validationResult -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
   [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
   exit $validationResult
@@ -105,7 +105,7 @@ validate_templates() {
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
   [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
-  validationResult=$((($validationResult + $exitcode)))
+  validationResult=$(($validationResult + $exitcode))
   rm $tmp_out
 }
 

@@ -77,6 +77,10 @@ function check_sops_file() {
   return 0
 }
 
+function cluster_env() {
+  printf "${CLOUD}-${CLUSTER}"
+}
+
 function hf() {
   helmfile --quiet -e $CLOUD-$CLUSTER "$@"
 }
