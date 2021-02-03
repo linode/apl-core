@@ -29,6 +29,11 @@ spec:
         args:
           - |
             {{- toString $spec.init.script | nindent 12 }}
+        {{- if $spec.init.env }}
+        envFrom:
+        - configMapRef:
+            name: {{ $spec.name }}
+        {{- end }}
         {{- if $spec.init.secretKeyRefs }}
         env:
           {{- range $ref := $spec.init.secretKeyRefs }}

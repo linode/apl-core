@@ -1,14 +1,20 @@
 {{- $v := .Values }}
 {{- range $name, $spec := $v.jobs }}
-{{- if and (default true $spec.enabled) (or $spec.env $spec.init.env) }}
+{{- if or $spec.env $spec.init }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ $spec.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data: 
-  {{- if $spec.env }}{{- toYaml $spec.env | nindent 2 }}{{- end }}
-  {{- if $spec.init.env }}{{- toYaml $spec.init.env | nindent 2 }}{{- end }}
+  {{- with $spec.env  }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if hasKey $spec "init" }}
+  {{- with $spec.init.env  }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
 ---
 {{- end }}
 {{- end }}
