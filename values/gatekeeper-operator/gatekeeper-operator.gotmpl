@@ -7,13 +7,13 @@ image:
   release: v3.2.2
   pullPolicy: IfNotPresent
 
-replicas: 1
+replicas: {{ $gk | get "replicas" 1 }} 
 
-emitAuditEvents: false
-emitAdmissionEvents: false
-constraintViolationsLimit: 20
-auditInterval: 60
-logLevel: INFO
+emitAuditEvents:  {{ $gk | get "emitAuditEvents" false }} 
+emitAdmissionEvents: {{ $gk | get "emitAdmissionEvents" false }}  
+constraintViolationsLimit: {{ $gk | get "constraintViolationsLimit" 20 }}  
+auditInterval: {{ $gk | get "auditInterval" 60 }}  
+logLevel: {{ $gk | get "logLevel" "INFO" }}  
 
 controllerManager:
   resources:
@@ -36,5 +36,5 @@ customResourceDefinitions:
 
 
 # enable data sync
-auditFromCache: true
-disableValidatingWebhook: false
+auditFromCache: {{ $gk | get "auditFromCache" false }}
+disableValidatingWebhook:  {{ $gk | get "disableValidatingWebhook" false }}

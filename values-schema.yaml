@@ -806,6 +806,22 @@ properties:
             type: array
             items:
               type: string
+          emitAuditEvents:
+            type: boolean
+          emitAdmissionEvents:
+            type: boolean
+          auditFromCache:
+            type: boolean
+          disableValidatingWebhook:
+            type: boolean
+          logLevel:
+            type: string
+          constraintViolationsLimit:
+            type: number
+          auditInterval:
+            type: number
+          replicas:
+            type: number
       harbor:
         additionalProperties: false
         properties:
