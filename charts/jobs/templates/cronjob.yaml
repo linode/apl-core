@@ -36,11 +36,11 @@ spec:
               envFrom:
               {{- if $spec.secret }}
               - secretRef:
-                  name: {{ $name }}
+                  name: job-{{ $name }}
               {{- end }}
               {{- if $spec.env }}
               - configMapRef:
-                  name: {{ $name }}
+                  name: job-{{ $name }}
               {{- end }}
           restartPolicy: Never
 ---
