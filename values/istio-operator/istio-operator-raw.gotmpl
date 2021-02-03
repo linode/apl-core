@@ -43,6 +43,7 @@ resources:
           - name: istio-ingressgateway
             enabled: true
             k8s:
+              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 16 }}
               priorityClassName: "otomi-critical"
               resources:
               {{- with $i | get "resources.ingressgateway" nil }}
