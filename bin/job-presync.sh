@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# hook, so go back one level first
+cd ..
+
+. bin/common.sh
+
+set -x
+release=$1
+run_policy=${2:-'OnSpecChange'}
+
+is_deployed=false
+hf list | grep $release >/dev/null && is_deployed=true
+
+[ -n "$VERBOSE" ] && echo "Release: $release, run_policy: $run_policy, deployed: $deployed"
+! $is_deployed && exit
+
+# what to do:
+# - OnSpecChange: if diff remove old job
+# - Always: remove job
+
+if [ "$run_policy" = 'Always' ]; then
+  hf -l name=$release destroy
+else
+  # OnSpecChange
+  has_diff=false
+  hf -l name=$release diff --skip-deps >/dev/null && has_diff=true
+
+  if $has_diff && $is_deployed; then
+    hf -l name=$release destroy
+  fi
+fi

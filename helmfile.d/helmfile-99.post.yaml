@@ -6,20 +6,30 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: jobs-ingress-azure
+  - name: job-ingress-azure
     installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
     <<: *jobs
     labels:
       pkg: ingress-azure
-  - name: jobs-harbor
+  - name: job-harbor
     installed: {{ $c | get "harbor.enabled" false }}
     labels:
       pkg: harbor
     <<: *jobs
-  - name: jobs-certs-aws
+  - name: job-certs-aws
     installed: {{ eq $v.cluster.provider "aws" }}
     <<: *jobs
-  - name: jobs-drone
+  - name: job-test
+    installed: true
+    <<: *jobs
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "../bin/job-presync.sh"
+        args:
+          - "{{`{{ .Release.Name }}`}}"
+          - "OnSpecChange"
+  - name: job-drone
     installed: false # {{ $c.drone.enabled }}
     labels:
       pkg: drone

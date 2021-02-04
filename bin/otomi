@@ -44,31 +44,26 @@ check_kube_context=1
 
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-set +e
-customer=$(customer_name || $CUSTOMER || "unknown")
-set -e
 cmd_image="otomi/core:$(otomi_image_tag)"
 docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
-function set_env_and_stack_dir() {
-  local cwd=$(basename "$PWD")
-  [ -n "$VERBOSE" ] && echo "CWD: $cwd"
-  if [ "$cwd" = "otomi-core" ]; then
-    [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
-    [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
-    stack_dir=$PWD
-    mount_stack_dir=1
-  fi
-  return 0
-}
+# check if we are in core or values repo (could be improved as it is based on name!)
+readonly cwd=$(basename "$PWD")
+[ -n "$VERBOSE" ] && echo "CWD: $cwd"
+if [ "$cwd" = "otomi-core" ]; then
+  [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
+  stack_dir=$PWD
+  mount_stack_dir=1
+fi
+# now we can retrieve customer name from settings
+customer=$(customer_name || $CUSTOMER || "unknown")
 
-function set_helm_config() {
-  helm_config="$HOME/.config/helm"
-  uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
-  return 0
-}
+# set helm config
+helm_config="$HOME/.config/helm"
+uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
 
 function show_usage() {
   echo "otomi usage:
@@ -386,6 +381,4 @@ function execute() {
 
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
 
-set_env_and_stack_dir
-set_helm_config
 execute $command $@
