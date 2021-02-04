@@ -240,7 +240,8 @@ function execute() {
     hf)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+
       ;;
     bash)
       check_kube_context=0
@@ -249,7 +250,7 @@ function execute() {
       ;;
     bootstrap)
       check_kube_context=0
-      if [[ "$@" != '' ]]; then
+      if [[ "$*" != '' ]]; then
         validate_cluster_env
       fi
       drun bin/bootstrap.sh 1
@@ -257,14 +258,14 @@ function execute() {
     console)
       check_kube_context=0
       evaluate_secrets
-      run_console $@
+      run_console "$@"
       ;;
     decrypt)
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != '' ]]; then
-        for f in $@; do
+      if [[ "$*" != '' ]]; then
+        for f in "$@"; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
         done
@@ -280,19 +281,19 @@ function execute() {
     diff)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ destroy | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != '' ]]; then
-        for f in $@; do
+      if [[ "$*" != '' ]]; then
+        for f in "$@"; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
         done
@@ -304,13 +305,13 @@ function execute() {
     sync)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ sync --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
       check_kube_context=0
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfile_output_hide_tpl
+      drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
       ;;
     rotate-keys)
       check_sops_file
@@ -328,22 +329,17 @@ function execute() {
       evaluate_secrets
       drun bin/gen-drone.sh
       ;;
-    test)
-      validate_cluster_env
-      evaluate_secrets
-      drun bin/test.sh
-      ;;
     validate-templates)
-      if [[ "$@" != '' ]]; then
+      if [[ "$*" != '' ]]; then
         validate_cluster_env
       fi
       check_kube_context=0
       evaluate_secrets
-      drun bin/validate-templates.sh $@
+      drun bin/validate-templates.sh "$@"
       ;;
     x)
       check_kube_context=0
-      drun $@
+      drun "$@"
       ;;
     commit)
       check_kube_context=0
@@ -368,11 +364,11 @@ function execute() {
       ;;
     *)
       show_usage
-      [ -z "$1" ] && err "Unknown command: $@" && exit 1
+      [ -z "$1" ] && err "Unknown command: $*" && exit 1
       ;;
   esac
 }
 
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
 
-execute $command $@
+execute $command "$@"

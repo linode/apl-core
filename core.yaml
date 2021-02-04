@@ -1,4 +1,4 @@
-toolsVersion: 1.4.9
+# NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 
 k8s:
   namespaces:
