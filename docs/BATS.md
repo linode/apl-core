@@ -8,7 +8,7 @@ The otomi/tools:1.4.10 or newer includes the [bats framework](https://github.com
 
 Example of calling the binary:
 
-`docker build --target test .`
+`docker run --rm otomi/core:latest bats bin/tests`
 
 This example assumes tests exist in the container directory `otomi-core/bin/tests`. You can call bats with a directory as parameter and it will execute any `*.bats` file.
 

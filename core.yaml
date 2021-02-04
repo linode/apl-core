@@ -1,5 +1,4 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
-toolsVersion: 1.4.9
 
 k8s:
   namespaces:

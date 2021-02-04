@@ -65,5 +65,4 @@ teardown () {
 
     result=$(yq r "$ENV_DIR/.vscode/values-schema.yaml" '**.required.' | wc -l)
     [ "$result" -eq 0 ]
-    
 }
