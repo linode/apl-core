@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $name, $spec := $v.jobs }}
-{{- if or $spec.env $spec.init }}
+{{- range $spec := $v.jobs }}
+{{- if default true $spec.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
