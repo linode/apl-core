@@ -14,10 +14,10 @@ templates:
     hooks:
       - events: ["presync"]
         showlogs: true
-        command: "../bin/job-presync.sh"
+        command: ../bin/job-presync.sh
         args:
           - "{{ .Release.Name }}"
-          - "OnSpecChange"
+          - OnSpecChange
     labels:
       tag: jobs
     values:
@@ -25,7 +25,7 @@ templates:
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
-      - events: ["prepare"]
+      - events: [prepare]
         showlogs: false
-        command: "../bin/skeleton-chart.sh"
+        command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}"]

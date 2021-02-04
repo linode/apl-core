@@ -2,15 +2,17 @@ bases:
   - snippets/defaults.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
+
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 
 releases:
   - name: job-ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
+    installed: false #{{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
     <<: *jobs
     labels:
       pkg: ingress-azure
+    {{ tpl (readFile "snippets/job-presync.gotmpl") (dict "name" "job-ingress-azure" "runPolicy" "Always") | nindent 4 }}
   - name: job-harbor
     installed: {{ $c | get "harbor.enabled" false }}
     labels:
@@ -19,16 +21,6 @@ releases:
   - name: job-certs-aws
     installed: {{ eq $v.cluster.provider "aws" }}
     <<: *jobs
-  - name: job-test
-    installed: true
-    <<: *jobs
-    hooks:
-      - events: ["presync"]
-        showlogs: true
-        command: "../bin/job-presync.sh"
-        args:
-          - "{{`{{ .Release.Name }}`}}"
-          - "OnSpecChange"
   - name: job-drone
     installed: false # {{ $c.drone.enabled }}
     labels:
