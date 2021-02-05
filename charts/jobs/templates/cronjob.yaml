@@ -1,13 +1,12 @@
 {{- $v := .Values }}
-{{- range $spec := $v.jobs }}
-{{- if and (default true $spec.enabled) (eq $spec.type "cronjob") }}
+{{- if and (default true $v.enabled) (eq $v.type "cronjob") }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: job-{{ $spec.name }}
+  name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
-  schedule: "{{ $spec.schedule }}"
+  schedule: "{{ $v.schedule }}"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
@@ -17,15 +16,15 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
+          serviceAccountName: {{ $v.serviceAccountName | default "default" }}
           containers:
-            - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
-              imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-              name: {{ $spec.name }}
+            - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+              imagePullPolicy: "{{ $v.image.pullPolicy }}"
+              name: {{ $v.name }}
               command: ["bash", "-c"]
               args:
                 - |
-                  {{- toString $spec.script | nindent 18 }}
+                  {{- toString $v.script | nindent 18 }}
               resources:
                 limits:
                   cpu: 200m
@@ -33,18 +32,17 @@ spec:
                 requests:
                   cpu: 100m
                   memory: 128Mi
-              {{- if or $spec.secret $spec.env }}
+              {{- if or $v.secret $v.env }}
               envFrom:
-              {{- if $spec.secret }}
+              {{- if $v.secret }}
               - secretRef:
-                  name: job-{{ $spec.name }}
+                  name: job-{{ $v.name }}
               {{- end }}
-              {{- if $spec.env }}
+              {{- if $v.env }}
               - configMapRef:
-                  name: {{ $spec.name }}
+                  name: {{ $v.name }}
               {{- end }}
               {{- end }}
           restartPolicy: Never
 ---
-{{- end }}
 {{- end }}

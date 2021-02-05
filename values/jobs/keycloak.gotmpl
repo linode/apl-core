@@ -5,61 +5,61 @@
 {{- range $name, $team := $teams }}
 {{- $teamNames = print "team-" $name | append $teamNames -}}
 {{- if ($team | get "oidc.groupMapping" false) }}
-  {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
+{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
 {{- end -}}
 {{- end -}}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-jobs:
-  - type: job
-    runPolicy: Always
-    description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    enabled: true
-    init:
-      image:
-        repository: badouralix/curl-http2
-      script: |
-        {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-        echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domain }}"
-        until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domain }}); do 
-          printf '.'
-          sleep 5
-        done
-        echo READY!
-    image:
-      repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
-      pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
-    name: keycloak
-    env:
-      KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
-    secret:
-      # DEBUG: '*'
-      KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
-      KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-      KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
-      KEYCLOAK_REALM: master
-      KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
-      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-      TENANT_ID: {{ $v.oidc.tenantID }}
-      TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
-      TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
-      IDP_ALIAS: {{ $k.idp.alias }}
-      IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
-      IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-      IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.email}" }}
-      IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-      IDP_OIDC_URL: {{ $v.oidc.issuer }}
-      REDIRECT_URIS: '[
-          "https://otomi.{{ $v.cluster.domain }}",
-          "https://auth.{{ $v.cluster.domain }}/*",
-          "https://apps.{{ $v.cluster.domain }}/*",
-          "https://otomi.{{ $v.cluster.domain }}/*",
-          {{- range $name, $team := $teams }}
-          "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
-          {{- end }}
-          "https://harbor.{{ $v.cluster.domain }}/*"
-      ]'
-    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+
+type: job
+runPolicy: Always
+description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+enabled: true
+init:
+  image:
+    repository: badouralix/curl-http2
+  script: |
+    {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domain }}"
+    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domain }}); do 
+      printf '.'
+      sleep 5
+    done
+    echo READY!
+image:
+  repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
+  tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
+  pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
+name: keycloak
+env:
+  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
+secret:
+  # DEBUG: '*'
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
+  KEYCLOAK_REALM: master
+  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+  TENANT_ID: {{ $v.oidc.tenantID }}
+  TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
+  TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+  IDP_ALIAS: {{ $k.idp.alias }}
+  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
+  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.email}" }}
+  IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
+  IDP_OIDC_URL: {{ $v.oidc.issuer }}
+  REDIRECT_URIS: '[
+      "https://otomi.{{ $v.cluster.domain }}",
+      "https://auth.{{ $v.cluster.domain }}/*",
+      "https://apps.{{ $v.cluster.domain }}/*",
+      "https://otomi.{{ $v.cluster.domain }}/*",
+      {{- range $name, $team := $teams }}
+      "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
+      {{- end }}
+      "https://harbor.{{ $v.cluster.domain }}/*"
+  ]'
+script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak

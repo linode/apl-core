@@ -1,11 +1,10 @@
 {{- $v := .Values }}
 {{- $ := . }}
-{{- range $spec := $v.jobs }}
-{{- if and (default true $spec.enabled) (eq $spec.type "job") }}
+{{- if and (default true $v.enabled) (eq $v.type "job") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: job-{{ $spec.name }}
+  name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   template:
@@ -15,24 +14,24 @@ spec:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
     spec:
-      serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
-      {{- if $spec.init }}
+      serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+      {{- if $v.init }}
       initContainers:
-      - image: "{{ $spec.init.image.repository }}:{{ $spec.init.image.tag | default "latest" }}"
-        imagePullPolicy: "{{ $spec.init.image.pullPolicy | default "IfNotPresent"}}"
-        name: "{{ $spec.name }}-init"
-        command: ["{{ $spec.init.shell | default "sh" }}", "-c"]
+      - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
+        imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent"}}"
+        name: "{{ $v.name }}-init"
+        command: ["{{ $v.init.shell | default "sh" }}", "-c"]
         args:
           - |
-            {{- toString $spec.init.script | nindent 12 }}
-        {{- if $spec.init.env }}
+            {{- toString $v.init.script | nindent 12 }}
+        {{- if $v.init.env }}
         envFrom:
         - configMapRef:
-            name: {{ $spec.name }}
+            name: {{ $v.name }}
         {{- end }}
-        {{- if $spec.init.secretKeyRefs }}
+        {{- if $v.init.secretKeyRefs }}
         env:
-          {{- range $ref := $spec.init.secretKeyRefs }}
+          {{- range $ref := $v.init.secretKeyRefs }}
           - name: {{ $ref.name }}
             valueFrom:
               secretKeyRef:
@@ -42,17 +41,17 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-      - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
-        imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-        name: {{ $spec.name }}
-        command: ["{{ $spec.shell | default "sh" }}", "-c"]
+      - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+        imagePullPolicy: "{{ $v.image.pullPolicy }}"
+        name: {{ $v.name }}
+        command: ["{{ $v.shell | default "sh" }}", "-c"]
         args:
           - |
-            {{- toString $spec.script | nindent 12 }}
-        resources: {{- if $spec.resources}}{{ toYaml $spec.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
-        {{- if $spec.secretKeyRefs }}
+            {{- toString $v.script | nindent 12 }}
+        resources: {{- if $v.resources}}{{ toYaml $v.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
+        {{- if $v.secretKeyRefs }}
         env:
-          {{- range $ref := $spec.secretKeyRefs }}
+          {{- range $ref := $v.secretKeyRefs }}
           - name: {{ $ref.name }}
             valueFrom:
               secretKeyRef:
@@ -60,32 +59,31 @@ spec:
                 key: {{ $ref.key }}
           {{- end }}
         {{- end }}
-        {{- if or $spec.secret $spec.env }}
+        {{- if or $v.secret $v.env }}
         envFrom:
-        {{- if $spec.secret }}
+        {{- if $v.secret }}
         - secretRef:
-            name: job-{{ $spec.name }}
+            name: job-{{ $v.name }}
         {{- end }}
-        {{- if or $spec.env }}
+        {{- if or $v.env }}
         - configMapRef:
-            name: job-{{ $spec.name }}
+            name: job-{{ $v.name }}
         {{- end }}
         {{- end }}
-        {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
+        {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
         volumeMounts:
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
         {{- end }}
       restartPolicy: Never
-      {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}
+      {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
       volumes:
         - name: fakeroot
           configMap:
             name: fakeroot
       {{- end }}
   backoffLimit: 3
-  ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
+  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
-{{- end }}
 {{- end }}

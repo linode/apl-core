@@ -15,35 +15,33 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-jobs:
-  - type: job
-    runPolicy: Always
-    enabled: {{ $hasHarbor }} 
-    description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    init:
-      image:
-        repository: otomi/tools
-        tag: v1.4.11
-        pullPolicy: IfNotPresent
-      # move secret for harbor to use
-      script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
-    name: harbor
-    image:
-      repository: otomi/tasks
-      tag: v0.2.1
-      pullPolicy: IfNotPresent
-    secret:
-      HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
-      HARBOR_USER: admin
-      OIDC_CLIENT_ID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
-      OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
-    env:
-      HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
-      TEAM_NAMES: '{{ $teamNames | sortAlpha | toJson }}'
-      OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
-      OIDC_GROUPS_CLAIM: 'groups'
-      OIDC_NAME: 'keycloak'
-      OIDC_SCOPE: 'openid'
-      OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
-    script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
-
+type: job
+runPolicy: Always
+enabled: {{ $hasHarbor }} 
+description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+init:
+  image:
+    repository: otomi/tools
+    tag: '1.4.11'
+    pullPolicy: IfNotPresent
+  # move secret for harbor to use
+  script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
+name: harbor
+image:
+  repository: otomi/tasks
+  tag: v0.2.1
+  pullPolicy: IfNotPresent
+secret:
+  HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}
+  HARBOR_USER: admin
+  OIDC_CLIENT_ID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+  OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
+env:
+  HARBOR_BASE_URL: "http://harbor-harbor-core.harbor/api/v2.0"
+  TEAM_NAMES: '{{ $teamNames | sortAlpha | toJson }}'
+  OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
+  OIDC_GROUPS_CLAIM: 'groups'
+  OIDC_NAME: 'keycloak'
+  OIDC_SCOPE: 'openid'
+  OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
+script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
