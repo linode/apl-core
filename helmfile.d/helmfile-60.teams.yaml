@@ -189,14 +189,16 @@ releases:
   {{- end }}
   {{- end }}
   {{- if hasKey $team "jobs" }}
-  - name: jobs-{{ $teamId }}
+  - name: job-{{ $team }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
     chart: ../charts/jobs
     labels:
+      group: jobs
       tag: teams
       team: {{ $teamId }}
     values:
       - {{- $team | toYaml | nindent 8 }}
+    {{ tpl (readFile "../helmfile.d/snippets/job-presync.gotmpl") (dict "name"  "runPolicy" .runPolicy ) | nindent 4 }}
   {{- end }}
   {{- end }}
