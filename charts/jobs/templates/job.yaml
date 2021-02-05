@@ -70,18 +70,36 @@ spec:
             name: job-{{ $v.name }}
         {{- end }}
         {{- end }}
-        {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
+        {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
         volumeMounts:
+          {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
+          {{- end }}
+          {{- if hasKey $v "files" }}
+          - name: files
+            mountPath: /
+          {{- end }}
         {{- end }}
       restartPolicy: Never
-      {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
+      {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
       volumes:
+        {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
         - name: fakeroot
           configMap:
             name: fakeroot
+        {{- end }}
+        {{- if hasKey $v "files" }}
+        - name: files
+          configMap:
+            name: job-{{ $v.name }}
+            items:
+            {{- range $name, $file := $v.files }}
+            - key: {{ $name }}
+              path: {{ $name }}
+            {{- end }}
+        {{- end }}
       {{- end }}
   backoffLimit: 3
   ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}

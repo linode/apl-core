@@ -5,12 +5,19 @@ kind: ConfigMap
 metadata:
   name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
-data: 
-  {{- with $v.env  }}
+data:
+  {{- if hasKey $v "env" }}
+  {{- with $v.env }}
     {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- if hasKey $v "init" }}
   {{- with $v.init.env  }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if hasKey $v "files" }}
+  {{- with $v.files  }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
