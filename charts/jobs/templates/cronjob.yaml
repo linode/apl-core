@@ -4,7 +4,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{ $spec.name }}
+  name: job-{{ $spec.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   schedule: "{{ $spec.schedule }}"
@@ -37,7 +37,7 @@ spec:
               envFrom:
               {{- if $spec.secret }}
               - secretRef:
-                  name: {{ $spec.name }}
+                  name: job-{{ $spec.name }}
               {{- end }}
               {{- if $spec.env }}
               - configMapRef:

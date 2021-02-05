@@ -5,11 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  {{- if eq $spec.runPolicy "OnSpecChange" }}
-  name: {{ $spec.name }}
-  {{- else if eq $spec.runPolicy "Always" }}
-  name: {{ join "-" (list $spec.name uuidv4) | trunc 63 }}
-  {{- end }}
+  name: job-{{ $spec.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   template:
@@ -68,11 +64,11 @@ spec:
         envFrom:
         {{- if $spec.secret }}
         - secretRef:
-            name: {{ $spec.name }}
+            name: job-{{ $spec.name }}
         {{- end }}
         {{- if or $spec.env }}
         - configMapRef:
-            name: {{ $spec.name }}
+            name: job-{{ $spec.name }}
         {{- end }}
         {{- end }}
         {{- if or (eq $spec.name "keycloak") (eq $spec.name "harbor") }}

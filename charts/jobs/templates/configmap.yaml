@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $spec.name }}
+  name: job-{{ $spec.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data: 
   {{- with $spec.env  }}

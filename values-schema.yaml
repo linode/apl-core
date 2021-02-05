@@ -771,6 +771,10 @@ properties:
         properties:
           adminUser:
             type: string
+          adminToken:
+            type: string
+            pattern: '^[0-9a-z-]{32}$'
+            description: 32 byte token. Generate one with openssl rand -hex 16.
           debug:
             default: false
             type: boolean
@@ -788,6 +792,10 @@ properties:
                 type: string
           orgsFilter:
             type: string
+          owner:
+            $ref: '#/definitions/idName'
+          repo:
+            $ref: '#/definitions/idName'
           repoFilter:
             type: string
           resources:
@@ -1469,8 +1477,6 @@ properties:
         patternProperties:
           '^[a-z-]+$':
             $ref: '#/definitions/team'
-  toolsVersion:
-    type: string
 required:
   - alerts
   - clouds
@@ -1480,4 +1486,3 @@ required:
   - teamConfig
   - k8s
   - services
-  - toolsVersion
