@@ -9,14 +9,16 @@ schemasBundleFile="$outputPath/all.json"
 k8sResourcesPath="/tmp/otomi/kubeval-fixtures"
 extractCrdSchemaJQFile=$(mktemp -u)
 exitcode=0
+has_err=false
 
 . bin/common.sh
 
 cleanup() {
-  [ $? -eq 0 ] && [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
+  [ $? -eq 0 ] && [ $exitcode -eq 0 ] && has_err=true
+  ! $has_err && echo "Validation Success" || err "Validation Failed"
   rm -rf $extractCrdSchemaJQFile
   rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
-  exit $exitcode
+  $has_err && exit 1
 }
 trap cleanup EXIT ERR
 
@@ -59,7 +61,7 @@ process_crd() {
       jq -c "$filterCRDExpr" |
       jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
   } || {
-    echo "ERROR Processing: $document"
+    err "Processing: $document"
     [ "$CI" != "" ] && exit 1
   }
 }
