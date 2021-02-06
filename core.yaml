@@ -167,6 +167,8 @@ teamConfig:
       svc: kubeapps
       isShared: true
       host: kubeapps
+      logo:
+        name: kubernetes
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
