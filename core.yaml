@@ -11,6 +11,7 @@ k8s:
       disableIstioInjection: true
     - name: knative-serving
     - name: kubeapps
+      disableIstioInjection: true
     - name: kube-system
       disableIstioInjection: true
     - name: maintenance

@@ -10,4 +10,4 @@ kubectl apply -f charts/gatekeeper-operator/crds
 kubectl apply -f charts/prometheus-operator/crds
 
 # helm charts after
-hf sync --skip-deps
+hf apply --skip-deps

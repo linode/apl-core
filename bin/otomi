@@ -241,7 +241,11 @@ function execute() {
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
-
+      ;;
+    apply)
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
       check_kube_context=0
