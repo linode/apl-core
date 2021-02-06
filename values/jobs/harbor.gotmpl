@@ -23,7 +23,7 @@ tasks:
     init:
       image:
         repository: otomi/tools
-        tag: v1.4.11
+        tag: 1.4.11
         pullPolicy: IfNotPresent
       # move secret for harbor to use
       script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -

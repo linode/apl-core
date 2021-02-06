@@ -51,8 +51,9 @@ tools:
   enabled: {{ $v.sops.enabled }}
   {{- if $v.sops.enabled }}
   image:
+    repository: otomi/core
+    tag: v0.11.58
     pullPolicy: IfNotPresent
-    tag: v1.4.11
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}

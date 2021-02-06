@@ -1,0 +1,8 @@
+{{- $v := .Environment.Values }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $realm := $k | get "realm" "master" }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $authDomain := printf "https://auth.%s" $v.cluster.domain }}
+authProxy:
+  enabled: false
+  external: true
