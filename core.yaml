@@ -163,7 +163,7 @@ teamConfig:
       isShared: true
       host: httpbin
     - name: kubeapps
-      namespace: shared
+      namespace: kubeapps
       svc: kubeapps
       isShared: true
       host: kubeapps
