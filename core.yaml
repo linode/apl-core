@@ -143,6 +143,7 @@ services:
     logo:
       name: kubernetes
     isPublic: true
+    isShared: true
 
 proxies:
   - name: drone
@@ -161,6 +162,11 @@ teamConfig:
       svc: httpbin
       isShared: true
       host: httpbin
+    - name: kubeapps
+      namespace: shared
+      svc: kubeapps
+      isShared: true
+      host: kubeapps
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
