@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
+{{- $seal := dict "provider" "kubernetes"}}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -101,8 +102,27 @@ resources:
           # This is true by default
           preFlightChecks: true
         # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
+        {{ if eq $seal.provider "kubernetes" }}
         kubernetes:
           secretNamespace: vault
+        {{ else if eq $seal.provider "azure" }}
+        azure:
+          keyVaultName: {{ $seal.keyVaultName }}
+        {{ else if eq $seal.provider "aws" }}
+        aws:
+          kmsKeyId: {{ $seal.kmsKeyId }}
+          kmsRegion: {{ $seal.kmsRegion }}
+          s3Bucket: {{ $seal.s3Bucket }}
+          s3Prefix: {{ $seal.s3Prefix }}
+          s3Region: {{ $seal.s3Region }}
+        {{ else if eq $seal.provider "google" }}
+        google:
+          kmsKeyRing: {{ $seal.kmsKeyRing }}
+          kmsCryptoKey: {{ $seal.kmsCryptoKey }}
+          kmsLocation: {{ $seal.kmsLocation }}
+          kmsProject: {{ $seal.kmsProject }}
+          storageBucket: {{ $seal.storageBucket }}
+        {{ end }}
 
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
@@ -246,6 +266,28 @@ resources:
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
 
+
+      # If you are not using a Service Account to authenticate against GCP you can pass in an
+      # GCP credentials refering to a Secret with the following configuration block. You have to
+      # create the "gcp-sa" secret manually, it has to have a key called "service-account.json"
+      # holding the configuration in the following format:
+      # https://cloud.google.com/docs/authentication/getting-started
+      credentialsConfig:
+        {{ if eq $seal.provide "aws" }}
+        env: AWS_SHARED_CREDENTIALS_FILE
+        path: /etc/aws/credentials
+        secretName: {{ $seal.secretName }}
+        {{ else if eq $seal.provide "azure" }}
+        env: AZURE_AUTH_LOCATION
+        path: /etc/azure/credentials
+        secretName: {{ $seal.secretName }}
+        {{ else if eq $seal.provider "google" }}
+        env: GOOGLE_APPLICATION_CREDENTIALS
+        path: /etc/gcp/service-account.json
+        secretName: {{ $seal.secretName }}
+        {{ else }}
+        {{- dict }}
+        {{ end }}
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
