@@ -14,3 +14,4 @@ name: ingress-azure
 schedule: "0 * * * *" # once an hour!
 script: |
   {{- readFile "scripts/delete-pod.sh" | nindent 6 }}
+runPolicy: Always
