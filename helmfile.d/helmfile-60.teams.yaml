@@ -198,9 +198,15 @@ releases:
       group: jobs
       tag: teams
       team: {{ $teamId }}
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: ../bin/job-presync.sh
+        args:
+          - job-{{ $teamId }}
+          - "{{ $job.runPolicy }}"    
     values:
       - {{- $job | toYaml | nindent 8 }}
-    {{ tpl (readFile "../helmfile.d/snippets/job-presync.gotmpl") (dict "name" "job-{{`{{`}} $teamId {{`}}`}}" "runPolicy" $job.runPolicy ) | nindent 4 }}
   {{- end }}
   {{- end }}
   {{- end }}
