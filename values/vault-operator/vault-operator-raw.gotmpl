@@ -26,34 +26,10 @@ resources:
         type/instance: "vaultconfigurer"
 
       # Vault Pods , Services and TLS Secret labels
-      vaultLabels:
-        example.com/log-format: "json"
+      vaultLabels: {}
 
       # Vault Configurer Pods and Services labels
-      vaultConfigurerLabels:
-        example.com/log-format: "string"
-
-      # Support for nodeAffinity Rules
-      # nodeAffinity:
-      #   requiredDuringSchedulingIgnoredDuringExecution:
-      #     nodeSelectorTerms:
-      #     - matchExpressions:
-      #       - key : "node-role.kubernetes.io/your_role"
-      #         operator: In
-      #         values: ["true"]
-
-      # Support for pod nodeSelector rules to control which nodes can be chosen to run
-      # the given pods
-      # nodeSelector:
-      #   "node-role.kubernetes.io/your_role": "true"
-
-      # Support for node tolerations that work together with node taints to control
-      # the pods that can like on a node
-      # tolerations:
-      # - effect: NoSchedule
-      #   key: node-role.kubernetes.io/your_role
-      #   operator: Equal
-      #   value: "true"
+      vaultConfigurerLabels: {}
 
       # Specify the ServiceAccount where the Vault Pod and the Bank-Vaults configurer/unsealer is running
       serviceAccount: vault
@@ -69,17 +45,6 @@ resources:
 
       # Specify threshold for renewing certificates. Valid time units are "ns", "us", "ms", "s", "m", "h".
       # tlsExpiryThreshold: 168h
-
-      # Request an Ingress controller with the default configuration
-      ingress:
-        # Specify Ingress object annotations here, if TLS is enabled (which is by default)
-        # the operator will add NGINX, Traefik and HAProxy Ingress compatible annotations
-        # to support TLS backends
-        annotations:
-        # Override the default Ingress specification here
-        # This follows the same format as the standard Kubernetes Ingress
-        # See: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#ingressspec-v1beta1-extensions
-        spec: {}
 
       # Use local disk to store Vault file data, see config section.
       volumes:
