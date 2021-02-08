@@ -24,7 +24,7 @@ if [ "$run_policy" = 'Always' ]; then
 else
   # OnSpecChange
   has_diff=false
-  ! hf -l name=$release diff --skip-deps && has_diff=true
+  hf -l name=$release diff --skip-deps && has_diff=true
   if $has_diff && $is_deployed; then
     hf -l name=$release destroy
   fi
