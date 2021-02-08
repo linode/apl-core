@@ -18,6 +18,7 @@ policyID = "psp-privileged"
 violation[msg] {
 	not exceptions.is_exception(policyID)
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	container_is_privileged(container)
 	msg := sprintf("Policy: %s - Privileged container is not allowed: %s/%s, securityContext: %v", [policyID, core.kind, core.name, container.securityContext])
 }

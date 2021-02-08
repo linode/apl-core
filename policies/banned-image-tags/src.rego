@@ -14,6 +14,7 @@ policyID = "banned-image-tags"
 violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	img_split := split(container.image, ":")
 	tag := img_split[minus(count(img_split), 1)]
 	banned := {s | s = parameters.policy_parameters(policyID).tags[_]}

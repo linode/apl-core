@@ -19,6 +19,7 @@ violation[{"msg": msg, "details": {}}] {
 	not exceptions.is_exception(policyID)
 	metadata := core.resource.metadata
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	has_apparmor_profile_loaded(metadata)
 	not input_apparmor_allowed(container, metadata)
 	msg := sprintf("Policy: %s - AppArmor profile is not allowed, pod: %v, container: %v. Allowed profiles: %v", [policyID, core.resource.metadata.name, container.name, parameters.policy_parameters(policyID).allowedProfiles])

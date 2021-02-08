@@ -136,6 +136,7 @@ violation[{"msg": msg}] {
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	cpu_orig := container.resources.limits.cpu
 	not canonify_cpu(cpu_orig)
 	msg := sprintf("Policy: %s - container <%v> cpu limit <%v> could not be parsed", [policyID, container.name, cpu_orig])
@@ -143,6 +144,7 @@ general_violation[{"msg": msg}] {
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	mem_orig := container.resources.limits.memory
 	not canonify_mem(mem_orig)
 	msg := sprintf("Policy: %s - container <%v> memory limit <%v> could not be parsed", [policyID, container.name, mem_orig])
@@ -150,30 +152,35 @@ general_violation[{"msg": msg}] {
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	not container.resources
 	msg := sprintf("Policy: %s - container <%v> has no resource limits", [policyID, container.name])
 }
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	not container.resources.limits
 	msg := sprintf("Policy: %s - container <%v> has no resource limits", [policyID, container.name])
 }
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	missing(container.resources.limits, "cpu")
 	msg := sprintf("Policy: %s - container <%v> has no cpu limit", [policyID, container.name])
 }
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	missing(container.resources.limits, "memory")
 	msg := sprintf("Policy: %s - container <%v> has no memory limit", [policyID, container.name])
 }
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	cpu_orig := container.resources.limits.cpu
 	cpu := canonify_cpu(cpu_orig)
 	max_cpu_orig := parameters.policy_parameters(policyID).cpu
@@ -184,6 +191,7 @@ general_violation[{"msg": msg}] {
 
 general_violation[{"msg": msg}] {
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	mem_orig := container.resources.limits.memory
 	mem := canonify_mem(mem_orig)
 	max_mem_orig := parameters.policy_parameters(policyID).memory

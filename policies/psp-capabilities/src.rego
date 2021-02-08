@@ -17,6 +17,7 @@ policyID = "psp-capabilities"
 violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	has_disallowed_capabilities(container)
 	msg := sprintf("Policy: %s - Container <%s> in %s/%s has a disallowed capabilities [%v].", [policyID, container.name, core.kind, core.name, container.securityContext.capabilities.add])
 }
@@ -39,22 +40,26 @@ get_default(obj, param, _default) = out {
 }
 
 #/* Disabled as it does not fit well with community based charts and platforms */#
-# violation[{"msg": msg}] {
-#   deny_drop_caps[msg]
-# }
-# deny_drop_caps[msg] {
-#   not exceptions.is_exception(policyID)
-#   pods.containers[container]
-#   missing_drop_capabilities(container)
-#   msg := sprintf("container <%v> is not dropping all required capabilities. Container must drop all of %v", [container.name, parameters.policy_parameters(policyID).requiredDropCapabilities])
-# }
-# # only check if dropped caps array exists
-# is_dropping_capabilities(container) = true {
-#   count(container.securityContext.capabilities.drop) > 0
-# }
-# missing_drop_capabilities(container) {
-#   is_dropping_capabilities(container)
-#   must_drop := {c | c := parameters.policy_parameters(policyID).requiredDropCapabilities[_]}
-#   dropped := {c | c := container.securityContext.capabilities.drop[_]}
-#   not count({x | dropped[x]; required = must_drop[_]; x == required}) > 0
-# }
+violation[{"msg": msg}] {
+	deny_drop_caps[msg]
+}
+
+deny_drop_caps[msg] {
+	not exceptions.is_exception(policyID)
+	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
+	missing_drop_capabilities(container)
+	msg := sprintf("container <%v> is not dropping all required capabilities. Container must drop all of %v", [container.name, parameters.policy_parameters(policyID).requiredDropCapabilities])
+}
+
+# only check if dropped caps array exists
+is_dropping_capabilities(container) {
+	count(container.securityContext.capabilities.drop) > 0
+}
+
+missing_drop_capabilities(container) {
+	is_dropping_capabilities(container)
+	must_drop := {c | c := parameters.policy_parameters(policyID).requiredDropCapabilities[_]}
+	dropped := {c | c := container.securityContext.capabilities.drop[_]}
+	not count({x | dropped[x]; required = must_drop[_]; x == required}) > 0
+}

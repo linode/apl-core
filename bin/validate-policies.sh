@@ -35,7 +35,7 @@ validate_policies() {
   run_setup
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates $k8s_resources_path
+  hf_templates $k8s_resources_path "$@"
 
   echo "Processing templates"
   # generate parameter constraints file from values
@@ -57,7 +57,8 @@ validate_policies() {
 
 if [ "${1-}" != "" ]; then
   echo "Checking policies for cluster '$(cluster_env)'"
-  validate_policies
+  shift
+  validate_policies "$@"
 else
   echo "Checking policies for all clusters"
   for_each_cluster validate_policies

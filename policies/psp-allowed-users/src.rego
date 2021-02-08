@@ -16,6 +16,7 @@ violation[{"msg": msg}] {
 	fields := ["runAsUser", "runAsGroup", "supplementalGroups", "fsGroup"]
 	field := fields[_]
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	msg := get_type_violation(field, container)
 }
 

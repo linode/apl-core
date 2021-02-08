@@ -1483,6 +1483,10 @@ properties:
             type: array
             items:
               type: string
+          requiredDropCapabilities:
+            type: array
+            items:
+              type: string
       psp-forbidden-sysctls:
         additionalProperties: false
         required: [enabled]

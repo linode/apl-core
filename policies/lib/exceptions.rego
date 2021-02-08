@@ -31,6 +31,13 @@ is_exception(policyID) {
 	ignore_list[_] == policyID
 }
 
+is_container_exception(cname, policyID) {
+	all_annotations := annotations.merge_annotations()
+	policy_list := object.get(all_annotations, annotations.get_container_ignore_field(cname), "")
+	ignore_list := split(policy_list, ",")
+	ignore_list[_] == policyID
+}
+
 is_exception(policyID) {
 	not parameters.policy_parameters(policyID).enabled
 }

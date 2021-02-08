@@ -16,6 +16,7 @@ violation[{"msg": msg, "details": {}}] {
 	metadata := core.resource.metadata
 	not input_wildcard_allowed(metadata)
 	pods.containers[container]
+	not exceptions.is_container_exception(container.name, policyID)
 	not input_container_allowed(metadata, container)
 	msg := sprintf("Seccomp profile is not allowed, pod: %v, container: %v, Allowed profiles: %v", [metadata.name, container.name, parameters.policy_parameters(policyID).allowedProfiles])
 }

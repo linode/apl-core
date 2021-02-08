@@ -16,6 +16,18 @@ default sidecarAnnotationField = "policy.otomi.io/ignore-sidecar"
 
 default paramsAnnotationField = "policy.otomi.io/parameters"
 
+default containerIgnoreAnnotationField = "policy.otomi.io/ignore/%s"
+
+default containerParamAnnotationField = "policy.otomi.io/parameters/%s.%s"
+
+get_container_params_field(cname, policyID) = return {
+	return := sprintf(containerParamAnnotationField, [cname, policyID])
+}
+
+get_container_ignore_field(cname) = return {
+	return := sprintf(containerIgnoreAnnotationField, [cname])
+}
+
 get_default(object, field, _default) = output {
 	core.has_field(object, field)
 	object[field] != null

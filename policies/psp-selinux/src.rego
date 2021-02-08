@@ -21,6 +21,7 @@ violation[{"msg": msg, "details": {}}] {
 # Disallow container level custom SELinux options
 violation[{"msg": msg, "details": {}}] {
 	c := input_security_context[_]
+	not exceptions.is_container_exception(c.name, policyID)
 	accept_context(parameters.policy_parameters(policyID).seLinuxContext, c.securityContext)
 	msg := sprintf("SELinux options is not allowed, pod: %v, container %v. Allowed options: %v", [core.resource.metadata.name, c.name, parameters.policy_parameters(policyID).allowedSELinuxOptions])
 }
