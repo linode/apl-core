@@ -19,7 +19,7 @@ spec:
       initContainers:
       - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
         imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent"}}"
-        name: "{{ $v.name }}-init"
+        name: "job-{{ $v.name }}-init"
         command: ["{{ $v.init.shell | default "sh" }}", "-c"]
         args:
           - |
@@ -27,7 +27,7 @@ spec:
         {{- if $v.init.env }}
         envFrom:
         - configMapRef:
-            name: {{ $v.name }}
+            name: job-{{ $v.name }}
         {{- end }}
         {{- if $v.init.secretKeyRefs }}
         env:
