@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- if and (default true $v.enabled) (eq $v.type "cronjob") }}
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -34,14 +35,17 @@ spec:
             - configMapRef:
                 name: job-{{ $v.name }}
             {{- end }}
-            {{- if $v.init.secretKeyRefs }}
+            {{- if $v.secrets }}
             env:
-              {{- range $ref := $v.init.secretKeyRefs }}
-              - name: {{ $ref.name }}
+              {{- range $secret := ($v.secrets | default list) }} 
+                {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
+                {{- range $entry := $entries }}
+              - name: {{ $entry | upper }}
                 valueFrom:
                   secretKeyRef:
-                    name: {{ $ref.secretKeyRefName }}
-                    key: {{ $ref.key }}
+                    name: {{ $secret.name }}
+                    key: {{ $entry }}
+                {{- end }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -50,15 +54,21 @@ spec:
             imagePullPolicy: "{{ $v.image.pullPolicy }}"
             name: {{ $v.name }}
             command: ["{{ $v.shell | default "sh" }}", "-c"]
-            resources: {{- if $v.resources}}{{ toYaml $v.resources | nindent 14 }}{{ else }}{{ toYaml $v.resources | nindent 14 }}{{ end }}
-            {{- if $v.secretKeyRefs }}
+            resources: {{- toYaml $v.resources | nindent 14 }}
+            args:
+              - |
+                {{- toString $v.script | nindent 16 }}
+            {{- if $v.secrets }}
             env:
-              {{- range $ref := $v.secretKeyRefs }}
-              - name: {{ $ref.name }}
+              {{- range $secret := ($v.secrets | default list) }} 
+                {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
+                {{- range $entry := $entries }}
+              - name: {{ $entry | upper }}
                 valueFrom:
                   secretKeyRef:
-                    name: {{ $ref.secretKeyRefName }}
-                    key: {{ $ref.key }}
+                    name: {{ $secret.name }}
+                    key: {{ $entry }}
+                {{- end }}
               {{- end }}
             {{- end }}
             {{- if or $v.secret $v.env }}

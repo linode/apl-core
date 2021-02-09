@@ -249,8 +249,8 @@ definitions:
               $ref: '#/definitions/image'
             script:
               $ref: '#/definitions/script'
-            secretKeyRefs:
-              $ref: '#/definitions/secretKeyRefs'
+            secrets:
+              $ref: '#/definitions/secrets'
         name:
           default: foo
           description: Must be a unique name.
@@ -271,8 +271,8 @@ definitions:
           default: 0 1 * * *
           description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
           type: string
-        secretKeyRefs:
-          $ref: '#/definitions/secretKeyRefs'
+        secrets:
+          $ref: '#/definitions/secrets'
         script:
           $ref: '#/definitions/script'
         ttlSecondsAfterFinished:
@@ -432,19 +432,26 @@ definitions:
     required:
       - name
       - type
-  secretKeyRefs:
+  secrets:
     items:
+      additionalProperties: true
       properties:
-        key:
-          type: string
+        entries:
+          items:
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+          title: Entries
+          type: array
+          uniqueItems: true
         name:
-          type: string
-        secretKeyRefName:
           type: string
       required:
         - name
-        - secretKeyRefName
-        - key
+    nullable: true
+    title: Secrets
     type: array
   team:
     additionalProperties: false
@@ -472,9 +479,7 @@ definitions:
         description: Will be used to separate team resources.
         type: string
       secrets:
-        items:
-          $ref: '#/definitions/secret'
-        type: array
+        $ref: '#/definitions/secrets'
       services:
         items:
           additionalProperties: false
@@ -571,22 +576,7 @@ definitions:
                   title: Scale to zero
                   type: boolean
                 secrets:
-                  items:
-                    additionalProperties: false
-                    properties:
-                      entries:
-                        items:
-                          type: string
-                        title: Entries
-                        type: array
-                        uniqueItems: true
-                      name:
-                        type: string
-                    required:
-                      - name
-                  nullable: true
-                  title: Secrets
-                  type: array
+                  $ref: '#/definitions/secrets'
             name:
               $ref: '#/definitions/idName'
               description: 'Short name. Will be used for generation of knative service name, as well as service URL.'

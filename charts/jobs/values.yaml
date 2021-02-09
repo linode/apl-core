@@ -1,3 +1,29 @@
+backoffLimit: 3
+env: {}
+  # receiver: world
+
+files: {}
+  # someFile: someData
+  # someFile2: someData2
+  # somefile3: |-
+  #     some data on another line
+  #     another line
+
+image: {}
+  # repository: busybox
+  # tag: latest
+  # pullPolicy: IfNotPresent
+
+init: {}
+  # env: {}
+  # image:
+  #     repository: busybox
+  #     tag: latest
+  #     pullPolicy: IfNotPresent
+  # script: echo "bla"
+  # secretKeyRefs: 
+  # - 
+
 resources:
   limits:
     cpu: 200m
@@ -6,15 +32,15 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-jobs: {}
-  # someTask:
-  #   enabled: true
-  #   shell: bash # default sh
-  #   env:
-  #     BLA: somebla
-  #   secret:
-  #     DIDA: somedida
-  #   type: job # cronjob
-  #   ttlSecondsAfterFinished: 86400
-  #   schedule: '1 * * * *'
-  #   script: echo "bla"
+runPolicy: Always # OnSpecChange
+# schedule: '1 * * * *'
+
+script: echo "bla"
+secrets: []
+  # - name: secret-name
+  #   entries:
+  #       - foo
+  #       - bar
+  
+type: job # cronjob
+ttlSecondsAfterFinished: 86400
