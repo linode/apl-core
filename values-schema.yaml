@@ -274,6 +274,58 @@ definitions:
         type: number
       minReplicas:
         type: number
+  externalSecret:
+    type: object
+    oneOf:
+      - properties:
+          type:
+            default: docker-registry
+            enum:
+              - docker-registry
+            type: string
+          path:
+            $ref: '#/definitions/vaultPath'
+        required:
+          - type
+          - path
+      - properties:
+          type:
+            default: tls
+            enum:
+              - tls
+            type: string
+          caCrt:
+            $ref: '#/definitions/vaultPath'
+          tlsCrt:
+            $ref: '#/definitions/vaultPath'
+          tlsKey:
+            $ref: '#/definitions/vaultPath'
+        required:
+          - type
+          - caCrt
+          - tlsCrt
+          - tlsKey
+      - properties:
+          type:
+            default: generic
+            enum:
+              - generic
+            type: string
+        oneOf:
+          - data:
+              type: array
+              items:
+                properties:
+                  path:
+                    $ref: '#/definitions/vaultPath'
+                  name:
+                    type: string
+                  property:
+                    $ref: '#/definitions/vaultProperty'
+          - dataFrom:
+              $ref: '#/definitions/vaultPath'
+        required:
+          - type
   secret:
     oneOf:
       - properties:
@@ -372,6 +424,10 @@ definitions:
       secrets:
         items:
           $ref: '#/definitions/secret'
+        type: array
+      externalSecrets:
+        items:
+          $ref: '#/definitions/externalSecret'
         type: array
       services:
         items:
@@ -544,6 +600,14 @@ definitions:
       - id
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
+    type: string
+  vaultPath:
+    description: A path to a secret at Vault KV engine
+    pattern: '^\/([A-z0-9-_+]+\/)*([A-z0-9-_]+)$'
+    type: string
+  vaultProperty:
+    description: A property name at vaultPath
+    pattern: '^[a-zA-Z0-9_]*$'
     type: string
 properties:
   alerts:
