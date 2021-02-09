@@ -21,8 +21,11 @@ init: {}
   #     tag: latest
   #     pullPolicy: IfNotPresent
   # script: echo "bla"
-  # secretKeyRefs: 
-  # - 
+  # secrets:
+  # - name: secret-name
+  #   entries:
+  #       - foo
+  #       - bar
 
 resources:
   limits:
@@ -41,6 +44,6 @@ secrets: []
   #   entries:
   #       - foo
   #       - bar
-  
+
 type: job # cronjob
 ttlSecondsAfterFinished: 86400
