@@ -2,43 +2,111 @@ teamConfig:
     teams:
         demo:
             jobs:
-                - image:
+                - env:
+                      receiver: world
+                  files:
+                      someFile: someData
+                      someFile2: someData2
+                      somefile3: |-
+                          some data on another line
+                          another line
+                  image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: regular-job
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello $receiver"
+                      secretKeyRefs:
+                          - name: secret-name
+                            secretKeyRefName: foo
+                            key: bar
+                          - name: secret-name3
+                            secretKeyRefName: foo3
+                            key: barblaasa
+                  name: contains-everything
                   runPolicy: Always
-                  script: echo "Hello World"
+                  script: echo "hello $receiver"
+                  secretKeyRefs:
+                      - name: secret-name2
+                        secretKeyRefName: foo2
+                        key: bar2
+                      - name: secret-name4
+                        secretKeyRefName: foo4
+                        key: bar4
                   type: job
                 - env:
-                      this-is: an env
+                      receiver: world
+                  files:
+                      someFile: someData
+                      someFile2: someData2
+                      somefile3: |-
+                          some data on another line
+                          another line
                   image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: job-with-env-and-secret
-                  runPolicy: OnSpecChange
-                  secret:
-                      this-is: a secret
-                  script: echo "Hello World again"
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello $receiver"
+                      secretKeyRefs:
+                          - name: secret-name
+                            secretKeyRefName: foo
+                            key: bar
+                          - name: secret-name3
+                            secretKeyRefName: foo3
+                            key: barblaasa
+                  name: also-contains-everything-but-cronjob
+                  runPolicy: Always
+                  schedule: 0 1 * * *
+                  script: echo "hello $receiver"
+                  secretKeyRefs:
+                      - name: secret-name2
+                        secretKeyRefName: foo2
+                        key: bar2
+                      - name: secret-name4
+                        secretKeyRefName: foo4
+                        key: bar4
+                  type: cronjob
+                - image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: base
+                  script: echo "hello $receiver"
                   type: job
                 - image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: regular-cronjob
-                  schedule: '0 1 * * *'
-                  script: echo "Hello World every day"
+                  name: base-cronjob
+                  schedule: 0 1 * * *
+                  script: echo "hello world"
                   type: cronjob
-                - env:
-                      cronjob-with: env
-                  image:
+                - image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
-                  name: cronjob-with-env-and-secret
-                  secret:
-                      cronjob-with: secret
-                  schedule: '0 1 * * *'
-                  script: echo "Hello World every day"
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello world"
+                  name: init-cronjob
+                  schedule: 0 1 * * *
+                  script: echo "hello $receiver"
                   type: cronjob
