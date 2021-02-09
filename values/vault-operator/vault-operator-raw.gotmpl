@@ -2,8 +2,10 @@
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
-{{- $seal := $vault | get "$seal" (dict "provider" "kubernetes") }}
-{{- $storage := $vault | get "$storage" (dict "provider" "kubernetes") }}
+{{- $seal := $vault | get "seal" (dict "provider" "kubernetes") }}
+{{- $storage := $vault | get "storage" (dict "provider" "kubernetes") }}
+{{- $secretRef := $vault | get "secretRef" dict }}
+
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -101,7 +103,6 @@ resources:
         {{ else if eq $storage.provider "google" }}
           gcs:
             bucket: {{ $storage.bucket }}
-            ha_enabled: {{ $storage.isHa }}
         {{ end }}
         listener:
           tcp:
@@ -239,18 +240,18 @@ resources:
       istioEnabled: true
 
       credentialsConfig:
-        {{ if or (eq $seal.provider "aws") (eq $storage.provider "aws") }}
+        {{ if hasKey $secretRef "aws" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
-        secretName: {{ $seal.secretName }}
-        {{ else if or (eq $seal.provider "azure") (eq $storage.provider "azure") }}
+        secretName: {{ $secretRef.aws }}
+        {{ else if hasKey $secretRef "azure" }}
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
-        secretName: {{ $seal.secretName }}
-        {{ else if or (eq $seal.provider "google") (eq $storage.provider "google") }}
+        secretName: {{ $secretRef.azure }}
+        {{ else if hasKey $secretRef "google" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
-        secretName: {{ $seal.secretName }}
+        secretName: {{ $secretRef.google }}
         {{ else }}
         {{- dict | toYaml }}
         {{ end }}

@@ -1147,9 +1147,101 @@ properties:
             type: string
           schedule:
             type: string
+      vault:
+        type: object
+        additionalProperties: false
+        properties:
+          seal:
+            type: object
+            oneOf:
+              - properties:
+                  provider:
+                    default: kubernetes
+                    enum:
+                      - kubernetes
+                    type: string
+                required:
+                  - provider
+
+              - properties:
+                  provider:
+                    default: aws
+                    enum:
+                      - aws
+                    type: string
+                  kmsKeyId:
+                    type: string
+                  kmsRegion:
+                    type: string
+                  s3Bucket:
+                    type: string
+                  s3Prefix:
+                    type: string
+                  s3Region:
+                    type: string
+              - properties:
+                  provider:
+                    default: google
+                    enum:
+                      - google
+                    type: string
+                  kmsKeyRing:
+                    type: string
+                  kmsCryptoKey:
+                    type: string
+                  kmsLocation:
+                    type: string
+                  kmsProject:
+                    type: string
+                  storageBucket:
+                    type: string
+                required:
+                  - provider
+                  - kmsKeyRing
+                  - kmsCryptoKey
+                  - kmsLocation
+                  - kmsProject
+                  - storageBucket
+          storage:
+            type: object
+            oneOf:
+              - properties:
+                  provider:
+                    default: kubernetes
+                    enum:
+                      - kubernetes
+                    type: string
+                required:
+                  - provider
+              - properties:
+                  provider:
+                    default: google
+                    enum:
+                      - google
+                    type: string
+                  bucket:
+                    type: string
+                required:
+                  - provider
+                  - bucket
+          secretRef:
+            type: object
+            additionalProperties: false
+            properties:
+              google:
+                type: string
+              aws:
+                type: string
+              azure:
+                type: string
+        required:
+          - storage
+          - seal
+
       weave-scope:
         default: false
         enabled: boolean
+
   clouds:
     additionalProperties: false
     properties:
