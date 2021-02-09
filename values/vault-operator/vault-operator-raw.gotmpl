@@ -1,7 +1,9 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
-{{- $seal := dict "provider" "kubernetes"}}
+{{- $vault := $v | get "charts.vault" dict }}
+{{- $seal := $vault | get "$seal" (dict "provider" "kubernetes") }}
+{{- $storage := $vault | get "$storage" (dict "provider" "kubernetes") }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -92,9 +94,15 @@ resources:
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
+        {{ if eq $storage.provider "kubernetes" }}
         storage:
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
+        {{ else if eq $storage.provider "google" }}
+          gcs:
+            bucket: {{ $storage.bucket }}
+            ha_enabled: {{ $storage.isHa }}
+        {{ end }}
         listener:
           tcp:
             address: "0.0.0.0:8200"
@@ -231,20 +239,20 @@ resources:
       istioEnabled: true
 
       credentialsConfig:
-        {{ if eq $seal.provider "aws" }}
+        {{ if or (eq $seal.provider "aws") (eq $storage.provider "aws") }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
         secretName: {{ $seal.secretName }}
-        {{ else if eq $seal.provider "azure" }}
+        {{ else if or (eq $seal.provider "azure") (eq $storage.provider "azure") }}
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
         secretName: {{ $seal.secretName }}
-        {{ else if eq $seal.provider "google" }}
+        {{ else if or (eq $seal.provider "google") (eq $storage.provider "google") }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
         secretName: {{ $seal.secretName }}
         {{ else }}
-        {{- dict }}
+        {{- dict | toYaml }}
         {{ end }}
   - apiVersion: v1
     kind: PersistentVolumeClaim
