@@ -97,6 +97,10 @@ resources:
         storage:
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
+        {{ else if eq $storage.provider "aws" }}
+          s3:
+            region: {{ $storage.region }}
+            bucket: {{ $storage.bucket }}
         {{ else if eq $storage.provider "google" }}
           gcs:
             bucket: {{ $storage.bucket }}
