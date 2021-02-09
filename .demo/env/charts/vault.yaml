@@ -1,0 +1,6 @@
+charts:
+  vault:
+    storage:
+      provider: kubernetes
+    seal:
+      provider: kubernetes
