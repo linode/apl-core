@@ -203,7 +203,7 @@ releases:
         showlogs: true
         command: ../bin/job-presync.sh
         args:
-          - job-{{ $teamId }}
+          - job-{{ $teamId }}-{{ $job.name }}
           {{- if hasKey $job "runPolicy" }}
           - "{{ $job.runPolicy }}"    
           {{- end }}
