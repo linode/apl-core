@@ -89,11 +89,11 @@ keycloak:
     runAsUser: 1000
     fsGroup: 1000
   podAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 4 }}
 
 postgresql:
   commonAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 4}}
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 4}}
   securityContext:
     enabled: true
     fsGroup: 1001

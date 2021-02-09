@@ -31,7 +31,7 @@ serviceMonitor:
 podAnnotations:
   sidecar.istio.io/inject: "false"
   # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
-  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem") | nindent 2 }}
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem")) | nindent 2 }}
 
 pipelineStages:
   - docker: {}

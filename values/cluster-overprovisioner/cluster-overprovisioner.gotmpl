@@ -10,4 +10,4 @@ deployments:
         cpu: {{ $o | get "cpu" "1000m" }}
         memory: {{ $o | get "memory" "1000Mi" }}
       {{- end }}
-    annotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 6}}
+    annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 6}}

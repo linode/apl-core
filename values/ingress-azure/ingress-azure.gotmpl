@@ -31,4 +31,4 @@ rbac:
   enabled: true
 verbosityLevel: 5
 
-podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem") | nindent 2 }}
+podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-host-filesystem")) | nindent 2 }}

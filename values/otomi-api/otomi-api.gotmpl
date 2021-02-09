@@ -61,7 +61,7 @@ tools:
   {{- end }}
 
 podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 2 }}
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
 
 podSecurityContext:
   runAsUser: 1000

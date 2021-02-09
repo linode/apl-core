@@ -28,7 +28,7 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
   secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
   secretName: {{ $harborSecretName }}
@@ -56,7 +56,7 @@ jobservice:
       memory: 512Mi
       cpu: 100m
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
@@ -136,7 +136,7 @@ proxy:
 
 registry:
   secret: q1g9gwm35g8k458b
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
   registry:
     image:
@@ -179,7 +179,7 @@ registry:
 
 database:
   type: internal
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   internal:
     image:
       repository: goharbor/harbor-db
@@ -198,7 +198,7 @@ database:
       {{- end }}
 
 clair:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   clair:
     resources:
       {{- with $h | get "resources.clair" nil }}
@@ -236,7 +236,7 @@ chartmuseum:
       cpu: 400m
       memory: 256Mi
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
 portal:
   resources:
@@ -250,10 +250,10 @@ portal:
       cpu: 400m
       memory: 128Mi
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
 redis:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users") | nindent 4 }}
+  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   internal:
     resources:
       requests:

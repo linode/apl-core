@@ -64,6 +64,6 @@ tasks:
           "https://harbor.{{ $v.cluster.domain }}/*"
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
-    annotations: {{- tpl $addIgnorePolicyAnnotation (list "banned-image-tags") | nindent 6 }}
+    annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 6 }}
     podSecurityContext:
       runAsUser: 1000

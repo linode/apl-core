@@ -6,6 +6,18 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
+  - name: gatekeeper-artifacts
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
+    namespace: gatekeeper-system
+    disableValidationOnInstall: true
+    labels:
+      pkg: gatekeeper
+    hooks:
+      - events: ["prepare"]
+        showlogs: true
+        command: "../bin/build-constraints.sh"
+        args: [true]
+    <<: *default
   - name: istio-operator
     installed: true
     namespace: default

@@ -26,7 +26,7 @@ weave-scope:
 # container requires "privileged: true", thus we cannot add a securityContext and remove "psp-allowed-users" policy annotation exception
 weave-scope-agent:
   podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (list "psp-allowed-users" "psp-host-filesystem" "psp-privileged" "psp-host-security" "psp-host-networking-ports") | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-host-filesystem" "psp-privileged" "psp-host-security" "psp-host-networking-ports")) | nindent 4 }}
   resources:
     requests:
       cpu: 200m
