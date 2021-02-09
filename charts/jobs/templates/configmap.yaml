@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- if default true $v.enabled }}
+{{- if or (hasKey $v "env") (hasKey $v "init") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,4 +23,5 @@ data:
   {{- end }}
   {{- end }}
 ---
+{{- end }}
 {{- end }}

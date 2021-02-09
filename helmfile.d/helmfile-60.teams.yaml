@@ -190,7 +190,7 @@ releases:
   {{- end }}
   {{- if hasKey $team "jobs" }}
   {{- range $job := $team.jobs }}
-  - name: job-{{ $teamId }}
+  - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ has $v.cluster.id $team.clusters }}
     namespace: team-{{ $teamId }}
     chart: ../charts/jobs
@@ -204,7 +204,9 @@ releases:
         command: ../bin/job-presync.sh
         args:
           - job-{{ $teamId }}
+          {{- if hasKey $job "runPolicy" }}
           - "{{ $job.runPolicy }}"    
+          {{- end }}
     values:
       - {{- $job | toYaml | nindent 8 }}
   {{- end }}

@@ -5,6 +5,9 @@ kind: CronJob
 metadata:
   name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
+  annotations:
+    checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
 spec:
   schedule: "{{ $v.schedule }}"
   successfulJobsHistoryLimit: 1
@@ -17,32 +20,90 @@ spec:
       template:
         spec:
           serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+          {{- if $v.init }}
+          initContainers:
+          - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
+            imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent" }}"
+            name: "job-{{ $v.name }}-init"
+            command: ["{{ $v.init.shell | default "sh" }}", "-c"]
+            args: 
+              - | 
+                {{- toString $v.init.script | nindent 16 }}
+            {{- if $v.init.env }}
+            envFrom:
+            - configMapRef:
+                name: job-{{ $v.name }}
+            {{- end }}
+            {{- if $v.init.secretKeyRefs }}
+            env:
+              {{- range $ref := $v.init.secretKeyRefs }}
+              - name: {{ $ref.name }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $ref.secretKeyRefName }}
+                    key: {{ $ref.key }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
           containers:
-            - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
-              imagePullPolicy: "{{ $v.image.pullPolicy }}"
-              name: {{ $v.name }}
-              command: ["bash", "-c"]
-              args:
-                - |
-                  {{- toString $v.script | nindent 18 }}
-              resources:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              {{- if or $v.secret $v.env }}
-              envFrom:
-              {{- if $v.secret }}
-              - secretRef:
-                  name: job-{{ $v.name }}
+          - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+            imagePullPolicy: "{{ $v.image.pullPolicy }}"
+            name: {{ $v.name }}
+            command: ["{{ $v.shell | default "sh" }}", "-c"]
+            resources: {{- if $v.resources}}{{ toYaml $v.resources | nindent 14 }}{{ else }}{{ toYaml $v.resources | nindent 14 }}{{ end }}
+            {{- if $v.secretKeyRefs }}
+            env:
+              {{- range $ref := $v.secretKeyRefs }}
+              - name: {{ $ref.name }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $ref.secretKeyRefName }}
+                    key: {{ $ref.key }}
               {{- end }}
-              {{- if $v.env }}
-              - configMapRef:
-                  name: {{ $v.name }}
+            {{- end }}
+            {{- if or $v.secret $v.env }}
+            envFrom:
+            {{- if $v.secret }}
+            - secretRef:
+                name: job-{{ $v.name }}
+            {{- end }}
+            {{- if or $v.env }}
+            - configMapRef:
+                name: job-{{ $v.name }}
+            {{- end }}
+            {{- end }}
+            {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+            volumeMounts:
+              {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
+              - name: fakeroot
+                mountPath: /fakeroot.pem
+                subPath: fakeroot.pem
               {{- end }}
+              {{- if hasKey $v "files" }}
+              - name: files
+                mountPath: /
               {{- end }}
+            {{- end }}
           restartPolicy: Never
+          {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+          volumes:
+            {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
+            - name: fakeroot
+              configMap:
+                name: fakeroot
+            {{- end }}
+            {{- if hasKey $v "files" }}
+            - name: files
+              configMap:
+                name: job-{{ $v.name }}
+                items:
+                {{- range $name, $file := $v.files }}
+                - key: {{ $name }}
+                  path: {{ $name }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
+  backoffLimit: 3
+  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
 {{- end }}

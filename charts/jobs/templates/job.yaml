@@ -4,10 +4,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  {{- if eq $v.runPolicy "OnSpecChange" }}
-  name: job-{{ $v.name }}
-  {{- else if eq $v.runPolicy "Always" }}
+  {{- if hasKey $v "runPolicy" }}
+  {{- if eq $v.runPolicy "Always" }}
   name: job-{{ join "-" (list $v.name uuidv4) | trunc 63 }}
+  {{- else }}
+  name: job-{{ $v.name }}
+  {{- end }}
   {{- end }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
