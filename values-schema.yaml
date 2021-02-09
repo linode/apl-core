@@ -1215,6 +1215,15 @@ properties:
                   - provider
               - properties:
                   provider:
+                    default: aws
+                    enum:
+                      - aws
+                  region:
+                    type: string
+                  bucket:
+                    type: string
+              - properties:
+                  provider:
                     default: google
                     enum:
                       - google
