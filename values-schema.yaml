@@ -1232,8 +1232,6 @@ properties:
                 type: string
               aws:
                 type: string
-              azure:
-                type: string
         required:
           - storage
           - seal

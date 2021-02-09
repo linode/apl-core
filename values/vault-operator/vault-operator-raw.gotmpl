@@ -74,9 +74,6 @@ resources:
         {{ if eq $seal.provider "kubernetes" }}
         kubernetes:
           secretNamespace: vault
-        {{ else if eq $seal.provider "azure" }}
-        azure:
-          keyVaultName: {{ $seal.keyVaultName }}
         {{ else if eq $seal.provider "aws" }}
         aws:
           kmsKeyId: {{ $seal.kmsKeyId }}
@@ -244,10 +241,6 @@ resources:
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
         secretName: {{ $secretRef.aws }}
-        {{ else if hasKey $secretRef "azure" }}
-        env: AZURE_AUTH_LOCATION
-        path: /etc/azure/credentials
-        secretName: {{ $secretRef.azure }}
         {{ else if hasKey $secretRef "google" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
