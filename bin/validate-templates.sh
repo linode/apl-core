@@ -12,10 +12,8 @@ exitcode=0
 
 . bin/common.sh
 
-readonly k8s_version="v$(get_k8s_version)"
-
 cleanup() {
-  [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
+  [ $? -eq 0 ] && [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile
   rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
   exit $exitcode
@@ -23,6 +21,7 @@ cleanup() {
 trap cleanup EXIT ERR
 
 run_setup() {
+  local k8s_version=$1
   rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
   mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
   echo "" >$schemasBundleFile
@@ -67,7 +66,9 @@ process_crd() {
 
 validate_templates() {
 
-  run_setup
+  local k8s_version="v$(get_k8s_version)"
+
+  run_setup $k8s_version
   # generate_manifests
   echo "Generating Kubernetes $k8s_version Manifests for ${CLOUD}-${CLUSTER}."
 

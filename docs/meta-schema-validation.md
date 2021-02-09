@@ -11,7 +11,6 @@ By having accurate and consistent descriptions (refer to `description` keys in `
 Excellent:
 
 ```
-
 oauth2-proxy:
    type: object
    additionalProperties: false
@@ -29,7 +28,6 @@ oauth2-proxy:
 Seeing a small improvement:
 
 ```
-
 armAuth:
    type: object
    additionalProperties: false
@@ -38,13 +36,11 @@ armAuth:
    secretJSON:
       description: A service Principal secret JSON key (base64 encoded)
       type: string
-
 ```
 
 This could be modified to:
 
 ```
-
 armAuth:
    type: object
    additionalProperties: false
@@ -53,7 +49,6 @@ armAuth:
    secretJSON:
       description: Must be a service Principal secret JSON key (base64 encoded)
       type: string
-
 ```
 
 etc.

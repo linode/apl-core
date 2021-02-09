@@ -1,11 +1,4 @@
 charts:
     prometheus-operator:
-        _rawValues: {}
-        alertmanager:
-            groupInterval: 5m
-            receiver: slack
-            repeatInterval: 3h
-            slack:
-                channel: dev-mon
         prometheus:
             storageSize: 10Gi

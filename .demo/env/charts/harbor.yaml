@@ -6,5 +6,5 @@ charts:
             imageChartStorage:
                 type: gcs
                 gcs:
-                    bucket: otomi-demo-harbor
-                    rootdirectory: /demo
+                    bucket: otomi-harbor
+                    rootdirectory: /google/demo

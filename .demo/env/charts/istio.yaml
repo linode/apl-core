@@ -27,7 +27,7 @@ charts:
             enabled: false
         global:
             logging:
-                level: default:debug
+                level: default:warn
             mtls:
                 enabled: false
             sds:

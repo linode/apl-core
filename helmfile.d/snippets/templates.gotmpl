@@ -12,14 +12,21 @@ templates:
   jobs: &jobs
     namespace: maintenance
     chart: ../charts/jobs
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: ../bin/job-presync.sh
+        args:
+          - "{{ .Release.Name }}"
+          - OnSpecChange
     labels:
       tag: jobs
     values:
-      - ../values/jobs/{{ .Release.Name | replace "jobs-" "" }}.gotmpl
+      - ../values/jobs/{{ .Release.Name | replace "job-" "" }}.gotmpl
   skeleton: &skeleton
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
-      - events: ["prepare"]
+      - events: [prepare]
         showlogs: false
-        command: "../bin/skeleton-chart.sh"
+        command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}"]

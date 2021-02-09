@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.58](https://github.com/redkubes/otomi-core/compare/v0.11.57...v0.11.58) (2021-02-01)
+
+
+### Bug Fixes
+
+* crypt ([#304](https://github.com/redkubes/otomi-core/issues/304)) ([6699ddb](https://github.com/redkubes/otomi-core/commit/6699ddb811cd740505ebec40f2508eed8aa1c311))
+
+### [0.11.57](https://github.com/redkubes/otomi-core/compare/v0.11.56...v0.11.57) (2021-02-01)
+
+
+### Features
+
+* drone job ([#298](https://github.com/redkubes/otomi-core/issues/298)) ([ab7402b](https://github.com/redkubes/otomi-core/commit/ab7402baeecb1c3fd0987c4c474f3afee2ad8594))
+
+### [0.11.56](https://github.com/redkubes/otomi-core/compare/v0.11.55...v0.11.56) (2021-02-01)
+
+
+### Features
+
+* add configurable username claim mapper ([#278](https://github.com/redkubes/otomi-core/issues/278)) ([1d1eae8](https://github.com/redkubes/otomi-core/commit/1d1eae808977b8b7c0731cacf92d5f06648f61dd))
+* upgrade helmfile ([#266](https://github.com/redkubes/otomi-core/issues/266)) ([c5667b3](https://github.com/redkubes/otomi-core/commit/c5667b3579c49d291e7b28a8313401da8f799fd4))
+
+
+### Bug Fixes
+
+* allow bootstrap without target cluster to install from master [ci skip] ([788ad5f](https://github.com/redkubes/otomi-core/commit/788ad5f72f0a35719c2ace03af85d57790b38564))
+* ci flag ([4d8f026](https://github.com/redkubes/otomi-core/commit/4d8f026d83c7343ba93ea17332067fc2326d3f4c))
+* ci logic drone ([0d619b4](https://github.com/redkubes/otomi-core/commit/0d619b491c945c3512baefef20aa5b640e412d34))
+* docker check for pipeline, job name, added google kms key to drone ([9d1976b](https://github.com/redkubes/otomi-core/commit/9d1976bf4c68df877b9bdd6b49c8e61b5868d327))
+* harbor issues ([#303](https://github.com/redkubes/otomi-core/issues/303)) ([da1956b](https://github.com/redkubes/otomi-core/commit/da1956b881fea1f5440177912179d9b97352dfba))
+* pdb, added destroy subcommand ([21431b5](https://github.com/redkubes/otomi-core/commit/21431b54ca78862b23d4135bd54b430a1a63a42a))
+* regexp pattern error - Lone quantifier brackets ([#283](https://github.com/redkubes/otomi-core/issues/283)) ([24a12e3](https://github.com/redkubes/otomi-core/commit/24a12e3bd6be8fcd57276abc34035bb81559a57e))
+* removed kubeapps ([e7f714f](https://github.com/redkubes/otomi-core/commit/e7f714fb56ed63f0e8461cdfd6db6be1e3647b3f))
+* validate-templates exit code (fixes [#284](https://github.com/redkubes/otomi-core/issues/284)) ([baa4e99](https://github.com/redkubes/otomi-core/commit/baa4e99fcb5828aed65604e8e360f7b50a0bf067))
+
+
+### CI
+
+* checking without caching ([c6566e7](https://github.com/redkubes/otomi-core/commit/c6566e7789721c0071ebdd15c40645b2bba9c9b0))
+
+
+### Docs
+
+* license renamed [ci skip] ([02f6b8a](https://github.com/redkubes/otomi-core/commit/02f6b8a554f53101ecbcb1ca3c54237315ab8d8c))
+* updated docs, renamed community email address [ci skip] ([d66a86d](https://github.com/redkubes/otomi-core/commit/d66a86dca9420d647dddf3b6950b4b118ba17ab5))
+
+
+### Code Refactoring
+
+* accomodating managed appgw ([9676588](https://github.com/redkubes/otomi-core/commit/96765885fd9f3c9039e36e9107682aacd80f29e7))
+* don't require ppa, but get yq from developer's docker image ([#273](https://github.com/redkubes/otomi-core/issues/273)) ([b7c8026](https://github.com/redkubes/otomi-core/commit/b7c8026ed8b7fd2d5fe189f86f5b9c8148581c8b)), closes [#272](https://github.com/redkubes/otomi-core/issues/272)
+* Error echo's to STDERR ([#271](https://github.com/redkubes/otomi-core/issues/271)) ([38758b5](https://github.com/redkubes/otomi-core/commit/38758b5477849066acc965d6104eb1465a72794e))
+
+### [0.11.55](https://github.com/redkubes/otomi-core/compare/v0.11.54...v0.11.55) (2021-01-05)
+
+
+### Bug Fixes
+
+* downgrade knative-serving ([1b0c684](https://github.com/redkubes/otomi-core/commit/1b0c6848d826c09e2e9114cff7339c18dcc7859c))
+
 ### [0.11.54](https://github.com/redkubes/otomi-core/compare/v0.11.53...v0.11.54) (2020-12-19)
 
 
