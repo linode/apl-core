@@ -18,7 +18,7 @@ cleanup() {
   rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
   exit $exitcode
 }
-trap cleanup EXIT ERR
+trap cleanup EXIT ERR SIGINT
 
 run_setup() {
   local k8s_version=$1
