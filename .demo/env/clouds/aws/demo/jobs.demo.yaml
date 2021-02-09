@@ -22,23 +22,19 @@ teamConfig:
                           tag: latest
                           pullPolicy: IfNotPresent
                       script: echo "hello $receiver"
-                      secretKeyRefs:
+                      secrets:
                           - name: secret-name
-                            secretKeyRefName: foo
-                            key: bar
-                          - name: secret-name3
-                            secretKeyRefName: foo3
-                            key: barblaasa
+                            entries:
+                                - foo
+                                - bar
                   name: contains-everything
                   runPolicy: Always
                   script: echo "hello $receiver"
-                  secretKeyRefs:
-                      - name: secret-name2
-                        secretKeyRefName: foo2
-                        key: bar2
-                      - name: secret-name4
-                        secretKeyRefName: foo4
-                        key: bar4
+                  secrets:
+                      - name: secret-name
+                        entries:
+                            - foo
+                            - bar
                   type: job
                 - env:
                       receiver: world
@@ -60,24 +56,20 @@ teamConfig:
                           tag: latest
                           pullPolicy: IfNotPresent
                       script: echo "hello $receiver"
-                      secretKeyRefs:
+                      secrets:
                           - name: secret-name
-                            secretKeyRefName: foo
-                            key: bar
-                          - name: secret-name3
-                            secretKeyRefName: foo3
-                            key: barblaasa
-                  name: also-contains-everything-but-cronjob
+                            entries:
+                                - foo
+                                - bar
+                  name: also-contains-everything-and-cron
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
-                  secretKeyRefs:
-                      - name: secret-name2
-                        secretKeyRefName: foo2
-                        key: bar2
-                      - name: secret-name4
-                        secretKeyRefName: foo4
-                        key: bar4
+                  secrets:
+                      - name: secret-name
+                        entries:
+                            - foo
+                            - bar
                   type: cronjob
                 - image:
                       repository: busybox
