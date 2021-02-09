@@ -93,7 +93,6 @@ resources:
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
         storage:
-          # inmem: {}
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
         listener:
@@ -231,18 +230,12 @@ resources:
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
 
-
-      # If you are not using a Service Account to authenticate against GCP you can pass in an
-      # GCP credentials refering to a Secret with the following configuration block. You have to
-      # create the "gcp-sa" secret manually, it has to have a key called "service-account.json"
-      # holding the configuration in the following format:
-      # https://cloud.google.com/docs/authentication/getting-started
       credentialsConfig:
-        {{ if eq $seal.provide "aws" }}
+        {{ if eq $seal.provider "aws" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
         secretName: {{ $seal.secretName }}
-        {{ else if eq $seal.provide "azure" }}
+        {{ else if eq $seal.provider "azure" }}
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
         secretName: {{ $seal.secretName }}
