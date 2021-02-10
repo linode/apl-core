@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
-set -uo pipefail
+[ -n "$CI" ] && set -e
+set -o pipefail
 
 . bin/common.sh
 
@@ -10,21 +10,27 @@ readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
+script_message="Templates validation"
+exitcode=0
+abort=false
 
-exitcode=1
-validationResult=0 # using $validationResult as final exit code result (assuming there is an error prior to finishing all policy chcking, the script should exit with an error)
-
-cleanup() {
-  validationResult=$(($validationResult + $exitcode))
-  [ $validationResult -eq 0 ] && echo "Template validation SUCCESS" || echo "Template validation FAILED"
-  [ "${DEBUG-}" = '' ] && rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
-  exit $validationResult
+function cleanup() {
+  [ $? -ne 0 ] && exitcode=$?
+  ! $abort && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  if [ -z "$DEBUG" ]; then
+    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
+  fi
+  exit $exitcode
 }
-trap cleanup EXIT
+trap cleanup EXIT ERR
+function abort() {
+  abort=true
+  cleanup
+}
+trap abort SIGINT
 
 run_setup() {
-  exitcode=1
-  local k8s_version="$1"
+  local k8s_version=$1
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
   echo "" >$schemas_bundle_file
@@ -62,8 +68,8 @@ process_crd() {
       jq -c "$filter_crd_expr" |
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
-    echo "ERROR Processing: $document"
-    [ "$CI" = 'true' ] && exit 1
+    err "Processing: $document"
+    [ -n "$CI" ] && exit 1
   }
 }
 
@@ -109,13 +115,13 @@ validate_templates() {
   rm $tmp_out
 }
 
-if [ "${1-}" != '' ]; then
-  echo "Validating templates for cluster '$(cluster_env)'"
+if [ -n "$1" ]; then
+  [ -n "$VERBOSE" ] && echo "Running validate-templates for target cluster only"
   validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # hf lint
 else
-  echo "Validating templates for all clusters"
+  [ -n "$VERBOSE" ] && echo "Running validate-templates for all clusters"
   for_each_cluster validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint

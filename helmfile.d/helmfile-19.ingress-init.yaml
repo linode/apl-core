@@ -6,7 +6,7 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: jobs-keycloak
+  - name: job-keycloak
     installed: {{ $c | get "keycloak.enabled" true }}
     labels:
       pkg: keycloak

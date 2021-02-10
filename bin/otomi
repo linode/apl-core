@@ -84,14 +84,14 @@ function show_usage() {
     template            export k8s resources (use labels like '-l name=prometheus-operator')
     test                runs some tests againts the target cluster
     values              show helmfile values for CLOUD and CLUSTER
-    validate-policies   validate generated manifests against defined OPA rules
+    check-policies      check if generated manifests adhere to defined OPA policies
     validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
 
   Env flags:
     VERBOSE=1;          Run otomi CLI in verbose mode
-    CI=true             Exit the script after first error
+    CI=1                Exit the script after first error
   "
 }
 
@@ -122,7 +122,7 @@ function evaluate_secrets() {
     echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  if [ "$CI" != 'true' ]; then
+  if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [[ ! -r "$secrets_path" ]] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     source $secrets_path
@@ -185,9 +185,7 @@ function drun() {
     stack_volume="-v ${stack_dir}:${stack_dir}"
   fi
 
-  if [ "${VERBOSE-}" != '' ]; then
-    verbose_env
-  fi
+  [ -n "$VERBOSE" ] && verbose_env
 
   # use docker run if has_docker AND either:
   # - not in docker
@@ -221,7 +219,7 @@ function drun() {
       $cmd_image \
       $command
   else
-    [ "${VERBOSE-}" != '' ] && echo "Running native version of command: $command"
+    [ -n "$VERBOSE" ] && echo "Running native version of command: $command"
     $command
   fi
 }
@@ -229,21 +227,10 @@ function drun() {
 function execute() {
   shift 2
   case $command in
-    values)
-      check_kube_context=0
+    apply)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
-      ;;
-    test)
-      validate_cluster_env
-      drun bin/test.sh
-      ;;
-    hf)
-      validate_cluster_env
-      set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
-
+      drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
       check_kube_context=0
@@ -256,6 +243,22 @@ function execute() {
         validate_cluster_env
       fi
       drun bin/bootstrap.sh 1
+      ;;
+    check-policies)
+      if [[ "$*" != '' ]]; then
+        validate_cluster_env
+      fi
+      check_kube_context=0
+      drun bin/check-policies.sh "$@"
+      ;;
+    commit)
+      check_kube_context=0
+      is_repo
+      evaluate_secrets
+      git -C $ENV_DIR pull
+      drun bin/validate-values.sh
+      drun bin/pre-commit.sh
+      git add . && git commit -m 'Manual commit' --no-verify
       ;;
     console)
       check_kube_context=0
@@ -304,6 +307,18 @@ function execute() {
         drun bin/crypt.sh encrypt
       fi
       ;;
+    hf)
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+      ;;
+    pull)
+      check_kube_context=0
+      is_repo
+      evaluate_secrets
+      git -C $ENV_DIR pull
+      drun bin/bootstrap.sh 1
+      ;;
     sync)
       validate_cluster_env
       set -o pipefail
@@ -335,10 +350,16 @@ function execute() {
       validate_cluster_env
       drun bin/test.sh
       ;;
+    values)
+      check_kube_context=0
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      ;;
     validate-values)
       check_kube_context=0
       evaluate_secrets
-      drun bin/validate-values.sh
+      drun bin/validate-values.sh "$@"
       ;;
     validate-templates)
       if [[ "$*" != '' ]]; then
@@ -347,32 +368,9 @@ function execute() {
       check_kube_context=0
       drun bin/validate-templates.sh "$@"
       ;;
-    validate-policies)
-      if [[ "$*" != '' ]]; then
-        validate_cluster_env
-      fi
-      check_kube_context=0
-      drun bin/validate-policies.sh $@
-      ;;
-    commit)
-      check_kube_context=0
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun bin/validate-values.sh
-      drun bin/pre-commit.sh
-      git add . && git commit -m 'Manual commit' --no-verify
-      ;;
-    pull)
-      check_kube_context=0
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun bin/bootstrap.sh 1
-      ;;
     x)
       check_kube_context=0
-      drun $@
+      drun "$@"
       ;;
     *)
       show_usage

@@ -67,7 +67,7 @@ This will check whether any CRs are matching their CRDs, but also check for k8s 
 And to run the policy checks run the following:
 
 ```bash
-otomi validate-policies
+otomi check-policies
 ```
 
 ### 2. Diffing changes

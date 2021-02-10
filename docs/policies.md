@@ -31,7 +31,7 @@ To start policy evaluation statically from a development workstation, run the fo
 
 ```sh
 # give an extra parameter to limit validation to the target cluster only, instead of all clusters.
-otomi validate-policies [1]
+otomi check-policies [1]
 ```
 
 ### Policy exclusions and parameter overrides
