@@ -13,7 +13,8 @@ exitcode=0
 . bin/common.sh
 
 cleanup() {
-  [ $? -eq 0 ] && [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
+  exitcode=$?
+  [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
   rm -rf $extractCrdSchemaJQFile
   rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
   exit $exitcode
