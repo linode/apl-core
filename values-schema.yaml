@@ -331,18 +331,28 @@ definitions:
             type: string
           name:
             type: string
-          caCrtPath:
+          caCrtVaultPath:
             $ref: '#/definitions/vaultPath'
-          tlsCrtPath:
+          caCrtFileName:
+            type: string
+            default: 'ca.crt'
+          tlsCrtVaultPath:
             $ref: '#/definitions/vaultPath'
-          tlsKeyPath:
+          tlsCrtFileName:
+            type: string
+            default: 'tls.crt'
+          tlsKeyVaultPath:
             $ref: '#/definitions/vaultPath'
+          tlsKeyFileName:
+            type: string
+            default: 'tls.crt'
         required:
           - type
           - name
-          - caCrt
-          - tlsCrt
-          - tlsKey
+          - tlsCrtVaultPath
+          - tlsCrtFileName
+          - tlsKeyVaultPath
+          - tlsKeyFileName
   secret:
     oneOf:
       - properties:
