@@ -277,55 +277,72 @@ definitions:
   externalSecret:
     type: object
     oneOf:
-      - properties:
+      - title: Generic
+        properties:
+          type:
+            default: generic
+            enum:
+              - generic
+          name:
+            type: string
+          vaultPath:
+            $ref: '#/definitions/vaultPath'
+        required:
+          - type
+          - vaultPath
+      - title: Generic (single item)
+        properties:
+          type:
+            default: genericItem
+            enum:
+              - genericItem
+          name:
+            type: string
+          vaultPath:
+            $ref: '#/definitions/vaultPath'
+          vaultProperty:
+            $ref: '#/definitions/vaultProperty'
+        required:
+          - type
+          - name
+          - vaultPath
+          - vaultProperty
+      - title: Docker registry
+        properties:
           type:
             default: docker-registry
             enum:
               - docker-registry
             type: string
-          path:
+          name:
+            type: string
+          vaultPath:
             $ref: '#/definitions/vaultPath'
         required:
           - type
-          - path
-      - properties:
+          - name
+          - vaultPath
+      - title: TLS
+        properties:
           type:
             default: tls
             enum:
               - tls
             type: string
-          caCrt:
+          name:
+            type: string
+          caCrtPath:
             $ref: '#/definitions/vaultPath'
-          tlsCrt:
+          tlsCrtPath:
             $ref: '#/definitions/vaultPath'
-          tlsKey:
+          tlsKeyPath:
             $ref: '#/definitions/vaultPath'
         required:
           - type
+          - name
           - caCrt
           - tlsCrt
           - tlsKey
-      - properties:
-          type:
-            default: generic
-            enum:
-              - generic
-            type: string
-        oneOf:
-          - data:
-              type: array
-              items:
-                properties:
-                  path:
-                    $ref: '#/definitions/vaultPath'
-                  name:
-                    type: string
-                  property:
-                    $ref: '#/definitions/vaultProperty'
-          - dataFrom:
-              $ref: '#/definitions/vaultPath'
-        required:
-          - type
   secret:
     oneOf:
       - properties:
