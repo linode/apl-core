@@ -15,9 +15,9 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-type: job
+type: Job
+enabled: {{ $hasHarbor }}
 runPolicy: Always
-enabled: {{ $hasHarbor }} 
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
 init:
   image:

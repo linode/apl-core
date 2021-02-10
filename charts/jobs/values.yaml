@@ -45,5 +45,5 @@ secrets: []
   #       - foo
   #       - bar
 
-type: job # cronjob
+type: Job # CronJob
 ttlSecondsAfterFinished: 86400

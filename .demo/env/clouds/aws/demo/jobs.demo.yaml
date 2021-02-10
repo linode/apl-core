@@ -35,7 +35,7 @@ teamConfig:
                         entries:
                             - foo
                             - bar
-                  type: job
+                  type: Job
                 - env:
                       receiver: world
                   files:
@@ -70,14 +70,14 @@ teamConfig:
                         entries:
                             - foo
                             - bar
-                  type: cronjob
+                  type: CronJob
                 - image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: base
                   script: echo "hello $receiver"
-                  type: job
+                  type: Job
                 - image:
                       repository: busybox
                       tag: latest
@@ -85,7 +85,7 @@ teamConfig:
                   name: base-cronjob
                   schedule: 0 1 * * *
                   script: echo "hello world"
-                  type: cronjob
+                  type: CronJob
                 - image:
                       repository: busybox
                       tag: latest
@@ -101,4 +101,4 @@ teamConfig:
                   name: init-cronjob
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
-                  type: cronjob
+                  type: CronJob

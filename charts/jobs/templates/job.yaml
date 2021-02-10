@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
-{{- if and (default true $v.enabled) (eq $v.type "job") }}
+{{- if eq $v.type "Job" }}
 apiVersion: batch/v1
 kind: Job
 metadata:

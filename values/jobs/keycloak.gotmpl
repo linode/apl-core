@@ -13,10 +13,10 @@
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 
-type: job
+type: Job
+enabled: true
 runPolicy: Always
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-enabled: true
 init:
   image:
     repository: badouralix/curl-http2

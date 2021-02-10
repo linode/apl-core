@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
-{{- if and (default true $v.enabled) (eq $v.type "cronjob") }}
+{{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
