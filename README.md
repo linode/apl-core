@@ -40,26 +40,37 @@ You can define OPA policies in `policies/*.rego` files that are used both for st
 
 ### 1. Validating changes
 
-For the next steps you will need to export at least `ENV_DIR`, `CLOUD` and `CLUSTER`, and source the aliases:
+For the next steps you will need to export`ENV_DIR` to point to your values folder, and source the aliases:
 
 ```bash
 # assuming you created otomi-values repo next to this:
-export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo
+export ENV_DIR=$PWD/../otomi-values
 . bin/aliases
 ```
 
-Start by checking all the values against the `values-schema.yaml` with:
+### Input
+
+Start by validating the configuration values against the `values-schema.yaml` with:
 
 ```bash
+# all clusters
 otomi validate-values
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+otomi validate-values: 1
 ```
 
 Any changes made to the meta-schema will then also be automatically validated.
 
+### Output
+
 You can check whether resulting manifests are conform our specs with:
 
-```
+```bash
+# all clusters
 otomi validate-templates
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+export CLOUD=google CLUSTER=demo
+otomi validate-templates 1
 ```
 
 This will check whether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
@@ -67,7 +78,10 @@ This will check whether any CRs are matching their CRDs, but also check for k8s 
 And to run the policy checks run the following:
 
 ```bash
+# all clusters
 otomi check-policies
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+otomi check-policies 1
 ```
 
 ### 2. Diffing changes
