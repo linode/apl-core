@@ -5,7 +5,6 @@ cd ..
 
 . bin/common.sh
 
-set -x
 release=$1
 run_policy=${2:-'OnSpecChange'}
 
@@ -24,7 +23,7 @@ if [ "$run_policy" = 'Always' ]; then
 else
   # OnSpecChange
   has_diff=false
-  ! hf -l name=$release diff --skip-deps && has_diff=true
+  hf -l name=$release diff --skip-deps && has_diff=true
   [ -n "$VERBOSE" ] && echo "has_diff: $has_diff"
   if $has_diff && $is_deployed; then
     hf -l name=$release destroy
