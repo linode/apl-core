@@ -56,3 +56,13 @@ teardown () {
     run bin/bootstrap.sh
     assert_success
 }
+
+@test "executing bootstrap.sh creates a valid loose schema" {
+    git init "$ENV_DIR"
+    run bin/bootstrap.sh
+    assert_success
+    assert_file_exist "$ENV_DIR/.vscode/values-schema.yaml"
+
+    result=$(yq r "$ENV_DIR/.vscode/values-schema.yaml" '**.required.' | wc -l)
+    [ "$result" -eq 0 ]
+}

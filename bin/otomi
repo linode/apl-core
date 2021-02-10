@@ -44,35 +44,29 @@ check_kube_context=1
 
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-set +e
-customer=$(customer_name || $CUSTOMER || "unknown")
-set -e
 cmd_image="otomi/core:$(otomi_image_tag)"
 docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 
-function set_env_and_stack_dir() {
-  local cwd=$(basename "$PWD")
-  [ "${VERBOSE-}" != '' ] && echo "CWD: $cwd"
-  if [ "$cwd" = "otomi-core" ]; then
-    [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
-    [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
-    stack_dir=$PWD
-    mount_stack_dir=1
-  fi
-  return 0
-}
+# check if we are in core or values repo (could be improved as it is based on name!)
+readonly cwd=$(basename "$PWD")
+[ -n "$VERBOSE" ] && echo "CWD: $cwd"
+if [ "$cwd" = "otomi-core" ]; then
+  [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
+  stack_dir=$PWD
+  mount_stack_dir=1
+fi
+# now we can retrieve customer name from settings
+customer=$(customer_name || $CUSTOMER || "unknown")
 
-function set_helm_config() {
-  helm_config="$HOME/.config/helm"
-  uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
-  return 0
-}
+# set helm config
+helm_config="$HOME/.config/helm"
+uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
 
 function show_usage() {
   echo "otomi usage:
-    apply               apply (first diff then sync if release changed) k8s resources (use labels like '-l name=prometheus-operator')
     bash                run interactive bash shell in otomi-core container
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit              wrapper for encrypt > generate pipelines > git commit changed files
@@ -248,12 +242,8 @@ function execute() {
     hf)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ | grep -Ev $helmfile_output_hide
-      ;;
-    apply)
-      validate_cluster_env
-      set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ apply --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+
       ;;
     bash)
       check_kube_context=0
@@ -262,7 +252,7 @@ function execute() {
       ;;
     bootstrap)
       check_kube_context=0
-      if [[ "$@" != '' ]]; then
+      if [[ "$*" != '' ]]; then
         validate_cluster_env
       fi
       drun bin/bootstrap.sh 1
@@ -270,14 +260,14 @@ function execute() {
     console)
       check_kube_context=0
       evaluate_secrets
-      run_console $@
+      run_console "$@"
       ;;
     decrypt)
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != '' ]]; then
-        for f in $@; do
+      if [[ "$*" != '' ]]; then
+        for f in "$@"; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
         done
@@ -293,19 +283,19 @@ function execute() {
     diff)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ diff --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ destroy | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
       check_kube_context=0
       evaluate_secrets
-      if [[ "$@" != '' ]]; then
-        for f in $@; do
+      if [[ "$*" != '' ]]; then
+        for f in "$@"; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
         done
@@ -317,13 +307,13 @@ function execute() {
     sync)
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER $@ sync --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
       check_kube_context=0
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER --quiet $@ template --skip-deps | grep -Ev $helmfile_output_hide_tpl
+      drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
       ;;
     rotate-keys)
       check_sops_file
@@ -343,7 +333,6 @@ function execute() {
       ;;
     test)
       validate_cluster_env
-      evaluate_secrets
       drun bin/test.sh
       ;;
     validate-values)
@@ -352,20 +341,22 @@ function execute() {
       drun bin/validate-values.sh
       ;;
     validate-templates)
-      validate_cluster_env
+      if [[ "$*" != '' ]]; then
+        validate_cluster_env
+      fi
       check_kube_context=0
-      evaluate_secrets
-      drun bin/validate-templates.sh $@
+      drun bin/validate-templates.sh "$@"
       ;;
     validate-policies)
-      validate_cluster_env
+      if [[ "$*" != '' ]]; then
+        validate_cluster_env
+      fi
       check_kube_context=0
-      evaluate_secrets
       drun bin/validate-policies.sh $@
       ;;
     commit)
       check_kube_context=0
-      check_repo
+      is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
       drun bin/validate-values.sh
@@ -374,7 +365,7 @@ function execute() {
       ;;
     pull)
       check_kube_context=0
-      check_repo
+      is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
       drun bin/bootstrap.sh 1
@@ -385,13 +376,11 @@ function execute() {
       ;;
     *)
       show_usage
-      [ -z "$1" ] && err "Unknown command: $@" && exit 1
+      [ -z "$1" ] && err "Unknown command: $*" && exit 1
       ;;
   esac
 }
 
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
 
-set_env_and_stack_dir
-set_helm_config
-execute $command $@
+execute $command "$@"

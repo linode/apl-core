@@ -1,4 +1,3 @@
-toolsVersion: 1.3.5
 cluster:
   provider: ""
   name: ""
