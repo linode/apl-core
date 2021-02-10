@@ -64,7 +64,6 @@ Create the name of the service account to use
 
 {{- define "itemsByName" -}}
 {{- range $i := . }}
-{{ $i.name }}:
-{{ $i | toYaml | nindent 2 }}
+{{ $i.name }}: {{- $i | toYaml | nindent 2 }}
 {{- end }}
 {{- end -}}
