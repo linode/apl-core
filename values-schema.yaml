@@ -1585,8 +1585,6 @@ properties:
         patternProperties:
           '^[a-z-]+$':
             $ref: '#/definitions/team'
-  toolsVersion:
-    type: string
 required:
   - alerts
   - clouds
@@ -1596,4 +1594,3 @@ required:
   - teamConfig
   - k8s
   - services
-  - toolsVersion
