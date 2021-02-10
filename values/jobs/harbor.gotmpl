@@ -44,5 +44,5 @@ env:
   OIDC_NAME: 'keycloak'
   OIDC_SCOPE: 'openid'
   OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
-script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:harbor
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:harbor
 runPolicy: OnSpecChange

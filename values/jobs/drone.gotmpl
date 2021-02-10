@@ -22,5 +22,5 @@ env:
   DRONE_OWNER: {{ $d | get "owner" }}
   DRONE_REPO: {{ $d | get "repo" }}
   DRONE_URL: http://drone.team-admin
-script: npm run tasks:drone
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:drone
 runPolicy: OnSpecChange

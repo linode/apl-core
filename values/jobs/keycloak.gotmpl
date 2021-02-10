@@ -62,5 +62,5 @@ secret:
       {{- end }}
       "https://harbor.{{ $v.cluster.domain }}/*"
   ]'
-script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange
