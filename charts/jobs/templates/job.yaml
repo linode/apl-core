@@ -81,27 +81,27 @@ spec:
             name: job-{{ $v.name }}
         {{- end }}
         {{- end }}
-        {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+        {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) $v.files }}
         volumeMounts:
           {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
           - name: fakeroot
             mountPath: /fakeroot.pem
             subPath: fakeroot.pem
           {{- end }}
-          {{- if hasKey $v "files" }}
+          {{- with $v.files }}
           - name: files
             mountPath: /
           {{- end }}
         {{- end }}
       restartPolicy: Never
-      {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+      {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) $v.files }}
       volumes:
         {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
         - name: fakeroot
           configMap:
             name: fakeroot
         {{- end }}
-        {{- if hasKey $v "files" }}
+        {{- with $v.files }}
         - name: files
           configMap:
             name: job-{{ $v.name }}
