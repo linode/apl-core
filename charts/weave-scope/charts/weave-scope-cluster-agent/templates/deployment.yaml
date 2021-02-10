@@ -8,6 +8,9 @@ metadata:
   name: {{ template "weave-scope-cluster-agent.fullname" . }}
   annotations:
     {{- include "weave-scope-cluster-agent.annotations" . | indent 4 }}
+    {{- range $key, $value := .Values.podAnnotations  }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -44,4 +47,8 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       serviceAccountName: {{ template "weave-scope-cluster-agent.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end -}}

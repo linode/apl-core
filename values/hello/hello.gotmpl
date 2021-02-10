@@ -1,5 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $httpbin := $v | get "charts.hello" dict }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: hello
 fullnameOverride: hello
@@ -14,3 +15,9 @@ resources:
   limits:
     cpu: 100m
     memory: 64Mi
+
+podAnnotations:
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
+
+podSecurityContext:
+  runAsUser: 1000

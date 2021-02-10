@@ -14,6 +14,10 @@ spec:
       {{- end }}
     spec:
 {{- include "metrics-server.imagePullSecrets" . | indent 6 }}
+      {{- with .Values.securityContext }}
+      securityContext: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}

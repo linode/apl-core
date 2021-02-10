@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
 {{- $host := printf "drone.%s" $v.cluster.domain }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: "drone-admit-members"
 fullnameOverride: "drone-admit-members"
@@ -21,3 +22,6 @@ github:
 
 env:
   DRONE_DEBUG: {{ $d | get "debug" false }}
+
+podAnnotations:
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}

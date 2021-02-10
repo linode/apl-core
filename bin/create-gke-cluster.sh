@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-readonly CLUSTER=${CLUSTER:-dev}
-readonly METERING_SET=${METERING_SET:-otomi_metering}
 readonly VERBOSE=${VERBOSE:-}
-
 readonly PROJECT_ID=${PROJECT_ID:-otomi-cloud}
 readonly GOOGLE_REGION=${GOOGLE_REGION:-europe-west4}
+readonly RELEASE_CHANNEL=${RELEASE_CHANNEL:-'stable'}
+readonly K8S_VERSION=${K8S_VERSION:-'1.18.12-gke.1205'}
+readonly CLUSTER=${CLUSTER:-dev}
+readonly METERING_SET=${METERING_SET:-otomi_metering}
 readonly CUSTOMER=${CUSTOMER:-otomi}
-readonly K8S_VERSION=${K8S_VERSION:-'1.17.14-gke.1600'}
 
 print_envs() {
-  echo "CLUSTER: $CLUSTER"
   echo "PROJECT_ID: $PROJECT_ID"
   echo "GOOGLE_REGION: $GOOGLE_REGION"
+  echo "RELEASE_CHANNEL: $RELEASE_CHANNEL"
   echo "K8S_VERSION: $K8S_VERSION"
-  echo "CUSTOMER: $CUSTOMER"
+  echo "CLUSTER: $CLUSTER"
   echo "METERING_SET: $METERING_SET"
+  echo "CUSTOMER: $CUSTOMER"
 }
 
 [ -n "$VERBOSE" ] && print_envs
@@ -56,6 +57,7 @@ gcloud container clusters create "otomi-gke-$CLUSTER" \
   --region "$GOOGLE_REGION" \
   --resource-usage-bigquery-dataset "$METERING_SET" \
   --scopes "https://www.googleapis.com/auth/cloud-platform" \
+  --release-channel "$RELEASE_CHANNEL" \
   --subnetwork "projects/$PROJECT_ID/regions/$GOOGLE_REGION/subnetworks/default"
 # --enable-pod-security-policy
 

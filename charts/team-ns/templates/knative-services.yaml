@@ -21,6 +21,7 @@ spec:
   template:
     metadata:
       annotations:
+        policy.otomi.io/ignore: psp-allowed-users
         {{- $hasMinScale := false -}}
         {{- range $a := $k.annotations -}}
           {{- if (contains "autoscaling.knative.dev/minScale" $a) -}}{{ $hasMinScale = true }}{{ end }}
