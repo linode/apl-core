@@ -18,18 +18,11 @@
 tasks:
   harbor:
     type: job
-    enabled: {{ $hasHarbor }} 
+    enabled: true
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
-    init:
-      image:
-        repository: otomi/tools
-        tag: v1.4.11
-        pullPolicy: IfNotPresent
-      # move secret for harbor to use
-      script: kubectl -n {{ $ns }} get secret harbor-{{ $v.cluster.domain | replace "." "-" }} -o yaml --export | kubectl -n harbor apply -f -
     image:
       repository: otomi/tasks
-      tag: v0.2.1
+      tag: v0.2.4
       pullPolicy: IfNotPresent
     secret:
       HARBOR_PASSWORD:  {{ $h | get "adminPassword" "bladibla" }}

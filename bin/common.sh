@@ -11,6 +11,9 @@ readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
+exitcode=0
+abort=false
+
 has_docker='false'
 if docker --version &>/dev/null; then
   has_docker='true'
