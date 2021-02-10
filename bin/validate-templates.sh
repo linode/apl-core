@@ -80,7 +80,7 @@ validate_templates() {
 
   run_setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates $k8s_resources_path
+  hf_templates_init $k8s_resources_path
 
   echo "Processing CRD files"
   # generate canonical schemas

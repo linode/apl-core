@@ -35,7 +35,7 @@ validate_policies() {
   run_setup
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates $k8s_resources_path "$@"
+  hf_templates_init $k8s_resources_path "$@"
 
   echo "Processing templates"
   # generate parameter constraints file from values
