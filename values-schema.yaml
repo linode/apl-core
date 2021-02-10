@@ -1261,6 +1261,7 @@ properties:
         properties:
           seal:
             type: object
+            description: Configure Key Management Service (KMS) for encrypting Vault unseal keys and root token
             oneOf:
               - title: aws
                 properties:
@@ -1274,6 +1275,7 @@ properties:
                   kmsRegion:
                     type: string
                   s3Bucket:
+                    description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
                     type: string
                   s3Prefix:
                     type: string
@@ -1295,6 +1297,7 @@ properties:
                   kmsProject:
                     type: string
                   storageBucket:
+                    description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
                     type: string
                 required:
                   - provider
@@ -1303,7 +1306,7 @@ properties:
                   - kmsLocation
                   - kmsProject
                   - storageBucket
-              - title: Kubernetes (not secure)
+              - title: No KMS (not secure)
                 properties:
                   provider:
                     default: kubernetes
@@ -1314,8 +1317,9 @@ properties:
                   - provider
           storage:
             type: object
+            description: Configure storage where encrypted user data should be saved
             oneOf:
-              - title: Kubernetes
+              - title: kubernetes
                 properties:
                   provider:
                     default: kubernetes
@@ -1324,7 +1328,8 @@ properties:
                     type: string
                 required:
                   - provider
-              - properties:
+              - title: aws
+                properties:
                   provider:
                     default: aws
                     enum:
