@@ -76,7 +76,7 @@ spec:
         - secretRef:
             name: job-{{ $v.name }}
         {{- end }}
-        {{- if or $v.env }}
+        {{- if $v.env }}
         - configMapRef:
             name: job-{{ $v.name }}
         {{- end }}
