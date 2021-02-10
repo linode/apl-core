@@ -279,10 +279,10 @@ definitions:
           default: 86400
           type: number
         type:
-          default: job
+          default: Job
           enum:
-            - job
-            - cronjob
+            - Job
+            - CronJob
           type: string
     required:
       - image
