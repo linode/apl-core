@@ -1,0 +1,7 @@
+hooks:
+  - events: ["presync"]
+    showlogs: true
+    command: "../bin/job-presync.sh"
+    args:
+      - "{{ .name }}"
+      - "{{ .runPolicy }}"
