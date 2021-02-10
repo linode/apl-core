@@ -35,6 +35,7 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+# runPolicy is only used if type: Job
 runPolicy: Always # OnSpecChange
 # schedule: '1 * * * *'
 
