@@ -7,7 +7,7 @@ teamConfig:
                       receiver: world
                   files:
                       some-file: someData
-                      some-file2: someData2
+                      /some/file2: someData2
                       some-file3: |-
                           some data on another line
                           another line
