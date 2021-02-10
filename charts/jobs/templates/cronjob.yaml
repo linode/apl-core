@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
+{{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
 {{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -21,24 +21,24 @@ spec:
       template:
         spec:
           serviceAccountName: {{ $v.serviceAccountName | default "default" }}
-          {{- if $v.init }}
+          {{- with $v.init }}
           initContainers:
-          - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
-            imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent" }}"
-            name: "job-{{ $v.name }}-init"
-            command: ["{{ $v.init.shell | default "sh" }}", "-c"]
+          - image: "{{ .image.repository }}:{{ .image.tag | default "latest" }}"
+            imagePullPolicy: "{{ .image.pullPolicy | default "IfNotPresent" }}"
+            name: "job-{{ .name }}-init"
+            command: ["{{ .shell | default "sh" }}", "-c"]
             args: 
               - | 
-                {{- toString $v.init.script | nindent 16 }}
-            {{- if $v.init.env }}
+                {{- toString .script | nindent 16 }}
+            {{- if .env }}
             envFrom:
             - configMapRef:
-                name: job-{{ $v.name }}
+                name: job-{{ .name }}
             {{- end }}
-            {{- if $v.secrets }}
+            {{- with $v.secrets }}
             env:
-              {{- range $secret := ($v.secrets | default list) }} 
-                {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
+              {{- range $secret := . }} 
+                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
                 {{- range $entry := $entries }}
               - name: {{ $entry | upper }}
                 valueFrom:
@@ -46,6 +46,13 @@ spec:
                     name: {{ $secret.name }}
                     key: {{ $entry }}
                 {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- with $v.files }}
+            volumeMounts:
+              {{- range $location, $content := $v.files }}
+              - name: {{ include "fileConfigMapName" $location }}
+                mountPath: {{ $location }}
               {{- end }}
             {{- end }}
           {{- end }}
@@ -58,10 +65,10 @@ spec:
             args:
               - |
                 {{- toString $v.script | nindent 16 }}
-            {{- if $v.secrets }}
+            {{- with $v.secrets }}
             env:
-              {{- range $secret := ($v.secrets | default list) }} 
-                {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
+              {{- range $secret := . }} 
+                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
                 {{- range $entry := $entries }}
               - name: {{ $entry | upper }}
                 valueFrom:
@@ -82,35 +89,23 @@ spec:
                 name: job-{{ $v.name }}
             {{- end }}
             {{- end }}
-            {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+            {{- with $v.files }}
             volumeMounts:
-              {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
-              - name: fakeroot
-                mountPath: /fakeroot.pem
-                subPath: fakeroot.pem
-              {{- end }}
-              {{- if hasKey $v "files" }}
-              - name: files
-                mountPath: /
+              {{- range $location, $content := $v.files }}
+              - name: {{ include "fileConfigMapName" $location }}
+                mountPath: {{ $location }}
               {{- end }}
             {{- end }}
           restartPolicy: Never
-          {{- if or (or (eq $v.name "keycloak") (eq $v.name "harbor")) (hasKey $v "files") }}
+          {{- with $v.files }}
           volumes:
-            {{- if or (eq $v.name "keycloak") (eq $v.name "harbor") }}
-            - name: fakeroot
+            {{- range $location, $content := $v.files }}
+            - name: {{ include "fileConfigMapName" $location }}
               configMap:
-                name: fakeroot
-            {{- end }}
-            {{- if hasKey $v "files" }}
-            - name: files
-              configMap:
-                name: job-{{ $v.name }}
+                name: {{ include "fileConfigMapName" $location }}
                 items:
-                {{- range $name, $file := $v.files }}
-                - key: {{ $name }}
-                  path: {{ $name }}
-                {{- end }}
+                - key: {{ $location }}
+                  path: {{ $location }}
             {{- end }}
           {{- end }}
   backoffLimit: 3

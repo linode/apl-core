@@ -67,3 +67,7 @@ Create the name of the service account to use
 {{ $i.name }}: {{- $i | toYaml | nindent 2 }}
 {{- end }}
 {{- end -}}
+
+{{- define "fileConfigMapName" -}}
+{{ printf "job-%s" (. | replace "." "-" | replace "/" "-") }}
+{{- end -}}

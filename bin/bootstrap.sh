@@ -16,7 +16,7 @@ has_otomi='false'
 function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
   local sourcePath="$PWD/values-schema.yaml"
-  yq r -j "${sourcePath}" | jq "del(.. | .required?)" | yq r --prettyPrint - > "${targetPath}"
+  yq r -j "${sourcePath}" | jq "del(.. | .required?)" | yq r --prettyPrint - >"${targetPath}"
   # yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' >$targetPath
   # also put a copy in the .values folder for local hinting of .demo/env/*.yaml files:
   [ "$PWD" != "/home/app/stack" ] && cp $targetPath .values/
@@ -48,7 +48,7 @@ if [ -z "$(ls -A $ENV_DIR/env)" ]; then
   echo "No files found in env, installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
-cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
+[ -f "$ENV_DIR/.git/hooks" ] && cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 [ "${GCLOUD_SERVICE_KEY-}" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
 secrets_file="$ENV_DIR/env/secrets.settings.yaml"
 if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != "" ]; then

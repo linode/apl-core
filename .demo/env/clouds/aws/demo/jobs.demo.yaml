@@ -2,12 +2,13 @@ teamConfig:
     teams:
         demo:
             jobs:
-                - env:
+                - enabled: true
+                  env:
                       receiver: world
                   files:
-                      someFile: someData
-                      someFile2: someData2
-                      somefile3: |-
+                      some-file: someData
+                      some-file2: someData2
+                      some-file3: |-
                           some data on another line
                           another line
                   image:
@@ -36,12 +37,13 @@ teamConfig:
                             - foo
                             - bar
                   type: Job
-                - env:
+                - enabled: true
+                  env:
                       receiver: world
                   files:
-                      someFile: someData
-                      someFile2: someData2
-                      somefile3: |-
+                      some-file: someData
+                      some-file2: someData2
+                      some-file3: |-
                           some data on another line
                           another line
                   image:
@@ -71,14 +73,16 @@ teamConfig:
                             - foo
                             - bar
                   type: CronJob
-                - image:
+                - enabled: true
+                  image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: base
                   script: echo "hello $receiver"
                   type: Job
-                - image:
+                - enabled: true
+                  image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent
@@ -86,7 +90,8 @@ teamConfig:
                   schedule: 0 1 * * *
                   script: echo "hello world"
                   type: CronJob
-                - image:
+                - enabled: true
+                  image:
                       repository: busybox
                       tag: latest
                       pullPolicy: IfNotPresent

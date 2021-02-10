@@ -188,7 +188,6 @@ releases:
           - sitespeed{{ end }}
   {{- end }}
   {{- end }}
-  {{- if hasKey $team "jobs" }}
   {{- range $job := $team.jobs }}
   - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ $job.enabled }}
@@ -208,7 +207,8 @@ releases:
           - "{{ $job.runPolicy }}"    
           {{- end }}
     values:
+      - teamSecrets: {{- $team.secrets | toYaml | nindent 10 }}
+        teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
-  {{- end }}
   {{- end }}
   {{- end }}

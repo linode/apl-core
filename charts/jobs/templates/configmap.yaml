@@ -12,9 +12,15 @@ data:
   {{- with $v.init.env  }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $v.files }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 ---
 {{- end }}
+{{- range $location, $content := $v.files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fileConfigMapName" $location }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+data:
+  {{ $location }}: {{- toYaml $content | nindent 4 }}
+---
 {{- end }}
