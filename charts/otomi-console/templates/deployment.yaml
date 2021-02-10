@@ -15,6 +15,12 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "otomi-console.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "otomi-console.serviceAccountName" . }}
       securityContext:

@@ -8,6 +8,9 @@ metadata:
   name: {{ template "weave-scope-frontend.fullname" . }}
   annotations:
     {{- include "weave-scope.annotations" . | indent 4 }}
+    {{- range $key, $value := .Values.podAnnotations  }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   replicas: 1
   selector:
@@ -36,4 +39,8 @@ spec:
               protocol: TCP
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end -}}

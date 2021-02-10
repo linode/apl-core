@@ -80,6 +80,10 @@ function check_sops_file() {
   return 0
 }
 
+function cluster_env() {
+  printf "${CLOUD}-${CLUSTER}"
+}
+
 function hf() {
   helmfile --quiet -e $CLOUD-$CLUSTER "$@"
 }
@@ -111,4 +115,11 @@ function for_each_cluster() {
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
+}
+
+hf_templates_init() {
+  local out_dir="$1"
+  shift
+  [ -z "${*-}" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null
+  hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null
 }

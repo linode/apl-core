@@ -1,0 +1,6 @@
+{{- with .Values.constraintFiles }}
+{{- range $file := . }}
+    {{- $file | toYaml }}
+---
+{{- end }}
+{{- end }}

@@ -18,6 +18,12 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := .  }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
       labels:
         {{- include "weave-scope-agent.helm_std_labels" . | indent 8 }}
         component: agent

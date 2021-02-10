@@ -29,5 +29,6 @@ releases:
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
     labels:
-      pkg: gatekeeper-operator
+      pkg: gatekeeper
     <<: *default
+  

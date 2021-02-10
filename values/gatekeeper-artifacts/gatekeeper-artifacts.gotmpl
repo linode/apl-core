@@ -1,0 +1,30 @@
+
+{{- $v := .Environment.Values }}
+{{- $gk := $v.charts | get "gatekeeper-operator" dict }}
+
+### Render Constraints (CRs)
+{{- $constraints := (exec "bash" (list "-c" "find /tmp/otomi/constraints -name 'constraint_*.yaml'")) | splitList "\n" }}
+constraintFiles:
+{{- range $constraint := $constraints }}{{ if ne $constraint "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
+  - {{ tpl (readFile $constraint) . | nindent 4  }}
+{{- end }}{{ end }}
+
+
+### Config Resources for OPA Gatekeeper
+config:  
+  # Data Replication  
+  {{- with $gk | get "dataSync" list }}
+  dataSync: 
+  {{- range $kind := . }}
+    - group: {{ $kind.group | quote }}
+      version: {{ $kind.version | quote }}
+      kind: {{ $kind.kind | quote }}
+  {{- end }}
+  {{- end }}
+
+
+  # Exempted Namespaces
+  match:
+    - excludedNamespaces: {{ (concat (list  "gatekeeper-system" "kube-system") ($gk | get "excludedNamespaces" list)) | toJson }}
+      processes: ["*"]
+
