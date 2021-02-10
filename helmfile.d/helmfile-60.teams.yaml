@@ -191,7 +191,7 @@ releases:
   {{- if hasKey $team "jobs" }}
   {{- range $job := $team.jobs }}
   - name: job-{{ $teamId }}-{{ $job.name }}
-    installed: {{- $job.enabled }}
+    installed: {{ $job.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/jobs
     labels:
