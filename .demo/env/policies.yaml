@@ -13,14 +13,6 @@ policies:
         allowedHostPaths:
             - pathPrefix: /tmp/
               readOnly: false
-            # - pathPrefix: /var/
-            #   readOnly: false
-            # - pathPrefix: /run/
-            #   readOnly: false
-            # - pathPrefix: /sys/
-            #   readOnly: false
-            # - pathPrefix: /proc/
-            #   readOnly: false
     psp-allowed-users:
         enabled: true
         runAsUser:
@@ -48,6 +40,8 @@ policies:
         enabled: true
     psp-capabilities:
         enabled: true
+        # requiredDropCapabilities:
+        #     - ALL
         allowedCapabilities:
             - NET_BIND_SERVICE
             - NET_RAW
@@ -69,13 +63,8 @@ policies:
             # - unconfined
             # - localhost/<profile-name>
     psp-selinux:
-        enabled: true
+        enabled: false
         seLinuxContext: RunAsAny
-        # allowedSELinuxOptions:
-        #   - level: s0:c123,c456
-        #     role: object_r
-        #     type: svirt_sandbox_file_t
-        #     user: system_u
     psp-seccomp:
         enabled: false
         allowedProfiles:
