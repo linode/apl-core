@@ -1262,16 +1262,8 @@ properties:
           seal:
             type: object
             oneOf:
-              - properties:
-                  provider:
-                    default: kubernetes
-                    enum:
-                      - kubernetes
-                    type: string
-                required:
-                  - provider
-
-              - properties:
+              - title: aws
+                properties:
                   provider:
                     default: aws
                     enum:
@@ -1287,7 +1279,8 @@ properties:
                     type: string
                   s3Region:
                     type: string
-              - properties:
+              - title: google
+                properties:
                   provider:
                     default: google
                     enum:
@@ -1310,10 +1303,20 @@ properties:
                   - kmsLocation
                   - kmsProject
                   - storageBucket
+              - title: Kubernetes (not secure)
+                properties:
+                  provider:
+                    default: kubernetes
+                    enum:
+                      - kubernetes
+                    type: string
+                required:
+                  - provider
           storage:
             type: object
             oneOf:
-              - properties:
+              - title: Kubernetes
+                properties:
                   provider:
                     default: kubernetes
                     enum:
@@ -1330,7 +1333,8 @@ properties:
                     type: string
                   bucket:
                     type: string
-              - properties:
+              - title: google
+                properties:
                   provider:
                     default: google
                     enum:
@@ -1356,7 +1360,6 @@ properties:
       weave-scope:
         default: false
         enabled: boolean
-
   clouds:
     additionalProperties: false
     properties:
