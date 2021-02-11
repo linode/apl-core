@@ -65,6 +65,3 @@ secret:
   ]'
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange
-annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
-podSecurityContext:
-  runAsUser: 1000
