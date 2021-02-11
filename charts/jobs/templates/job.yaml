@@ -18,15 +18,15 @@ spec:
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
-        {{- range $key, $value := $spec.annotations }}
+        {{- range $key, $value := $v.annotations }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
     spec:
-      serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
-      {{- with $spec.podSecurityContext }}
+      serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+      {{- with $v.podSecurityContext }}
       securityContext: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if $spec.init }}
+      {{- if $v.init }}
       initContainers:
       - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
         imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent"}}"
@@ -59,7 +59,7 @@ spec:
           - name: {{ include "fileConfigMapName" $location }}
             mountPath: {{ $location }}
           {{- end }}
-        {{- with $spec.init.securityContext }}
+        {{- with $v.init.securityContext }}
         securityContext: {{- toYaml . | nindent 10 }}
         {{- end }}
       {{- end }}
@@ -102,7 +102,7 @@ spec:
           - name: {{ include "fileConfigMapName" $location }}
             mountPath: {{ $location }}
           {{- end }}
-        {{- with $spec.securityContext }}
+        {{- with $v.securityContext }}
         securityContext: {{- toYaml . | nindent 10 }}
         {{- end }}
       restartPolicy: Never
