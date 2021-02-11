@@ -19,6 +19,7 @@ kubernetes:
 
   # Port for AGIC's HTTP API endpoint
   httpServicePort: 8123
+  podAnnotations: {}
 
 # Set this to override the default ingress class value. DEFAULT: azure/application-gateway
 # This can be used to segregate ingress controllers in the same namespace

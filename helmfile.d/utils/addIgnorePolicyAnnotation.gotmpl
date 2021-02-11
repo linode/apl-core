@@ -1,0 +1,32 @@
+# To use this function you must provide the following arguments:
+#  "policies" - (required) list of policies [ "policy-id-1,policy-id-2" ]
+#  "type" - (optional) type of annotation [ "pod" | "sidecar" | "container" ]  
+#  "name" - (optional) in case type=container [ "container-name" ]
+#
+# Example Yaml: 
+# podAnnotations: 
+# \{ \{-  tpl $addIgnorePolicyAnnotation (dict "type" "container" "name" "wget" "policies" (list  "banned-image-tags" "psp-allowed-users"))  | nindent 2 }}
+#
+#
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $policies := (readFile "../../env/env/policies.yaml" | fromYaml) | get "policies" dict }}
+{{- $activatePolicies := list -}}
+
+# iterating over list of provided policy names and rendering only the enabled policies
+{{- range $i, $policyID := .policies }}
+{{- $enabled := ($policies | get $policyID) | get "enabled" false }}
+{{- if $enabled }} {{ $activatePolicies = append $activatePolicies $policyID }}  {{ end -}} 
+{{ end -}} 
+
+# append annotation field with list of excluded policy names
+{{- if $activatePolicies }}
+{{- $renderPolicies := tpl $joinTpl (dict "list" $activatePolicies "sep" ",") | quote }}
+{{- $type := . | get "type" "pod" }}
+{{- if (eq $type "pod") }}
+policy.otomi.io/ignore: {{ $renderPolicies }}
+{{- else if ( eq $type "sidecar") }}
+policy.otomi.io/ignore-sidecar: {{ $renderPolicies }}
+{{- else if ( eq $type "container") }}
+policy.otomi.io/ignore/{{ .name }}: {{ $renderPolicies }}
+{{- end }}
+{{- end }}

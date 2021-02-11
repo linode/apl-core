@@ -14,6 +14,7 @@
 {{- range $teams -}}
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 type: Job
 enabled: true
@@ -46,3 +47,6 @@ env:
   OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:harbor
 runPolicy: OnSpecChange
+annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 6 }}
+podSecurityContext:
+  runAsUser: 1000

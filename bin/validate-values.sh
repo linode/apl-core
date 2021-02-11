@@ -14,8 +14,7 @@ function cleanup() {
   [ $? -ne 0 ] && exitcode=$?
   ! $abort && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
   if [ -z "$DEBUG" ]; then
-    rm -rf $extract_crd_schema_jqfile
-    rm -rf $k8s_resources_path -rf $output_path $schema_output_path
+    rm -rf $tmp_path
   fi
   exit $exitcode
 }
