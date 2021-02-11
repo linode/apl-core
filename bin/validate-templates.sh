@@ -29,7 +29,7 @@ function abort() {
 }
 trap abort SIGINT
 
-run_setup() {
+function setup() {
   local k8s_version=$1
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
@@ -60,7 +60,7 @@ run_setup() {
 EOF
 }
 
-process_crd() {
+function process_crd() {
   local document="$1"
   local filter_crd_expr='select(.kind=="CustomResourceDefinition")'
   {
@@ -73,12 +73,12 @@ process_crd() {
   }
 }
 
-validate_templates() {
+function validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
 
-  run_setup $k8s_version
+  setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates_init $k8s_resources_path
 

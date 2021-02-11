@@ -37,7 +37,7 @@ validate_policies() {
 
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
-  run_setup
+  setup
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates_init $k8s_resources_path "$@" >/dev/null
