@@ -102,7 +102,8 @@ validate_templates() {
   echo "Validating resources for cluster '$cluster_env'"
   local kubeval_schema_location="file://${schema_output_path}"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
-  local skip_kinds="CustomResourceDefinition,$constraint_kinds"
+  # TODO: revisit these excluded resources and see it they exist now
+  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   set +o pipefail
@@ -110,9 +111,7 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
-  validationResult=$(($validationResult + $exitcode))
-  rm $tmp_out
+  grep -e "ERR\b" $tmp_out && exitcode=1
 }
 
 if [ -n "$1" ]; then
