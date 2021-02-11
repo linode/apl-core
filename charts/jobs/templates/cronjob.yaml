@@ -7,6 +7,7 @@ metadata:
   name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
   annotations:
+    policy.otomi.io/ignore: psp-allowed-users
     checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
     checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
 spec:
