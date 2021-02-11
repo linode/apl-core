@@ -42,6 +42,9 @@ otomi:
     isMultitenant: true
     mode: ce
     teamPrefix: team-
+    addons:
+        conftest:
+            enabled: true
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in

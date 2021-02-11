@@ -4,10 +4,12 @@ set -eu
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
-if [ -f "$ENV_DIR/.secrets" ]; then
-  source $ENV_DIR/.secrets
+secrets_file="$ENV_DIR/.secrets"
+
+if [ -f $secrets_file ]; then
+  source $secrets_file
 else
-  cp $PWD/.values/.secrets.sample $ENV_DIR/.secrets
+  cp $PWD/.values/.secrets.sample $secrets_file
 fi
 
 has_otomi='false'
@@ -49,9 +51,9 @@ if [ -z "$(ls -A $ENV_DIR/env)" ]; then
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
-[ "${GCLOUD_SERVICE_KEY-}" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
+[ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
 secrets_file="$ENV_DIR/env/secrets.settings.yaml"
-if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != "" ]; then
+if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != '' ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
   cp -f $PWD/core.yaml $ENV_DIR/

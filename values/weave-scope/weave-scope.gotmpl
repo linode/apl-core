@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $w := $v.charts | get "weaveScope" dict }}
-
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+  
 global:
   image:
     tag: 1.12.0
@@ -8,6 +9,8 @@ global:
     name: weave-scope
 
 weave-scope-frontend:
+  podSecurityContext:
+    runAsUser: 1001
   resources:
     requests:
       cpu: 200m
@@ -16,7 +19,14 @@ weave-scope-frontend:
       cpu: 1
       memory: 256Mi
 
+weave-scope:
+  podSecurityContext:
+    runAsUser: 1001
+
+# container requires "privileged: true", thus we cannot add a securityContext and remove "psp-allowed-users" policy annotation exception
 weave-scope-agent:
+  podAnnotations:
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-host-filesystem" "psp-privileged" "psp-host-security" "psp-host-networking-ports")) | nindent 4 }}
   resources:
     requests:
       cpu: 200m
@@ -26,6 +36,8 @@ weave-scope-agent:
       memory: 256Mi
 
 weave-scope-cluster-agent:
+  podSecurityContext:
+    runAsUser: 1001
   resources:
     requests:
       cpu: 200m

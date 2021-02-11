@@ -6,6 +6,9 @@ metadata:
 {{ include "otomi-api.labels" . | indent 4 }}
   annotations:
     "helm.sh/hook": test-success
+    {{- range $key, $value :=  .Values.podAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   containers:
     - name: wget
@@ -13,3 +16,6 @@ spec:
       command: ['wget']
       args:  ['{{ include "otomi-api.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
+  {{- with .Values.podSecurityContext }}
+  securityContext: {{- toYaml . | nindent 4 }}
+  {{- end }}

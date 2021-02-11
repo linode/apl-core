@@ -16,7 +16,7 @@ spec:
       command:
         - bash
         - -c
-        # We are requesting the "wordpress" chart to the chartsvc to check that everything works as expected
+        # We are requesting the chart to the chartsvc to check that everything works as expected
         # Also, we retry several times in case the repository is being populated at the time of executing this test
         - |
             n=0
@@ -30,4 +30,16 @@ spec:
             if [ "$n" -eq 5 ]; then
               exit 1
             fi
+      resources:
+        limits:
+          cpu: 50m
+          memory: 64Mi
+        requests:
+          cpu: 25m
+          memory: 32Mi
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+      {{- end }}
   restartPolicy: Never
