@@ -140,7 +140,6 @@ function evaluate_secrets() {
 }
 
 function validate_cluster_env() {
-  evaluate_secrets
   check_kube_context=1
   local err
   [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
@@ -236,6 +235,7 @@ function execute() {
   shift 2
   case $command in
     apply)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
@@ -251,6 +251,7 @@ function execute() {
       drun bin/bootstrap.sh 1
       ;;
     check-policies)
+      evaluate_secrets
       if [ "$*" != '' ]; then
         validate_cluster_env
       fi
@@ -282,15 +283,18 @@ function execute() {
       fi
       ;;
     deploy)
+      evaluate_secrets
       validate_cluster_env
       drun bin/deploy.sh | grep -Ev $helmfile_output_hide
       ;;
     diff)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
@@ -309,6 +313,7 @@ function execute() {
       fi
       ;;
     hf)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
@@ -320,11 +325,13 @@ function execute() {
       drun bin/bootstrap.sh 1
       ;;
     sync)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
@@ -334,20 +341,17 @@ function execute() {
       evaluate_secrets
       drun bin/crypt.sh rotate
       ;;
-    switch)
-      evaluate_k8s_context
-      kubectl config use $K8S_CONTEXT
-      drun bin/bootstrap.sh 1
-      ;;
     gen-drone)
       evaluate_secrets
       drun bin/gen-drone.sh
       ;;
     test)
+      evaluate_secrets
       validate_cluster_env
       drun bin/test.sh
       ;;
     values)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
@@ -357,6 +361,7 @@ function execute() {
       drun bin/validate-values.sh "$@"
       ;;
     validate-templates)
+      evaluate_secrets
       if [ "$*" != '' ]; then
         validate_cluster_env
       fi
