@@ -248,6 +248,7 @@ function execute() {
       if [[ "$*" != '' ]]; then
         validate_cluster_env
       fi
+      evaluate_secrets
       check_kube_context=0
       drun bin/check-policies.sh "$@"
       ;;
