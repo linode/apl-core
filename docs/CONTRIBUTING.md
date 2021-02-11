@@ -22,7 +22,7 @@ Please make sure to add all the artifacts from the Definition of Done, which inc
 2. Linting of k8s output (manifests) that are generated from the `.demo/env/*` input happens in the build pipelines (via `otomi validate-templates`).
    It tests k8s output from the stack for correct CRs based on their CRDs and OPA rules defined.
    Therefore it is very important to always add test data that generates all of your templates (to keep up coverage).
-3. OPA policy checks are also done in the pipeline via `otomi validate-policies`.
+3. OPA policy checks are also done in the pipeline via `otomi check-policies`.
 4. Scripting is done in `bash`, and these shell scripts are available in `bin/*`. We use the `bats` testing framework as explained in [documentation about bats](./BATS.md).
 
 ### 2. End-to-end tests

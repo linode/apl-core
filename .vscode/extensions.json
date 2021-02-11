@@ -13,6 +13,7 @@
     "redhat.vscode-yaml",
     "streetsidesoftware.code-spell-checker",
     "timonwong.shellcheck",
-    "xyz.local-history"
+    "xyz.local-history",
+    "tsandall.opa"
   ]
 }

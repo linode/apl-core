@@ -1,12 +1,12 @@
 dependencies:
 - name: kube-state-metrics
-  repository: https://kubernetes-charts.storage.googleapis.com/
+  repository: https://charts.helm.sh/stable/
   version: 2.8.14
 - name: prometheus-node-exporter
-  repository: https://kubernetes-charts.storage.googleapis.com/
+  repository: https://charts.helm.sh/stable/
   version: 1.10.0
 - name: grafana
-  repository: https://kubernetes-charts.storage.googleapis.com/
+  repository: https://charts.helm.sh/stable/
   version: 5.3.6
-digest: sha256:32724526e92c26d748eaab3ccb0b52909577ea1bd813513ff0e47990eff7b371
-generated: "2020-09-10T13:19:40.1528232Z"
+digest: sha256:a25d418d7ae32c49c68f6d159e4f42521f38595ccc4dfb02ee91330200b11e9c
+generated: "2021-02-03T18:56:15.451795+02:00"

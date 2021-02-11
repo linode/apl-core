@@ -10,6 +10,8 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
     - name: knative-serving
+    - name: kubeapps
+      disableIstioInjection: true
     - name: kube-system
       disableIstioInjection: true
     - name: maintenance
@@ -74,10 +76,6 @@ services:
     isShared: true
     svc: otomi-console
     paths: [/]
-    authz:
-      forwardOriginalToken: true
-      workload:
-        app.kubernetes.io/name: otomi-console
   - name: loki
     svc: po-grafana
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
@@ -144,6 +142,14 @@ services:
     svc: vault-0
     port: 8200
     ownHost: true
+  - name: kubeapps
+    svc: kubeapps
+    namespace: kubeapps
+    ownHost: true
+    logo:
+      name: kubernetes
+    isPublic: true
+    isShared: true
 
 proxies:
   - name: drone
@@ -162,6 +168,13 @@ teamConfig:
       svc: httpbin
       isShared: true
       host: httpbin
+    - name: kubeapps
+      namespace: kubeapps
+      svc: kubeapps
+      isShared: true
+      host: kubeapps
+      logo:
+        name: kubernetes
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view

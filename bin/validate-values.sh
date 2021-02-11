@@ -1,24 +1,39 @@
 #!/usr/bin/env bash
 
-[ "$CI" != "" ] && set -e
-set -uo pipefail
+[ -n "$CI" ] && set -e
+set -o pipefail
 
 . bin/common.sh
 
 readonly tmp_path="/tmp/validate-values"
-mkdir -p $tmp_path >/dev/null
+script_message="Values validation"
+exitcode=0
+abort=false
 
-cleanup() {
-  local exitcode=$?
-  rm -rf $tmp_path
-  return $exitcode
+function cleanup() {
+  [ $? -ne 0 ] && exitcode=$?
+  ! $abort && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  if [ -z "$DEBUG" ]; then
+    rm -rf $tmp_path
+  fi
+  exit $exitcode
 }
 trap cleanup EXIT ERR
+function abort() {
+  abort=true
+  cleanup
+}
+trap abort SIGINT
+
+mkdir -p $tmp_path >/dev/null
 
 validate_values() {
   local values_path="$tmp_path/$CLOUD-$CLUSTER.yaml"
   hf_values >$values_path
-  ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
+  ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid || exitcode=1
 }
-
-for_each_cluster validate_values
+if [ -n "$1" ]; then
+  validate_values
+else
+  for_each_cluster validate_values
+fi
