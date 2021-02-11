@@ -64,185 +64,158 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.11.54](https://github.com/redkubes/otomi-core/compare/v0.11.53...v0.11.54) (2020-12-19)
 
-
 ### Features
 
-* add bats documentation ([#236](https://github.com/redkubes/otomi-core/issues/236)) ([a11cacf](https://github.com/redkubes/otomi-core/commit/a11cacf473d9b5e80bd3807cfda0c7b5d777cc29))
-* added documentation for schema validation ([#240](https://github.com/redkubes/otomi-core/issues/240)) ([4683d58](https://github.com/redkubes/otomi-core/commit/4683d58672e72c2b94c86d1c49892edc17205678))
-* downgrade knative-serving ([#257](https://github.com/redkubes/otomi-core/issues/257)) ([ae2f3e9](https://github.com/redkubes/otomi-core/commit/ae2f3e9d7598cff162d852497c3f891e7b54a359))
-
+- add bats documentation ([#236](https://github.com/redkubes/otomi-core/issues/236)) ([a11cacf](https://github.com/redkubes/otomi-core/commit/a11cacf473d9b5e80bd3807cfda0c7b5d777cc29))
+- added documentation for schema validation ([#240](https://github.com/redkubes/otomi-core/issues/240)) ([4683d58](https://github.com/redkubes/otomi-core/commit/4683d58672e72c2b94c86d1c49892edc17205678))
+- downgrade knative-serving ([#257](https://github.com/redkubes/otomi-core/issues/257)) ([ae2f3e9](https://github.com/redkubes/otomi-core/commit/ae2f3e9d7598cff162d852497c3f891e7b54a359))
 
 ### CI
 
-* renamed build job name to conform to rest of our repos [ci skip] ([8735c8d](https://github.com/redkubes/otomi-core/commit/8735c8d4a8a8c474920a16abc21b4f9d5f0ead4e))
+- renamed build job name to conform to rest of our repos [ci skip] ([8735c8d](https://github.com/redkubes/otomi-core/commit/8735c8d4a8a8c474920a16abc21b4f9d5f0ead4e))
 
 ### [0.11.53](https://github.com/redkubes/otomi-core/compare/v0.11.52...v0.11.53) (2020-12-15)
 
-
 ### Features
 
-* upgrade knative-serving version ([#230](https://github.com/redkubes/otomi-core/issues/230)) ([528eb07](https://github.com/redkubes/otomi-core/commit/528eb07d73a57ee373f661e1ee13c67fa5e5c626))
-
+- upgrade knative-serving version ([#230](https://github.com/redkubes/otomi-core/issues/230)) ([528eb07](https://github.com/redkubes/otomi-core/commit/528eb07d73a57ee373f661e1ee13c67fa5e5c626))
 
 ### Bug Fixes
 
-* format & sort values-schema.yaml ([#242](https://github.com/redkubes/otomi-core/issues/242)) ([bdd6188](https://github.com/redkubes/otomi-core/commit/bdd61888f6a5a837c624d9e8da4353e478b7059b))
-* modify check empty parameters ([#247](https://github.com/redkubes/otomi-core/issues/247)) ([02c1687](https://github.com/redkubes/otomi-core/commit/02c1687936c0e4355778c9dc0dcbe84dace4c503))
-* removed 403 redirect ([83fffcc](https://github.com/redkubes/otomi-core/commit/83fffcc2110b0db3fbae574a227611c708ddc316))
-* without export not available ([#229](https://github.com/redkubes/otomi-core/issues/229)) ([c231527](https://github.com/redkubes/otomi-core/commit/c231527b4fa384529c3a65e5dedb9d3f289146df))
-
+- format & sort values-schema.yaml ([#242](https://github.com/redkubes/otomi-core/issues/242)) ([bdd6188](https://github.com/redkubes/otomi-core/commit/bdd61888f6a5a837c624d9e8da4353e478b7059b))
+- modify check empty parameters ([#247](https://github.com/redkubes/otomi-core/issues/247)) ([02c1687](https://github.com/redkubes/otomi-core/commit/02c1687936c0e4355778c9dc0dcbe84dace4c503))
+- removed 403 redirect ([83fffcc](https://github.com/redkubes/otomi-core/commit/83fffcc2110b0db3fbae574a227611c708ddc316))
+- without export not available ([#229](https://github.com/redkubes/otomi-core/issues/229)) ([c231527](https://github.com/redkubes/otomi-core/commit/c231527b4fa384529c3a65e5dedb9d3f289146df))
 
 ### Others
 
-* **deps:** bump ini from 1.3.5 to 1.3.8 ([#245](https://github.com/redkubes/otomi-core/issues/245)) ([50a877f](https://github.com/redkubes/otomi-core/commit/50a877ff00d6572787269f6f3352df85615fcead))
+- **deps:** bump ini from 1.3.5 to 1.3.8 ([#245](https://github.com/redkubes/otomi-core/issues/245)) ([50a877f](https://github.com/redkubes/otomi-core/commit/50a877ff00d6572787269f6f3352df85615fcead))
 
 ### [0.11.52](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.52) (2020-12-07)
 
-
 ### Features
 
-* bats test framework ([#216](https://github.com/redkubes/otomi-core/issues/216)) ([19952a6](https://github.com/redkubes/otomi-core/commit/19952a6308806e95200656b3e2db917f4e3ad59b))
-* bumped versions, both dockerfiles ([#227](https://github.com/redkubes/otomi-core/issues/227)) ([3ecc99b](https://github.com/redkubes/otomi-core/commit/3ecc99bdb4da5c80c24e7f58df62a3754e438e69))
-* support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
-
+- bats test framework ([#216](https://github.com/redkubes/otomi-core/issues/216)) ([19952a6](https://github.com/redkubes/otomi-core/commit/19952a6308806e95200656b3e2db917f4e3ad59b))
+- bumped versions, both dockerfiles ([#227](https://github.com/redkubes/otomi-core/issues/227)) ([3ecc99b](https://github.com/redkubes/otomi-core/commit/3ecc99bdb4da5c80c24e7f58df62a3754e438e69))
+- support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
 
 ### Bug Fixes
 
-* cluter overprovisioner [ci skip] ([00dfcc1](https://github.com/redkubes/otomi-core/commit/00dfcc12905e4c42c210f343082f55f894e97c14))
-* demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
-* oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
-* set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
-
+- cluter overprovisioner [ci skip] ([00dfcc1](https://github.com/redkubes/otomi-core/commit/00dfcc12905e4c42c210f343082f55f894e97c14))
+- demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
+- oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
+- set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
 
 ### Code Refactoring
 
-* resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
-
+- resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
 
 ### Others
 
-* **release:** 0.11.51 ([e54434e](https://github.com/redkubes/otomi-core/commit/e54434e3a8f8df9545ea5ec4c66e95c7eabd4596))
+- **release:** 0.11.51 ([e54434e](https://github.com/redkubes/otomi-core/commit/e54434e3a8f8df9545ea5ec4c66e95c7eabd4596))
 
 ### [0.11.51](https://github.com/redkubes/otomi-core/compare/v0.11.50...v0.11.51) (2020-12-07)
 
-
 ### Features
 
-* support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
-
+- support for aws mfa exec ([#225](https://github.com/redkubes/otomi-core/issues/225)) ([bc12727](https://github.com/redkubes/otomi-core/commit/bc12727b369c49f162e6d8e8d81afcf2ced33c2f))
 
 ### Bug Fixes
 
-* demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
-* oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
-* set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
-
+- demo values [ci skip] ([17e92ed](https://github.com/redkubes/otomi-core/commit/17e92edc64c95c1e065f111284e10adee37e594d))
+- oauth2-proxy redis connect url ([9381c62](https://github.com/redkubes/otomi-core/commit/9381c62728b5ca9d1692c28c04364250ab2d2267))
+- set istio sidecar imagepullpolicy to ifnotpresent ([#223](https://github.com/redkubes/otomi-core/issues/223)) ([4372cef](https://github.com/redkubes/otomi-core/commit/4372cef97004e599fadc61e2fdf6254252c46efc))
 
 ### Code Refactoring
 
-* resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
+- resources, egress, gotmpl dry up, fix for grafana istio ([262694c](https://github.com/redkubes/otomi-core/commit/262694c2cd06c8a5de3e60ead0376b7a9e5ec74e))
 
 ### [0.11.50](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.50) (2020-11-30)
 
-
 ### Bug Fixes
 
-* demo values [ci skip] ([5af6dc7](https://github.com/redkubes/otomi-core/commit/5af6dc7c9a733445cbed43926db3f4baa739e8d4))
-
+- demo values [ci skip] ([5af6dc7](https://github.com/redkubes/otomi-core/commit/5af6dc7c9a733445cbed43926db3f4baa739e8d4))
 
 ### Code Refactoring
 
-* smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
-
+- smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
 
 ### Others
 
-* **release:** 0.11.49 ([136e4be](https://github.com/redkubes/otomi-core/commit/136e4be8ad6671623082ef73a5e956deb159fa74))
+- **release:** 0.11.49 ([136e4be](https://github.com/redkubes/otomi-core/commit/136e4be8ad6671623082ef73a5e956deb159fa74))
 
 ### [0.11.49](https://github.com/redkubes/otomi-core/compare/v0.11.48...v0.11.49) (2020-11-30)
 
-
 ### Code Refactoring
 
-* smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
+- smtp on its own [ci skip] ([f1b64b7](https://github.com/redkubes/otomi-core/commit/f1b64b7263a794e23ff2fa7eb6b4bd617e6e0cd0))
 
 ### [0.11.48](https://github.com/redkubes/otomi-core/compare/v0.11.47...v0.11.48) (2020-11-30)
 
-
 ### Bug Fixes
 
-* alertmanager template [ci skip] ([48a4169](https://github.com/redkubes/otomi-core/commit/48a41698dcbee89b621840ef28d1dbd81c870f76))
+- alertmanager template [ci skip] ([48a4169](https://github.com/redkubes/otomi-core/commit/48a41698dcbee89b621840ef28d1dbd81c870f76))
 
 ### [0.11.47](https://github.com/redkubes/otomi-core/compare/v0.11.46...v0.11.47) (2020-11-30)
 
-
 ### Bug Fixes
 
-* alertmanager template [ci skip] ([62683af](https://github.com/redkubes/otomi-core/commit/62683af7e94fb16f89b0dab3a5867b9d5d48e618))
+- alertmanager template [ci skip] ([62683af](https://github.com/redkubes/otomi-core/commit/62683af7e94fb16f89b0dab3a5867b9d5d48e618))
 
 ### [0.11.46](https://github.com/redkubes/otomi-core/compare/v0.11.45...v0.11.46) (2020-11-30)
 
-
 ### Features
 
-* added email+home receiver, moved cloud settings to own props ([8392c47](https://github.com/redkubes/otomi-core/commit/8392c4749948330341c93519450a36f11c953427))
-* multiple alert endpoints ([b5aa63c](https://github.com/redkubes/otomi-core/commit/b5aa63c86f379b7eb8b4ad078af3b6b3168d3066))
-
+- added email+home receiver, moved cloud settings to own props ([8392c47](https://github.com/redkubes/otomi-core/commit/8392c4749948330341c93519450a36f11c953427))
+- multiple alert endpoints ([b5aa63c](https://github.com/redkubes/otomi-core/commit/b5aa63c86f379b7eb8b4ad078af3b6b3168d3066))
 
 ### Bug Fixes
 
-* alertmanager email conf ([36f5558](https://github.com/redkubes/otomi-core/commit/36f5558ad64c9adef5fe396dc851d38a85b760ce))
-* alertmanager email conf home fallback ([adbf699](https://github.com/redkubes/otomi-core/commit/adbf69915f5405efdcaf217b5fee333e497171cf))
-* dns config, cli invocation for single cluster validation ([36e2a03](https://github.com/redkubes/otomi-core/commit/36e2a0349ccecdd28dc6264fb3beb808e5678fae))
-* home email alert config ([85df7ee](https://github.com/redkubes/otomi-core/commit/85df7ee58a96ac496b9900d469ad9dca3ca10a9a))
-* msteams pipeline [ci skip] ([f7c2640](https://github.com/redkubes/otomi-core/commit/f7c2640630bf9e097bbad155ceac14c215d7344d))
-* non required props ([b6bac19](https://github.com/redkubes/otomi-core/commit/b6bac192b3e9c889ad21c8b0c808ce7061a8c10b))
+- alertmanager email conf ([36f5558](https://github.com/redkubes/otomi-core/commit/36f5558ad64c9adef5fe396dc851d38a85b760ce))
+- alertmanager email conf home fallback ([adbf699](https://github.com/redkubes/otomi-core/commit/adbf69915f5405efdcaf217b5fee333e497171cf))
+- dns config, cli invocation for single cluster validation ([36e2a03](https://github.com/redkubes/otomi-core/commit/36e2a0349ccecdd28dc6264fb3beb808e5678fae))
+- home email alert config ([85df7ee](https://github.com/redkubes/otomi-core/commit/85df7ee58a96ac496b9900d469ad9dca3ca10a9a))
+- msteams pipeline [ci skip] ([f7c2640](https://github.com/redkubes/otomi-core/commit/f7c2640630bf9e097bbad155ceac14c215d7344d))
+- non required props ([b6bac19](https://github.com/redkubes/otomi-core/commit/b6bac192b3e9c889ad21c8b0c808ce7061a8c10b))
 
 ### [0.11.45](https://github.com/redkubes/otomi-core/compare/v0.11.44...v0.11.45) (2020-11-20)
 
-
 ### Code Refactoring
 
-* simplified oidc, overloading with keycloak if exists [ci skip] ([4519656](https://github.com/redkubes/otomi-core/commit/4519656b490a87d4fc77ce615e37877b2ef84596))
+- simplified oidc, overloading with keycloak if exists [ci skip] ([4519656](https://github.com/redkubes/otomi-core/commit/4519656b490a87d4fc77ce615e37877b2ef84596))
 
 ### [0.11.44](https://github.com/redkubes/otomi-core/compare/v0.11.43...v0.11.44) (2020-11-20)
 
-
 ### Code Refactoring
 
-* grafana ini oidc [ci skip] ([165dd1a](https://github.com/redkubes/otomi-core/commit/165dd1a7c2b74fb5dace4cdb5a9b1b148f900b8a))
+- grafana ini oidc [ci skip] ([165dd1a](https://github.com/redkubes/otomi-core/commit/165dd1a7c2b74fb5dace4cdb5a9b1b148f900b8a))
 
 ### [0.11.43](https://github.com/redkubes/otomi-core/compare/v0.11.42...v0.11.43) (2020-11-20)
 
-
 ### Bug Fixes
 
-* azure exposure was missing apps domain [ci skip] ([410ca0f](https://github.com/redkubes/otomi-core/commit/410ca0f7d28ea102e3b2deb9c068330a532b780b))
+- azure exposure was missing apps domain [ci skip] ([410ca0f](https://github.com/redkubes/otomi-core/commit/410ca0f7d28ea102e3b2deb9c068330a532b780b))
 
 ### [0.11.42](https://github.com/redkubes/otomi-core/compare/v0.11.41...v0.11.42) (2020-11-20)
 
-
 ### Code Refactoring
 
-* **oidc:** moved oidc.idp props to oidc, added home [ci skip] ([e6a2c64](https://github.com/redkubes/otomi-core/commit/e6a2c646d8a35f7e65b5fb0fb2373a36a458b12a))
+- **oidc:** moved oidc.idp props to oidc, added home [ci skip] ([e6a2c64](https://github.com/redkubes/otomi-core/commit/e6a2c646d8a35f7e65b5fb0fb2373a36a458b12a))
 
 ### [0.11.41](https://github.com/redkubes/otomi-core/compare/v0.11.40...v0.11.41) (2020-11-20)
 
-
 ### Features
 
-* email receiver for alertmanager ([b8b4198](https://github.com/redkubes/otomi-core/commit/b8b41981f2f39c2d751efb46de97f9fcde1ad6e9))
-
+- email receiver for alertmanager ([b8b4198](https://github.com/redkubes/otomi-core/commit/b8b41981f2f39c2d751efb46de97f9fcde1ad6e9))
 
 ### Bug Fixes
 
-* demo clusters enabled flag [ci skip] ([9276235](https://github.com/redkubes/otomi-core/commit/92762353dd76e11a10501490cd9a9dc93cd814c8))
-* docker build tests can be skipped with build arg SKIP_TESTS [ci skip] ([edb31f7](https://github.com/redkubes/otomi-core/commit/edb31f70fe9936c42caa40a9a61f3ad3ea4ca142))
-
+- demo clusters enabled flag [ci skip] ([9276235](https://github.com/redkubes/otomi-core/commit/92762353dd76e11a10501490cd9a9dc93cd814c8))
+- docker build tests can be skipped with build arg SKIP_TESTS [ci skip] ([edb31f7](https://github.com/redkubes/otomi-core/commit/edb31f70fe9936c42caa40a9a61f3ad3ea4ca142))
 
 ### Others
 
-* **release:** 0.11.40 ([e74b235](https://github.com/redkubes/otomi-core/commit/e74b235346b5ac9f6e9d77b6f808cb82290c3996))
+- **release:** 0.11.40 ([e74b235](https://github.com/redkubes/otomi-core/commit/e74b235346b5ac9f6e9d77b6f808cb82290c3996))
 
 ### [0.11.40](https://github.com/redkubes/otomi-core/compare/v0.11.39...v0.11.40) (2020-11-18)
 

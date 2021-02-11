@@ -120,8 +120,8 @@ Parameter | Description | Default
 `keycloak.route.tls.termination` | TLS termination of the route. Can be `edge`, `passthrough` or `reencrypt` | `edge`
 `keycloak.persistence.deployPostgres` | If true, the PostgreSQL chart is installed | `false`
 `keycloak.persistence.existingSecret` | Name of an existing secret to be used for the database password (if `keycloak.persistence.deployPostgres=false`). Otherwise a new secret is created | `""`
-`keycloak.persistence.existingSecretPasswordKey` | The key for the database password in the existing secret (if `keycloak.persistence.deployPostgres=false` and `keycloak.persistence.existingSecret != ""`) | `""`
-`keycloak.persistence.existingSecretUsernameKey` | The key for the database username in the existing secret (if `keycloak.persistence.deployPostgres=false` and `keycloak.persistence.existingSecret != ""`). Will default to the value of `.keycloak.persistence.dbUser` if left unset. | `""`
+`keycloak.persistence.existingSecretPasswordKey` | The key for the database password in the existing secret (if `keycloak.persistence.deployPostgres=false` and `keycloak.persistence.existingSecret != ''`) | `""`
+`keycloak.persistence.existingSecretUsernameKey` | The key for the database username in the existing secret (if `keycloak.persistence.deployPostgres=false` and `keycloak.persistence.existingSecret != ''`). Will default to the value of `.keycloak.persistence.dbUser` if left unset. | `""`
 `keycloak.persistence.dbVendor` | One of `h2`, `postgres`, `mysql`, or `mariadb` (if `deployPostgres=false`) | `h2`
 `keycloak.persistence.dbName` | The name of the database to connect to (if `deployPostgres=false`) | `keycloak`
 `keycloak.persistence.dbHost` | The database host name (if `deployPostgres=false`) | `mykeycloak`

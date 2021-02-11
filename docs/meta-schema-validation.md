@@ -1,6 +1,6 @@
 # Meta-schema validation
 
-We validate `values-schema.yaml` using JSON Schema. Refer to `values-schema.yaml` for the supported `$schema`, it should always be on top of the file for easy reference.
+We validate values with our `values-schema.yaml` JSON Schema. The supported version can always be found on top of the file for easy reference.
 
 ## Guidelines for describing strings
 

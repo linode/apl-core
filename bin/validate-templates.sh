@@ -1,36 +1,45 @@
 #!/usr/bin/env bash
 
-[ "$CI" != "" ] && set -e
-set -uo pipefail
-
-schemaOutputPath="/tmp/otomi/kubernetes-json-schema"
-outputPath="/tmp/otomi/generated-crd-schemas"
-schemasBundleFile="$outputPath/all.json"
-k8sResourcesPath="/tmp/otomi/kubeval-fixtures"
-extractCrdSchemaJQFile=$(mktemp -u)
-exitcode=0
+[ -n "$CI" ] && set -e
+set -o pipefail
 
 . bin/common.sh
 
-cleanup() {
-  [ $? -eq 0 ] && [ $exitcode -eq 0 ] && echo "Validation Success" || echo "Validation Failed"
-  rm -rf $extractCrdSchemaJQFile
-  rm -rf $k8sResourcesPath -rf $outputPath $schemaOutputPath
+readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
+readonly output_path="/tmp/otomi/generated-crd-schemas"
+readonly schemas_bundle_file="$output_path/all.json"
+readonly k8s_resources_path="/tmp/otomi/generated-manifests"
+readonly jq_file=$(mktemp -u)
+script_message="Templates validation"
+exitcode=0
+abort=false
+
+function cleanup() {
+  [ $? -ne 0 ] && exitcode=$?
+  ! $abort && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  if [ -z "$DEBUG" ]; then
+    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
+  fi
   exit $exitcode
 }
 trap cleanup EXIT ERR
+function abort() {
+  abort=true
+  cleanup
+}
+trap abort SIGINT
 
 run_setup() {
   local k8s_version=$1
-  rm -rf $k8sResourcesPath $outputPath $schemaOutputPath
-  mkdir -p $k8sResourcesPath $outputPath $schemaOutputPath
-  echo "" >$schemasBundleFile
+  rm -rf $k8s_resources_path $output_path $schema_output_path
+  mkdir -p $k8s_resources_path $output_path $schema_output_path
+  echo "" >$schemas_bundle_file
   # use standalone schemas
-  tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schemaOutputPath/"
-  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schemaOutputPath/$k8s_version-standalone"
+  tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
+  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
 
   # loop over .spec.versions[] and generate one file for each version
-  cat <<'EOF' >$extractCrdSchemaJQFile
+  cat <<'EOF' >$jq_file
     . as $obj |
     if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
     if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end | 
@@ -53,64 +62,66 @@ EOF
 
 process_crd() {
   local document="$1"
-  local filterCRDExpr='select(.kind=="CustomResourceDefinition")'
+  local filter_crd_expr='select(.kind=="CustomResourceDefinition")'
   {
     yq r -d'*' -j "$document" |
-      jq -c "$filterCRDExpr" |
-      jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
+      jq -c "$filter_crd_expr" |
+      jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
-    echo "ERROR Processing: $document"
-    [ "$CI" != "" ] && exit 1
+    err "Processing: $document"
+    [ -n "$CI" ] && exit 1
   }
 }
 
 validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
+  local cluster_env=$(cluster_env)
 
   run_setup $k8s_version
-  # generate_manifests
-  echo "Generating Kubernetes $k8s_version Manifests for ${CLOUD}-${CLUSTER}."
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  hf_templates_init $k8s_resources_path
 
-  hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-  hf template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-
-  echo "Processing CRD files."
+  echo "Processing CRD files"
   # generate canonical schemas
-  local targetYamlFiles="*.yaml"
+  local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+  for file in $(find "$k8s_resources_path" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # schemas for chart crds
-  for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
+  for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # create schema in canonical format for each extracted file
-  for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
-    jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >"$schemaOutputPath/$k8s_version-standalone/$json"
+  for json in $(jq -s -r '.[] | .filename' $schemas_bundle_file); do
+    jq "select(.filename==\"$json\")" $schemas_bundle_file | jq '.schema' >"$schema_output_path/$k8s_version-standalone/$json"
   done
 
   # validate_resources
-  echo "Validating resources against Kubernetes version: $k8s_version"
-  local kubevalSchemaLocation="file://${schemaOutputPath}"
-  local skipKinds="CustomResourceDefinition"
-  local skipFilenames="crd,knative-services"
+  echo "Validating resources for cluster '$cluster_env'"
+  local kubeval_schema_location="file://${schema_output_path}"
+  local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
+  local skip_kinds="CustomResourceDefinition,$constraint_kinds"
+  local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   set +o pipefail
-  kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames \
-    --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation \
+  kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
+    --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  grep -q "ERROR" $tmp_out && exitcode=1
+  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
+  validationResult=$(($validationResult + $exitcode))
   rm $tmp_out
 }
 
-if [ "${1-}" != "" ]; then
+if [ -n "$1" ]; then
+  [ -n "$VERBOSE" ] && echo "Running validate-templates for target cluster only"
   validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # hf lint
 else
+  [ -n "$VERBOSE" ] && echo "Running validate-templates for all clusters"
   for_each_cluster validate_templates
   # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
   # for_each_cluster hf lint

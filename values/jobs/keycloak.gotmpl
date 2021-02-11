@@ -12,8 +12,9 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-tasks:
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
+tasks:
   keycloak:
     type: job
     description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
@@ -30,9 +31,9 @@ tasks:
         done
         echo READY!
     image:
-      repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
-      tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
-      pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
+      repository: otomi/tasks
+      tag: v0.2.4
+      pullPolicy: IfNotPresent
     env:
       KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
     secret:
@@ -65,3 +66,6 @@ tasks:
           "http://localhost:8250/oidc/callback"
       ]'
     script: {{ if $skipVerify }}export NODE_EXTRA_CA_CERTS=/fakeroot.pem && {{ end }}npm run tasks:keycloak
+    annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 6 }}
+    podSecurityContext:
+      runAsUser: 1000

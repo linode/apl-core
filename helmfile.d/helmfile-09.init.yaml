@@ -24,12 +24,6 @@ releases:
       pkg: knative
     values:
       - ../values/knative/knative-serving-raw.gotmpl
-  - name: gatekeeper-operator-config
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
-    namespace: gatekeeper-system
-    labels:
-      pkg: gatekeeper-operator
-    <<: *default
   - name: oauth2-proxy-redis
     installed: true
     namespace: istio-system

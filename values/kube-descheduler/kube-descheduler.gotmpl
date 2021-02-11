@@ -42,3 +42,6 @@ deschedulerPolicy:
         - requiredDuringSchedulingIgnoredDuringExecution
     RemovePodsViolatingNodeTaints:
       enabled: true
+
+securityContext:
+  runAsUser: 1001

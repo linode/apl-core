@@ -1,4 +1,3 @@
----
 $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: false
 definitions:
@@ -229,7 +228,7 @@ definitions:
     examples:
       - 1Mi
       - 0.5M
-    pattern: '^[0-9]+\.?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
   portNumber:
     maximum: 32768
@@ -868,7 +867,29 @@ properties:
             required:
               - region
           azure:
-            type: object
+            properties:
+              cloud:
+                type: string
+                description: Azure Cloud to use
+              resourceGroup:
+                type: string
+                description: Azure resource group to use
+              tenantId:
+                type: string
+                description: Azure tenant ID to use (will default to global value)
+              subscriptionId:
+                type: string
+                description: Azure subscription ID to use (will default to global value)
+              aadClientId:
+                type: string
+                description: Azure Application Client ID to use
+              aadClientSecret:
+                type: string
+                description: Azure Application Client Secret to use
+              useManagedIdentityExtension:
+                type: boolean
+                description: If you use Azure MSI, this should be set to true
+                default: false
           domainFilters:
             items:
               type: string
@@ -884,12 +905,35 @@ properties:
           zoneIdFilters:
             items:
               type: string
-            type: array
       gatekeeper-operator:
         additionalProperties: false
         properties:
           enabled:
             type: boolean
+          excludedNamespaces:
+            type: array
+            items:
+              type: string
+          emitAuditEvents:
+            type: boolean
+          emitAdmissionEvents:
+            type: boolean
+          auditFromCache:
+            type: boolean
+          disableValidatingWebhook:
+            type: boolean
+          logLevel:
+            type: string
+          constraintViolationsLimit:
+            type: number
+          auditInterval:
+            type: number
+          replicas:
+            type: number
+          dataSync:
+            type: array
+            items:
+              type: object
       harbor:
         additionalProperties: false
         properties:
@@ -1477,6 +1521,244 @@ properties:
         description: The prefix to use in URLs for team domains.
         pattern: '^[a-z]+[-]{1}$'
         type: string
+      addons:
+        description: Manage addon configuration
+        additionalProperties: false
+        properties:
+          conftest:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                description: Use this flag to enable conftest for policy validation
+
+  policies:
+    type: object
+    description: |
+      List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
+    additionalProperties: false
+    properties:
+      banned-image-tags:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          tags:
+            type: array
+            items:
+              type: string
+          enabled:
+            type: boolean
+            default: false
+      container-limits:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          cpu:
+            '$ref': '#/definitions/cpuQuantity'
+          memory:
+            '$ref': '#/definitions/memoryQuantity'
+          enabled:
+            type: boolean
+            default: false
+      psp-allowed-repos:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          repos:
+            type: array
+            items:
+              type: string
+          enabled:
+            type: boolean
+            default: false
+      psp-host-filesystem:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          allowedHostPaths:
+            type: array
+            items:
+              type: object
+              required: [pathPrefix, readOnly]
+              properties:
+                pathPrefix:
+                  type: string
+                readOnly:
+                  type: boolean
+              additionalProperties: false
+          enabled:
+            type: boolean
+            default: false
+      psp-allowed-users:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          runAsUser:
+            type: object
+            additionalProperties: false
+            required: [rule]
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          runAsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          supplementalGroups:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          fsGroup:
+            type: object
+            properties:
+              rule:
+                type: string
+                enum: [RunAsAny, MayRunAs, MustRunAs]
+              ranges:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [min, max]
+                  properties:
+                    min:
+                      type: integer
+                    max:
+                      type: integer
+          enabled:
+            type: boolean
+            default: false
+      psp-host-security:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+      psp-host-networking-ports:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+      psp-privileged:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+      psp-capabilities:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          allowedCapabilities:
+            type: array
+            items:
+              type: string
+          requiredDropCapabilities:
+            type: array
+            items:
+              type: string
+      psp-forbidden-sysctls:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          forbiddenSysctls:
+            type: array
+            items:
+              type: string
+      psp-apparmor:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      psp-seccomp:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          allowedProfiles:
+            type: array
+            items:
+              type: string
+      psp-selinux:
+        additionalProperties: false
+        required: [enabled]
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          seLinuxContext:
+            type: string
+            enum: [MustRunAs, RunAsAny]
+          allowedSELinuxOptions:
+            type: array
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                level:
+                  type: string
+                role:
+                  type: string
+                type:
+                  type: string
+                user:
+                  type: string
   proxies:
     items:
       additionalProperties: false
