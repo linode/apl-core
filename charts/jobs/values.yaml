@@ -51,7 +51,7 @@ type: Job # CronJob
 ttlSecondsAfterFinished: 86400
 
 # Policies
-{{- $addIgnorePolicyAnnotation := readFile "../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 6 }}
 podSecurityContext:
   runAsUser: 1000
