@@ -21,6 +21,6 @@ metadata:
   name: {{ include "fileConfigMapName" $location }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{ $location }}: {{- toYaml $content | nindent 4 }}
+  {{ include "fileConfigMapName" $location }}: {{- toYaml $content | nindent 4 }} 
 ---
 {{- end }}

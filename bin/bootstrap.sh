@@ -48,7 +48,7 @@ if [ -z "$(ls -A $ENV_DIR/env)" ]; then
   echo "No files found in env, installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
-[ -f "$ENV_DIR/.git/hooks" ] && cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
+cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 [ "${GCLOUD_SERVICE_KEY-}" != "" ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
 secrets_file="$ENV_DIR/env/secrets.settings.yaml"
 if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != "" ]; then

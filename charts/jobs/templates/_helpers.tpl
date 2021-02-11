@@ -69,5 +69,5 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "fileConfigMapName" -}}
-{{ printf "job-%s" (. | replace "." "-" | replace "/" "-") }}
+{{ printf "job-%s" (. | replace "." "" | replace "/" "") }}
 {{- end -}}

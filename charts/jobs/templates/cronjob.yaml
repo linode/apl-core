@@ -103,9 +103,6 @@ spec:
             - name: {{ include "fileConfigMapName" $location }}
               configMap:
                 name: {{ include "fileConfigMapName" $location }}
-                items:
-                - key: {{ $location }}
-                  path: {{ $location }}
             {{- end }}
           {{- end }}
   backoffLimit: 3

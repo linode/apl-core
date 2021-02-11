@@ -6,9 +6,9 @@ teamConfig:
                   env:
                       receiver: world
                   files:
-                      some-file: someData
-                      /some/file2: someData2
-                      some-file3: |-
+                      /config/some-file: someData
+                      /config/some/file2: someData2
+                      /config/some-file3: |-
                           some data on another line
                           another line
                   image:
@@ -22,20 +22,26 @@ teamConfig:
                           repository: busybox
                           tag: latest
                           pullPolicy: IfNotPresent
-                      script: echo "hello $receiver"
+                      script: echo "hello $receiver and $SOME-KEY"
                       secrets:
-                          - name: secret-name
+                          - name: generic-example
                             entries:
-                                - foo
-                                - bar
+                                - some-key
+                                - some-key2
+                          - name: another-generic-secret
+                            entries:
+                                - some-key3
                   name: contains-everything
                   runPolicy: Always
                   script: echo "hello $receiver"
                   secrets:
-                      - name: secret-name
+                      - name: generic-example
                         entries:
-                            - foo
-                            - bar
+                            - some-key
+                            - some-key2
+                      - name: another-generic-secret
+                        entries:
+                            - some-key3
                   type: Job
                 - enabled: true
                   env:
@@ -59,19 +65,25 @@ teamConfig:
                           pullPolicy: IfNotPresent
                       script: echo "hello $receiver"
                       secrets:
-                          - name: secret-name
+                          - name: generic-example
                             entries:
-                                - foo
-                                - bar
+                                - some-key
+                                - some-key2
+                          - name: another-generic-secret
+                            entries:
+                                - some-key3
                   name: also-contains-everything-and-cron
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
                   secrets:
-                      - name: secret-name
+                      - name: generic-example
                         entries:
-                            - foo
-                            - bar
+                            - some-key
+                            - some-key2
+                      - name: another-generic-secret
+                        entries:
+                            - some-key3
                   type: CronJob
                 - enabled: true
                   image:

@@ -47,7 +47,7 @@ spec:
             {{- end }}
           {{- end }}
         {{- end }}
-        {{- with $v.files }}
+        {{- if $v.files }}
         volumeMounts:
           {{- range $location, $content := $v.files }}
           - name: {{ include "fileConfigMapName" $location }}
@@ -64,7 +64,7 @@ spec:
           - |
             {{- toString $v.script | nindent 12 }}
         resources: {{ toYaml $v.resources | nindent 10 }}
-        {{- if $v.secrets }}
+        {{- with $v.secrets }}
         env:
           {{- range $secret := ($v.secrets | default list) }} 
             {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
@@ -88,7 +88,7 @@ spec:
             name: job-{{ $v.name }}
         {{- end }}
         {{- end }}
-        {{- if $v.files }}
+        {{- with $v.files }}
         volumeMounts:
           {{- range $location, $content := $v.files }}
           - name: {{ include "fileConfigMapName" $location }}
@@ -96,15 +96,12 @@ spec:
           {{- end }}
         {{- end }}
       restartPolicy: Never
-      {{- if $v.files }}
+      {{- with $v.files }}
       volumes:
         {{- range $location, $content := $v.files }}
         - name: {{ include "fileConfigMapName" $location }}
           configMap:
             name: {{ include "fileConfigMapName" $location }}
-            items:
-            - key: {{ $location }}
-              path: {{ $location }}
         {{- end }}
       {{- end }}
   backoffLimit: 3
