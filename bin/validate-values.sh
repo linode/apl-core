@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ -n "$CI" ] && set -e
+[ "$CI" = 'true' ] && set -e
 set -o pipefail
 
 . bin/common.sh

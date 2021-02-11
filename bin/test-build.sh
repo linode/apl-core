@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export CI=true
+export CI='true'
 
 bin/validate-values.sh &&
   bats bin/tests &&

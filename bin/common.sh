@@ -11,9 +11,6 @@ readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
-exitcode=0
-abort=false
-
 has_docker='false'
 if docker --version &>/dev/null; then
   has_docker='true'
@@ -70,14 +67,6 @@ function otomi_image_tag() {
 
 function customer_name() {
   yq r $otomi_settings "customer.name"
-}
-
-function check_sops_file() {
-  [[ ! -f "$ENV_DIR/.sops.yaml" ]] && (
-    err "The $ENV_DIR/.sops.yaml does not exists"
-    exit 1
-  )
-  return 0
 }
 
 function cluster_env() {
