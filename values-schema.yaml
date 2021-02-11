@@ -273,6 +273,9 @@ definitions:
         type: number
       minReplicas:
         type: number
+  subdomainType:
+    type: string
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   externalSecret:
     type: object
     oneOf:
@@ -283,7 +286,7 @@ definitions:
             enum:
               - generic
           name:
-            type: string
+            $ref: '#/definitions/subdomainType'
           vaultPath:
             $ref: '#/definitions/vaultPath'
         required:
@@ -296,7 +299,7 @@ definitions:
             enum:
               - genericItem
           name:
-            type: string
+            $ref: '#/definitions/subdomainType'
           vaultPath:
             $ref: '#/definitions/vaultPath'
           vaultProperty:
@@ -314,7 +317,7 @@ definitions:
               - docker-registry
             type: string
           name:
-            type: string
+            $ref: '#/definitions/subdomainType'
           vaultPath:
             $ref: '#/definitions/vaultPath'
         required:
@@ -329,7 +332,7 @@ definitions:
               - tls
             type: string
           name:
-            type: string
+            $ref: '#/definitions/subdomainType'
           caCrtVaultPath:
             $ref: '#/definitions/vaultPath'
           caCrtFileName:
@@ -344,7 +347,7 @@ definitions:
             $ref: '#/definitions/vaultPath'
           tlsKeyFileName:
             type: string
-            default: 'tls.crt'
+            default: 'tls.key'
         required:
           - type
           - name
