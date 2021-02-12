@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ -n "$CI" ] && set -e
+[ "$CI" = 'true' ] && set -e
 set -o pipefail
 
 . bin/common.sh
@@ -27,11 +27,12 @@ trap abort SIGINT
 
 mkdir -p $tmp_path >/dev/null
 
-validate_values() {
+function validate_values() {
   local values_path="$tmp_path/$CLOUD-$CLUSTER.yaml"
   hf_values >$values_path
   ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid || exitcode=1
 }
+
 if [ -n "$1" ]; then
   validate_values
 else

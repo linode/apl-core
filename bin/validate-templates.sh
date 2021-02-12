@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ -n "$CI" ] && set -e
+[ "$CI" = 'true' ] && set -e
 set -o pipefail
 
 . bin/common.sh
@@ -29,7 +29,7 @@ function abort() {
 }
 trap abort SIGINT
 
-run_setup() {
+function setup() {
   local k8s_version=$1
   rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
@@ -60,7 +60,7 @@ run_setup() {
 EOF
 }
 
-process_crd() {
+function process_crd() {
   local document="$1"
   local filter_crd_expr='select(.kind=="CustomResourceDefinition")'
   {
@@ -73,12 +73,12 @@ process_crd() {
   }
 }
 
-validate_templates() {
+function validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
 
-  run_setup $k8s_version
+  setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates_init $k8s_resources_path
 
@@ -102,7 +102,8 @@ validate_templates() {
   echo "Validating resources for cluster '$cluster_env'"
   local kubeval_schema_location="file://${schema_output_path}"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
-  local skip_kinds="CustomResourceDefinition,$constraint_kinds"
+  # TODO: revisit these excluded resources and see it they exist now
+  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   set +o pipefail
@@ -110,9 +111,7 @@ validate_templates() {
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
-  validationResult=$(($validationResult + $exitcode))
-  rm $tmp_out
+  grep -e "ERR\b" $tmp_out && exitcode=1
 }
 
 if [ -n "$1" ]; then
