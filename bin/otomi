@@ -14,7 +14,7 @@
 set -e
 
 # normalize $CI to be set to 'true' if set and not 'false'
-[ "$CI" = 'true' ] && [ "$CI" != 'false' ] && export CI='true'
+([ "$CI" = 'true' ] || [ "$CI" != 'false' ]) && CI='true'
 
 command=$1
 env_unset='false'
