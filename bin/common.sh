@@ -70,7 +70,7 @@ function customer_name() {
 }
 
 function cluster_env() {
-  printf "${CLOUD}-${CLUSTER}"
+  printf "$CLOUD-$CLUSTER"
 }
 
 function hf() {
@@ -78,7 +78,7 @@ function hf() {
 }
 
 function hf_values() {
-  [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
+  [ -z "$VERBOSE" ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build |
     grep -Ev $helmfile_output_hide |
     sed -e $replace_paths_pattern |
@@ -95,7 +95,7 @@ function prepare_crypt() {
 function for_each_cluster() {
   # Perform a command from argument for each cluster
   executable=$1
-  [[ -z "$executable" ]] && err "The positional argument is not set"
+  [ -z "$executable" ] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
@@ -109,6 +109,6 @@ function for_each_cluster() {
 hf_templates_init() {
   local out_dir="$1"
   shift
-  [ -z "${*-}" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
   hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }

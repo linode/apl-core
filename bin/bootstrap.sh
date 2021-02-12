@@ -18,7 +18,7 @@ has_otomi='false'
 function generate_loose_schema() {
   local targetPath="$ENV_DIR/.vscode/values-schema.yaml"
   local sourcePath="$PWD/values-schema.yaml"
-  yq r -j "${sourcePath}" | jq "del(.. | .required?)" | yq r --prettyPrint - > "${targetPath}"
+  yq r -j "${sourcePath}" | jq "del(.. | .required?)" | yq r --prettyPrint - >"$targetPath"
   # yq d $sourcePath '**.required.' | yq d - 'properties.toolsVersion' | yq d - 'properties.cluster' >$targetPath
   # also put a copy in the .values folder for local hinting of .demo/env/*.yaml files:
   [ "$PWD" != "/home/app/stack" ] && cp $targetPath .values/
@@ -59,7 +59,7 @@ if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')
   cp -f $PWD/core.yaml $ENV_DIR/
   cp -f $PWD/docker-compose.yml $ENV_DIR/
 fi
-if [ "$has_otomi" = "false" ]; then
+if [ "$has_otomi" = 'false' ]; then
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"
   echo ". bin/aliases"
