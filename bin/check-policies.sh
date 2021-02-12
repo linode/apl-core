@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 [ "$CI" = 'true' ] && set -e
-set -uo pipefail
+set -o pipefail
 
 . bin/common.sh
 
