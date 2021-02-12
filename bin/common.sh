@@ -16,11 +16,33 @@ if docker --version &>/dev/null; then
   has_docker='true'
 fi
 
+# some exit handling for scripts to clean up
+exitcode=0
+script_message=''
+function exit_handler() {
+  local x=$?
+  [ $x -ne 0 ] && exitcode=$x
+  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  cleanup
+  trap "exit $exitcode" EXIT ERR
+  exit $exitcode
+}
+trap exit_handler EXIT ERR
+function cleanup() {
+  return 0
+}
+function abort() {
+  cleanup
+  trap 'exit 0' EXIT
+  exit 0
+}
+trap abort SIGINT
+
 #######################################
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #######################################
 function err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERROR: $*" >&2
+  echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
 
 function _rind() {
