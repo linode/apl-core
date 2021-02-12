@@ -59,7 +59,7 @@ if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')
   cp -f $PWD/core.yaml $ENV_DIR/
   cp -f $PWD/docker-compose.yml $ENV_DIR/
 fi
-if [ "$has_otomi" = "false" ]; then
+if [ "$has_otomi" = 'false' ]; then
   echo "You can now use otomi CLI"
   echo "Start by sourcing aliases:"
   echo ". bin/aliases"

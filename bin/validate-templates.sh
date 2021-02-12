@@ -5,7 +5,7 @@ set -o pipefail
 
 . bin/common.sh
 
-readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
+readonly schema_output_path="schemas/"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
@@ -22,7 +22,7 @@ function cleanup() {
   fi
   exit $exitcode
 }
-trap cleanup EXIT ERR
+# trap cleanup EXIT ERR
 function abort() {
   abort=true
   cleanup
@@ -31,18 +31,18 @@ trap abort SIGINT
 
 function setup() {
   local k8s_version=$1
-  rm -rf $k8s_resources_path $output_path $schema_output_path
-  mkdir -p $k8s_resources_path $output_path $schema_output_path
-  echo "" >$schemas_bundle_file
+  touch $schemas_bundle_file
   # use standalone schemas
-  tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
-  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
+  if [ ! -d "schemas/$k8s_version-standalone" ]; then
+    tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "schemas/"
+    tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "schemas/$k8s_version-standalone"
+  fi
 
   # loop over .spec.versions[] and generate one file for each version
   cat <<'EOF' >$jq_file
     . as $obj |
-    if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
-    if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end | 
+    if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end |
+    if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end |
     {
         filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .version  ) + ".json" ),
         schema: {
@@ -54,9 +54,9 @@ function setup() {
             "$schema": "http://json-schema.org/draft/2019-09/schema#",
             "x-kubernetes-group-version-kind.group": $obj.spec.group,
             "x-kubernetes-group-version-kind.kind": $obj.spec.names.kind,
-            "x-kubernetes-group-version-kind.version": .version 
+            "x-kubernetes-group-version-kind.version": .version
         }
-    } 
+    }
 EOF
 }
 
@@ -69,7 +69,7 @@ function process_crd() {
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
     err "Processing: $document"
-    [ -n "$CI" ] && exit 1
+    [ "$CI" = 'true' ] && exit 1
   }
 }
 
@@ -80,7 +80,7 @@ function validate_templates() {
 
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init $k8s_resources_path
+  # hf_templates_init $k8s_resources_path
 
   echo "Processing CRD files"
   # generate canonical schemas
@@ -100,7 +100,7 @@ function validate_templates() {
 
   # validate_resources
   echo "Validating resources for cluster '$cluster_env'"
-  local kubeval_schema_location="file://${schema_output_path}"
+  local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
