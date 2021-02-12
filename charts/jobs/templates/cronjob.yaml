@@ -1,13 +1,17 @@
 {{- $v := .Values }}
-{{- range $name, $spec := $v.tasks }}
-{{- if and $spec.enabled (eq $spec.type "cronjob") }}
+{{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
+{{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{ $name }}
+  name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users
+    checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
 spec:
-  schedule: "{{ $spec.schedule }}"
+  schedule: "{{ $v.schedule }}"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
@@ -17,32 +21,92 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
+          serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+          {{- with $v.init }}
+          initContainers:
+          - image: "{{ .image.repository }}:{{ .image.tag | default "latest" }}"
+            imagePullPolicy: "{{ .image.pullPolicy | default "IfNotPresent" }}"
+            name: "job-{{ .name }}-init"
+            command: ["{{ .shell | default "sh" }}", "-c"]
+            args: 
+              - | 
+                {{- toString .script | nindent 16 }}
+            {{- if .env }}
+            envFrom:
+            - configMapRef:
+                name: job-{{ .name }}
+            {{- end }}
+            {{- with $v.secrets }}
+            env:
+              {{- range $secret := . }} 
+                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
+                {{- range $entry := $entries }}
+              - name: {{ $entry | upper }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $secret.name }}
+                    key: {{ $entry }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- with $v.files }}
+            volumeMounts:
+              {{- range $location, $content := $v.files }}
+              - name: {{ include "fileConfigMapName" $location }}
+                mountPath: {{ $location }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
           containers:
-            - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
-              imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-              name: {{ $name }}
-              command: ["bash", "-c"]
-              args:
-                - |
-                  {{- toString $spec.script | nindent 18 }}
-              resources:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              envFrom:
-              {{- if $spec.secret }}
-              - secretRef:
-                  name: job-{{ $name }}
+          - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+            imagePullPolicy: "{{ $v.image.pullPolicy }}"
+            name: {{ $v.name }}
+            command: ["{{ $v.shell | default "sh" }}", "-c"]
+            resources: {{- toYaml $v.resources | nindent 14 }}
+            args:
+              - |
+                {{- toString $v.script | nindent 16 }}
+            {{- with $v.secrets }}
+            env:
+              {{- range $secret := . }} 
+                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
+                {{- range $entry := $entries }}
+              - name: {{ $entry | upper }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $secret.name }}
+                    key: {{ $entry }}
+                {{- end }}
               {{- end }}
-              {{- if $spec.env }}
-              - configMapRef:
-                  name: job-{{ $name }}
+            {{- end }}
+            {{- if or $v.secret $v.env }}
+            envFrom:
+            {{- if $v.secret }}
+            - secretRef:
+                name: job-{{ $v.name }}
+            {{- end }}
+            {{- if or $v.env }}
+            - configMapRef:
+                name: job-{{ $v.name }}
+            {{- end }}
+            {{- end }}
+            {{- with $v.files }}
+            volumeMounts:
+              {{- range $location, $content := $v.files }}
+              - name: {{ include "fileConfigMapName" $location }}
+                mountPath: {{ $location }}
               {{- end }}
+            {{- end }}
           restartPolicy: Never
+          {{- with $v.files }}
+          volumes:
+            {{- range $location, $content := $v.files }}
+            - name: {{ include "fileConfigMapName" $location }}
+              configMap:
+                name: {{ include "fileConfigMapName" $location }}
+            {{- end }}
+          {{- end }}
+  backoffLimit: 3
+  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
-{{- end }}
 {{- end }}
