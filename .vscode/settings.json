@@ -1,8 +1,23 @@
 {
-  "[docker,shell]": {
+  "[docker]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[ejs,js,json,md,yaml]": {
+  "[shell]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[ejs]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[js]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[md]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "cSpell.enabled": true,
