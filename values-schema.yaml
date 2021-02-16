@@ -566,23 +566,6 @@ definitions:
                   description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
                   title: Scale to zero
                   type: boolean
-                externalSecrets:
-                  items:
-                    additionalProperties: false
-                    properties:
-                      entries:
-                        items:
-                          type: string
-                        title: Entries
-                        type: array
-                        uniqueItems: true
-                      name:
-                        type: string
-                    required:
-                      - name
-                  nullable: true
-                  title: Secrets
-                  type: array
                 secrets:
                   items:
                     additionalProperties: false
