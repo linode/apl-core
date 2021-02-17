@@ -9,7 +9,8 @@ readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
-script_message="Templates validation"
+readonly script_message="Templates validation"
+
 function cleanup() {
   if [ -z "$DEBUG" ]; then
     [ -n "$VERBOSE" ] && echo "custom cleanup called"
@@ -19,7 +20,6 @@ function cleanup() {
 
 function setup() {
   local k8s_version=$1
-  rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
   touch $schemas_bundle_file
   # use standalone schemas
@@ -70,13 +70,13 @@ function validate_templates() {
 
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init $k8s_resources_path
+  hf_templates_init "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
   # generate canonical schemas
   local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8s_resources_path" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # schemas for chart crds

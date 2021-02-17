@@ -5,13 +5,13 @@ set -o pipefail
 
 . bin/common.sh
 
-readonly k8s_resources_path="/tmp/otomi/conftest-fixtures"
+readonly k8s_resources_path="/tmp/otomi/templates"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly policies_path="policies"
 readonly constraints_file=$(mktemp -u)
 readonly parameters_file=$(mktemp -u)
+readonly script_message="Policy checking"
 
-script_message="Values validation"
 function cleanup() {
   if [ -z "$DEBUG" ]; then
     rm -rf $k8s_resources_path $constraints_file $parameters_file
@@ -25,7 +25,7 @@ validate_policies() {
   mkdir -p $k8s_resources_path
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init $k8s_resources_path "$@" >/dev/null
+  hf_templates_init "$k8s_resources_path/$k8s_version" "$@" >/dev/null
 
   echo "Processing templates"
   # generate parameter constraints file from values
@@ -38,7 +38,7 @@ validate_policies() {
 
   # validate_resources
   echo "Validating manifests against policies for $cluster_env cluster."
-  conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path $k8s_resources_path || exitcode=1
+  conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" || exitcode=1
   [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
