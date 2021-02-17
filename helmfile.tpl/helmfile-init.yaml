@@ -17,6 +17,8 @@ releases:
   - name: cloud
     installed: true
     namespace: kube-system
+    labels:
+      init: true
     chart: ../charts/raw
     values:
     - ../values/cloud/cloud-raw.gotmpl

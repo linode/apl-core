@@ -26,10 +26,10 @@ definitions:
         additionalProperties: false
         properties:
           highPrio:
-            description: The low prio web hook
+            description: The low prio web hook.
             type: string
           lowPrio:
-            description: The high prio web hook
+            description: The high prio web hook.
             type: string
       receivers:
         description: Notification receivers.
@@ -64,31 +64,31 @@ definitions:
   azureMonitor:
     properties:
       appInsightsApiKey:
-        description: An Azure AppInsights client secret (defaults to clientSecret)
+        description: An Azure AppInsights client secret (defaults to clientSecret).
         type: string
       appInsightsAppId:
-        description: An Azure AppInsights client id (defaults to clientId)
+        description: An Azure AppInsights client id (defaults to clientId).
         type: string
       clientId:
-        description: An Azure client id
+        description: An Azure client id.
         type: string
       clientSecret:
-        description: An Azure client secret
+        description: An Azure client secret.
         type: string
       logAnalyticsClientId:
-        description: An Azure client secret (defaults to clientSecret)
+        description: An Azure client secret (defaults to clientSecret).
         type: string
       logAnalyticsClientSecret:
-        description: An Azure client secret (defaults to clientSecret)
+        description: An Azure client secret (defaults to clientSecret).
         type: string
       logAnalyticsTenantId:
-        description: An Azure tenant id (defaults to tenantId)
+        description: An Azure tenant id (defaults to tenantId).
         type: string
       logAnalyticsWorkspace:
-        description: An Azure monitor log analytics workspace
+        description: An Azure monitor log analytics workspace.
         type: string
   cloud:
-    description: A common cloud configuration
+    description: A common cloud configuration.
     properties:
       clusters:
         additionalProperties: false
@@ -110,7 +110,7 @@ definitions:
         description: Used by kubectl for local deployment to target cluster.
         type: string
       dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider ot this cluster.
+        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
         enum:
           - azure
           - google
@@ -128,7 +128,7 @@ definitions:
         default: true
         type: boolean
       entrypoint:
-        description: A Kubernetes API public IP address (onprem only)
+        description: A Kubernetes API public IP address (onprem only).
         type: string
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
@@ -171,8 +171,13 @@ definitions:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
   env:
-    pattern: '^[a-zA-Z0-9_]*$'
-    type: string
+    additionalProperties: false
+    patternProperties:
+      '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
+        maxLength: 131072
+        type: string
+    nullable: true
+    title: Environment variables
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
@@ -192,6 +197,7 @@ definitions:
       repository:
         $ref: '#/definitions/repository'
       tag:
+        default: latest
         type: string
     title: Container image
   imageSimple:
@@ -206,6 +212,83 @@ definitions:
       tag:
         type: string
     title: Container image
+  jobs:
+    description: You may pass an array of Job objects. The Kubernetes API accepts
+      a Job specification, which is meant for run-to-completion apps (e.g. batch
+      Jobs).
+    additionalProperties: false
+    items:
+      additionalProperties: false
+      properties:
+        enabled:
+          default: true
+          type: boolean
+        env:
+          default:
+            foo: bar
+          $ref: '#/definitions/env'
+        files:
+          default:
+            foo: bar.log
+          description: May mount files directly into the container.
+            The mount path is /, so a user can specify anything that comes after it.
+            E.g.
+            foo/bar.log -> /foo/bar.log
+            foo.log -> /foo.log
+          patternProperties:
+            '^(.*/)|[a-z-]+([^/]*)$':
+              type: string
+        image:
+          $ref: '#/definitions/image'
+        init:
+          properties:
+            env:
+              $ref: '#/definitions/env'
+            image:
+              $ref: '#/definitions/image'
+            script:
+              $ref: '#/definitions/script'
+            secrets:
+              $ref: '#/definitions/secrets'
+        name:
+          default: foo
+          description: Must be a unique name.
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          type: string
+        resources:
+          $ref: '#/definitions/resources'
+        runPolicy:
+          default: OnSpecChange
+          description: |
+            If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
+            If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
+          enum:
+            - Always
+            - OnSpecChange
+          type: string
+        schedule:
+          default: 0 1 * * *
+          description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
+          type: string
+        secrets:
+          $ref: '#/definitions/secrets'
+        script:
+          $ref: '#/definitions/script'
+        ttlSecondsAfterFinished:
+          default: 86400
+          type: number
+        type:
+          default: Job
+          enum:
+            - Job
+            - CronJob
+          type: string
+    required:
+      - image
+      - name
+      - script
+      - type
+    type: array
   k8sVersion:
     default: '1.18'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
@@ -224,7 +307,7 @@ definitions:
       : pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   memoryQuantity:
-    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki
+    description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki.
     examples:
       - 1Mi
       - 0.5M
@@ -242,7 +325,7 @@ definitions:
     pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
-    description: A container image repository
+    description: A container image repository.
     pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
     type: string
   resource:
@@ -257,22 +340,25 @@ definitions:
       - memory
   resources:
     additionalProperties: false
-    description: Compute resources for containers
+    description: Compute resources for containers.
     properties:
       limits:
         $ref: '#/definitions/resource'
-        description: Requested resources (best effort)
+        description: Requested resources (best effort).
       requests:
         $ref: '#/definitions/resource'
-        description: Requested resources (guaranteed)
+        description: Requested resources (guaranteed).
     title: Pod resources
   scaling:
-    description: Min and max nr of replicas
+    description: Min and max number of replicas.
     properties:
       maxReplicas:
         type: number
       minReplicas:
         type: number
+  script:
+    description: May specify a non-empty string containing an executable script.
+    type: string
   secret:
     oneOf:
       - properties:
@@ -294,15 +380,15 @@ definitions:
         title: Docker Registry
       - properties:
           entries:
-            description: Key names and their values
+            description: Key names and their values.
             items:
               properties:
                 key:
-                  description: Key or file name
+                  description: Key or file name.
                   example: secretstuff.conf
                   type: string
                 value:
-                  description: Value to be encrypted
+                  description: Value to be encrypted.
                   example: password=yoursecretpassword
                   type: string
               required:
@@ -319,13 +405,13 @@ definitions:
         title: Generic
       - properties:
           ca:
-            description: The CA certificate content
+            description: The CA certificate content.
             type: string
           crt:
-            description: The PEM encoded public key certificate content
+            description: The PEM encoded public key certificate content.
             type: string
           key:
-            description: The private key certificate content
+            description: The private key certificate content.
             type: string
           type:
             default: tls
@@ -345,6 +431,27 @@ definitions:
     required:
       - name
       - type
+  secrets:
+    items:
+      additionalProperties: true
+      properties:
+        entries:
+          items:
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+          title: Entries
+          type: array
+          uniqueItems: true
+        name:
+          type: string
+      required:
+        - name
+    nullable: true
+    title: Secrets
+    type: array
   team:
     additionalProperties: false
     properties:
@@ -359,6 +466,8 @@ definitions:
       id:
         $ref: '#/definitions/idName'
         description: Must be the same as the name.
+      jobs:
+        $ref: '#/definitions/jobs'
       oidc:
         additionalProperties: false
         properties:
@@ -369,9 +478,7 @@ definitions:
         description: Will be used to separate team resources.
         type: string
       secrets:
-        items:
-          $ref: '#/definitions/secret'
-        type: array
+        $ref: '#/definitions/secrets'
       services:
         items:
           additionalProperties: false
@@ -387,18 +494,18 @@ definitions:
                 workload:
                   $ref: '#/definitions/labelsAnnotations'
             domain:
-              description: A custom service domain name
+              description: A custom service domain name.
               type: string
             forwardPath:
               default: false
-              description: "Wether to forward the path into the service, or 'terminate' it."
+              description: "Whether to forward the path into the service, or 'terminate' it."
               type: boolean
             id:
               description: Unique identifier created by and used in API. Optional.
               type: string
             internal:
               default: false
-              description: 'If true, service is not going to be exposed to the public domain'
+              description: 'If true, service is not going to be exposed to the public domain.'
               type: boolean
             isPublic:
               default: false
@@ -424,7 +531,7 @@ definitions:
                       properties:
                         additionalProperties: false
                         semver:
-                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*"'
+                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
                           example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
                           title: Semver version pattern
                           type: string
@@ -439,7 +546,7 @@ definitions:
                     - additionalProperties: false
                       properties:
                         glob:
-                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*"'
+                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
                           example: master-v1.*.*
                           title: Glob string pattern
                           type: string
@@ -453,20 +560,7 @@ definitions:
                       title: Glob pattern matching
                   title: Continuous delivery pipeline
                 env:
-                  items:
-                    additionalProperties: false
-                    properties:
-                      name:
-                        $ref: '#/definitions/env'
-                      value:
-                        maxLength: 131072
-                        type: string
-                    required:
-                      - name
-                      - value
-                  nullable: true
-                  title: Environment variables
-                  type: array
+                  $ref: '#/definitions/env'
                 image:
                   $ref: '#/definitions/image'
                 predeployed:
@@ -481,22 +575,7 @@ definitions:
                   title: Scale to zero
                   type: boolean
                 secrets:
-                  items:
-                    additionalProperties: false
-                    properties:
-                      entries:
-                        items:
-                          type: string
-                        title: Entries
-                        type: array
-                        uniqueItems: true
-                      name:
-                        type: string
-                    required:
-                      - name
-                  nullable: true
-                  title: Secrets
-                  type: array
+                  $ref: '#/definitions/secrets'
             name:
               $ref: '#/definitions/idName'
               description: 'Short name. Will be used for generation of knative service name, as well as service URL.'
@@ -527,11 +606,23 @@ definitions:
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
+  volumes:
+    items:
+      additionalProperties: false
+      properties:
+        name:
+          description: Name must match mount name.
+          type: string
+        configMap:
+          properties:
+            name:
+              type: string
+    type: array
 properties:
   alerts:
     $ref: '#/definitions/alerts'
   azure:
-    description: Azure specific configuration
+    description: Azure specific configuration.
     properties:
       appgw:
         properties:
@@ -540,7 +631,7 @@ properties:
             description: Is this appgw installed as AKS addon?
             type: boolean
       diskType:
-        description: An Azure disk type (SKU Type)
+        description: An Azure disk type (SKU Type).
         enum:
           - Standard_LRS
           - Standard_GRS
@@ -554,13 +645,13 @@ properties:
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
-        description: An Azure resource group
+        description: An Azure resource group.
         type: string
       subscriptionId:
-        description: An Azure subscription ID
+        description: An Azure subscription ID.
         type: string
       tenantId:
-        description: An Azure tenant ID
+        description: An Azure tenant ID.
         type: string
     required:
       - diskType
@@ -640,7 +731,7 @@ properties:
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
-              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/
+              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/.
             enum:
               - staging
               - production
@@ -694,7 +785,7 @@ properties:
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
-            description: A secret used by drone-admit-members plugin
+            description: A secret used by drone-admit-members plugin.
             type: string
           sourceControl:
             additionalProperties: false
@@ -885,32 +976,32 @@ properties:
             default: false
       ingress-azure:
         additionalProperties: false
-        description: A chart for Azure Application Gateway
+        description: A chart for Azure Application Gateway.
         properties:
           appgw:
             additionalProperties: false
-            description: Application Gateway
+            description: Application Gateway.
             properties:
               name:
-                description: A name of the Application Gateway
+                description: A name of the Application Gateway.
                 type: string
               resourceGroup:
-                description: A name of the Azure Resource Group in which Application Gateway was created
+                description: A name of the Azure Resource Group in which Application Gateway was created.
                 type: string
               subnetName:
-                description: A subnet of the application gateway
+                description: A subnet of the application gateway.
                 type: string
               subnetPrefix:
-                description: A subnet in CIDR notation
+                description: A subnet in CIDR notation.
                 examples:
                   - 10.1.0.0/16
                 type: string
               subscriptionId:
-                description: The Azure Subscription ID in which Application Gateway resides
+                description: The Azure Subscription ID in which Application Gateway resides.
                 type: string
               usePrivateIP:
                 default: false
-                description: Wether to use a private ip range or not
+                description: Whether to use a private ip range or not.
                 type: boolean
             required:
               - subscriptionId
@@ -920,10 +1011,10 @@ properties:
               - subnetPrefix
           armAuth:
             additionalProperties: false
-            description: A service Principal secret
+            description: A service Principal secret.
             properties:
               secretJSON:
-                description: A service Principal secret JSON key (base64 encoded)
+                description: A service Principal secret JSON key (base64 encoded).
                 type: string
             required:
               - secretJSON
@@ -1008,12 +1099,7 @@ properties:
               pilot:
                 $ref: '#/definitions/resources'
       jobs:
-        additionalProperties: false
-        patternProperties:
-          certs-aws|harbor|ingress-azure|keycloak:
-            properties:
-              image:
-                $ref: '#/definitions/image'
+        $ref: '#/definitions/jobs'
       keycloak:
         additionalProperties: false
         properties:
@@ -1141,6 +1227,7 @@ properties:
         properties:
           image:
             $ref: '#/definitions/imageSimple'
+
       prometheus-operator:
         properties:
           additionalProperties: false
@@ -1206,20 +1293,20 @@ properties:
       onprem:
         $ref: '#/definitions/cloud'
   cluster:
-    description: An internal otomi object (do not edit it)
+    description: An internal otomi object (do not edit it).
   customer:
     additionalProperties: false
     properties:
       name:
         type: string
   google:
-    description: Google specific configuration
+    description: Google specific configuration.
     properties:
       cloudDnsKey:
-        description: A service account key for managing a DNS zone
+        description: A service account key for managing a DNS zone.
         type: string
       projectId:
-        description: A Google Cloud project ID for accessing DNS zone
+        description: A Google Cloud project ID for accessing DNS zone.
         type: string
     required:
       - cloudDnsKey
@@ -1280,15 +1367,15 @@ properties:
         type: boolean
       isHomeMonitored:
         default: false
-        description: Wether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
+        description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isManaged:
         default: true
-        description: Wether masters are managed and not under control. Set this to false when onprem.
+        description: Whether masters are managed and not under control. Set this to false when onprem.
         type: boolean
       isMultitenant:
         default: true
-        description: Wether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
+        description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       mode:
         default: ee
@@ -1645,7 +1732,7 @@ properties:
     additionalProperties: false
     properties:
       services:
-        description: An internal otomi object (do not edit it)
+        description: An internal otomi object (do not edit it).
         type: array
       teams:
         additionalProperties: false

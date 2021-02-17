@@ -7,21 +7,20 @@
 {{- $teamNames = print "team-" . | append $teamNames -}}
 {{- end -}}
 
-tasks:
-  drone:
-    type: job
-    enabled: true
-    description: Configure Drone to use the right pipeline file
-    image:
-      repository: "otomi/tasks"
-      tag: "drone"
-      pullPolicy: "Always"
-    secret:
-      DRONE_TOKEN: {{ $d | get "adminToken" }}
-    env:
-      DRONE_CONFIG_PATH: env/clouds/{{ $v.cluster.provider }}/{{ $v.cluster.name }}/.drone.yml
-      DRONE_OWNER: {{ $d | get "owner" }}
-      DRONE_REPO: {{ $d | get "repo" }}
-      DRONE_URL: http://drone.team-admin
-    script: npm run tasks:drone
-
+type: Job
+enabled: true
+description: Configure Drone to use the right pipeline file
+image:
+  repository: "otomi/tasks"
+  tag: "drone"
+  pullPolicy: "Always"
+name: drone
+secret:
+  DRONE_TOKEN: {{ $d | get "adminToken" }}
+env:
+  DRONE_CONFIG_PATH: env/clouds/{{ $v.cluster.provider }}/{{ $v.cluster.name }}/.drone.yml
+  DRONE_OWNER: {{ $d | get "owner" }}
+  DRONE_REPO: {{ $d | get "repo" }}
+  DRONE_URL: http://drone.team-admin
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:drone
+runPolicy: OnSpecChange

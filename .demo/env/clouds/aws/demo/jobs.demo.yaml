@@ -1,0 +1,121 @@
+teamConfig:
+    teams:
+        demo:
+            jobs:
+                - enabled: true
+                  env:
+                      receiver: world
+                  files:
+                      /config/some-file: someData
+                      /config/some/file2: someData2
+                      /config/some-file3: |-
+                          some data on another line
+                          another line
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello $receiver and $SOME-KEY"
+                      secrets:
+                          - name: generic-example
+                            entries:
+                                - some-key
+                                - some-key2
+                          - name: another-generic-secret
+                            entries:
+                                - some-key3
+                  name: contains-everything
+                  runPolicy: Always
+                  script: echo "hello $receiver"
+                  secrets:
+                      - name: generic-example
+                        entries:
+                            - some-key
+                            - some-key2
+                      - name: another-generic-secret
+                        entries:
+                            - some-key3
+                  type: Job
+                - enabled: true
+                  env:
+                      receiver: world
+                  files:
+                      some-file: someData
+                      some-file2: someData2
+                      some-file3: |-
+                          some data on another line
+                          another line
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello $receiver"
+                      secrets:
+                          - name: generic-example
+                            entries:
+                                - some-key
+                                - some-key2
+                          - name: another-generic-secret
+                            entries:
+                                - some-key3
+                  name: also-contains-everything-and-cron
+                  runPolicy: Always
+                  schedule: 0 1 * * *
+                  script: echo "hello $receiver"
+                  secrets:
+                      - name: generic-example
+                        entries:
+                            - some-key
+                            - some-key2
+                      - name: another-generic-secret
+                        entries:
+                            - some-key3
+                  type: CronJob
+                - enabled: true
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: base
+                  script: echo "hello $receiver"
+                  type: Job
+                - enabled: true
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  name: base-cronjob
+                  schedule: 0 1 * * *
+                  script: echo "hello world"
+                  type: CronJob
+                - enabled: true
+                  image:
+                      repository: busybox
+                      tag: latest
+                      pullPolicy: IfNotPresent
+                  init:
+                      env:
+                          foo: bar
+                      image:
+                          repository: busybox
+                          tag: latest
+                          pullPolicy: IfNotPresent
+                      script: echo "hello world"
+                  name: init-cronjob
+                  schedule: 0 1 * * *
+                  script: echo "hello $receiver"
+                  type: CronJob
