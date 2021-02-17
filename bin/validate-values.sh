@@ -5,9 +5,9 @@ set -o pipefail
 
 . bin/common.sh
 
-readonly k8s_resources_path="/tmp/validate-values"
+readonly k8s_resources_path="/tmp/otomi/values"
+readonly script_message="Values validation"
 
-script_message="Values validation"
 function cleanup() {
   if [ -z "$DEBUG" ]; then
     rm -rf $k8s_resources_path
