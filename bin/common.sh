@@ -48,7 +48,7 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
+  if [ $has_docker = 'true' ] && [[ ! $IN_DOCKER ]]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \
@@ -108,7 +108,11 @@ function hf_values() {
 }
 
 function prepare_crypt() {
+<<<<<<< HEAD
   [ -z "$GCLOUD_SERVICE_KEY" ] && return 0
+=======
+  [[ ! $GCLOUD_SERVICE_KEY ]] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+>>>>>>> fix: these checks don't run in bash
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS

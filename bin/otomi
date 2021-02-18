@@ -130,11 +130,9 @@ function evaluate_secrets() {
     [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  if [ -z "$CI" ]; then
-    local secrets_path="$ENV_DIR/.secrets"
-    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
-    source $secrets_path
-  fi
+  local secrets_path="$ENV_DIR/.secrets"
+  [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
+  source $secrets_path
   prepare_crypt
   return 0
 }
