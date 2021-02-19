@@ -135,10 +135,10 @@ main() {
           # helm lint $2
           shift 2
           ;;
-        -A | --all) ;;
-
-        \
-          --)
+        -A | --all)
+          echo $2
+          ;;
+        --)
           shift
           break
           ;;
@@ -154,7 +154,9 @@ main() {
   fi
 }
 
-# Some more context: https://stackoverflow.com/questions/35006457/choosing-between-0-and-bash-source
+######################################################################################################
+# Some more context: https://stackoverflow.com/questions/35006457/choosing-between-0-and-bash-source #
+######################################################################################################
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
   if [ $? -gt 0 ]; then
