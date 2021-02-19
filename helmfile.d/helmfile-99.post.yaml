@@ -19,7 +19,7 @@ releases:
       pkg: harbor
     <<: *jobs
   - name: job-certs-aws
-    installed: {{ eq $v.cluster.provider "aws" }}
+    installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
   - name: job-drone
     installed: false # {{ $c.drone.enabled }}

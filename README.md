@@ -11,8 +11,10 @@ Important features:
 - **Single Sign On**: Bring your own IDP or use Keycloak
 - **Multi Tenancy**: Create admins and teams to allow self service of deployments
 - **Automatic Ingress Configuration**: Easily configure ingress for team services or core apps, allowing access within minutes.
+- **Input/output validation**: Configuration and output manifests are checked statically for validity and best practices.
+- **Policy enforcement**: Manifests are checked both statically and on the cluster at runtime for obedience to OPA policies.
 - **Automatic Vulnerability Scanning**: All configured team service containers get scanned in Harbor.
-- and many more (for a full list see [redkubes.com](https://redkubes.com))
+- and many more (for a full list see [otomi.io](https://otomi.io))
 
 This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
 Other parts of the platform:
@@ -26,29 +28,61 @@ To get up and running with the platform please follow the [online documentation 
 
 ## Development
 
+### Editing source files
+
 Most of the code is in go templates: helmfile's `*.gotmpl` and helm chart's `templates/*.yaml`. Please become familiar with it's intricacies by reading our [special section on go templating](./docs/GO_TEMPLATING.md).
 
-For the next steps please target your values repo and cluster, and source the aliases:
+For editing the `values-schema.yaml` please refer to the [meta-schema documentation](./docs/meta-schema-validation.md).
 
-```bash
-# assuming you followed the previous steps and created otomi-values repo next to this:
-export ENV_DIR=$PWD/../otomi-values CLOUD=google CLUSTER=demo
-. bin/aliases
-```
+For working with `bats` and adding tests to `bin/tests/*` please refer to the [online bats documentation](https://bats-core.readthedocs.io/en/latest/)
+
+You can define OPA policies in `policies/*.rego` files that are used both for statical analysis (also at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
 
 ### 1. Validating changes
 
-You can check whether resulting manifests violate any of our output checks:
+For the next steps you will need to export`ENV_DIR` to point to your values folder, and source the aliases:
 
 ```bash
+# assuming you created otomi-values repo next to this:
+export ENV_DIR=$PWD/../otomi-values
+. bin/aliases
+```
+
+### Input
+
+Start by validating the configuration values against the `values-schema.yaml` with:
+
+```bash
+# all clusters
+otomi validate-values
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+otomi validate-values: 1
+```
+
+Any changes made to the meta-schema will then also be automatically validated.
+
+### Output
+
+You can check whether resulting manifests are conform our specs with:
+
+```bash
+# all clusters
 otomi validate-templates
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+export CLOUD=google CLUSTER=demo
+otomi validate-templates 1
 ```
 
 This will check whether any CRs are matching their CRDs, but also check for k8s manifest best practices using [kubeval](https://www.kubeval.com).
 
-We are also integrating another solution based on [conftest](https://www.conftest.dev). It allows to create OPA policies that are used both for statical analysis (at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
+And to run the policy checks run the following:
 
-There is in-built meta-schema validation for editing `otomi-values`-files. Refer to [meta-schema documentation](./docs/meta-schema-validation.md).
+```bash
+# all clusters
+otomi check-policies
+# For the next step you will also need to export`CLOUD` and `CLUSTER`, as it is only validating a configured target cluster:
+otomi check-policies 1
+```
 
 ### 2. Diffing changes
 

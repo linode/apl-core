@@ -4,6 +4,7 @@
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 replicaCount: 1
 
@@ -51,10 +52,17 @@ tools:
   enabled: {{ $v.sops.enabled }}
   {{- if $v.sops.enabled }}
   image:
+    repository: otomi/core
+    tag: v0.11.58
     pullPolicy: IfNotPresent
-    tag: v1.4.11
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}
     {{- end }}
   {{- end }}
+
+podAnnotations:
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
+
+podSecurityContext:
+  runAsUser: 1000

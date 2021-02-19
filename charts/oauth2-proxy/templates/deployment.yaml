@@ -143,6 +143,7 @@ spec:
 {{- if .Values.securityContext.enabled }}
         securityContext:
           runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+          runAsUser:  {{ .Values.securityContext.runAsUser }}
 {{- end}}
       volumes:
 {{- with .Values.config.google }}

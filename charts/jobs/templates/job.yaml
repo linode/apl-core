@@ -1,66 +1,123 @@
-{{- $v := .Values }}
+{{- $v := .Values }} 
 {{- $ := . }}
-{{- range $name, $spec := $v.tasks }}
-{{- if and $spec.enabled (eq $spec.type "job") }}
+{{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
+{{- if eq $v.type "Job" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: job-{{ $name }}
+  {{- if eq ($v.runPolicy | default "OnSpecChange") "Always" }}
+  name: job-{{ join "-" (list $v.name uuidv4) | trunc 63 }}
+  {{- else }}
+  name: job-{{ $v.name }}
+  {{- end }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 spec:
   template:
     metadata:
       labels: {{- include "jobs.labels" $ | nindent 8 }}
       annotations:
+        policy.otomi.io/ignore: psp-allowed-users
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
+        {{- range $key, $value := $v.annotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
     spec:
-      serviceAccountName: {{ $spec.serviceAccountName | default "default" }}
-      {{- if $spec.init }}
+      serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+      {{- with $v.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $v.init }}
       initContainers:
-      - image: "{{ $spec.init.image.repository }}:{{ $spec.init.image.tag | default "latest" }}"
-        imagePullPolicy: "{{ $spec.init.image.pullPolicy | default "IfNotPresent"}}"
-        name: "{{ $name }}-init"
-        command: ["{{ $spec.init.shell | default "sh" }}", "-c"]
+      - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"
+        imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent"}}"
+        name: "job-{{ $v.name }}-init"
+        command: ["{{ $v.init.shell | default "sh" }}", "-c"]
         args:
           - |
-            {{- toString $spec.init.script | nindent 12 }}
+            {{- toString $v.init.script | nindent 12 }}
+        {{- if $v.init.env }}
+        envFrom:
+        - configMapRef:
+            name: job-{{ $v.name }}
+        {{- end }}
+        {{- with $v.secrets }}
+        env:
+          {{- range $secret := . }} 
+            {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
+            {{- range $entry := $entries }}
+          - name: {{ $entry | upper }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret.name }}
+                key: {{ $entry }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if $v.files }}
+        volumeMounts:
+          {{- range $location, $content := $v.files }}
+          - name: {{ include "fileConfigMapName" $location }}
+            mountPath: {{ $location }}
+          {{- end }}
+        {{- with $v.init.securityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- end }}
       {{- end }}
       containers:
-      - image: "{{ $spec.image.repository }}:{{ $spec.image.tag }}"
-        imagePullPolicy: "{{ $spec.image.pullPolicy }}"
-        name: "{{ $name }}"
-        command: ["{{ $spec.shell | default "sh" }}", "-c"]
+      - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+        imagePullPolicy: "{{ $v.image.pullPolicy }}"
+        name: {{ $v.name }}
+        command: ["{{ $v.shell | default "sh" }}", "-c"]
         args:
           - |
-            {{- toString $spec.script | nindent 12 }}
-        resources: {{- if $spec.resources}}{{ toYaml $spec.resources | nindent 10 }}{{ else }}{{ toYaml $v.resources | nindent 10 }}{{ end }}
-        envFrom:
-        {{- if $spec.secret }}
-        - secretRef:
-            name: job-{{ $name }}
-        {{- end }}
-        {{- if $spec.env }}
-        - configMapRef:
-            name: job-{{ $name }}
-        {{- end }}
-        volumeMounts:
-          - name: fakeroot
-            mountPath: /fakeroot.pem
-            subPath: fakeroot.pem
-          {{- if $spec.mounts }}
-          {{- $spec.mounts | toYaml | nindent 10 }}
+            {{- toString $v.script | nindent 12 }}
+        resources: {{ toYaml $v.resources | nindent 10 }}
+        {{- with $v.secrets }}
+        env:
+          {{- range $secret := ($v.secrets | default list) }} 
+            {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
+            {{- range $entry := $entries }}
+          - name: {{ $entry | upper }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret.name }}
+                key: {{ $entry }}
+            {{- end }}
           {{- end }}
-      restartPolicy: Never
-      volumes:
-        - name: fakeroot
-          configMap:
-            name: fakeroot
-        {{- if $spec.volumes }}
-        {{- $spec.volumes | toYaml | nindent 8 }}
         {{- end }}
+        {{- if or $v.secret $v.env }}
+        envFrom:
+        {{- if $v.secret }}
+        - secretRef:
+            name: job-{{ $v.name }}
+        {{- end }}
+        {{- if $v.env }}
+        - configMapRef:
+            name: job-{{ $v.name }}
+        {{- end }}
+        {{- end }}
+        {{- with $v.files }}
+        volumeMounts:
+          {{- range $location, $content := $v.files }}
+          - name: {{ include "fileConfigMapName" $location }}
+            mountPath: {{ $location }}
+          {{- end }}
+        {{- with $v.securityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- end }}
+      restartPolicy: Never
+      {{- with $v.files }}
+      volumes:
+        {{- range $location, $content := $v.files }}
+        - name: {{ include "fileConfigMapName" $location }}
+          configMap:
+            name: {{ include "fileConfigMapName" $location }}
+        {{- end }}
+      {{- end }}
   backoffLimit: 3
-  ttlSecondsAfterFinished: {{ $spec.ttlSecondsAfterFinished | default 86400 }}
+  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
-{{- end }}
 {{- end }}

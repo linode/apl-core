@@ -12,6 +12,7 @@
 {{- $o := $v.oidc }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -23,6 +24,7 @@ resources:
       components:
         pilot:
           k8s:
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             hpaSpec:
               minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 2 }}
@@ -42,6 +44,7 @@ resources:
           - name: istio-ingressgateway
             enabled: true
             k8s:
+              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               priorityClassName: "otomi-critical"
               resources:
               {{- with $i | get "resources.ingressgateway" nil }}
@@ -76,6 +79,7 @@ resources:
               istio: ingressgateway-auth
               app: ingressgateway-auth
             k8s:
+              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway-auth.minReplicas" 2 }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 6 }}
@@ -110,6 +114,7 @@ resources:
               istio: cluster-local-gateway
               app: cluster-local-gateway
             k8s:
+              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.gateway-local.minReplicas" 2 }}
                 maxReplicas: {{ $i | get "autoscaling.gateway-local.maxReplicas" 6 }}
@@ -139,6 +144,7 @@ resources:
           - name: istio-egressgateway
             enabled: true
             k8s:
+              podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               priorityClassName: "otomi-critical"
               resources:
               {{- with $i | get "resources.egressgateway" nil }}
@@ -172,6 +178,7 @@ resources:
         grafana:
           enabled: {{ $ia | get "grafana.enabled" true }}
           k8s:
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.grafana" nil }}
@@ -187,6 +194,7 @@ resources:
         prometheus:
           enabled: {{ $ia | get "prometheus.enabled" true }}
           k8s:
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.prometheus" nil }}
@@ -202,6 +210,7 @@ resources:
         tracing:
           enabled: {{ $ia | get "tracing.enabled" true }}
           k8s:
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.tracing" nil }}
@@ -217,6 +226,7 @@ resources:
         kiali:
           enabled: {{ $ia | get "kiali.enabled" true }}
           k8s:
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.kiali" nil }}
@@ -305,5 +315,7 @@ resources:
           contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
+          injectedAnnotations: 
+            {{- tpl $addIgnorePolicyAnnotation (dict "type" "sidecar" "policies" (list "psp-allowed-users" "psp-capabilities")) | nindent 12 }}
         tracing:
           contextPath: '/tracing'

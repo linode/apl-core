@@ -13,6 +13,9 @@
 #####################################################################################
 set -e
 
+# normalize $CI to be set to 'true' if set and not 'false'
+([ "$CI" = 'true' ] || [ "$CI" != 'false' ]) && CI='true'
+
 command=$1
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
@@ -35,11 +38,8 @@ function verbose_env() {
   echo "command=$command"
 }
 
-# VERBOSE - set this variable to run this script in verbose mode
-VERBOSE=${VERBOSE:-''}
-
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
-check_kube_context=1
+check_kube_context=0
 # A path to directory with values directory
 
 mount_stack_dir=0
@@ -84,13 +84,14 @@ function show_usage() {
     template            export k8s resources (use labels like '-l name=prometheus-operator')
     test                runs some tests againts the target cluster
     values              show helmfile values for CLOUD and CLUSTER
-    validate-templates  validate generated manifests against supported k8s versions/CRDs, best practices, and defined OPA rules, (provide any arg to limit to the selected cluster)
+    check-policies      check if generated manifests adhere to defined OPA policies
+    validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
 
   Env flags:
     VERBOSE=1;          Run otomi CLI in verbose mode
-    CI=true             Exit the script after first error
+    CI=1                Exit the script after first error
   "
 }
 
@@ -98,17 +99,17 @@ function evaluate_k8s_context() {
   local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
   [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
   source $env_path
-  [[ -z "$K8S_CONTEXT" ]] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
+  [ -z "$K8S_CONTEXT" ] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
   return 0
 }
 
 function validate_k8s_context() {
   local context=$(kubectl config current-context)
-  if [[ "$K8S_CONTEXT" != "$context" ]]; then
+  if [ "$K8S_CONTEXT" != "$context" ]; then
     read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? Yn" oki
     if [ "${oki:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
-      drun bin/bootstrap.sh 1
+      $is_repo && drun bin/bootstrap.sh 1
     else
       exit
     fi
@@ -116,14 +117,22 @@ function validate_k8s_context() {
   return 0
 }
 
+function check_sops_file() {
+  [ ! -f "$ENV_DIR/.sops.yaml" ] && (
+    err "The $ENV_DIR/.sops.yaml does not exist"
+    exit 1
+  )
+  return 0
+}
+
 function evaluate_secrets() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && {
-    echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
+    [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  if [ "$CI" = "" ]; then
+  if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
-    [[ ! -r "$secrets_path" ]] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
+    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     source $secrets_path
   fi
   prepare_crypt
@@ -131,16 +140,16 @@ function evaluate_secrets() {
 }
 
 function validate_cluster_env() {
-  evaluate_secrets
+  check_kube_context=1
   local err
-  [[ -z "$CLOUD" ]] && err "The CLOUD environment variable is not set" && err=1
-  [[ -z "$CLUSTER" ]] && err "The CLUSTER environment variable is not set" && err=1
-  [[ -n "$err" ]] && exit 2
+  [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
+  [ -z "$CLUSTER" ] && err "The CLUSTER environment variable is not set" && err=1
+  [ -n "$err" ] && exit 2
   return 0
 }
 
 function is_repo() {
-  [[ "$(basename "$PWD")" = "otomi-core" ]] && err "Error: Should not be ran from otomi-core" && exit 2
+  [ "$(basename "$PWD")" = "otomi-core" ] && err "Error: Should not be ran from otomi-core" && exit 2
   return 0
 }
 
@@ -162,12 +171,11 @@ function run_console() {
 
 function drun() {
   local command=$@
-  local tmp_volume=''
   local stack_volume=''
   local socket_volume=''
 
-  [ -n "$VERBOSE" ] && echo "Running in CI: $CI"
-  if [ -n "$CI" ]; then
+  [ "${VERBOSE-}" != '' ] && echo "Running in CI: $CI"
+  if [ "$CI" = 'true' ]; then
     check_kube_context=0
   # else
   #   socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
@@ -184,14 +192,12 @@ function drun() {
     stack_volume="-v ${stack_dir}:${stack_dir}"
   fi
 
-  if [ -n "$VERBOSE" ]; then
-    verbose_env
-  fi
+  [ -n "$VERBOSE" ] && verbose_env
 
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [[ "${has_docker}" == 'true' && "$IN_DOCKER" != '1' ]]; then
+  if [ "$has_docker" = 'true' ] && [ "$IN_DOCKER" != '1' ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
@@ -208,12 +214,13 @@ function drun() {
       -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
-      -e VERBOSE="$VERBOSE" \
+      -e VERBOSE="${VERBOSE-}" \
       -e CLOUD="$CLOUD" \
       -e IN_DOCKER="1" \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
+      -e DEBUG="$DEBUG" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
@@ -227,44 +234,45 @@ function drun() {
 function execute() {
   shift 2
   case $command in
-    values)
-      check_kube_context=0
+    apply)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
-      ;;
-    test)
-      validate_cluster_env
-      drun bin/test.sh
-      ;;
-    hf)
-      validate_cluster_env
-      set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
-
+      drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
-      check_kube_context=0
-      docker_terminal_params='-t'
+      docker_terminal_params='-ti'
       drun bash
       ;;
     bootstrap)
-      check_kube_context=0
-      if [[ "$*" != '' ]]; then
+      if [ "$*" != '' ]; then
         validate_cluster_env
       fi
       drun bin/bootstrap.sh 1
       ;;
+    check-policies)
+      evaluate_secrets
+      if [ "$*" != '' ]; then
+        validate_cluster_env
+      fi
+      drun bin/check-policies.sh "$@"
+      ;;
+    commit)
+      is_repo
+      evaluate_secrets
+      git -C $ENV_DIR pull
+      drun bin/validate-values.sh
+      drun bin/pre-commit.sh
+      git add . && git commit -m 'Manual commit' --no-verify
+      ;;
     console)
-      check_kube_context=0
       evaluate_secrets
       run_console "$@"
       ;;
     decrypt)
       check_sops_file
-      check_kube_context=0
       evaluate_secrets
-      if [[ "$*" != '' ]]; then
+      if [ "$*" != '' ]; then
         for f in "$@"; do
           echo "Decrypting $f"
           drun helm secrets dec ./env/$f >/dev/null
@@ -275,24 +283,26 @@ function execute() {
       fi
       ;;
     deploy)
+      evaluate_secrets
       validate_cluster_env
       drun bin/deploy.sh | grep -Ev $helmfile_output_hide
       ;;
     diff)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
-      check_kube_context=0
       evaluate_secrets
-      if [[ "$*" != '' ]]; then
+      if [ "$*" != '' ]; then
         for f in "$@"; do
           echo "Encrypting $f"
           drun helm secrets enc ./env/$f >/dev/null
@@ -302,65 +312,64 @@ function execute() {
         drun bin/crypt.sh encrypt
       fi
       ;;
+    hf)
+      evaluate_secrets
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+      ;;
+    pull)
+      is_repo
+      evaluate_secrets
+      git -C $ENV_DIR pull
+      drun bin/bootstrap.sh 1
+      ;;
     sync)
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
-      check_kube_context=0
+      evaluate_secrets
       validate_cluster_env
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
       ;;
     rotate-keys)
       check_sops_file
-      check_kube_context=0
       evaluate_secrets
       drun bin/crypt.sh rotate
       ;;
-    switch)
-      evaluate_k8s_context
-      kubectl config use $K8S_CONTEXT
-      drun bin/bootstrap.sh 1
-      ;;
     gen-drone)
-      check_kube_context=0
       evaluate_secrets
       drun bin/gen-drone.sh
       ;;
+    test)
+      evaluate_secrets
+      validate_cluster_env
+      drun bin/test.sh
+      ;;
+    values)
+      evaluate_secrets
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      ;;
+    validate-values)
+      evaluate_secrets
+      drun bin/validate-values.sh "$@"
+      ;;
     validate-templates)
-      if [[ "$*" != '' ]]; then
+      evaluate_secrets
+      if [ "$*" != '' ]; then
         validate_cluster_env
       fi
-      check_kube_context=0
-      evaluate_secrets
       drun bin/validate-templates.sh "$@"
       ;;
     x)
       check_kube_context=0
       drun "$@"
-      ;;
-    commit)
-      check_kube_context=0
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun bin/validate-values.sh
-      drun bin/pre-commit.sh
-      git add . && git commit -m 'Manual commit' --no-verify
-      ;;
-    pull)
-      check_kube_context=0
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun bin/bootstrap.sh 1
-      ;;
-    validate-values)
-      check_kube_context=0
-      evaluate_secrets
-      drun bin/validate-values.sh
       ;;
     *)
       show_usage
