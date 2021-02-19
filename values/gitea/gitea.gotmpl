@@ -1,0 +1,19 @@
+{{- $v := .Environment.Values }}
+{{- $g := $v.charts | get "gitea" dict }}
+
+gitea:
+  admin:
+    username: admin
+    password: {{ $g | get "admin.password" "bladibla" }}
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+persistence:
+  size: 1Gi
+
+postgresql:
+  persistence:
+    size: 1Gi

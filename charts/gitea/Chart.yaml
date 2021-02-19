@@ -32,15 +32,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 4.2.20
   condition: gitea.cache.builtIn.enabled
-- name: mysql
-  repository: https://charts.bitnami.com/bitnami
-  version: 6.14.10
-  condition: gitea.database.builtIn.mysql.enabled
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 9.7.2
   condition: gitea.database.builtIn.postgresql.enabled
-- name: mariadb
-  repository: https://charts.bitnami.com/bitnami
-  version: 8.0.0
-  condition: gitea.database.builtIn.mariadb.enabled
