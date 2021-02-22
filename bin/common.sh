@@ -135,10 +135,26 @@ function for_each_cluster() {
 function hf_templates_init() {
   local out_dir="$1"
   shift
-  [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
-  hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  [[ ! "$*" ]] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }
 
+#####################################################################################################################################
+# Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
+# Also add some globals if you do so.
+# Globals:
+#   all
+#   label
+# Arguments:
+#   all -> default behaviour
+#   label -> k8s metadata.labels Selector
+# Outputs:
+#   STDERR: if CLI argument not given, it will complain
+#   STDOUT: none
+# Returns:
+#   all -> if passed, sets to 'y' and can be used globally in conditional statements
+#   label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and can be used globally in conditional statements
+#####################################################################################################################################
 function parse_args() {
   if [[ "$*" != "" ]]; then
     ! getopt --test >/dev/null
@@ -147,8 +163,8 @@ function parse_args() {
       exit 1
     fi
 
-    OPTIONS=l:
-    LONGOPTS=label:
+    OPTIONS=al:
+    LONGOPTS=all,label:
 
     ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
     if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
@@ -160,11 +176,11 @@ function parse_args() {
       case "$1" in
         -l | --label)
           label=$2
-          # helm lint $2
           shift 2
           ;;
         -A | --all)
           all=y
+          shift
           ;;
         --)
           shift

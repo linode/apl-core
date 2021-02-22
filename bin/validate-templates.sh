@@ -12,7 +12,7 @@ readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
 
 # Flags for CLI arguments
-label=n all=0
+label=- all=n
 
 function cleanup() {
   if [ -z "$DEBUG" ]; then
@@ -67,12 +67,12 @@ function process_crd() {
 }
 
 function validate_templates() {
-
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
 
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+
   hf_templates_init "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
@@ -113,6 +113,9 @@ function validate_templates() {
 }
 
 function main() {
+  parse_args "$@"
+  echo "ALL: $all"
+  echo "LABEL: $label"
   for_each_cluster validate_templates
 }
 
