@@ -5,8 +5,15 @@
 
 nameOverride: gitea
 fullnameOverride: gitea
+# clusterDomain: {{ $v.cluster.domain }}
 
 gitea:
+  config:
+    server:
+      HTTP_ADDR: 0.0.0.0
+      HTTP_PORT: 3000
+    log:
+      LEVEL: Trace
   admin:
     username: gitea-admin
     password: {{ $g | get "admin.password" "bladibla" }}
@@ -17,7 +24,7 @@ gitea:
       enabled: true
 
   podAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags" "psp-allowed-users")) | nindent 4 }}
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
 persistence:
   size: 1Gi
@@ -25,12 +32,3 @@ persistence:
 postgresql:
   persistence:
     size: 1Gi
-
-
-
-# annotations:
-#   policy.otomi.io/ignore: psp-allowed-users
-
-# podAnnotations:
-#   policy.otomi.io/ignore: psp-allowed-users
-#   {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "")) | nindent 2 }}
