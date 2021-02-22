@@ -141,19 +141,19 @@ function hf_templates_init() {
 
 #####################################################################################################################################
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
-# Also add some globals if you do so.
+# Please update this comment if you do so.
 # Globals:
-#   all
-#   label
+#     all
+#     label
 # Arguments:
-#   all -> default behaviour
-#   label -> k8s metadata.labels Selector
+#     all -> default behaviour
+#     label -> k8s metadata.labels Selector
 # Outputs:
-#   STDERR: if CLI argument not given, it will complain
-#   STDOUT: none
+#     STDERR: if CLI argument not given, it will complain
+#     STDOUT: none
 # Returns:
-#   all -> if passed, sets to 'y' and can be used globally in conditional statements
-#   label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and can be used globally in conditional statements
+#     all -> if passed, sets to 'y' and can be used globally in conditional statements
+#     label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and can be used globally in conditional statements
 #####################################################################################################################################
 function parse_args() {
   if [[ "$*" != "" ]]; then
