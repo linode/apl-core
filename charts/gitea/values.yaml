@@ -17,19 +17,19 @@ service:
   http:
     type: ClusterIP
     port: 3000
-    clusterIP: None
+    clusterIP: 
     #loadBalancerIP:
     #nodePort:
     annotations:
   ssh:
     type: ClusterIP
     port: 22
-    clusterIP: None
+    clusterIP:
     #loadBalancerIP:
     #nodePort:
     #externalTrafficPolicy:
     #externalIPs:
-    loadBalancerSourceRanges: []
+    # loadBalancerSourceRanges: []
     annotations:
 
 ingress:
