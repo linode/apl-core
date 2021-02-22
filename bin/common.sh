@@ -148,6 +148,7 @@ function hf_templates_init() {
 # Arguments:
 #     all -> default behaviour
 #     label -> k8s metadata.labels Selector
+#     none -> exit STDERR
 # Outputs:
 #     STDERR: if CLI argument not given, it will complain
 #     STDOUT: none
