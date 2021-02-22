@@ -38,9 +38,9 @@ function abort() {
 }
 trap abort SIGINT
 
-#######################################
-# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
-#######################################
+#####################################################################################
+# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr #
+#####################################################################################
 function err() {
   echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
@@ -132,9 +132,51 @@ function for_each_cluster() {
   done
 }
 
-hf_templates_init() {
+function hf_templates_init() {
   local out_dir="$1"
   shift
   [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
   hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+}
+
+function parse_args() {
+  if [[ "$*" != "" ]]; then
+    ! getopt --test >/dev/null
+    if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
+      echo '`getopt --test` failed in this environment.'
+      exit 1
+    fi
+
+    OPTIONS=l:
+    LONGOPTS=label:
+
+    ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+    if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+      exit 2
+    fi
+    eval set -- "$PARSED"
+
+    while true; do
+      case "$1" in
+        -l | --label)
+          label=$2
+          # helm lint $2
+          shift 2
+          ;;
+        -A | --all)
+          all=y
+          ;;
+        --)
+          shift
+          break
+          ;;
+        *)
+          echo "Programming error: expected '--' but got $1"
+          exit 3
+          ;;
+      esac
+    done
+  else
+    echo "Error: --all or --label not specified"
+  fi
 }

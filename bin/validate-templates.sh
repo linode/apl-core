@@ -11,6 +11,9 @@ readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
 
+# Flags for CLI arguments
+label=n all=0
+
 function cleanup() {
   if [ -z "$DEBUG" ]; then
     [ -n "$VERBOSE" ] && echo "custom cleanup called"
@@ -50,108 +53,67 @@ function setup() {
 EOF
 }
 
-process_crd() {
+function process_crd() {
   local document="$1"
-  local filterCRDExpr='select(.kind=="CustomResourceDefinition")'
+  local filter_crd_expr='select(.kind=="CustomResourceDefinition")'
   {
     yq r -d'*' -j "$document" |
-      jq -c "$filterCRDExpr" |
-      jq -S -c --raw-output -f "$extractCrdSchemaJQFile" >>"$schemasBundleFile"
+      jq -c "$filter_crd_expr" |
+      jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
-    echo "ERROR Processing: $document"
-    [ "$CI" != "" ] && exit 1
+    err "Processing: $document"
+    [ "$CI" = 'true' ] && exit 1
   }
 }
 
-validate_templates() {
+function validate_templates() {
+
   local k8s_version="v$(get_k8s_version)"
-  local targetYamlFiles="*.yaml"
-  local kubevalSchemaLocation="file://${schemaOutputPath}"
-  local skipKinds="CustomResourceDefinition"
-  local skipFilenames="crd,knative-services"
+  local cluster_env=$(cluster_env)
+
+  setup $k8s_version
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  hf_templates_init "$k8s_resources_path/$k8s_version"
+
+  echo "Processing CRD files"
+  # generate canonical schemas
+  local target_yaml_files="*.yaml"
+  # schemas for otomi templates
+  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+    process_crd $file
+  done
+  # schemas for chart crds
+  for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+    process_crd $file
+  done
+  # create schema in canonical format for each extracted file
+  for json in $(jq -s -r '.[] | .filename' $schemas_bundle_file); do
+    jq "select(.filename==\"$json\")" $schemas_bundle_file | jq '.schema' >"$schema_output_path/$k8s_version-standalone/$json"
+  done
+
+  # validate_resources
+  local kubeval_schema_location="file://$schema_output_path"
+  local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
+  # TODO: revisit these excluded resources and see it they exist now
+  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
+  local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  local label=$1
+  echo "Validating resources for cluster '$cluster_env'"
+  set +o pipefail
+  [ "$CI" = 'true' ] && set +e
+  kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
+    --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
+    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
+  set -o pipefail
+  [ "$CI" = 'true' ] && set -e
 
-  if [ $# -eq 0 ]; then
-    run_setup $k8s_version
-    echo "Generating Kubernetes $k8s_version Manifests for ${CLOUD}-${CLUSTER}."
-
-    hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-    hf template ${label:+"-l" "$label"} --skip-deps --output-dir="$k8sResourcesPath" >/dev/null
-
-    echo "Processing CRD files."
-    # generate canonical schemas
-    # schemas for otomi templates
-    for file in $(find "$k8sResourcesPath" -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
-      process_crd $file
-    done
-    # schemas for chart crds
-    for file in $(find charts/**/crds -name "$targetYamlFiles" -exec bash -c "ls {}" \;); do
-      process_crd $file
-    done
-    # create schema in canonical format for each extracted file
-    for json in $(jq -s -r '.[] | .filename' $schemasBundleFile); do
-      jq "select(.filename==\"$json\")" $schemasBundleFile | jq '.schema' >|"$schemaOutputPath/$k8s_version-standalone/$json"
-    done
-
-    echo "Validating resources against Kubernetes version: $k8s_version"
-
-    kubeval --quiet --skip-kinds $skipKinds --ignored-filename-patterns $skipFilenames \
-      --force-color -d $k8sResourcesPath --schema-location $kubevalSchemaLocation \
-      --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-    grep -q "ERROR" $tmp_out && exitcode=1
-    rm $tmp_out
-  else
-    echo "Validating $label..."
-    validate=
-    if kubectl cluster-info >/dev/null 2>&1; then
-      validate="true"
-    fi
-    helm template "$label" --output-dir="$k8sResourcesPath" >/dev/null
-  fi
+  grep -e "ERR\b" $tmp_out && exitcode=1
+  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  return 0
 }
 
-main() {
-  if [[ "$*" != "" ]]; then
-    ! getopt --test >/dev/null
-    if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
-      echo '`getopt --test` failed in this environment.'
-      exit 1
-    fi
-
-    OPTIONS=l:
-    LONGOPTS=label:
-
-    ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
-    if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-      exit 2
-    fi
-    eval set -- "$PARSED"
-
-    while true; do
-      case "$1" in
-        -l | --label)
-          validate_templates $2
-          # helm lint $2
-          shift 2
-          ;;
-        -A | --all)
-          echo $2
-          ;;
-        --)
-          shift
-          break
-          ;;
-        *)
-          echo "Programming error: expected '--' but got $1"
-          exit 3
-          ;;
-      esac
-    done
-  else
-    for_each_cluster validate_templates
-    # for_each_cluster helmfile lint
-  fi
+function main() {
+  for_each_cluster validate_templates
 }
 
 ######################################################################################################
