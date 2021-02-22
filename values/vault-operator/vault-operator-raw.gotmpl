@@ -286,7 +286,7 @@ resources:
     metadata:
       name: cloudSaToken
     type: Opaque
-    data: |{{ $vault.cloudSaToken | nindent 6 }}
+    data: |{{ $vault.encodedCloudToken | nindent 6 }}
 {{- end }}
 
 # RBAC

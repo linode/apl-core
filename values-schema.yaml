@@ -1508,14 +1508,14 @@ properties:
                 $ref: '#/definitions/vaultAwsSeal'
               unsealKeyStorage:
                 $ref: '#/definitions/vaultAwsUnseal'
-              cloudSaToken:
+              encodedCloudToken:
                 type: string
             required:
               - profile
               - storage
               - seal
               - unsealKeyStorage
-              - cloudSaToken
+              - encodedCloudToken
           - title: production-azure
             properties:
               profile:
@@ -1528,14 +1528,14 @@ properties:
                 $ref: '#/definitions/vaultAzureSeal'
               unsealKeyStorage:
                 $ref: '#/definitions/vaultAzureUnseal'
-              cloudSaToken:
+              encodedCloudToken:
                 type: string
             required:
               - profile
               - storage
               - seal
               - unsealKeyStorage
-              - cloudSaToken
+              - encodedCloudToken
           - title: production-google
             properties:
               profile:
@@ -1548,14 +1548,14 @@ properties:
                 $ref: '#/definitions/vaultGoogleSeal'
               unsealKeyStorage:
                 $ref: '#/definitions/vaultGoogleUnseal'
-              cloudSaToken:
+              encodedCloudToken:
                 type: string
             required:
               - profile
               - storage
               - seal
               - unsealKeyStorage
-              - cloudSaToken
+              - encodedCloudToken
           - title: non-production
             properties:
               profile:
