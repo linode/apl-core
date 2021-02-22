@@ -239,19 +239,18 @@ resources:
 
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
-
+      {{ if $secretRef }}
       credentialsConfig:
-        {{ if hasKey $secretRef "aws" }}
+        {{- if hasKey $secretRef "aws" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
         secretName: {{ $secretRef.aws }}
-        {{ else if hasKey $secretRef "google" }}
+        {{- else if hasKey $secretRef "google" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
         secretName: {{ $secretRef.google }}
-        {{ else }}
-        {{- dict | toYaml }}
-        {{ end }}
+        {{- end }}
+      {{- end }}
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
