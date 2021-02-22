@@ -1,12 +1,26 @@
 {{- $v := .Values }}
-{{- range $name, $spec := $v.tasks }}
-{{- if and $spec.enabled $spec.env }}
+{{- if or (or $v.env $v.init.env) $v.files }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: job-{{ $name }}
+  name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
-data: {{- toYaml $spec.env | nindent 2 }}
+data:
+  {{- with $v.env }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $v.init.env  }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 ---
 {{- end }}
+{{- range $location, $content := $v.files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fileConfigMapName" $location }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+data:
+  {{ include "fileConfigMapName" $location }}: {{- toYaml $content | nindent 4 }} 
+---
 {{- end }}

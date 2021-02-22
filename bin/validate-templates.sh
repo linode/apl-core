@@ -1,48 +1,38 @@
 #!/usr/bin/env bash
 
-[ -n "$CI" ] && set -e
+[ "$CI" = 'true' ] && set -e
 set -o pipefail
 
-. bin/common.sh
-
+source bin/common.sh
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
-script_message="Templates validation"
-exitcode=0
-abort=false
+readonly script_message="Templates validation"
 
 function cleanup() {
-  [ $? -ne 0 ] && exitcode=$?
-  ! $abort && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
   if [ -z "$DEBUG" ]; then
-    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path
+    [ -n "$VERBOSE" ] && echo "custom cleanup called"
+    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path >/dev/null 2>&1
   fi
-  exit $exitcode
 }
-trap cleanup EXIT ERR
-function abort() {
-  abort=true
-  cleanup
-}
-trap abort SIGINT
 
-run_setup() {
+function setup() {
   local k8s_version=$1
-  rm -rf $k8s_resources_path $output_path $schema_output_path
   mkdir -p $k8s_resources_path $output_path $schema_output_path
-  echo "" >$schemas_bundle_file
+  touch $schemas_bundle_file
   # use standalone schemas
-  tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
-  tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
+  if [ ! -d "$schema_output_path/$k8s_version-standalone" ]; then
+    tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
+    tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
+  fi
 
   # loop over .spec.versions[] and generate one file for each version
   cat <<'EOF' >$jq_file
     . as $obj |
-    if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end | 
-    if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end | 
+    if $obj.spec.versions then $obj.spec.versions[] else {name: $obj.spec.version} end |
+    if .schema then {version: .name, schema: .schema} else {version: .name, schema: $obj.spec.validation} end |
     {
         filename: ( ($obj.spec.names.kind | ascii_downcase) +"-"+  ($obj.spec.group | split(".")[0]) +"-"+ ( .version  ) + ".json" ),
         schema: {
@@ -54,13 +44,13 @@ run_setup() {
             "$schema": "http://json-schema.org/draft/2019-09/schema#",
             "x-kubernetes-group-version-kind.group": $obj.spec.group,
             "x-kubernetes-group-version-kind.kind": $obj.spec.names.kind,
-            "x-kubernetes-group-version-kind.version": .version 
+            "x-kubernetes-group-version-kind.version": .version
         }
-    } 
+    }
 EOF
 }
 
-process_crd() {
+function process_crd() {
   local document="$1"
   local filter_crd_expr='select(.kind=="CustomResourceDefinition")'
   {
@@ -69,24 +59,24 @@ process_crd() {
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
     err "Processing: $document"
-    [ -n "$CI" ] && exit 1
+    [ "$CI" = 'true' ] && exit 1
   }
 }
 
-validate_templates() {
+function validate_templates() {
 
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
 
-  run_setup $k8s_version
+  setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init $k8s_resources_path
+  hf_templates_init "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
   # generate canonical schemas
   local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8s_resources_path" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
   done
   # schemas for chart crds
@@ -99,20 +89,24 @@ validate_templates() {
   done
 
   # validate_resources
-  echo "Validating resources for cluster '$cluster_env'"
-  local kubeval_schema_location="file://${schema_output_path}"
+  local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
-  local skip_kinds="CustomResourceDefinition,$constraint_kinds"
+  # TODO: revisit these excluded resources and see it they exist now
+  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
+  echo "Validating resources for cluster '$cluster_env'"
   set +o pipefail
+  [ "$CI" = 'true' ] && set +e
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$(grep -e "ERR\b" $tmp_out)" != "" ] && exitcode=1 || exitcode=0
-  validationResult=$(($validationResult + $exitcode))
-  rm $tmp_out
+  [ "$CI" = 'true' ] && set -e
+
+  grep -e "ERR\b" $tmp_out && exitcode=1
+  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  return 0
 }
 
 if [ -n "$1" ]; then

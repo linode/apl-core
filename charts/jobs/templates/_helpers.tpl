@@ -61,3 +61,13 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{- define "itemsByName" -}}
+{{- range $i := . }}
+{{ $i.name }}: {{- $i | toYaml | nindent 2 }}
+{{- end }}
+{{- end -}}
+
+{{- define "fileConfigMapName" -}}
+{{ printf "job-%s" (. | replace "." "" | replace "/" "") }}
+{{- end -}}
