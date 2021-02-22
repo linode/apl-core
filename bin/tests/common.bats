@@ -8,10 +8,13 @@ load "$lib_dir/bats-file/load.bash"
 
 . bin/common.sh
 
+##############
+# parse_args #
+##############
 @test "parse_args without CLI argument should throw 4" {
     run parse_args
     assert_output 'Error: --all or --label not specified'
-    assert_failure 4
+    assert_failure 5
 }
 
 @test "parse_args with --all should succeed" {
@@ -40,5 +43,3 @@ load "$lib_dir/bats-file/load.bash"
     parse_args --label this=should_work
     assert [ ${label} = 'this=should_work' ]
 }
-
-

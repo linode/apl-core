@@ -121,7 +121,7 @@ function prepare_crypt() {
 function for_each_cluster() {
   # Perform a command from argument for each cluster
   executable=$1
-  [ -z "$executable" ] && err "The positional argument is not set"
+  [[ "$executable" ]] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
@@ -135,13 +135,13 @@ function for_each_cluster() {
 function hf_templates_init() {
   local out_dir="$1"
   shift
-  [[ ! "$*" ]] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  [[ $all ]] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
   hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }
 
-#####################################################################################################################################
+##############################################################################################
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
-# Please update this comment if you do so.
+# Please update this function comment if you add additional parameters.
 # Outputs:
 #     STDERR 2: parse_args without options
 #     STDERR 3: no '--' passed with options
@@ -149,8 +149,11 @@ function hf_templates_init() {
 #     STDERR 5: no options specified
 # Returns:
 #     all -> if passed, sets to 'y' and can be used globally in conditional statements
-#     label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and can be used globally in conditional statements
-#####################################################################################################################################
+#     label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and
+#              can be used globally in conditional statements
+# Resources:
+# - https://stackoverflow.com/a/29754866
+##############################################################################################
 function parse_args() {
   if [[ "$*" != "" ]]; then
     ! getopt --test >/dev/null
@@ -171,7 +174,6 @@ function parse_args() {
       exit 2
     fi
     eval set -- "$PARSED"
-    label=- all=n
     while true; do
       case "$1" in
         -l | --label)
