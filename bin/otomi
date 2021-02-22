@@ -98,7 +98,7 @@ function show_usage() {
 function evaluate_k8s_context() {
   local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
   [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
-  source $env_path
+  . $env_path
   [ -z "$K8S_CONTEXT" ] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
   return 0
 }
@@ -132,7 +132,8 @@ function evaluate_secrets() {
   }
   local secrets_path="$ENV_DIR/.secrets"
   [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
-  source $secrets_path
+  # shellcheck source=/dev/null
+  . $secrets_path
   prepare_crypt
   return 0
 }
