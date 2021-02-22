@@ -2,7 +2,8 @@
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
-{{- $seal := $vault | get "seal" (dict "provider" "kubernetes") }}
+{{- $seal := $vault | get "seal" (dict "provider" "default") }}
+{{- $unsealKeyStorage := $vault | get "unsealKeyStorage" (dict "provider" "kubernetes") }}}}
 {{- $storage := $vault | get "storage" (dict "provider" "kubernetes") }}
 {{- $secretRef := $vault | get "secretRef" dict }}
 
@@ -70,41 +71,79 @@ resources:
           # The preFlightChecks flag enables unseal and root token storage tests
           # This is true by default
           preFlightChecks: true
-        {{ if eq $seal.provider "kubernetes" }}
+        {{- if eq $vaultKeyStorage.provider "kubernetes" }}
         kubernetes:
           # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
           secretNamespace: vault
-        {{ else if eq $seal.provider "aws" }}
+        {{- else if eq $unsealKeyStorage.provider "azure" }}
+        azure:
+          keyVaultName: {{ $unsealKeyStorage.keyVaultName }}
+        {{- else if eq $unsealKeyStorage.provider "aws" }}
         aws:
-          kmsKeyId: {{ $seal.kmsKeyId }}
-          kmsRegion: {{ $seal.kmsRegion }}
-          s3Bucket: {{ $seal.s3Bucket }}
-          s3Prefix: {{ $seal.s3Prefix }}
-          s3Region: {{ $seal.s3Region }}
-        {{ else if eq $seal.provider "google" }}
+          kmsKeyId: {{ $unsealKeyStorage.kmsKeyId }}
+          kmsRegion: {{ $unsealKeyStorage.kmsRegion }}
+          s3Bucket: {{ $unsealKeyStorage.s3Bucket }}
+          s3Prefix: {{ $unsealKeyStorage.s3Prefix }}
+          s3Region: {{ $unsealKeyStorage.s3Region }}
+        {{- else if eq $unsealKeyStorage.provider "google" }}
         google:
-          kmsKeyRing: {{ $seal.kmsKeyRing }}
-          kmsCryptoKey: {{ $seal.kmsCryptoKey }}
-          kmsLocation: {{ $seal.kmsLocation }}
-          kmsProject: {{ $seal.kmsProject }}
-          storageBucket: {{ $seal.storageBucket }}
-        {{ end }}
+          kmsKeyRing: {{ $unsealKeyStorage.kmsKeyRing }}
+          kmsCryptoKey: {{ $unsealKeyStorage.kmsCryptoKey }}
+          kmsLocation: {{ $unsealKeyStorage.kmsLocation }}
+          kmsProject: {{ $unsealKeyStorage.kmsProject }}
+          storageBucket: {{ $unsealKeyStorage.storageBucket }}
+        {{- end }}
 
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
-        {{ if eq $storage.provider "kubernetes" }}
+        {{- if eq $storage.provider "kubernetes" }}
         storage:
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
-        {{ else if eq $storage.provider "aws" }}
+        {{- else if eq $storage.provider "aws" }}
           s3:
             region: {{ $storage.region }}
             bucket: {{ $storage.bucket }}
-        {{ else if eq $storage.provider "google" }}
+        {{- else if eq $storage.provider "azure" }}
+          azure:
+            accountName: {{ $storage.accountName }}
+            accountKey: {{ $storage.accountKey }}
+            container: {{ $storage.container }}
+            environment: {{ $storage.environment }}
+        {{- else if eq $storage.provider "google" }}
           gcs:
             bucket: {{ $storage.bucket }}
-        {{ end }}
+        {{- end }}
+
+        {{- if $seal }}
+        # https://www.vaultproject.io/docs/configuration/seal
+        seal:
+          {{- if eq $seal.provider "azure" }}
+          # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
+          azurekeyvault:
+            tenant_id: {{ $seal.tenant_id }}
+            client_id: {{ $seal.client_id }}
+            client_secret: {{ $seal.client_secret }}
+            vault_name: {{ $seal.vault_name }}
+            key_name: {{ $seal.key_name }}
+          {{- if eq $seal.provider "aws" }}
+          # https://www.vaultproject.io/docs/configuration/seal/awskms
+          awskms:
+            region: {{ $seal.region }}
+            access_key: {{ $seal.access_key }}
+            secret_key: {{ $seal.secret_key }}
+            kms_key_id: {{ $seal.kms_key_id }}
+            endpoint: {{ $seal.endpoint }}
+          {{- if eq $seal.provider "google" }}
+          # https://www.vaultproject.io/docs/configuration/seal/gcpckms
+          gcpckms:
+            project: {{ $seal.project }}
+            region: {{ $seal.region }}
+            key_ring:  {{ $seal.key_ring }}
+            crypto_key: {{ $seal.crypto_key }}
+          {{- end }}
+        {{- end }}
         listener:
           tcp:
             address: "0.0.0.0:8200"
@@ -216,26 +255,6 @@ resources:
           value: debug
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
-
-      # If you are using a custom certificate and are setting the hostname in a custom way
-      # sidecarEnvsConfig:
-      #   - name: VAULT_ADDR
-      #     value: https://vault.local:8200
-
-      # # https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
-      # vaultPodSpec:
-      #   hostAliases:
-      #   - ip: "127.0.0.1"
-      #     hostnames:
-      #     - "vault.local"
-
-      # It is possible to override the Vault container directly:
-      # vaultContainerSpec:
-      #   lifecycle:
-      #     postStart:
-      #       exec:
-      #         command:
-      #              - setcap cap_ipc_lock=+ep /vault/plugins/orchestrate
 
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
