@@ -245,7 +245,7 @@ function execute() {
       drun bash
       ;;
     bats)
-      drun bats bin/tests
+      drun bats -Tp "$@" bin/tests
       ;;
     bootstrap)
       if [ "$*" != '' ]; then

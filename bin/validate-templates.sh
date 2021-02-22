@@ -3,16 +3,13 @@
 [ "$CI" = 'true' ] && set -e
 set -o pipefail
 
-source bin/common.sh
+. bin/common.sh
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
-
-# Flags for CLI arguments
-label=- all=n
 
 function cleanup() {
   if [ -z "$DEBUG" ]; then
@@ -66,6 +63,12 @@ function process_crd() {
   }
 }
 
+###############################################################
+# Calls 'kubeval' on generated templates by 'helmfile template'
+# Globals:
+#     label
+#     all
+###############################################################
 function validate_templates() {
   local k8s_version="v$(get_k8s_version)"
   local cluster_env=$(cluster_env)
@@ -113,10 +116,8 @@ function validate_templates() {
 }
 
 function main() {
-  parse_args "$@"
-  echo "ALL: $all"
-  echo "LABEL: $label"
-  for_each_cluster validate_templates
+  parse_args -- "$@"
+  for_each_cluster validate_templates && exit 0
 }
 
 ######################################################################################################

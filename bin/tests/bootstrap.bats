@@ -6,13 +6,13 @@ load "$lib_dir/bats-support/load.bash"
 load "$lib_dir/bats-assert/load.bash"
 load "$lib_dir/bats-file/load.bash"
 
-setup () {
+function setup () {
     test_temp_dir="$(temp_make --prefix 'otomi-values-')"
     export ENV_DIR="$test_temp_dir"
     env_path="$ENV_DIR/env"
 }
 
-teardown () {
+function teardown () {
     temp_del "$test_temp_dir"
     unset ENV_DIR
     unset env_path

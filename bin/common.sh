@@ -142,16 +142,11 @@ function hf_templates_init() {
 #####################################################################################################################################
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
 # Please update this comment if you do so.
-# Globals:
-#     all
-#     label
-# Arguments:
-#     all -> default behaviour
-#     label -> k8s metadata.labels Selector
-#     none -> exit STDERR
 # Outputs:
-#     STDERR: if CLI argument not given, it will complain
-#     STDOUT: none
+#     STDERR 2: parse_args without options
+#     STDERR 3: no '--' passed with options
+#     STDERR 4: special ERR reserved for checking if enhanced getopt is present on the host
+#     STDERR 5: no options specified
 # Returns:
 #     all -> if passed, sets to 'y' and can be used globally in conditional statements
 #     label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and can be used globally in conditional statements
@@ -164,15 +159,19 @@ function parse_args() {
       exit 1
     fi
 
-    OPTIONS=al:
+    OPTIONS=Al:
     LONGOPTS=all,label:
 
+    # - regarding ! and PIPESTATUS see above
+    # - temporarily store output to be able to check for errors
+    # - activate quoting/enhanced mode (e.g. by writing out “--options”)
+    # - pass arguments only via   -- "$@"   to separate them correctly
     ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
     if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
       exit 2
     fi
     eval set -- "$PARSED"
-
+    label=- all=n
     while true; do
       case "$1" in
         -l | --label)
@@ -195,5 +194,6 @@ function parse_args() {
     done
   else
     echo "Error: --all or --label not specified"
+    exit 5
   fi
 }
