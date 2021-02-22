@@ -278,6 +278,14 @@ definitions:
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   externalSecret:
     type: object
+    properties:
+      id:
+        readOnly: true
+        type: string
+      name:
+        $ref: '#/definitions/subdomainType'
+    required:
+      - name
     oneOf:
       - title: Generic
         properties:
@@ -285,30 +293,24 @@ definitions:
             default: generic
             enum:
               - generic
-          name:
-            $ref: '#/definitions/subdomainType'
-          vaultPath:
+          secretPath:
             $ref: '#/definitions/vaultPath'
+          entries:
+            type: array
+            items:
+              properties:
+                name:
+                  $ref: '#/definitions/vaultProperty'
+                value:
+                  $ref: '#/definitions/vaultPath'
+              required:
+                - name
+                - value
+              minItems: 1
+              uniqueItems: true
         required:
           - type
-          - vaultPath
-      - title: Generic (single item)
-        properties:
-          type:
-            default: genericItem
-            enum:
-              - genericItem
-          name:
-            $ref: '#/definitions/subdomainType'
-          vaultPath:
-            $ref: '#/definitions/vaultPath'
-          vaultProperty:
-            $ref: '#/definitions/vaultProperty'
-        required:
-          - type
-          - name
-          - vaultPath
-          - vaultProperty
+          - entries
       - title: Docker registry
         properties:
           type:
@@ -316,14 +318,15 @@ definitions:
             enum:
               - docker-registry
             type: string
-          name:
-            $ref: '#/definitions/subdomainType'
-          vaultPath:
+          secretPath:
             $ref: '#/definitions/vaultPath'
+          itemName:
+            type: string
+            default: '.dockerconfig.json'
+            readOnly: true
         required:
           - type
-          - name
-          - vaultPath
+          - secretPath
       - title: TLS
         properties:
           type:
@@ -331,30 +334,26 @@ definitions:
             enum:
               - tls
             type: string
-          name:
-            $ref: '#/definitions/subdomainType'
-          caCrtVaultPath:
+          caSecretPath:
             $ref: '#/definitions/vaultPath'
-          caCrtFileName:
+          caItemName:
             type: string
-            default: 'ca.crt'
-          tlsCrtVaultPath:
+            default: 'ca.pem'
+          crtSecretPath:
             $ref: '#/definitions/vaultPath'
-          tlsCrtFileName:
+          crtItemName:
             type: string
-            default: 'tls.crt'
-          tlsKeyVaultPath:
+            default: 'crt.pem'
+          keySecretPath:
             $ref: '#/definitions/vaultPath'
-          tlsKeyFileName:
+          keyItemName:
             type: string
-            default: 'tls.key'
+            default: 'key.pem'
         required:
           - type
-          - name
-          - tlsCrtVaultPath
-          - tlsCrtFileName
-          - tlsKeyVaultPath
-          - tlsKeyFileName
+          - caSecretPath
+          - crtSecretPath
+          - keySecretPath
   secret:
     oneOf:
       - properties:
