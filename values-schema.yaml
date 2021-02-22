@@ -699,6 +699,126 @@ definitions:
     description: A property name at vaultPath
     pattern: '^[a-zA-Z0-9_]*$'
     type: string
+  vaultAwsUnseal:
+    properties:
+      kmsKeyId:
+        type: string
+      kmsRegion:
+        type: string
+      s3Bucket:
+        description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
+        type: string
+      s3Prefix:
+        type: string
+      s3Region:
+        type: string
+    required:
+      - kmsKeyId
+      - kmsRegion
+      - s3Bucket
+      - s3Prefix
+      - s3Region
+  vaultAwsStorage:
+    properties:
+      region:
+        type: string
+      bucket:
+        type: string
+    required:
+      - region
+      - bucket
+  vaultAwsSeal:
+    properties:
+      region:
+        type: string
+      access_key:
+        type: string
+      secret_key:
+        type: string
+      kms_key_id:
+        type: string
+      endpoint:
+        type: string
+    required:
+      - region
+      - access_key
+      - secret_key
+      - kms_key_id
+      - endpoint
+  vaultAzureStorage:
+    properties:
+      accountName:
+        type: string
+      accountKey:
+        type: string
+      container:
+        type: string
+      environment:
+        type: string
+  vaultAzureSeal:
+    properties:
+      tenant_id:
+        type: string
+      client_id:
+        type: string
+      client_secret:
+        type: string
+      vault_name:
+        type: string
+      key_name:
+        type: string
+    required:
+      - tenant_id
+      - client_id
+      - client_secret
+      - vault_name
+      - key_name
+  vaultAzureUnseal:
+    properties:
+      keyVaultName:
+        type: string
+    required:
+      - keyVaultName
+  vaultGoogleStorage:
+    properties:
+      bucket:
+        type: string
+    required:
+      - bucket
+  vaultGoogleSeal:
+    properties:
+      project:
+        type: string
+      region:
+        type: string
+      key_ring:
+        type: string
+      crypto_key:
+        type: string
+    required:
+      - project
+      - region
+      - key_ring
+      - crypto_key
+  vaultGoogleUnseal:
+    properties:
+      kmsKeyRing:
+        type: string
+      kmsCryptoKey:
+        type: string
+      kmsLocation:
+        type: string
+      kmsProject:
+        type: string
+      storageBucket:
+        description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
+        type: string
+    required:
+      - kmsKeyRing
+      - kmsCryptoKey
+      - kmsLocation
+      - kmsProject
+      - storageBucket
   volumes:
     items:
       additionalProperties: false
@@ -1371,113 +1491,77 @@ properties:
             type: string
           schedule:
             type: string
+
       vault:
         type: object
         additionalProperties: false
-        properties:
-          seal:
-            type: object
-            description: Configure Key Management Service (KMS) for encrypting Vault unseal keys and root token
-            oneOf:
-              - title: aws
-                properties:
-                  provider:
-                    default: aws
-                    enum:
-                      - aws
-                    type: string
-                  kmsKeyId:
-                    type: string
-                  kmsRegion:
-                    type: string
-                  s3Bucket:
-                    description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
-                    type: string
-                  s3Prefix:
-                    type: string
-                  s3Region:
-                    type: string
-              - title: google
-                properties:
-                  provider:
-                    default: google
-                    enum:
-                      - google
-                    type: string
-                  kmsKeyRing:
-                    type: string
-                  kmsCryptoKey:
-                    type: string
-                  kmsLocation:
-                    type: string
-                  kmsProject:
-                    type: string
-                  storageBucket:
-                    description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
-                    type: string
-                required:
-                  - provider
-                  - kmsKeyRing
-                  - kmsCryptoKey
-                  - kmsLocation
-                  - kmsProject
-                  - storageBucket
-              - title: No KMS (not secure)
-                properties:
-                  provider:
-                    default: kubernetes
-                    enum:
-                      - kubernetes
-                    type: string
-                required:
-                  - provider
-          storage:
-            type: object
-            description: Configure storage where encrypted user data should be saved
-            oneOf:
-              - title: kubernetes
-                properties:
-                  provider:
-                    default: kubernetes
-                    enum:
-                      - kubernetes
-                    type: string
-                required:
-                  - provider
-              - title: aws
-                properties:
-                  provider:
-                    default: aws
-                    enum:
-                      - aws
-                  region:
-                    type: string
-                  bucket:
-                    type: string
-              - title: google
-                properties:
-                  provider:
-                    default: google
-                    enum:
-                      - google
-                    type: string
-                  bucket:
-                    type: string
-                required:
-                  - provider
-                  - bucket
-          secretRef:
-            type: object
-            additionalProperties: false
+        oneOf:
+          - title: production-aws
             properties:
-              google:
+              profile:
+                default: production-aws
+                enum:
+                  - production-aws
+              storage:
+                $ref: '#/definitions/vaultAwsStorage'
+              seal:
+                $ref: '#/definitions/vaultAwsSeal'
+              unsealKeyStorage:
+                $ref: '#/definitions/vaultAwsUnseal'
+              cloudSaToken:
                 type: string
-              aws:
+            required:
+              - profile
+              - storage
+              - seal
+              - unsealKeyStorage
+              - cloudSaToken
+          - title: production-azure
+            properties:
+              profile:
+                default: production-azure
+                enum:
+                  - production-azure
+              storage:
+                $ref: '#/definitions/vaultAzureStorage'
+              seal:
+                $ref: '#/definitions/vaultAzureSeal'
+              unsealKeyStorage:
+                $ref: '#/definitions/vaultAzureUnseal'
+              cloudSaToken:
                 type: string
-        required:
-          - storage
-          - seal
-
+            required:
+              - profile
+              - storage
+              - seal
+              - unsealKeyStorage
+              - cloudSaToken
+          - title: production-google
+            properties:
+              profile:
+                default: production-google
+                enum:
+                  - production-google
+              storage:
+                $ref: '#/definitions/vaultGoogleStorage'
+              seal:
+                $ref: '#/definitions/vaultGoogleSeal'
+              unsealKeyStorage:
+                $ref: '#/definitions/vaultGoogleUnseal'
+              cloudSaToken:
+                type: string
+            required:
+              - profile
+              - storage
+              - seal
+              - unsealKeyStorage
+              - cloudSaToken
+          - title: non-production
+            properties:
+              profile:
+                default: non-production
+                enum:
+                  - non-production
       weave-scope:
         default: false
         enabled: boolean
