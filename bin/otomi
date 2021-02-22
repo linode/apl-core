@@ -68,6 +68,7 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 function show_usage() {
   echo "otomi usage:
     bash                run interactive bash shell in otomi-core container
+    bats                runs BATS on bin/tests (see docs/BATS.md)
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     commit              wrapper for encrypt > generate pipelines > git commit changed files
     console             starts Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
@@ -242,6 +243,9 @@ function execute() {
     bash)
       docker_terminal_params='-ti'
       drun bash
+      ;;
+    bats)
+      drun bats bin/tests
       ;;
     bootstrap)
       if [ "$*" != '' ]; then
