@@ -311,6 +311,10 @@ function execute() {
         drun bin/crypt.sh encrypt
       fi
       ;;
+    gen-drone)
+      evaluate_secrets
+      drun bin/gen-drone.sh
+      ;;
     hf)
       evaluate_secrets
       validate_cluster_env
@@ -322,6 +326,11 @@ function execute() {
       evaluate_secrets
       git -C $ENV_DIR pull
       drun bin/bootstrap.sh 1
+      ;;
+    rotate-keys)
+      check_sops_file
+      evaluate_secrets
+      drun bin/crypt.sh rotate
       ;;
     sync)
       evaluate_secrets
@@ -335,29 +344,10 @@ function execute() {
       set -o pipefail
       drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
       ;;
-    rotate-keys)
-      check_sops_file
-      evaluate_secrets
-      drun bin/crypt.sh rotate
-      ;;
-    gen-drone)
-      evaluate_secrets
-      drun bin/gen-drone.sh
-      ;;
     test)
       evaluate_secrets
       validate_cluster_env
       drun bin/test.sh
-      ;;
-    values)
-      evaluate_secrets
-      validate_cluster_env
-      set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
-      ;;
-    validate-values)
-      evaluate_secrets
-      drun bin/validate-values.sh "$@"
       ;;
     validate-templates)
       evaluate_secrets
@@ -365,6 +355,16 @@ function execute() {
         validate_cluster_env
       fi
       drun bin/validate-templates.sh "$@"
+      ;;
+    validate-values)
+      evaluate_secrets
+      drun bin/validate-values.sh "$@"
+      ;;
+    values)
+      evaluate_secrets
+      validate_cluster_env
+      set -o pipefail
+      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       check_kube_context=0
