@@ -5,7 +5,7 @@
 
 nameOverride: gitea
 fullnameOverride: gitea
-clusterDomain: {{ $v.cluster.domain }}
+# clusterDomain: {{ $v.cluster.domain }}
 
 gitea:
   podAnnotations: 
@@ -16,6 +16,8 @@ gitea:
   config:
     server:
       DOMAIN: {{ $giteadomain }}
+    openid:
+      ENABLE_OPENID_SIGNIN: true
   metrics:
     enabled: true
     serviceMonitor:
