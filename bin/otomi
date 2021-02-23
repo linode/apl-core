@@ -14,7 +14,7 @@
 set -e
 
 # normalize $CI to be set to 'true' if set and not 'false'
-[ "$CI" != 'false' ] && [ "$CI" != '' ] && CI='true'
+{ [ "$CI" = 'true' ] || [ "$CI" != 'false' ]; } && CI='true'
 
 command=$1
 env_unset='false'
@@ -24,7 +24,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-[ $has_docker = 'false' ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [[ ! "$CI" ]] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
