@@ -7,6 +7,7 @@
 {{- $storage := $vault | get "storage" dict }}
 {{- $useCloudResources := has $vault.profile (list "azure" "google" "aws") }}
 {{- $useKms := has $vault.profile (list "azure" "google" "aws") }}
+
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -21,16 +22,41 @@ resources:
       # Common annotations for all created resources
       annotations:
         common/annotation: "true"
-
       # Vault Pods , Services and TLS Secret annotations
       vaultAnnotations:
         type/instance: "vault"
+        # psp-capabilities: IPC_LOCK vault uses it for preventing from flusing memory to swap
+        # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
+        policy.otomi.io/ignore: "banned-image-tags,psp-capabilities,psp-allowed-users"
+      vaultPodSpec:
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+          runAsGroup: 0
+
+      # Marks presence of Istio, which influences things like port namings
+      istioEnabled: true
+      vaultEnvsConfig:
+        - name: VAULT_LOG_LEVEL
+          value: debug
+        - name: VAULT_STORAGE_FILE
+          value: "/vault/file"
+        # - name: SKIP_CHOWN
+        #   value: "true"
+        # - name: SKIP_SETCAP
+        #   value: "true"
 
       # Vault Configurer Pods and Services annotations
       vaultConfigurerAnnotations:
         type/instance: "vaultconfigurer"
-
       # Vault Pods , Services and TLS Secret labels
+
+      vaultConfigurerPodSpec:
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+
       vaultLabels: {}
 
       # Vault Configurer Pods and Services labels
@@ -220,14 +246,7 @@ resources:
             data:
               data:
                 HELLO: "Welcome admin team"
-      vaultEnvsConfig:
-        - name: VAULT_LOG_LEVEL
-          value: debug
-        - name: VAULT_STORAGE_FILE
-          value: "/vault/file"
 
-      # Marks presence of Istio, which influences things like port namings
-      istioEnabled: true
       {{- if $useCloudResources }}
       credentialsConfig:
         {{- if eq $vault.profile "production-azure" }}
