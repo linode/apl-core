@@ -4,8 +4,7 @@ charts:
             - otomi.cloud
         zoneIdFilters:
             - otomi
-        storage:
-            type: persisten-volume
+    vault:
         seal:
             type: gcpckms
             credentials: '/usr/vault/vault-project-user-creds.json'

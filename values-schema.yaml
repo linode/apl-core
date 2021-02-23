@@ -1475,7 +1475,6 @@ properties:
             type: string
           schedule:
             type: string
-
       vault:
         type: object
         additionalProperties: false
@@ -1490,19 +1489,10 @@ properties:
                 $ref: '#/definitions/vaultAwsSeal'
               - title: azurekeyvault
                 $ref: '#/definitions/vaultAzureSeal'
-          storage:
-            oneOf:
-              - title: persistent-volume
-                properties:
-                  type:
-                    default: persistent-volume
-                    enum:
-                      - persistent-volume
           encodedCloudToken:
             type: string
         required:
           - seal
-          - storage
       weave-scope:
         default: false
         enabled: boolean
