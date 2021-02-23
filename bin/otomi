@@ -142,8 +142,8 @@ function evaluate_secrets() {
 function validate_cluster_env() {
   check_kube_context=1
   local err
-  [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
-  [ -z "$CLUSTER" ] && err "The CLUSTER environment variable is not set" && err=1
+  [[ ! "$CLOUD" ]] && err "The CLOUD environment variable is not set" && err=1
+  [[ ! "$CLUSTER" ]] && err "The CLUSTER environment variable is not set" && err=1
   [ -n "$err" ] && exit 2
   return 0
 }

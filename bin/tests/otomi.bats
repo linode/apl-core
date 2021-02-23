@@ -16,6 +16,21 @@ function teardown () {
     unset ENV_DIR CLOUD CLUSTER env_path
 }
 
+function run_cmd { 
+    cmd="$1"; timeout="$2";
+    grep -qP '^\d+$' <<< $timeout || timeout=5
+    ( 
+        eval "$cmd" &
+        child=$!
+        trap -- "" SIGTERM 
+        (       
+                sleep $timeout
+                kill $child 2> /dev/null 
+        ) &     
+        wait $child
+    )
+}
+
 #############
 # bin/otomi #
 #############
@@ -30,35 +45,35 @@ function teardown () {
 generating_text="Generating k8s v1.18 manifests for cluster 'aws-dev'"
 assert_output_partial_generating_text="assert_output --partial $generating_text"
 validate_templates_name="validate-templates"
-run_otomi_validate_templates="run bin/otomi $validate_templates_name"
+run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
 
 @test "$validate_templates_name without arguments fails" {
-    eval "$run_otomi_validate_templates"
+    eval "$run_otomi_validate_templates" 
     assert_failure
 }
 
 @test "$validate_templates_name with both -A and -l fails" {
-    eval "$run_otomi_validate_templates" -A -l group=jobs
+    eval "$run_otomi_validate_templates -A -l group=jobs"
     assert_output --partial 'Error: cannot specify --all and --label simultaneously'
     assert_failure 6
 }
 
 @test "$validate_templates_name -l something starts generating" {
-    eval "$run_otomi_validate_templates" -l group=jobs
+    eval "$run_otomi_validate_templates -l group=jobs"
     eval "$assert_output_partial_generating_text"
 }
 
 @test "$validate_templates_name --label something starts generating" {
-    eval "$run_otomi_validate_templates" --label group=jobs
+    eval "$run_otomi_validate_templates --label group=jobs"
     eval "$assert_output_partial_generating_text"
 }
 
 @test "$validate_templates_name -A starts generating" {
-    eval "$run_otomi_validate_templates" -A
+    eval "$run_otomi_validate_templates -A"
     eval "$assert_output_partial_generating_text"
 }
 
 @test "$validate_templates_name --all starts generating" {
-    eval "$run_otomi_validate_templates" --all
+    eval "$run_otomi_validate_templates --all"
     eval "$assert_output_partial_generating_text"
 }
