@@ -16,7 +16,7 @@ default sidecarAnnotationField = "policy.otomi.io/ignore-sidecar"
 
 default paramsAnnotationField = "policy.otomi.io/parameters"
 
-default containerIgnoreAnnotationField = "policy.otomi.io/ignore/%s"
+default containerIgnoreAnnotationField = "policy.otomi.io/ignore.%s"
 
 default containerParamAnnotationField = "policy.otomi.io/parameters/%s.%s"
 
