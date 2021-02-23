@@ -10,7 +10,7 @@ readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
-readonly k8s_version="v$(get_k8s_version)"
+readonly k8s_version="v${get_k8s_version:-1.18}"
 readonly cluster_env=$(cluster_env)
 
 function cleanup() {
@@ -65,26 +65,25 @@ function process_crd() {
 }
 
 function process_crd_wrapper() {
+  setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates_init "$k8s_resources_path/$k8s_version"
 
-  if [[ $all ]]; then
-    echo "Processing CRD files"
-    # generate canonical schemas
-    local target_yaml_files="*.yaml"
-    # schemas for otomi templates
-    for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
-      process_crd $file
-    done
-    # schemas for chart crds
-    for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
-      process_crd $file
-    done
-    # create schema in canonical format for each extracted file
-    for json in $(jq -s -r '.[] | .filename' $schemas_bundle_file); do
-      jq "select(.filename==\"$json\")" $schemas_bundle_file | jq '.schema' >"$schema_output_path/$k8s_version-standalone/$json"
-    done
-  fi
+  echo "Processing CRD files"
+  # generate canonical schemas
+  local target_yaml_files="*.yaml"
+  # schemas for otomi templates
+  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+    process_crd $file
+  done
+  # schemas for chart crds
+  for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+    process_crd $file
+  done
+  # create schema in canonical format for each extracted file
+  for json in $(jq -s -r '.[] | .filename' $schemas_bundle_file); do
+    jq "select(.filename==\"$json\")" $schemas_bundle_file | jq '.schema' >"$schema_output_path/$k8s_version-standalone/$json"
+  done
 }
 
 ###############################################################
@@ -94,14 +93,14 @@ function process_crd_wrapper() {
 #     all
 ###############################################################
 function validate_templates() {
-  local label=$1
+  process_crd_wrapper
   # validate_resources
   local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
-  local tmp_out=$(mktemp -u)
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
+  local tmp_out=$(mktemp -u)
   echo "Validating resources for cluster '$cluster_env'"
   set +o pipefail
   [ "$CI" = 'true' ] && set +e
@@ -118,9 +117,12 @@ function validate_templates() {
 
 function main() {
   parse_args "$@"
-  if [[ $all = 'y' || $label ]]; then
-    process_crd_wrapper
-    for_each_cluster validate_templates $label
+  [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 6
+  if [[ $label ]]; then
+    validate_templates
+    exit 0
+  else
+    for_each_cluster validate_templates
     exit 0
   fi
 }
