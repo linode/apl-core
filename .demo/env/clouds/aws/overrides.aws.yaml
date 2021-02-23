@@ -10,3 +10,14 @@ charts:
         zoneIdFilters: []
         aws:
             region: eu-central-1
+    vault:
+        storage:
+            type: persisten-volume
+        seal:
+            type: awskms
+            region: eu-central-1
+            access_key: 'AKIAIOSFODNN7EXAMPLE'
+            secret_key: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+            kms_key_id: '19ec80b0-dfdd-4d97-8164-c6examplekey'
+            endpoint: 'https://vpce-0e1bb1852241f8cc6-pzi0do8n.kms.us-east-1.vpce.amazonaws.com'
+        encodedCloudToken: 'dsaddasdsad'

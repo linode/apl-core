@@ -1,6 +1,6 @@
 charts:
-  vault:
-    storage:
-      provider: kubernetes
-    seal:
-      provider: kubernetes
+    vault:
+        storage:
+            provider: peristent-volume
+        seal:
+            provider: default
