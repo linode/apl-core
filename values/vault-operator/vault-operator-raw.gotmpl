@@ -63,28 +63,9 @@ resources:
         options:
           # The preFlightChecks flag enables unseal and root token storage tests
           preFlightChecks: true
-        {{- if eq $vault.profile "non-production" }}
         kubernetes:
           # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
           secretNamespace: vault
-        {{- else if eq $vault.profile "production-azure" }}
-        azure:
-          keyVaultName: {{ $unsealKeyStorage.keyVaultName }}
-        {{- else if eq $vault.profile "production-aws" }}
-        aws:
-          kmsKeyId: {{ $unsealKeyStorage.kmsKeyId }}
-          kmsRegion: {{ $unsealKeyStorage.kmsRegion }}
-          s3Bucket: {{ $unsealKeyStorage.s3Bucket }}
-          s3Prefix: {{ $unsealKeyStorage.s3Prefix }}
-          s3Region: {{ $unsealKeyStorage.s3Region }}
-        {{- else if eq $vault.profile "production-google" }}
-        google:
-          kmsKeyRing: {{ $unsealKeyStorage.kmsKeyRing }}
-          kmsCryptoKey: {{ $unsealKeyStorage.kmsCryptoKey }}
-          kmsLocation: {{ $unsealKeyStorage.kmsLocation }}
-          kmsProject: {{ $unsealKeyStorage.kmsProject }}
-          storageBucket: {{ $unsealKeyStorage.storageBucket }}
-        {{- end }}
 
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
