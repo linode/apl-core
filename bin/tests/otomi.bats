@@ -16,21 +16,6 @@ function teardown () {
     unset ENV_DIR CLOUD CLUSTER env_path
 }
 
-function run_cmd { 
-    cmd="$1"; timeout="$2";
-    grep -qP '^\d+$' <<< $timeout || timeout=5
-    ( 
-        eval "$cmd" &
-        child=$!
-        trap -- "" SIGTERM 
-        (       
-                sleep $timeout
-                kill $child 2> /dev/null 
-        ) &     
-        wait $child
-    )
-}
-
 #############
 # bin/otomi #
 #############
