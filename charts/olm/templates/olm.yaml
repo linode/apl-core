@@ -98,7 +98,7 @@ spec:
             requests:
               cpu: 10m
               memory: 160Mi
-          securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
+      securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
           
       
       nodeSelector:
@@ -159,7 +159,7 @@ spec:
             requests:
               cpu: 10m
               memory: 80Mi
-          securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
+      securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
       
       nodeSelector:
         kubernetes.io/os: linux

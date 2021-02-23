@@ -4,22 +4,19 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if eq $dnsProvider "azure" }}
-  {{- $ap := $cm.provider.azure.azuredns }}
+{{- if or (eq $dnsProvider "azure") (eq $dnsProvider "google") }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: {{ $ap.clientSecretSecretRef.name }}
+      name: dns-secret
     data:
-      {{ $ap.clientSecretSecretRef.key }}: "{{ $cm.azureClientSecret | b64enc }}"
-{{- end }}
-{{- if eq $dnsProvider "google" }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: cloud-dns-key
-    data:
-      key.json: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
+      {{- if eq $dnsProvider "google" }}
+      secret: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
+      {{- else if eq $dnsProvider "azure" }}
+      secret: "{{ $cm.azureClientSecret | b64enc }}"
+      {{- else if eq $dnsProvider "aws" }}
+      # aws via service account access not yet implemented, expecting role to be on node
+      {{- end }}
 {{- end }}
 {{- range $stage := (list "staging" "production") }}
   - apiVersion: cert-manager.io/v1alpha2
@@ -36,6 +33,12 @@ resources:
           - selector: {}
             dns01:
               {{- index $cm.provider $dnsProvider | toYaml | nindent 14 }}
+                {{- if or (eq $dnsProvider "azure") (eq $dnsProvider "google") }}
+                clientSecretSecretRef:
+                  name: dns-secret
+                  key: secret
+                {{- end }}
+
 {{- end }}
 # generate all da certs
 {{- range $domInfo := $vars.domains }}

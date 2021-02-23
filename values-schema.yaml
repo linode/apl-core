@@ -687,16 +687,6 @@ properties:
                     properties:
                       clientID:
                         type: string
-                      clientSecretSecretRef:
-                        additionalProperties: false
-                        properties:
-                          key:
-                            type: string
-                          name:
-                            type: string
-                        required:
-                          - name
-                          - key
                       hostedZoneName:
                         type: string
                       resourceGroupName:
@@ -707,7 +697,6 @@ properties:
                         type: string
                     required:
                       - clientID
-                      - clientSecretSecretRef
                       - tenantID
                       - subscriptionID
                       - resourceGroupName
