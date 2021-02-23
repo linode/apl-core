@@ -3,5 +3,5 @@ export CI='true'
 
 bin/validate-values.sh &&
   bin/otomi bats &&
-  bin/validate-templates.sh &&
+  bin/otomi validate-templates --all &&
   bin/check-policies.sh
