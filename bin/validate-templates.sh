@@ -10,8 +10,6 @@ readonly schemas_bundle_file="$output_path/all.json"
 readonly k8s_resources_path="/tmp/otomi/generated-manifests"
 readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
-readonly k8s_version="v${get_k8s_version:-1.18}"
-readonly cluster_env=$(cluster_env)
 
 function cleanup() {
   if [ -z "$DEBUG" ]; then
@@ -21,6 +19,7 @@ function cleanup() {
 }
 
 function setup() {
+  local k8s_version=$1
   mkdir -p $k8s_resources_path $output_path $schema_output_path
   touch $schemas_bundle_file
   # use standalone schemas
@@ -65,6 +64,8 @@ function process_crd() {
 }
 
 function process_crd_wrapper() {
+  local k8s_version=$1
+  local cluster_env=$2
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
   hf_templates_init "$k8s_resources_path/$k8s_version"
@@ -93,7 +94,10 @@ function process_crd_wrapper() {
 #     all
 ###############################################################
 function validate_templates() {
-  process_crd_wrapper
+  local k8s_version="v${get_k8s_version:-1.18}"
+  local cluster_env=$(cluster_env)
+  process_crd_wrapper $k8s_version $cluster_env
+
   # validate_resources
   local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
@@ -118,10 +122,7 @@ function validate_templates() {
 function main() {
   parse_args "$@"
   [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 6
-  if [[ $label ]]; then
-    validate_templates
-    exit 0
-  else
+  if [[ $all = 'y' || $label ]]; then
     for_each_cluster validate_templates
     exit 0
   fi

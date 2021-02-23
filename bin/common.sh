@@ -119,9 +119,8 @@ function prepare_crypt() {
 }
 
 function for_each_cluster() {
-  # Perform a command from argument for each cluster
   executable=$1
-  [[ "$executable" ]] && err "The positional argument is not set"
+  [[ ! "$executable" ]] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do

@@ -33,6 +33,8 @@ function teardown () {
 ##########################
 # bin/validate-templates #
 ##########################
+generating_text="Generating k8s v1.18 manifests for cluster 'aws-dev'"
+
 @test "executing validate-templates without arguments fails" {
     run bin/otomi validate-templates
     assert_failure
@@ -44,7 +46,22 @@ function teardown () {
     assert_failure 6
 }
 
-@test "executing validate-templates with --label something works" {
+@test "executing validate-templates -l something starts generating" {
     run bin/otomi validate-templates -l group=jobs
-    assert_output --partial "Generating k8s v1.18 manifests for cluster 'aws-dev'"
+    assert_output --partial $generating_text
+}
+
+@test "executing validate-templates --label something starts generating" {
+    run bin/otomi validate-templates --label group=jobs
+    assert_output --partial $generating_text
+}
+
+@test "executing validate-templates -A starts generating" {
+    run bin/otomi validate-templates -A
+    assert_output --partial $generating_text
+}
+
+@test "executing validate-templates --all starts generating" {
+    run bin/otomi validate-templates --all
+    assert_output --partial $generating_text
 }
