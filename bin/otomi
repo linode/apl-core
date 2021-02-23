@@ -14,7 +14,7 @@
 set -e
 
 # normalize $CI to be set to 'true' if set and not 'false'
-([ "$CI" = 'true' ] || [ "$CI" != 'false' ]) && CI='true'
+[ "$CI" != 'false' ] && [ "$CI" != '' ] && CI='true'
 
 command=$1
 env_unset='false'
@@ -373,7 +373,7 @@ function execute() {
       ;;
     *)
       show_usage
-      [ -z "$1" ] && err "Unknown command: $*" && exit 1
+      [ -z "$1" ] && err "Unknown command: $command" && exit 1
       ;;
   esac
 }
