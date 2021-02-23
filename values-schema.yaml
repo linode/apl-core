@@ -706,25 +706,7 @@ definitions:
         default: default
         enum:
           - default
-  vaultAwsUnseal:
-    properties:
-      kmsKeyId:
-        type: string
-      kmsRegion:
-        type: string
-      s3Bucket:
-        description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
-        type: string
-      s3Prefix:
-        type: string
-      s3Region:
-        type: string
-    required:
-      - kmsKeyId
-      - kmsRegion
-      - s3Bucket
-      - s3Prefix
-      - s3Region
+
   vaultAwsStorage:
     properties:
       region:
@@ -792,12 +774,7 @@ definitions:
       - client_secret
       - vault_name
       - key_name
-  vaultAzureUnseal:
-    properties:
-      keyVaultName:
-        type: string
-    required:
-      - keyVaultName
+
   vaultGoogleStorage:
     properties:
       bucket:
@@ -825,25 +802,7 @@ definitions:
       - region
       - key_ring
       - crypto_key
-  vaultGoogleUnseal:
-    properties:
-      kmsKeyRing:
-        type: string
-      kmsCryptoKey:
-        type: string
-      kmsLocation:
-        type: string
-      kmsProject:
-        type: string
-      storageBucket:
-        description: A storage bucket, where encrypted Vault unseal keys and root token should be saved
-        type: string
-    required:
-      - kmsKeyRing
-      - kmsCryptoKey
-      - kmsLocation
-      - kmsProject
-      - storageBucket
+
   volumes:
     items:
       additionalProperties: false
