@@ -36,9 +36,11 @@ Common labels
 */}}
 {{- define "gitea.labels" -}}
 helm.sh/chart: {{ include "gitea.chart" . }}
+app: {{ include "gitea.name" . }}
 {{ include "gitea.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
