@@ -70,6 +70,7 @@ function show_usage() {
     bash                run interactive bash shell in otomi-core container
     bats                runs BATS on bin/tests (see docs/BATS.md)
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
+    check-policies      check if generated manifests adhere to defined OPA policies
     commit              wrapper for encrypt > generate pipelines > git commit changed files
     console             starts Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
@@ -85,7 +86,6 @@ function show_usage() {
     template            export k8s resources (use labels like '-l name=prometheus-operator')
     test                runs some tests againts the target cluster
     values              show helmfile values for CLOUD and CLUSTER
-    check-policies      check if generated manifests adhere to defined OPA policies
     validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices
     validate-values     validate values for each cluster against JSON schema
     x                   execute command in container
@@ -245,7 +245,7 @@ function execute() {
       drun bash
       ;;
     bats)
-      drun bats -Tp "$@" bin/tests
+      drun bats -T "$@" bin/tests
       ;;
     bootstrap)
       if [ "$*" != '' ]; then
