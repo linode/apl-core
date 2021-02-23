@@ -16,6 +16,7 @@
     "descheduler",
     "encodedkey",
     "envs",
+    "gcpckms",
     "gotmpl",
     "groupsname",
     "gzrs",

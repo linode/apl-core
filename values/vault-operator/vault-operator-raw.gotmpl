@@ -2,11 +2,9 @@
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
-{{- $seal := $vault | get "seal" dict }}
-{{- $unsealKeyStorage := $vault | get "unsealKeyStorage" dict }}
-{{- $storage := $vault | get "storage" dict }}
-{{- $useCloudResources := has $vault.profile (list "azure" "google" "aws") }}
-{{- $useKms := has $vault.profile (list "azure" "google" "aws") }}
+{{- $seal := $vault | get "seal" }}
+{{- $storage := $vault | get "storage" }}
+{{- $useCloudResources := or (ne $seal.type "default") (ne $storage.type "persistent-volume") }}
 
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
@@ -69,7 +67,7 @@ resources:
       # Please note that some Ingress controllers like https://github.com/kubernetes/ingress-gce
       # forces you to expose your Service on a NodePort
       serviceType: ClusterIP
-      {{- if eq $vault.profile "non-production" }}
+      {{- if eq $storage.type "persistent-volume" }}
       # Use local disk to store Vault file data, see config section.
       volumes:
         - name: vault-file
@@ -96,29 +94,29 @@ resources:
       # A YAML representation of a final vault config file.
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
-        {{- if eq $vault.profile "non-production"}}
         storage:
+        {{- if eq $storage.type "persistent-volume" }}
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
-        {{- else if eq $vault.profile "production-aws" }}
+        {{- else if eq $storage.type "s3" }}
           s3:
             region: {{ $storage.region }}
             bucket: {{ $storage.bucket }}
-        {{- else if eq $vault.profile "production-azure" }}
+        {{- else if eq $storage.type  "az" }}
           azure:
             accountName: {{ $storage.accountName }}
             accountKey: {{ $storage.accountKey }}
             container: {{ $storage.container }}
             environment: {{ $storage.environment }}
-        {{- else if eq $vault.profile "production-google" }}
+        {{- else if eq $storage.type "gcs" }}
           gcs:
             bucket: {{ $storage.bucket }}
         {{- end }}
 
-        {{- if $useKms }}
         # https://www.vaultproject.io/docs/configuration/seal
+        {{- if ne $seal.type "default" }}
         seal:
-          {{- if eq $vault.profile "production-azure" }}
+          {{- if eq $seal.type "azurekeyvault" }}
           # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
           azurekeyvault:
             tenant_id: {{ $seal.tenant_id }}
@@ -126,7 +124,7 @@ resources:
             client_secret: {{ $seal.client_secret }}
             vault_name: {{ $seal.vault_name }}
             key_name: {{ $seal.key_name }}
-          {{- else if eq $vault.profile "production-aws" }}
+          {{- else if eq $seal.type "awskms" }}
           # https://www.vaultproject.io/docs/configuration/seal/awskms
           awskms:
             region: {{ $seal.region }}
@@ -134,7 +132,7 @@ resources:
             secret_key: {{ $seal.secret_key }}
             kms_key_id: {{ $seal.kms_key_id }}
             endpoint: {{ $seal.endpoint }}
-          {{- else if eq $vault.profile "production-google" }}
+          {{- else if eq $seal.type "gcpckms" }}
           # https://www.vaultproject.io/docs/configuration/seal/gcpckms
           gcpckms:
             project: {{ $seal.project }}
@@ -249,23 +247,23 @@ resources:
 
       {{- if $useCloudResources }}
       credentialsConfig:
-        {{- if eq $vault.profile "production-azure" }}
+        {{- if eq $seal.type "azurekeyvault" }}
         # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
-        secretName: {{ $vault.cloudSaToken }}
-        {{- else if eq $vault.profile "production-aws" }}
+        secretName: cloudSaToken
+        {{- else if eq $seal.type "awskms" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
-        secretName: {{ $vault.cloudSaToken }}
-        {{- else if eq $vault.profile "production-google" }}
+        secretName: cloudSaToken
+        {{- else if eq $seal.type "gcpckms" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
-        secretName: {{ $vault.cloudSaToken }}
+        secretName: cloudSaToken
         {{- end }}
       {{- end }}
 
-{{- if eq $vault.profile "non-production" }}
+{{- if eq $storage.type "persistent-volume" }}
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:

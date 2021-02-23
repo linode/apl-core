@@ -699,6 +699,13 @@ definitions:
     description: A property name at vaultPath
     pattern: '^[a-zA-Z0-9_]*$'
     type: string
+  vaultDefaultSeal:
+    properties:
+      type:
+        type: string
+        default: default
+        enum:
+          - default
   vaultAwsUnseal:
     properties:
       kmsKeyId:
@@ -729,6 +736,11 @@ definitions:
       - bucket
   vaultAwsSeal:
     properties:
+      type:
+        type: string
+        default: awskms
+        enum:
+          - awskms
       region:
         type: string
       access_key:
@@ -740,6 +752,7 @@ definitions:
       endpoint:
         type: string
     required:
+      - type
       - region
       - access_key
       - secret_key
@@ -757,6 +770,11 @@ definitions:
         type: string
   vaultAzureSeal:
     properties:
+      type:
+        type: string
+        default: azurekeyvault
+        enum:
+          - azurekeyvault
       tenant_id:
         type: string
       client_id:
@@ -768,6 +786,7 @@ definitions:
       key_name:
         type: string
     required:
+      - type
       - tenant_id
       - client_id
       - client_secret
@@ -787,6 +806,11 @@ definitions:
       - bucket
   vaultGoogleSeal:
     properties:
+      type:
+        type: string
+        default: gcpckms
+        enum:
+          - gcpckms
       project:
         type: string
       region:
@@ -796,6 +820,7 @@ definitions:
       crypto_key:
         type: string
     required:
+      - type
       - project
       - region
       - key_ring
@@ -1495,73 +1520,30 @@ properties:
       vault:
         type: object
         additionalProperties: false
-        oneOf:
-          - title: production-aws
-            properties:
-              profile:
-                default: production-aws
-                enum:
-                  - production-aws
-              storage:
-                $ref: '#/definitions/vaultAwsStorage'
-              seal:
-                $ref: '#/definitions/vaultAwsSeal'
-              unsealKeyStorage:
-                $ref: '#/definitions/vaultAwsUnseal'
-              encodedCloudToken:
-                type: string
-            required:
-              - profile
-              - storage
-              - seal
-              - unsealKeyStorage
-              - encodedCloudToken
-          - title: production-azure
-            properties:
-              profile:
-                default: production-azure
-                enum:
-                  - production-azure
-              storage:
-                $ref: '#/definitions/vaultAzureStorage'
-              seal:
-                $ref: '#/definitions/vaultAzureSeal'
-              unsealKeyStorage:
-                $ref: '#/definitions/vaultAzureUnseal'
-              encodedCloudToken:
-                type: string
-            required:
-              - profile
-              - storage
-              - seal
-              - unsealKeyStorage
-              - encodedCloudToken
-          - title: production-google
-            properties:
-              profile:
-                default: production-google
-                enum:
-                  - production-google
-              storage:
-                $ref: '#/definitions/vaultGoogleStorage'
-              seal:
+        properties:
+          seal:
+            oneOf:
+              - title: default
+                $ref: '#/definitions/vaultDefaultSeal'
+              - title: gcpckms
                 $ref: '#/definitions/vaultGoogleSeal'
-              unsealKeyStorage:
-                $ref: '#/definitions/vaultGoogleUnseal'
-              encodedCloudToken:
-                type: string
-            required:
-              - profile
-              - storage
-              - seal
-              - unsealKeyStorage
-              - encodedCloudToken
-          - title: non-production
-            properties:
-              profile:
-                default: non-production
-                enum:
-                  - non-production
+              - title: awskms
+                $ref: '#/definitions/vaultAwsSeal'
+              - title: azurekeyvault
+                $ref: '#/definitions/vaultAzureSeal'
+          storage:
+            oneOf:
+              - title: persistent-volume
+                properties:
+                  type:
+                    default: persistent-volume
+                    enum:
+                      - persistent-volume
+          encodedCloudToken:
+            type: string
+        required:
+          - seal
+          - storage
       weave-scope:
         default: false
         enabled: boolean

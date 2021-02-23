@@ -4,6 +4,16 @@ charts:
             - otomi.cloud
         zoneIdFilters:
             - otomi
+        storage:
+            type: persisten-volume
+        seal:
+            type: gcpckms
+            credentials: '/usr/vault/vault-project-user-creds.json'
+            project: 'vault-project'
+            region: 'global'
+            key_ring: 'vault-keyring'
+            crypto_key: 'vault-key'
+        encodedCloudToken: 'dsaddasdsad'
 otomi:
     hasCloudLB: false
 clouds:
