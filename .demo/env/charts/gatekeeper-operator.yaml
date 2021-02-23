@@ -12,11 +12,7 @@ charts:
 
         excludedNamespaces:
             - 'knative-serving'
-            - 'shared'
         dataSync:
             - group: ''
               version: 'v1'
               kind: 'Pod'
-            - group: ''
-              version: 'v1'
-              kind: 'Service'
