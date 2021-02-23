@@ -5,8 +5,8 @@
 {{- $seal := $vault | get "seal" dict }}
 {{- $unsealKeyStorage := $vault | get "unsealKeyStorage" dict }}
 {{- $storage := $vault | get "storage" dict }}
-{{- $useCloudResources := has ($vault.profile (list "azure", "google", "aws")) }}
-{{- $useKms := has ($vault.profile (list "azure", "google", "aws")) }}
+{{- $useCloudResources := has $vault.profile (list "azure" "google" "aws") }}
+{{- $useKms := has $vault.profile (list "azure" "google" "aws") }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -43,7 +43,7 @@ resources:
       # Please note that some Ingress controllers like https://github.com/kubernetes/ingress-gce
       # forces you to expose your Service on a NodePort
       serviceType: ClusterIP
-
+      {{- if eq $vault.profile "non-production" }}
       # Use local disk to store Vault file data, see config section.
       volumes:
         - name: vault-file
@@ -53,7 +53,7 @@ resources:
       volumeMounts:
         - name: vault-file
           mountPath: /vault/file
-
+      {{- end }}
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
       caNamespaces: []
@@ -63,21 +63,21 @@ resources:
         options:
           # The preFlightChecks flag enables unseal and root token storage tests
           preFlightChecks: true
-        {{- if eq $vault.profile "non-production"}}
+        {{- if eq $vault.profile "non-production" }}
         kubernetes:
           # WARNING: It is not supported to change the secrets namespace once initialization happened. If you change it in the CR you have to move secrets to new namesoace manually.
           secretNamespace: vault
         {{- else if eq $vault.profile "production-azure" }}
         azure:
           keyVaultName: {{ $unsealKeyStorage.keyVaultName }}
-        {{- else if eq $vault.profile  "production-aws" }}
+        {{- else if eq $vault.profile "production-aws" }}
         aws:
           kmsKeyId: {{ $unsealKeyStorage.kmsKeyId }}
           kmsRegion: {{ $unsealKeyStorage.kmsRegion }}
           s3Bucket: {{ $unsealKeyStorage.s3Bucket }}
           s3Prefix: {{ $unsealKeyStorage.s3Prefix }}
           s3Region: {{ $unsealKeyStorage.s3Region }}
-        {{- else if eq $vault.profile  "production-google" }}
+        {{- else if eq $vault.profile "production-google" }}
         google:
           kmsKeyRing: {{ $unsealKeyStorage.kmsKeyRing }}
           kmsCryptoKey: {{ $unsealKeyStorage.kmsCryptoKey }}
@@ -119,7 +119,7 @@ resources:
             client_secret: {{ $seal.client_secret }}
             vault_name: {{ $seal.vault_name }}
             key_name: {{ $seal.key_name }}
-          {{- if eq $vault.profile "production-aws" }}
+          {{- else if eq $vault.profile "production-aws" }}
           # https://www.vaultproject.io/docs/configuration/seal/awskms
           awskms:
             region: {{ $seal.region }}
@@ -127,7 +127,7 @@ resources:
             secret_key: {{ $seal.secret_key }}
             kms_key_id: {{ $seal.kms_key_id }}
             endpoint: {{ $seal.endpoint }}
-          {{- if eq $vault.profile "production-google" }}
+          {{- else if eq $vault.profile "production-google" }}
           # https://www.vaultproject.io/docs/configuration/seal/gcpckms
           gcpckms:
             project: {{ $seal.project }}
@@ -247,25 +247,25 @@ resources:
 
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
-      {{- if $useCloud }}
+      {{- if $useCloudResources }}
       credentialsConfig:
-        {{- if hasKey $vault.profile "production-azure" }}
+        {{- if eq $vault.profile "production-azure" }}
         # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
         secretName: {{ $vault.cloudSaToken }}
-        {{- else if hasKey $vault.profile "production-aws" }}
+        {{- else if eq $vault.profile "production-aws" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
         secretName: {{ $vault.cloudSaToken }}
-        {{- else if hasKey $vault.profile "production-google" }}
+        {{- else if eq $vault.profile "production-google" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
         secretName: {{ $vault.cloudSaToken }}
         {{- end }}
       {{- end }}
 
-{{- if eq $vault.profile "non-production"}}
+{{- if eq $vault.profile "non-production" }}
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
@@ -280,13 +280,14 @@ resources:
           storage: 1Gi
 {{- end }}
 
-{{- if $useCloud }}
+{{- if $useCloudResources }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: cloudSaToken
     type: Opaque
-    data: |{{ $vault.encodedCloudToken | nindent 6 }}
+    data: |
+      {{- $vault.encodedCloudToken | nindent 6 }}
 {{- end }}
 
 # RBAC
