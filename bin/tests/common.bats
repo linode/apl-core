@@ -1,11 +1,6 @@
 #!/usr/local/bin/bats
 
-lib_dir="/usr/local/lib"
-
-load "$lib_dir/bats-support/load.bash"
-load "$lib_dir/bats-assert/load.bash"
-load "$lib_dir/bats-file/load.bash"
-
+. bin/tests/bats-common.sh
 . bin/common.sh
 
 ##############
