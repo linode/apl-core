@@ -34,34 +34,36 @@ function teardown () {
 # bin/validate-templates #
 ##########################
 generating_text="Generating k8s v1.18 manifests for cluster 'aws-dev'"
+assert_output_partial_generating_text="assert_output --partial $generating_text"
+run_otomi_validate_templates="run bin/otomi validate-templates"
 
 @test "executing validate-templates without arguments fails" {
-    run bin/otomi validate-templates
+    eval "$run_otomi_validate_templates"
     assert_failure
 }
 
 @test "executing validate-templates with both -A and -l fails" {
-    run bin/otomi validate-templates -A -l group=jobs
+    eval "$run_otomi_validate_templates" -A -l group=jobs
     assert_output --partial 'Error: cannot specify --all and --label simultaneously'
     assert_failure 6
 }
 
 @test "executing validate-templates -l something starts generating" {
-    run bin/otomi validate-templates -l group=jobs
-    assert_output --partial $generating_text
+    eval "$run_otomi_validate_templates" -l group=jobs
+    eval "$assert_output_partial_generating_text"
 }
 
 @test "executing validate-templates --label something starts generating" {
-    run bin/otomi validate-templates --label group=jobs
-    assert_output --partial $generating_text
+    eval "$run_otomi_validate_templates" --label group=jobs
+    eval "$assert_output_partial_generating_text"
 }
 
 @test "executing validate-templates -A starts generating" {
-    run bin/otomi validate-templates -A
-    assert_output --partial $generating_text
+    eval "$run_otomi_validate_templates" -A
+    eval "$assert_output_partial_generating_text"
 }
 
 @test "executing validate-templates --all starts generating" {
-    run bin/otomi validate-templates --all
-    assert_output --partial $generating_text
+    eval "$run_otomi_validate_templates" --all
+    eval "$assert_output_partial_generating_text"
 }
