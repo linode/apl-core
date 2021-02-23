@@ -5,26 +5,21 @@
 
 nameOverride: gitea
 fullnameOverride: gitea
-# clusterDomain: {{ $v.cluster.domain }}
+clusterDomain: {{ $v.cluster.domain }}
 
 gitea:
-  config:
-    server:
-      HTTP_ADDR: 0.0.0.0
-      HTTP_PORT: 3000
-    log:
-      LEVEL: Trace
+  podAnnotations: 
+    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
   admin:
     username: gitea-admin
     password: {{ $g | get "admin.password" "bladibla" }}
-
+  config:
+    server:
+      DOMAIN: {{ $giteadomain }}
   metrics:
     enabled: true
     serviceMonitor:
       enabled: true
-
-  podAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
 persistence:
   size: 1Gi
@@ -32,3 +27,9 @@ persistence:
 postgresql:
   persistence:
     size: 1Gi
+
+# Can't be used (for now) as gitea requires root in the docker image
+# securityContext:
+#   runAsNonRoot: true
+#   runAsUser: 1000
+#   runAsGroup: 1000
