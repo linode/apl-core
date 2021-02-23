@@ -1,4 +1,4 @@
 charts:
     vault:
         seal:
-            provider: default
+            type: default
