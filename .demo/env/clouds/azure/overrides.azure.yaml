@@ -5,8 +5,6 @@ charts:
         azure:
             region: westeurope
     vault:
-        storage:
-            type: persisten-volume
         seal:
             type: azurekeyvault
             tenant_id: '46646709-b63e-4747-be42-516edeaf1e14'

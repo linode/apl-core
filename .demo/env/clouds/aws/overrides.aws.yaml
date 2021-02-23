@@ -11,8 +11,6 @@ charts:
         aws:
             region: eu-central-1
     vault:
-        storage:
-            type: persisten-volume
         seal:
             type: awskms
             region: eu-central-1

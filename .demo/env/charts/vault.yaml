@@ -1,6 +1,4 @@
 charts:
     vault:
-        storage:
-            provider: peristent-volume
         seal:
             provider: default
