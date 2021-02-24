@@ -1075,6 +1075,12 @@ properties:
                 properties:
                   enabled:
                     type: boolean
+          meshConfig:
+            properties:
+              defaultConfig:
+                type: object
+            required:
+              - defaultConfig
           resources:
             properties:
               egressgateway:

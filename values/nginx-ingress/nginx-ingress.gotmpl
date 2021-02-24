@@ -18,7 +18,7 @@ defaultBackend:
       memory: 10Mi
 
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
@@ -41,7 +41,7 @@ controller:
         memory: 512Mi
     {{- end }}
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
     {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-privileged")) | nindent 4 }}
   replicaCount: 2
   minAvailable: 1

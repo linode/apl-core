@@ -8,9 +8,6 @@ metadata:
   name: {{ template "weave-scope-frontend.fullname" . }}
   annotations:
     {{- include "weave-scope.annotations" . | indent 4 }}
-    {{- range $key, $value := .Values.podAnnotations  }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
 spec:
   replicas: 1
   selector:
@@ -20,6 +17,10 @@ spec:
       component: frontend
   template:
     metadata:
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations  }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       labels:
         {{- include "weave-scope-frontend.helm_std_labels" . | indent 8 }}
         component: frontend
