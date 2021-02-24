@@ -642,6 +642,21 @@ properties:
           - Standard_GZRS
           - Standard_RAGZRS
         type: string
+      keyVault:
+        description: Azure Key Vault access credentials. Will use azure.tenantId if tenantId is not provided.
+        properties:
+          tenantId:
+            description: An Azure tenant ID.
+            type: string
+          clientId:
+            description: An Azure client ID.
+            type: string
+          clientSecret:
+            description: An Azure client secret.
+            type: string
+        required:
+          - clientId
+          - clientSecret
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
@@ -1123,6 +1138,12 @@ properties:
               - default
               - otomi
             type: string
+      kubeapps:
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
       kube-descheduler:
         additionalProperties: false
         properties:
@@ -1213,6 +1234,12 @@ properties:
           tools:
             additionalProperties: false
             properties:
+              azureTenantId:
+                type: string
+              azureClientId:
+                type: string
+              azureClientSecret:
+                type: string
               gcloudServiceKey:
                 type: string
               image:
@@ -1299,6 +1326,9 @@ properties:
     properties:
       cloudDnsKey:
         description: A service account key for managing a DNS zone.
+        type: string
+      kmsAccount:
+        description: A service account key for managing a KMS vault.
         type: string
       projectId:
         description: A Google Cloud project ID for accessing DNS zone.
