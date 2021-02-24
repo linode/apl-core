@@ -16,21 +16,24 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-api
-  tag: {{ $o.image.tag }}
-  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
+  tag: {{ $o | get "image.tag" "v0.4.42" }}
+  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 secrets:
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
   {{- if $v.sops.enabled }}
-  GCLOUD_SERVICE_KEY: '{{ $o.tools.gcloudServiceKey }}'
+  AZURE_TENANT_ID: '{{ $v | get "azure.keyVault.tenantId" ($v | get "azure.tenantId" "") }}'
+  AZURE_CLIENT_ID: '{{ $v | get "azure.keyVault.clientId" "" }}'
+  AZURE_CLIENT_SECRET: '{{ $v | get "azure.keyVault.clientSecret" "" }}'
+  GCLOUD_SERVICE_KEY: '{{ $v | get "google.kmsAccount" "" }}'
   {{- end }}
 
 env:
   # DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
-  GIT_BRANCH: {{ $o | get "git.branch" "master" }}
+  GIT_BRANCH: {{ $o.git | get "branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
@@ -53,8 +56,8 @@ tools:
   {{- if $v.sops.enabled }}
   image:
     repository: otomi/core
-    tag: v0.11.58
-    pullPolicy: IfNotPresent
+    tag: {{ $o | get "tools.image.tag" "v0.11.58" }}
+    pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}
