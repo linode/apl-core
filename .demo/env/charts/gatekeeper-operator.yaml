@@ -1,3 +1,18 @@
 charts:
     gatekeeper-operator:
         enabled: true
+        replicas: 1
+        disableValidatingWebhook: false
+        auditFromCache: false
+        emitAuditEvents: false
+        emitAdmissionEvents: false
+        constraintViolationsLimit: 20
+        auditInterval: 60
+        logLevel: INFO
+
+        excludedNamespaces:
+            - 'knative-serving'
+        dataSync:
+            - group: ''
+              version: 'v1'
+              kind: 'Pod'
