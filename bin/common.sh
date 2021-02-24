@@ -48,7 +48,7 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [[ ! $IN_DOCKER ]]; then
+  if [[ $has_docker = 'true' && ${IN_DOCKER+0} -eq 0 ]]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \

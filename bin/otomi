@@ -197,7 +197,7 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [ "$has_docker" = 'true' ] && [ "$IN_DOCKER" != '1' ]; then
+  if [[ $has_docker = 'true' && ${IN_DOCKER+0} -eq 0 ]]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
