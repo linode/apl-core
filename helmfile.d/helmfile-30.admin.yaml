@@ -26,5 +26,5 @@ releases:
     <<: *default
   - name: olm
     installed: true
-    namespace: default
+    namespace: olm
     <<: *default

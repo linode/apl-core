@@ -8,6 +8,8 @@ persistence:
 usePassword: false
 
 sentinel:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
   resources:
   {{- with $r | get "resources.sentinel" nil }}
     {{- toYaml . | nindent 4 }}
@@ -21,6 +23,8 @@ sentinel:
   {{- end }}
 
 master:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
   priorityClassName: "otomi-critical"
   resources:
   {{- with $r | get "resources.master" nil }}
@@ -35,6 +39,8 @@ master:
   {{- end }}
 
 slave:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
   priorityClassName: "otomi-critical"
   resources:
   {{- with $r | get "resources.slave" nil }}
@@ -49,6 +55,8 @@ slave:
   {{- end }}
 
 metrics:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
   priorityClassName: "otomi-critical"
   resources:
     requests:

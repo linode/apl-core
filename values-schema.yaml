@@ -884,16 +884,6 @@ properties:
                     properties:
                       clientID:
                         type: string
-                      clientSecretSecretRef:
-                        additionalProperties: false
-                        properties:
-                          key:
-                            type: string
-                          name:
-                            type: string
-                        required:
-                          - name
-                          - key
                       hostedZoneName:
                         type: string
                       resourceGroupName:
@@ -904,7 +894,6 @@ properties:
                         type: string
                     required:
                       - clientID
-                      - clientSecretSecretRef
                       - tenantID
                       - subscriptionID
                       - resourceGroupName
@@ -1283,6 +1272,12 @@ properties:
                 properties:
                   enabled:
                     type: boolean
+          meshConfig:
+            properties:
+              defaultConfig:
+                type: object
+            required:
+              - defaultConfig
           resources:
             properties:
               egressgateway:
@@ -1536,6 +1531,8 @@ properties:
           additionalProperties: false
           properties:
             disableIstioInjection:
+              type: boolean
+            disablePolicyChecks:
               type: boolean
             name:
               type: string
@@ -1961,5 +1958,4 @@ required:
   - oidc
   - otomi
   - teamConfig
-  - k8s
   - services
