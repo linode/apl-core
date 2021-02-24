@@ -18,7 +18,7 @@ default paramsAnnotationField = "policy.otomi.io/parameters"
 
 default containerIgnoreAnnotationField = "policy.otomi.io/ignore.%s"
 
-default containerParamAnnotationField = "policy.otomi.io/parameters/%s.%s"
+default containerParamAnnotationField = "policy.otomi.io/parameters.%s.%s"
 
 get_container_params_field(cname, policyID) = return {
 	return := sprintf(containerParamAnnotationField, [cname, policyID])
