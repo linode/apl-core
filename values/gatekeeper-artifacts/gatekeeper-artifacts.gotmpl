@@ -26,6 +26,6 @@ config:
 
   # Exempted Namespaces
   match:
-    - excludedNamespaces: {{ (concat (list  $excludedNamespaces ($gk | get "excludedNamespaces" list)) | toJson }}
+    - excludedNamespaces: {{ concat $excludedNamespaces ($gk | get "excludedNamespaces" list) | toJson }}
       processes: ["*"]
 
