@@ -107,7 +107,7 @@ function evaluate_k8s_context() {
 function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [ "$K8S_CONTEXT" != "$context" ]; then
-    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? Yn" oki
+    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" oki
     if [ "${oki:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
       $is_repo && drun bin/bootstrap.sh 1
@@ -202,7 +202,7 @@ function drun() {
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
-      -v ${HOME}/.kube/config:/home/app/.kube/config \
+      -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
       -v ${helm_config}:/home/app/.config/helm \
       -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \

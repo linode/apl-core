@@ -34,6 +34,7 @@ k8s:
       # disableIstioInjection: true
     - name: olm
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: operators
     - name: overprovisioner
       disableIstioInjection: true
