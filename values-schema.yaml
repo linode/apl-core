@@ -1075,6 +1075,12 @@ properties:
                 properties:
                   enabled:
                     type: boolean
+          meshConfig:
+            properties:
+              defaultConfig:
+                type: object
+            required:
+              - defaultConfig
           resources:
             properties:
               egressgateway:
@@ -1310,6 +1316,8 @@ properties:
           additionalProperties: false
           properties:
             disableIstioInjection:
+              type: boolean
+            disablePolicyChecks:
               type: boolean
             name:
               type: string
@@ -1735,5 +1743,4 @@ required:
   - oidc
   - otomi
   - teamConfig
-  - k8s
   - services

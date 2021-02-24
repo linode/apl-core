@@ -2,24 +2,44 @@
 
 k8s:
   namespaces:
+    - name: default
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: drone-pipelines
       disableIstioInjection: true
-    - name: ingress
-    - name: keycloak
-    - name: harbor
-    - name: istio-system
+      disablePolicyChecks: true
+    - name: gatekeeper-system
       disableIstioInjection: true
+      disablePolicyChecks: true
+    - name: gitea
+      disableIstioInjection: true
+    - name: harbor
+      disableIstioInjection: true
+    - name: ingress
+      disableIstioInjection: true
+    - name: istio-system
+      # disableIstioInjection: true
+    - name: keycloak
     - name: knative-serving
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: kubeapps
       disableIstioInjection: true
     - name: kube-system
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
+      # disableIstioInjection: true
+    - name: olm
+      disableIstioInjection: true
+    - name: operators
+    - name: overprovisioner
+      disableIstioInjection: true
     - name: shared
     - name: team-admin
-    - name: overprovisioner
+    - name: vault
       disableIstioInjection: true
 
 services:
@@ -99,7 +119,7 @@ services:
     authz:
       workload:
         app: grafana
-        release: istio
+        release: istio-system
   - name: prometheus
     svc: po-prometheus
     port: 9090

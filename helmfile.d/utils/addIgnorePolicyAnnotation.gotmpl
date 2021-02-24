@@ -27,6 +27,6 @@ policy.otomi.io/ignore: {{ $renderPolicies }}
 {{- else if ( eq $type "sidecar") }}
 policy.otomi.io/ignore-sidecar: {{ $renderPolicies }}
 {{- else if ( eq $type "container") }}
-policy.otomi.io/ignore/{{ .name }}: {{ $renderPolicies }}
+policy.otomi.io/ignore.{{ .name }}: {{ $renderPolicies }}
 {{- end }}
 {{- end }}
