@@ -1317,6 +1317,8 @@ properties:
           properties:
             disableIstioInjection:
               type: boolean
+            disablePolicyChecks:
+              type: boolean
             name:
               type: string
           required:
@@ -1741,5 +1743,4 @@ required:
   - oidc
   - otomi
   - teamConfig
-  - k8s
   - services
