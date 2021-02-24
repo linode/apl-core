@@ -2,8 +2,15 @@
 
 k8s:
   namespaces:
+    - name: default
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: drone-pipelines
       disableIstioInjection: true
+      disablePolicyChecks: true
+    - name: gatekeeper-system
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: gitea
       disableIstioInjection: true
     - name: harbor
@@ -15,10 +22,12 @@ k8s:
     - name: keycloak
     - name: knative-serving
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: kubeapps
       disableIstioInjection: true
     - name: kube-system
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
