@@ -1,7 +1,7 @@
 
 {{- $v := .Environment.Values }}
 {{- $gk := $v.charts | get "gatekeeper-operator" dict }}
-{{- $otomiNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ $otomiNamespaces = append $otomiNamespaces $ns.name }}{{ end }}
+{{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 ### Render Constraints (CRs)
 {{- $constraints := (exec "bash" (list "-c" "find /tmp/otomi/constraints -name 'constraint_*.yaml'")) | splitList "\n" }}
@@ -26,6 +26,6 @@ config:
 
   # Exempted Namespaces
   match:
-    - excludedNamespaces: {{ (concat (list  "default" "gatekeeper-system" "kube-system") $otomiNamespaces ($gk | get "excludedNamespaces" list)) | toJson }}
+    - excludedNamespaces: {{ (concat (list  $excludedNamespaces ($gk | get "excludedNamespaces" list)) | toJson }}
       processes: ["*"]
 

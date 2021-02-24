@@ -9,9 +9,8 @@ charts:
         constraintViolationsLimit: 20
         auditInterval: 60
         logLevel: INFO
-
         excludedNamespaces:
-            - 'knative-serving'
+            - 'sandbox'
         dataSync:
             - group: ''
               version: 'v1'
