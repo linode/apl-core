@@ -232,15 +232,15 @@ resources:
         # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         env: AZURE_AUTH_LOCATION
         path: /etc/azure/credentials
-        secretName: cloudSaToken
+        secretName: service-account-key
         {{- else if eq $seal.type "awskms" }}
         env: AWS_SHARED_CREDENTIALS_FILE
         path: /etc/aws/credentials
-        secretName: cloudSaToken
+        secretName: service-account-key
         {{- else if eq $seal.type "gcpckms" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
-        secretName: cloudSaToken
+        secretName: service-account-key
         {{- end }}
       {{- end }}
 
@@ -257,14 +257,20 @@ resources:
         requests:
           storage: 1Gi
 
-{{- if ne $seal.type "default" }}
+{{- if $seal.encodedCloudToken }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: cloudSaToken
+      name: service-account-key
     type: Opaque
-    data: |
-      {{- $vault.encodedCloudToken | nindent 6 }}
+    data:
+    {{- if eq $seal.type "azurekeyvault" }}
+      credentials: "{{- $seal.encodedCloudToken }}"
+    {{- else if eq $seal.type "awskms" }}
+      credentials: "{{- $seal.encodedCloudToken}}"
+    {{- else if eq $seal.type "gcpckms" }}
+      service-account.json: "{{- $seal.encodedCloudToken }}"
+    {{- end }}
 {{- end }}
 
 # RBAC
