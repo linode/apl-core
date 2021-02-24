@@ -108,7 +108,7 @@ function hf_values() {
 }
 
 function prepare_crypt() {
-  [ -z "$GCLOUD_SERVICE_KEY" ] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  [ -z "$GCLOUD_SERVICE_KEY" ] && return 0
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
