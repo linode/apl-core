@@ -104,7 +104,8 @@ spec:
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
 {{- if $k.enabled }}
-{{- $principal := printf "https://keycloak.%s/realms/master/*" $v.cluster.domain }}
+{{- $realm := $k.realm | default "master" }}
+{{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.cluster.domain $realm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:

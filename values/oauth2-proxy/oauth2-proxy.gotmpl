@@ -52,7 +52,9 @@ resources:
 # securityContext:
 #   enabled: true
   # runAsUser: 2000
-podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 2 }}
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 2 }}
 extraArgs:
   ssl-insecure-skip-verify: {{ eq $cm.stage "staging" }}
   # supported: oidc, google, azure, github
