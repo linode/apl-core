@@ -7,12 +7,11 @@ charts:
     vault:
         seal:
             type: gcpckms
-            credentials: '/usr/vault/vault-project-user-creds.json'
             project: 'vault-project'
             region: 'global'
             key_ring: 'vault-keyring'
             crypto_key: 'vault-key'
-        encodedCloudToken: 'dsaddasdsad'
+            encodedCloudToken: c2F0b2tlbgo=
 otomi:
     hasCloudLB: false
 clouds:

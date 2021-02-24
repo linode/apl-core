@@ -706,7 +706,6 @@ definitions:
         default: default
         enum:
           - default
-
   vaultAwsStorage:
     properties:
       region:
@@ -733,6 +732,8 @@ definitions:
         type: string
       endpoint:
         type: string
+      encodedCloudToken:
+        type: string
     required:
       - type
       - region
@@ -740,6 +741,7 @@ definitions:
       - secret_key
       - kms_key_id
       - endpoint
+      - encodedCloudToken
   vaultAzureStorage:
     properties:
       accountName:
@@ -767,6 +769,8 @@ definitions:
         type: string
       key_name:
         type: string
+      encodedCloudToken:
+        type: string
     required:
       - type
       - tenant_id
@@ -774,6 +778,7 @@ definitions:
       - client_secret
       - vault_name
       - key_name
+      - encodedCloudToken
 
   vaultGoogleStorage:
     properties:
@@ -796,12 +801,15 @@ definitions:
         type: string
       crypto_key:
         type: string
+      encodedCloudToken:
+        type: string
     required:
       - type
       - project
       - region
       - key_ring
       - crypto_key
+      - encodedCloudToken
 
   volumes:
     items:

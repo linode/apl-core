@@ -12,6 +12,6 @@ charts:
             client_secret: 'DUJDS3...'
             vault_name: 'hc-vault'
             key_name: 'vault_key'
-        encodedCloudToken: 'dsaddasdsad'
+            encodedCloudToken: c2F0b2tlbgo=
 otomi:
     hasCloudLB: true
