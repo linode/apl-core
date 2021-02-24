@@ -1,6 +1,2 @@
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-{{- $v := .Environment.Values }}
-{{- $i := $v.charts | get "istio" dict }}
-hub: istio
-tag: {{ $i | get "version" "1.6.5" }}
 podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 2 }}
