@@ -4,13 +4,5 @@ charts:
             - aks.otomi.cloud
         azure:
             region: westeurope
-    vault:
-        seal:
-            type: azurekeyvault
-            tenant_id: '46646709-b63e-4747-be42-516edeaf1e14'
-            client_id: '03dc33fc-16d9-4b77-8152-3ec568f8af6e'
-            client_secret: 'DUJDS3...'
-            vault_name: 'hc-vault'
-            key_name: 'vault_key'
 otomi:
     hasCloudLB: true
