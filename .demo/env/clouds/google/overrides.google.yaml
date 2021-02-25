@@ -4,14 +4,6 @@ charts:
             - otomi.cloud
         zoneIdFilters:
             - otomi
-    vault:
-        seal:
-            type: gcpckms
-            project: 'vault-project'
-            region: 'global'
-            key_ring: 'vault-keyring'
-            crypto_key: 'vault-key'
-            encodedCloudToken: c2F0b2tlbgo=
 otomi:
     hasCloudLB: false
 clouds:

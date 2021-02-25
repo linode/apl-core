@@ -732,8 +732,6 @@ definitions:
         type: string
       endpoint:
         type: string
-      encodedCloudToken:
-        type: string
     required:
       - type
       - region
@@ -741,7 +739,6 @@ definitions:
       - secret_key
       - kms_key_id
       - endpoint
-      - encodedCloudToken
   vaultAzureStorage:
     properties:
       accountName:
@@ -759,26 +756,23 @@ definitions:
         default: azurekeyvault
         enum:
           - azurekeyvault
+      vault_name:
+        type: string
+      key_name:
+        type: string
       tenant_id:
         type: string
       client_id:
         type: string
       client_secret:
         type: string
-      vault_name:
-        type: string
-      key_name:
-        type: string
-      encodedCloudToken:
-        type: string
     required:
       - type
+      - vault_name
+      - key_name
       - tenant_id
       - client_id
       - client_secret
-      - vault_name
-      - key_name
-      - encodedCloudToken
 
   vaultGoogleStorage:
     properties:
@@ -1483,6 +1477,7 @@ properties:
         additionalProperties: false
         properties:
           seal:
+            description: Use Cloud KMS to encrypt and decrypt the master key
             oneOf:
               - title: default
                 $ref: '#/definitions/vaultDefaultSeal'
@@ -1492,8 +1487,6 @@ properties:
                 $ref: '#/definitions/vaultAwsSeal'
               - title: azurekeyvault
                 $ref: '#/definitions/vaultAzureSeal'
-          encodedCloudToken:
-            type: string
         required:
           - seal
       weave-scope:
