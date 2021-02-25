@@ -1,0 +1,9 @@
+charts:
+    vault:
+        seal:
+            type: gcpckms
+            project: 'vault-project'
+            region: 'global'
+            key_ring: 'vault-keyring'
+            crypto_key: 'vault-key'
+            encodedCloudToken: 'ZW5jb2RlZENsb3VkVG9rZW4='

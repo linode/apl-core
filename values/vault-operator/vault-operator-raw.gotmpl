@@ -37,6 +37,25 @@ resources:
           value: debug
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
+        {{- if eq $seal.type "azurekeyvault" }}
+         # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
+        - name: AZURE_TENANT_ID
+          value: {{ $seal.tenant_id }}
+        - name: AZURE_CLIENT_ID
+          value: {{ $seal.client_id }}
+        - name: AZURE_CLIENT_SECRET
+          value: {{ $seal.client_secret }}
+        - name: AZURE_ENVIRONMENT
+          value: "AZUREPUBLICCLOUD"
+        {{- end }}
+        {{- if eq $seal.type "awskms" }}
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ $seal.access_key }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ $seal.secret_key }}
+
+        {{- end }}
+
         # - name: SKIP_CHOWN
         #   value: "true"
         # - name: SKIP_SETCAP
@@ -100,17 +119,12 @@ resources:
           {{- if eq $seal.type "azurekeyvault" }}
           # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
           azurekeyvault:
-            tenant_id: {{ $seal.tenant_id }}
-            client_id: {{ $seal.client_id }}
-            client_secret: {{ $seal.client_secret }}
             vault_name: {{ $seal.vault_name }}
             key_name: {{ $seal.key_name }}
           {{- else if eq $seal.type "awskms" }}
           # https://www.vaultproject.io/docs/configuration/seal/awskms
           awskms:
             region: {{ $seal.region }}
-            access_key: {{ $seal.access_key }}
-            secret_key: {{ $seal.secret_key }}
             kms_key_id: {{ $seal.kms_key_id }}
             endpoint: {{ $seal.endpoint }}
           {{- else if eq $seal.type "gcpckms" }}
@@ -226,22 +240,11 @@ resources:
               data:
                 HELLO: "Welcome admin team"
 
-      {{- if ne $seal.type "default" }}
+      {{- if eq $seal.type "gcpckms" }}
       credentialsConfig:
-        {{- if eq $seal.type "azurekeyvault" }}
-        # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
-        env: AZURE_AUTH_LOCATION
-        path: /etc/azure/credentials
-        secretName: service-account-key
-        {{- else if eq $seal.type "awskms" }}
-        env: AWS_SHARED_CREDENTIALS_FILE
-        path: /etc/aws/credentials
-        secretName: service-account-key
-        {{- else if eq $seal.type "gcpckms" }}
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
         secretName: service-account-key
-        {{- end }}
       {{- end }}
 
   - apiVersion: v1
@@ -257,20 +260,14 @@ resources:
         requests:
           storage: 1Gi
 
-{{- if $seal.encodedCloudToken }}
+{{- if eq $seal.type "gcpckms" }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: service-account-key
     type: Opaque
     data:
-    {{- if eq $seal.type "azurekeyvault" }}
-      credentials: "{{- $seal.encodedCloudToken }}"
-    {{- else if eq $seal.type "awskms" }}
-      credentials: "{{- $seal.encodedCloudToken}}"
-    {{- else if eq $seal.type "gcpckms" }}
       service-account.json: "{{- $seal.encodedCloudToken }}"
-    {{- end }}
 {{- end }}
 
 # RBAC
