@@ -31,6 +31,6 @@ releases:
       pkg: keycloak
     <<: *default
   - name: vault-operator-artifacts
-    installed: true
+    installed: {{ $c | get "vault.enabled" true }}
     namespace: vault
     <<: *raw

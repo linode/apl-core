@@ -1503,6 +1503,9 @@ properties:
         type: object
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
+            default: true
           seal:
             description: Use Cloud KMS to encrypt and decrypt the master key
             oneOf:
