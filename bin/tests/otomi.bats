@@ -30,6 +30,7 @@ function teardown () {
 generating_text="Generating k8s v1.18 manifests for cluster 'aws-dev'"
 assert_output_partial_generating_text="assert_output --partial $generating_text"
 validate_templates_name="validate-templates"
+# <timeout> because a real validation can take up to 80 sec
 run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
 
 @test "$validate_templates_name without arguments fails" {
