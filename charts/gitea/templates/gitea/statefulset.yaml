@@ -15,6 +15,7 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/gitea/config.yaml") . | sha256sum }}
         checksum/ldap: {{ include "gitea.ldap_settings" . | sha256sum }}
+        checksum/oauth: {{ include "gitea.oauth_settings" . | sha256sum }}
         {{- with .Values.gitea.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -66,7 +67,7 @@ spec:
               containerPort: {{ .Values.gitea.config.server.SSH_LISTEN_PORT }}
             - name: http
               containerPort: {{ .Values.gitea.config.server.HTTP_PORT }}
-            {{- if .Values.gitea.config.server.PPROF_ENABLED }}
+            {{- if .Values.gitea.config.server.ENABLE_PPROF }}
             - name: profiler
               containerPort: 6060
             {{- end }}

@@ -134,6 +134,19 @@ gitea:
     #usernameAttribute: 
     #sshPublicKeyAttribute:
 
+  oauth:
+    enabled: false
+    #name:
+    #provider
+    #key: 
+    #secret: 
+    #autoDiscoverUrl:
+    #useCustomUrls
+    #customAuthUrl
+    #customTokenUrl
+    #customProfileUrl
+    #customEmailUrl
+
   config: {}
   #  APP_NAME: "Gitea: Git with a cup of tea"
   #  RUN_MODE: dev
