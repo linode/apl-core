@@ -38,9 +38,9 @@ function abort() {
 }
 trap abort SIGINT
 
-#####################################################################################
-# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr #
-#####################################################################################
+<<'###'
+https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
+###
 function err() {
   echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
@@ -65,9 +65,9 @@ function _rind() {
   fi
 }
 
-#######################################
-# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting
-#######################################
+<<'###'
+https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting                                                               
+###
 function yq() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
@@ -134,21 +134,17 @@ function hf_templates_init() {
   hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }
 
-##############################################################################################
-# Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
-# Please update this function comment if you add additional parameters.
-# Outputs:
-#     STDERR 2: parse_args without options
-#     STDERR 3: no '--' passed with options
-#     STDERR 4: special ERR reserved for checking if enhanced getopt is present on the host
-#     STDERR 5: no options specified
-# Returns:
-#     all -> if passed, sets to 'y' and can be used globally in conditional statements
-#     label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and
-#              can be used globally in conditional statements
-# Resources:
-# - https://stackoverflow.com/a/29754866
-##############################################################################################
+<<'###'
+Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
+Returns:                                                                              
+    all -> if passed, sets to 'y' and can be used globally in conditional statements  
+    label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and   
+             can be used globally in conditional statements                           
+    configure ->                                                                      
+Resources:                                    
+- https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
+- https://stackoverflow.com/a/29754866                                                
+###
 function parse_args() {
   if [[ "$*" != "" ]]; then
     ! getopt --test >/dev/null
