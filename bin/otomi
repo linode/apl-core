@@ -13,6 +13,8 @@
 #####################################################################################
 set -e
 
+[ "${BASH_VERSINFO:-0}" -lt 5 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 5. Please upgrade." && exit 1
+
 # normalize $CI to be set to 'true' if set and not 'false'
 { [ "$CI" = 'true' ] || [ "$CI" != 'false' ]; } && CI='true'
 
