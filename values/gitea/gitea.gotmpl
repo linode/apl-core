@@ -1,5 +1,11 @@
 {{- $v := .Environment.Values }}
+{{- $o := $v.oidc }}
 {{- $g := $v.charts | get "gitea" dict }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $realm := $k | get "realm" "master" }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+
 {{- $giteadomain := printf "gitea.%s" $v.cluster.domain}}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
@@ -23,6 +29,13 @@ gitea:
     enabled: true
     serviceMonitor:
       enabled: true
+  oauth:
+    enabled: true
+    name: {{ $hasKeycloak | ternary $k.idp.alias "otomi" }}
+    provider: openidConnect
+    key: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+    secret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
+    autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}/.well-known/openid-configuration'
 
 persistence:
   size: 1Gi
