@@ -23,8 +23,12 @@ fi
 # some exit handling for scripts to clean up
 exitcode=0
 script_message='common.sh'
+last_function=-
+last_arguments=-
 function exit_handler() {
   local x=$?
+  last_arguments="$BASH_COMMAND"
+  last_function="${FUNCNAME[1]}"
   [ $x -ne 0 ] && exitcode=$x
   if [ $exitcode -eq 0 ]; then
     echo "$script_message SUCCEEDED"
@@ -50,7 +54,16 @@ trap abort SIGINT
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #####
 function err() {
-  printf "%s\n" "TIME: [$(date +'%Y-%m-%dT %T.%3N')]" "WHERE IT WENT WRONG: ${0}" "ERROR MESSAGE (if any): $*" >&2
+  local tab=$'\t'
+  local divider="-----------------------"
+  printf "%s\n" "$divider" >&2
+  printf "%-50s %s\n" \
+    "Time" "$tab [$(date +'%Y-%m-%dT %T.%3N')]" \
+    "Faulty script" "$tab ${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" \
+    "Last function" "$tab $last_function" \
+    "Last arguments" "$tab $last_arguments" \
+    "Error message (if any)" "$tab $*" "$divider" \
+    >&2
 }
 
 function _rind() {
@@ -116,7 +129,7 @@ function hf_values() {
 }
 
 function prepare_crypt() {
-  [[ ! $GCLOUD_SERVICE_KEY ]] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  [ -z "$GCLOUD_SERVICE_KEY" ] && return 0
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
@@ -124,7 +137,7 @@ function prepare_crypt() {
 
 function for_each_cluster() {
   executable=$1
-  [[ ! "$executable" ]] && err "The positional argument is not set"
+  [ -z "$executable" ] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
