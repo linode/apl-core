@@ -1,5 +1,31 @@
 #!/usr/local/env bash
+
+##### 
+# Exit codes
+#define EX_SUCCESS      0       /* standard success */
+#define EX_ERR          1       /* standard error */
+#define EX_GETOPT       4       /* enhanced getopt check */
+#define EX_USAGE        64      /* command line usage error */
+#define EX_DATAERR      65      /* data format error */
+#define EX_NOINPUT      66      /* cannot open input */    
+#define EX_NOUSER       67      /* addressee unknown */    
+#define EX_NOHOST       68      /* host name unknown */
+#define EX_UNAVAILABLE  69      /* service unavailable */
+#define EX_SOFTWARE     70      /* internal software error */
+#define EX_OSERR        71      /* system error (e.g., can't fork) */
+#define EX_OSFILE       72      /* critical OS file missing */
+#define EX_CANTCREAT    73      /* can't create (user) output file */
+#define EX_IOERR        74      /* input/output error */
+#define EX_TEMPFAIL     75      /* temp failure; user is invited to retry */
+#define EX_PROTOCOL     76      /* remote error in protocol */
+#define EX_NOPERM       77      /* permission denied */
+#define EX_CONFIG       78      /* configuration error */
+##### 
+
+# Environment vars
 ENV_DIR=${ENV_DIR:-./env}
+CLOUD=${CLOUD:-aws}
+CLUSTER=${CLUSTER:-demo}
 
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
@@ -22,9 +48,13 @@ script_message=''
 function exit_handler() {
   local x=$?
   [ $x -ne 0 ] && exitcode=$x
-  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  if [ $exitcode -eq 0 ]; then
+    echo "$script_message SUCCESS"
+  else
+   err "$script_message FAILED"
+  fi
   cleanup
-  trap "exit $exitcode" EXIT ERR
+  trap 'exit $exitcode' EXIT ERR
   exit $exitcode
 }
 trap exit_handler EXIT ERR
@@ -38,9 +68,9 @@ function abort() {
 }
 trap abort SIGINT
 
-<<'###'
-https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
-###
+#####
+# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
+#####
 function err() {
   echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
@@ -65,9 +95,9 @@ function _rind() {
   fi
 }
 
-<<'###'
-https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting                                                               
-###
+#####
+# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting                                                               
+#####
 function yq() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
@@ -134,17 +164,16 @@ function hf_templates_init() {
   hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }
 
-<<'###'
-Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
-Returns:                                                                              
-    all -> if passed, sets to 'y' and can be used globally in conditional statements  
-    label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and   
-             can be used globally in conditional statements                           
-    configure ->                                                                      
-Resources:                                    
-- https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
-- https://stackoverflow.com/a/29754866                                                
-###
+#####
+# Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
+# Returns:                                                                              
+#    all -> if passed, sets to 'y' and can be used globally in conditional statements  
+#    label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and   
+#             can be used globally in conditional statements                           
+# Resources:                                    
+# - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
+# - https://stackoverflow.com/a/29754866                                                
+#####
 function parse_args() {
   if [[ "$*" != "" ]]; then
     ! getopt --test >/dev/null

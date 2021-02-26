@@ -116,7 +116,7 @@ function validate_templates() {
 
   grep -e "ERR\b" $tmp_out && exitcode=1
   [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
-  return 0
+  return $EX_SUCCESS
 }
 
 function main() {
@@ -124,13 +124,13 @@ function main() {
   [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 6
   if [[ $all = 'y' || $label ]]; then
     for_each_cluster validate_templates
-    exit 0
+    exit $EX_SUCCESS
   fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
   if [ $? -gt 0 ]; then
-    exit 1
+    exit $EX_ERR
   fi
 fi
