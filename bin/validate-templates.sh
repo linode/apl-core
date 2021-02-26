@@ -121,16 +121,16 @@ function validate_templates() {
 
 function main() {
   parse_args "$@"
-  [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 6
+  [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 1
   if [[ $all = 'y' || $label ]]; then
     for_each_cluster validate_templates
-    exit $EX_SUCCESS
+    exit 0
   fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main "$@"
   if [ $? -gt 0 ]; then
-    exit $EX_ERR
+    exit 1
   fi
 fi

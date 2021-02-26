@@ -8,8 +8,8 @@
 ##############
 @test "parse_args without CLI argument should throw 4" {
     run parse_args
-    assert_output 'Error: --all or --label not specified'
-    assert_failure 5
+    assert_output --partial '--all or --label not specified'
+    assert_failure 1
 }
 
 @test "parse_args with --all should succeed" {
@@ -25,13 +25,13 @@
 @test "parse_args with ONLY --label should fail" {
     run parse_args --label
     assert_output --partial "option '--label' requires an argument"
-    assert_failure 2
+    assert_failure 1
 }
 
 @test "parse_args with ONLY -l should fail" {
     run parse_args -l
     assert_output --partial "option requires an argument -- 'l'"
-    assert_failure 2
+    assert_failure 1
 }
 
 @test "parse_args with --label 'arbitrary value' should pass" {

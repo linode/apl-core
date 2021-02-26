@@ -39,8 +39,8 @@ run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
 
 @test "$validate_templates_name with both -A and -l fails" {
     eval "$run_otomi_validate_templates -A -l group=jobs"
-    assert_output --partial 'Error: cannot specify --all and --label simultaneously'
-    assert_failure 6
+    assert_output --partial 'cannot specify --all and --label simultaneously'
+    assert_failure 1
 }
 
 @test "$validate_templates_name -l something starts generating" {

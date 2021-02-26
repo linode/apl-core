@@ -1,27 +1,5 @@
 #!/usr/local/env bash
 
-##### 
-# Exit codes
-#define EX_SUCCESS      0       /* standard success */
-#define EX_ERR          1       /* standard error */
-#define EX_GETOPT       4       /* enhanced getopt check */
-#define EX_USAGE        64      /* command line usage error */
-#define EX_DATAERR      65      /* data format error */
-#define EX_NOINPUT      66      /* cannot open input */    
-#define EX_NOUSER       67      /* addressee unknown */    
-#define EX_NOHOST       68      /* host name unknown */
-#define EX_UNAVAILABLE  69      /* service unavailable */
-#define EX_SOFTWARE     70      /* internal software error */
-#define EX_OSERR        71      /* system error (e.g., can't fork) */
-#define EX_OSFILE       72      /* critical OS file missing */
-#define EX_CANTCREAT    73      /* can't create (user) output file */
-#define EX_IOERR        74      /* input/output error */
-#define EX_TEMPFAIL     75      /* temp failure; user is invited to retry */
-#define EX_PROTOCOL     76      /* remote error in protocol */
-#define EX_NOPERM       77      /* permission denied */
-#define EX_CONFIG       78      /* configuration error */
-##### 
-
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}
 CLOUD=${CLOUD:-aws}
@@ -44,12 +22,12 @@ fi
 
 # some exit handling for scripts to clean up
 exitcode=0
-script_message=''
+script_message='common.sh'
 function exit_handler() {
   local x=$?
   [ $x -ne 0 ] && exitcode=$x
   if [ $exitcode -eq 0 ]; then
-    echo "$script_message SUCCESS"
+    echo "$script_message SUCCEEDED"
   else
    err "$script_message FAILED"
   fi
@@ -72,7 +50,7 @@ trap abort SIGINT
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #####
 function err() {
-  echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
+  printf "%s\n" "TIME: [$(date +'%Y-%m-%dT %T.%3N')]" "WHERE IT WENT WRONG: ${0}" "ERROR MESSAGE (if any): $*" >&2
 }
 
 function _rind() {
@@ -191,7 +169,7 @@ function parse_args() {
     # - pass arguments only via   -- "$@"   to separate them correctly
     ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
     if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-      exit 2
+      exit 1
     fi
     eval set -- "$PARSED"
     while true; do
@@ -209,13 +187,13 @@ function parse_args() {
           break
           ;;
         *)
-          echo "Programming error: expected '--' but got $1"
-          exit 3
+          err "Programming error: expected '--' but got $1"
+          exit 1
           ;;
       esac
     done
   else
-    echo "Error: --all or --label not specified"
-    exit 5
+    err "--all or --label not specified"
+    exit 1
   fi
 }
