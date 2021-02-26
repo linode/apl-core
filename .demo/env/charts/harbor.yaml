@@ -1,6 +1,6 @@
 charts:
     harbor:
-        enabled: true
+        enabled: false
         persistence:
             imageChartStorage:
                 type: gcs
