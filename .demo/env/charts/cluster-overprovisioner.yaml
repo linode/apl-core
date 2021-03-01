@@ -1,3 +1,4 @@
 charts:
-  cluster-overprovisioner:
-    enabled: true
+    cluster-overprovisioner:
+        _rawValues: {}
+        enabled: true

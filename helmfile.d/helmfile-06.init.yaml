@@ -13,7 +13,8 @@ releases:
       pkg: istio-operator
     chart: ../charts/raw
     values:
-    - ../values/istio-operator/istio-operator-raw.gotmpl
+      - ../values/istio-operator/istio-operator-raw.gotmpl
+      - snippets/rawValues.gotmpl
   - name: vault-secrets-webhook
     installed: {{ $c | get "vault.enabled" true }}
     namespace: vault
@@ -22,3 +23,4 @@ releases:
     installed: {{ $c | get "vault.enabled" true }}
     namespace: vault
     <<: *default
+

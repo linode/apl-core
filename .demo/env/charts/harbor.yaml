@@ -1,5 +1,6 @@
 charts:
     harbor:
+        _rawValues: {}
         enabled: false
         persistence:
             imageChartStorage:
