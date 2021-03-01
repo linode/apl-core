@@ -106,7 +106,7 @@ spec:
                 name: {{ include "fileConfigMapName" $location }}
             {{- end }}
           {{- end }}
-  backoffLimit: 3
-  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
+      backoffLimit: 3
+      ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
 {{- end }}
