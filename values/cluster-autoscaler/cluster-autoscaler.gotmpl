@@ -37,11 +37,11 @@ rbac:
 priorityClassName: "otomi-critical"
 resources:
   limits:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 500m
+    memory: 512Mi
   requests:
     cpu: 100m
-    memory: 256Mi
+    memory: 128Mi
 
 serviceMonitor:
   enabled: true
@@ -51,3 +51,7 @@ serviceMonitor:
 
 extraArgs:
   expander: least-waste
+
+securityContext:
+  runAsUser: 1001
+  

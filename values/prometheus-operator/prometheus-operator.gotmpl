@@ -9,6 +9,8 @@
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
 nameOverride: po
 fullnameOverride: po
 coreDns:
@@ -29,6 +31,8 @@ kubeProxy:
 prometheusOperator:
   configReloaderCpu: 50m
   configReloaderMemory: 64Mi
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
   resources:
     limits:
       cpu: 400m
@@ -60,8 +64,8 @@ prometheus:
         cpu: 100m
         memory: 512Mi
       limits:
-        cpu: 1000m
-        memory: 2Gi
+        cpu: '3'
+        memory: 3Gi
       {{- end }}
     priorityClassName: "otomi-critical"
     externalLabels:
@@ -100,7 +104,7 @@ alertmanager:
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
 grafana:
   image:
-    tag: 7.1.5
+    tag: 7.4.2
   resources:
     {{- with $p | get "resources.grafana" nil }}
       {{- toYaml . | nindent 4 }}
@@ -117,8 +121,17 @@ grafana:
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
-  # podAnnotations:
-  #   sidecar.istio.io/inject: "false"
+  podAnnotations:
+    sidecar.istio.io/inject: "true"
+
+  testFramework:
+    # enabled: true
+    # image: "bats/bats"
+    # tag: "v1.1.0"
+    # imagePullPolicy: IfNotPresent
+    securityContext: 
+      runAsUser: 1000
+    
   plugins:
     - grafana-piechart-panel
   additionalDataSources:
@@ -183,3 +196,6 @@ prometheus-node-exporter:
   rbac:
     pspEnabled: false
   priorityClassName: "otomi-critical"
+  podAnnotations:
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security")) | nindent 4 }}
+

@@ -15,6 +15,7 @@
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 replicaCount: 1
 
 resources:
@@ -32,8 +33,8 @@ resources:
 image:
   registry: docker.io
   repository: otomi/console
-  tag: {{ $o | get "image.tag" "v0.4.24" }}
-  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
+  tag: {{ $o | get "image.tag" "v0.4.35" }}
+  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 env:
   API_BASE_URL: /api
@@ -44,3 +45,7 @@ env:
   CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
+
+
+podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags" "psp-allowed-users")) | nindent 2 }}
+

@@ -24,3 +24,7 @@ releases:
     installed: false
     namespace: team-admin
     <<: *default
+  - name: olm
+    installed: true
+    namespace: olm
+    <<: *default

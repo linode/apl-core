@@ -4,4 +4,3 @@ charts:
         image:
             pullPolicy: Always
             tag: latest
-

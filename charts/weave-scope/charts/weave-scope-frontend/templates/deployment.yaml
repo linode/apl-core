@@ -17,6 +17,10 @@ spec:
       component: frontend
   template:
     metadata:
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations  }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       labels:
         {{- include "weave-scope-frontend.helm_std_labels" . | indent 8 }}
         component: frontend
@@ -36,4 +40,8 @@ spec:
               protocol: TCP
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end -}}

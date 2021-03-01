@@ -9,10 +9,12 @@ releases:
   - name: hello
     installed: {{ $c | get "hello.enabled" false }}
     namespace: team-otomi
-    chart: ../charts/hello
     <<: *default
   - name: httpbin
     installed: {{ $c | get "httpbin.enabled" true }}
     namespace: shared
-    chart: ../charts/httpbin
+    <<: *default
+  - name: kubeapps
+    installed: {{ $c | get "kubeapps.enabled" true }}
+    namespace: kubeapps
     <<: *default

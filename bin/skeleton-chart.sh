@@ -6,7 +6,7 @@ root=..
 
 app=${1}
 shift
-args=${@:-''}
+args=${@-}
 appDir=/tmp/charts/$app
 tplDir="$appDir/templates"
 tpls="$tplDir/all.yaml"
@@ -18,7 +18,7 @@ mkdir -p $tplDir
 cp -r $root/charts/skeleton/* $appDir/
 sed -i -e "s/##CHART/$app/g" $appDir/Chart.yaml
 printf "" >$tpls
-if [ "$args" != "" ]; then
+if [ "$args" != '' ]; then
   kubectl apply $args -f $root/k8s/$app --dry-run -o yaml >$tpls
 else
   find $root/k8s/$app/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls

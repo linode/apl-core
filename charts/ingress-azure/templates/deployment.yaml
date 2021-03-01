@@ -27,7 +27,14 @@ spec:
         checksum/config: {{ print .Values | sha256sum }}
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.kubernetes.httpServicePort | quote}}
+        {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
     spec:
+      {{- with .Values.kubernetes.securityContext }}
+      securityContext: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ template "application-gateway-kubernetes-ingress.serviceaccountname" . }}
       containers:
       - name: {{ .Chart.Name }}

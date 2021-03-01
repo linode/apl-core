@@ -18,6 +18,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations  }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       labels:
         {{- include "weave-scope-cluster-agent.helm_std_labels" . | indent 8 }}
         component: cluster-agent
@@ -44,4 +48,8 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       serviceAccountName: {{ template "weave-scope-cluster-agent.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end -}}

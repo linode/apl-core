@@ -16,11 +16,33 @@ if docker --version &>/dev/null; then
   has_docker='true'
 fi
 
+# some exit handling for scripts to clean up
+exitcode=0
+script_message=''
+function exit_handler() {
+  local x=$?
+  [ $x -ne 0 ] && exitcode=$x
+  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  cleanup
+  trap "exit $exitcode" EXIT ERR
+  exit $exitcode
+}
+trap exit_handler EXIT ERR
+function cleanup() {
+  return 0
+}
+function abort() {
+  cleanup
+  trap 'exit 0' EXIT
+  exit 0
+}
+trap abort SIGINT
+
 #######################################
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #######################################
 function err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] ERROR: $*" >&2
+  echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
 
 function _rind() {
@@ -69,12 +91,8 @@ function customer_name() {
   yq r $otomi_settings "customer.name"
 }
 
-function check_sops_file() {
-  [[ ! -f "$ENV_DIR/.sops.yaml" ]] && (
-    err "The $ENV_DIR/.sops.yaml does not exists"
-    exit 1
-  )
-  return 0
+function cluster_env() {
+  printf "$CLOUD-$CLUSTER"
 }
 
 function hf() {
@@ -82,7 +100,7 @@ function hf() {
 }
 
 function hf_values() {
-  [ "${VERBOSE-'false'}" = 'false' ] && quiet='--quiet'
+  [ -z "$VERBOSE" ] && quiet='--quiet'
   helmfile ${quiet-} -e "$CLOUD-$CLUSTER" -f helmfile.tpl/helmfile-dump.yaml build |
     grep -Ev $helmfile_output_hide |
     sed -e $replace_paths_pattern |
@@ -90,7 +108,7 @@ function hf_values() {
 }
 
 function prepare_crypt() {
-  [ -z "$GCLOUD_SERVICE_KEY" ] && err "The GCLOUD_SERVICE_KEY environment variable is not set" && exit 2
+  [ -z "$GCLOUD_SERVICE_KEY" ] && return 0
   GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
   echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
   export GOOGLE_APPLICATION_CREDENTIALS
@@ -99,7 +117,7 @@ function prepare_crypt() {
 function for_each_cluster() {
   # Perform a command from argument for each cluster
   executable=$1
-  [[ -z "$executable" ]] && err "The positional argument is not set"
+  [ -z "$executable" ] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
   clouds=$(yq r -j $clustersPath clouds | jq -rc '.|keys[]')
   for cloud in $clouds; do
@@ -108,4 +126,11 @@ function for_each_cluster() {
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
+}
+
+hf_templates_init() {
+  local out_dir="$1"
+  shift
+  [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }

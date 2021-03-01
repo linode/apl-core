@@ -1,17 +1,17 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 
-tasks:
-  ingress-azure:
-    type: cronjob
-    enabled: true
-    image:
-      repository: otomi/tools
-      tag: v1.4.11
-      pullPolicy: IfNotPresent
-    env:
-      LABELS: "app=ingress-azure"
-      NS: ingress
-    schedule: "0 * * * *" # once an hour!
-    script: |
-      {{- readFile "scripts/delete-pod.sh" | nindent 6 }}
+type: CronJob
+enabled: true
+image:
+  repository: otomi/tools
+  tag: v1.4.11
+  pullPolicy: IfNotPresent
+env:
+  LABELS: "app=ingress-azure"
+  NS: ingress
+name: ingress-azure
+schedule: "0 * * * *" # once an hour!
+script: |
+  {{- readFile "scripts/delete-pod.sh" | nindent 6 }}
+runPolicy: Always

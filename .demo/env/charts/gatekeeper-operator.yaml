@@ -2,3 +2,17 @@ charts:
     gatekeeper-operator:
         _rawValues: {}
         enabled: false
+        replicas: 1
+        disableValidatingWebhook: false
+        auditFromCache: false
+        emitAuditEvents: false
+        emitAdmissionEvents: false
+        constraintViolationsLimit: 20
+        auditInterval: 60
+        logLevel: INFO
+        excludedNamespaces:
+            - 'sandbox'
+        dataSync:
+            - group: ''
+              version: 'v1'
+              kind: 'Pod'

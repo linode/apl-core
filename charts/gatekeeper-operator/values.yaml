@@ -1,21 +1,49 @@
-replicas: 1
+replicas: 3
 auditInterval: 60
 constraintViolationsLimit: 20
 auditFromCache: false
+disableValidatingWebhook: false
+auditChunkSize: 0
 logLevel: INFO
+emitAdmissionEvents: false
+emitAuditEvents: false
 image:
-  repository: quay.io/open-policy-agent/gatekeeper
-  release: v3.1.0-beta.8
+  repository: openpolicyagent/gatekeeper
+  release: v3.2.2
   pullPolicy: IfNotPresent
-nodeSelector: {}
+  pullSecrets: []
+nodeSelector: { kubernetes.io/os: linux }
+affinity: 
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: gatekeeper.sh/operation
+            operator: In
+            values:
+            - webhook
+        topologyKey: kubernetes.io/hostname
+      weight: 100
 tolerations: []
-podAnnotations: {
-  container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
-}
-resources:
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
+podAnnotations:
+  { container.seccomp.security.alpha.kubernetes.io/manager: runtime/default }
+secretAnnotations: {}
+controllerManager:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+audit:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+customResourceDefinitions:
+  create: true

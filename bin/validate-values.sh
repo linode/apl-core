@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
 
-[ "$CI" != "" ] && set -e
-set -uo pipefail
+[ "$CI" = 'true' ] && set -e
+set -o pipefail
 
 . bin/common.sh
 
-readonly tmp_path="/tmp/validate-values"
-mkdir -p $tmp_path >/dev/null
+readonly k8s_resources_path="/tmp/otomi/values"
+readonly script_message="Values validation"
 
-cleanup() {
-  local exitcode=$?
-  rm -rf $tmp_path
-  return $exitcode
+function cleanup() {
+  if [ -z "$DEBUG" ]; then
+    rm -rf $k8s_resources_path
+  fi
 }
-trap cleanup EXIT ERR
 
-validate_values() {
-  local values_path="$tmp_path/$CLOUD-$CLUSTER.yaml"
+mkdir -p $k8s_resources_path >/dev/null
+
+function validate_values() {
+  local values_path="$k8s_resources_path/$CLOUD-$CLUSTER.yaml"
   hf_values >$values_path
-  ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
+  ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid || exitcode=1
+  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  return 0
 }
 
-for_each_cluster validate_values
+if [ -n "$1" ]; then
+  validate_values
+else
+  for_each_cluster validate_values
+fi

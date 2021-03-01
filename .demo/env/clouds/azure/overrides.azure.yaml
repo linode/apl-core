@@ -4,5 +4,3 @@ charts:
             - aks.otomi.cloud
         azure:
             region: westeurope
-otomi:
-    hasCloudLB: true

@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 rbac:
   create: true
@@ -17,7 +18,7 @@ defaultBackend:
       memory: 10Mi
 
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
@@ -40,7 +41,8 @@ controller:
         memory: 512Mi
     {{- end }}
   podAnnotations:
-    sidecar.istio.io/inject: "false" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-privileged")) | nindent 4 }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
