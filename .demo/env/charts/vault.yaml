@@ -2,3 +2,4 @@ charts:
     vault:
         seal:
             type: default
+        logLevel: warn

@@ -306,6 +306,15 @@ definitions:
       ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
       : pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
+  logLevel:
+    type: string
+    default: info
+    enum:
+      - error
+      - warn
+      - info
+      - debug
+      - trace
   memoryQuantity:
     description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki.
     examples:
@@ -1080,14 +1089,6 @@ properties:
             items:
               type: string
             type: array
-          logLevel:
-            default: info
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-            type: string
           zoneIdFilters:
             items:
               type: string
@@ -1343,6 +1344,11 @@ properties:
           enabled:
             default: true
             type: boolean
+      kubernetes-external-secrets:
+        additionalProperties: false
+        properties:
+          logLevel:
+            $ref: '#/definitions/logLevel'
       kube-descheduler:
         additionalProperties: false
         properties:
@@ -1517,6 +1523,8 @@ properties:
                 $ref: '#/definitions/vaultAwsSeal'
               - title: azurekeyvault
                 $ref: '#/definitions/vaultAzureSeal'
+          logLevel:
+            $ref: '#/definitions/logLevel'
         required:
           - seal
       weave-scope:
