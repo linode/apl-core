@@ -24,12 +24,14 @@ releases:
       pkg: knative
     values:
       - ../values/knative/knative-serving-raw.gotmpl
+      - snippets/rawValues.gotmpl
   - name: oauth2-proxy-redis
     installed: true
     namespace: istio-system
     chart: ../charts/redis
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
+      - snippets/rawValues.gotmpl
   - name: redis # made obsolete by oauth2-proxy-redis, keeping here to erase on next deploy
     installed: false
     namespace: istio-system

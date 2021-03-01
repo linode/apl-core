@@ -1,5 +1,6 @@
 charts:
     gatekeeper-operator:
+        _rawValues: {}
         enabled: false
         replicas: 1
         disableValidatingWebhook: false
