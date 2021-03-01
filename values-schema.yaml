@@ -659,7 +659,7 @@ properties:
       - subscriptionId
       - tenantId
   charts:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       cert-manager:
         additionalProperties: false
