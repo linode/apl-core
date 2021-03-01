@@ -1,3 +1,4 @@
 charts:
     weave-scope:
+        _rawValues: {}
         enabled: false
