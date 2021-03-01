@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
+{{- $podSecurityContext := get $v "podSecurityContext" | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) }}
+
 {{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -22,6 +24,7 @@ spec:
       template:
         spec:
           serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+          securityContext: {{- toYaml $podSecurityContext | nindent 12 }}
           {{- with $v.init }}
           initContainers:
           - image: "{{ .image.repository }}:{{ .image.tag | default "latest" }}"
