@@ -41,7 +41,7 @@ resources:
       istioEnabled: true
       vaultEnvsConfig:
         - name: VAULT_LOG_LEVEL
-          value: debug
+          value: {{ $vault | get "logLevel" "info" }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
         {{- if eq $seal.type "azurekeyvault" }}
