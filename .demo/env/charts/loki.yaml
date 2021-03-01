@@ -1,5 +1,6 @@
 charts:
     loki:
+        _rawValues: {}
         persistence:
             size: 20Gi
         retention:
