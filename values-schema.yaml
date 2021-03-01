@@ -1523,8 +1523,7 @@ properties:
                 $ref: '#/definitions/vaultAzureSeal'
           logLevel:
             $ref: '#/definitions/logLevel'
-        required:
-          - seal
+
       weave-scope:
         default: false
         enabled: boolean
