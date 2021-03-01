@@ -2,7 +2,7 @@
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
-{{- $seal := $vault | get "seal" }}
+{{- $seal := $vault | get "seal"  (dict "type" "default") }}
 
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
