@@ -8,7 +8,7 @@ bases:
 
 releases:
   - name: job-ingress-azure
-    installed: false #{{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
+    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
     <<: *jobs
     labels:
       pkg: ingress-azure
@@ -22,7 +22,7 @@ releases:
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
   - name: job-drone
-    installed: false # {{ $c.drone.enabled }}
+    installed: {{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
     <<: *jobs

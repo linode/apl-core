@@ -1,5 +1,6 @@
 charts:
     keycloak:
+        _rawValues: {}
         enabled: true
         theme: otomi
         realm: master
