@@ -17,9 +17,9 @@ type: Job
 enabled: true
 runPolicy: Always
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+annotations:
+  policy.otomi.io/ignore: "banned-image-tags"
 init:
-  annotations:
-    policy.otomi.io/ignore.job-keycloak-init: "banned-image-tags"
   image:
     repository: badouralix/curl-http2
   script: |

@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
-set -o pipefail
-
 . bin/common.sh
+set -eo pipefail
 
 readonly k8s_resources_path="/tmp/otomi/templates"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
