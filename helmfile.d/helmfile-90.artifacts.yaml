@@ -13,5 +13,6 @@ releases:
       pkg: istio
     chart: ../charts/raw
     values:
-    - ../values/raw/istio-raw.gotmpl
+      - ../values/raw/istio-raw.gotmpl
+      - snippets/rawValues.gotmpl
 

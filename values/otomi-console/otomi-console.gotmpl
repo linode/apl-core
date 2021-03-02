@@ -34,7 +34,7 @@ image:
   registry: docker.io
   repository: otomi/console
   tag: {{ $o | get "image.tag" "v0.4.35" }}
-  pullPolicy: {{ $o.image | get "pullPolicy" "IfNotPresent" }}
+  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 env:
   API_BASE_URL: /api
