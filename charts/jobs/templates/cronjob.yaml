@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
+{{- $podSecurityContext := get $v "podSecurityContext" | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) }}
+
 {{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -7,9 +9,9 @@ metadata:
   name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users
     checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
     checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
+    
 spec:
   schedule: "{{ $v.schedule }}"
   successfulJobsHistoryLimit: 1
@@ -22,6 +24,7 @@ spec:
       template:
         spec:
           serviceAccountName: {{ $v.serviceAccountName | default "default" }}
+          securityContext: {{- toYaml $podSecurityContext | nindent 12 }}
           {{- with $v.init }}
           initContainers:
           - image: "{{ .image.repository }}:{{ .image.tag | default "latest" }}"
@@ -106,7 +109,7 @@ spec:
                 name: {{ include "fileConfigMapName" $location }}
             {{- end }}
           {{- end }}
-  backoffLimit: 3
-  ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
+      backoffLimit: 3
+      ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 ---
 {{- end }}

@@ -277,6 +277,8 @@ definitions:
           $ref: '#/definitions/secrets'
         script:
           $ref: '#/definitions/script'
+        podSecurityContext:
+          $ref: '#/definitions/podSecurityContext'
         ttlSecondsAfterFinished:
           default: 86400
           type: number
@@ -329,6 +331,21 @@ definitions:
     maximum: 32768
     minimum: 80
     type: number
+  podSecurityContext:
+    properties:
+      runAsNonRoot:
+        type: boolean
+        default: true
+      runAsUser:
+        type: integer
+        minimum": 0
+        maximum": 65535
+        default: 1001
+      runAsGroup:
+        type: integer
+        minimum": 0
+        maximum": 65535
+        default: 1001
   registry:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
@@ -885,7 +902,7 @@ properties:
       - subscriptionId
       - tenantId
   charts:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       cert-manager:
         additionalProperties: false
