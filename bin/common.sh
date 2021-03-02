@@ -55,14 +55,14 @@ trap abort SIGINT
 #####
 function err() {
   local tab=$'\t'
-  local divider="-----------------------"
-  printf "%s\n" "$divider" >&2
+  local divider="---------------------------"
+  printf "%-50s %s\n" "$divider" "$divider ">&2
   printf "%-50s %s\n" \
-    "Time" "$tab [$(date +'%Y-%m-%dT %T.%3N')]" \
-    "Faulty script" "$tab ${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" \
-    "Last function" "$tab $last_function" \
-    "Last arguments" "$tab $last_arguments" \
-    "Script message (if any)" "$tab $*" \
+    "- Time" "[$(date +'%Y-%m-%dT %T.%3N')]" \
+    "- Faulty script" "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" \
+    "- Last function" "$last_function" \
+    "- Last arguments" "$last_arguments" \
+    "- Script message (if any)" "$*" \
     >&2
 }
 
