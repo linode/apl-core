@@ -121,8 +121,8 @@ function validate_templates() {
 
 function main() {
   parse_args "$@"
-  [[ $all && $label ]] && echo "Error: cannot specify --all and --label simultaneously" && exit 1
-  if [[ $all = 'y' || $label ]]; then
+  [ $all = 'true' ] && [ -n "$label" ] && echo "Error: cannot specify --all and --label simultaneously" && exit 1
+  if [ $all = 'true' ] || [ -n "$label" ]; then
     for_each_cluster validate_templates
     exit 0
   fi

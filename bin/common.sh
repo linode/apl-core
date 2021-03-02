@@ -158,7 +158,7 @@ function parse_args() {
   if [[ "$*" != "" ]]; then
     ! getopt --test >/dev/null
     if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
-      echo '`getopt --test` failed in this environment.'
+      err '`getopt --test` failed in this environment.'
       exit 1
     fi
 
@@ -181,7 +181,7 @@ function parse_args() {
           shift 2
           ;;
         -A | --all)
-          all=y
+          all='true'
           shift
           ;;
         --)

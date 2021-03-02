@@ -12,14 +12,15 @@
     assert_failure 1
 }
 
+true_var='true'
 @test "parse_args with --all should succeed" {
     parse_args --all
-    assert [ $all = 'y' ]
+    assert [ $all = $true_var ]
 }
 
 @test "parse_args with -A should succeed" {
     parse_args -A
-    assert [ $all = 'y' ]
+    assert [ $all = $true_var ]
 }
 
 @test "parse_args with ONLY --label should fail" {
