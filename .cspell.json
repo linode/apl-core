@@ -23,6 +23,7 @@
     "istioctl",
     "istiod",
     "konstraint",
+    "kubeapps",
     "kubes",
     "kubeval",
     "millis",

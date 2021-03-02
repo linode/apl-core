@@ -111,3 +111,6 @@ tools:
       memory: 100Mi
   secrets:
     GCLOUD_SERVICE_KEY: ''
+    AZURE_TENANT_ID: ''
+    AZURE_CLIENT_ID: ''
+    AZURE_CLIENT_SECRET: ''
