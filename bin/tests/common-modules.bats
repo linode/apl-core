@@ -1,12 +1,13 @@
 #!/usr/local/bin/bats
 
 . bin/tests/bats-common.sh
+. bin/common-modules.sh
 . bin/common.sh
 
 ##############
 # parse_args #
 ##############
-@test "parse_args without CLI argument should throw 4" {
+@test "parse_args without CLI argument should throw" {
     run parse_args
     assert_output --partial '--all or --label not specified'
     assert_failure 1

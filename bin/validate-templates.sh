@@ -3,7 +3,9 @@
 [ -n "$CI" ] && set -e
 set -o pipefail
 
+. bin/common-modules.sh
 . bin/common.sh
+
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
