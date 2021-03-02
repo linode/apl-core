@@ -21,12 +21,8 @@ fi
 # some exit handling for scripts to clean up
 exitcode=0
 script_message='common.sh'
-last_function=-
-last_arguments=-
 function exit_handler() {
   local x=$?
-  last_arguments="$BASH_COMMAND"
-  last_function="${FUNCNAME[1]}"
   [ $x -ne 0 ] && exitcode=$x
   if [ $exitcode -eq 0 ]; then
     echo "$script_message SUCCEEDED"
@@ -140,6 +136,6 @@ function for_each_cluster() {
 function hf_templates_init() {
   local out_dir="$1"
   shift
-  [[ $all ]] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  [ -n "$all" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
   hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }

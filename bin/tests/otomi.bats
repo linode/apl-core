@@ -28,8 +28,10 @@ function teardown () {
 ##########################
 # bin/validate-templates #
 ##########################
-generating_text="Generating k8s v1.18 manifests for cluster 'aws-dev'"
-assert_output_partial_generating_text="assert_output --partial $generating_text"
+aws_dev_str="aws-dev"
+aws_demo_str="aws-demo"
+generating_text="Generating k8s v1.18 manifests for cluster"
+assert_output_partial_generating_text="assert_output --partial"
 validate_templates_name="validate-templates"
 # <timeout> because a real validation can take up to 80 sec
 run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
@@ -45,22 +47,51 @@ run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
     assert_failure 1
 }
 
+@test "$validate_templates_name with both --all and --label fails" {
+    eval "$run_otomi_validate_templates --all --label group=jobs"
+    assert_output --partial 'cannot specify --all and --label simultaneously'
+    assert_failure 1
+}
+
+@test "$validate_templates_name with both --all and --cluster fails" {
+    eval "$run_otomi_validate_templates --all --cluster $aws_dev_str"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
+    assert_failure 1
+}
+
+@test "$validate_templates_name with both -A and -c fails" {
+    eval "$run_otomi_validate_templates -A -c $aws_dev_str"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
+    assert_failure 1
+}
+
+assert_generating_text="$assert_output_partial_generating_text $generating_text"
 @test "$validate_templates_name -l something starts generating" {
     eval "$run_otomi_validate_templates -l group=jobs"
-    eval "$assert_output_partial_generating_text"
+    eval "$assert_generating_text"
 }
 
 @test "$validate_templates_name --label something starts generating" {
     eval "$run_otomi_validate_templates --label group=jobs"
-    eval "$assert_output_partial_generating_text"
+    eval "$assert_generating_text"
 }
 
 @test "$validate_templates_name -A starts generating" {
     eval "$run_otomi_validate_templates -A"
-    eval "$assert_output_partial_generating_text"
+    eval "$assert_generating_text"
 }
 
 @test "$validate_templates_name --all starts generating" {
     eval "$run_otomi_validate_templates --all"
-    eval "$assert_output_partial_generating_text"
+    eval "$assert_generating_text"
+}
+
+@test "$validate_templates_name --cluster aws-demo starts generating 'aws-demo'" {
+    eval "$run_otomi_validate_templates --cluster $aws_demo_str"
+    eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
+}
+
+@test "$validate_templates_name -c aws-demo starts generating 'aws-demo'" {
+    eval "$run_otomi_validate_templates -c $aws_demo_str"
+    eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
 }

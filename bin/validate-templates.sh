@@ -97,7 +97,7 @@ function process_crd_wrapper() {
 ###############################################################
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
-  local cluster_env=$(cluster_env)
+  local cluster_env=${cluster_env:-$cluster}
   process_crd_wrapper $k8s_version $cluster_env
 
   # validate_resources
@@ -123,10 +123,13 @@ function validate_templates() {
 
 function main() {
   parse_args "$@"
-  [ $all = 'true' ] && [ -n "$label" ] && echo "Error: cannot specify --all and --label simultaneously" && exit 1
-  if [ $all = 'true' ] || [ -n "$label" ]; then
+  [ -n "$all" ] && [ -n "$label" ] && err "cannot specify --all and --label simultaneously" && exit 1
+  [ -n "$all" ] && [ -n "$cluster" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
+  if [ -n "$all" ]; then
     for_each_cluster validate_templates
     exit 0
+  else
+    validate_templates
   fi
 }
 
