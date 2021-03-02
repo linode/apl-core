@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
+[ -n "$CI" ] && set -e
 set -o pipefail
 
 . bin/common.sh
@@ -20,7 +20,7 @@ function validate_values() {
   local values_path="$k8s_resources_path/$CLOUD-$CLUSTER.yaml"
   hf_values >$values_path
   ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid || exitcode=1
-  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
 

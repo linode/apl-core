@@ -14,9 +14,7 @@
 set -e
 
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-
-# normalize $CI to be set to 'true' if set and not 'false'
-[ "$CI" != 'false' ] && [ "$CI" != '' ] && CI='true'
+[ -n "$DEBUG" ] && unset DEBUG && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
 
 command=$1
 env_unset='false'
@@ -26,7 +24,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-[ $has_docker = 'false' ] && [ "$CI" = 'false' ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ -n "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -93,8 +91,9 @@ function show_usage() {
     x                   execute command in container
 
   Env flags:
-    VERBOSE=1;          Run otomi CLI in verbose mode
     CI=1                Exit the script after first error
+    DEBUG=1             Run otomi CLI in debug mode
+    VERBOSE=1;          Run otomi CLI in verbose mode
   "
 }
 
@@ -129,13 +128,11 @@ function check_sops_file() {
 }
 
 function evaluate_secrets() {
-  set -x
   [ ! -f "$ENV_DIR/.sops.yaml" ] && {
     [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  
-  if [ "$CI" = 'false' ]; then
+  if [ "$CI" != 'true' ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     . $secrets_path
@@ -181,7 +178,7 @@ function drun() {
   local socket_volume=''
 
   [ "${VERBOSE-}" != '' ] && echo "Running in CI: $CI"
-  if [ "$CI" = 'true' ]; then
+  if [ -n "$CI" ]; then
     check_kube_context=0
   # else
   #   socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
@@ -203,7 +200,7 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [ "$has_docker" = 'true' ] && [ "$IN_DOCKER" != '1' ]; then
+  if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
@@ -222,7 +219,7 @@ function drun() {
       -e CUSTOMER="$customer" \
       -e VERBOSE="${VERBOSE-}" \
       -e CLOUD="$CLOUD" \
-      -e IN_DOCKER="1" \
+      -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \

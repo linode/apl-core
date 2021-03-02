@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
+[ -n "$CI" ] && set -e
 set -o pipefail
 
 . bin/common.sh
@@ -59,7 +59,7 @@ function process_crd() {
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
     err "Processing: $document"
-    [ "$CI" = 'true' ] && exit 1
+    [ -n "$CI" ] && exit 1
   }
 }
 
@@ -107,15 +107,15 @@ function validate_templates() {
   local tmp_out=$(mktemp -u)
   echo "Validating resources for cluster '$cluster_env'"
   set +o pipefail
-  [ "$CI" = 'true' ] && set +e
+  [ -n "$CI" ] && set +e
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$CI" = 'true' ] && set -e
+  [ -n "$CI" ] && set -e
 
   grep -e "ERR\b" $tmp_out && exitcode=1
-  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
   return $EX_SUCCESS
 }
 

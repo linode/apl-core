@@ -52,22 +52,13 @@ trap abort SIGINT
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
 #####
 function err() {
-  local tab=$'\t'
-  local divider="---------------------------"
-  printf "%-50s %s\n" "$divider" "$divider ">&2
-  printf "%-50s %s\n" \
-    "- Time" "[$(date +'%Y-%m-%dT %T.%3N')]" \
-    "- Faulty script" "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" \
-    "- Last function" "$last_function" \
-    "- Last arguments" "$last_arguments" \
-    "- Script message (if any)" "$*" \
-    >&2
+  echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
 
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
+  if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \
