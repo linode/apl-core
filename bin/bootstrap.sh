@@ -51,6 +51,7 @@ if [ -z "$(ls -A $ENV_DIR/env)" ]; then
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
+# to accomodate sops plugin in vscode:
 [ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
 secrets_file="$ENV_DIR/env/secrets.settings.yaml"
 if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != '' ]; then
