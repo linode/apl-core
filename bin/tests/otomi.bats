@@ -21,7 +21,7 @@ function teardown () {
 #############
 @test "otomi without arguments prints help message" {
     run bin/otomi
-    assert_failure 2
+    [ -n "$CI" ] && assert_failure 1 || assert_failure 2
 }
 
 ##########################
