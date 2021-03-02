@@ -1,14 +1,15 @@
 charts:
     drone:
         _rawValues: {}
-        enabled: false
         debug: false
-        orgsFilter: redkubes
-        repoFilter: redkubes
+        enabled: false
         githubAdmins:
             org: redkubes
             team: admins
+        orgsFilter: redkubes
+        owner: redkubes
+        repoFilter: redkubes
         sourceControl:
-            provider: github
             github:
                 server: https://github.com
+            provider: github
