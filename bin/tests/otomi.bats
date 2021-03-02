@@ -22,7 +22,7 @@ function teardown () {
 @test "otomi without arguments prints help message" {
     run bin/otomi
     # Exit code is different depending on global $CI ...
-    [ -n "$CI" ] && assert_failure 1 || assert_failure 2
+    [ -z "$CI" ] && assert_failure 1 || assert_failure 2
 }
 
 ##########################

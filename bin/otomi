@@ -24,7 +24,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-[ $has_docker = 'false' ] && [ -n "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -132,7 +132,7 @@ function evaluate_secrets() {
     [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  if [ "$CI" != 'true' ]; then
+  if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     . $secrets_path
