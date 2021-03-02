@@ -2,8 +2,6 @@
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}
-CLOUD=${CLOUD:-aws}
-CLUSTER=${CLUSTER:-demo}
 
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
@@ -69,7 +67,7 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [[ $has_docker = 'true' && ${IN_DOCKER+0} -eq 0 ]]; then
+  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \

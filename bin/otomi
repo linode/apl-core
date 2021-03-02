@@ -16,7 +16,7 @@ set -e
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 
 # normalize $CI to be set to 'true' if set and not 'false'
-{ [ "$CI" = 'true' ] || [ "$CI" != 'false' ]; } && CI='true'
+[ "$CI" != 'false' ] && [ "$CI" != '' ] && CI='true'
 
 command=$1
 env_unset='false'
@@ -26,7 +26,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 
 . bin/common.sh
 
-[ $has_docker = 'false' ] && [[ ! "$CI" ]] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ "$CI" = 'false' ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 function verbose_env() {
   echo "has_docker=$has_docker"
@@ -129,23 +129,26 @@ function check_sops_file() {
 }
 
 function evaluate_secrets() {
+  set -x
   [ ! -f "$ENV_DIR/.sops.yaml" ] && {
     [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
   local secrets_path="$ENV_DIR/.secrets"
-  [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
-  # shellcheck source=/dev/null
-  . $secrets_path
+  if [ "$CI" = 'false' ]; then
+    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
+    . $secrets_path
+  fi
   prepare_crypt
+  set +x
   return 0
 }
 
 function validate_cluster_env() {
   check_kube_context=1
   local err
-  [[ ! "$CLOUD" ]] && err "The CLOUD environment variable is not set" && err=1
-  [[ ! "$CLUSTER" ]] && err "The CLUSTER environment variable is not set" && err=1
+  [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
+  [ -z "$CLUSTER" ] && err "The CLUSTER environment variable is not set" && err=1
   [ -n "$err" ] && exit 2
   return 0
 }
@@ -199,7 +202,7 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [[ $has_docker = 'true' && ${IN_DOCKER+0} -eq 0 ]]; then
+  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
