@@ -134,8 +134,9 @@ function evaluate_secrets() {
     [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
     return 0
   }
-  local secrets_path="$ENV_DIR/.secrets"
+  
   if [ "$CI" = 'false' ]; then
+    local secrets_path="$ENV_DIR/.secrets"
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
     . $secrets_path
   fi
@@ -202,7 +203,7 @@ function drun() {
   # use docker run if has_docker AND either:
   # - not in docker
   # - in docker AND force docker
-  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
+  if [ "$has_docker" = 'true' ] && [ "$IN_DOCKER" != '1' ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
