@@ -1,0 +1,32 @@
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+
+type: Job
+name: gitea
+enabled: true
+env:
+  GITEA_URL: https://gitea.{{ $v.cluster.domain }}
+  GITEA_ADMIN: {{ $c | get "gitea.admin.username" "gitea-admin" }}
+  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
+  GITEA_VALUES_REPO: {{ $c | get "gitea.repo.name" "otomi-values"}}
+init:
+  env:
+    GITEA_URL: https://gitea.{{ $v.cluster.domain }}
+    GITEA_ADMIN: {{ $c | get "gitea.admin.username" "gitea-admin" }}
+    GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
+    GITEA_VALUES_REPO: {{ $c | get "gitea.repo.name" "otomi-values"}}
+  image:
+    repository: otomi/tools
+    tag: v1.4.13
+    pullPolicy: IfNotPresent
+  shell: bash
+  script: |
+    {{- readFile "scripts/init/gitea.sh" | nindent 4 }}
+image:
+  repository: otomi/tools
+  tag: v1.4.13
+  pullPolicy: IfNotPresent
+shell: bash
+script: |
+  {{- readFile "scripts/gitea.sh" | nindent 2 }}
+runPolicy: Always

@@ -932,6 +932,21 @@ properties:
             type: array
             items:
               type: object
+      gitea:
+        properties:
+          enabled:
+            type: boolean
+            default:
+          admin:
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+          repo:
+            properties:
+              name:
+                type: string
       harbor:
         additionalProperties: false
         properties:

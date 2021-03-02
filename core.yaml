@@ -84,6 +84,15 @@ services:
     ownHost: true
     isShared: true
     port: 3000
+    paths: [/api/]
+    forwardPath: true
+    isPublic: true
+  - name: gitea
+    namespace: gitea
+    svc: gitea-http
+    ownHost: true
+    isShared: true
+    port: 3000
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
