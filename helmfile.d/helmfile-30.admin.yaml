@@ -20,11 +20,12 @@ releases:
     chart: ../charts/drone-admit-members
     values:
       - ../values/drone/drone-admit-members.gotmpl
+      - snippets/rawValues.gotmpl
   - name: gitlab
     installed: false
     namespace: team-admin
     <<: *default
   - name: olm
     installed: true
-    namespace: default
+    namespace: olm
     <<: *default

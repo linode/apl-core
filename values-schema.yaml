@@ -1,6 +1,9 @@
 $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: false
 definitions:
+  rawValues:
+    description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
+    type: object
   alerts:
     properties:
       drone:
@@ -290,7 +293,7 @@ definitions:
       - type
     type: array
   k8sVersion:
-    default: '1.18'
+    default: '1.19'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
       - '1.17'
@@ -642,6 +645,21 @@ properties:
           - Standard_GZRS
           - Standard_RAGZRS
         type: string
+      keyVault:
+        description: Azure Key Vault access credentials. Will use azure.tenantId if tenantId is not provided.
+        properties:
+          tenantId:
+            description: An Azure tenant ID.
+            type: string
+          clientId:
+            description: An Azure client ID.
+            type: string
+          clientSecret:
+            description: An Azure client secret.
+            type: string
+        required:
+          - clientId
+          - clientSecret
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
@@ -664,6 +682,8 @@ properties:
       cert-manager:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           azureClientSecret:
             type: string
           email:
@@ -728,6 +748,8 @@ properties:
       cluster-overprovisioner:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           cpu:
             $ref: '#/definitions/cpuQuantity'
           enabled:
@@ -737,12 +759,12 @@ properties:
       drone:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           adminUser:
             type: string
           adminToken:
             type: string
-            pattern: '^[0-9a-z-]{32}$'
-            description: 32 byte token. Generate one with openssl rand -hex 16.
           debug:
             default: false
             type: boolean
@@ -832,6 +854,8 @@ properties:
       external-dns:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           aws:
             properties:
               region:
@@ -880,6 +904,8 @@ properties:
       gatekeeper-operator:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           excludedNamespaces:
@@ -909,6 +935,8 @@ properties:
       harbor:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
           enabled:
@@ -967,6 +995,8 @@ properties:
         additionalProperties: false
         description: A chart for Azure Application Gateway.
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           appgw:
             additionalProperties: false
             description: Application Gateway.
@@ -1013,6 +1043,8 @@ properties:
       istio:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           addonComponents:
             additionalProperties: false
             properties:
@@ -1075,6 +1107,12 @@ properties:
                 properties:
                   enabled:
                     type: boolean
+          meshConfig:
+            properties:
+              defaultConfig:
+                type: object
+            required:
+              - defaultConfig
           resources:
             properties:
               egressgateway:
@@ -1092,6 +1130,8 @@ properties:
       keycloak:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           idp:
@@ -1117,6 +1157,12 @@ properties:
               - default
               - otomi
             type: string
+      kubeapps:
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
       kube-descheduler:
         additionalProperties: false
         properties:
@@ -1129,6 +1175,8 @@ properties:
       loki:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
           persistence:
@@ -1148,6 +1196,8 @@ properties:
       nginx-ingress:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           autoscaling:
             additionalProperties: false
             properties:
@@ -1159,6 +1209,8 @@ properties:
       oauth2-proxy:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           config:
             properties:
               cookieSecret:
@@ -1168,6 +1220,8 @@ properties:
       oauth2-proxy-redis:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           resources:
             additionalProperties: false
             properties:
@@ -1180,6 +1234,8 @@ properties:
       otomi-api:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           git:
             additionalProperties: false
             properties:
@@ -1207,6 +1263,12 @@ properties:
           tools:
             additionalProperties: false
             properties:
+              azureTenantId:
+                type: string
+              azureClientId:
+                type: string
+              azureClientSecret:
+                type: string
               gcloudServiceKey:
                 type: string
               image:
@@ -1214,11 +1276,15 @@ properties:
       otomi-console:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           image:
             $ref: '#/definitions/imageSimple'
 
       prometheus-operator:
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           additionalProperties: false
           grafana:
             additionalProperties: false
@@ -1235,11 +1301,11 @@ properties:
             properties:
               grafana:
                 $ref: '#/definitions/resources'
-              prometheus:
-                $ref: '#/definitions/resources'
       redis-shared:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           resources:
@@ -1254,6 +1320,8 @@ properties:
       sitespeed:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           pvc:
@@ -1268,8 +1336,12 @@ properties:
           schedule:
             type: string
       weave-scope:
-        default: false
-        enabled: boolean
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
   clouds:
     additionalProperties: false
     properties:
@@ -1294,6 +1366,9 @@ properties:
       cloudDnsKey:
         description: A service account key for managing a DNS zone.
         type: string
+      kmsAccount:
+        description: A service account key for managing a KMS vault.
+        type: string
       projectId:
         description: A Google Cloud project ID for accessing DNS zone.
         type: string
@@ -1310,6 +1385,8 @@ properties:
           additionalProperties: false
           properties:
             disableIstioInjection:
+              type: boolean
+            disablePolicyChecks:
               type: boolean
             name:
               type: string
@@ -1735,5 +1812,4 @@ required:
   - oidc
   - otomi
   - teamConfig
-  - k8s
   - services

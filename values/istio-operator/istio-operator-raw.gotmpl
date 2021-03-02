@@ -13,6 +13,8 @@
 {{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
+
 resources:
   - apiVersion: install.istio.io/v1alpha1
     kind: IstioOperator
@@ -22,23 +24,25 @@ resources:
     spec:
       profile: default
       components:
+        cni:
+          enabled: false
         pilot:
           k8s:
             podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
             priorityClassName: "otomi-critical"
             hpaSpec:
-              minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 2 }}
+              minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 1 }}
               maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 6 }}
             resources:
               {{- with $i | get "resources.pilot" nil }}
                 {{- toYaml . | nindent 14 }}
               {{- else }}
-              requests:
-                memory: 192Mi
-                cpu: 100m
               limits:
-                memory: 768Mi
-                cpu: 500m
+                cpu: '2'
+                memory: 2Gi
+              requests:
+                cpu: 100m
+                memory: 128Mi
               {{- end }}
         ingressGateways:
           - name: istio-ingressgateway
@@ -50,15 +54,15 @@ resources:
               {{- with $i | get "resources.ingressgateway" nil }}
                 {{- toYaml . | nindent 16 }}
               {{- else }}
-                requests:
-                  memory: 128Mi
-                  cpu: 100m
                 limits:
+                  cpu: '1'
                   memory: 256Mi
-                  cpu: 500m
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 1 }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 6 }}
               service:
                 type: ClusterIP
@@ -81,19 +85,19 @@ resources:
             k8s:
               podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway-auth.minReplicas" 2 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway-auth.minReplicas" 1 }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
                 {{- with $i | get "resources.ingressgateway-auth" nil }}
                   {{- toYaml . | nindent 16 }}
                 {{- else }}
-                requests:
-                  memory: 128Mi
-                  cpu: 100m
                 limits:
+                  cpu: '1'
                   memory: 256Mi
-                  cpu: 500m
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
                 {{- end }}
               service:
                 type: ClusterIP
@@ -116,19 +120,19 @@ resources:
             k8s:
               podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.gateway-local.minReplicas" 2 }}
+                minReplicas: {{ $i | get "autoscaling.gateway-local.minReplicas" 1 }}
                 maxReplicas: {{ $i | get "autoscaling.gateway-local.maxReplicas" 6 }}
               priorityClassName: "otomi-critical"
               resources:
                 {{- with $i | get "resources.gateway-local" nil }}
                   {{- toYaml . | nindent 16 }}
                 {{- else }}
-                requests:
-                  memory: 128Mi
-                  cpu: 100m
                 limits:
+                  cpu: '1'
                   memory: 256Mi
-                  cpu: 500m
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
                 {{- end }}
               service:
                 type: ClusterIP
@@ -150,15 +154,15 @@ resources:
               {{- with $i | get "resources.egressgateway" nil }}
                 {{- toYaml . | nindent 16 }}
               {{- else }}
-                requests:
-                  memory: 128Mi
-                  cpu: 100m
                 limits:
+                  cpu: '1'
                   memory: 256Mi
-                  cpu: 500m
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 2 }}
+                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 1 }}
                 maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 6 }}
               service:
                 type: ClusterIP
@@ -178,68 +182,72 @@ resources:
         grafana:
           enabled: {{ $ia | get "grafana.enabled" true }}
           k8s:
-            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
+            podAnnotations:
+              sidecar.istio.io/inject: "true"
+              {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.grafana" nil }}
                 {{- toYaml . | nindent 14 }}
               {{- else }}
-              requests:
-                cpu: 100m
-                memory: 512Mi
               limits:
                 cpu: 500m
                 memory: 2Gi
+              requests:
+                cpu: 100m
+                memory: 512Mi
               {{- end }}
         prometheus:
           enabled: {{ $ia | get "prometheus.enabled" true }}
           k8s:
-            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.prometheus" nil }}
                 {{- toYaml . | nindent 14 }}
               {{- else }}
-              requests:
-                cpu: 100m
-                memory: 512Mi
               limits:
                 cpu: 500m
                 memory: 2Gi
+              requests:
+                cpu: 250m
+                memory: 512Mi
               {{- end }}
         tracing:
           enabled: {{ $ia | get "tracing.enabled" true }}
           k8s:
-            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.tracing" nil }}
                 {{- toYaml . | nindent 14 }}
               {{- else }}
-              requests:
-                cpu: 100m
-                memory: 512Mi
               limits:
                 cpu: 500m
-                memory: 1Gi
+                memory: 500Mi
+              requests:
+                cpu: 50m
+                memory: 50Mi
               {{- end }}
         kiali:
           enabled: {{ $ia | get "kiali.enabled" true }}
           k8s:
-            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 16 }}
+            podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.kiali" nil }}
                 {{- toYaml . | nindent 14 }}
               {{- else }}
-              requests:
-                cpu: 100m
-                memory: 512Mi
               limits:
                 cpu: 500m
                 memory: 1Gi
+              requests:
+                cpu: 100m
+                memory: 512Mi
               {{- end }}
       values:
+        cni:
+          excludeNamespaces: {{- $excludedNamespaces | toYaml | nindent 12 }}
         kiali:
           contextPath: '/kiali'
           dashboard:
@@ -267,17 +275,33 @@ resources:
             resources:
             {{- with $i | get "resources.proxy" nil }}
               {{- toYaml . | nindent 14 }}
+            {{- else }}
+              limits:
+                  cpu: '1'
+                  memory: 1Gi
+              requests:
+                  cpu: 20m
+                  memory: 80Mi
             {{- end }}
             autoInject: enabled
           useMCP: false
         grafana:
+          contextPath: '/grafana-istio'
           env:
             GF_SERVER_ROOT_URL: /grafana-istio/
-          contextPath: '/grafana-istio'
           grafana.ini: {{- $grafanaIni | nindent 12 }}
+          image: 
+            tag: 7.4.2
         meshConfig:
-          enableAutoMtls: true
           accessLogFile: "/dev/stdout"
+          defaultConfig:
+          {{ with $i | get "meshConfig.defaultConfig" nil }}
+            {{- . | toYaml | nindent 14 }}
+          {{- else }}
+            tracing:
+              sampling: 0.1
+          {{- end }}
+          enableAutoMtls: true
         pilot:
           {{- if eq $cm.stage "staging" }}
           jwksResolverExtraRootCA: |

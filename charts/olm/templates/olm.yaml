@@ -1,14 +1,4 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: olm
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: operators
----
 kind: ServiceAccount
 apiVersion: v1
 metadata:
@@ -99,8 +89,6 @@ spec:
               cpu: 10m
               memory: 160Mi
       securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
-          
-      
       nodeSelector:
         kubernetes.io/os: linux
 ---
@@ -131,7 +119,7 @@ spec:
           args:
           - '-namespace'
           - olm
-          - -configmapServerImage=quay.io/operator-framework/configmap-operator-registry:latest
+          - -configmapServerImage=quay.io/operator-framework/configmap-operator-registry:v0.16.1
           - -util-image
           -  {{ .Values.image.location }}
           image: {{ .Values.image.location }}
@@ -150,8 +138,6 @@ spec:
               path: /healthz
               port: 8080
           terminationMessagePolicy: FallbackToLogsOnError
-          env:
-          
           resources:
             limits:
               cpu: 50m
@@ -160,7 +146,6 @@ spec:
               cpu: 10m
               memory: 80Mi
       securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
-      
       nodeSelector:
         kubernetes.io/os: linux
 ---

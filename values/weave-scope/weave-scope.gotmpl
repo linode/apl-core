@@ -9,6 +9,8 @@ global:
     name: weave-scope
 
 weave-scope-frontend:
+  podAnnotations:
+    sidecar.istio.io/inject: "true"
   podSecurityContext:
     runAsUser: 1001
   resources:
@@ -36,6 +38,8 @@ weave-scope-agent:
       memory: 256Mi
 
 weave-scope-cluster-agent:
+  podAnnotations:
+    sidecar.istio.io/inject: "true"
   podSecurityContext:
     runAsUser: 1001
   resources:

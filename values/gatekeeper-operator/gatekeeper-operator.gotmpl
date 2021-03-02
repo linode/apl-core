@@ -15,14 +15,6 @@ constraintViolationsLimit: {{ $gk | get "constraintViolationsLimit" 20 }}
 auditInterval: {{ $gk | get "auditInterval" 60 }}  
 logLevel: {{ $gk | get "logLevel" "INFO" }}  
 
-controllerManager:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
 audit:
   resources:
     limits:
@@ -31,10 +23,18 @@ audit:
     requests:
       cpu: 100m
       memory: 256Mi
+controllerManager:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
 customResourceDefinitions:
   create: false
 
 
 # enable data sync
 auditFromCache: {{ $gk | get "auditFromCache" false }}
-disableValidatingWebhook:  {{ $gk | get "disableValidatingWebhook" false }}
+disableValidatingWebhook: {{ $gk | get "disableValidatingWebhook" false }}
