@@ -116,7 +116,7 @@ function validate_templates() {
 
   grep -e "ERR\b" $tmp_out && exitcode=1
   [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
-  return $EX_SUCCESS
+  return 0
 }
 
 function main() {
