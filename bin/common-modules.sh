@@ -2,10 +2,10 @@
 
 #####
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
-# Returns:                                                                              
-#    all -> if passed, sets to 'y' and can be used globally in conditional statements  
-#    label -> if passed (e.g. label init=true), sets to label (e.g. 'init=true') and   
-#             can be used globally in conditional statements                           
+# Globals:                                                                              
+#    --all -> 'true' 
+#    --label -> k8s label selector
+#    --cluster -> k8s cluster selector (format: CLOUD-CLUSTER) 
 # Resources:                                    
 # - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
 # - https://stackoverflow.com/a/29754866                                                
@@ -18,8 +18,8 @@ function parse_args() {
       exit 1
     fi
 
-    OPTIONS=Al:
-    LONGOPTS=all,label:
+    OPTIONS=Al:c:
+    LONGOPTS=all,label:,cluster:
 
     # - regarding ! and PIPESTATUS see above
     # - temporarily store output to be able to check for errors
@@ -32,13 +32,17 @@ function parse_args() {
     eval set -- "$PARSED"
     while true; do
       case "$1" in
-        -l | --label)
-          label=$2
-          shift 2
-          ;;
         -A | --all)
           all='true'
           shift
+          ;;
+        -c | --cluster)
+          cluster=$2
+          shift 2
+          ;;
+        -l | --label)
+          label=$2
+          shift 2
           ;;
         --)
           shift

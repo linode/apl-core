@@ -30,13 +30,40 @@ true_var='true'
     assert_failure 1
 }
 
+@test "parse_args with ONLY --cluster should fail" {
+    run parse_args --cluster
+    assert_output --partial "option '--cluster' requires an argument"
+    assert_failure 1
+}
+
 @test "parse_args with ONLY -l should fail" {
     run parse_args -l
     assert_output --partial "option requires an argument -- 'l'"
     assert_failure 1
 }
 
+@test "parse_args with ONLY -c should fail" {
+    run parse_args -c
+    assert_output --partial "option requires an argument -- 'c'"
+    assert_failure 1
+}
+
 @test "parse_args with --label 'arbitrary value' should pass" {
     parse_args --label this=should_work
     assert [ ${label} = 'this=should_work' ]
+}
+
+@test "parse_args with -l 'arbitrary value' should pass" {
+    parse_args -l this=should_work
+    assert [ ${label} = 'this=should_work' ]
+}
+
+@test "parse_args with --cluster 'arbitrary cluster' should pass" {
+    parse_args --cluster aws-dev
+    assert [ ${cluster} = 'aws-dev' ]
+}
+
+@test "parse_args with -c 'arbitrary cluster' should pass" {
+    parse_args -c aws-dev
+    assert [ ${cluster} = 'aws-dev' ]
 }
