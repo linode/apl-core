@@ -62,7 +62,7 @@ function err() {
     "Faulty script" "$tab ${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" \
     "Last function" "$tab $last_function" \
     "Last arguments" "$tab $last_arguments" \
-    "Error message (if any)" "$tab $*" "$divider" \
+    "Script message (if any)" "$tab $*" \
     >&2
 }
 
