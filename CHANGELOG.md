@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.1](https://github.com/redkubes/otomi-core/compare/v0.12.0...v0.12.1) (2021-03-02)
+
+
+### Features
+
+* allow adding new charts even if they are not defined in the schema sepc ([7bc2cc0](https://github.com/redkubes/otomi-core/commit/7bc2cc0ac17f5492c3349b4911b92866c659b46a))
+* expert mode ([#232](https://github.com/redkubes/otomi-core/issues/232)) ([a847e58](https://github.com/redkubes/otomi-core/commit/a847e582c55b2dd10af266e7ab1e81cf87a2a914))
+
+
+### Bug Fixes
+
+* keycloak job excluding banned image check for entire pod ([6276176](https://github.com/redkubes/otomi-core/commit/6276176e2560407d969ddcdceefeac2cb010cda0))
+
 ## [0.12.0](https://github.com/redkubes/otomi-core/compare/v0.11.58...v0.12.0) (2021-03-01)
 
 

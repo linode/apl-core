@@ -70,7 +70,7 @@ function process_crd_wrapper() {
   local cluster_env=$2
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init "$k8s_resources_path/$k8s_version"
+  hf_templates "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
   # generate canonical schemas
