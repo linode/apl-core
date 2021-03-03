@@ -802,7 +802,6 @@ definitions:
       - tenant_id
       - client_id
       - client_secret
-
   vaultGoogleStorage:
     properties:
       bucket:
@@ -1577,7 +1576,6 @@ properties:
                 $ref: '#/definitions/vaultAzureSeal'
           logLevel:
             $ref: '#/definitions/logLevel'
-
       weave-scope:
         properties:
           _rawValues:
@@ -1712,7 +1710,6 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
-
   policies:
     type: object
     description: |
