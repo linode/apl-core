@@ -41,15 +41,15 @@ run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
     assert_failure
 }
 
-@test "$validate_templates_name with both -A and -l fails" {
-    eval "$run_otomi_validate_templates -A -l group=jobs"
-    assert_output --partial 'cannot specify --all and --label simultaneously'
+@test "$validate_templates_name with both -A and -c fails" {
+    eval "$run_otomi_validate_templates -A -c aws-dev"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
     assert_failure 1
 }
 
-@test "$validate_templates_name with both --all and --label fails" {
-    eval "$run_otomi_validate_templates --all --label group=jobs"
-    assert_output --partial 'cannot specify --all and --label simultaneously'
+@test "$validate_templates_name with both --all and --cluster fails" {
+    eval "$run_otomi_validate_templates --all --cluster aws-dev"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
     assert_failure 1
 }
 

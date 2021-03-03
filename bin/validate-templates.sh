@@ -117,7 +117,7 @@ function validate_templates() {
 
 function main() {
   parse_args "$@"
-  [ -n "$all" ] && [ -n "$label" ] && err "cannot specify --all and --label simultaneously" && exit 1
+  [ -n "$all" ] && [ -n "$CLUSTER_OPT" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
   if [ -n "$all" ]; then
     for_each_cluster validate_templates
     exit 0
