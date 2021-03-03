@@ -68,23 +68,23 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 function show_usage() {
   echo "otomi usage:
     bash                run interactive bash shell in otomi-core container
-    bats                runs BATS on bin/tests (see docs/BATS.md)
+    bats                run BATS on bin/tests (see docs/BATS.md)
     bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
     check-policies      check if generated manifests adhere to defined OPA policies
-    commit              wrapper for encrypt > generate pipelines > git commit changed files
-    console             starts Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
+    console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script
-    destroy             destroy all or some charts (use labels like '-l name=prometheus-operator')
-    diff                diff k8s resources (use labels like '-l name=prometheus-operator')
-    encrypt             encrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
+    destroy             destroy all or some charts 
+    diff                diff k8s resources 
+    encrypt             encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help                print this help
     hf                  run helmfile with CLUSTER and CLOUD already set
     pull                wrapper for git pull && bootstrap
-    sync                sync k8s resources (use labels like '-l name=prometheus-operator')
-    switch              switches context to the target cluster and boostraps
-    template            export k8s resources (use labels like '-l name=prometheus-operator')
-    test                runs some tests againts the target cluster
+    sync                sync k8s resources 
+    switch              switch context to the target cluster and bootstraps
+    template            export k8s resources 
+    test                run tests against the target cluster
     values              show helmfile values for CLOUD and CLUSTER
     validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices
     validate-values     validate values for each cluster against JSON schema
@@ -94,6 +94,11 @@ function show_usage() {
     CI=1                Exit the script after first error
     DEBUG=1             Run otomi CLI in debug mode
     VERBOSE=1;          Run otomi CLI in verbose mode
+
+  Options:
+    -A|--all            Target all clusters     
+    -c|--cluster        Target clusters (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
+    -l|--label          Target charts (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
   "
 }
 
@@ -108,8 +113,8 @@ function evaluate_k8s_context() {
 function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [ "$K8S_CONTEXT" != "$context" ]; then
-    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" oki
-    if [ "${oki:-y}" = "y" ]; then
+    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Y n]" ok
+    if [ "${ok:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
       $is_repo && drun bin/bootstrap.sh 1
     else

@@ -2,10 +2,6 @@
 
 #####
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
-# Globals:                                                                              
-#    --all -> 'true' 
-#    --label -> k8s label selector
-#    --cluster -> k8s cluster selector (format: CLOUD-CLUSTER) 
 # Resources:                                    
 # - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
 # - https://stackoverflow.com/a/29754866                                                
