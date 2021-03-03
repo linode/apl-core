@@ -97,7 +97,7 @@ function show_usage() {
 
   Options:
     -A|--all            Target all charts (not simultaneously with -l|--label)     
-    -c|--cluster        Target clusters (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
+    -c|--cluster        Override a set target cluster (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
     -l|--label          Target charts (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
   "
 }
