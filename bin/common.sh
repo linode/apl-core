@@ -1,4 +1,4 @@
-#!/usr/local/env bash
+#!/usr/bin/env bash
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}
@@ -27,7 +27,7 @@ function exit_handler() {
   if [ $exitcode -eq 0 ]; then
     echo "$script_message SUCCEEDED"
   else
-   err "$script_message FAILED"
+    err "$script_message FAILED"
   fi
   cleanup
   trap 'exit $exitcode' EXIT ERR
@@ -72,7 +72,7 @@ function _rind() {
 }
 
 #####
-# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting                                                               
+# https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting
 #####
 function yq() {
   _rind "${FUNCNAME[0]}" "$@"
