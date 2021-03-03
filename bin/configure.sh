@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-function otomi_cfg_if_not_exists() {
-  local otomi_cfg_location="$ENV_DIR/otomi.cfg"
-  [ ! -f "$otomi_cfg_location/otomi.cfg" ] && touch $otomi_cfg_location
-  return 0
-}
+. bin/common.sh
+. bin/common-modules.sh
 
-main() {
-  otomi_cfg_if_not_exists
+#####
+# ini parsing might be nice with more vars: https://stackoverflow.com/a/37027274
+#####
+function main() {
+  parse_args "$@"
+  [ -n "$CLUSTER_OPT" ] && echo "export CLUSTER=$CLUSTER_OPT" >$ENV_DIR/otomi.cfg
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

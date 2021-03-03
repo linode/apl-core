@@ -1,10 +1,10 @@
 #!/usr/local/env bash
 
 #####
-# Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.                       
-# Resources:                                    
-# - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments                                        
-# - https://stackoverflow.com/a/29754866                                                
+# Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
+# Resources:
+# - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments
+# - https://stackoverflow.com/a/29754866
 #####
 function parse_args() {
   if [[ "$*" != "" ]]; then
@@ -51,7 +51,7 @@ function parse_args() {
       esac
     done
   else
-    err "--all or --label not specified"
+    err "--all, --cluster or --label not specified"
     exit 1
   fi
 }

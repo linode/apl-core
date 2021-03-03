@@ -9,7 +9,7 @@
 ##############
 @test "parse_args without CLI argument should throw" {
     run parse_args
-    assert_output --partial '--all or --label not specified'
+    assert_output --partial '--all, --cluster or --label not specified'
     assert_failure 1
 }
 
