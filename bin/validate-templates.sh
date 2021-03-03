@@ -91,7 +91,7 @@ function process_crd_wrapper() {
 
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
-  local cluster_env=${cluster_env:-$cluster}
+  local cluster_env=${cluster:-$cluster_env}
   process_crd_wrapper $k8s_version $cluster_env
 
   # validate_resources
