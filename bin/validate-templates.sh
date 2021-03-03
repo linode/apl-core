@@ -70,7 +70,7 @@ function process_crd_wrapper() {
   local cluster_env=$2
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates "$k8s_resources_path/$k8s_version"
+  hf_templates_init "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
   # generate canonical schemas
@@ -89,12 +89,6 @@ function process_crd_wrapper() {
   done
 }
 
-###############################################################
-# Calls 'kubeval' on generated templates by 'helmfile template'
-# Globals:
-#     label
-#     all
-###############################################################
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
   local cluster_env=${cluster_env:-$cluster}
@@ -124,7 +118,6 @@ function validate_templates() {
 function main() {
   parse_args "$@"
   [ -n "$all" ] && [ -n "$label" ] && err "cannot specify --all and --label simultaneously" && exit 1
-  [ -n "$all" ] && [ -n "$cluster" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
   if [ -n "$all" ]; then
     for_each_cluster validate_templates
     exit 0
