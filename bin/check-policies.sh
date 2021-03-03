@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
-set -o pipefail
-
 . bin/common.sh
+set -eo pipefail
 
 readonly k8s_resources_path="/tmp/otomi/templates"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
@@ -25,7 +23,7 @@ validate_policies() {
   mkdir -p $k8s_resources_path
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init "$k8s_resources_path/$k8s_version" "$@" >/dev/null
+  hf_templates "$k8s_resources_path/$k8s_version" "$@"
 
   echo "Processing templates"
   # generate parameter constraints file from values

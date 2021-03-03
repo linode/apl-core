@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
+source bin/common.sh
 set -o pipefail
 
-source bin/common.sh
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
 readonly schemas_bundle_file="$output_path/all.json"
@@ -70,7 +69,7 @@ function validate_templates() {
 
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
-  hf_templates_init "$k8s_resources_path/$k8s_version"
+  hf_templates "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files"
   # generate canonical schemas

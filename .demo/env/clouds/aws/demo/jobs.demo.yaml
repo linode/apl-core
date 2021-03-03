@@ -11,6 +11,10 @@ teamConfig:
                       /config/some-file3: |-
                           some data on another line
                           another line
+                  podSecurityContext:
+                      runAsNonRoot: true
+                      runAsUser: 1002
+                      runAsGroup: 1002
                   image:
                       repository: busybox
                       tag: latest
