@@ -446,21 +446,21 @@ definitions:
             enum:
               - tls
             type: string
-          caSecretPath:
-            $ref: '#/definitions/vaultPath'
-          caItemName:
-            type: string
-            default: 'ca.pem'
           crtSecretPath:
             $ref: '#/definitions/vaultPath'
           crtItemName:
             type: string
-            default: 'crt.pem'
+            default: 'crt'
           keySecretPath:
             $ref: '#/definitions/vaultPath'
           keyItemName:
             type: string
-            default: 'key.pem'
+            default: 'key'
+          caSecretPath:
+            $ref: '#/definitions/vaultPath'
+          caItemName:
+            type: string
+            default: 'ca'
         required:
           - type
           - caSecretPath
