@@ -136,6 +136,6 @@ function for_each_cluster() {
 function hf_templates_init() {
   local out_dir="$1"
   shift
-  [ -n "$all" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
   hf $(echo ${label:+"-l $label"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }
