@@ -143,7 +143,6 @@ function evaluate_secrets() {
     . $secrets_path
   fi
   prepare_crypt
-  set +x
   return 0
 }
 

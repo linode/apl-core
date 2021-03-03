@@ -16,18 +16,18 @@ function teardown () {
     unset ENV_DIR CLOUD CLUSTER env_path
 }
 
-#############
-# bin/otomi #
-#############
+#####
+# bin/otomi 
+#####
 @test "otomi without arguments prints help message" {
     run bin/otomi
     # Exit code is different depending on global $CI ...
     [ -z "$CI" ] && assert_failure 1 || assert_failure 2
 }
 
-##########################
-# bin/validate-templates #
-##########################
+#####
+# bin/validate-templates 
+#####
 aws_dev_str="aws-dev"
 aws_demo_str="aws-demo"
 generating_text="Generating k8s v1.18 manifests for cluster"
