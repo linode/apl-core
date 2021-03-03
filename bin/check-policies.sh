@@ -36,6 +36,7 @@ check_policies() {
   done
   yq r -j $constraints_file | jq '{parameters: .}' | yq r -P - >$parameters_file
 
+  # validate_resources
   echo "Checking manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" || exitcode=1
   [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
