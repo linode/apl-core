@@ -60,10 +60,10 @@ true_var='true'
 
 @test "parse_args with --cluster 'arbitrary cluster' should pass" {
     parse_args --cluster aws-dev
-    assert [ ${cluster} = 'aws-dev' ]
+    assert [ ${CLUSTER_OPT} = 'aws-dev' ]
 }
 
 @test "parse_args with -c 'arbitrary cluster' should pass" {
     parse_args -c aws-dev
-    assert [ ${cluster} = 'aws-dev' ]
+    assert [ ${CLUSTER_OPT} = 'aws-dev' ]
 }

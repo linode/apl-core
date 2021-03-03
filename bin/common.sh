@@ -98,11 +98,15 @@ function customer_name() {
 }
 
 function cluster_env() {
-  printf "$CLOUD-$CLUSTER"
+  if [ -n "$CLUSTER_OPT" ]; then
+    printf "%s" "$CLUSTER_OPT"
+  else
+    printf "%s" "$CLOUD-$CLUSTER"
+  fi
 }
 
 function hf() {
-  helmfile --quiet -e $CLOUD-$CLUSTER "$@"
+  helmfile --quiet -e $(cluster_env) "$@"
 }
 
 function hf_values() {

@@ -33,7 +33,7 @@ function parse_args() {
           shift
           ;;
         -c | --cluster)
-          cluster=$2
+          CLUSTER_OPT=$2
           shift 2
           ;;
         -l | --label)
