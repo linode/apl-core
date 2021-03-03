@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
+function otomi_cfg_if_not_exists() {
+  local otomi_cfg_location="$ENV_DIR/otomi.cfg"
+  [ ! -f "$otomi_cfg_location/otomi.cfg" ] && touch $otomi_cfg_location
+  return 0
+}
+
 main() {
-  [ ! -f "$ENV_DIR/otomi.cfg" ] && echo "NO"
+  otomi_cfg_if_not_exists
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
