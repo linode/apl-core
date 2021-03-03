@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 {{- $d := $c | get "drone" dict }}
+{{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
 {{- range $teams -}}

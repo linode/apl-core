@@ -1,6 +1,7 @@
 {{- $v := .Values }} 
 {{- $ := . }}
 {{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
+{{- $podSecurityContext := get $v "podSecurityContext" | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) }}
 {{- if eq $v.type "Job" }}
 apiVersion: batch/v1
 kind: Job
@@ -16,7 +17,6 @@ spec:
     metadata:
       labels: {{- include "jobs.labels" $ | nindent 8 }}
       annotations:
-        policy.otomi.io/ignore: psp-allowed-users
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
         {{- range $key, $value := $v.annotations }}
@@ -24,9 +24,7 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ $v.serviceAccountName | default "default" }}
-      {{- with $v.podSecurityContext }}
-      securityContext: {{- toYaml . | nindent 8 }}
-      {{- end }}
+      securityContext: {{- toYaml $podSecurityContext | nindent 8 }}
       {{- if $v.init }}
       initContainers:
       - image: "{{ $v.init.image.repository }}:{{ $v.init.image.tag | default "latest" }}"

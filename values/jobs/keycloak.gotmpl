@@ -12,12 +12,13 @@
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 type: Job
 enabled: true
 runPolicy: Always
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+annotations:
+  policy.otomi.io/ignore: "banned-image-tags"
 init:
   image:
     repository: badouralix/curl-http2
