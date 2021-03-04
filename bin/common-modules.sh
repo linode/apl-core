@@ -68,5 +68,4 @@ function validate_resources() {
     $cmd
     exit 0
   fi
-  exit 1
 }
