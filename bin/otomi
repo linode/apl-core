@@ -277,9 +277,6 @@ function execute() {
       drun bin/pre-commit.sh
       git add . && git commit -m 'Manual commit' --no-verify
       ;;
-    configure)
-      drun bin/configure.sh "$@"
-      ;;
     console)
       evaluate_secrets
       run_console "$@"
