@@ -11,7 +11,6 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
@@ -211,6 +210,5 @@ releases:
       - teamSecrets: {{- $team.secrets | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
-  {{- end }}
   {{- end }}
   {{- end }}
