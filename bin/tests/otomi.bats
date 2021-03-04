@@ -83,3 +83,7 @@ assert_generating_text="$assert_output_partial_generating_text $generating_text"
     eval "$run_otomi_validate_templates -c $aws_demo_str"
     eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
 }
+
+#####
+# bin/check-policies.sh
+#####

@@ -24,10 +24,10 @@ check_policies() {
   local cluster_env=$(cluster_env)
   mkdir -p $k8s_resources_path
   # generate_manifests
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
   hf_templates_init "$k8s_resources_path/$k8s_version" "$@"
 
-  echo "Processing templates"
+  echo "Processing templates..."
   # generate parameter constraints file from values
   local parse_constraints_expression='.policies as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
   local policies=$(yq r $policies_file -j | jq --raw-output -S -c "$parse_constraints_expression")
@@ -46,10 +46,10 @@ check_policies() {
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 if [ "${1-}" != "" ]; then
-  echo "Checking policies for cluster '$(cluster_env)'"
+  echo "Checking policies for cluster '$(cluster_env)'..."
   shift
   check_policies "$@"
 else
-  echo "Checking policies for all clusters"
+  echo "Checking policies for all clusters..."
   for_each_cluster check_policies
 fi

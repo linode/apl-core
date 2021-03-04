@@ -29,7 +29,7 @@ function parse_args() {
     while true; do
       case "$1" in
         -A | --all)
-          all='true'
+          ALL_OPT='true'
           shift
           ;;
         -c | --cluster)

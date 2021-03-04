@@ -17,12 +17,12 @@ parse_args_str="parse_args"
 true_var='true'
 @test "$parse_args_str with --all should succeed" {
     parse_args --all
-    assert [ $all = $true_var ]
+    assert [ $ALL_OPT = $true_var ]
 }
 
 @test "$parse_args_str with -A should succeed" {
     parse_args -A
-    assert [ $all = $true_var ]
+    assert [ $ALL_OPT = $true_var ]
 }
 
 @test "$parse_args_str with ONLY --label should fail" {
