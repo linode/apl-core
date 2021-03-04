@@ -4,6 +4,7 @@
 set -o pipefail
 
 . bin/common.sh
+. bin/common-modules.sh
 
 readonly k8s_resources_path="/tmp/otomi/values"
 readonly script_message="Values validation"
@@ -24,8 +25,13 @@ function validate_values() {
   return 0
 }
 
-if [ -n "$1" ]; then
-  validate_values
-else
-  for_each_cluster validate_values
+function main() {
+  validate_resources validate_values "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+  if [ $? -gt 0 ]; then
+    exit 1
+  fi
 fi

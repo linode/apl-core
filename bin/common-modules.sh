@@ -55,3 +55,18 @@ function parse_args() {
     exit 1
   fi
 }
+
+function validate_resources() {
+  local cmd=$1
+  shift
+  parse_args "$@"
+  [ -n "$ALL_OPT" ] && [ -n "$CLUSTER_OPT" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
+  if [ -n "$ALL_OPT" ]; then
+    for_each_cluster $cmd
+    exit 0
+  else
+    $cmd
+    exit 0
+  fi
+  exit 1
+}

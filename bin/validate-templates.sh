@@ -94,7 +94,6 @@ function validate_templates() {
   local cluster_env=$(cluster_env)
   process_crd_wrapper $k8s_version $cluster_env
 
-  # validate_resources
   local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
@@ -116,16 +115,7 @@ function validate_templates() {
 }
 
 function main() {
-  parse_args "$@"
-  [ -n "$ALL_OPT" ] && [ -n "$CLUSTER_OPT" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
-  if [ -n "$ALL_OPT" ]; then
-    for_each_cluster validate_templates
-    exit 0
-  else
-    validate_templates
-    exit 0
-  fi
-  exit 1
+  validate_resources validate_templates "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
