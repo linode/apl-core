@@ -37,7 +37,7 @@ function parse_args() {
           shift 2
           ;;
         -l | --label)
-          label=$2
+          LABEL_OPT=$2
           shift 2
           ;;
         --)
