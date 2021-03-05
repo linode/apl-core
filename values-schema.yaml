@@ -956,13 +956,7 @@ properties:
             default:
           admin:
             properties:
-              username:
-                type: string
               password:
-                type: string
-          repo:
-            properties:
-              name:
                 type: string
       harbor:
         additionalProperties: false

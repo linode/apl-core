@@ -84,7 +84,7 @@ services:
     ownHost: true
     isShared: true
     port: 3000
-    paths: [/api/]
+    paths: [/api/, /otomi/values]
     forwardPath: true
     isPublic: true
   - name: gitea

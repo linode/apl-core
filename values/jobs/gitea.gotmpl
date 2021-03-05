@@ -1,32 +1,33 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
+{{- $cm := $c | get "cert-manager" -}}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
 
 type: Job
 name: gitea
 enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.cluster.domain }}
-  GITEA_ADMIN: {{ $c | get "gitea.admin.username" "gitea-admin" }}
+  GITEA_REPO: values
+secret:
+  GITEA_USER: otomi
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
-  GITEA_VALUES_REPO: {{ $c | get "gitea.repo.name" "otomi-values"}}
+annotations:
+  policy.otomi.io/ignore: "banned-image-tags"
 init:
-  env:
-    GITEA_URL: https://gitea.{{ $v.cluster.domain }}
-    GITEA_ADMIN: {{ $c | get "gitea.admin.username" "gitea-admin" }}
-    GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
-    GITEA_VALUES_REPO: {{ $c | get "gitea.repo.name" "otomi-values"}}
   image:
-    repository: otomi/tools
-    tag: v1.4.13
-    pullPolicy: IfNotPresent
-  shell: bash
+    repository: badouralix/curl-http2
   script: |
-    {{- readFile "scripts/init/gitea.sh" | nindent 4 }}
+    {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+    echo "Waiting until gitea is accessible at https://gitea.{{ $v.cluster.domain }}"
+    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://gitea.{{ $v.cluster.domain }}); do 
+      printf '.'
+      sleep 5
+    done
+    echo READY!
 image:
-  repository: otomi/tools
-  tag: v1.4.13
+  repository: otomi/tasks
+  tag: gitea
   pullPolicy: IfNotPresent
-shell: bash
-script: |
-  {{- readFile "scripts/gitea.sh" | nindent 2 }}
-runPolicy: Always
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
+runPolicy: OnSpecChange
