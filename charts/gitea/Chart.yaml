@@ -3,7 +3,7 @@ name: gitea
 description: Gitea Helm chart for Kubernetes
 type: application
 version: 0.0.0
-appVersion: 1.13.2
+appVersion: 1.13.4
 icon: https://docs.gitea.io/images/gitea.png
 
 keywords:

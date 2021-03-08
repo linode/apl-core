@@ -15,7 +15,7 @@ fullnameOverride: gitea
 
 gitea:
   podAnnotations: 
-    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}4
+    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
   admin:
     username: otomi
     password: {{ $g | get "admin.password" "bladibla" }}

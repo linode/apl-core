@@ -953,7 +953,6 @@ properties:
         properties:
           enabled:
             type: boolean
-            default:
           admin:
             properties:
               password:
