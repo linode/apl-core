@@ -728,13 +728,7 @@ definitions:
     description: A property name at vaultPath
     pattern: '^[a-zA-Z0-9_]*$'
     type: string
-  vaultDefaultSeal:
-    properties:
-      type:
-        type: string
-        default: default
-        enum:
-          - default
+
   vaultAwsStorage:
     properties:
       region:
@@ -744,30 +738,6 @@ definitions:
     required:
       - region
       - bucket
-  vaultAwsSeal:
-    properties:
-      type:
-        type: string
-        default: awskms
-        enum:
-          - awskms
-      region:
-        type: string
-      access_key:
-        type: string
-      secret_key:
-        type: string
-      kms_key_id:
-        type: string
-      endpoint:
-        type: string
-    required:
-      - type
-      - region
-      - access_key
-      - secret_key
-      - kms_key_id
-      - endpoint
   vaultAzureStorage:
     properties:
       accountName:
@@ -778,60 +748,13 @@ definitions:
         type: string
       environment:
         type: string
-  vaultAzureSeal:
-    properties:
-      type:
-        type: string
-        default: azurekeyvault
-        enum:
-          - azurekeyvault
-      vault_name:
-        type: string
-      key_name:
-        type: string
-      tenant_id:
-        type: string
-      client_id:
-        type: string
-      client_secret:
-        type: string
-    required:
-      - type
-      - vault_name
-      - key_name
-      - tenant_id
-      - client_id
-      - client_secret
+
   vaultGoogleStorage:
     properties:
       bucket:
         type: string
     required:
       - bucket
-  vaultGoogleSeal:
-    properties:
-      type:
-        type: string
-        default: gcpckms
-        enum:
-          - gcpckms
-      project:
-        type: string
-      region:
-        type: string
-      key_ring:
-        type: string
-      crypto_key:
-        type: string
-      encodedCloudToken:
-        type: string
-    required:
-      - type
-      - project
-      - region
-      - key_ring
-      - crypto_key
-      - encodedCloudToken
 
   volumes:
     items:
@@ -1566,14 +1489,29 @@ properties:
           seal:
             description: Use Cloud KMS to encrypt and decrypt the master key
             oneOf:
-              - title: default
-                $ref: '#/definitions/vaultDefaultSeal'
-              - title: gcpckms
-                $ref: '#/definitions/vaultGoogleSeal'
-              - title: awskms
-                $ref: '#/definitions/vaultAwsSeal'
-              - title: azurekeyvault
-                $ref: '#/definitions/vaultAzureSeal'
+              - title: Additional data protection with Cloud KMS
+                properties:
+                  kmsKeyId:
+                    title: Key name or key ID
+                    description: Cloud KMS key to encrypt and decrypt the Vault master key.
+                    type: string
+                  type:
+                    type: string
+                    default: kms
+                    enum:
+                      - kms
+                required:
+                  - type
+                  - kmsKeyId
+              - title: No additional data protection
+                properties:
+                  type:
+                    type: string
+                    default: no-kms
+                    enum:
+                      - no-kms
+                required:
+                  - type
           logLevel:
             $ref: '#/definitions/logLevel'
       weave-scope:
@@ -1636,6 +1574,80 @@ properties:
         type: array
     required:
       - namespaces
+  kms:
+    type: object
+    description: Use Cloud KMS to encrypt and decrypt the master key
+    oneOf:
+      - title: No KMS
+        properties:
+          type:
+            type: string
+            default: no-kms
+            enum:
+              - no-kms
+      - title: gcpckms
+        properties:
+          type:
+            type: string
+            default: gcpckms
+            enum:
+              - gcpckms
+          project:
+            type: string
+          region:
+            type: string
+          key_ring:
+            type: string
+          encodedCloudToken:
+            type: string
+        required:
+          - type
+          - project
+          - region
+          - key_ring
+          - encodedCloudToken
+      - title: awskms
+        properties:
+          type:
+            type: string
+            default: awskms
+            enum:
+              - awskms
+          region:
+            type: string
+          access_key:
+            type: string
+          secret_key:
+            type: string
+          endpoint:
+            type: string
+        required:
+          - type
+          - region
+          - access_key
+          - secret_key
+          - endpoint
+      - title: azurekeyvault
+        properties:
+          type:
+            type: string
+            default: azurekeyvault
+            enum:
+              - azurekeyvault
+          vault_name:
+            type: string
+          tenant_id:
+            type: string
+          client_id:
+            type: string
+          client_secret:
+            type: string
+        required:
+          - type
+          - vault_name
+          - tenant_id
+          - client_id
+          - client_secret
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'

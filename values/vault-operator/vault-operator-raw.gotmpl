@@ -3,7 +3,7 @@
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
-
+{{- $kms := $v.kms }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -44,22 +44,22 @@ resources:
           value: {{ $vault | get "logLevel" "info" }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
-        {{- if eq $seal.type "azurekeyvault" }}
+        {{- if eq $kms.type "azurekeyvault" }}
          # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         - name: AZURE_TENANT_ID
-          value: {{ $seal.tenant_id }}
+          value: {{ $kms.tenant_id }}
         - name: AZURE_CLIENT_ID
-          value: {{ $seal.client_id }}
+          value: {{ $kms.client_id }}
         - name: AZURE_CLIENT_SECRET
-          value: {{ $seal.client_secret }}
+          value: {{ $kms.client_secret }}
         - name: AZURE_ENVIRONMENT
           value: "AZUREPUBLICCLOUD"
         {{- end }}
-        {{- if eq $seal.type "awskms" }}
+        {{- if eq $kms.type "awskms" }}
         - name: AWS_ACCESS_KEY_ID
-          value: {{ $seal.access_key }}
+          value: {{ $kms.access_key }}
         - name: AWS_SECRET_ACCESS_KEY
-          value: {{ $seal.secret_key }}
+          value: {{ $kms.secret_key }}
         {{- end }}
 
         # - name: SKIP_CHOWN
@@ -120,26 +120,26 @@ resources:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
 
         # https://www.vaultproject.io/docs/configuration/seal
-        {{- if ne $seal.type "default" }}
+        {{- if eq $seal.type "kms" }}
         seal:
-          {{- if eq $seal.type "azurekeyvault" }}
+          {{- if eq $kms.type "azurekeyvault" }}
           # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
           azurekeyvault:
-            vault_name: {{ $seal.vault_name }}
-            key_name: {{ $seal.key_name }}
-          {{- else if eq $seal.type "awskms" }}
+            vault_name: {{ $kms.vault_name }}
+            key_name: {{ $seal.kmsKeyId }}
+          {{- else if eq $kms.type "awskms" }}
           # https://www.vaultproject.io/docs/configuration/seal/awskms
           awskms:
-            region: {{ $seal.region }}
-            kms_key_id: {{ $seal.kms_key_id }}
-            endpoint: {{ $seal.endpoint }}
-          {{- else if eq $seal.type "gcpckms" }}
+            region: {{ $kms.region }}
+            kms_key_id: {{ $seal.kmsKeyId }}
+            endpoint: {{ $kms.endpoint }}
+          {{- else if eq $kms.type "gcpckms" }}
           # https://www.vaultproject.io/docs/configuration/seal/gcpckms
           gcpckms:
-            project: {{ $seal.project }}
-            region: {{ $seal.region }}
-            key_ring:  {{ $seal.key_ring }}
-            crypto_key: {{ $seal.crypto_key }}
+            project: {{ $kms.project }}
+            region: {{ $kms.region }}
+            key_ring:  {{ $kms.key_ring }}
+            crypto_key: {{ $seal.kmsKeyId }}
           {{- end }}
         {{- end }}
         listener:
