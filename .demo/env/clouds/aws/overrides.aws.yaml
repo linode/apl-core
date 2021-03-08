@@ -10,3 +10,7 @@ charts:
         zoneIdFilters: []
         aws:
             region: eu-central-1
+kms:
+    type: awskms
+    region: eu-central-1
+    endpoint: 'https://vpce-0e1bb1852241f8cc6-pzi0do8n.kms.us-east-1.vpce.amazonaws.com'

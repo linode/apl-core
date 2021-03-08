@@ -9,3 +9,9 @@ otomi:
 clouds:
     google:
         projectId: otomi-cloud
+
+kms:
+    type: gcpckms
+    project: 'vault-project'
+    region: 'global'
+    key_ring: 'vault-keyring'

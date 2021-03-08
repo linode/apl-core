@@ -1,7 +1,5 @@
 charts:
     vault:
         seal:
-            type: awskms
-            region: eu-central-1
-            kms_key_id: '19ec80b0-dfdd-4d97-8164-c6examplekey'
-            endpoint: 'https://vpce-0e1bb1852241f8cc6-pzi0do8n.kms.us-east-1.vpce.amazonaws.com'
+            type: kms
+            kmsKeyId: '19ec80b0-dfdd-4d97-8164-c6examplekey'

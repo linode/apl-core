@@ -6,3 +6,6 @@ charts:
     external-dns:
         domainFilters:
             - onprem.otomi.cloud
+
+kms:
+    type: no-kms
