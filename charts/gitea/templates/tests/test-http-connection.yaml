@@ -7,6 +7,10 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
   containers:
     - name: wget
       image: busybox
