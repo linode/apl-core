@@ -3,7 +3,7 @@
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
-{{- $kms := $v.kms }}
+{{- $kms := $v | get "kms" dict }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -44,22 +44,22 @@ resources:
           value: {{ $vault | get "logLevel" "info" }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
-        {{- if eq $kms.type "azurekeyvault" }}
+        {{- if hasKey $kms "azurekeyvault" }}
          # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         - name: AZURE_TENANT_ID
-          value: {{ $kms.tenant_id }}
+          value: {{ $kms.azurekeyvault.tenant_id }}
         - name: AZURE_CLIENT_ID
-          value: {{ $kms.client_id }}
+          value: {{ $kms.azurekeyvault.client_id }}
         - name: AZURE_CLIENT_SECRET
-          value: {{ $kms.client_secret }}
+          value: {{ $kms.azurekeyvault.client_secret }}
         - name: AZURE_ENVIRONMENT
           value: "AZUREPUBLICCLOUD"
         {{- end }}
-        {{- if eq $kms.type "awskms" }}
+        {{- if hasKey $kms "awskms" }}
         - name: AWS_ACCESS_KEY_ID
-          value: {{ $kms.access_key }}
+          value: {{ $kms.awskms.access_key }}
         - name: AWS_SECRET_ACCESS_KEY
-          value: {{ $kms.secret_key }}
+          value: {{ $kms.awskms.secret_key }}
         {{- end }}
 
         # - name: SKIP_CHOWN
@@ -120,25 +120,25 @@ resources:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
 
         # https://www.vaultproject.io/docs/configuration/seal
-        {{- if eq $seal.type "kms" }}
+        {{- if hasKey $seal "kmsKeyId" }}
         seal:
-          {{- if eq $kms.type "azurekeyvault" }}
+          {{- if hasKey $kms "azurekeyvault" }}
           # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
           azurekeyvault:
-            vault_name: {{ $kms.vault_name }}
+            vault_name: {{ $kms.azurekeyvault.vault_name }}
             key_name: {{ $seal.kmsKeyId }}
-          {{- else if eq $kms.type "awskms" }}
+          {{- else if hasKey $kms "awskms" }}
           # https://www.vaultproject.io/docs/configuration/seal/awskms
           awskms:
-            region: {{ $kms.region }}
+            region: {{ $kms.awskms.region }}
             kms_key_id: {{ $seal.kmsKeyId }}
-            endpoint: {{ $kms.endpoint }}
-          {{- else if eq $kms.type "gcpckms" }}
+            endpoint: {{ $kms.awskms.endpoint }}
+          {{- else if hasKey $kms "gcpckms" }}
           # https://www.vaultproject.io/docs/configuration/seal/gcpckms
           gcpckms:
-            project: {{ $kms.project }}
-            region: {{ $kms.region }}
-            key_ring:  {{ $kms.key_ring }}
+            project: {{ $kms.gcpckms.project }}
+            region: {{ $kms.gcpckms.region }}
+            key_ring:  {{ $kms.gcpckms.key_ring }}
             crypto_key: {{ $seal.kmsKeyId }}
           {{- end }}
         {{- end }}
@@ -246,7 +246,7 @@ resources:
               data:
                 HELLO: "Welcome admin team"
 
-      {{- if eq $seal.type "gcpckms" }}
+      {{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
       credentialsConfig:
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
@@ -266,14 +266,14 @@ resources:
         requests:
           storage: 1Gi
 
-{{- if eq $seal.type "gcpckms" }}
+{{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: service-account-key
     type: Opaque
     data:
-      service-account.json: "{{- $seal.encodedCloudToken }}"
+      service-account.json: "{{- $kms.gcpckms.encodedCloudToken }}"
 {{- end }}
 
 # RBAC
