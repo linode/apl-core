@@ -29,27 +29,12 @@ function teardown () {
     eval "$assert_generating_text"
 }
 
-@test "$validate_templates_name --label something starts generating" {
-    eval "$run_otomi_validate_templates --label group=jobs"
-    eval "$assert_generating_text"
-}
-
 @test "$validate_templates_name -A starts generating" {
     eval "$run_otomi_validate_templates -A"
     eval "$assert_generating_text"
 }
 
-@test "$validate_templates_name --all starts generating" {
-    eval "$run_otomi_validate_templates --all"
-    eval "$assert_generating_text"
-}
-
 @test "$validate_templates_name --cluster aws-demo starts generating 'aws-demo'" {
     eval "$run_otomi_validate_templates --cluster $aws_demo_str"
-    eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
-}
-
-@test "$validate_templates_name -c aws-demo starts generating 'aws-demo'" {
-    eval "$run_otomi_validate_templates -c $aws_demo_str"
     eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
 }
