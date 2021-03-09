@@ -1570,13 +1570,13 @@ properties:
                 type: string
               key_ring:
                 type: string
-              encodedCloudToken:
+              kmsAccount:
                 type: string
             required:
               - project
               - region
               - key_ring
-              - encodedCloudToken
+              - kmsAccount
         required:
           - gcpckms
       - title: awskms

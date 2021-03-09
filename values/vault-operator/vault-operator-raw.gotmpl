@@ -273,7 +273,7 @@ resources:
       name: service-account-key
     type: Opaque
     data:
-      service-account.json: "{{- $kms.gcpckms.encodedCloudToken }}"
+      service-account.json: "{{- $kms.gcpckms.kmsAccount | b64enc }}"
 {{- end }}
 
 # RBAC
