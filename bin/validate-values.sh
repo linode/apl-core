@@ -27,7 +27,7 @@ function validate_values() {
 }
 
 function main() {
-  validate_resources validate_values "$@"
+  process_clusters validate_values "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

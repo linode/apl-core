@@ -46,7 +46,7 @@ check_policies() {
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 function main() {
-  validate_resources check_policies "$@"
+  process_clusters check_policies "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

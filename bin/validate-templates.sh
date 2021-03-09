@@ -115,7 +115,7 @@ function validate_templates() {
 }
 
 function main() {
-  validate_resources validate_templates "$@"
+  process_clusters validate_templates "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

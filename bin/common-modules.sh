@@ -51,7 +51,7 @@ function parse_args() {
   done
 }
 
-function validate_resources() {
+function process_clusters() {
   local cmd=$1
   shift
   parse_args "$@"
