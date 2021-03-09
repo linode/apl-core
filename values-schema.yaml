@@ -1634,8 +1634,6 @@ properties:
         type: string
       issuer:
         $ref: '#/definitions/url'
-      jwksUri:
-        $ref: '#/definitions/url'
       scope:
         type: string
       teamAdminGroupID:
