@@ -8,12 +8,6 @@
 # parse_args #
 ##############
 parse_args_str="parse_args"
-@test "$parse_args_str without CLI argument should throw" {
-    run parse_args
-    assert_output --partial '--all, --cluster or --label not specified'
-    assert_failure 1
-}
-
 true_var='true'
 @test "$parse_args_str with --all should succeed" {
     parse_args --all

@@ -20,17 +20,13 @@ fi
 
 # some exit handling for scripts to clean up
 exitcode=0
-script_message='common.sh'
+script_message=''
 function exit_handler() {
   local x=$?
   [ $x -ne 0 ] && exitcode=$x
-  if [ $exitcode -eq 0 ]; then
-    echo "$script_message SUCCEEDED"
-  else
-    err "$script_message FAILED"
-  fi
+  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
   cleanup
-  trap 'exit $exitcode' EXIT ERR
+  trap "exit $exitcode" EXIT ERR
   exit $exitcode
 }
 trap exit_handler EXIT ERR
