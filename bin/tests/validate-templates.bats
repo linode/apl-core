@@ -19,32 +19,11 @@ function teardown () {
 #####
 # bin/validate-templates 
 #####
-aws_dev_str="aws-dev"
-aws_demo_str="aws-demo"
-generating_text="Generating k8s v1.18 manifests for cluster"
-assert_output_partial_generating_text="assert_output --partial"
-validate_templates_name="validate-templates"
-# <timeout> because a real validation can take up to 80 sec
-run_otomi_validate_templates="run timeout 5 bin/${validate_templates_name}.sh"
-
 @test "$validate_templates_name without arguments fails" {
     eval "$run_otomi_validate_templates" 
     assert_failure
 }
 
-@test "$validate_templates_name with both -A and -c fails" {
-    eval "$run_otomi_validate_templates -A -c aws-dev"
-    assert_output --partial 'cannot specify --all and --cluster simultaneously'
-    assert_failure 1
-}
-
-@test "$validate_templates_name with both --all and --cluster fails" {
-    eval "$run_otomi_validate_templates --all --cluster aws-dev"
-    assert_output --partial 'cannot specify --all and --cluster simultaneously'
-    assert_failure 1
-}
-
-assert_generating_text="$assert_output_partial_generating_text $generating_text"
 @test "$validate_templates_name -l something starts generating" {
     eval "$run_otomi_validate_templates -l group=jobs"
     eval "$assert_generating_text"

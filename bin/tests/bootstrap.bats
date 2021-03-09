@@ -16,8 +16,6 @@ function teardown () {
 #######################
 # env folder creation #
 #######################
-env_folder="env folder"
-
 @test "$env_folder should not be overwritten" {
     git init "$ENV_DIR"
     cluster_path="$env_path/clusters.yaml"
@@ -41,9 +39,6 @@ env_folder="env folder"
 ################
 # bootstrap.sh #
 ################
-bootstrap_sh="bootstrap.sh"
-env_dir_str="with new ENV_DIR (otomi-values)"
-
 @test "$bootstrap_sh should pass $env_dir_str folder" {
     git init "$ENV_DIR"
     run bin/bootstrap.sh

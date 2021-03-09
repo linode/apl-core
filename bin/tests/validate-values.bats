@@ -16,8 +16,6 @@ function teardown () {
     unset ENV_DIR CLOUD CLUSTER env_path
 }
 
-validate_values_str="validate-values"
-run_otomi_validate_values="run timeout 5 bin/${validate_values_str}.sh"
 @test "$validate_values_str starts generating with --cluster azure-demo" {
     eval "$run_otomi_validate_values --cluster azure-demo"
     assert_output --partial "/tmp/otomi/values/azure-demo.yaml passed test"

@@ -7,8 +7,6 @@
 ##############
 # parse_args #
 ##############
-parse_args_str="parse_args"
-true_var='true'
 @test "$parse_args_str with --all should succeed" {
     parse_args --all
     assert [ $ALL_OPT = $true_var ]
@@ -61,4 +59,16 @@ true_var='true'
 @test "$parse_args_str with -c 'arbitrary cluster' should pass" {
     parse_args -c aws-dev
     assert [ ${CLUSTER_OPT} = 'aws-dev' ]
+}
+
+@test "$validate_templates_name with both -A and -c fails" {
+    eval "$run_otomi_validate_templates -A -c aws-dev"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
+    assert_failure 1
+}
+
+@test "$validate_templates_name with both --all and --cluster fails" {
+    eval "$run_otomi_validate_templates --all --cluster aws-dev"
+    assert_output --partial 'cannot specify --all and --cluster simultaneously'
+    assert_failure 1
 }
