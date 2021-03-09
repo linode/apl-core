@@ -11,7 +11,7 @@ clouds:
         projectId: otomi-cloud
 
 kms:
-    type: gcpckms
-    project: 'vault-project'
-    region: 'global'
-    key_ring: 'vault-keyring'
+    gcpckms:
+        project: 'vault-project'
+        region: 'global'
+        key_ring: 'vault-keyring'

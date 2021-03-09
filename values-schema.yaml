@@ -1488,30 +1488,12 @@ properties:
             default: true
           seal:
             description: Use Cloud KMS to encrypt and decrypt the master key
-            oneOf:
-              - title: Additional data protection with Cloud KMS
-                properties:
-                  kmsKeyId:
-                    title: Key name or key ID
-                    description: Cloud KMS key to encrypt and decrypt the Vault master key.
-                    type: string
-                  type:
-                    type: string
-                    default: kms
-                    enum:
-                      - kms
-                required:
-                  - type
-                  - kmsKeyId
-              - title: No additional data protection
-                properties:
-                  type:
-                    type: string
-                    default: no-kms
-                    enum:
-                      - no-kms
-                required:
-                  - type
+            properties:
+              kmsKeyId:
+                title: Key name or key ID
+                description: Cloud KMS key to encrypt and decrypt the Vault master key.
+                type: string
+                nullable: true
           logLevel:
             $ref: '#/definitions/logLevel'
       weave-scope:
@@ -1578,76 +1560,64 @@ properties:
     type: object
     description: Use Cloud KMS to encrypt and decrypt the master key
     oneOf:
-      - title: No KMS
-        properties:
-          type:
-            type: string
-            default: no-kms
-            enum:
-              - no-kms
       - title: gcpckms
         properties:
-          type:
-            type: string
-            default: gcpckms
-            enum:
-              - gcpckms
-          project:
-            type: string
-          region:
-            type: string
-          key_ring:
-            type: string
-          encodedCloudToken:
-            type: string
+          gcpckms:
+            properties:
+              project:
+                type: string
+              region:
+                type: string
+              key_ring:
+                type: string
+              encodedCloudToken:
+                type: string
+            required:
+              - project
+              - region
+              - key_ring
+              - encodedCloudToken
         required:
-          - type
-          - project
-          - region
-          - key_ring
-          - encodedCloudToken
+          - gcpckms
       - title: awskms
         properties:
-          type:
-            type: string
-            default: awskms
-            enum:
-              - awskms
-          region:
-            type: string
-          access_key:
-            type: string
-          secret_key:
-            type: string
-          endpoint:
-            type: string
+          awskms:
+            properties:
+              region:
+                type: string
+              access_key:
+                type: string
+              secret_key:
+                type: string
+              endpoint:
+                type: string
+            required:
+              - region
+              - access_key
+              - secret_key
+              - endpoint
         required:
-          - type
-          - region
-          - access_key
-          - secret_key
-          - endpoint
+          - awskms
       - title: azurekeyvault
         properties:
-          type:
-            type: string
-            default: azurekeyvault
-            enum:
-              - azurekeyvault
-          vault_name:
-            type: string
-          tenant_id:
-            type: string
-          client_id:
-            type: string
-          client_secret:
-            type: string
+          azurekeyvault:
+            properties:
+              vault_name:
+                type: string
+              tenant_id:
+                type: string
+              client_id:
+                type: string
+              client_secret:
+                type: string
+            required:
+              - vault_name
+              - tenant_id
+              - client_id
+              - client_secret
         required:
-          - type
-          - vault_name
-          - tenant_id
-          - client_id
-          - client_secret
+          - azurekeyvault
+
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
