@@ -69,26 +69,26 @@ function show_usage() {
   echo "otomi usage:
     bash                run interactive bash shell in otomi-core container
     bats                run BATS on bin/tests (see docs/BATS.md)
-    bootstrap           bootstrap values repo with artifacts corresponding to the cluster's stack version
-    check-policies      check if generated manifests adhere to defined OPA policies
+    bootstrap           bootstrap values repo with artifacts corresponding to the target cluster's stack version
+    check-policies      check if generated manifests adhere to defined OPA policies (takes helmfile options)
     commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
-    configure           set environment variables in otomi-values/otomi.cfg (ini format). Current location: $ENV_DIR/otomi.cfg
+    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg). Currently has only one option: `-c|--cluster` (to set target cluster).
     console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script
-    destroy             destroy all or some charts 
-    diff                diff k8s resources 
+    destroy             destroy all or some charts (takes helmfile options)
+    diff                diff k8s resources (takes helmfile options)
     encrypt             encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help                print this help
-    hf                  run helmfile with CLUSTER and CLOUD already set
+    hf                  run helmfile for a set target cluster (takes helmfile options)
     pull                wrapper for git pull && bootstrap
-    sync                sync k8s resources 
+    sync                sync k8s resources (takes helmfile options)
     switch              switch context to the target cluster and bootstraps
-    template            export k8s resources 
+    template            export k8s resources (takes helmfile options)
     test                run tests against the target cluster
-    values              show helmfile values for CLOUD and CLUSTER
-    validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices
-    validate-values     validate values for each cluster against JSON schema
+    values              show helmfile values for target cluster (takes target options)
+    validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices (takes helmfile & target options)
+    validate-values     validate values for each cluster against JSON schema (takes target options)
     x                   execute command in container
 
   Env flags:
@@ -96,10 +96,14 @@ function show_usage() {
     DEBUG=1             Run otomi CLI in debug mode
     VERBOSE=1;          Run otomi CLI in verbose mode
 
-  Options:
+  Example helmfile options:
+    -l|--label          Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
+    -f|--file           Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
+  (For a full list of options please read the helmfile documentation.)
+
+  Target (output) options:
     -A|--all            Target all clusters and charts (not simultaneously with -c|--cluster)     
     -c|--cluster        Override a set target cluster (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
-    -l|--label          Target charts (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
   "
 }
 

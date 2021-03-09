@@ -11,7 +11,6 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- if hasKey $team "services" }}
   {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
@@ -92,7 +91,7 @@ releases:
                 static_configs:
                   - targets:
                     {{ $registry := list }}
-                    {{- range $s := $team.services }}
+                    {{- range $s := $team | get "services" list }}
                     {{- if and (hasKey $s "isPublic") (not ($s | get "ksvc.scaleToZero" false)) }}
                     {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
                     {{- $path := "/" }}{{ if hasKey $s "paths" }}{{ $path = index $s.paths 0 }}{{ end }}
@@ -186,7 +185,6 @@ releases:
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}
-  {{- end }}
   {{- end }}
   {{- if hasKey $team "jobs" }}
   {{- range $job := $team.jobs }}
