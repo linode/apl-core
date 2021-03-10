@@ -31,4 +31,7 @@ releases:
     labels:
       pkg: gatekeeper
     <<: *default
-  
+  - name: vault-operator
+    installed: {{ $c | get "vault.enabled" true }}
+    namespace: vault
+    <<: *default
