@@ -1,7 +1,6 @@
 name: Slack Notification
 on:
   workflow_run:
-    workflows: ['Build and publish Docker']
     types:
       - completed
 jobs:
@@ -14,9 +13,9 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: Workflow ${{ job.status }}
+          SLACK_COLOR: ${{ github.event.workflow_run.conclusion == 'success' && 'good' || 'danger' }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_MESSAGE: 'Workflow ${{ github.event.workflow_run.repository }}/${{ github.event.workflow_run.action }}: ${{ job.status }}'
           SLACK_TITLE: CI Result
           SLACK_USERNAME: SlackBot
         if: always() # failure
