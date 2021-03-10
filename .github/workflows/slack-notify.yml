@@ -12,11 +12,14 @@ jobs:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
+          MSG_MINIMAL: commit,event,ref
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: Workflow ${{ job.status }}
-          SLACK_TITLE: CI Result
+          SLACK_COLOR: ${{ github.event.workflow_run.conclusion == 'success' && 'good' || 'danger' }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_MESSAGE: |
+            Repo: redkubes/${{ github.event.workflow_run.repository.full_name }}
+            Run: https://github.com/redkubes/${{ github.event.workflow_run.repository.full_name }}/runs/${{ github.event.workflow_run.action.id }}
+          SLACK_TITLE: CI run ${{ job.status }}
           SLACK_USERNAME: SlackBot
         if: always() # failure
