@@ -2031,7 +2031,7 @@ properties:
       teams:
         additionalProperties: false
         patternProperties:
-          '^[a-z-]+$':
+          ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$:
             $ref: '#/definitions/team'
 required:
   - alerts
