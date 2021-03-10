@@ -1,7 +1,9 @@
 bases:
   - snippets/defaults.gotmpl
-
+---
 {{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: istio-operator-artifacts
@@ -13,3 +15,12 @@ releases:
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/rawValues.gotmpl
+  - name: vault-secrets-webhook
+    installed: {{ $c | get "vault.enabled" true }}
+    namespace: vault
+    <<: *default
+  - name: kubernetes-external-secrets
+    installed: {{ $c | get "vault.enabled" true }}
+    namespace: vault
+    <<: *default
+

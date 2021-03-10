@@ -44,6 +44,7 @@ k8s:
     - name: team-admin
     - name: vault
       disableIstioInjection: true
+    - name: vault
 
 services:
   - name: keycloak
@@ -174,6 +175,14 @@ services:
       workload:
         app: drone
         component: server
+  - name: vault
+    namespace: vault
+    svc: vault-0
+    port: 8200
+    ownHost: true
+    logo:
+      name: vault
+    isShared: true
   - name: kubeapps
     svc: kubeapps
     namespace: kubeapps
@@ -200,6 +209,14 @@ teamConfig:
       svc: httpbin
       isShared: true
       host: httpbin
+    - name: vault
+      namespace: vault
+      svc: vault-0
+      port: 8200
+      host: vault
+      logo:
+        name: vault
+      isShared: true
     - name: kubeapps
       namespace: kubeapps
       svc: kubeapps
