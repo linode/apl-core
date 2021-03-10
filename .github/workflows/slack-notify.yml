@@ -9,20 +9,14 @@ jobs:
     name: Slack Notification
     runs-on: ubuntu-latest
     steps:
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          job_name: ${{ github.event.workflow_run.name }}
-          fields: workflow,job,commit,repo,ref,author,took
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                title: 'CI Result',
-                text: `${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-              }],
-              channel: 'github-ci'
-            }
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: Workflow ${{ job.status }}
+          SLACK_TITLE: CI Result
+          SLACK_USERNAME: SlackBot
         if: always() # failure
