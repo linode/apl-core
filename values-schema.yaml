@@ -930,7 +930,7 @@ properties:
           orgsFilter:
             type: string
           owner:
-            $ref: '#/definitions/idName'
+            type: string
           repo:
             $ref: '#/definitions/idName'
           repoFilter:
