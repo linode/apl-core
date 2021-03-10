@@ -22,7 +22,7 @@ releases:
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
   - name: job-drone
-    installed: {{ $c | get "drone.enabled" false }}
+    installed: false # {{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
     <<: *jobs
