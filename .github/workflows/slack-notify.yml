@@ -1,0 +1,22 @@
+name: Slack Notification
+on:
+  workflow_run:
+    workflows: ['Build and publish Docker']
+    types:
+      - completed
+jobs:
+  slackNotification:
+    name: Slack Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: Workflow ${{ job.status }}
+          SLACK_TITLE: CI Result
+          SLACK_USERNAME: SlackBot
+        if: always() # failure
