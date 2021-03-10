@@ -1,6 +1,7 @@
 name: Slack Notification
 on:
   workflow_run:
+    workflows: ['Build and publish Docker']
     types:
       - completed
 jobs:
