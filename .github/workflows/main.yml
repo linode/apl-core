@@ -73,3 +73,13 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: CI run ${{ job.status }}
+          SLACK_USERNAME: RedKubesBot
+        if: always() # failure
