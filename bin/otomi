@@ -48,6 +48,7 @@ cmd_image="otomi/core:$(otomi_image_tag)"
 docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
+kubeconfig="-v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config"
 
 # check if we are in core or values repo (could be improved as it is based on name!)
 readonly cwd=$(basename "$PWD")
