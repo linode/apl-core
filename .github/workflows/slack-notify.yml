@@ -19,7 +19,7 @@ jobs:
           SLACK_ICON: https://github.com/redkubes.png?size=48
           SLACK_MESSAGE: |
             Repo: redkubes/${{ github.event.workflow_run.repository.full_name }}
-            Run: https://github.com/redkubes/${{ github.event.workflow_run.repository.full_name }}/runs/${{ github.event.workflow_run.action.id }}'
+            Run: https://github.com/redkubes/${{ github.event.workflow_run.repository.full_name }}/runs/${{ github.event.workflow_run.action.id }}
           SLACK_TITLE: CI run ${{ job.status }}
           SLACK_USERNAME: SlackBot
         if: always() # failure
