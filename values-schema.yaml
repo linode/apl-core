@@ -311,6 +311,15 @@ definitions:
       ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
       : pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
+  logLevel:
+    type: string
+    default: info
+    enum:
+      - error
+      - warn
+      - info
+      - debug
+      - trace
   memoryQuantity:
     description: Amount of memory. Valid units are E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki.
     examples:
@@ -376,6 +385,87 @@ definitions:
         type: number
       minReplicas:
         type: number
+  subdomainType:
+    type: string
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+  externalSecret:
+    type: object
+    properties:
+      id:
+        readOnly: true
+        type: string
+      name:
+        $ref: '#/definitions/subdomainType'
+    required:
+      - name
+    oneOf:
+      - title: Generic
+        properties:
+          type:
+            default: generic
+            enum:
+              - generic
+          secretPath:
+            $ref: '#/definitions/vaultPath'
+          entries:
+            type: array
+            items:
+              properties:
+                name:
+                  $ref: '#/definitions/vaultProperty'
+                value:
+                  $ref: '#/definitions/vaultPath'
+              required:
+                - name
+                - value
+              minItems: 1
+              uniqueItems: true
+        required:
+          - type
+          - entries
+      - title: Docker registry
+        properties:
+          type:
+            default: docker-registry
+            enum:
+              - docker-registry
+            type: string
+          secretPath:
+            $ref: '#/definitions/vaultPath'
+          itemName:
+            type: string
+            default: '.dockerconfig.json'
+            readOnly: true
+        required:
+          - type
+          - secretPath
+      - title: TLS
+        properties:
+          type:
+            default: tls
+            enum:
+              - tls
+            type: string
+          crtSecretPath:
+            $ref: '#/definitions/vaultPath'
+          crtItemName:
+            type: string
+            default: 'crt'
+          keySecretPath:
+            $ref: '#/definitions/vaultPath'
+          keyItemName:
+            type: string
+            default: 'key'
+          caSecretPath:
+            $ref: '#/definitions/vaultPath'
+          caItemName:
+            type: string
+            default: 'ca'
+        required:
+          - type
+          - caSecretPath
+          - crtSecretPath
+          - keySecretPath
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
@@ -499,6 +589,10 @@ definitions:
         type: string
       secrets:
         $ref: '#/definitions/secrets'
+      externalSecrets:
+        items:
+          $ref: '#/definitions/externalSecret'
+        type: array
       services:
         items:
           additionalProperties: false
@@ -626,6 +720,42 @@ definitions:
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
+  vaultPath:
+    description: A path to a secret at Vault KV engine
+    pattern: '^\/([A-z0-9-_+]+\/)*([A-z0-9-_]+)$'
+    type: string
+  vaultProperty:
+    description: A property name at vaultPath
+    pattern: '^[a-zA-Z0-9_]*$'
+    type: string
+
+  vaultAwsStorage:
+    properties:
+      region:
+        type: string
+      bucket:
+        type: string
+    required:
+      - region
+      - bucket
+  vaultAzureStorage:
+    properties:
+      accountName:
+        type: string
+      accountKey:
+        type: string
+      container:
+        type: string
+      environment:
+        type: string
+
+  vaultGoogleStorage:
+    properties:
+      bucket:
+        type: string
+    required:
+      - bucket
+
   volumes:
     items:
       additionalProperties: false
@@ -907,14 +1037,6 @@ properties:
             items:
               type: string
             type: array
-          logLevel:
-            default: info
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-            type: string
           zoneIdFilters:
             items:
               type: string
@@ -1180,6 +1302,11 @@ properties:
           enabled:
             default: true
             type: boolean
+      kubernetes-external-secrets:
+        additionalProperties: false
+        properties:
+          logLevel:
+            $ref: '#/definitions/logLevel'
       kube-descheduler:
         additionalProperties: false
         properties:
@@ -1352,6 +1479,23 @@ properties:
             type: string
           schedule:
             type: string
+      vault:
+        type: object
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          seal:
+            description: Use Cloud KMS to encrypt and decrypt the master key
+            properties:
+              kmsKeyId:
+                title: Key name or key ID
+                description: Cloud KMS key to encrypt and decrypt the Vault master key.
+                type: string
+                nullable: true
+          logLevel:
+            $ref: '#/definitions/logLevel'
       weave-scope:
         properties:
           _rawValues:
@@ -1412,6 +1556,68 @@ properties:
         type: array
     required:
       - namespaces
+  kms:
+    type: object
+    description: Use Cloud KMS to encrypt and decrypt the master key
+    oneOf:
+      - title: gcpckms
+        properties:
+          gcpckms:
+            properties:
+              project:
+                type: string
+              region:
+                type: string
+              key_ring:
+                type: string
+              kmsAccount:
+                type: string
+            required:
+              - project
+              - region
+              - key_ring
+              - kmsAccount
+        required:
+          - gcpckms
+      - title: awskms
+        properties:
+          awskms:
+            properties:
+              region:
+                type: string
+              access_key:
+                type: string
+              secret_key:
+                type: string
+              endpoint:
+                type: string
+            required:
+              - region
+              - access_key
+              - secret_key
+              - endpoint
+        required:
+          - awskms
+      - title: azurekeyvault
+        properties:
+          azurekeyvault:
+            properties:
+              vault_name:
+                type: string
+              tenant_id:
+                type: string
+              client_id:
+                type: string
+              client_secret:
+                type: string
+            required:
+              - vault_name
+              - tenant_id
+              - client_id
+              - client_secret
+        required:
+          - azurekeyvault
+
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
@@ -1484,7 +1690,6 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
-
   policies:
     type: object
     description: |

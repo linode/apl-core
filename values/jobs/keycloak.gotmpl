@@ -62,7 +62,8 @@ secret:
       {{- range $name, $team := $teams }}
       "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
       {{- end }}
-      "https://harbor.{{ $v.cluster.domain }}/*"
+      "https://harbor.{{ $v.cluster.domain }}/*",
+      "https://vault.{{ $v.cluster.domain }}/*"
   ]'
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange
