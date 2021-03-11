@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 . bin/common.sh
-
+[ "$CI" = 'true' ] && exit 1
 set -eo pipefail
 prepare_crypt
 readonly values=$(hf_values)
@@ -26,6 +26,7 @@ if [ $(git config remote.$remote_name.url) ] && [ "gitea.$gitea_url" != $(git co
   exit 1
 else
   git remote add $remote_name "https://$gitea_user:$gitea_password@gitea.$gitea_url/$gitea_user/$gitea_repo.git"
+  echo "Added gitea as a remote origin"
 fi
 
 # Try to pull, if repo is not new, it will get data
@@ -40,6 +41,7 @@ if [ "$commit_count" -eq "0" ]; then
 
     git commit --no-verify -m "Initial commit of otomi-values"
     git push -u $remote_name master
+    echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"
 fi
