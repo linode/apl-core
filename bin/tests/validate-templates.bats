@@ -19,11 +19,6 @@ function teardown () {
 #####
 # bin/validate-templates 
 #####
-@test "$validate_templates_name without arguments fails" {
-    eval "$run_otomi_validate_templates" 
-    assert_failure
-}
-
 @test "$validate_templates_name -l something starts generating" {
     eval "$run_otomi_validate_templates -l group=jobs"
     eval "$assert_generating_text"
@@ -37,4 +32,5 @@ function teardown () {
 @test "$validate_templates_name --cluster aws-demo starts generating 'aws-demo'" {
     eval "$run_otomi_validate_templates --cluster $aws_demo_str"
     eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
+    refute_output "$generating_text $aws_dev_str"
 }
