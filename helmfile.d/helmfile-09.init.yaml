@@ -36,3 +36,4 @@ releases:
     installed: false
     namespace: istio-system
     <<: *default
+

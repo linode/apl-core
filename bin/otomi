@@ -48,6 +48,7 @@ cmd_image="otomi/core:$(otomi_image_tag)"
 docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
+kubeconfig="-v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config"
 
 # check if we are in core or values repo (could be improved as it is based on name!)
 readonly cwd=$(basename "$PWD")
@@ -212,9 +213,8 @@ function drun() {
   if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     docker run $docker_terminal_params --rm \
-      $stack_volume $socket_volume -v /tmp:/tmp \
+      $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
-      -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
       -v ${HOME}/.ssh:/home/app/.ssh \
       -v ${helm_config}:/home/app/.config/helm \
       -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \

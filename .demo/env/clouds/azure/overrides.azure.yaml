@@ -4,3 +4,8 @@ charts:
             - aks.otomi.cloud
         azure:
             region: westeurope
+kms:
+    azurekeyvault:
+        tenant_id: '46646709-b63e-4747-be42-516edeaf1e14'
+        client_id: '03dc33fc-16d9-4b77-8152-3ec568f8af6e'
+        vault_name: 'hc-vault'

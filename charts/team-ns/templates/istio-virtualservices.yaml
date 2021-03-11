@@ -99,7 +99,6 @@ spec:
         - {{ $k.idp.clientID }}
   {{- else }}
     - issuer: {{ $v.oidc.issuer }}
-      # jwksUri: {{ $v.oidc.jwksUri }}
   {{- end }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
