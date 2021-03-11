@@ -25,7 +25,7 @@ check_policies() {
   mkdir -p $k8s_resources_path
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
-  hf_templates_init "$k8s_resources_path/$k8s_version" "$@"
+  hf_templates "$k8s_resources_path/$k8s_version" "$@"
 
   echo "Processing templates..."
   # generate parameter constraints file from values
@@ -49,6 +49,3 @@ function main() {
 }
 
 main "$@"
-if [ $? -gt 0 ]; then
-  exit 1
-fi

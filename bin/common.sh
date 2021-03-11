@@ -133,7 +133,7 @@ function for_each_cluster() {
   done
 }
 
-function hf_templates_init() {
+function hf_templates() {
   local out_dir="$1"
   shift
   [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
