@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-[ -n "$CI" ] && set -e
-set -o pipefail
+set -eo pipefail
 
 . bin/common.sh
 . bin/common-modules.sh
@@ -49,9 +48,7 @@ function main() {
   process_clusters check_policies "$@"
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  main "$@"
-  if [ $? -gt 0 ]; then
-    exit 1
-  fi
+main "$@"
+if [ $? -gt 0 ]; then
+  exit 1
 fi

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-
-[ -n "$CI" ] && set -e
-set -o pipefail
+set -eo pipefail
 
 . bin/common-modules.sh
 . bin/common.sh
@@ -118,9 +116,7 @@ function main() {
   process_clusters validate_templates "$@"
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  main "$@"
-  if [ $? -gt 0 ]; then
-    exit 1
-  fi
+main "$@"
+if [ $? -gt 0 ]; then
+  exit 1
 fi
