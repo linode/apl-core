@@ -19,11 +19,13 @@ cd $ENV_DIR
 # Initialize as clean slate
 if [ ! -d .git ]; then
   git init
-  git remote add $remote_name "https://$gitea_user:$gitea_password@gitea.$gitea_url/$gitea_user/$gitea_repo.git"
+fi
 # Check if gitea is origin, otherwise stop
-elif [ "gitea.$gitea_url" != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
+if [ $(git config remote.$remote_name.url) ] && [ "gitea.$gitea_url" != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
   err "Another origin already exists, not using gitea"
   exit 1
+else
+  git remote add $remote_name "https://$gitea_user:$gitea_password@gitea.$gitea_url/$gitea_user/$gitea_repo.git"
 fi
 
 # Try to pull, if repo is not new, it will get data
