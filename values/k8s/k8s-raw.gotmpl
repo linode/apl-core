@@ -21,7 +21,7 @@ resources:
         name: {{ $ns }}
         istio-injection: enabled
       {{- $pullSecrets := list }}
-      {{- range $s := $team.secrets }}
+      {{- range $s := $team | get "secrets" list }}
         {{- if eq $s.type "docker-registry" }}
           {{- $pullSecrets = (append $pullSecrets $s) }}
         {{- end }}
