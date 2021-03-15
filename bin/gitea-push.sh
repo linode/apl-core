@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 . bin/common.sh
-[ "$CI" = 'true' ] && exit 1
+[ -n "$CI" ] && exit 1
 set -eo pipefail
 prepare_crypt
 readonly values=$(hf_values)
@@ -24,7 +24,7 @@ fi
 # Check if gitea is origin, otherwise stop
 if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
   err "Another origin already exists, not using gitea"
-  exit 1
+  exit 0
 else
   git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_user/$gitea_repo.git"
   echo "Added gitea as a remote origin"

@@ -19,7 +19,7 @@ releases:
     namespace: kubeapps
     <<: *default
   - name: gitea
-    installed: {{ $c | get "gitea.enabled" true }}
+    installed: false #{{ $c | get "gitea.enabled" true }}
     namespace: gitea
     chart: ../charts/gitea
     <<: *default

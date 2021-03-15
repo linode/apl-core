@@ -14,7 +14,6 @@ Important features:
 - **Input/output validation**: Configuration and output manifests are checked statically for validity and best practices.
 - **Policy enforcement**: Manifests are checked both statically and on the cluster at runtime for obedience to OPA policies.
 - **Automatic Vulnerability Scanning**: All configured team service containers get scanned in Harbor.
-- **Git store**: Store the values on the cluster, or store them elsewhere.
 - and many more (for a full list see [otomi.io](https://otomi.io))
 
 This repo is also built as an image and published on [docker hub](https://hub.docker.com/repository/docker/otomi/core) at `otomi/core`.
@@ -41,7 +40,7 @@ You can define OPA policies in `policies/*.rego` files that are used both for st
 
 ### 1. Validating changes
 
-For the next steps you will need to export`ENV_DIR` to point to your values folder, and source the aliases:
+For the next steps you will need to export `ENV_DIR` to point to your values folder, and source the aliases:
 
 ```bash
 # assuming you created otomi-values repo next to this:
