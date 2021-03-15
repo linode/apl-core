@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-. bin/common.sh
 set -eo pipefail
+
+. bin/common.sh
+. bin/common-modules.sh
 
 readonly k8s_resources_path="/tmp/otomi/templates"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
@@ -22,10 +24,10 @@ check_policies() {
   local cluster_env=$(cluster_env)
   mkdir -p $k8s_resources_path
   # generate_manifests
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
   hf_templates "$k8s_resources_path/$k8s_version" "$@"
 
-  echo "Processing templates"
+  echo "Processing templates..."
   # generate parameter constraints file from values
   local parse_constraints_expression='.policies as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
   local policies=$(yq r $policies_file -j | jq --raw-output -S -c "$parse_constraints_expression")
@@ -34,20 +36,16 @@ check_policies() {
   done
   yq r -j $constraints_file | jq '{parameters: .}' | yq r -P - >$parameters_file
 
-  # validate_resources
   echo "Checking manifests against policies for $cluster_env cluster."
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" || exitcode=1
-  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
 
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
-if [ "${1-}" != "" ]; then
-  echo "Checking policies for cluster '$(cluster_env)'"
-  shift
-  check_policies "$@"
-else
-  echo "Checking policies for all clusters"
-  for_each_cluster check_policies
-fi
+function main() {
+  process_clusters check_policies "$@"
+}
+
+main "$@"
