@@ -704,33 +704,6 @@ definitions:
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
-  vaultAwsStorage:
-    properties:
-      region:
-        type: string
-      bucket:
-        type: string
-    required:
-      - region
-      - bucket
-  vaultAzureStorage:
-    properties:
-      accountName:
-        type: string
-      accountKey:
-        type: string
-      container:
-        type: string
-      environment:
-        type: string
-
-  vaultGoogleStorage:
-    properties:
-      bucket:
-        type: string
-    required:
-      - bucket
-
   volumes:
     items:
       additionalProperties: false
