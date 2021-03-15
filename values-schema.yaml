@@ -408,12 +408,10 @@ definitions:
           entries:
             type: array
             items:
-              properties:
-                name:
-                  $ref: '#/definitions/vaultProperty'
-              required:
-                - name
+              description: A property name at vaultPath
               minItems: 1
+              pattern: '^[a-zA-Z0-9_]*$'
+              type: string
               uniqueItems: true
         required:
           - type
@@ -706,15 +704,6 @@ definitions:
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
-  vaultPath:
-    description: A path to a secret at Vault KV engine
-    pattern: '^\/([A-z0-9-_+]+\/)*([A-z0-9-_]+)$'
-    type: string
-  vaultProperty:
-    description: A property name at vaultPath
-    pattern: '^[a-zA-Z0-9_]*$'
-    type: string
-
   vaultAwsStorage:
     properties:
       region:
