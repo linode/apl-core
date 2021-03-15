@@ -405,19 +405,14 @@ definitions:
             default: generic
             enum:
               - generic
-          secretPath:
-            $ref: '#/definitions/vaultPath'
           entries:
             type: array
             items:
               properties:
                 name:
                   $ref: '#/definitions/vaultProperty'
-                value:
-                  $ref: '#/definitions/vaultPath'
               required:
                 - name
-                - value
               minItems: 1
               uniqueItems: true
         required:
@@ -430,15 +425,13 @@ definitions:
             enum:
               - docker-registry
             type: string
-          secretPath:
-            $ref: '#/definitions/vaultPath'
-          itemName:
+          dockerconfig:
             type: string
-            default: '.dockerconfig.json'
+            enum:
+              - '.dockerconfig.json'
             readOnly: true
         required:
           - type
-          - secretPath
       - title: TLS
         properties:
           type:
@@ -446,26 +439,19 @@ definitions:
             enum:
               - tls
             type: string
-          crtSecretPath:
-            $ref: '#/definitions/vaultPath'
-          crtItemName:
+          crt:
             type: string
-            default: 'crt'
-          keySecretPath:
-            $ref: '#/definitions/vaultPath'
-          keyItemName:
+            default: 'tls.crt'
+          key:
             type: string
-            default: 'key'
-          caSecretPath:
-            $ref: '#/definitions/vaultPath'
-          caItemName:
+            default: 'tls.key'
+          ca:
             type: string
-            default: 'ca'
+            default: 'ca.crt'
         required:
           - type
-          - caSecretPath
-          - crtSecretPath
-          - keySecretPath
+          - crt
+          - key
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
