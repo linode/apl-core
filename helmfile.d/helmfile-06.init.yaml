@@ -15,12 +15,6 @@ releases:
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/rawValues.gotmpl
-  - name: vault-secrets-webhook
-    installed: {{ $c | get "vault.enabled" true }}
-    namespace: vault
-    labels:
-      pkg: vault
-    <<: *default
   - name: kubernetes-external-secrets
     installed: {{ $c | get "vault.enabled" true }}
     namespace: vault
