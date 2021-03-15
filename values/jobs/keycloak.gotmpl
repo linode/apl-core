@@ -59,6 +59,7 @@ secret:
       "https://auth.{{ $v.cluster.domain }}/*",
       "https://apps.{{ $v.cluster.domain }}/*",
       "https://otomi.{{ $v.cluster.domain }}/*",
+      "https://gitea.{{ $v.cluster.domain }}/*",
       {{- range $name, $team := $teams }}
       "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
       {{- end }}
