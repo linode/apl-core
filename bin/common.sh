@@ -1,4 +1,6 @@
-#!/usr/local/env bash
+#!/usr/bin/env bash
+
+# Environment vars
 ENV_DIR=${ENV_DIR:-./env}
 
 # Common vars
@@ -38,9 +40,9 @@ function abort() {
 }
 trap abort SIGINT
 
-#######################################
+#####
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
-#######################################
+#####
 function err() {
   echo "[$(date +'%Y-%m-%dT %T.%3N')] ERROR: $*" >&2
 }
@@ -48,7 +50,7 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [ -n "$IN_DOCKER" ]; then
+  if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e CLOUD="$CLOUD" \
@@ -65,9 +67,9 @@ function _rind() {
   fi
 }
 
-#######################################
+#####
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#quoting
-#######################################
+#####
 function yq() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
@@ -92,11 +94,15 @@ function customer_name() {
 }
 
 function cluster_env() {
-  printf "$CLOUD-$CLUSTER"
+  if [ -n "$CLUSTER_OPT" ]; then
+    printf "%s" "$CLUSTER_OPT"
+  else
+    printf "%s" "$CLOUD-$CLUSTER"
+  fi
 }
 
 function hf() {
-  helmfile --quiet -e $CLOUD-$CLUSTER "$@"
+  helmfile --quiet -e $(cluster_env) "$@"
 }
 
 function hf_values() {
@@ -115,7 +121,6 @@ function prepare_crypt() {
 }
 
 function for_each_cluster() {
-  # Perform a command from argument for each cluster
   executable=$1
   [ -z "$executable" ] && err "The positional argument is not set"
   local clustersPath="$ENV_DIR/env/clusters.yaml"
@@ -128,9 +133,9 @@ function for_each_cluster() {
   done
 }
 
-hf_templates() {
+function hf_templates() {
   local out_dir="$1"
   shift
-  [ -z "$*" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null
-  hf "$@" template --skip-deps --output-dir="$out_dir" >/dev/null
+  [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
+  hf $(echo ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null 2>&1
 }

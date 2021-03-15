@@ -26,3 +26,8 @@ releases:
     labels:
       pkg: drone
     <<: *jobs
+  - name: job-gitea
+    installed: {{ $c | get "gitea.enabled" false }}
+    labels:
+      pkg: gitea
+    <<: *jobs

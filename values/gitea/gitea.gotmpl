@@ -1,0 +1,51 @@
+{{- $v := .Environment.Values }}
+{{- $o := $v.oidc }}
+{{- $g := $v.charts | get "gitea" dict }}
+{{- $k := $v.charts | get "keycloak" dict }}
+{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $realm := $k | get "realm" "master" }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+
+{{- $giteadomain := printf "gitea.%s" $v.cluster.domain}}
+{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+
+nameOverride: gitea
+fullnameOverride: gitea
+# clusterDomain: {{ $v.cluster.domain }}
+
+gitea:
+  podAnnotations: 
+    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
+  admin:
+    username: otomi
+    password: {{ $g | get "admin.password" "bladibla" }}
+  config:
+    server:
+      DOMAIN: {{ $giteadomain }}
+      ROOT_URL: "https://{{ $giteadomain }}/"
+    openid:
+      ENABLE_OPENID_SIGNIN: true
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  oauth:
+    enabled: true
+    name: {{ $hasKeycloak | ternary $k.idp.alias "otomi" }}
+    provider: openidConnect
+    key: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
+    secret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
+    autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}/.well-known/openid-configuration'
+
+persistence:
+  size: 1Gi
+
+postgresql:
+  persistence:
+    size: 1Gi
+
+# Can't be used (until Gitea 1.14) as gitea requires root in the docker image
+# securityContext:
+#   runAsNonRoot: true
+#   runAsUser: 1000
+#   runAsGroup: 1000

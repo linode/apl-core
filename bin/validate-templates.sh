@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+set -eo pipefail
 
-source bin/common.sh
-set -o pipefail
+. bin/common-modules.sh
+. bin/common.sh
 
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
@@ -43,9 +44,9 @@ function setup() {
             "$schema": "http://json-schema.org/draft/2019-09/schema#",
             "x-kubernetes-group-version-kind.group": $obj.spec.group,
             "x-kubernetes-group-version-kind.kind": $obj.spec.names.kind,
-            "x-kubernetes-group-version-kind.version": .version
+            "x-kubernetes-group-version-kind.version": .version 
         }
-    }
+    } 
 EOF
 }
 
@@ -58,20 +59,18 @@ function process_crd() {
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
     err "Processing: $document"
-    [ "$CI" = 'true' ] && exit 1
+    [ -n "$CI" ] && exit 1
   }
 }
 
-function validate_templates() {
-
-  local k8s_version="v$(get_k8s_version)"
-  local cluster_env=$(cluster_env)
-
+function process_crd_wrapper() {
+  local k8s_version=$1
+  local cluster_env=$2
   setup $k8s_version
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'"
+  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
   hf_templates "$k8s_resources_path/$k8s_version"
 
-  echo "Processing CRD files"
+  echo "Processing CRD files..."
   # generate canonical schemas
   local target_yaml_files="*.yaml"
   # schemas for otomi templates
@@ -86,36 +85,35 @@ function validate_templates() {
   for json in $(jq -s -r '.[] | .filename' $schemas_bundle_file); do
     jq "select(.filename==\"$json\")" $schemas_bundle_file | jq '.schema' >"$schema_output_path/$k8s_version-standalone/$json"
   done
+}
 
-  # validate_resources
+function validate_templates() {
+  local k8s_version="v${get_k8s_version:-1.18}"
+  local cluster_env=$(cluster_env)
+  process_crd_wrapper $k8s_version $cluster_env
+
   local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  echo "Validating resources for cluster '$cluster_env'"
+  echo "Validating resources for cluster '$cluster_env'..."
   set +o pipefail
-  [ "$CI" = 'true' ] && set +e
+  [ -n "$CI" ] && set +e
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
   set -o pipefail
-  [ "$CI" = 'true' ] && set -e
+  [ -n "$CI" ] && set -e
 
   grep -e "ERR\b" $tmp_out && exitcode=1
-  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
 
-if [ -n "$1" ]; then
-  [ -n "$VERBOSE" ] && echo "Running validate-templates for target cluster only"
-  validate_templates
-  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
-  # hf lint
-else
-  [ -n "$VERBOSE" ] && echo "Running validate-templates for all clusters"
-  for_each_cluster validate_templates
-  # re-enable next line after helm does not throw error any more: https://github.com/helm/helm/issues/8596
-  # for_each_cluster hf lint
-fi
+function main() {
+  process_clusters validate_templates "$@"
+}
+
+main "$@"
