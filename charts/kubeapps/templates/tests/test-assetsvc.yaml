@@ -30,4 +30,7 @@ spec:
             if [ "$n" -eq 5 ]; then
               exit 1
             fi
+      {{- if .Values.securityContext.enabled }}
+      securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
   restartPolicy: Never
