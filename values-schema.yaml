@@ -1019,6 +1019,14 @@ properties:
             type: array
             items:
               type: object
+      gitea:
+        properties:
+          enabled:
+            type: boolean
+          admin:
+            properties:
+              password:
+                type: string
       harbor:
         additionalProperties: false
         properties:

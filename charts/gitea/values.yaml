@@ -1,0 +1,211 @@
+# Default values for gitea.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+clusterDomain: cluster.local
+
+image:
+  repository: gitea/gitea
+  tag: 1.13.4
+  pullPolicy: Always
+
+imagePullSecrets: []
+
+service:
+  http:
+    type: ClusterIP
+    port: 3000
+    clusterIP: 
+    #loadBalancerIP:
+    #nodePort:
+    annotations:
+  ssh:
+    type: ClusterIP
+    port: 22
+    clusterIP:
+    #loadBalancerIP:
+    #nodePort:
+    #externalTrafficPolicy:
+    #externalIPs:
+    # loadBalancerSourceRanges: []
+    annotations:
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - git.example.com
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - git.example.com
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+statefulset:
+  env: []
+    # - name: VARIABLE
+    #   value: my-value
+  terminationGracePeriodSeconds: 60
+
+persistence:
+  enabled: true
+  # existingClaim:
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  labels: {}
+  annotations: {}
+
+# additional volumes to add to the Gitea statefulset.
+extraVolumes:
+# - name: postgres-ssl-vol
+#   secret:
+#     secretName: gitea-postgres-ssl
+
+
+# additional volumes to mount, both to the init container and to the main
+# container. As an example, can be used to mount a client cert when connecting
+# to an external Postgres server.
+extraVolumeMounts:
+# - name: postgres-ssl-vol
+#   readOnly: true
+#   mountPath: "/pg-ssl"
+
+# bash shell script copied verbatim to the start of the init-container.
+initPreScript: ""
+#
+# initPreScript: |
+#   mkdir -p /data/git/.postgresql
+#   cp /pg-ssl/* /data/git/.postgresql/
+#   chown -R git:git /data/git/.postgresql/
+#   chmod 400 /data/git/.postgresql/postgresql.key
+
+
+gitea:
+  admin:
+    username: gitea_admin
+    password: r8sA8CPHD9!bt6d
+    email: "gitea@local.domain"
+
+  metrics:
+    enabled: false
+    serviceMonitor:
+      enabled: false
+
+  ldap:
+    enabled: false
+    #name: 
+    #securityProtocol: 
+    #host: 
+    #port: 
+    #userSearchBase: 
+    #userFilter: 
+    #adminFilter: 
+    #emailAttribute: 
+    #bindDn: 
+    #bindPassword: 
+    #usernameAttribute: 
+    #sshPublicKeyAttribute:
+
+  oauth:
+    enabled: false
+    #name:
+    #provider
+    #key: 
+    #secret: 
+    #autoDiscoverUrl:
+    #useCustomUrls
+    #customAuthUrl
+    #customTokenUrl
+    #customProfileUrl
+    #customEmailUrl
+
+  config: {}
+  #  APP_NAME: "Gitea: Git with a cup of tea"
+  #  RUN_MODE: dev
+  #
+  #  server:
+  #    SSH_PORT: 22
+  #
+  #  security:
+  #    PASSWORD_COMPLEXITY: spec
+
+  podAnnotations: {}
+
+  database:
+    builtIn:
+      postgresql:
+        enabled: true
+      mysql:
+        enabled: false
+      mariadb:
+        enabled: false
+
+  cache:
+    builtIn:
+      enabled: true
+
+memcached:
+  service:
+    port: 11211
+
+postgresql:
+  global:
+    postgresql:
+      postgresqlDatabase: gitea
+      postgresqlUsername: gitea
+      postgresqlPassword: gitea
+      servicePort: 5432
+  persistence:
+    size: 10Gi
+
+mysql:
+  root:
+    password: gitea
+  db:
+    user: gitea
+    password: gitea
+    name: gitea
+  service:
+    port: 3306
+  persistence:
+    size: 10Gi
+
+mariadb:
+  auth:
+    database: gitea
+    username: gitea
+    password: gitea
+    rootPassword: gitea
+  primary:
+    service:
+      port: 3306
+    persistence:
+      size: 10Gi
