@@ -40,7 +40,7 @@ You can define OPA policies in `policies/*.rego` files that are used both for st
 
 ### 1. Validating changes
 
-For the next steps you will need to export`ENV_DIR` to point to your values folder, and source the aliases:
+For the next steps you will need to export `ENV_DIR` to point to your values folder, and source the aliases:
 
 ```bash
 # assuming you created otomi-values repo next to this:

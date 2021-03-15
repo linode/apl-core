@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "gitea.fullname" . }}-init
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  init_gitea.sh: |-
+    #!/bin/bash
+    {{- if .Values.initPreScript }}
+    # BEGIN: initPreScript
+    {{- with .Values.initPreScript -}}
+    {{ . | nindent 4}}
+    {{- end -}}
+    # END: initPreScript
+    {{- end }}
+
+    mkdir -p /data/git/.ssh
+    chmod -R 700 /data/git/.ssh
+    mkdir -p /data/gitea/conf
+    cp /etc/gitea/conf/app.ini /data/gitea/conf/app.ini
+    chmod a+rwx /data/gitea/conf/app.ini
+    nc -v -w2 -z {{ include "db.servicename" . }} {{ include "db.port" . }} && \
+    su git -c ' \
+    set -x; \
+    gitea migrate; \
+    {{- if and .Values.gitea.admin.username .Values.gitea.admin.password }}
+    gitea admin create-user --username  {{ .Values.gitea.admin.username }} --password {{ .Values.gitea.admin.password | quote }} --email {{ .Values.gitea.admin.email }} --admin --must-change-password=false \
+    || \
+    gitea admin change-password --username {{ .Values.gitea.admin.username }} --password {{ .Values.gitea.admin.password | quote }}; \
+    {{- end }}
+    {{- if .Values.gitea.ldap.enabled }}
+    gitea admin auth add-ldap \
+    {{- include "gitea.ldap_settings" . | nindent 6 }} \
+    || \
+    ( \
+      export GITEA_AUTH_ID=$(gitea admin auth list | grep {{ .Values.gitea.ldap.name | quote }} | awk -F " "  "{print \$1}"); \
+      gitea admin auth update-ldap --id ${GITEA_AUTH_ID} \
+      {{- include "gitea.ldap_settings" . | nindent 6 }} \
+    ) \
+    {{- end }}
+    {{- if .Values.gitea.oauth.enabled }}
+    gitea admin auth add-oauth \
+    {{- include "gitea.oauth_settings" . | nindent 6 }} \
+    || \
+    ( \
+      export GITEA_AUTH_ID=$(gitea admin auth list | grep {{ .Values.gitea.oauth.name | quote }} | awk -F " "  "{print \$1}"); \
+      gitea admin auth update-oauth --id ${GITEA_AUTH_ID} \
+      {{- include "gitea.oauth_settings" . | nindent 6 }} \
+    ) \
+    {{- end }}
+    '

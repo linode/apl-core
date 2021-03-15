@@ -14,6 +14,8 @@ k8s:
     - name: gitea
       disableIstioInjection: true
     - name: harbor
+    - name: gitea
+    - name: istio-system
       disableIstioInjection: true
     - name: ingress
       disableIstioInjection: true
@@ -77,6 +79,21 @@ services:
     forwardPath: true
     hide: true
     isPublic: true
+  - name: gitea
+    namespace: gitea
+    svc: gitea-http
+    ownHost: true
+    isShared: true
+    port: 3000
+    paths: [/api/, /otomi/values]
+    forwardPath: true
+    isPublic: true
+  - name: gitea
+    namespace: gitea
+    svc: gitea-http
+    ownHost: true
+    isShared: true
+    port: 3000
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443

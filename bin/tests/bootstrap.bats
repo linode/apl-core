@@ -1,24 +1,22 @@
 #!/usr/local/bin/bats
 
-lib_dir="/usr/local/lib"
+. bin/tests/bats-common.sh
 
-load "$lib_dir/bats-support/load.bash"
-load "$lib_dir/bats-assert/load.bash"
-load "$lib_dir/bats-file/load.bash"
-
-setup () {
+function setup () {
     test_temp_dir="$(temp_make --prefix 'otomi-values-')"
     export ENV_DIR="$test_temp_dir"
     env_path="$ENV_DIR/env"
 }
 
-teardown () {
+function teardown () {
     temp_del "$test_temp_dir"
     unset ENV_DIR
     unset env_path
 }
-
-@test "the env folder should not be overwritten" {
+#######################
+# env folder creation #
+#######################
+@test "$env_folder should not be overwritten" {
     git init "$ENV_DIR"
     cluster_path="$env_path/clusters.yaml"
     mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
@@ -29,7 +27,7 @@ teardown () {
     assert_file_not_exist "$env_path/teams"
 }
 
-@test "the env folder should be created after bootstrap.sh" {
+@test "$env_folder should be created after bootstrap.sh" {
     git init "$ENV_DIR"
     bin/bootstrap.sh
 
@@ -38,20 +36,23 @@ teardown () {
     assert_file_exist "$env_path/teams"
 }
 
-@test "executing bootstrap.sh should pass with new ENV_DIR (otomi-values) folder" {
+################
+# bootstrap.sh #
+################
+@test "$bootstrap_sh should pass $env_dir_str folder" {
     git init "$ENV_DIR"
     run bin/bootstrap.sh
     assert_success
 }
 
-@test "executing bootstrap.sh multiple times should pass with new ENV_DIR (otomi-values)" {
+@test "$bootstrap_sh multiple times should pass $env_dir_str" {
     git init "$test_temp_dir"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
     assert_success
 }
 
-@test "executing bootstrap.sh creates a valid loose schema" {
+@test "$bootstrap_sh creates a valid loose schema" {
     git init "$ENV_DIR"
     run bin/bootstrap.sh
     assert_success
