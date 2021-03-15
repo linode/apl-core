@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-[ "$CI" = 'true' ] && set -e
-set -o pipefail
+set -eo pipefail
 
 . bin/common.sh
+. bin/common-modules.sh
 
 readonly k8s_resources_path="/tmp/otomi/values"
 readonly script_message="Values validation"
@@ -17,15 +17,16 @@ function cleanup() {
 mkdir -p $k8s_resources_path >/dev/null
 
 function validate_values() {
-  local values_path="$k8s_resources_path/$CLOUD-$CLUSTER.yaml"
+  [ -n "$LABEL_OPT" ] && err "Cannot pass option $LABEL_OPT: please specify --all|-A or --cluster|-c" && exit 1
+  local values_path="$k8s_resources_path/$(cluster_env).yaml"
   hf_values >$values_path
   ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid || exitcode=1
-  [ "$CI" = 'true' ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
 
-if [ -n "$1" ]; then
-  validate_values
-else
-  for_each_cluster validate_values
-fi
+function main() {
+  process_clusters validate_values "$@"
+}
+
+main "$@"

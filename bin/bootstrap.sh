@@ -46,7 +46,7 @@ done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
-if [ -z "$(ls -A $ENV_DIR/env)" ]; then
+if [ ! -d "$ENV_DIR/env" ]; then
   echo "No files found in env, installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
