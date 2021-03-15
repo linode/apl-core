@@ -58,7 +58,7 @@ steps:
     depends_on:
       - test
 
-  - name: slack-__CUSTOMER
+  - name: slack-result
     image: plugins/slack
     environment:
       CLUSTER: __CLUSTER
