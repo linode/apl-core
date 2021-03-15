@@ -34,4 +34,6 @@ releases:
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
     namespace: vault
+    labels:
+      pkg: vault
     <<: *default
