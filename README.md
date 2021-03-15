@@ -110,8 +110,6 @@ export CLOUD=google && CLUSTER=demo
 otomi deploy
 ```
 
-If the values git repository does not have a remote defined yet, then otomi sets git remote origin to URL of Gitea that is deployed to the Kubernetes cluster.
-
 NOTICE: when on GKE this may sometimes result in an access token refresh error as the full path to the `gcloud` binary is referenced from GKE's token refresh mechanism in `.kube/config`, which is mounted from the host, but inaccessible from within the container. (See bug report: https://issuetracker.google.com/issues/171493249).
 Retrying the command usuall works, so do that to work around it for now.
 

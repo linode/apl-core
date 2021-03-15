@@ -22,7 +22,7 @@ gitea:
   config:
     server:
       DOMAIN: {{ $giteadomain }}
-      ROOT_URL: "https://%(DOMAIN)s/"
+      ROOT_URL: "https://{{ $giteadomain }}/"
     openid:
       ENABLE_OPENID_SIGNIN: true
   metrics:
