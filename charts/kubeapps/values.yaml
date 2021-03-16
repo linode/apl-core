@@ -236,8 +236,8 @@ apprepository:
   ##
   image:
     registry: docker.io
-    repository: bitnami/kubeapps-apprepository-controller
-    tag: 2.2.1-scratch-r0
+    repository: kubeapps/apprepository-controller
+    tag: latest
     ## Specify a imagePullPolicy
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     ##
@@ -248,8 +248,8 @@ apprepository:
   ##
   syncImage:
     registry: docker.io
-    repository: bitnami/kubeapps-asset-syncer
-    tag: 2.2.1-scratch-r0
+    repository: kubeapps/asset-syncer
+    tag: latest
     ## Specify a imagePullPolicy
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     ##
@@ -350,8 +350,8 @@ kubeops:
   replicaCount: 2
   image:
     registry: docker.io
-    repository: bitnami/kubeapps-kubeops
-    tag: 2.2.1-scratch-r1
+    repository: kubeapps/kubeops
+    tag: latest
     ## Specify a imagePullPolicy
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     ##
@@ -401,8 +401,8 @@ assetsvc:
   ##
   image:
     registry: docker.io
-    repository: bitnami/kubeapps-assetsvc
-    tag: 2.2.1-scratch-r0
+    repository: kubeapps/assetsvc
+    tag: latest
     ## Specify a imagePullPolicy
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     ##
@@ -466,8 +466,8 @@ dashboard:
   ##
   image:
     registry: docker.io
-    repository: bitnami/kubeapps-dashboard
-    tag: 2.2.1-debian-10-r15
+    repository: kubeapps/dashboard
+    tag: latest
     ## Specify a imagePullPolicy
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     ##
@@ -577,7 +577,7 @@ rbac:
 securityContext:
   enabled: false
   runAsUser: 1001
-  fsGroup: 1001
+  # fsGroup: 1001
 
 ## Image used for the tests. The only requirement is to include curl
 ##
@@ -686,6 +686,9 @@ pinnipedProxy:
   defaultPinnipedNamespace: pinniped-concierge
   defaultAuthenticatorType: JWTAuthenticator
   defaultAuthenticatorName: jwt-authenticator
+  ## The defaultPinnipedAPISuffix flag is not fully supported yet, 
+  ## please use the default value "pinniped.dev"
+  defaultPinnipedAPISuffix: pinniped.dev
 
   ## OAuth2 Proxy containers' resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
