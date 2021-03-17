@@ -405,20 +405,13 @@ definitions:
             default: generic
             enum:
               - generic
-          secretPath:
-            $ref: '#/definitions/vaultPath'
           entries:
             type: array
             items:
-              properties:
-                name:
-                  $ref: '#/definitions/vaultProperty'
-                value:
-                  $ref: '#/definitions/vaultPath'
-              required:
-                - name
-                - value
+              description: A property name at vaultPath
               minItems: 1
+              pattern: '^[a-zA-Z0-9_]*$'
+              type: string
               uniqueItems: true
         required:
           - type
@@ -430,15 +423,13 @@ definitions:
             enum:
               - docker-registry
             type: string
-          secretPath:
-            $ref: '#/definitions/vaultPath'
-          itemName:
+          dockerconfig:
             type: string
-            default: '.dockerconfig.json'
+            enum:
+              - '.dockerconfig.json'
             readOnly: true
         required:
           - type
-          - secretPath
       - title: TLS
         properties:
           type:
@@ -446,26 +437,19 @@ definitions:
             enum:
               - tls
             type: string
-          crtSecretPath:
-            $ref: '#/definitions/vaultPath'
-          crtItemName:
+          crt:
             type: string
-            default: 'crt'
-          keySecretPath:
-            $ref: '#/definitions/vaultPath'
-          keyItemName:
+            default: 'tls.crt'
+          key:
             type: string
-            default: 'key'
-          caSecretPath:
-            $ref: '#/definitions/vaultPath'
-          caItemName:
+            default: 'tls.key'
+          ca:
             type: string
-            default: 'ca'
+            default: 'ca.crt'
         required:
           - type
-          - caSecretPath
-          - crtSecretPath
-          - keySecretPath
+          - crt
+          - key
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
@@ -720,42 +704,6 @@ definitions:
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
-  vaultPath:
-    description: A path to a secret at Vault KV engine
-    pattern: '^\/([A-z0-9-_+]+\/)*([A-z0-9-_]+)$'
-    type: string
-  vaultProperty:
-    description: A property name at vaultPath
-    pattern: '^[a-zA-Z0-9_]*$'
-    type: string
-
-  vaultAwsStorage:
-    properties:
-      region:
-        type: string
-      bucket:
-        type: string
-    required:
-      - region
-      - bucket
-  vaultAzureStorage:
-    properties:
-      accountName:
-        type: string
-      accountKey:
-        type: string
-      container:
-        type: string
-      environment:
-        type: string
-
-  vaultGoogleStorage:
-    properties:
-      bucket:
-        type: string
-    required:
-      - bucket
-
   volumes:
     items:
       additionalProperties: false
