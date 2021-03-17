@@ -197,9 +197,9 @@ resources:
             roles:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
-                bound_service_account_names: ["kubernetes-external-secrets", "vault-secrets-webhook", "vault", "default"]
+                bound_service_account_names: ["kubernetes-external-secrets", "vault", "default"]
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
-                bound_service_account_namespaces: ["shared", "vault", "vault-secrets-webhook"]
+                bound_service_account_namespaces: ["shared", "vault"]
                 token_policies: ["allow-read-all-secrets"]
                 ttl: 1h
 
