@@ -94,6 +94,7 @@ services:
     ownHost: true
     isShared: true
     port: 3000
+    hide: true
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -182,8 +183,8 @@ services:
     ownHost: true
     logo:
       name: vault
-    path: 'ui/vault/auth?with=oidc'
     isShared: true
+    path: 'ui/vault/auth?with=oidc'
   - name: kubeapps
     svc: kubeapps
     namespace: kubeapps
