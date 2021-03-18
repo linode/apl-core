@@ -12,6 +12,22 @@
 {{- $clusters = append $clusters $cluster -}}
 {{- end -}}
 {{- end -}}
+{{- $services := list -}}
+{{- range $s := $v.services -}}
+{{- if hasKey $v.charts $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+  {{- $s := set $s "enabled" $enabled -}}
+  {{- $services = append $services $s -}}
+{{- end }}
+{{- end }}
+{{- $teamServices := list -}}
+{{- range $s := $v.teamConfig.services -}}
+{{- if hasKey $v.charts $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+  {{- $s := set $s "enabled" $enabled -}}
+  {{- $teamServices = append $teamServices $s -}}
+{{- end }}
+{{- end }}
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
@@ -42,7 +58,7 @@ env:
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
   CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
   CLUSTERS: '{{ $clusters | toJson }}'
-  CORE: '{"services":{{ $v.services | toJson }},"teamConfig":{"services":{{ $v.teamConfig.services | toJson }}}}'
+  CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $teamServices | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
 
