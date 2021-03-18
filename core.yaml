@@ -182,6 +182,7 @@ services:
     ownHost: true
     logo:
       name: vault
+    path: 'ui/vault/auth?with=oidc'
     isShared: true
   - name: kubeapps
     svc: kubeapps
