@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.4](https://github.com/redkubes/otomi-core/compare/v0.12.3...v0.12.4) (2021-03-18)
+
+
+### Features
+
+* set vault url path to indicate oidc auth ([540ce22](https://github.com/redkubes/otomi-core/commit/540ce226b5f880db38d5c0346e91df4f7489b193))
+
+
+### Bug Fixes
+
+* gen-drone, gitea double [ci skip] ([f3bc6b6](https://github.com/redkubes/otomi-core/commit/f3bc6b6ab717270629b2b4b231dd3f9039f2cd60))
+
 ### [0.12.3](https://github.com/redkubes/otomi-core/compare/v0.12.2...v0.12.3) (2021-03-18)
 
 
