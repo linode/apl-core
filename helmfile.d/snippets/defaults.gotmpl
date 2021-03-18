@@ -4,7 +4,8 @@ helmDefaults:
   wait: true
   timeout: 1200
   force: false
-  cleanupOnFail: true
+  cleanupOnFail: false
+  skipDeps: true
   disableValidation: true
 {{- $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
 environments:

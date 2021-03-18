@@ -1,13 +1,3 @@
-# To use this function you must provide the following arguments:
-#  "policies" - (required) list of policies [ "policy-id-1,policy-id-2" ]
-#  "type" - (optional) type of annotation [ "pod" | "sidecar" | "container" ]  
-#  "name" - (optional) in case type=container [ "container-name" ]
-#
-# Example Yaml: 
-# podAnnotations: 
-# \{ \{-  tpl $addIgnorePolicyAnnotation (dict "type" "container" "name" "wget" "policies" (list  "banned-image-tags" "psp-allowed-users"))  | nindent 2 }}
-#
-#
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 {{- $policies := (readFile "../../env/env/policies.yaml" | fromYaml) | get "policies" dict }}
 {{- $activatePolicies := list -}}
