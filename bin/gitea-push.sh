@@ -40,7 +40,7 @@ if [ "$commit_count" -eq "0" ]; then
     git config user.email "otomi@$cluster_domain"
     git add -A
 
-    git commit --no-verify -m "Initial commit of otomi-values"
+    git commit --no-verify -m "Initial commit of otomi-values [ci-skip]"
     git push -u $remote_name master
     echo "Otomi-values has been pushed to gitea"
 else
