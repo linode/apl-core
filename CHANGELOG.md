@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.3](https://github.com/redkubes/otomi-core/compare/v0.12.2...v0.12.3) (2021-03-18)
+
+
+### Bug Fixes
+
+* tools version ([1a34807](https://github.com/redkubes/otomi-core/commit/1a348072e0b833199834a5e0246eaa1776006d7d))
+* vault resource validation error ([#357](https://github.com/redkubes/otomi-core/issues/357)) ([#369](https://github.com/redkubes/otomi-core/issues/369)) ([4eb0a8c](https://github.com/redkubes/otomi-core/commit/4eb0a8cc232929512eb1c15fcad731aee43516ff))
+
 ### [0.12.2](https://github.com/redkubes/otomi-core/compare/v0.12.1...v0.12.2) (2021-03-18)
 
 ### Features
