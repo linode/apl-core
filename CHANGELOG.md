@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.7](https://github.com/redkubes/otomi-core/compare/v0.12.6...v0.12.7) (2021-03-19)
+
+
+### Bug Fixes
+
+* team url for vault [ci skip] ([430ba0b](https://github.com/redkubes/otomi-core/commit/430ba0b8bc9fdc34f1bf7fe32e15062f31021700))
+
 ### [0.12.6](https://github.com/redkubes/otomi-core/compare/v0.12.5...v0.12.6) (2021-03-19)
 
 
