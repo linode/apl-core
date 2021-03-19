@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.6](https://github.com/redkubes/otomi-core/compare/v0.12.5...v0.12.6) (2021-03-19)
+
+
+### Bug Fixes
+
+* external secrets, err output [ci skip] ([ae21a70](https://github.com/redkubes/otomi-core/commit/ae21a70b97020f44887a4a1481476b753df8a75a))
+* external secrets, err output [ci skip] ([9b762ac](https://github.com/redkubes/otomi-core/commit/9b762ac64a9b2355e1c7a46c11716a2b2c6c9311))
+* locked console version for keycloak theme [ci skip] ([a34abc3](https://github.com/redkubes/otomi-core/commit/a34abc308c19cf819b2ad148caa11b6019998d48))
+
 ### [0.12.5](https://github.com/redkubes/otomi-core/compare/v0.12.4...v0.12.5) (2021-03-19)
 
 
