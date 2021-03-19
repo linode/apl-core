@@ -184,7 +184,7 @@ services:
     logo:
       name: vault
     isShared: true
-    path: 'ui/vault/auth?with=oidc'
+    path: ui/vault/auth?with=oidc
   - name: kubeapps
     svc: kubeapps
     namespace: kubeapps
@@ -219,6 +219,7 @@ teamConfig:
       logo:
         name: vault
       isShared: true
+      path: ui/vault/secrets/secret/list/teams/#NS#/
     - name: kubeapps
       namespace: kubeapps
       svc: kubeapps
