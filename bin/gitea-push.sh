@@ -6,7 +6,7 @@ set -eo pipefail
 prepare_crypt
 readonly values=$(hf_values)
 readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
-[ "$gitea_enabled" != "true" ] && err "Gitea is disabled" && exit 0
+[ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 
 readonly cluster_domain=$(echo "$values" | yq r - 'cluster.domain')
 readonly gitea_url="gitea.$cluster_domain"
@@ -36,13 +36,13 @@ git fetch $remote_name master || true
 readonly commit_count=$(git rev-list --count --remotes=$remote_name)
 
 if [ "$commit_count" -eq "0" ]; then
-    git config user.name "Otomi"
-    git config user.email "otomi@$cluster_domain"
-    git add -A
+  git config user.name "Otomi"
+  git config user.email "otomi@$cluster_domain"
+  git add -A
 
-    git commit --no-verify -m "Initial commit of otomi-values [ci-skip]"
-    git push -u $remote_name master
-    echo "Otomi-values has been pushed to gitea"
+  git commit --no-verify -m "Initial commit of otomi-values"
+  git push -u $remote_name master
+  echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"
 fi

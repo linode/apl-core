@@ -20,6 +20,7 @@ if [ "$receiver" = 'slack' ]; then
 else
   key="lowPrio"
 fi
+
 readonly webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 
 function template_drone_config() {

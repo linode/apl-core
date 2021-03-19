@@ -24,14 +24,15 @@ resources:
         # psp-capabilities: IPC_LOCK vault uses it for preventing from flusing memory to swap
         # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
         policy.otomi.io/ignore: "banned-image-tags,psp-capabilities,psp-allowed-users"
-      vaultPodSpec:
-        resources:
+      resources:
+        vault:
           limits:
             cpu: "1"
             memory: 512Mi
           requests:
-            cpu: 250m
+            cpu: 500m
             memory: 256Mi
+      vaultPodSpec:
         securityContext:
           runAsNonRoot: false
           runAsUser: 0

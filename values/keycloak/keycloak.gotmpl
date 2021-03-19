@@ -54,8 +54,8 @@ keycloak:
       cp -Rv /themes/* /opt/jboss/keycloak/themes/
   extraInitContainers:
     - name: keycloak-otomi-branding
-      image: "otomi/console:{{ $v | get "charts.otomi-console.image.tag" "master" }}"
-      imagePullPolicy: "{{ $v | get "charts.otomi-console.image.pullPolicy" "IfNotPresent" }}"
+      image: otomi/console:v0.4.37
+      imagePullPolicy: IfNotPresent
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
