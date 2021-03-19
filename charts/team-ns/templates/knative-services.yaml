@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
-{{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
+{{- $secrets := (include "itemsByName" ($v.externalSecrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
@@ -38,15 +38,17 @@ spec:
           {{- if or $k.env $k.secrets }}
           env:
             {{- with $k.env }}{{ . | toYaml | nindent 12 }}{{ end }}
-            {{- range $secret := ($k.secrets | default list) }} 
-              {{- $entries := ($secret.entries | default (index $secrets $secret.name)) }}
-              {{- range $entry := $entries }}
-            - name: {{ $entry | upper }}
+            {{- range $secretName := ($k.secrets | default list) }} 
+            {{- if hasKey $secrets $secretName -}}
+              {{- $secret := index $secrets $secretName  }}
+              {{- range $entry := $secret.entries }}
+            - name: {{ $entry }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $secret.name }}
+                  name: {{ $secretName }}
                   key: {{ $entry }}
               {{- end }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- with $k.envFrom }}
