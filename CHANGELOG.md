@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.5](https://github.com/redkubes/otomi-core/compare/v0.12.4...v0.12.5) (2021-03-19)
+
+
+### Features
+
+* added enabled flag to core apps dynamically for console [ci skip] ([ca81dd9](https://github.com/redkubes/otomi-core/commit/ca81dd9b77a4b55bfd287c95e368ad4bb60b22af))
+
+
+### Bug Fixes
+
+* remove debug flag [ci skip] ([762c44c](https://github.com/redkubes/otomi-core/commit/762c44c9a8db4950f4fde0b69d63247373b5ca56))
+* renamed scope for console [ci skip] ([d7a87b2](https://github.com/redkubes/otomi-core/commit/d7a87b20d5eeee1bbc32b7fc3fc9db82de3bec95))
+
+
+### Others
+
+* **release:** 0.12.4 ([29a4c56](https://github.com/redkubes/otomi-core/commit/29a4c56b83c0cdc10cf6cd8f6086ffa2da781699))
+
 ### [0.12.3](https://github.com/redkubes/otomi-core/compare/v0.12.2...v0.12.3) (2021-03-18)
 
 ### Bug Fixes
