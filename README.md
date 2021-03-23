@@ -122,6 +122,5 @@ otomi apply -l name=prometheus-operator
 This will first do a `diff` and then a `sync`. But if you expect the helm bookkeeping to not match the current state (because resources were manipulated without helm), then do a sync:
 
 ```bash
-# or:
 otomi sync -l name=prometheus-operator
 ```

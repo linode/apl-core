@@ -94,6 +94,7 @@ services:
     ownHost: true
     isShared: true
     port: 3000
+    hide: true
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -119,7 +120,7 @@ services:
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
     path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
-  - name: scope
+  - name: weave-scope
     svc: weave-scope
     namespace: monitoring
   - name: grafana
@@ -183,6 +184,7 @@ services:
     logo:
       name: vault
     isShared: true
+    path: ui/vault/auth?with=oidc
   - name: kubeapps
     svc: kubeapps
     namespace: kubeapps
@@ -217,6 +219,7 @@ teamConfig:
       logo:
         name: vault
       isShared: true
+      path: ui/vault/secrets/secret/list/teams/#NS#/
     - name: kubeapps
       namespace: kubeapps
       svc: kubeapps

@@ -24,14 +24,15 @@ resources:
         # psp-capabilities: IPC_LOCK vault uses it for preventing from flusing memory to swap
         # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
         policy.otomi.io/ignore: "banned-image-tags,psp-capabilities,psp-allowed-users"
-      vaultPodSpec:
-        resources:
+      resources:
+        vault:
           limits:
             cpu: "1"
             memory: 512Mi
           requests:
-            cpu: 250m
+            cpu: 500m
             memory: 256Mi
+      vaultPodSpec:
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
@@ -197,9 +198,9 @@ resources:
             roles:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
-                bound_service_account_names: ["kubernetes-external-secrets", "vault-secrets-webhook", "vault", "default"]
+                bound_service_account_names: ["kubernetes-external-secrets", "vault", "default"]
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
-                bound_service_account_namespaces: ["shared", "vault", "vault-secrets-webhook"]
+                bound_service_account_namespaces: ["shared", "vault"]
                 token_policies: ["allow-read-all-secrets"]
                 ttl: 1h
 
