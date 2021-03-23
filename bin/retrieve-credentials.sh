@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-. bin/common.sh
 [ -n "$CI" ] && exit 1
+
 set -eo pipefail
+
+. bin/common.sh
 [ -f $ENV_DIR/.secrets ] && . $ENV_DIR/.secrets
+
 prepare_crypt
 readonly values=$(hf_values)
 readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
 readonly drone_enabled=$(echo "$values" | yq r - 'charts.drone.enabled')
+
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 [ "$drone_enabled" != "true" ] && echo "Drone is disabled" && exit 0
 
@@ -18,8 +22,8 @@ else
     echo "$cluster_overrides doesn't exist"
 fi
 
-
 cd $ENV_DIR
+
 readonly secret_val=$(kubectl -n gitea get secret gitea-drone-secret -o yaml)
 readonly drone_clientId=$(echo "$secret_val" | yq r - "data.clientId" | base64 --decode)
 readonly drone_clientSecret=$(echo "$secret_val" | yq r - "data.clientSecret" | base64 --decode)
