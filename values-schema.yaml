@@ -1601,6 +1601,10 @@ properties:
       usernameClaimMapper:
         type: string
         description: 'Claim name used by Keycloak to identify incoming users from identity provider'
+      subClaimMapper:
+        type: string
+        description: 'Select OIDC claim to be used as a unique user identifier'
+        default: 'sub'
   otomi:
     additionalProperties: false
     properties:
