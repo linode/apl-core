@@ -17,6 +17,7 @@ readonly drone_enabled=$(echo "$values" | yq r - 'charts.drone.enabled')
 readonly cluster_overrides="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/overrides.$CLOUD-$CLUSTER.yaml"
 if [ -f $cluster_overrides ]; then
     yq w -i -I4 $cluster_overrides "charts.drone.repo" 'values' # Defined in otomi-core/values/jobs/gitea.gotmpl
+    yq w -i -I4 $cluster_overrides "charts.drone.sourceControl.provider" 'gitea'
     echo "$cluster_overrides updated"
 else
     echo "$cluster_overrides doesn't exist"
@@ -39,14 +40,14 @@ if [ -f ./.sops.yaml ]; then
     helm secrets dec $secret_cluster_override
 
 
-    yq w -i -I4 $secret_cluster_override.dec "charts.drone.sourceControl.gitea.clientIDa" $drone_clientId # Defined in otomi-core/values/jobs/gitea.gotmpl
-    yq w -i -I4 $secret_cluster_override.dec "charts.drone.sourceControl.gitea.clientSecretValue" $drone_clientSecret # Defined in otomi-core/values/jobs/gitea.gotmpl
+    yq w -i -I4 $secret_cluster_override.dec "charts.drone.sourceControl.gitea.clientIDa" $drone_clientId
+    yq w -i -I4 $secret_cluster_override.dec "charts.drone.sourceControl.gitea.clientSecretValue" $drone_clientSecret
 
     helm secrets enc $secret_cluster_override
     rm $secret_cluster_override.dec
 else
     echo "No sops found"
-    yq w -i -I4 $secret_cluster_override "charts.drone.sourceControl.gitea.clientID" $drone_clientId # Defined in otomi-core/values/jobs/gitea.gotmpl
-    yq w -i -I4 $secret_cluster_override "charts.drone.sourceControl.gitea.clientSecretValue" $drone_clientSecret # Defined in otomi-core/values/jobs/gitea.gotmpl
+    yq w -i -I4 $secret_cluster_override "charts.drone.sourceControl.gitea.clientID" $drone_clientId
+    yq w -i -I4 $secret_cluster_override "charts.drone.sourceControl.gitea.clientSecretValue" $drone_clientSecret
 fi
 cd -
