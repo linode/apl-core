@@ -12,6 +12,8 @@ prepare_crypt
 readonly values=$(hf_values)
 readonly raw_receiver=$(echo "$values" | yq r - alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}
+readonly raw_branch=$(echo "$values" | yq r - charts.otomi-api.git.branch)
+readonly branch=${raw_branch:-'master'}
 readonly templatePath=$PWD/tpl/.drone.tpl.$receiver.yml
 readonly customer_name=$(customer_name)
 
@@ -34,7 +36,7 @@ function template_drone_config() {
 
   cat $templatePath | sed -e "s/__CLOUD/${CLOUD}/g" -e "s/__CLUSTER/${CLUSTER}/g" \
     -e "s/__IMAGE_TAG/${otomi_image_tag}/g" -e "s|__WEBHOOK|${webhook}|g" \
-    -e "s/__CUSTOMER/${customer_name}/g" \
+    -e "s/__CUSTOMER/${customer_name}/g" -e "s/__BRANCH/${branch}/g" \
     >$target
 }
 
