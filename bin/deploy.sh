@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-set -eo pipefail
+set -e
 
 # install some stuff that we never want to end up as charts
 hf -f helmfile.tpl/helmfile-init.yaml template | kubectl apply -f -

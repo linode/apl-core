@@ -36,10 +36,8 @@ spec:
 {{- end }}
     spec:
       securityContext:
+        runAsUser: 10000
         fsGroup: 10000
-        {{- with .Values.chartmuseum.securityContext }}
-        runAsUser: {{ default 10000 .runAsUser }}
-        {{- end -}}
 {{- if .Values.chartmuseum.serviceAccountName }}
       serviceAccountName: {{ .Values.chartmuseum.serviceAccountName }}
 {{- end -}}
@@ -47,6 +45,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: false
       containers:
       - name: chartmuseum
         image: {{ .Values.chartmuseum.image.repository }}:{{ .Values.chartmuseum.image.tag }}

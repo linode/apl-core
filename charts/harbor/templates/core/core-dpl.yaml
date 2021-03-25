@@ -30,10 +30,8 @@ spec:
 {{- end }}
     spec:
       securityContext:
+        runAsUser: 10000
         fsGroup: 10000
-        {{- with .Values.core.securityContext }}
-        runAsUser: {{ .runAsUser | default 10000 }}
-        {{- end }}
 {{- if .Values.core.serviceAccountName }}
       serviceAccountName: {{ .Values.core.serviceAccountName }}
 {{- end -}}
@@ -41,10 +39,12 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: false
       containers:
       - name: core
         image: {{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.core.startupProbe.enabled }}
         startupProbe:
           httpGet:
             path: /api/v2.0/ping
@@ -53,6 +53,7 @@ spec:
           failureThreshold: 360
           initialDelaySeconds: {{ .Values.core.startupProbe.initialDelaySeconds }}
           periodSeconds: 10
+        {{- end }}
         livenessProbe:
           httpGet:
             path: /api/v2.0/ping

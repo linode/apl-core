@@ -22,7 +22,7 @@ data:
         namespace: "harbor_job_service_namespace"
         idle_timeout_second: 3600
     job_loggers:
-      {{- if eq .Values.jobservice.jobLogger "file" }}
+      {{- if has "file" .Values.jobservice.jobLoggers }}
       - name: "FILE"
         level: {{ .Values.logLevel | upper }}
         settings: # Customized settings of logger
@@ -31,12 +31,14 @@ data:
           duration: 14 #days
           settings: # Customized settings of sweeper
             work_dir: "/var/log/jobs"
-      {{- else if eq .Values.jobservice.jobLogger "database" }}
+      {{- end }}
+      {{- if has "database" .Values.jobservice.jobLoggers }}
       - name: "DB"
         level: {{ .Values.logLevel | upper }}
         sweeper:
           duration: 14 #days
-      {{- else }}
+      {{- end }}
+      {{- if has "stdout" .Values.jobservice.jobLoggers }}
       - name: "STD_OUTPUT"
         level: {{ .Values.logLevel | upper }}
       {{- end }}

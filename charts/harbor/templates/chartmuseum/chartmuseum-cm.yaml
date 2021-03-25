@@ -109,4 +109,5 @@ data:
   {{- end }}
   ALIBABA_CLOUD_ACCESS_KEY_ID: {{ $storage.oss.accesskeyid }}
 {{- end }}
+  STORAGE_TIMESTAMP_TOLERANCE: 1s
 {{- end }}

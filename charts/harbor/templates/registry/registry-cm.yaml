@@ -166,7 +166,9 @@ data:
       sentinelMasterSet: {{ template "harbor.redis.masterSet" . }}
       {{- end }}
       db: {{ template "harbor.redis.dbForRegistry" . }}
+      {{- if not (eq (include "harbor.redis.password" .) "") }}
       password: {{ template "harbor.redis.password" . }}
+      {{- end }}
       readtimeout: 10s
       writetimeout: 10s
       dialtimeout: 10s
@@ -182,7 +184,14 @@ data:
       # set via environment variable
       # secret: placeholder
       debug:
+      {{- if .Values.metrics.enabled}}
+        addr: :{{ .Values.metrics.registry.port }}
+        prometheus:
+          enabled: true
+          path: {{ .Values.metrics.registry.path }}
+      {{- else }}
         addr: localhost:5001
+      {{- end }}
     auth:
       htpasswd:
         realm: harbor-registry-basic-realm

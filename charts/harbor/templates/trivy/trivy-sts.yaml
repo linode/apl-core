@@ -38,10 +38,9 @@ spec:
       serviceAccountName: {{ .Values.trivy.serviceAccountName }}
 {{- end }}
       securityContext:
-        runAsNonRoot: true
         runAsUser: 10000
         fsGroup: 10000
-      automountServiceAccountToken: {{ .Values.trivy.automountServiceAccountToken | default false }}
+      automountServiceAccountToken: false
       containers:
         - name: trivy
           image: {{ .Values.trivy.image.repository }}:{{ .Values.trivy.image.tag }}
