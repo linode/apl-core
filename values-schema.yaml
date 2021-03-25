@@ -1304,6 +1304,9 @@ properties:
               enabled:
                 default: true
                 type: boolean
+          maxBodySize:
+            type: string
+            default: 1024m
           resources:
             $ref: '#/definitions/resources'
       oauth2-proxy:
