@@ -5,9 +5,11 @@ metadata:
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
+{{- if  (eq .Values.expose.ingress.controller "gce") }}
+  type: NodePort
+{{- end }}
   ports:
     - port: {{ template "harbor.portal.servicePort" . }}
-      # appProtocol: http
       targetPort: {{ template "harbor.portal.containerPort" . }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}

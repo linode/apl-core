@@ -36,10 +36,8 @@ spec:
 {{- end }}
     spec:
       securityContext:
+        runAsUser: 10000
         fsGroup: 10000
-        {{- with .Values.registry.securityContext }}
-        runAsUser: {{ default 10000 .runAsUser  }}
-        {{- end -}}
 {{- if .Values.registry.serviceAccountName }}
       serviceAccountName: {{ .Values.registry.serviceAccountName }}
 {{- end -}}
@@ -47,6 +45,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: false
       containers:
       - name: registry
         image: {{ .Values.registry.registry.image.repository }}:{{ .Values.registry.registry.image.tag }}
@@ -99,9 +98,6 @@ spec:
         - name: registry-data
           mountPath: {{ .Values.persistence.imageChartStorage.filesystem.rootdirectory }}
           subPath: {{ .Values.persistence.persistentVolumeClaim.registry.subPath }}
-        - name: registry-root-certificate
-          mountPath: /etc/registry/root.crt
-          subPath: tls.crt
         - name: registry-htpasswd
           mountPath: /etc/registry/passwd
           subPath: passwd
@@ -213,13 +209,6 @@ spec:
           items:
             - key: REGISTRY_HTPASSWD
               path: passwd
-      - name: registry-root-certificate
-        secret:
-          {{- if .Values.core.secretName }}
-          secretName: {{ .Values.core.secretName }}
-          {{- else }}
-          secretName: {{ template "harbor.core" . }}
-          {{- end }}
       - name: registry-config
         configMap:
           name: "{{ template "harbor.registry" . }}"

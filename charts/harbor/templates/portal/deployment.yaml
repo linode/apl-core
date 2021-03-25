@@ -26,16 +26,17 @@ spec:
 {{ toYaml .Values.portal.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- with .Values.portal.securityContext }}
-      securityContext: {{- toYaml . | nindent 8 }}
-{{- end }}
 {{- if .Values.portal.serviceAccountName }}
       serviceAccountName: {{ .Values.portal.serviceAccountName }}
 {{- end }}
+      automountServiceAccountToken: false
       containers:
       - name: portal
         image: {{ .Values.portal.image.repository }}:{{ .Values.portal.image.tag }}

@@ -19,19 +19,21 @@
   {{- $_ := set . "notary_path" "/.*" -}}
 {{- else }}
   {{- $_ := set . "portal_path" "/" -}}
-  {{- $_ := set . "api_path" "/api/" -}}
-  {{- $_ := set . "service_path" "/service/" -}}
-  {{- $_ := set . "v2_path" "/v2/" -}}
-  {{- $_ := set . "chartrepo_path" "/chartrepo/" -}}
-  {{- $_ := set . "controller_path" "/c/" -}}
+  {{- $_ := set . "api_path" "/api" -}}
+  {{- $_ := set . "service_path" "/service" -}}
+  {{- $_ := set . "v2_path" "/v2" -}}
+  {{- $_ := set . "chartrepo_path" "/chartrepo" -}}
+  {{- $_ := set . "controller_path" "/c" -}}
   {{- $_ := set . "notary_path" "/" -}}
 {{- end }}
 
 ---
 {{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: extensions/v1beta1
-{{- else }}
+{{- else if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: networking.k8s.io/v1
 {{- end }}
 kind: Ingress
 metadata:
@@ -61,6 +63,7 @@ spec:
   rules:
   - http:
       paths:
+{{- if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
       - path: {{ .portal_path }}
         backend:
           serviceName: {{ template "harbor.portal" . }}
@@ -85,6 +88,50 @@ spec:
         backend:
           serviceName: {{ template "harbor.core" . }}
           servicePort: {{ template "harbor.core.servicePort" . }}
+{{- else }}
+      - path: {{ .portal_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.portal" . }}
+            port:
+              number: {{ template "harbor.portal.servicePort" . }}
+      - path: {{ .api_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .service_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .v2_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .chartrepo_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .controller_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+{{- end }}
     {{- if $ingress.hosts.core }}
     host: {{ $ingress.hosts.core }}
     {{- end }}
@@ -93,8 +140,10 @@ spec:
 ---
 {{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: extensions/v1beta1
-{{- else }}
+{{- else if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: networking.k8s.io/v1
 {{- end }}
 kind: Ingress
 metadata:
@@ -122,9 +171,18 @@ spec:
   - http:
       paths:
       - path: {{ .notary_path }}
+{{- if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion }}
         backend:
           serviceName: {{ template "harbor.notary-server" . }}
           servicePort: 4443
+{{- else }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.notary-server" . }}
+            port:
+              number: 4443
+{{- end -}}
     {{- if $ingress.hosts.notary }}
     host: {{ $ingress.hosts.notary }}
     {{- end }}

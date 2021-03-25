@@ -25,6 +25,9 @@ spec:
 {{ toYaml .Values.database.podAnnotations | indent 8 }}
 {{- end }}
     spec:
+      securityContext:
+        runAsUser: 999
+        fsGroup: 999
 {{- if .Values.database.internal.serviceAccountName }}
       serviceAccountName: {{ .Values.database.internal.serviceAccountName }}
 {{- end -}}
@@ -32,26 +35,22 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: false
       initContainers:
-      - name: "change-permission-of-directory"
-        securityContext:
-          runAsUser: 0
+      # as we change the data directory to a sub folder to support psp, the init container here
+      # is used to migrate the existing data. See https://github.com/goharbor/harbor-helm/issues/756
+      # for more detail.
+      # we may remove it after several releases
+      - name: "data-migrator"
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
-        args: ["-c", "chown -R postgres:postgres /var/lib/postgresql/data; chmod 0700 /var/lib/postgresql/data"]
+        # args: ["-c", "[ -e /var/lib/postgresql/data/postgresql.conf ] && [ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || true"]
+        args: ["-c", "[ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && [ -e /var/lib/postgresql/data/postgresql.conf ] && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || chmod 0700 /var/lib/postgresql/data/pgdata || true"]
         volumeMounts:
-        - name: database-data
-          mountPath: /var/lib/postgresql/data
-          subPath: {{ $database.subPath }}
-      - name: "remove-lost-found"
-        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        command: ["rm", "-Rf", "/var/lib/postgresql/data/lost+found"]
-        volumeMounts:
-        - name: database-data
-          mountPath: /var/lib/postgresql/data
-          subPath: {{ $database.subPath }}
+          - name: database-data
+            mountPath: /var/lib/postgresql/data
+            subPath: {{ $database.subPath }}
       containers:
       - name: database
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
@@ -75,6 +74,11 @@ spec:
         envFrom:
           - secretRef:
               name: "{{ template "harbor.database" . }}"
+        env:
+          # put the data into a sub directory to avoid the permission issue in k8s with restricted psp enabled
+          # more detail refer to https://github.com/goharbor/harbor-helm/issues/756
+          - name: PGDATA
+            value: "/var/lib/postgresql/data/pgdata"
         volumeMounts:
         - name: database-data
           mountPath: /var/lib/postgresql/data

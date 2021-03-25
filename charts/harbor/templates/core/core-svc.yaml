@@ -9,10 +9,13 @@ spec:
   type: NodePort
 {{- end }}
   ports:
-    - port: {{ template "harbor.core.servicePort" . }}
-      # appProtocol: http
+    - name: web
+      port: {{ template "harbor.core.servicePort" . }}
       targetPort: {{ template "harbor.core.containerPort" . }}
-      name: http-core
+{{- if .Values.metrics.enabled}}
+    - name: metrics
+      port: {{ .Values.metrics.core.port }}
+{{- end }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: core

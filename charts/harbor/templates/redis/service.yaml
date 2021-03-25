@@ -8,7 +8,6 @@ metadata:
 spec:
   ports:
     - port: 6379
-      name: redis
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: redis

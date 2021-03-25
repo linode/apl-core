@@ -4,12 +4,14 @@ expose:
   # in the corresponding section
   type: ingress
   tls:
-    # Enable the tls or not. Note: if the type is "ingress" and the tls
+    # Enable the tls or not.
+    # Delete the "ssl-redirect" annotations in "expose.ingress.annotations" when TLS is disabled and "expose.type" is "ingress"
+    # Note: if the "expose.type" is "ingress" and the tls
     # is disabled, the port must be included in the command when pull/push
     # images. Refer to https://github.com/goharbor/harbor/issues/5291
     # for the detail.
     enabled: true
-    # The source of the tls certificate. Set it as "auto", "secret" 
+    # The source of the tls certificate. Set it as "auto", "secret"
     # or "none" and fill the information in the corresponding section
     # 1) auto: generate the tls certificate automatically
     # 2) secret: read the tls certificate from the specified secret.
@@ -41,6 +43,8 @@ expose:
     # set to `ncp` if using the NCP (NSX-T Container Plugin) ingress controller
     controller: default
     annotations:
+      # note different ingress controllers may require a different ssl-redirect annotation
+      # for Envoy, use ingress.kubernetes.io/force-ssl-redirect: "true" and remove the nginx lines below
       ingress.kubernetes.io/ssl-redirect: "true"
       ingress.kubernetes.io/proxy-body-size: "0"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -159,14 +163,6 @@ internalTLS:
     crt: ""
     # Content of chartmuseum's TLS key file, only available when `certSource` is "manual"
     key: ""
-  # clair related cert configuration
-  clair:
-    # secret name for clair's tls certs
-    secretName: ""
-    # Content of clair's TLS key file, only available when `certSource` is "manual"
-    crt: ""
-    # Content of clair's TLS key file, only available when `certSource` is "manual"
-    key: ""
   # trivy related cert configuration
   trivy:
     # secret name for trivy's tls certs
@@ -198,7 +194,7 @@ persistence:
       # Specify the "storageClass" used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to "-" to disable dynamic provisioning
-      storageClass: "fast"
+      storageClass: ""
       subPath: ""
       accessMode: ReadWriteOnce
       size: 5Gi
@@ -348,7 +344,7 @@ caSecretName: ""
 # The secret key used for encryption. Must be a string of 16 chars.
 secretKey: "not-a-secure-key"
 
-# The proxy settings for updating clair vulnerabilities from the Internet and replicating
+# The proxy settings for updating trivy vulnerabilities from the Internet and replicating
 # artifacts from/to the registries that cannot be reached directly
 proxy:
   httpProxy:
@@ -357,11 +353,10 @@ proxy:
   components:
     - core
     - jobservice
-    - clair
     - trivy
 
 # The custom ca bundle secret, the secret must contain key named "ca.crt"
-# which will be injected into the trust store for chartmuseum, clair, core, jobservice, registry, trivy components
+# which will be injected into the trust store for chartmuseum, core, jobservice, registry, trivy components
 # caBundleSecretName: ""
 
 ## UAA Authentication Options
@@ -375,7 +370,7 @@ proxy:
 nginx:
   image:
     repository: goharbor/nginx-photon
-    tag: v2.1.0
+    tag: v2.2.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   replicas: 1
@@ -392,7 +387,7 @@ nginx:
 portal:
   image:
     repository: goharbor/harbor-portal
-    tag: v2.1.0
+    tag: v2.2.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   replicas: 1
@@ -409,12 +404,13 @@ portal:
 core:
   image:
     repository: goharbor/harbor-core
-    tag: v2.1.0
+    tag: v2.2.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   replicas: 1
   ## Startup probe values
   startupProbe:
+    enabled: true
     initialDelaySeconds: 10
   # resources:
   #  requests:
@@ -442,13 +438,17 @@ core:
 jobservice:
   image:
     repository: goharbor/harbor-jobservice
-    tag: v2.1.0
+    tag: v2.2.0
   replicas: 1
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   maxJobWorkers: 10
   # The logger for jobs: "file", "database" or "stdout"
-  jobLogger: file
+  jobLoggers:
+    - file
+    # - database
+    # - stdout
+
   # resources:
   #   requests:
   #     memory: 256Mi
@@ -469,7 +469,7 @@ registry:
   registry:
     image:
       repository: goharbor/registry-photon
-      tag: v2.1.0
+      tag: v2.2.0
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -477,7 +477,7 @@ registry:
   controller:
     image:
       repository: goharbor/harbor-registryctl
-      tag: v2.1.0
+      tag: v2.2.0
 
     # resources:
     #  requests:
@@ -524,42 +524,12 @@ chartmuseum:
   absoluteUrl: false
   image:
     repository: goharbor/chartmuseum-photon
-    tag: v2.1.0
+    tag: v2.2.0
   replicas: 1
   # resources:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  ## Additional deployment annotations
-  podAnnotations: {}
-
-clair:
-  enabled: true
-  # set the service account to be used, default if left empty
-  serviceAccountName: ""
-  clair:
-    image:
-      repository: goharbor/clair-photon
-      tag: v2.1.0
-    # resources:
-    #  requests:
-    #    memory: 256Mi
-    #    cpu: 100m
-  adapter:
-    image:
-      repository: goharbor/clair-adapter-photon
-      tag: v2.1.0
-    # resources:
-    #  requests:
-    #    memory: 256Mi
-    #    cpu: 100m
-  replicas: 1
-  # The interval of clair updaters, the unit is hour, set to 0 to
-  # disable the updaters
-  updatersInterval: 12
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -573,7 +543,7 @@ trivy:
     # repository the repository for Trivy adapter image
     repository: goharbor/trivy-adapter-photon
     # tag the tag for Trivy adapter image
-    tag: v2.1.0
+    tag: v2.2.0
   # set the service account to be used, default if left empty
   serviceAccountName: ""
   # replicas the number of Pod replicas
@@ -630,28 +600,33 @@ notary:
     serviceAccountName: ""
     image:
       repository: goharbor/notary-server-photon
-      tag: v2.1.0
+      tag: v2.2.0
     replicas: 1
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    ## Additional deployment annotations
+    podAnnotations: {}
   signer:
     # set the service account to be used, default if left empty
     serviceAccountName: ""
     image:
       repository: goharbor/notary-signer-photon
-      tag: v2.1.0
+      tag: v2.2.0
     replicas: 1
     # resources:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  ## Additional deployment annotations
-  podAnnotations: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    ## Additional deployment annotations
+    podAnnotations: {}
   # Fill the name of a kubernetes secret if you want to use your own
   # TLS certificate authority, certificate and private key for notary
   # communications.
@@ -669,7 +644,7 @@ database:
     serviceAccountName: ""
     image:
       repository: goharbor/harbor-db
-      tag: v2.1.0
+      tag: v2.2.0
     # The initial superuser password for internal database
     password: "changeit"
     # resources:
@@ -685,7 +660,6 @@ database:
     username: "user"
     password: "password"
     coreDatabase: "registry"
-    clairDatabase: "clair"
     notaryServerDatabase: "notary_server"
     notarySignerDatabase: "notary_signer"
     # "disable" - No SSL
@@ -715,7 +689,7 @@ redis:
     serviceAccountName: ""
     image:
       repository: goharbor/redis-photon
-      tag: v2.1.0
+      tag: v2.2.0
     # resources:
     #  requests:
     #    memory: 256Mi
@@ -736,8 +710,37 @@ redis:
     jobserviceDatabaseIndex: "1"
     registryDatabaseIndex: "2"
     chartmuseumDatabaseIndex: "3"
-    clairAdapterIndex: "4"
     trivyAdapterIndex: "5"
     password: ""
   ## Additional deployment annotations
   podAnnotations: {}
+
+exporter:
+    replicas: 1
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+    podAnnotations: {}
+    serviceAccountName: ""
+    image:
+      repository: goharbor/harbor-exporter
+      tag: v2.2.0
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    cacheDuration: 30
+    cacheCleanInterval: 14400
+
+metrics:
+  enabled: false
+  core:
+    path: /metrics
+    port: 8001
+  registry:
+    path: /metrics
+    port: 8001
+  exporter:
+    path: /metrics
+    port: 8001
+

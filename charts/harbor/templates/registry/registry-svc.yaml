@@ -7,11 +7,13 @@ metadata:
 spec:
   ports:
     - name: http-registry
-      # appProtocol: http
       port: {{ template "harbor.registry.servicePort" . }}
     - name: http-controller
-      # appProtocol: http
       port: {{ template "harbor.registryctl.servicePort" . }}
+{{- if .Values.metrics.enabled}}
+    - name: metrics
+      port: {{ .Values.metrics.registry.port }}
+{{- end }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: registry
