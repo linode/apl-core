@@ -35,6 +35,7 @@ oidc:
     scope: openid email profile
     teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     tenantID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    subClaimMapper: oid
 otomi:
     hasCloudLB: false
     isHomeMonitored: true
