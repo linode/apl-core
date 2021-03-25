@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.8](https://github.com/redkubes/otomi-core/compare/v0.12.7...v0.12.8) (2021-03-25)
+
+
+### Features
+
+* exposed maxBodySize for nginx ([db6d186](https://github.com/redkubes/otomi-core/commit/db6d18671ff62276841aa5e7b1f6723cb5d5e175))
+* otomi regcred ([29d06c7](https://github.com/redkubes/otomi-core/commit/29d06c72d46e59bdadc27da2f129319c24dffcfe))
+* support sub claim mapper ([#377](https://github.com/redkubes/otomi-core/issues/377)) ([a1fd9c5](https://github.com/redkubes/otomi-core/commit/a1fd9c5888ecdba3d84130dc154bfe3389ba92bf))
+
+
+### Bug Fixes
+
+* added conf for drone branch ([b43cdb8](https://github.com/redkubes/otomi-core/commit/b43cdb87881da4c7603bdcf98629bd41fd32a913))
+* missing schema [ci skip] ([54263db](https://github.com/redkubes/otomi-core/commit/54263dbde6ff36df72a446474e5c2d1eb795615c))
+* removed interfering CI flag from run-if-changed [ci skip] ([bfd16ae](https://github.com/redkubes/otomi-core/commit/bfd16aebb5aac1e82b79a398d993ef49286d48e6))
+* service paths may have underscores...doh! ([e9a8e31](https://github.com/redkubes/otomi-core/commit/e9a8e312451dae0aa1d85479c64da666dccce7b3))
+
+
+### Others
+
+* **deps:** upgraded harbor to 2.2.0 ([96f0bb3](https://github.com/redkubes/otomi-core/commit/96f0bb35af5f5231b7027ff06b8fd025767ced5d))
+
 ### [0.12.7](https://github.com/redkubes/otomi-core/compare/v0.12.6...v0.12.7) (2021-03-19)
 
 ### Bug Fixes
