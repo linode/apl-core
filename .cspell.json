@@ -42,7 +42,8 @@
     "somekey",
     "somesecretvalue",
     "spotinst",
-    "westeurope"
+    "westeurope",
+    "xsrf"
   ],
   "language": "en",
   "words": [
