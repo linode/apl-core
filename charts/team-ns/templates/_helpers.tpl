@@ -20,7 +20,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 
 {{- define "flatten-name" -}}
 {{- $res := regexReplaceAll "[()/]{1}" . "" -}}
-{{- regexReplaceAll "[|.]{1}" $res "-" | trimAll "-" -}}
+{{- regexReplaceAll "[|.]{1}" $res "-" | replace "_" "" | trimAll "-" -}}
 {{- end -}}
 
 {{- define "dockercfg" -}}
