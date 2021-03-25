@@ -9,8 +9,6 @@
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
-# {{- $knativeServiceDomain }}
-# {{- $domain }}
 {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
