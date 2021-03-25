@@ -52,6 +52,7 @@ secret:
   IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
   IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
+  IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
   IDP_OIDC_URL: {{ $v.oidc.issuer }}
   REDIRECT_URIS: '[
