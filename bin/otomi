@@ -144,7 +144,7 @@ function evaluate_secrets() {
   }
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
-    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 2
+    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
     . $secrets_path
   fi
   prepare_crypt
@@ -161,7 +161,7 @@ function validate_cluster_env() {
 }
 
 function is_repo() {
-  [ "$(basename "$PWD")" = "otomi-core" ] && err "Error: Should not be ran from otomi-core" && exit 2
+  [ "$(basename "$PWD")" = "otomi-core" ] && err "Error: Should not be ran from otomi-core" && exit 1
   return 0
 }
 
@@ -399,6 +399,6 @@ function execute() {
   esac
 }
 
-[ -z "$command" ] && err "Missing command argument" && show_usage && exit 2
+[ -z "$command" ] && err "Missing command argument" && show_usage && exit 1
 
 execute $command "$@"
