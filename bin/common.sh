@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -n "$DEBUG" ] && set -x
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}
@@ -17,28 +18,6 @@ has_docker='false'
 if docker --version &>/dev/null; then
   has_docker='true'
 fi
-
-# some exit handling for scripts to clean up
-exitcode=0
-script_message=''
-function exit_handler() {
-  local x=$?
-  [ $x -ne 0 ] && exitcode=$x
-  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
-  cleanup
-  trap "exit $exitcode" EXIT ERR
-  exit $exitcode
-}
-trap exit_handler EXIT ERR
-function cleanup() {
-  return 0
-}
-function abort() {
-  cleanup
-  trap 'exit 0' EXIT
-  exit 0
-}
-trap abort SIGINT
 
 #####
 # https://github.com/google/styleguide/blob/gh-pages/shellguide.md#stdout-vs-stderr
@@ -131,11 +110,4 @@ function for_each_cluster() {
       CLOUD=$cloud CLUSTER=$cluster $executable
     done
   done
-}
-
-function hf_templates() {
-  local out_dir="$1"
-  shift
-  [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" >/dev/null
-  hf $(echo ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps --output-dir="$out_dir" >/dev/null
 }
