@@ -345,6 +345,9 @@ function execute() {
       git -C $ENV_DIR pull
       drun bin/bootstrap.sh 1
       ;;
+    regcred)
+      drun bin/regcred.sh "$@"
+      ;;
     rotate-keys)
       check_sops_file
       evaluate_secrets

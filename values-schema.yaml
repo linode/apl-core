@@ -1034,8 +1034,17 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
+          core:
+            properties:
+              secret:
+                type: string
+              xsrfKey:
+                type: string
           enabled:
             type: boolean
+          jobservice:
+            secret:
+              type: string
           persistence:
             additionalProperties: false
             properties:
@@ -1053,6 +1062,9 @@ properties:
                         type: string
                   type:
                     type: string
+          registry:
+            secret:
+              type: string
           resources:
             additionalProperties: false
             properties:
@@ -1304,6 +1316,9 @@ properties:
               enabled:
                 default: true
                 type: boolean
+          maxBodySize:
+            type: string
+            default: 1024m
           resources:
             $ref: '#/definitions/resources'
       oauth2-proxy:

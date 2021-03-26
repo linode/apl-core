@@ -29,8 +29,8 @@ nginx:
     sidecar.istio.io/inject: "false"
 core:
   podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
-  xsrfKey: {{ $h | get "core.xsrfKey" "UeaJg4EzsYnryRdcYdyXiFvlIFaDlspshfd" }}
-  secret: {{ $h | get "core.secret" "9gfm2350fg3fg3m8" }}
+  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+  secret: {{ $h | get "core.secret" nil }}
   secretName: {{ $harborSecretName }}
   resources:
     {{- with $h | get "resources.core" nil }}
@@ -44,7 +44,7 @@ core:
       cpu: 100m
     {{- end }}
 jobservice:
-  secret: {{ $h | get "jobservice.secret" "mnf9adfgjwr23m4d" }}
+  secret: {{ $h | get "jobservice.secret" nil }}
   resources:
     {{- with $h | get "resources.jobservice" nil }}
       {{- toYaml . | nindent 2 }}
@@ -71,7 +71,7 @@ persistence:
       # Specify the 'storageClass' used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to '-' to disable dynamic provisioning
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
@@ -119,9 +119,9 @@ persistence:
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: '{{ $h | get "adminPassword" "bladibla" }}'
+harborAdminPassword: {{ $h | get "adminPassword" "bladibla" }}
 # The secret key used for encryption. Must be a string of 16 chars.
-secretKey: '{{ $h.secretKey }}'
+secretKey: {{ $h | get "secretKey" nil }}
 
 # The proxy settings for updating clair vulnerabilities from the Internet and replicating
 # artifacts from/to the registries that cannot be reached directly
@@ -135,13 +135,10 @@ proxy:
     - clair
 
 registry:
-  secret: q1g9gwm35g8k458b
+  secret: {{ $h | get "registry.secret" nil }}
   podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
 
   registry:
-    image:
-      repository: goharbor/registry-photon
-      tag: v2.0.0
     resources:
       requests:
         memory: 64Mi
@@ -150,9 +147,6 @@ registry:
         memory: 128Mi
         cpu: 100m
   controller:
-    image:
-      repository: goharbor/harbor-registryctl
-      tag: v2.0.0
     resources:
       {{- with $h | get "resources.controller" nil }}
         {{- toYaml . | nindent 6 }}
@@ -164,13 +158,6 @@ registry:
         memory: 512Mi
         cpu: 100m
       {{- end }}
-  # Secret is used to secure the upload state from client
-  # and registry storage backend.
-  # See: https://github.com/docker/distribution/blob/master/docs/configuration.md#http
-  # If a secret key is not specified, Helm will generate one.
-  # Must be a string of 16 chars.
-  secret: '4j8sdf75dfd8sdfd'
-  # If true, the registry returns relative URLs in Location headers. The client is responsible for resolving the correct URL.
   relativeurls: false
   credentials:
     username: {{ $h | get "registry.credentials.username" "admin" }}
@@ -181,10 +168,6 @@ database:
   type: internal
   podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   internal:
-    image:
-      repository: goharbor/harbor-db
-      tag: v2.0.0
-    # password: "sd83jf7s"
     resources:
       {{- with $h | get "resources.database" nil }}
         {{- toYaml . | nindent 6 }}

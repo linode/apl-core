@@ -1,15 +1,15 @@
-{{ if .Values.clair.enabled }}
+{{- if .Values.metrics.enabled}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ template "harbor.clair" . }}"
+  name: "{{ template "harbor.exporter" . }}"
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
-    - name: adapter
-      port: {{ include "harbor.clairAdapter.servicePort" . }}
+    - name: metrics
+      port: {{ .Values.metrics.exporter.port }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
-    component: clair
+    component: exporter
 {{ end }}

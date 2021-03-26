@@ -20,11 +20,12 @@ spec:
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/notary/notary-secret.yaml") . | sha256sum }}
         checksum/secret-core: {{ include (print $.Template.BasePath "/core/core-secret.yaml") . | sha256sum }}
-{{- if .Values.notary.podAnnotations }}
-{{ toYaml .Values.notary.podAnnotations | indent 8 }}
+{{- if .Values.notary.server.podAnnotations }}
+{{ toYaml .Values.notary.server.podAnnotations | indent 8 }}
 {{- end }}
     spec:
       securityContext:
+        runAsUser: 10000
         fsGroup: 10000
 {{- if .Values.notary.server.serviceAccountName }}
       serviceAccountName: {{ .Values.notary.server.serviceAccountName }}
@@ -33,6 +34,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: false
       containers:
       - name: notary-server
         image: {{ .Values.notary.server.image.repository }}:{{ .Values.notary.server.image.tag }}
@@ -74,15 +76,15 @@ spec:
           {{- else }}
           secretName: {{ template "harbor.notary-server" . }}
           {{- end }}
-    {{- with .Values.notary.nodeSelector }}
+    {{- with .Values.notary.server.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.notary.affinity }}
+    {{- with .Values.notary.server.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.notary.tolerations }}
+    {{- with .Values.notary.server.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}

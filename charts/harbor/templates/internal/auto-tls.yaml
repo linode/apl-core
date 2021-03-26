@@ -78,23 +78,6 @@ data:
   tls.key: {{ $chartCrt.Key | b64enc | quote }}
 {{- end }}
 
-{{- if .Values.clair.enabled }}
----
-{{- $clairCN := (include "harbor.clair" .) }}
-{{- $clairCrt := genSignedCert $clairCN nil (list $clairCN) 365 $ca }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: "{{ template "harbor.internalTLS.clair.secretName" . }}"
-  labels:
-{{ include "harbor.labels" . | indent 4 }}
-type: kubernetes.io/tls
-data:
-  ca.crt: {{ $ca.Cert | b64enc | quote }}
-  tls.crt: {{ $clairCrt.Cert | b64enc | quote }}
-  tls.key: {{ $clairCrt.Key | b64enc | quote }}
-{{- end }}
-
 {{- if and .Values.trivy.enabled}}
 ---
 {{- $trivyCN := (include "harbor.trivy" .) }}
