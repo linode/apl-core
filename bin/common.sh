@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[ -n "$DEBUG" ] && set -x
+[ -n "${DEBUG:-}" ] && set -x
 set -e
 
 # Environment vars
