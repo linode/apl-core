@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 [ -n "$DEBUG" ] && set -x
+set -e
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}

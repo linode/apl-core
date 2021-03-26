@@ -11,8 +11,6 @@
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
-set -e
-
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 [ -n "$TIME" ] && unset TIME && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
 

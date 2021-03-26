@@ -19,18 +19,18 @@ function teardown () {
 #####
 # bin/validate-templates 
 #####
-@test "$validate_templates_name -l something starts generating" {
-    eval "$run_otomi_validate_templates -l group=jobs"
-    eval "$assert_generating_text"
+@test "validate-templates -l something starts generating" {
+    eval "run timeout 5 bin/validate-templates.sh -l group=jobs"
+    eval "assert_output --partial Templates validation SUCCESS"
 }
 
-@test "$validate_templates_name -A starts generating" {
-    eval "$run_otomi_validate_templates -A"
-    eval "$assert_generating_text"
+@test "validate-templates -A starts generating" {
+    eval "run timeout 5 bin/validate-templates.sh -A"
+    eval "assert_output --partial Templates validation SUCCESS"
 }
 
-@test "$validate_templates_name --cluster aws-demo starts generating 'aws-demo'" {
-    eval "$run_otomi_validate_templates --cluster $aws_demo_str"
-    eval "$assert_output_partial_generating_text $generating_text $aws_demo_str"
-    refute_output "$generating_text $aws_dev_str"
+@test "validate-templates --cluster aws-demo starts generating 'aws-demo'" {
+    eval "run timeout 5 bin/validate-templates.sh --cluster aws-demo"
+    eval "assert_output --partial Templates validation SUCCESS"
+    refute_output "Generating k8s v1.18 manifests for cluster aws-dev"
 }
