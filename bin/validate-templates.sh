@@ -58,8 +58,7 @@ function process_crd() {
       jq -c "$filter_crd_expr" |
       jq -S -c --raw-output -f "$jq_file" >>"$schemas_bundle_file"
   } || {
-    err "Processing: $document"
-    [ -n "$CI" ] && exit 1
+    err "Processing: $document" && exit 1
   }
 }
 
@@ -99,16 +98,14 @@ function validate_templates() {
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   echo "Validating resources for cluster '$cluster_env'..."
-  set +o pipefail
-  [ -n "$CI" ] && set +e
+  set +eo pipefail
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
     --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-  set -o pipefail
-  [ -n "$CI" ] && set -e
+  set -eo pipefail
 
   grep -e "ERR\b" $tmp_out && exitcode=1
-  [ -n "$CI" ] && [ $exitcode -ne 0 ] && exit $exitcode
+  [ $exitcode -ne 0 ] && exit $exitcode
   return 0
 }
 

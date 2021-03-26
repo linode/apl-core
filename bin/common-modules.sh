@@ -1,5 +1,27 @@
 #!/usr/local/env bash
 
+# some exit handling for scripts to clean up
+exitcode=0
+script_message=''
+function exit_handler() {
+  local x=$?
+  [ $x -ne 0 ] && exitcode=$x
+  [ "$script_message" != '' ] && ([ $exitcode -eq 0 ] && echo "$script_message SUCCESS" || err "$script_message FAILED")
+  cleanup
+  trap "exit $exitcode" EXIT ERR
+  exit $exitcode
+}
+trap exit_handler EXIT ERR
+function cleanup() {
+  return 0
+}
+function abort() {
+  cleanup
+  trap 'exit 0' EXIT
+  exit 0
+}
+trap abort SIGINT
+
 #####
 # Use OPTIONS/LONGOPTS(LONGOPTIONS) to set additional parameters.
 # Resources:
@@ -13,8 +35,8 @@ function parse_args() {
     exit 1
   fi
 
-  OPTIONS=Al:c:
-  LONGOPTS=all,label:,cluster:
+  OPTIONS=Ac:f:l:
+  LONGOPTS=all,cluster:,file:,label:
 
   # - regarding ! and PIPESTATUS see above
   # - temporarily store output to be able to check for errors
@@ -33,6 +55,10 @@ function parse_args() {
         ;;
       -c | --cluster)
         CLUSTER_OPT=$2
+        shift 2
+        ;;
+      -f | --file)
+        FILE_OPT=$2
         shift 2
         ;;
       -l | --label)
@@ -62,5 +88,17 @@ function process_clusters() {
   else
     $cmd
     exit 0
+  fi
+}
+
+function hf_templates() {
+  [ -n "$DEBUG" ] && keep="--skip-cleanup"
+  if [ -n "$1" ]; then
+    local out_dir="$1"
+    [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" $keep >/dev/null
+    hf $(echo ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps --output-dir="$out_dir" $keep >/dev/null
+  else
+    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $keep 2>&1 | grep -Ev $helmfile_output_hide_tpl
+    hf $(echo ${FILE_OPT:+"-l $FILE_OPT"} ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps $keep 2>&1 | grep -Ev $helmfile_output_hide_tpl
   fi
 }

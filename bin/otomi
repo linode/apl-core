@@ -14,7 +14,7 @@
 set -e
 
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-[ -n "$DEBUG" ] && unset DEBUG && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
+[ -n "$TIME" ] && unset TIME && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
 
 command=$1
 env_unset='false'
@@ -95,6 +95,7 @@ function show_usage() {
   Env flags:
     CI=1                Exit the script after first error
     DEBUG=1             Run otomi CLI in debug mode
+    TIME=1              Time otomi CLI calls
     VERBOSE=1;          Run otomi CLI in verbose mode
 
   Example helmfile options:
@@ -233,6 +234,7 @@ function drun() {
       -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e DEBUG="$DEBUG" \
+      -e TIME="$TIME" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
@@ -364,7 +366,7 @@ function execute() {
       validate_cluster_env
       check_kube_context=0
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER --quiet "$@" template --skip-deps | grep -Ev $helmfile_output_hide_tpl
+      drun bin/template.sh "$@"
       ;;
     test)
       evaluate_secrets
