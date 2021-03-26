@@ -62,13 +62,13 @@
 }
 
 @test "validate-templates with both -A and -c fails" {
-    eval "run timeout 5 bin/validate-templates.sh -A -c aws-dev"
+    run timeout 5 bin/validate-templates.sh -A -c aws-dev
     assert_output --partial 'cannot specify --all and --cluster simultaneously'
     assert_failure 1
 }
 
 @test "validate-templates with both --all and --cluster fails" {
-    eval "run timeout 5 bin/validate-templates.sh --all --cluster aws-dev"
+    run timeout 5 bin/validate-templates.sh --all --cluster aws-dev
     assert_output --partial 'cannot specify --all and --cluster simultaneously'
     assert_failure 1
 }

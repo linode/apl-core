@@ -20,17 +20,17 @@ function teardown () {
 # bin/validate-templates 
 #####
 @test "validate-templates -l something starts generating" {
-    eval "run timeout 5 bin/validate-templates.sh -l group=jobs"
-    eval "assert_output --partial Templates validation SUCCESS"
+    run timeout 5 bin/validate-templates.sh -l group=jobs
+    assert_output --partial 'Generating k8s v1.18 manifests for cluster'
 }
 
 @test "validate-templates -A starts generating" {
-    eval "run timeout 5 bin/validate-templates.sh -A"
-    eval "assert_output --partial Templates validation SUCCESS"
+    run timeout 5 bin/validate-templates.sh -A
+    assert_output --partial 'Generating k8s v1.18 manifests for cluster'
 }
 
 @test "validate-templates --cluster aws-demo starts generating 'aws-demo'" {
-    eval "run timeout 5 bin/validate-templates.sh --cluster aws-demo"
-    eval "assert_output --partial Templates validation SUCCESS"
+    run timeout 5 bin/validate-templates.sh --cluster aws-demo
+    assert_output --partial 'Generating k8s v1.18 manifests for cluster'
     refute_output "Generating k8s v1.18 manifests for cluster aws-dev"
 }
