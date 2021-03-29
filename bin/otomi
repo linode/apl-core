@@ -15,6 +15,7 @@
 [ -n "$TRACE" ] && unset TRACE && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
 
 command=$1
+shift
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
@@ -91,8 +92,8 @@ function show_usage() {
 
   Env flags:
     CI=1                Exit the script after first error
-    DEBUG=1             Run otomi CLI in debug mode
-    TRACE=1              Time otomi CLI calls
+    DEBUG=1             Run otomi CLI in debug mode. Keeps tmp files for inspection.
+    TRACE=1             Trace otomi CLI calls. Starts bash with -x and logs time.
     VERBOSE=1;          Run otomi CLI in verbose mode
 
   Example helmfile options:
@@ -244,7 +245,7 @@ function drun() {
 }
 
 function execute() {
-  shift 2
+  shift
   case $command in
     apply)
       evaluate_secrets
@@ -397,6 +398,7 @@ function execute() {
       [ -z "$1" ] && err "Unknown command: $command" && exit 1
       ;;
   esac
+  exit
 }
 
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 1
