@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[ -n "${DEBUG:-}" ] && set -x
+[ -n "${TRACE:-}" ] && set -x
 set -e
 
 # Environment vars
@@ -63,8 +63,9 @@ function get_k8s_version() {
 }
 
 function otomi_image_tag() {
-  local otomiVersion=$(yq r $clusters_file "cluster.otomiVersion")
-  [ -n "$otomiVersion" ] && echo $otomiVersion || echo 'latest'
+  local otomi_version=$(yq r $clusters_file "cluster.otomiVersion")
+  [ -n "$otomi_version" ] && otomi_version='latest'
+  echo $otomi_version
 }
 
 function customer_name() {

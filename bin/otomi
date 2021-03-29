@@ -12,9 +12,10 @@
 ##
 #####################################################################################
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-[ -n "$TIME" ] && unset TIME && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
+[ -n "$TRACE" ] && unset TRACE && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
 
 command=$1
+shift
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
@@ -38,11 +39,10 @@ function verbose_env() {
 
 # check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
 check_kube_context=0
-# A path to directory with values directory
-
 mount_stack_dir=0
 stack_dir='/home/app/stack'
-cmd_image="otomi/core:$(otomi_image_tag)"
+readonly image_tag=$(otomi_image_tag)
+readonly cmd_image="otomi/core:$image_tag"
 docker_terminal_params='-it'
 helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
@@ -92,8 +92,8 @@ function show_usage() {
 
   Env flags:
     CI=1                Exit the script after first error
-    DEBUG=1             Run otomi CLI in debug mode
-    TIME=1              Time otomi CLI calls
+    DEBUG=1             Run otomi CLI in debug mode. Keeps tmp files for inspection.
+    TRACE=1             Trace otomi CLI calls. Starts bash with -x and logs time.
     VERBOSE=1;          Run otomi CLI in verbose mode
 
   Example helmfile options:
@@ -114,7 +114,7 @@ function evaluate_k8s_context() {
 function validate_k8s_context() {
   local context=$(kubectl config current-context)
   if [ "$K8S_CONTEXT" != "$context" ]; then
-    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Y n]" ok
+    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" ok
     if [ "${ok:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
       $is_repo && drun bin/bootstrap.sh 1
@@ -203,6 +203,7 @@ function drun() {
   # - in docker AND force docker
   if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
+    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ "$has_docker" = 'true' ] && docker pull "otomi/core:$image_tag"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
@@ -222,7 +223,7 @@ function drun() {
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e DEBUG="$DEBUG" \
-      -e TIME="$TIME" \
+      -e TRACE="$TRACE" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
@@ -234,7 +235,7 @@ function drun() {
 }
 
 function execute() {
-  shift 2
+  shift
   case $command in
     apply)
       evaluate_secrets
@@ -387,6 +388,7 @@ function execute() {
       [ -z "$1" ] && err "Unknown command: $command" && exit 1
       ;;
   esac
+  exit
 }
 
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 1
