@@ -45,14 +45,12 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.cluster.domain $.domain))) }}
 {{- if not $isApps }}
+  {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
   {{- if (not (hasKey $routes $domain)) }}
-    {{- $routes = (merge $routes (dict $domain (hasKey $s "paths" | ternary $s.paths list))) }}
+    {{- $routes = merge $routes (dict $domain $paths) }}
   {{- else }}
-    {{- if $s.paths }}
-      {{- $paths := index $routes $domain }}
-      {{- $paths = concat $paths $s.paths }}
-      {{- $routes = (merge (dict $domain $paths) $routes) }}
-    {{- end }}
+    {{- $paths = concat (index $routes $domain) $paths }}
+    {{- $routes = (merge (dict $domain $paths) $routes) }}
   {{- end }}
 {{- end }}
 {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}

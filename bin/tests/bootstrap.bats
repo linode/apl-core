@@ -16,7 +16,7 @@ function teardown () {
 #######################
 # env folder creation #
 #######################
-@test "$env_folder should not be overwritten" {
+@test "env folder should not be overwritten" {
     git init "$ENV_DIR"
     cluster_path="$env_path/clusters.yaml"
     mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
@@ -27,7 +27,7 @@ function teardown () {
     assert_file_not_exist "$env_path/teams"
 }
 
-@test "$env_folder should be created after bootstrap.sh" {
+@test "env folder should be created after bootstrap.sh" {
     git init "$ENV_DIR"
     bin/bootstrap.sh
 
@@ -39,20 +39,20 @@ function teardown () {
 ################
 # bootstrap.sh #
 ################
-@test "$bootstrap_sh should pass $env_dir_str folder" {
+@test "bootstrap.sh should pass with new ENV_DIR (otomi-values) folder" {
     git init "$ENV_DIR"
     run bin/bootstrap.sh
     assert_success
 }
 
-@test "$bootstrap_sh multiple times should pass $env_dir_str" {
+@test "bootstrap.sh multiple times should pass with new ENV_DIR (otomi-values)" {
     git init "$test_temp_dir"
     bin/bootstrap.sh 
     run bin/bootstrap.sh
     assert_success
 }
 
-@test "$bootstrap_sh creates a valid loose schema" {
+@test "bootstrap.sh creates a valid loose schema" {
     git init "$ENV_DIR"
     run bin/bootstrap.sh
     assert_success

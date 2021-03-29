@@ -17,13 +17,13 @@ function teardown () {
 }
 
 @test "$validate_values_str starts generating with --cluster azure-demo" {
-    eval "$run_otomi_validate_values --cluster azure-demo"
+    eval "run timeout 5 bin/validate-values.sh --cluster azure-demo"
     assert_output --partial "/tmp/otomi/values/azure-demo.yaml passed test"
     assert [ ! -f "/tmp/otomi/values/aws-dev.yaml" ]
 }
 
 @test "$validate_values_str starts generating with --cluster aws-dev" {
-    eval "$run_otomi_validate_values --cluster aws-dev"
+    eval "run timeout 5 bin/validate-values.sh --cluster aws-dev"
     assert_output --partial "/tmp/otomi/values/aws-dev.yaml passed test"
     assert [ ! -f "/tmp/otomi/values/azure-demo.yaml" ]
 }
