@@ -50,6 +50,7 @@ if [ ! -d "$ENV_DIR/env" ]; then
   echo "No files found in env, installing demo files"
   cp -r $PWD/.demo/env $ENV_DIR/env
 fi
+git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 # to accomodate sops plugin in vscode:
 [ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
