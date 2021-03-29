@@ -71,7 +71,7 @@ function show_usage() {
     bootstrap           bootstrap values repo with artifacts corresponding to the target cluster's stack version
     check-policies      check if generated manifests adhere to defined OPA policies (takes helmfile options)
     commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
-    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg). Currently has only one option: $(-c | --cluster) (to set target cluster).
+    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg).
     console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script

@@ -10,7 +10,7 @@ readonly otomi_settings="$ENV_DIR/env/settings.yaml"
 readonly otomi_tools_image="otomi/tools:latest"
 
 # Mutliple files vars
-readonly clusters_file="$ENV_DIR/env/clusters.yaml"
+readonly clusters_file="$ENV_DIR/env/cluster.yaml"
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
 readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
@@ -63,13 +63,15 @@ function get_k8s_version() {
 }
 
 function otomi_image_tag() {
-  local otomi_version=$(yq r $clusters_file "cluster.otomiVersion")
-  [ -n "$otomi_version" ] && otomi_version='latest'
+  local otomi_version=''
+  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file "cluster.otomiVersion")
+  [ -z "$otomi_version" ] && otomi_version='latest'
   echo $otomi_version
 }
 
 function customer_name() {
-  yq r $otomi_settings "customer.name"
+  [ -f $otomi_settings ] && yq r $otomi_settings "customer.name" && return 0
+  return 1
 }
 
 function hf() {
