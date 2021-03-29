@@ -26,18 +26,22 @@ fi
 readonly webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 
 function template_drone_config() {
-  local targetPath="$ENV_DIR/env/clouds/${CLOUD}/${CLUSTER}/.drone.yml"
-  local otomi_image_tag="$(yq r $clusters_file clouds.${CLOUD}.clusters.${CLUSTER}.otomiVersion)"
+  local targetPath="$ENV_DIR/env/.drone.yml"
+  local otomi_image_tag="$(yq r $clusters_file cluster.otomiVersion)"
+  local cluster="$(yq r $clusters_file cluster.id)"
 
   printf "${COLOR_LIGHT_PURPLE}Creating $targetPath ${COLOR_NC}\n"
 
   local target=$targetPath
   [ "${DRY_RUN-'false'}" = 'false' ] && target="/dev/stdout"
 
-  cat $templatePath | sed -e "s/__CLOUD/${CLOUD}/g" -e "s/__CLUSTER/${CLUSTER}/g" \
-    -e "s/__IMAGE_TAG/${otomi_image_tag}/g" -e "s|__WEBHOOK|${webhook}|g" \
-    -e "s/__CUSTOMER/${customer_name}/g" -e "s/__BRANCH/${branch}/g" \
+  cat $templatePath | sed \
+    -e "s/__CLUSTER/${cluster}/g" \
+    -e "s/__IMAGE_TAG/${otomi_image_tag}/g" \
+    -e "s|__WEBHOOK|${webhook}|g" \
+    -e "s/__CUSTOMER/${customer_name}/g" \
+    -e "s/__BRANCH/${branch}/g" \
     >$target
 }
 
-for_each_cluster template_drone_config
+template_drone_config

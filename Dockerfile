@@ -26,7 +26,7 @@ ENV CI=true
 COPY --chown=app . .
 
 RUN if [ "$SKIP_TESTS" = 'false' ]; then \
-  cp -r .demo/ env/ && bin/test-build.sh; fi
+  cp -r .test/generic/ env/ && bin/test-build.sh; fi
 
 #-----------------------------
 FROM otomi/tools:v1.4.13 as prod

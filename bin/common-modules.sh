@@ -49,14 +49,6 @@ function parse_args() {
   eval set -- "$PARSED"
   while true; do
     case "$1" in
-      -A | --all)
-        ALL_OPT='true'
-        shift
-        ;;
-      -c | --cluster)
-        CLUSTER_OPT=$2
-        shift 2
-        ;;
       -f | --file)
         FILE_OPT=$2
         shift 2
@@ -75,20 +67,6 @@ function parse_args() {
         ;;
     esac
   done
-}
-
-function process_clusters() {
-  local cmd=$1
-  shift
-  parse_args "$@"
-  [ -n "$ALL_OPT" ] && [ -n "$CLUSTER_OPT" ] && err "cannot specify --all and --cluster simultaneously" && exit 1
-  if [ -n "$ALL_OPT" ]; then
-    for_each_cluster $cmd
-    exit 0
-  else
-    $cmd
-    exit 0
-  fi
 }
 
 function hf_templates() {

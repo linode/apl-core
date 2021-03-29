@@ -64,9 +64,8 @@ function process_crd() {
 
 function process_crd_wrapper() {
   local k8s_version=$1
-  local cluster_env=$2
   setup $k8s_version
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
+  echo "Generating k8s $k8s_version manifests"
   hf_templates "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files..."
@@ -88,8 +87,7 @@ function process_crd_wrapper() {
 
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
-  local cluster_env=$(cluster_env)
-  process_crd_wrapper $k8s_version $cluster_env
+  process_crd_wrapper $k8s_version
 
   local kubeval_schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
@@ -97,7 +95,7 @@ function validate_templates() {
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  echo "Validating resources for cluster '$cluster_env'..."
+  echo "Validating resources"
   set +eo pipefail
   kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
@@ -110,7 +108,7 @@ function validate_templates() {
 }
 
 function main() {
-  process_clusters validate_templates "$@"
+  validate_templates "$@"
 }
 
 main "$@"

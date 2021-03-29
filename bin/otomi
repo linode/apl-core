@@ -99,16 +99,12 @@ function show_usage() {
   Example helmfile options:
     -l|--label          Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
     -f|--file           Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
-  (For a full list of options please read the helmfile documentation.)
-
-  Target (output) options:
-    -A|--all            Target all clusters and charts (not simultaneously with -c|--cluster)     
-    -c|--cluster        Override a set target cluster (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
+  (For a full list of options please read the helmfile documentation.)   
   "
 }
 
 function evaluate_k8s_context() {
-  local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
+  local env_path="$ENV_DIR/env/.env"
   [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
   . $env_path
   [ -z "$K8S_CONTEXT" ] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
@@ -153,10 +149,6 @@ function evaluate_secrets() {
 
 function validate_cluster_env() {
   check_kube_context=1
-  local err
-  [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
-  [ -z "$CLUSTER" ] && err "The CLUSTER environment variable is not set" && err=1
-  [ -n "$err" ] && exit 2
   return 0
 }
 
@@ -226,10 +218,8 @@ function drun() {
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
       -e VERBOSE="${VERBOSE-}" \
-      -e CLOUD="$CLOUD" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-      -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e DEBUG="$DEBUG" \
       -e TIME="$TIME" \
@@ -250,7 +240,7 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
       docker_terminal_params='-ti'
@@ -307,13 +297,13 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" destroy | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
@@ -337,7 +327,7 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" | grep -Ev $helmfile_output_hide
       ;;
     pull)
       is_repo
@@ -357,7 +347,7 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
@@ -386,7 +376,7 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       check_kube_context=0

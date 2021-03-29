@@ -17,15 +17,15 @@ function cleanup() {
 mkdir -p $k8s_resources_path >/dev/null
 
 function validate_values() {
-  [ -n "$LABEL_OPT" ] && err "Cannot pass option $LABEL_OPT: please specify --all|-A or --cluster|-c" && exit 1
-  local values_path="$k8s_resources_path/$(cluster_env).yaml"
+  [ -n "$LABEL_OPT" ] && err "Cannot pass option $LABEL_OPT." && exit 1
+  local values_path="$k8s_resources_path/values.yaml"
   hf_values >$values_path
   ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
   return 0
 }
 
 function main() {
-  process_clusters validate_values "$@"
+  validate_values "$@"
 }
 
 main "$@"

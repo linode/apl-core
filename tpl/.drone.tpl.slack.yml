@@ -20,15 +20,12 @@ environment:
 steps:
   - name: slack-start
     image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     settings:
       webhook: __WEBHOOK
       channel: mon-otomi
       username: Drone
       template: >
-        Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+        Started syncing cluster '__CLUSTER' for customer '__CUSTOMER'...
         Drone: <{{ build.link }}>
 
   - name: prepare-env
@@ -39,9 +36,6 @@ steps:
   - name: test
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - prepare-env
     commands:
@@ -50,9 +44,6 @@ steps:
   - name: deploy
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     commands:
       - cd .. && bin/otomi deploy
     depends_on:
@@ -60,9 +51,6 @@ steps:
 
   - name: slack-result
     image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - deploy
     settings:
@@ -71,9 +59,9 @@ steps:
       username: Drone
       template: >
         {{#success build.status}}
-          Completed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' :)
+          Completed syncing cluster '__CLUSTER' for customer '__CUSTOMER' :)
         {{else}}
-          Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+          Failed syncing cluster '__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
         {{/success}}
 
         Drone: <{{ build.link }}>

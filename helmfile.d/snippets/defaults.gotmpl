@@ -9,18 +9,12 @@ helmDefaults:
   disableValidation: true
 {{- $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
 environments:
-  {{- range $provider, $p := $v.clouds -}}
-  {{- range $clusterName, $c := $p.clusters -}}
+  {{- $provider := $v.cluster.provider -}}
+  {{- $clusterName := $v.cluster.name -}}
+  
   {{- $otomiDefaults := dict "isManaged" (has $provider (list "aws" "azure" "google")) "hasCloudLB" (eq $provider "azure") }}
   # toYaml | fromYaml avoids bug that does not let us do a merge in a simple way: https://github.com/roboll/helmfile/issues/1275
   {{- $values := $v | toYaml | fromYaml -}}
-  {{- $clusterSettings := $c | toYaml | fromYaml -}}
-  {{- $clusterSettings = set $clusterSettings "id" (printf "%s/%s" $provider $clusterName) -}}
-  {{- $clusterSettings = set $clusterSettings "provider" $provider -}}
-  {{- $clusterSettings = set $clusterSettings "name" $clusterName -}}
-  {{- $clusterSettings = set $clusterSettings "domain" (printf "%s.%s" $clusterName $p.domain) -}}
   {{- $values = set $values "otomi" $otomiDefaults -}}
-  {{- $values = set $values "cluster" $clusterSettings -}}
   {{- tpl (readFile "../helmfile.d/snippets/env.gotmpl") $values | nindent 2 }}
-  {{- end -}}
-  {{- end -}}
+
