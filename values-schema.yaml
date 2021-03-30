@@ -98,62 +98,17 @@ definitions:
         patternProperties:
           '^[a-z-]+$':
             $ref: '#/definitions/cluster'
-      domain:
-        $ref: '#/definitions/domain'
     required:
       - domain
       - clusters
   cluster:
     additionalProperties: false
     properties:
-      apiName:
-        description: Only used for API/UI to show in app.
-        type: string
-      apiServer:
-        description: Used by kubectl for local deployment to target cluster.
-        type: string
-      dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
-        enum:
-          - azure
-          - google
-          - aws
-        type: string
-      dnsZones:
-        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
-        items:
-          $ref: '#/definitions/domain'
-        type: array
-      domain:
-        $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       enabled:
         default: true
         type: boolean
-      entrypoint:
-        description: A Kubernetes API public IP address (onprem only).
-        type: string
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
-      otomiVersion:
-        default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-        type: string
-      region:
-        description: Dependent on provider.
-        examples:
-          - europe-west4
-          - eu-central-1
-          - westeurope
-        type: string
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        type: string
     required:
-      - apiServer
-      - k8sVersion
-      - otomiVersion
-      - region
+      - enabled
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -1485,8 +1440,66 @@ properties:
         $ref: '#/definitions/cloud'
       onprem:
         $ref: '#/definitions/cloud'
+
   cluster:
-    description: An internal otomi object (do not edit it).
+    properties:
+      apiName:
+        description: Only used for API/UI to show in app.
+        type: string
+      apiServer:
+        description: Used by kubectl for local deployment to target cluster.
+        type: string
+      dnsProvider:
+        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
+        enum:
+          - azure
+          - google
+          - aws
+        type: string
+      dnsZones:
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
+        items:
+          $ref: '#/definitions/domain'
+        type: array
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
+      entrypoint:
+        description: A Kubernetes API public IP address (onprem only).
+        type: string
+      k8sVersion:
+        $ref: '#/definitions/k8sVersion'
+      name:
+        type: string
+      otomiVersion:
+        default: latest
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
+        type: string
+      provider:
+        type: string
+        enum:
+          - aws
+          - azure
+          - google
+          - oneprem
+      region:
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
+        type: string
+      vpcID:
+        description: AWS only. If provided will override autodiscovery from metadata.
+        type: string
+    required:
+      - apiServer
+      - domain
+      - k8sVersion
+      - name
+      - otomiVersion
+      - provider
+      - region
   customer:
     additionalProperties: false
     properties:
