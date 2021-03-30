@@ -7,11 +7,9 @@ helmDefaults:
   cleanupOnFail: false
   skipDeps: true
   disableValidation: true
-{{- $v := (readFile "../env/env/clusters.yaml" | fromYaml) }}
+{{- $v := (readFile "../env/env/cluster.yaml" | fromYaml) }}
 environments:
   {{- $provider := $v.cluster.provider -}}
-  {{- $clusterName := $v.cluster.name -}}
-  
   {{- $otomiDefaults := dict "isManaged" (has $provider (list "aws" "azure" "google")) "hasCloudLB" (eq $provider "azure") }}
   # toYaml | fromYaml avoids bug that does not let us do a merge in a simple way: https://github.com/roboll/helmfile/issues/1275
   {{- $values := $v | toYaml | fromYaml -}}
