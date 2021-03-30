@@ -42,7 +42,6 @@ RUN apt-get update -qq \
   git \
   gnupg2 \
   groff \
-  jq \
   nano \
   netcat \
   openssh-server \

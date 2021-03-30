@@ -9,7 +9,7 @@ clusterDomain: cluster.local
 image:
   repository: gitea/gitea
   tag: 1.13.4
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 
