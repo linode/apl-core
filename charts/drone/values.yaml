@@ -102,6 +102,9 @@ sourceControl:
     clientSecretValue:
     server:
   gitea:
+    clientID:
+    clientSecretKey: clientSecret
+    clientSecretValue:
     server:
   gogs:
     server:
