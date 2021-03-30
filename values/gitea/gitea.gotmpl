@@ -25,6 +25,8 @@ gitea:
       ROOT_URL: "https://{{ $giteadomain }}/"
     openid:
       ENABLE_OPENID_SIGNIN: true
+    repository:
+      DEFAULT_BRANCH: main
   metrics:
     enabled: true
     serviceMonitor:

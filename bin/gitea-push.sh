@@ -13,25 +13,34 @@ readonly gitea_url="gitea.$cluster_domain"
 readonly gitea_password=$(echo "$values" | yq r - 'charts.gitea.admin.password')
 readonly gitea_user='otomi'
 readonly gitea_repo='values'
-readonly remote_name='origin'
-
 cd $ENV_DIR
-
 # Initialize as clean slate
 if [ ! -d .git ]; then
   git init
+  git checkout -b main
 fi
-# Check if gitea is origin, otherwise stop
+
+set +o pipefail
+tmp_remote_name=$(git remote -v | grep "$gitea_url" | grep "push" | cut -f1)
+remote_name=${tmp_remote_name:-origin}
+set -o pipefail
+
 if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
-  err "Another origin already exists, not using gitea"
-  exit 0
-else
+  read "Another origin already exists, do you want to add Gitea as a remote? [y/N]" add_remote
+  if [ $add_remote == 'y' ] || [ $add_remote == 'Y' ]; then
+    remote_name='otomi-values'
+  else
+    exit 0
+  fi
+fi
+if [ ! $(git config remote.$remote_name.url) ]; then
   git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_user/$gitea_repo.git"
   echo "Added gitea as a remote origin"
+  echo "You can push using: \`git push main $remote_name\`"
 fi
 
 # Try to pull, if repo is not new, it will get data
-git fetch $remote_name master || true
+git fetch $remote_name main || true
 # Which will show how many commits are there.
 readonly commit_count=$(git rev-list --count --remotes=$remote_name)
 
@@ -41,7 +50,7 @@ if [ "$commit_count" -eq "0" ]; then
   git add -A
 
   git commit --no-verify -m "Initial commit of otomi-values"
-  git push -u $remote_name master
+  git push -u $remote_name main
   echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"
