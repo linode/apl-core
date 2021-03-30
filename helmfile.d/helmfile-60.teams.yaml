@@ -50,7 +50,7 @@ releases:
         {{- end }}
   {{- if $v.otomi.isMultitenant }}  
   - name: prometheus-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-operator
     labels:
@@ -149,7 +149,7 @@ releases:
             {{- end }}
   {{ if has "msteams" ($team | get "receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -168,7 +168,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
   {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:

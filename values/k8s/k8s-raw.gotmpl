@@ -12,7 +12,6 @@ resources:
   {{- end }}
   {{- range $id, $team := $t.teams }}
     {{- $ns := printf "team-%s" $id }}
-    {{- if has $v.cluster.id $team.clusters }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -38,7 +37,6 @@ resources:
         - name: {{ $s.name }}
         {{- end }}
       {{- end }}
-    {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
