@@ -13,7 +13,7 @@ readonly values=$(hf_values)
 readonly raw_receiver=$(echo "$values" | yq r - alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}
 readonly raw_branch=$(echo "$values" | yq r - charts.otomi-api.git.branch)
-readonly branch=${raw_branch:-'master'}
+readonly branch=${raw_branch:-'main'}
 readonly templatePath=$PWD/tpl/.drone.tpl.$receiver.yml
 readonly customer_name=$(customer_name)
 
@@ -27,8 +27,8 @@ readonly webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 
 function template_drone_config() {
   local targetPath="$ENV_DIR/env/clouds/${CLOUD}/${CLUSTER}/.drone.yml"
-  local image_tag=otomi_image_tag
-
+  local image_tag=$(otomi_image_tag)
+  
   printf "${COLOR_LIGHT_PURPLE}Creating $targetPath ${COLOR_NC}\n"
 
   local target=$targetPath
