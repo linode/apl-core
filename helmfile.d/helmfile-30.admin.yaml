@@ -18,6 +18,7 @@ releases:
     namespace: team-admin
     labels:
       pkg: drone
+      stage: post
     chart: ../charts/drone-admit-members
     values:
       - ../values/drone/drone-admit-members.gotmpl
