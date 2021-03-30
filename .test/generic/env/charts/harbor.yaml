@@ -1,0 +1,10 @@
+charts:
+  harbor:
+    _rawValues: {}
+    enabled: false
+    persistence:
+      imageChartStorage:
+        type: gcs
+        gcs:
+          bucket: otomi-harbor
+          rootdirectory: /google/demo
