@@ -16,6 +16,8 @@ stringData:
     # END: initPreScript
     {{- end }}
 
+    chmod 777 /data
+
     mkdir -p /data/git/.ssh
     chmod -R 700 /data/git/.ssh
     mkdir -p /data/gitea/conf
