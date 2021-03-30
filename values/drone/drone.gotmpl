@@ -39,9 +39,11 @@ server:
     DRONE_LOGS_TRACE: {{ $debug }}
     DRONE_LOGS_PRETTY: false
     DRONE_RPC_DEBUG: {{ $debug }}
+    {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
-    {{- with $d.repoFilter }}
-    DRONE_REPOSITORY_FILTER: {{ . }}
+    {{- end }}
+    {{- if hasKey $d "repoFilter" }}
+    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
