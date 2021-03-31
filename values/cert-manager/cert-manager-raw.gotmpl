@@ -3,12 +3,15 @@
 {{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $secretName:= "dns-secret"}}
+
+
 resources:
 {{- if or (eq $dnsProvider "azure") (eq $dnsProvider "google") }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: dns-secret
+      name: {{ $secretName }}
     data:
       {{- if eq $dnsProvider "google" }}
       secret: "{{ $v | getOrNil "google.cloudDnsKey" | b64enc }}"
@@ -33,11 +36,16 @@ resources:
           - selector: {}
             dns01:
               {{- index $cm.provider $dnsProvider | toYaml | nindent 14 }}
-                {{- if or (eq $dnsProvider "azure") (eq $dnsProvider "google") }}
+                {{- if eq $dnsProvider "azure" }}
                 clientSecretSecretRef:
-                  name: dns-secret
+                  name: {{ $secretName }}
+                  key: secret
+                {{- else if eq $dnsProvider "google" }}
+                serviceAccountSecretRef:
+                  name: {{ $secretName }}
                   key: secret
                 {{- end }}
+
 
 {{- end }}
 # generate all da certs
