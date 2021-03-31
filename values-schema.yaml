@@ -1450,11 +1450,10 @@ properties:
         description: Used by kubectl for local deployment to target cluster.
         type: string
       dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
+        description: DNS zone provider
         enum:
           - azure
           - google
-          - aws
         type: string
       dnsZones:
         description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
@@ -1495,6 +1494,7 @@ properties:
     required:
       - apiServer
       - domain
+      - dnsProvider
       - k8sVersion
       - name
       - otomiVersion
