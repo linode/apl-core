@@ -150,7 +150,7 @@ grafana:
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
     {{- end }}
-    {{- if $c.sitespeed.enabled }}
+    {{- if $c | get "sitespeed.enabled" false }}
     - name: Graphite
       editable: false
       type: graphite

@@ -137,7 +137,7 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if $c.sitespeed.enabled }}
+            {{- if $c | get "sitespeed.enabled" false }}
             - name: Graphite
               editable: false
               type: graphite
