@@ -1,0 +1,6 @@
+teamConfig:
+  teams:
+    demo:
+      id: demo
+      clusters:
+        - google/demo

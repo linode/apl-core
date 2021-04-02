@@ -1,0 +1,21 @@
+alerts:
+  receivers:
+    - slack
+  slack:
+    channel: mon-otomi
+    channelCrit: mon-otomi-crit
+customer:
+  name: demo
+otomi:
+  isMultitenant: true
+  mode: ce
+  teamPrefix: team-
+oidc:
+  adminGroupID: 'te'
+  authUrl: https://oidc.local/oauth2/authorize
+  clientID: 5eb129f2-1b26-4910-a05a-70d8b6a380cd
+  issuer: https://oidc.local/57a3f6ea-7e70-4260-acb4-e06ce452f695/
+  scope: openid email profile
+  teamAdminGroupID: teamAdminGroupID
+  tenantID: tenantID
+  tokenUrl: https://oidc.local/57a3f6ea-7e70-4260-acb4-e06ce452f695/oauth2/token

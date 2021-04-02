@@ -1,0 +1,8 @@
+charts:
+  external-dns:
+    domainFilters:
+      - otomi.cloud
+    zoneIdFilters: []
+    azure:
+      resourceGroup: 'FillMe'
+      aadClientId: 'FillMe'

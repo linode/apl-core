@@ -1,0 +1,8 @@
+charts:
+  cert-manager:
+    email: admins@redkubes.com
+    stage: 'staging'
+    provider:
+      aws:
+        route53:
+          region: eu-central-1

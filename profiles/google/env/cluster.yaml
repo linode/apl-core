@@ -1,0 +1,9 @@
+cluster:
+  apiName: 'FILL'
+  apiServer: 'apiServer.local'
+  domain: demo.gks.otomi.cloud
+  k8sVersion: '1.19'
+  name: demo
+  otomiVersion: master
+  provider: google
+  region: eu-central-1

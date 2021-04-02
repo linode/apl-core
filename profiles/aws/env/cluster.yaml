@@ -1,0 +1,9 @@
+cluster:
+  apiName: 'FILL'
+  apiServer: 'FILL.eks.amazonaws.com'
+  domain: demo.aks.otomi.cloud
+  k8sVersion: '1.19'
+  name: demo
+  otomiVersion: master
+  provider: aws
+  region: eu-central-1
