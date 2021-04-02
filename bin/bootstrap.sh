@@ -45,8 +45,12 @@ for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
 if [ ! -d "$ENV_DIR/env" ]; then
-  echo "No files found in env, installing demo files"
-  cp -r $PWD/.demo/env $ENV_DIR/env
+  readonly profile=$1
+  readonly profilePath=$PWD/profiles/$profile/env
+  [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
+
+  echo "No files found in "$ENV_DIR/env". Initiliazing configuration files"
+  cp -r $profilePath $ENV_DIR/env
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/

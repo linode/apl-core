@@ -117,7 +117,7 @@ function validate_k8s_context() {
     read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" ok
     if [ "${ok:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
-      $is_repo && drun bin/bootstrap.sh 1
+      $is_repo && drun bin/bootstrap.sh
     else
       exit
     fi
@@ -251,17 +251,10 @@ function execute() {
       drun bats -T "$@" bin/tests
       ;;
     bootstrap)
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
-      drun bin/bootstrap.sh 1
+      drun bin/bootstrap.sh "$@"
       ;;
     check-policies)
       evaluate_secrets
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
-      check_kube_context=0
       drun bin/check-policies.sh "$@"
       ;;
     commit)
@@ -321,7 +314,6 @@ function execute() {
       ;;
     gen-drone)
       evaluate_secrets
-      validate_cluster_env
       drun bin/gen-drone.sh
       ;;
     hf)
@@ -334,7 +326,7 @@ function execute() {
       is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
-      drun bin/bootstrap.sh 1
+      drun bin/bootstrap.sh
       ;;
     regcred)
       drun bin/regcred.sh "$@"
@@ -352,21 +344,15 @@ function execute() {
       ;;
     template)
       evaluate_secrets
-      validate_cluster_env
-      check_kube_context=0
       set -o pipefail
       drun bin/template.sh "$@"
       ;;
     test)
       evaluate_secrets
-      validate_cluster_env
       drun bin/test.sh
       ;;
     validate-templates)
       evaluate_secrets
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
       drun bin/validate-templates.sh "$@"
       ;;
     validate-values)
@@ -375,7 +361,6 @@ function execute() {
       ;;
     values)
       evaluate_secrets
-      validate_cluster_env
       set -o pipefail
       drun helmfile -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
