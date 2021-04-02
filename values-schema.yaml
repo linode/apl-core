@@ -795,6 +795,10 @@ properties:
               - staging
               - production
             type: string
+        required:
+          - email
+          - stage
+          - provider
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -1205,8 +1209,6 @@ properties:
                 type: string
               clientSecret:
                 type: string
-          realm:
-            type: string
           resources:
             additionalProperties: false
             properties:
@@ -1258,8 +1260,16 @@ properties:
                 type: string
               period:
                 type: string
+            required:
+              - duration
+              - period
           storageType:
             type: string
+        required:
+          - adminPassword
+          - persistence
+          - retention
+          - storageType
       nginx-ingress:
         additionalProperties: false
         properties:
@@ -1361,6 +1371,8 @@ properties:
             properties:
               adminPassword:
                 type: string
+            required:
+              - adminPassword
           prometheus:
             additionalProperties: false
             properties:
@@ -1371,6 +1383,8 @@ properties:
             properties:
               grafana:
                 $ref: '#/definitions/resources'
+        required:
+          - grafana
       redis-shared:
         additionalProperties: false
         properties:
