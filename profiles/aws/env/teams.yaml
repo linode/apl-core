@@ -2,5 +2,3 @@ teamConfig:
   teams:
     demo:
       id: demo
-      clusters:
-        - azure/demo
