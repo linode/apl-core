@@ -211,7 +211,7 @@ function drun() {
   # - in docker AND force docker
   if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
-    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ "$has_docker" = 'true' ] && docker pull "otomi/core:$image_tag"
+    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && docker pull "otomi/core:$image_tag"
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
