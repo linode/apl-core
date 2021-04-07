@@ -12,7 +12,7 @@
 ##
 #####################################################################################
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-[ -n "$TRACE" ] && unset TRACE && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@"
+[ -n "$TRACE" ] && unset TRACE && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@" && exit 1
 
 command=$1
 shift
