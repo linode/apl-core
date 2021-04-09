@@ -23,6 +23,7 @@
     "ingressgateway",
     "istioctl",
     "istiod",
+    "keyid",
     "konstraint",
     "kubeapps",
     "kubes",

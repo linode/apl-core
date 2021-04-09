@@ -77,21 +77,22 @@ persistence:
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
     jobservice:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
+
     # If external database is used, the following settings for database will
     # be ignored
     database:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -99,13 +100,13 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
