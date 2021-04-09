@@ -19,8 +19,9 @@ k8s:
       disableIstioInjection: true
     - name: ingress
       disableIstioInjection: true
+    - name: istio-apps
     - name: istio-system
-      # disableIstioInjection: true
+      disableIstioInjection: true
     - name: keycloak
     - name: knative-serving
       disableIstioInjection: true
@@ -33,7 +34,6 @@ k8s:
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
-      # disableIstioInjection: true
     - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -126,6 +126,9 @@ services:
   - name: grafana
     svc: po-grafana
     namespace: monitoring
+    # specifying authz will strip the bearer token by default, unless forwardOriginalToken=true
+    # this mechanism allows us to not bother services that need the same "Bearer" header for their own oidc
+    # it also adds an in-cluster enforcement that only payloads containing the right authn may access it
     authz:
       workload:
         app.kubernetes.io/instance: prometheus-operator
@@ -135,7 +138,7 @@ services:
     port: 3000
     logo:
       name: istio
-    namespace: istio-system
+    namespace: istio-apps
     authz:
       workload:
         app: grafana
@@ -150,7 +153,7 @@ services:
     port: 9090
     logo:
       name: prometheus
-    namespace: istio-system
+    namespace: istio-apps
   - name: alertmanager
     svc: po-alertmanager
     port: 9093
@@ -161,13 +164,13 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: istio-system
+    namespace: istio-apps
   - name: tracing
     svc: tracing
     forwardPath: true
     logo:
       name: jaeger
-    namespace: istio-system
+    namespace: istio-apps
   - name: drone
     svc: drone
     namespace: team-admin
