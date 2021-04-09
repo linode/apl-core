@@ -12,6 +12,17 @@
 - apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
+    name: std-immediate
+  parameters:
+    kind: Managed
+    storageaccounttype: {{ .diskType }}
+  provisioner: kubernetes.io/azure-disk
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
     name: fast
   parameters:
     kind: Managed
@@ -20,3 +31,14 @@
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: fast-immediate
+  parameters:
+    kind: Managed
+    storageaccounttype: {{ .diskType }}
+  provisioner: kubernetes.io/azure-disk
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
