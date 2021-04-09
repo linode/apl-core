@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.9](https://github.com/redkubes/otomi-core/compare/v0.12.8...v0.12.9) (2021-04-09)
+
+
+### Features
+
+* docker pull before run ([#382](https://github.com/redkubes/otomi-core/issues/382)) ([e96abb0](https://github.com/redkubes/otomi-core/commit/e96abb0d9ac1c12e429a9a1b3d10a39f025fdb3c))
+* storage classes added for Immediate binding, fixed harbor on azure not starting ([#401](https://github.com/redkubes/otomi-core/issues/401)) ([52b6f67](https://github.com/redkubes/otomi-core/commit/52b6f673d329076a46ca862fd41d693ed30c6745))
+
+
+### Bug Fixes
+
+* added istio-apps ns to fix istio-system injection problem ([#400](https://github.com/redkubes/otomi-core/issues/400)) ([ae442ea](https://github.com/redkubes/otomi-core/commit/ae442ea87002bb212c47b01c36969306ab4869c5))
+* bin/otomi and bin/common.sh conditionals ([#392](https://github.com/redkubes/otomi-core/issues/392)) ([ae6711a](https://github.com/redkubes/otomi-core/commit/ae6711a6e937fb6d5bd6eec6bec82a83cdf64e45))
+* fixes bug introduced by [#370](https://github.com/redkubes/otomi-core/issues/370)/[#382](https://github.com/redkubes/otomi-core/issues/382) ([#395](https://github.com/redkubes/otomi-core/issues/395)) ([88df926](https://github.com/redkubes/otomi-core/commit/88df9265eb78e7536a0fee5fdec8d6908d46ef56)), closes [#394](https://github.com/redkubes/otomi-core/issues/394)
+* hf_templates function fix, scripts always exit on error ([bfb5761](https://github.com/redkubes/otomi-core/commit/bfb5761eecca5094ce07d8e0d685fac8403f01e7))
+* smaller window for blackbox alert trigger ([b09d8ec](https://github.com/redkubes/otomi-core/commit/b09d8ecab97b4960ab1baf4b0fbc88ad1d755935))
+* stderr diff between github pipeline runner and local docker runner ([c0b5443](https://github.com/redkubes/otomi-core/commit/c0b544357900af19dba8e9067bf2cf521b9d017f))
+* team service without path now appears with slash in ingress ([19989e5](https://github.com/redkubes/otomi-core/commit/19989e58f71bcfcb8d06692ba026292ae4c7a5b4))
+* tests now readable ([edd93e7](https://github.com/redkubes/otomi-core/commit/edd93e7e733cf1b0699000312bd6b2de0ed155ff))
+* unset var ([9008621](https://github.com/redkubes/otomi-core/commit/90086214adf13d7a5ea11e0b550a9f9e6630e2cf))
+
+
+### Others
+
+* **deps:** bump y18n from 4.0.0 to 4.0.1 ([#387](https://github.com/redkubes/otomi-core/issues/387)) ([6717776](https://github.com/redkubes/otomi-core/commit/67177769cff315f279cb4ba37d38c369bea16a6d))
+
 ### [0.12.8](https://github.com/redkubes/otomi-core/compare/v0.12.7...v0.12.8) (2021-03-25)
 
 
