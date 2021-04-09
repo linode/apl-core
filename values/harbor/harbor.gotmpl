@@ -31,7 +31,7 @@ core:
   podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
   secret: {{ $h | get "core.secret" nil }}
-  secretName: {{ $harborSecretName }}
+  # secretName: {{ $harborSecretName }}
   resources:
     {{- with $h | get "resources.core" nil }}
       {{- toYaml . | nindent 4 }}
@@ -83,7 +83,7 @@ persistence:
       size: 5Gi
     jobservice:
       existingClaim: ''
-      storageClass: 'fast'
+      storageClass: 'fast-immediate'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi

@@ -11,6 +11,16 @@
 - apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
+    name: std-immediate
+  parameters:
+    type: pd-standard
+  provisioner: kubernetes.io/gce-pd
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
     name: std-regional
   parameters:
     type: pd-standard
@@ -29,6 +39,16 @@
   allowVolumeExpansion: true
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: fast-immediate
+  parameters:
+    type: pd-ssd
+  provisioner: kubernetes.io/gce-pd
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
 - apiVersion: storage.k8s.io/v1
   kind: StorageClass
   metadata:
