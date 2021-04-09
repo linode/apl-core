@@ -1050,7 +1050,50 @@ properties:
             properties:
               imageChartStorage:
                 additionalProperties: false
+                description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
                 properties:
+                  aws:
+                    additionalProperties: false
+                    properties:
+                      accesskey:
+                        type: string
+                      secretkey:
+                        type: string
+                      region:
+                        type: string
+                      regionendpoint:
+                        type: string
+                      bucket:
+                        type: string
+                      encrypt:
+                        type: boolean
+                      keyid:
+                        type: string
+                      secure:
+                        type: boolean
+                      v4auth:
+                        type: boolean
+                      chunksize:
+                        type: integer
+                      multipartcopychunksize:
+                        type: integer
+                      multipartcopymaxconcurrency:
+                        type: integer
+                      multipartcopythresholdsize:
+                        type: integer
+                      rootdirectory:
+                        type: string
+                  azure:
+                    additionalProperties: false
+                    properties:
+                      accountname:
+                        type: string
+                      accountkey:
+                        type: string
+                      container:
+                        type: string
+                      realm:
+                        type: string
                   gcs:
                     additionalProperties: false
                     properties:
@@ -1528,7 +1571,6 @@ properties:
     required:
       - namespaces
   kms:
-    type: object
     description: Use Cloud KMS to encrypt and decrypt the master key
     oneOf:
       - title: gcpckms

@@ -79,7 +79,6 @@ spec:
                 X-Forwarded-Proto: https
 ---
 {{- if and (not (hasKey $s "isPublic")) (hasKey $s "authz") }}
-# grrr
 {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
