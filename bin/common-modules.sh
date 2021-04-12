@@ -77,6 +77,6 @@ function hf_templates() {
     hf $(echo ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps --output-dir="$out_dir" $keep >/dev/null
   else
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $keep 2>&1 | grep -Ev $helmfile_output_hide_tpl
-    hf $(echo ${FILE_OPT:+"-l $FILE_OPT"} ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps $keep 2>&1 | grep -Ev $helmfile_output_hide_tpl
+    hf $(echo ${FILE_OPT:+"-f $FILE_OPT"} ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) template --skip-deps $keep 2>&1 | grep -Ev $helmfile_output_hide_tpl
   fi
 }
