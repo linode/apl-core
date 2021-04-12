@@ -10,6 +10,7 @@ releases:
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
     disableValidationOnInstall: true
+    createNamespace: false
     labels:
       pkg: gatekeeper
     hooks:
