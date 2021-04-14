@@ -1,5 +1,3 @@
-google:
-  projectId: otomi-cloud
 alerts:
   receivers:
     - slack
@@ -8,12 +6,15 @@ alerts:
     channelCrit: mon-otomi-crit
 customer:
   name: demo
-otomi:
-  isMultitenant: true
-  mode: ce
-  teamPrefix: team-
+dns:
+  dnsZones: []
+  domain: demo.gks.otomi.cloud
+  google:
+    projectId: <projectId>
+google:
+  projectId: otomi-cloud
 oidc:
-  adminGroupID: 'te'
+  adminGroupID: te
   authUrl: https://oidc.local/oauth2/authorize
   clientID: clientId
   issuer: https://oidc.local/
@@ -21,3 +22,7 @@ oidc:
   teamAdminGroupID: teamAdminGroupID
   tenantID: tenantID
   tokenUrl: https://oidc.local/oauth2/token
+otomi:
+  isMultitenant: true
+  mode: ce
+  teamPrefix: team-

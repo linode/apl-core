@@ -1,6 +1,6 @@
 clouds:
   azure:
-    domain: demo.aks.otomi.cloud
     clusters:
       demo:
         enabled: true
+    domain: demo.aks.otomi.cloud

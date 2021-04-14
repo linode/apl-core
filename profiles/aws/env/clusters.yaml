@@ -1,6 +1,6 @@
 clouds:
   aws:
-    domain: demo.eks.otomi.cloud
     clusters:
       demo:
         enabled: true
+    domain: demo.eks.otomi.cloud

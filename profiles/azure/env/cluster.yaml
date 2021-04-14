@@ -1,7 +1,6 @@
 cluster:
-  apiName: 'FILL'
-  apiServer: 'FILL.aks.azure.com'
-  domain: demo.aks.otomi.cloud
+  apiName: FILL
+  apiServer: FILL.aks.azure.com
   k8sVersion: '1.19'
   name: demo
   otomiVersion: master

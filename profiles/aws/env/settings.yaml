@@ -19,3 +19,5 @@ oidc:
   teamAdminGroupID: teamAdminGroupID
   tenantID: tenantID
   tokenUrl: https://oidc.local/oauth2/token
+dns:
+  region: eu-central-1

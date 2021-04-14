@@ -1,3 +1,9 @@
+alerts:
+  receivers:
+    - slack
+  slack:
+    channel: mon-otomi
+    channelCrit: mon-otomi-crit
 azure:
   appgw:
     isManaged: true
@@ -5,20 +11,18 @@ azure:
   resourceGroup: somevalue
   subscriptionId: somevalue
   tenantId: somevalue
-alerts:
-  receivers:
-    - slack
-  slack:
-    channel: mon-otomi
-    channelCrit: mon-otomi-crit
 customer:
   name: demo
-otomi:
-  isMultitenant: true
-  mode: ce
-  teamPrefix: team-
+dns:
+  azure:
+    aadClientId: <aadClientId>
+    resourceGroup: <resourceGroup>
+    subscriptionId: <subscriptionId>
+    tenantId: <tenantId>
+  dnsZones: []
+  domain: demo.gks.otomi.cloud
 oidc:
-  adminGroupID: 'te'
+  adminGroupID: te
   authUrl: https://oidc.local/oauth2/authorize
   clientID: clientId
   issuer: https://oidc.local/
@@ -26,3 +30,7 @@ oidc:
   teamAdminGroupID: teamAdminGroupID
   tenantID: tenantID
   tokenUrl: https://oidc.local/oauth2/token
+otomi:
+  isMultitenant: true
+  mode: ce
+  teamPrefix: team-

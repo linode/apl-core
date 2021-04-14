@@ -1,7 +1,0 @@
-charts:
-  external-dns:
-    domainFilters:
-      - eks.otomi.cloud
-    zoneIdFilters: []
-    aws:
-      region: eu-central-1
