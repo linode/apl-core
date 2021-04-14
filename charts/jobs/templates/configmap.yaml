@@ -15,7 +15,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: job-init-{{ $v.name }}
+  name: job-{{ $v.name }}-name
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
   {{- with $v.init.env  }}
