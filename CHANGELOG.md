@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.10](https://github.com/redkubes/otomi-core/compare/v0.12.9...v0.12.10) (2021-04-14)
+
+
+### Features
+
+* **team-ns:** exposed resourceQuota and limitRange for teams ([6b8fb6e](https://github.com/redkubes/otomi-core/commit/6b8fb6e9acc0b94b6bf9f07d0b1f5d6354bbeea7)), closes [redkubes/unassigned-issues#155](https://github.com/redkubes/unassigned-issues/issues/155)
+
+
+### Bug Fixes
+
+* [#397](https://github.com/redkubes/otomi-core/issues/397) ([#402](https://github.com/redkubes/otomi-core/issues/402)) ([bd34257](https://github.com/redkubes/otomi-core/commit/bd342576118e4e6885b2dc66f05ab4c20707f680))
+* team demo file ([fc33544](https://github.com/redkubes/otomi-core/commit/fc3354467d0d5b4630d399a49edaf91c6f01687a))
+
+
+### Others
+
+* added new format 2 for package json files [ci skip] ([6c43b93](https://github.com/redkubes/otomi-core/commit/6c43b93df095e5049f6acc6615599b056f4234f0))
+
 ### [0.12.9](https://github.com/redkubes/otomi-core/compare/v0.12.8...v0.12.9) (2021-04-09)
 
 
