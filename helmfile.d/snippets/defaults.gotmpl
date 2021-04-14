@@ -6,7 +6,6 @@ helmDefaults:
   force: false
   cleanupOnFail: false
   skipDeps: true
-  disableValidation: true
 {{- $v := (readFile "../env/env/cluster.yaml" | fromYaml) }}
 environments:
   {{- $provider := $v.cluster.provider -}}

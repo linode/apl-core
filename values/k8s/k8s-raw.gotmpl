@@ -8,7 +8,7 @@ resources:
       name: {{ $ns.name }}
       labels:
         name: {{ $ns.name }}
-        istio-injection: {{ if $ns | get "disableIstioInjection" false }}disabled{{ else }}enabled{{ end }}
+        {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
   {{- end }}
   {{- range $id, $team := $t.teams }}
     {{- $ns := printf "team-%s" $id }}
