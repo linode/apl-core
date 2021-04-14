@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- if or (or $v.env $v.init.env) $v.files }}
+{{- if $v.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,6 +9,15 @@ data:
   {{- with $v.env }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
+---
+{{- end }}
+{{- if $v.init.env }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: job-init-{{ $v.name }}
+  labels: {{- include "jobs.labels" $ | nindent 4 }}
+data:
   {{- with $v.init.env  }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
