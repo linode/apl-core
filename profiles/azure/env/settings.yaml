@@ -20,7 +20,7 @@ dns:
     subscriptionId: <subscriptionId>
     tenantId: <tenantId>
   dnsZones: []
-  domain: demo.gks.otomi.cloud
+  domain: demo.aks.otomi.cloud
 oidc:
   adminGroupID: te
   authUrl: https://oidc.local/oauth2/authorize

@@ -6,12 +6,13 @@ alerts:
     channelCrit: mon-otomi-crit
 customer:
   name: demo
-otomi:
-  isMultitenant: true
-  mode: ce
-  teamPrefix: team-
+dns:
+  dnsZones: []
+  domain: demo.eks.otomi.cloud
+  aws:
+    region: eu-central-1
 oidc:
-  adminGroupID: 'te'
+  adminGroupID: te
   authUrl: https://oidc.local/oauth2/authorize
   clientID: clientId
   issuer: https://oidc.local/
@@ -19,5 +20,7 @@ oidc:
   teamAdminGroupID: teamAdminGroupID
   tenantID: tenantID
   tokenUrl: https://oidc.local/oauth2/token
-dns:
-  region: eu-central-1
+otomi:
+  isMultitenant: true
+  mode: ce
+  teamPrefix: team-

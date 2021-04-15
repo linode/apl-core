@@ -46,11 +46,13 @@ for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
 done
 if [ ! -d "$ENV_DIR/env" ]; then
   readonly profile=$1
+  readonly commonProfilePath=$PWD/profiles/common/env
   readonly profilePath=$PWD/profiles/$profile/env
   [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
 
   echo "No files found in "$ENV_DIR/env". Initiliazing configuration files"
-  cp -r $profilePath $ENV_DIR/env
+  cp -r $commonProfilePath $ENV_DIR
+  cp -r $profilePath $ENV_DIR
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
