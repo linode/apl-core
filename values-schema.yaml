@@ -738,54 +738,6 @@ properties:
             type: string
           email:
             $ref: '#/definitions/email'
-          provider:
-            additionalProperties: false
-            properties:
-              aws:
-                additionalProperties: false
-                properties:
-                  route53:
-                    additionalProperties: false
-                    properties:
-                      region:
-                        type: string
-              azure:
-                additionalProperties: false
-                properties:
-                  azuredns:
-                    additionalProperties: false
-                    properties:
-                      clientID:
-                        type: string
-                      hostedZoneName:
-                        type: string
-                      resourceGroupName:
-                        type: string
-                      subscriptionID:
-                        type: string
-                      tenantID:
-                        type: string
-                    required:
-                      - clientID
-                      - tenantID
-                      - subscriptionID
-                      - resourceGroupName
-                      - hostedZoneName
-              google:
-                additionalProperties: false
-                properties:
-                  clouddns:
-                    additionalProperties: false
-                    properties:
-                      project:
-                        type: string
-                      serviceAccountSecretRef:
-                        additionalProperties: false
-                        properties:
-                          key:
-                            type: string
-                          name:
-                            type: string
           stage:
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
@@ -798,7 +750,6 @@ properties:
         required:
           - email
           - stage
-          - provider
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -1506,7 +1457,6 @@ properties:
         type: string
     required:
       - apiServer
-      - domain
       - k8sVersion
       - name
       - otomiVersion

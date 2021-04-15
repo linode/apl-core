@@ -25,7 +25,7 @@ for profile in $profiles; do
   bin/validate-values.sh
   bin/validate-templates.sh
   bin/check-policies.sh
-  # rm -rf $ENV_DIR
+  rm -rf $valuesPath
   unlink env
 
 done
