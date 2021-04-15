@@ -6,7 +6,7 @@ metadata:
   name: job-{{ $v.name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- toYaml ($v | get "env" dict) | nindent 4 }}
+  {{- toYaml $v.env | nindent 4 }}
 ---
 {{- end }}
 {{- if $v.init.env }}
@@ -16,7 +16,7 @@ metadata:
   name: job-{{ $v.name }}-name
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- toYaml ($v | get "init.env" dict) | nindent 4 }}
+  {{- toYaml $v.init.env | nindent 4 }}
 ---
 {{- end }}
 {{- range $location, $content := $v.files }}
