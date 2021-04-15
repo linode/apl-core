@@ -1,5 +1,5 @@
 {{- $v := .Environment.Values }}
-{{- $externalDns := get $v "charts.external-dns" }}
+{{- $externalDns := $v | get "charts.external-dns" }}
 {{- $dns := $v.dns }}
 {{- $dnsProvider := first (keys $v.dns) }}
 sources:
@@ -12,7 +12,7 @@ google:
   project: {{ $dns.google.projectId }}
   serviceAccountKey: |
     {{- $dns.cloudDnsKey | nindent 4 }}
-{{- else if $dnsProvider "aws") }}
+{{- else if eq $dnsProvider "aws" }}
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}
 azure:

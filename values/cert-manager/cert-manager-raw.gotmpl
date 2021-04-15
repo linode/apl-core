@@ -14,7 +14,8 @@ resources:
       {{- if hasKey $dns "google" }}
       secret: "{{ $dns.google.cloudDnsKey | b64enc }}"
       {{- else if hasKey $dns "azure" }}
-      secret: "{{ $dns.azure.azureClientSecret | b64enc }}"
+      # TODO: is aadClientSecret  same as azureClientSecret ?
+      secret: "{{ $dns.azure.aadClientSecret | b64enc }}"
       {{- else if hasKey $dns "aws" }}
       # aws via service account access not yet implemented, expecting role to be on node
       {{- end }}
@@ -35,17 +36,19 @@ resources:
             dns01:
               {{- if hasKey $dns "aws" }}
               route53:
-                region: {{ $dns.aws.egion }}
+                region: {{ $dns.aws.region }}
               {{- else if hasKey $dns "azure" }}
               azuredns:
-                clientID: {{ $dns.azure.clientID }}
+                clientID: {{ $dns.azure.aadClientId }}
                 clientSecretSecretRef:
                   key: secret
                   name: "dns-secret"
+                {{- if hasKey $dns.azure "hostedZoneName" }}
                 hostedZoneName: {{ $dns.azure.hostedZoneName }}
-                resourceGroupName: {{ $dns.azure.resourceGroupName }}
-                subscriptionID: {{ $dns.azure.subscriptionID }}
-                tenantID: {{ $dns.azure.tenantID }}
+                {{- end }}
+                resourceGroupName: {{ $dns.azure.resourceGroup }}
+                subscriptionID: {{ $dns.azure.subscriptionId }}
+                tenantID: {{ $dns.azure.tenantId }}
               {{- else if hasKey $dns "google" }}
               clouddns:
                 project: {{ $dns.google.projectId }}

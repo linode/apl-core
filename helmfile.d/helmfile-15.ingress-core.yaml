@@ -5,7 +5,7 @@ bases:
 {{- $v := .Environment.Values }}
 {{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
-{{- $adminDomain := printf $v.cluster.domain }}
+{{- $adminDomain := printf $v.dns.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 releases:
   - name: team-ns-admin

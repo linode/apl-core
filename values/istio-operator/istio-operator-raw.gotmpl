@@ -8,9 +8,9 @@
 {{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
 {{- $o := $v.oidc }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
+{{- $appsDomain := printf "apps.%s" $v.dns.domain }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}

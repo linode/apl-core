@@ -8,8 +8,8 @@ global:
 {{- end }}
 {{- if or (has "email" $receivers) (and $isHomeMonitored (has "email" $homeReceivers))  }}
   smtp_smarthost: {{ .root | get "smtp.smarthost" }}
-  smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domain }}
-  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domain) }}
+  smtp_hello: {{ .root | get "smtp.hello" .root.dns.domain }}
+  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.dns.domain) }}
   smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
   smtp_auth_password: {{ .root | get "smtp.auth_password" nil }}
   smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil }}

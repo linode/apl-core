@@ -11,8 +11,6 @@ dns:
   domain: demo.gks.otomi.cloud
   google:
     projectId: <projectId>
-google:
-  projectId: otomi-cloud
 oidc:
   adminGroupID: te
   authUrl: https://oidc.local/oauth2/authorize

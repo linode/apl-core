@@ -1,5 +1,5 @@
 {{ $v := .Environment.Values }}
-{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
+{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
 global:
   hosts:
     domain: {{ $domain }}

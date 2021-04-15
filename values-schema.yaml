@@ -1494,6 +1494,8 @@ properties:
             resourceGroup:
               type: string
               description: Azure resource group to use
+            hostedZoneName:
+              type: string
             tenantId:
               type: string
               description: Azure tenant ID to use (will default to global value)
@@ -1511,7 +1513,7 @@ properties:
               description: If you use Azure MSI, this should be set to true
               default: false
           required:
-            - resourceGroup
+            - resourceGroupName
             - tenantId
             - subscriptionId
             - aadClientId
@@ -1530,18 +1532,14 @@ properties:
             - projectId
         required:
           - google
+    required:
+      - domain
   google:
     description: Google specific configuration.
     properties:
       kmsAccount:
         description: A service account key for managing a KMS vault.
         type: string
-      projectId:
-        description: A Google Cloud project ID for accessing DNS zone.
-        type: string
-    required:
-      - cloudDnsKey
-      - projectId
   home:
     $ref: '#/definitions/alerts'
   k8s:

@@ -11,7 +11,7 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
+  {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.dns.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}
@@ -27,6 +27,7 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         domain: {{ $domain }}
+        clusterDomain: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         knative:
           enabled: true

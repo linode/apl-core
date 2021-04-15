@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
-{{- $host := printf "drone.%s" $v.cluster.domain }}
+{{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: "drone-admit-members"
