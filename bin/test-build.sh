@@ -18,13 +18,14 @@ profiles=$(ls profiles | xargs)
 for profile in $profiles; do
   echo "Validating profiles/$profile/ values"
   [ "$profile" == "common" ] && continue
-  export ENV_DIR=$(mktemp -d)
-  echo $ENV_DIR
+  valuesPath=$(mktemp -d)
+  ln -s $valuesPath env
   bin/bootstrap.sh $profile
+  find $ENV_DIR
   bin/validate-values.sh
   bin/validate-templates.sh
   bin/check-policies.sh
   # rm -rf $ENV_DIR
-  unset ENV_DIR
+  unlink env
 
 done

@@ -51,8 +51,8 @@ if [ ! -d "$ENV_DIR/env" ]; then
   [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
 
   echo "No files found in "$ENV_DIR/env". Initiliazing configuration files"
-  cp -r $commonProfilePath $ENV_DIR
-  cp -r $profilePath $ENV_DIR
+  cp -rv $commonProfilePath $ENV_DIR
+  cp -rv $profilePath $ENV_DIR
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
