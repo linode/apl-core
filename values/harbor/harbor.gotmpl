@@ -31,7 +31,7 @@ core:
   podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
   secret: {{ $h | get "core.secret" nil }}
-  secretName: {{ $harborSecretName }}
+  # secretName: {{ $harborSecretName }}
   resources:
     {{- with $h | get "resources.core" nil }}
       {{- toYaml . | nindent 4 }}
@@ -77,21 +77,22 @@ persistence:
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
     jobservice:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast-immediate'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
+
     # If external database is used, the following settings for database will
     # be ignored
     database:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -99,13 +100,13 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
       existingClaim: ''
-      storageClass: ''
+      storageClass: 'fast'
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi

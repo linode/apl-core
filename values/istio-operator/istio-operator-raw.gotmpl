@@ -181,6 +181,7 @@ resources:
       addonComponents:
         grafana:
           enabled: {{ $ia | get "grafana.enabled" true }}
+          namespace: istio-apps
           k8s:
             podAnnotations:
               sidecar.istio.io/inject: "true"
@@ -199,6 +200,7 @@ resources:
               {{- end }}
         prometheus:
           enabled: {{ $ia | get "prometheus.enabled" true }}
+          namespace: istio-apps
           k8s:
             podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
@@ -215,6 +217,7 @@ resources:
               {{- end }}
         tracing:
           enabled: {{ $ia | get "tracing.enabled" true }}
+          namespace: istio-apps
           k8s:
             podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"
@@ -231,6 +234,7 @@ resources:
               {{- end }}
         kiali:
           enabled: {{ $ia | get "kiali.enabled" true }}
+          namespace: istio-apps
           k8s:
             podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 14 }}
             priorityClassName: "otomi-critical"

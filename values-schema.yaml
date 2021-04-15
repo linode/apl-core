@@ -557,11 +557,22 @@ definitions:
         items:
           type: string
         type: array
+      externalSecrets:
+        items:
+          $ref: '#/definitions/externalSecret'
+        type: array
       id:
         $ref: '#/definitions/idName'
         description: Must be the same as the name.
       jobs:
         $ref: '#/definitions/jobs'
+      limitRange:
+        description: 'Kubernetes limit range. As is.'
+        properties:
+          default:
+            $ref: '#/definitions/resource'
+          defaultRequest:
+            $ref: '#/definitions/resource'
       oidc:
         additionalProperties: false
         properties:
@@ -571,12 +582,10 @@ definitions:
       password:
         description: Will be used to separate team resources.
         type: string
+      resourceQuota:
+        description: Kubernetes resource quota. As is.
       secrets:
         $ref: '#/definitions/secrets'
-      externalSecrets:
-        items:
-          $ref: '#/definitions/externalSecret'
-        type: array
       services:
         items:
           additionalProperties: false
@@ -596,14 +605,14 @@ definitions:
               type: string
             forwardPath:
               default: false
-              description: "Whether to forward the path into the service, or 'terminate' it."
+              description: Whether to forward the path into the service, or 'terminate' it.
               type: boolean
             id:
               description: Unique identifier created by and used in API. Optional.
               type: string
             internal:
               default: false
-              description: 'If true, service is not going to be exposed to the public domain.'
+              description: If true, service is not going to be exposed to the public domain.
               type: boolean
             isPublic:
               default: false
@@ -676,7 +685,7 @@ definitions:
                   $ref: '#/definitions/secrets'
             name:
               $ref: '#/definitions/idName'
-              description: 'Short name. Will be used for generation of knative service name, as well as service URL.'
+              description: Short name. Will be used for generation of knative service name, as well as service URL.
             ownHost:
               default: true
               description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
@@ -694,7 +703,7 @@ definitions:
               description: Points to the backing k8s service (only used when 'svc' is set).
             svc:
               $ref: '#/definitions/idName'
-              description: 'When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.'
+              description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
           required:
             - id
             - name
@@ -1050,7 +1059,50 @@ properties:
             properties:
               imageChartStorage:
                 additionalProperties: false
+                description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
                 properties:
+                  aws:
+                    additionalProperties: false
+                    properties:
+                      accesskey:
+                        type: string
+                      secretkey:
+                        type: string
+                      region:
+                        type: string
+                      regionendpoint:
+                        type: string
+                      bucket:
+                        type: string
+                      encrypt:
+                        type: boolean
+                      keyid:
+                        type: string
+                      secure:
+                        type: boolean
+                      v4auth:
+                        type: boolean
+                      chunksize:
+                        type: integer
+                      multipartcopychunksize:
+                        type: integer
+                      multipartcopymaxconcurrency:
+                        type: integer
+                      multipartcopythresholdsize:
+                        type: integer
+                      rootdirectory:
+                        type: string
+                  azure:
+                    additionalProperties: false
+                    properties:
+                      accountname:
+                        type: string
+                      accountkey:
+                        type: string
+                      container:
+                        type: string
+                      realm:
+                        type: string
                   gcs:
                     additionalProperties: false
                     properties:
@@ -1528,7 +1580,6 @@ properties:
     required:
       - namespaces
   kms:
-    type: object
     description: Use Cloud KMS to encrypt and decrypt the master key
     oneOf:
       - title: gcpckms

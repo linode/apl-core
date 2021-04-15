@@ -66,7 +66,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=$([ -n "${CLOUD+x}${CLUSTER+x}" ] && yq r $clusters_file "clouds.$CLOUD.clusters.$CLUSTER.otomiVersion")
-  [ -n "$otomi_version" ] && otomi_version='latest'
+  [ -z "$otomi_version" ] && otomi_version='latest'
   echo $otomi_version
 }
 
