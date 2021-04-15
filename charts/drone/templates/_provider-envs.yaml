@@ -28,7 +28,7 @@
             {{- else }}
             valueFrom:
               secretKeyRef:
-                name: {{ template "drone.sourceControlSecret" . }}
+                name: drone-source-control
                 key: clientId
             {{- end }}
           - name: DRONE_GITEA_SERVER
@@ -40,11 +40,10 @@
           - name: DRONE_GITEA_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
-                {{- if.Values.sourceControl.gitea.clientSecretKey }}
                 name: {{ template "drone.sourceControlSecret" . }}
                 key: {{ .Values.sourceControl.gitea.clientSecretKey }}
                 {{- else }}
-                name: gitea-drone-secret
+                name: drone-source-control
                 key: clientSecret
                 {{- end }}
 {{- end -}}
