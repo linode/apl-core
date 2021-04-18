@@ -21,7 +21,6 @@ for profile in $profiles; do
   valuesPath=$(mktemp -d)
   ln -s $valuesPath env
   bin/bootstrap.sh $profile
-  find $ENV_DIR
   bin/validate-values.sh
   bin/validate-templates.sh
   bin/check-policies.sh
