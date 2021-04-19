@@ -5,8 +5,3 @@ teamConfig:
         receivers:
           - email
       id: demo
-      clusters:
-        - aws/demo
-        - azure/demo
-        - google/demo
-        - onprem/demo

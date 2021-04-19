@@ -3,10 +3,3 @@ charts:
     _rawValues: {}
     email: admins@redkubes.com
     stage: staging
-    provider:
-      google:
-        clouddns:
-          project: otomi-cloud
-          serviceAccountSecretRef:
-            name: cloud-dns-key
-            key: key.json
