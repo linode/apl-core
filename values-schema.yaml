@@ -1455,58 +1455,64 @@ properties:
         $ref: '#/definitions/domain'
         description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
     oneOf:
-      - aws:
-          properties:
-            region:
-              type: string
-          required:
-            - region
+      - title: aws
+        properties:
+          aws:
+            properties:
+              region:
+                type: string
+            required:
+              - region
         required:
           - aws
-      - azure:
-          properties:
-            cloud:
-              type: string
-              description: Azure Cloud to use
-            resourceGroup:
-              type: string
-              description: Azure resource group to use
-            hostedZoneName:
-              type: string
-            tenantId:
-              type: string
-              description: Azure tenant ID to use (will default to global value)
-            subscriptionId:
-              type: string
-              description: Azure subscription ID to use (will default to global value)
-            aadClientId:
-              type: string
-              description: Azure Application Client ID to use
-            aadClientSecret:
-              type: string
-              description: Azure Application Client Secret to use
-            useManagedIdentityExtension:
-              type: boolean
-              description: If you use Azure MSI, this should be set to true
-              default: false
-          required:
-            - resourceGroupName
-            - tenantId
-            - subscriptionId
-            - aadClientId
-            - aadClientSecret
+      - title: azure
+        properties:
+          azure:
+            properties:
+              cloud:
+                type: string
+                description: Azure Cloud to use
+              resourceGroup:
+                type: string
+                description: Azure resource group to use
+              hostedZoneName:
+                type: string
+              tenantId:
+                type: string
+                description: Azure tenant ID to use (will default to global value)
+              subscriptionId:
+                type: string
+                description: Azure subscription ID to use (will default to global value)
+              aadClientId:
+                type: string
+                description: Azure Application Client ID to use
+              aadClientSecret:
+                type: string
+                description: Azure Application Client Secret to use
+              useManagedIdentityExtension:
+                type: boolean
+                description: If you use Azure MSI, this should be set to true
+                default: false
+            required:
+              - resourceGroup
+              - tenantId
+              - subscriptionId
+              - aadClientId
+              - aadClientSecret
         required:
           - azure
-      - google:
-          properties:
-            cloudDnsKey:
-              description: A service account key for managing a DNS zone.
-              type: string
-            projectId:
-              type: string
-          required:
-            - cloudDnsKey
-            - projectId
+      - title: google
+        properties:
+          google:
+            properties:
+              cloudDnsKey:
+                description: A service account key for managing a DNS zone.
+                type: string
+              projectId:
+                type: string
+            required:
+              - cloudDnsKey
+              - projectId
         required:
           - google
     required:
