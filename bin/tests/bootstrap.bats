@@ -18,7 +18,7 @@ function teardown () {
 #######################
 @test "env folder should not be overwritten" {
     git init "$ENV_DIR"
-    cluster_path="$env_path/clusters.yaml"
+    cluster_path="$env_path/cluster.yaml"
     mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
     bin/bootstrap.sh aws
 
