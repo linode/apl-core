@@ -11,8 +11,8 @@ bin/validate-templates.sh
 bin/check-policies.sh
 unlink env
 
-profiles=$(find profiles -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-for profile in $profiles; do
+for dir in ./profiles/*; do
+  profile=$(basename $dir)
   echo "Validating profiles/$profile/ values"
   [ "$profile" == "common" ] && continue
   valuesPath=$(mktemp -d)
