@@ -1,7 +1,5 @@
 /.*
 !/.values
-!/.demo
-!/.test
 /env
 /node_modules
 /tools
