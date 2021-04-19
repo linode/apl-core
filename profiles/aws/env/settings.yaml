@@ -12,7 +12,7 @@ dns:
   aws:
     region: eu-central-1
 oidc:
-  adminGroupID: te
+  adminGroupID: adminGroupID
   authUrl: https://oidc.local/oauth2/authorize
   clientID: clientId
   issuer: https://oidc.local/

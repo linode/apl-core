@@ -22,7 +22,7 @@ dns:
   dnsZones: []
   domain: demo.aks.otomi.cloud
 oidc:
-  adminGroupID: te
+  adminGroupID: adminGroupID
   authUrl: https://oidc.local/oauth2/authorize
   clientID: clientId
   issuer: https://oidc.local/
