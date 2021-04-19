@@ -2,19 +2,16 @@
 export CI='true'
 set -e
 
-tests=$(ls .test | xargs)
-for test in $tests; do
-  echo "Validating .test/$test values"
-  ln -s $PWD/.test/$test env
-  bats -T bin/tests
-  bin/validate-values.sh
-  bin/validate-templates.sh
-  bin/check-policies.sh
-  unlink env
-done
+testEnv=$PWD/tests/fixtures
+echo "Validating $testEnv values"
+ln -s $testEnv env
+bats -T bin/tests
+bin/validate-values.sh
+bin/validate-templates.sh
+bin/check-policies.sh
+unlink env
 
-profiles=$(ls profiles | xargs)
-
+profiles=$(find profiles -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
 for profile in $profiles; do
   echo "Validating profiles/$profile/ values"
   [ "$profile" == "common" ] && continue
@@ -26,5 +23,4 @@ for profile in $profiles; do
   bin/check-policies.sh
   rm -rf $valuesPath
   unlink env
-
 done
