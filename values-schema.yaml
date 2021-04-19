@@ -90,17 +90,6 @@ definitions:
       logAnalyticsWorkspace:
         description: An Azure monitor log analytics workspace.
         type: string
-  cloud:
-    description: A common cloud configuration.
-    properties:
-      clusters:
-        additionalProperties: false
-        patternProperties:
-          '^[a-z-]+$':
-            $ref: '#/definitions/cluster'
-    required:
-      - domain
-      - clusters
   cluster:
     additionalProperties: false
     properties:
@@ -1407,18 +1396,6 @@ properties:
           enabled:
             type: boolean
             default: false
-  clouds:
-    additionalProperties: false
-    properties:
-      aws:
-        $ref: '#/definitions/cloud'
-      azure:
-        $ref: '#/definitions/cloud'
-      google:
-        $ref: '#/definitions/cloud'
-      onprem:
-        $ref: '#/definitions/cloud'
-
   cluster:
     properties:
       apiName:
@@ -1697,6 +1674,13 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
+  otomiInstanceUrls:
+    description: Use this property to indicate other otomi instances and easily navigate between them from otomi-console
+    type: array
+    properties:
+      items:
+        type: string
+    default: []
   policies:
     type: object
     description: |
@@ -2034,7 +2018,7 @@ properties:
             $ref: '#/definitions/team'
 required:
   - alerts
-  - clouds
+  - cluster
   - customer
   - oidc
   - otomi

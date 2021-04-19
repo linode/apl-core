@@ -182,7 +182,7 @@ releases:
         folders:
           - k8s
           - istio
-          {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" ($v.clouds | get "azure.monitor" nil)) }}
+          {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}

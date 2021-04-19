@@ -2,16 +2,6 @@
 {{- $c := $v.cluster -}}
 {{- $o := $v.charts | get "otomi-console" dict -}}
 {{- $domain := printf "otomi.%s" $v.dns.domain -}}
-{{- $clusters := list -}}
-{{- range $cloudName, $cloud := $v.clouds -}}
-{{- range $clusterName, $cluster := $cloud.clusters -}}
-{{- $cluster = set $cluster "cloud" $cloudName -}}
-{{- $cluster = set $cluster "name" $clusterName -}}
-{{- $cluster = set $cluster "id" (printf "%s/%s" $cloudName $clusterName) -}}
-{{- $cluster = set $cluster "domain" (printf "%s.%s" $clusterName $cloud.domain) -}}
-{{- $clusters = append $clusters $cluster -}}
-{{- end -}}
-{{- end -}}
 {{- $services := list -}}
 {{- range $s := $v.services -}}
 {{- if hasKey $v.charts $s.name -}}
@@ -56,8 +46,6 @@ env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
-  CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
-  CLUSTERS: '{{ $clusters | toJson }}'
   CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $teamServices | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'

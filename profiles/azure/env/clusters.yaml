@@ -1,6 +1,0 @@
-clouds:
-  azure:
-    clusters:
-      demo:
-        enabled: true
-    domain: demo.aks.otomi.cloud

@@ -1,6 +1,0 @@
-clouds:
-  google:
-    clusters:
-      demo:
-        enabled: true
-    domain: demo.gks.otomi.cloud
