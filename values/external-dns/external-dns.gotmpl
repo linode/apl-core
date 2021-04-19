@@ -11,7 +11,7 @@ provider: {{ $dnsProvider }}
 google:
   project: {{ $dns.google.projectId }}
   serviceAccountKey: |
-    {{- $dns.cloudDnsKey | nindent 4 }}
+    {{- $dns.google.cloudDnsKey | nindent 4 }}
 {{- else if eq $dnsProvider "aws" }}
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}
