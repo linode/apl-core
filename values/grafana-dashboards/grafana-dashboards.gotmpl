@@ -6,6 +6,6 @@ folders:
   {{- if and (eq $v.cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
   - azure
   {{- end }}
-  {{- if $c.sitespeed.enabled }}
+  {{- if $c | get "sitespeed.enabled" false }}
   - sitespeed
   {{- end }}

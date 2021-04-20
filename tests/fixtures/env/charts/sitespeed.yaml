@@ -1,0 +1,9 @@
+charts:
+  sitespeed:
+    _rawValues: {}
+    enabled: false
+    pvc:
+      graphite: 2Gi
+      results: 10Gi
+    retention: 10m:7d,30m:14d
+    schedule: '*/30 * * * *'

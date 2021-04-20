@@ -1,6 +1,7 @@
 {{- $v := .Environment.Values }}
-{{- $dns := $v.charts | get "external-dns" dict }}
-{{- $dnsProvider := $v.cluster | get "dnsProvider" $v.cluster.provider }}
+{{- $externalDns := $v | get "charts.external-dns" }}
+{{- $dns := $v.dns }}
+{{- $dnsProvider := first (keys $v.dns) }}
 sources:
 - ingress
 - istio-gateway
@@ -8,21 +9,19 @@ sources:
 provider: {{ $dnsProvider }}
 {{- if eq $dnsProvider "google" }}
 google:
-  project: {{ $v.google.projectId }}
+  project: {{ $dns.google.projectId }}
   serviceAccountKey: |
-    {{- $v.google.cloudDnsKey | nindent 4 }}
-{{- else if and (eq $dnsProvider "aws") (hasKey $dns "aws") }}
+    {{- $dns.google.cloudDnsKey | nindent 4 }}
+{{- else if eq $dnsProvider "aws" }}
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if eq $dnsProvider "azure" }}
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
-  tenantId: {{ $v.azure.tenantId }}
-  subscriptionId: {{ $v.azure.subscriptionId }}
 {{- end }}  
-domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
-zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
+domainFilters: {{ $externalDns | get "domainFilters" | toYaml | nindent 2 }}
+zoneIdFilters: {{ $externalDns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
-logLevel: {{ $dns | get "logLevel" "info" }}
+logLevel: {{ $externalDns | get "logLevel" "info" }}
 dryRun: false
 crd:
   create: false

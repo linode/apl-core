@@ -1,7 +1,7 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
 {{- $debug := $d | get "debug" false }}
-{{- $host := printf "drone.%s" $v.cluster.domain }}
+{{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 images:
@@ -43,7 +43,7 @@ server:
     {{- with $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ . }}
     {{- end }}
-    DRONE_SERVER_PROXY_HOST: proxy.{{ $v.cluster.domain }}/drone
+    DRONE_SERVER_PROXY_HOST: proxy.{{ $v.dns.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 kubernetes:
@@ -61,7 +61,6 @@ kubernetes:
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
-    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
   annotations:
     {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags")) | nindent 4 }}
   envFile: |

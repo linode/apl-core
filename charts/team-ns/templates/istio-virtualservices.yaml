@@ -8,7 +8,7 @@
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomain $v.domain))) }}
 {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
@@ -33,8 +33,8 @@ spec:
       - uri:
           prefix: /logout-otomi
       redirect:
-        authority: auth.{{ $v.cluster.domain }}
-        uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.cluster.domain }}
+        authority: auth.{{ $v.clusterDomain }}
+        uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.clusterDomain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.clusterDomain }}
       # route:
       #   - destination:
       #       host: istio-ingressgateway.istio-system.svc.cluster.local
@@ -90,8 +90,8 @@ spec:
     matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
   {{- if $k.enabled }}
-    - issuer: https://keycloak.{{ $v.cluster.domain }}/realms/master
-      jwksUri: https://keycloak.{{ $v.cluster.domain }}/realms/master/protocol/openid-connect/certs
+    - issuer: https://keycloak.{{ $v.clusterDomain }}/realms/master
+      jwksUri: https://keycloak.{{ $v.clusterDomain }}/realms/master/protocol/openid-connect/certs
       audiences:
         - {{ $k.idp.clientID }}
   {{- else }}
@@ -101,7 +101,7 @@ spec:
 ---    
 {{- if $k.enabled }}
 {{- $realm := $k.realm | default "master" }}
-{{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.cluster.domain $realm }}
+{{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.clusterDomain $realm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
