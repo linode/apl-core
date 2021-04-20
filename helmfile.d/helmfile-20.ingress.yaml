@@ -3,7 +3,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
-
+{{- $c := $v.charts }}
 releases:
   - name: aws-alb-ingress-controller
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
@@ -18,17 +18,17 @@ releases:
       tag: ingress
     <<: *raw
   - name: cert-manager-artifacts
-    installed: true
+    installed: {{ $c | get "cert-manager.enabled" true }}
     namespace: ingress
     labels:
       tag: cert-manager
     <<: *raw
   - name: external-dns
-    installed: true
+    installed: {{ $c | get "external-dns.enabled" true }}
     namespace: ingress
     <<: *default
   - name: ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v.azure | get "appgw.isManaged" true)) }}
+    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v| get "azure.appgw.isManaged" true)) }}
     namespace: ingress
     labels:
       tag: ingress

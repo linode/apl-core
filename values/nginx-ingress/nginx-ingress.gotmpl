@@ -1,6 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
-{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
+{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 rbac:

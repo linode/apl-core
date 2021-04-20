@@ -5,7 +5,7 @@
 {{- $o := $v.oidc }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 image:
@@ -40,14 +40,14 @@ resources:
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
-        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domain $s.domain)) }}
+        {{- if and (not (has $s.domain $domains)) (not (contains $v.dns.domain $s.domain)) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domain)) "sep" ",") }}
+{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.dns.domain)) "sep" ",") }}
 
 # securityContext:
 #   enabled: true
@@ -63,7 +63,7 @@ extraArgs:
   scope: {{ $o | get "scope" "openid email profile" }}
   session-store-type: redis
   redis-connection-url: redis://oauth2-proxy-redis-master
-  redirect-url: https://auth.{{ $v.cluster.domain }}/oauth2/callback
+  redirect-url: https://auth.{{ $v.dns.domain }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}
   cookie-samesite: none

@@ -21,10 +21,9 @@ function cleanup() {
 check_policies() {
 
   local k8s_version="v$(get_k8s_version)"
-  local cluster_env=$(cluster_env)
   mkdir -p $k8s_resources_path
   # generate_manifests
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
+  echo "Generating k8s $k8s_version manifests for cluster"
   hf_templates "$k8s_resources_path/$k8s_version" "$@"
 
   echo "Processing templates..."
@@ -36,7 +35,7 @@ check_policies() {
   done
   yq r -j $constraints_file | jq '{parameters: .}' | yq r -P - >$parameters_file
 
-  echo "Checking manifests against policies for $cluster_env cluster."
+  echo "Checking manifests against policies"
   conftest test --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version"
   return 0
 }
@@ -44,7 +43,7 @@ check_policies() {
 ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
 
 function main() {
-  process_clusters check_policies "$@"
+  check_policies "$@"
 }
 
 main "$@"

@@ -5,8 +5,8 @@
 {{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
+{{- $appsDomain := printf "apps.%s" $v.dns.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
@@ -150,7 +150,7 @@ grafana:
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
     {{- end }}
-    {{- if $c.sitespeed.enabled }}
+    {{- if $c | get "sitespeed.enabled" false }}
     - name: Graphite
       editable: false
       type: graphite

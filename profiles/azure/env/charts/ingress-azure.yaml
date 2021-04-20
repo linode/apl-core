@@ -1,0 +1,8 @@
+charts:
+  ingress-azure:
+    appgw:
+      subscriptionId: 000000-0000-0000-0000-000000000000
+      resourceGroup: otomi-aks-dev
+      name: appgw-otomi-aks-dev
+      subnetName: appgw-subnet
+      subnetPrefix: 10.1.0.0/16

@@ -7,7 +7,7 @@ type: Job
 name: gitea
 enabled: true
 env:
-  GITEA_URL: https://gitea.{{ $v.cluster.domain }}
+  GITEA_URL: https://gitea.{{ $v.dns.domain }}
   GITEA_REPO: values
 secret:
   GITEA_USER: otomi

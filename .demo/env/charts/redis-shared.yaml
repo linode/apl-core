@@ -1,4 +1,0 @@
-charts:
-    redis-shared:
-        _rawValues: {}
-        enabled: false
