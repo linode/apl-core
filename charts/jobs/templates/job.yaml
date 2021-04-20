@@ -37,7 +37,7 @@ spec:
         {{- if $v.init.env }}
         envFrom:
         - configMapRef:
-            name: job-{{ $v.name }}
+            name: job-{{ $v.name }}-init
         {{- end }}
         {{- with $v.secrets }}
         env:
