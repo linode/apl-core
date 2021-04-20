@@ -1,20 +1,22 @@
 {{- $v := .Environment.Values }}
 {{- $externalDns := $v | get "charts.external-dns" }}
 {{- $dns := $v.dns }}
-{{- $dnsProvider := first (keys $v.dns) }}
 sources:
 - ingress
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
-provider: {{ $dnsProvider }}
-{{- if eq $dnsProvider "google" }}
+
+{{- if hasKey $dns "google" }}
+provider: "google"
 google:
   project: {{ $dns.google.projectId }}
   serviceAccountKey: |
     {{- $dns.google.cloudDnsKey | nindent 4 }}
-{{- else if eq $dnsProvider "aws" }}
+{{- else if hasKey $dns "aws" }}
+provider: "aws"
 aws: {{- $dns.aws | toYaml | nindent 2 }}
-{{- else if eq $dnsProvider "azure" }}
+{{- else if hasKey $dns "azure" }}
+provider: "azure"
 azure:
   {{- $dns.azure | toYaml | nindent 2 }}
 {{- end }}  
