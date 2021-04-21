@@ -1246,6 +1246,8 @@ properties:
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
+          loadBalancerIP:
+            type: string
       oauth2-proxy:
         additionalProperties: false
         properties:
