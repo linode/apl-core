@@ -732,8 +732,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          azureClientSecret:
-            type: string
           email:
             $ref: '#/definitions/email'
           stage:
