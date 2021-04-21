@@ -8,17 +8,13 @@ sources:
 
 {{- if hasKey $dns "google" }}
 provider: "google"
-google:
-  project: {{ $dns.google.projectId }}
-  serviceAccountKey: |
-    {{- $dns.google.cloudDnsKey | nindent 4 }}
+google: {{- $dns.google | toYaml | nindent 2 }}
 {{- else if hasKey $dns "aws" }}
 provider: "aws"
 aws: {{- $dns.aws | toYaml | nindent 2 }}
 {{- else if hasKey $dns "azure" }}
 provider: "azure"
-azure:
-  {{- $dns.azure | toYaml | nindent 2 }}
+azure: {{- $dns.azure | toYaml | nindent 2 }}
 {{- end }}  
 domainFilters: {{ $externalDns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $externalDns | get "zoneIdFilters" list | toYaml | nindent 2 }}
