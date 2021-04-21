@@ -104,7 +104,7 @@ alertmanager:
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
 grafana:
   image:
-    tag: 7.4.2
+    tag: 7.5.4
   resources:
     {{- with $p | get "resources.grafana" nil }}
       {{- toYaml . | nindent 4 }}

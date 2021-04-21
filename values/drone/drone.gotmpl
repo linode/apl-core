@@ -48,8 +48,10 @@ server:
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
+    {{- if eq $d.sourceControl.provider "github" }}
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+    {{- end }}
 kubernetes:
   resources:
     {{- with $d | get "resources.runner" nil }}

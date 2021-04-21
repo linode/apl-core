@@ -11,7 +11,7 @@ readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
 readonly cluster_domain=$(echo "$values" | yq r - 'cluster.domain')
 readonly gitea_url="gitea.$cluster_domain"
 readonly gitea_password=$(echo "$values" | yq r - 'charts.gitea.admin.password')
-readonly gitea_user='otomi'
+readonly gitea_user='otomi-admin'
 readonly gitea_repo='values'
 cd $ENV_DIR
 # Initialize as clean slate
@@ -26,8 +26,8 @@ remote_name=${tmp_remote_name:-origin}
 set -o pipefail
 
 if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
-  read "Another origin already exists, do you want to add Gitea as a remote? [y/N]" add_remote
-  if [ $add_remote == 'y' ] || [ $add_remote == 'Y' ]; then
+  read -p "Another origin already exists, do you want to add Gitea as a remote? [y/N]" add_remote
+  if [ "${add_remote:-n}" = 'y' ] || [ "${add_remote:-n}" = 'Y' ]; then
     remote_name='otomi-values'
   else
     exit 0

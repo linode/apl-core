@@ -17,9 +17,11 @@ gitea:
   podAnnotations: 
     {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
   admin:
-    username: otomi
+    username: otomi-admin
     password: {{ $g | get "admin.password" "bladibla" }}
   config:
+    log:
+      LEVEL: debug
     server:
       DOMAIN: {{ $giteadomain }}
       ROOT_URL: "https://{{ $giteadomain }}/"

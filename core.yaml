@@ -85,7 +85,7 @@ services:
     ownHost: true
     isShared: true
     port: 3000
-    paths: [/api/, /otomi/values, /login/oauth]
+    paths: [/api/, /otomi/values, /otomi-admin/values, /login/oauth]
     forwardPath: true
     isPublic: true
   - name: gitea
@@ -179,6 +179,14 @@ services:
       workload:
         app: drone
         component: server
+  # - name: drone
+  #   svc: drone
+  #   namespace: team-admin
+  #   ownHost: true
+  #   hide: true
+  #   isPublic: true
+  #   paths: [/api/]
+  #   forwardPath: true
   - name: vault
     namespace: vault
     svc: vault-0

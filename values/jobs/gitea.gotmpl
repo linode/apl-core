@@ -8,9 +8,7 @@ name: gitea
 enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.cluster.domain }}
-  GITEA_REPO: values
 secret:
-  GITEA_USER: otomi
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"

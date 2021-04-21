@@ -865,6 +865,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          adminIsMachine:
+            type: boolean
+            default: false
           adminUser:
             type: string
           adminToken:
@@ -945,6 +948,8 @@ properties:
                 properties:
                   server:
                     type: string
+              password:
+                type: string
               provider:
                 default: github
                 enum:
@@ -954,6 +959,10 @@ properties:
                   - gogs
                   - bitbucketCloud
                   - bitbucketServer
+                type: string
+              secret:
+                type: string
+              username:
                 type: string
       external-dns:
         additionalProperties: false

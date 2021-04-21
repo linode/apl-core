@@ -37,9 +37,16 @@
             {{- else }}
             value: https://gitea.{{ .Values.clusterDomain }}
             {{- end }}
+          {{- if not (eq .Values.sourceControl.provider "bitbucketServer") }}
+          - name: DRONE_GIT_USERNAME
+            value: {{ .Values.sourceControl.username | default "otomi-admin" }}
+          - name: DRONE_GIT_USERNAME
+            value: {{ .Values.sourceControl.password | default "bladibla" }}
+          {{- end }}
           - name: DRONE_GITEA_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
+                {{- if .Values.sourceControl.gitea.clientSecretKey }}
                 name: {{ template "drone.sourceControlSecret" . }}
                 key: {{ .Values.sourceControl.gitea.clientSecretKey }}
                 {{- else }}

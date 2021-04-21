@@ -11,7 +11,6 @@ kubectl apply -f charts/prometheus-operator/crds
 hf apply --skip-deps -l stage!=post
 
 # Post deploy tasks
-bin/retrieve-credentials.sh
-bin/gitea-push.sh 
+bin/gitea-push.sh
 
 hf apply --skip-deps -l stage=post
