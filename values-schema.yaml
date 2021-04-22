@@ -732,8 +732,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          azureClientSecret:
-            type: string
           email:
             $ref: '#/definitions/email'
           stage:
@@ -1248,6 +1246,8 @@ properties:
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
+          loadBalancerIP:
+            type: string
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1514,14 +1514,14 @@ properties:
         properties:
           google:
             properties:
-              cloudDnsKey:
+              serviceAccountKey:
                 description: A service account key for managing a DNS zone.
                 type: string
-              projectId:
+              project:
                 type: string
             required:
-              - cloudDnsKey
-              - projectId
+              - serviceAccountKey
+              - project
         required:
           - google
     required:

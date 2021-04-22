@@ -9,7 +9,7 @@ helmDefaults:
 {{- $v := (readFile "../env/env/cluster.yaml" | fromYaml) }}
 environments:
   {{- $provider := $v.cluster.provider -}}
-  {{- $otomiDefaults := dict "isManaged" (has $provider (list "aws" "azure" "google")) "hasCloudLB" (eq $provider "azure") }}
+  {{- $otomiDefaults := dict "isManaged" (has $provider (list "aws" "azure" "google")) "hasCloudLB" false }}
   # toYaml | fromYaml avoids bug that does not let us do a merge in a simple way: https://github.com/roboll/helmfile/issues/1275
   {{- $values := $v | toYaml | fromYaml -}}
   {{- $values = set $values "otomi" $otomiDefaults -}}

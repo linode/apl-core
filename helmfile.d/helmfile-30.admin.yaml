@@ -27,5 +27,6 @@ releases:
     <<: *default
   - name: olm
     installed: true
+    disableValidationOnInstall: true
     namespace: olm
     <<: *default
