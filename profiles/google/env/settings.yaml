@@ -10,7 +10,7 @@ dns:
   dnsZones: []
   domain: demo.gks.otomi.cloud
   google:
-    projectId: <projectId>
+    project: <projectId>
 oidc:
   adminGroupID: adminGroupID
   authUrl: https://oidc.local/oauth2/authorize
