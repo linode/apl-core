@@ -5,7 +5,7 @@ singleQuote: true
 printWidth: 120
 overrides:
   - files:
-      - '.demo/**/*.yaml'
+      - 'profiles/**/*.yaml'
     options:
       tabWidth: 4
       useTabs: true
