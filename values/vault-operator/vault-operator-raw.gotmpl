@@ -61,6 +61,10 @@ resources:
           value: {{ $kms.awskms.access_key }}
         - name: AWS_SECRET_ACCESS_KEY
           value: {{ $kms.awskms.secret_key }}
+        - name: AWS_REGION
+          value: {{ $kms.awskms.region }}
+        - name: AWS_DEFAULT_REGION
+          value: {{ $kms.awskms.region }}
         {{- end }}
 
         # - name: SKIP_CHOWN
