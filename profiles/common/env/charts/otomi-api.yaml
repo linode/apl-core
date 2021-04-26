@@ -1,0 +1,4 @@
+charts:
+    otomi-api:
+        git:
+            repoUrl: github.com/redkubes/otomi-values-demo.git

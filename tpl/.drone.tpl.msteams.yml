@@ -20,14 +20,11 @@ environment:
 steps:
   - name: notify-start
     image: diyfr/drone_plugin_teams
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     settings:
       webhook: __WEBHOOK
       content:
         title: Started syncing cluster
-        text: Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+        text: Started syncing cluster '__CLUSTER' for customer '__CUSTOMER'...
         themeColor: 009EEA
 
   - name: prepare-env
@@ -38,9 +35,6 @@ steps:
   - name: test
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - prepare-env
     commands:
@@ -49,9 +43,6 @@ steps:
   - name: deploy
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     commands:
       - cd .. && bin/otomi deploy
     depends_on:
@@ -59,16 +50,13 @@ steps:
 
   - name: notify-success
     image: diyfr/drone_plugin_teams
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - deploy
     settings:
       webhook: __WEBHOOK
       content:
         title: Completed syncing cluster
-        text: Completed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' :)
+        text: Completed syncing cluster '__CLUSTER' for customer '__CUSTOMER' :)
         themeColor: #228B22
     when:
       status:
@@ -76,16 +64,13 @@ steps:
 
   - name: notify-error
     image: diyfr/drone_plugin_teams
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - deploy
     settings:
       webhook: __WEBHOOK
       content:
         title: Failed syncing cluster
-        text: Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+        text: Failed syncing cluster '__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
         themeColor: EA4300
     when:
       status:

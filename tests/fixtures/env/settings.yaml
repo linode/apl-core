@@ -1,0 +1,61 @@
+alerts:
+  drone: slack
+  groupInterval: 5m
+  receivers:
+    - slack
+    - email
+  repeatInterval: 3h
+azure:
+  appgw:
+    isManaged: true
+  diskType: Standard_LRS
+  resourceGroup: somevalue
+  subscriptionId: somevalue
+  tenantId: somevalue
+charts:
+  hello:
+    enabled: true
+  httpbin:
+    enabled: true
+customer:
+  name: demo
+dns:
+  dnsZones: []
+  domain: demo.eks.otomi.cloud
+  aws:
+    region: eu-central-1
+home:
+  receivers:
+    - slack
+  slack:
+    channel: mon-otomi
+    channelCrit: mon-otomi-crit
+oidc:
+  adminGroupID: someAdminGroupID
+  clientID: someClientID
+  clientSecret: someClientSecret
+  issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  scope: openid email profile
+  teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  tenantID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  subClaimMapper: oid
+otomi:
+  hasCloudLB: false
+  isHomeMonitored: true
+  isManaged: true
+  isMultitenant: true
+  mode: ce
+  teamPrefix: team-
+  addons:
+    conftest:
+      enabled: true
+otomiInstanceUrls:
+  - demo.aks.otomi.cloud
+  - demo.eks.otomi.cloud
+  - demo.gks.otomi.cloud
+  - demo.onprem.otomi.cloud
+smtp:
+  auth_username: no-reply@doma.in
+  from: no-reply@doma.in
+  hello: doma.in
+  smarthost: smtp-relay.gmail.com:587

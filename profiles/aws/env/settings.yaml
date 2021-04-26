@@ -1,0 +1,26 @@
+alerts:
+    receivers:
+        - slack
+    slack:
+        channel: mon-otomi
+        channelCrit: mon-otomi-crit
+customer:
+    name: demo
+dns:
+    dnsZones: []
+    domain: demo.eks.otomi.cloud
+    aws:
+        region: eu-central-1
+oidc:
+    adminGroupID: adminGroupID
+    authUrl: https://oidc.local/oauth2/authorize
+    clientID: clientId
+    issuer: https://oidc.local/
+    scope: openid email profile
+    teamAdminGroupID: teamAdminGroupID
+    tenantID: tenantID
+    tokenUrl: https://oidc.local/oauth2/token
+otomi:
+    isMultitenant: true
+    mode: ce
+    teamPrefix: team-

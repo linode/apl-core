@@ -5,7 +5,7 @@ bases:
 {{- $v := .Environment.Values }}
 {{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
-{{- $adminDomain := printf $v.cluster.domain }}
+{{- $adminDomain := printf $v.dns.domain }}
 {{- $cm := index $v.charts "cert-manager" }}
 releases:
   - name: team-ns-admin
@@ -22,7 +22,8 @@ releases:
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $adminDomain }}
+        domain: {{ $v.dns.domain  }}
+        clusterDomain: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         proxies: {{- $v.proxies | toYaml | nindent 10 }}

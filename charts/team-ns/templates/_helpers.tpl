@@ -43,7 +43,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- range $s := .services }}
 {{- $isShared := $s.isShared | default false }}
 {{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.cluster.domain $.domain))) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.clusterDomain $.domain))) }}
 {{- if not $isApps }}
   {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
   {{- if (not (hasKey $routes $domain)) }}
@@ -63,7 +63,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}
 {{- if and (eq .teamId "admin") .otomi.hasCloudLB (not (eq .provider "nginx")) }}
-  {{- $routes = (merge $routes (dict (printf "auth.%s" .cluster.domain) list)) }}
+  {{- $routes = (merge $routes (dict (printf "auth.%s" .clusterDomain) list)) }}
   {{- $routes = (merge $routes (dict (printf "proxy.%s" .domain) list)) }}
 {{- end }}
 apiVersion: extensions/v1beta1
@@ -108,12 +108,12 @@ metadata:
 {{- if .hasAuth }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .cluster.domain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ .clusterDomain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end }}
 {{- if or .isApps .hasAuth }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
   {{- if .isApps }}
-      rewrite ^/$ https://otomi.{{ .cluster.domain }}/ permanent;
+      rewrite ^/$ https://otomi.{{ .clusterDomain }}/ permanent;
       rewrite ^(/tracing)$ $1/ permanent;
   {{- end }}
 {{- end }}

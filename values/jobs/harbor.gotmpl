@@ -7,7 +7,7 @@
 {{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
 {{- $hasHarbor := $h | get "enabled" false -}}
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}

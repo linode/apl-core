@@ -29,9 +29,7 @@ function generate_loose_schema() {
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
 
-# The very first time we use latest image
-img='otomi/core:latest'
-[ "$has_otomi" = 'true' ] && img="otomi/core:$(otomi_image_tag)"
+img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
@@ -47,9 +45,16 @@ for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
 if [ ! -d "$ENV_DIR/env" ]; then
-  echo "No files found in env, installing demo files"
-  cp -r $PWD/.demo/env $ENV_DIR/env
+  readonly profile=$1
+  readonly commonProfilePath=$PWD/profiles/common/env
+  readonly profilePath=$PWD/profiles/$profile/env
+  [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
+
+  echo "No files found in "$ENV_DIR/env". Initiliazing configuration files"
+  cp -r $commonProfilePath $ENV_DIR
+  cp -r $profilePath $ENV_DIR
 fi
+git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 # to accomodate sops plugin in vscode:
 [ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json

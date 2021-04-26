@@ -71,7 +71,7 @@ function show_usage() {
     bootstrap           bootstrap values repo with artifacts corresponding to the target cluster's stack version
     check-policies      check if generated manifests adhere to defined OPA policies (takes helmfile options)
     commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
-    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg). Currently has only one option: $(-c | --cluster) (to set target cluster).
+    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg).
     console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
     deploy              execute otomi-core deploy script
@@ -99,16 +99,12 @@ function show_usage() {
   Example helmfile options:
     -l|--label          Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
     -f|--file           Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
-  (For a full list of options please read the helmfile documentation.)
-
-  Target (output) options:
-    -A|--all            Target all clusters and charts (not simultaneously with -c|--cluster)     
-    -c|--cluster        Override a set target cluster (format: CLOUD-CLUSTER), e.g. '-c aws-dev' or '--cluster azure-demo'
+  (For a full list of options please read the helmfile documentation.)   
   "
 }
 
 function evaluate_k8s_context() {
-  local env_path="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/.env"
+  local env_path="$ENV_DIR/env/.env"
   [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
   . $env_path
   [ -z "$K8S_CONTEXT" ] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
@@ -121,7 +117,7 @@ function validate_k8s_context() {
     read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" ok
     if [ "${ok:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
-      $is_repo && drun bin/bootstrap.sh 1
+      $is_repo && drun bin/bootstrap.sh
     else
       exit
     fi
@@ -153,10 +149,6 @@ function evaluate_secrets() {
 
 function validate_cluster_env() {
   check_kube_context=1
-  local err
-  [ -z "$CLOUD" ] && err "The CLOUD environment variable is not set" && err=1
-  [ -z "$CLUSTER" ] && err "The CLUSTER environment variable is not set" && err=1
-  [ -n "$err" ] && exit 2
   return 0
 }
 
@@ -211,7 +203,7 @@ function drun() {
   # - in docker AND force docker
   if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
-    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && docker pull "otomi/core:$image_tag"
+    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && docker pull "otomi/core:$image_tag" >/dev/null
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
@@ -227,10 +219,8 @@ function drun() {
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e CUSTOMER="$customer" \
       -e VERBOSE="${VERBOSE-}" \
-      -e CLOUD="$CLOUD" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-      -e CLUSTER="$CLUSTER" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e DEBUG="$DEBUG" \
       -e TRACE="$TRACE" \
@@ -251,7 +241,7 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     bash)
       docker_terminal_params='-ti'
@@ -261,17 +251,10 @@ function execute() {
       drun bats -T "$@" bin/tests
       ;;
     bootstrap)
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
-      drun bin/bootstrap.sh 1
+      drun bin/bootstrap.sh "$@"
       ;;
     check-policies)
       evaluate_secrets
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
-      check_kube_context=0
       drun bin/check-policies.sh "$@"
       ;;
     commit)
@@ -308,13 +291,13 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" destroy | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" destroy | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
@@ -331,20 +314,19 @@ function execute() {
       ;;
     gen-drone)
       evaluate_secrets
-      validate_cluster_env
       drun bin/gen-drone.sh
       ;;
     hf)
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" | grep -Ev $helmfile_output_hide
       ;;
     pull)
       is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
-      drun bin/bootstrap.sh 1
+      drun bin/bootstrap.sh
       ;;
     regcred)
       drun bin/regcred.sh "$@"
@@ -358,25 +340,19 @@ function execute() {
       evaluate_secrets
       validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
+      drun helmfile "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
-      validate_cluster_env
-      check_kube_context=0
       set -o pipefail
       drun bin/template.sh "$@"
       ;;
     test)
       evaluate_secrets
-      validate_cluster_env
       drun bin/test.sh
       ;;
     validate-templates)
       evaluate_secrets
-      if [ "$*" != '' ]; then
-        validate_cluster_env
-      fi
       drun bin/validate-templates.sh "$@"
       ;;
     validate-values)
@@ -385,9 +361,8 @@ function execute() {
       ;;
     values)
       evaluate_secrets
-      validate_cluster_env
       set -o pipefail
-      drun helmfile -e $CLOUD-$CLUSTER -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       check_kube_context=0

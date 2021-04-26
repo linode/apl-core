@@ -1,0 +1,36 @@
+alerts:
+    receivers:
+        - slack
+    slack:
+        channel: mon-otomi
+        channelCrit: mon-otomi-crit
+azure:
+    appgw:
+        isManaged: true
+    diskType: Standard_LRS
+    resourceGroup: somevalue
+    subscriptionId: somevalue
+    tenantId: somevalue
+customer:
+    name: demo
+dns:
+    azure:
+        aadClientId: <aadClientId>
+        resourceGroup: <resourceGroup>
+        subscriptionId: <subscriptionId>
+        tenantId: <tenantId>
+    dnsZones: []
+    domain: demo.aks.otomi.cloud
+oidc:
+    adminGroupID: adminGroupID
+    authUrl: https://oidc.local/oauth2/authorize
+    clientID: clientId
+    issuer: https://oidc.local/
+    scope: openid email profile
+    teamAdminGroupID: teamAdminGroupID
+    tenantID: tenantID
+    tokenUrl: https://oidc.local/oauth2/token
+otomi:
+    isMultitenant: true
+    mode: ce
+    teamPrefix: team-

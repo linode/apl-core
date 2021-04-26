@@ -7,7 +7,7 @@
 {{- range $s := $v.services }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.cluster.domain $v.domain))) }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomain $v.domain))) }}
 {{- if $s.isPublic }}
   {{- if not (has $domain $publicDomains) }}
     {{- $publicDomains = (append $publicDomains $domain) }}

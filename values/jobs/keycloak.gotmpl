@@ -24,8 +24,8 @@ init:
     repository: badouralix/curl-http2
   script: |
     {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domain }}"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domain }}); do 
+    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.dns.domain }}"
+    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.dns.domain }}); do 
       printf '.'
       sleep 5
     done
@@ -39,7 +39,7 @@ env:
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
 secret:
   # DEBUG: '*'
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
   KEYCLOAK_REALM: master
@@ -56,16 +56,16 @@ secret:
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
   IDP_OIDC_URL: {{ $v.oidc.issuer }}
   REDIRECT_URIS: '[
-      "https://otomi.{{ $v.cluster.domain }}",
-      "https://auth.{{ $v.cluster.domain }}/*",
-      "https://apps.{{ $v.cluster.domain }}/*",
-      "https://otomi.{{ $v.cluster.domain }}/*",
-      "https://gitea.{{ $v.cluster.domain }}/*",
+      "https://otomi.{{ $v.dns.domain }}",
+      "https://auth.{{ $v.dns.domain }}/*",
+      "https://apps.{{ $v.dns.domain }}/*",
+      "https://otomi.{{ $v.dns.domain }}/*",
+      "https://gitea.{{ $v.dns.domain }}/*",
       {{- range $name, $team := $teams }}
-      "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
+      "https://apps.team-{{ $name }}.{{ $v.dns.domain }}/*",
       {{- end }}
-      "https://harbor.{{ $v.cluster.domain }}/*",
-      "https://vault.{{ $v.cluster.domain }}/*"
+      "https://harbor.{{ $v.dns.domain }}/*",
+      "https://vault.{{ $v.dns.domain }}/*"
   ]'
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange

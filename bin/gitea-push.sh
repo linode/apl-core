@@ -8,7 +8,7 @@ readonly values=$(hf_values)
 readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 
-readonly cluster_domain=$(echo "$values" | yq r - 'cluster.domain')
+readonly cluster_domain=$(echo "$values" | yq r - 'dns.domain')
 readonly gitea_url="gitea.$cluster_domain"
 readonly gitea_password=$(echo "$values" | yq r - 'charts.gitea.admin.password')
 readonly gitea_user='otomi'

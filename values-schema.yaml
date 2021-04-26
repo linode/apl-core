@@ -90,70 +90,14 @@ definitions:
       logAnalyticsWorkspace:
         description: An Azure monitor log analytics workspace.
         type: string
-  cloud:
-    description: A common cloud configuration.
-    properties:
-      clusters:
-        additionalProperties: false
-        patternProperties:
-          '^[a-z-]+$':
-            $ref: '#/definitions/cluster'
-      domain:
-        $ref: '#/definitions/domain'
-    required:
-      - domain
-      - clusters
   cluster:
     additionalProperties: false
     properties:
-      apiName:
-        description: Only used for API/UI to show in app.
-        type: string
-      apiServer:
-        description: Used by kubectl for local deployment to target cluster.
-        type: string
-      dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
-        enum:
-          - azure
-          - google
-          - aws
-        type: string
-      dnsZones:
-        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
-        items:
-          $ref: '#/definitions/domain'
-        type: array
-      domain:
-        $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       enabled:
         default: true
         type: boolean
-      entrypoint:
-        description: A Kubernetes API public IP address (onprem only).
-        type: string
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
-      otomiVersion:
-        default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-        type: string
-      region:
-        description: Dependent on provider.
-        examples:
-          - europe-west4
-          - eu-central-1
-          - westeurope
-        type: string
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        type: string
     required:
-      - apiServer
-      - k8sVersion
-      - otomiVersion
-      - region
+      - enabled
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -788,58 +732,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          azureClientSecret:
-            type: string
           email:
             $ref: '#/definitions/email'
-          provider:
-            additionalProperties: false
-            properties:
-              aws:
-                additionalProperties: false
-                properties:
-                  route53:
-                    additionalProperties: false
-                    properties:
-                      region:
-                        type: string
-              azure:
-                additionalProperties: false
-                properties:
-                  azuredns:
-                    additionalProperties: false
-                    properties:
-                      clientID:
-                        type: string
-                      hostedZoneName:
-                        type: string
-                      resourceGroupName:
-                        type: string
-                      subscriptionID:
-                        type: string
-                      tenantID:
-                        type: string
-                    required:
-                      - clientID
-                      - tenantID
-                      - subscriptionID
-                      - resourceGroupName
-                      - hostedZoneName
-              google:
-                additionalProperties: false
-                properties:
-                  clouddns:
-                    additionalProperties: false
-                    properties:
-                      project:
-                        type: string
-                      serviceAccountSecretRef:
-                        additionalProperties: false
-                        properties:
-                          key:
-                            type: string
-                          name:
-                            type: string
           stage:
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
@@ -849,6 +743,9 @@ properties:
               - staging
               - production
             type: string
+        required:
+          - email
+          - stage
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -960,36 +857,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          aws:
-            properties:
-              region:
-                type: string
-            required:
-              - region
-          azure:
-            properties:
-              cloud:
-                type: string
-                description: Azure Cloud to use
-              resourceGroup:
-                type: string
-                description: Azure resource group to use
-              tenantId:
-                type: string
-                description: Azure tenant ID to use (will default to global value)
-              subscriptionId:
-                type: string
-                description: Azure subscription ID to use (will default to global value)
-              aadClientId:
-                type: string
-                description: Azure Application Client ID to use
-              aadClientSecret:
-                type: string
-                description: Azure Application Client Secret to use
-              useManagedIdentityExtension:
-                type: boolean
-                description: If you use Azure MSI, this should be set to true
-                default: false
           domainFilters:
             items:
               type: string
@@ -1302,8 +1169,6 @@ properties:
                 type: string
               clientSecret:
                 type: string
-          realm:
-            type: string
           resources:
             additionalProperties: false
             properties:
@@ -1355,8 +1220,16 @@ properties:
                 type: string
               period:
                 type: string
+            required:
+              - duration
+              - period
           storageType:
             type: string
+        required:
+          - adminPassword
+          - persistence
+          - retention
+          - storageType
       nginx-ingress:
         additionalProperties: false
         properties:
@@ -1373,6 +1246,8 @@ properties:
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
+          loadBalancerIP:
+            type: string
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1458,6 +1333,8 @@ properties:
             properties:
               adminPassword:
                 type: string
+            required:
+              - adminPassword
           prometheus:
             additionalProperties: false
             properties:
@@ -1468,6 +1345,8 @@ properties:
             properties:
               grafana:
                 $ref: '#/definitions/resources'
+        required:
+          - grafana
       redis-shared:
         additionalProperties: false
         properties:
@@ -1526,39 +1405,133 @@ properties:
           enabled:
             type: boolean
             default: false
-  clouds:
-    additionalProperties: false
-    properties:
-      aws:
-        $ref: '#/definitions/cloud'
-      azure:
-        $ref: '#/definitions/cloud'
-      google:
-        $ref: '#/definitions/cloud'
-      onprem:
-        $ref: '#/definitions/cloud'
   cluster:
-    description: An internal otomi object (do not edit it).
+    properties:
+      apiName:
+        description: Only used for API/UI to show in app.
+        type: string
+      apiServer:
+        description: Used by kubectl for local deployment to target cluster.
+        type: string
+      entrypoint:
+        description: A Kubernetes API public IP address (onprem only).
+        type: string
+      k8sVersion:
+        $ref: '#/definitions/k8sVersion'
+      name:
+        type: string
+      otomiVersion:
+        default: latest
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
+        type: string
+      provider:
+        type: string
+        enum:
+          - aws
+          - azure
+          - google
+          - oneprem
+      region:
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
+        type: string
+      vpcID:
+        description: AWS only. If provided will override autodiscovery from metadata.
+        type: string
+    required:
+      - apiServer
+      - k8sVersion
+      - name
+      - otomiVersion
+      - provider
+      - region
   customer:
     additionalProperties: false
     properties:
       name:
         type: string
+  dns:
+    properties:
+      dnsZones:
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
+        items:
+          $ref: '#/definitions/domain'
+        type: array
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
+    oneOf:
+      - title: aws
+        properties:
+          aws:
+            properties:
+              region:
+                type: string
+            required:
+              - region
+        required:
+          - aws
+      - title: azure
+        properties:
+          azure:
+            properties:
+              cloud:
+                type: string
+                description: Azure Cloud to use
+              resourceGroup:
+                type: string
+                description: Azure resource group to use
+              hostedZoneName:
+                type: string
+              tenantId:
+                type: string
+                description: Azure tenant ID to use (will default to global value)
+              subscriptionId:
+                type: string
+                description: Azure subscription ID to use (will default to global value)
+              aadClientId:
+                type: string
+                description: Azure Application Client ID to use
+              aadClientSecret:
+                type: string
+                description: Azure Application Client Secret to use
+              useManagedIdentityExtension:
+                type: boolean
+                description: If you use Azure MSI, this should be set to true
+                default: false
+            required:
+              - resourceGroup
+              - tenantId
+              - subscriptionId
+              - aadClientId
+              - aadClientSecret
+        required:
+          - azure
+      - title: google
+        properties:
+          google:
+            properties:
+              serviceAccountKey:
+                description: A service account key for managing a DNS zone.
+                type: string
+              project:
+                type: string
+            required:
+              - serviceAccountKey
+              - project
+        required:
+          - google
+    required:
+      - domain
   google:
     description: Google specific configuration.
     properties:
-      cloudDnsKey:
-        description: A service account key for managing a DNS zone.
-        type: string
       kmsAccount:
         description: A service account key for managing a KMS vault.
         type: string
-      projectId:
-        description: A Google Cloud project ID for accessing DNS zone.
-        type: string
-    required:
-      - cloudDnsKey
-      - projectId
   home:
     $ref: '#/definitions/alerts'
   k8s:
@@ -1716,6 +1689,13 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
+  otomiInstanceUrls:
+    description: Use this property to indicate other otomi instances and easily navigate between them from otomi-console
+    type: array
+    properties:
+      items:
+        type: string
+    default: []
   policies:
     type: object
     description: |
@@ -2053,7 +2033,7 @@ properties:
             $ref: '#/definitions/team'
 required:
   - alerts
-  - clouds
+  - cluster
   - customer
   - oidc
   - otomi
