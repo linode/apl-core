@@ -46,26 +46,31 @@ resources:
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
         {{- if hasKey $kms "azurekeyvault" }}
+        {{- with $kms.azurekeyvault }}
          # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
         - name: AZURE_TENANT_ID
-          value: {{ $kms.azurekeyvault.tenant_id }}
+          value: {{- .tenant_id }}
         - name: AZURE_CLIENT_ID
-          value: {{ $kms.azurekeyvault.client_id }}
+          value: {{- .client_id }}
         - name: AZURE_CLIENT_SECRET
-          value: {{ $kms.azurekeyvault.client_secret }}
+          value: {{- .client_secret }}
         - name: AZURE_ENVIRONMENT
           value: "AZUREPUBLICCLOUD"
         {{- end }}
-        {{- if hasKey $kms "awskms" }}
-        - name: AWS_ACCESS_KEY_ID
-          value: {{ $kms.awskms.access_key }}
-        - name: AWS_SECRET_ACCESS_KEY
-          value: {{ $kms.awskms.secret_key }}
-        - name: AWS_REGION
-          value: {{ $kms.awskms.region }}
-        - name: AWS_DEFAULT_REGION
-          value: {{ $kms.awskms.region }}
         {{- end }}
+        {{- if hasKey $kms "awskms" }}
+        {{- with $kms.awskms }}
+        - name: AWS_ACCESS_KEY_ID
+          value: {{- .access_key }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{- .secret_key }}
+        - name: AWS_REGION
+          value: {{- .region }}
+        - name: AWS_DEFAULT_REGION
+          value: {{- .region }}
+        {{- end }}
+        {{- end }}
+
 
         # - name: SKIP_CHOWN
         #   value: "true"
