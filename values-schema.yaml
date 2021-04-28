@@ -1390,7 +1390,8 @@ properties:
           logLevel:
             $ref: '#/definitions/logLevel'
           seal:
-            description: Use Cloud KMS to encrypt and decrypt the master key
+            description: Use a KMS to encrypt and decrypt the master key
+            nullable: true
             oneOf:
               - title: gcpckms
                 properties:

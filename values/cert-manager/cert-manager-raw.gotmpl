@@ -13,10 +13,10 @@ resources:
       name: "dns-secret"
     data:
       {{- if hasKey $p "google" }}
-      secret: "{{ $dns.google.serviceAccountKey | b64enc }}"
+      secret: "{{ $p.google.serviceAccountKey | b64enc }}"
       {{- else if hasKey $p "azure" }}
       # TODO: is aadClientSecret  same as azureClientSecret ?
-      secret: "{{ $dns.azure.aadClientSecret | b64enc }}"
+      secret: "{{ $p.azure.aadClientSecret | b64enc }}"
       {{- else if hasKey $p "aws" }}
       # aws via service account access not yet implemented, expecting role to be on node
       {{- end }}
