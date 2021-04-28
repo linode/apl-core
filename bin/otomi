@@ -58,7 +58,7 @@ if [ "$cwd" = "otomi-core" ]; then
   mount_stack_dir=1
 fi
 # now we can retrieve customer name from settings
-customer=$(customer_name || $CUSTOMER || "unknown")
+customer=$(echo customer_name || $CUSTOMER || "unknown")
 
 # set helm config
 helm_config="$HOME/.config/helm"

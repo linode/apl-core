@@ -19,7 +19,7 @@ function teardown () {
 #####
 # bin/validate-templates 
 #####
-@test "validate-templates -l something starts generating" {
+@test "Validating templates should run successfully" {
     run timeout 5 bin/validate-templates.sh -l group=jobs
-    assert_output --partial 'Generating k8s v1.18 manifests'
+    assert_output --partial 'Templates validation SUCCESS'
 }

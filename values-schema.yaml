@@ -1248,6 +1248,8 @@ properties:
             $ref: '#/definitions/resources'
           loadBalancerIP:
             type: string
+          loadBalancerRG:
+            type: string
       oauth2-proxy:
         additionalProperties: false
         properties:
