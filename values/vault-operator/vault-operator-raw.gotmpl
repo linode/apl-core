@@ -45,6 +45,7 @@ resources:
           value: {{ $vault | get "logLevel" "info" }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
+
         {{- if hasKey $kms "azurekeyvault" }}
         {{- with $kms.azurekeyvault }}
          # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
@@ -58,6 +59,7 @@ resources:
           value: "AZUREPUBLICCLOUD"
         {{- end }}
         {{- end }}
+
         {{- if hasKey $kms "awskms" }}
         {{- with $kms.awskms }}
         - name: AWS_ACCESS_KEY_ID
@@ -71,7 +73,18 @@ resources:
         {{- end }}
         {{- end }}
 
-
+        {{- if hasKey $kms "gcpckms" }}
+        {{- with $kms.gcpckms }}
+        - name: GOOGLE_PROJECT
+          value: {{- .project }}
+        - name: GOOGLE_REGION
+          value: {{- .region }}
+        - name: VAULT_GCPCKMS_SEAL_KEY_RING
+          value: {{- .key_ring }}
+        - name: GCLOUD_SERVICE_KEY
+          value: {{- .kmsAccount }}
+        {{- end }}
+        {{- end }}
         # - name: SKIP_CHOWN
         #   value: "true"
         # - name: SKIP_SETCAP
