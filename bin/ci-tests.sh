@@ -15,7 +15,6 @@ for dir in ./profiles/*; do
   echo "Validating profiles '$profile' values"
   [ "$profile" == "common" ] && continue
   ENV_DIR=$values_path
-  bin/bootstrap.sh $profile
   bin/validate-values.sh
   bin/validate-templates.sh
   bin/check-policies.sh
