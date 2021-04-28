@@ -21,5 +21,5 @@ function teardown () {
 #####
 @test "Validating templates should run successfully" {
     run timeout 5 bin/validate-templates.sh -l group=jobs
-    assert_output --partial 'Templates validation SUCCESS'
+    assert_output --partial 'Generating k8s '
 }

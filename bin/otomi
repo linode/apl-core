@@ -52,7 +52,7 @@ kubeconfig="-v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config"
 readonly cwd=$(basename "$PWD")
 [ -n "$VERBOSE" ] && echo "CWD: $cwd"
 if [ "$cwd" = "otomi-core" ]; then
-  [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  [ -z "$CI" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
   [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
   stack_dir=$PWD
   mount_stack_dir=1
@@ -193,7 +193,7 @@ function drun() {
   fi
 
   if [ $mount_stack_dir -eq 1 ]; then
-    stack_volume="-v ${stack_dir}:${stack_dir}"
+    stack_volume="-v $stack_dir:$stack_dir"
   fi
 
   [ -n "$VERBOSE" ] && verbose_env
