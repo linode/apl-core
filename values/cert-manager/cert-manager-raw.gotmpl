@@ -6,7 +6,7 @@
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 
 resources:
-{{- if or (hasKey $dns.provider "azure") (hasKey $dns.provider "google") }}
+{{- if or (hasKey $p "azure") (hasKey $p "google") }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -38,7 +38,7 @@ resources:
               {{- if hasKey $p "aws" }}
               route53:
                 region: {{ $p.aws.region }}
-              {{- else if hasKey $dns "azure" }}
+              {{- else if hasKey $p "azure" }}
               azuredns:
                 clientID: {{ $p.azure.aadClientId }}
                 clientSecretSecretRef:
