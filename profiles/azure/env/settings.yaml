@@ -14,12 +14,13 @@ azure:
 customer:
     name: demo
 dns:
-    azure:
-        aadClientId: <aadClientId>
-        resourceGroup: <resourceGroup>
-        subscriptionId: <subscriptionId>
-        tenantId: <tenantId>
-    dnsZones: []
+    provider:
+        azure:
+            aadClientId: <aadClientId>
+            resourceGroup: <resourceGroup>
+            subscriptionId: <subscriptionId>
+            tenantId: <tenantId>
+    zones: []
     domain: demo.aks.otomi.cloud
 oidc:
     adminGroupID: adminGroupID

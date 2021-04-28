@@ -3,7 +3,7 @@
 {{- $debug := $d | get "debug" false }}
 {{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-{{- $kms := $v | get "kms" dict }}
+{{- $seal := $v.charts | get "vault.seal" dict }}
 
 images:
   server:
@@ -14,7 +14,7 @@ images:
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
+sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
@@ -65,29 +65,24 @@ kubernetes:
   annotations:
     {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags")) | nindent 4 }}
   envFile: |
-    {{- if $v.sops.enabled }}
-
-    {{- with ($kms | get "azurekeyvault" nil) }}
-    AZURE_TENANT_ID: '{{ .tenant_id }}'
-    AZURE_CLIENT_ID: '{{ .client_id }}'
+    {{- with $seal | get "azurekeyvault" nil }}
+    AZURE_TENANT_ID: {{ .tenant_id }}
+    AZURE_CLIENT_ID: {{ .client_id }}
     AZURE_CLIENT_SECRET: '{{ .client_secret }}'
-    AZURE_ENVIRONMENT: "AZUREPUBLICCLOUD"
+    AZURE_ENVIRONMENT: {{ .environment | default "AzurePublicCloud" }}
     {{- end }}
-
-    {{- with ($kms | get "awskms" nil) }}
-    AWS_ACCESS_KEY_ID: '{{ .access_key }}'
+    {{- with $seal | get "awskms" nil }}
+    AWS_ACCESS_KEY_ID: {{ .access_key }}
     AWS_SECRET_ACCESS_KEY: '{{ .secret_key }}'
-    AWS_REGION: '{{ .region }}'
-    AWS_DEFAULT_REGION: '{{ .region }}'
+    AWS_REGION: {{ .region }}
+    {{- end }}  
+    {{- with $seal | get "gcpckms" nil }}
+    GOOGLE_PROJECT: {{ .project }}
+    GOOGLE_REGION: {{ .region }}
+    GCLOUD_SERVICE_KEY: '{{ .kmsAccount | replace "\n" "" }}'
     {{- end }}
-    
-    {{- with ($kms | get "gcpckms" nil) }}
-    GOOGLE_PROJECT: '{{ .project }}'
-    GOOGLE_REGION: '{{ .region }}'
-    VAULT_GCPCKMS_SEAL_KEY_RING: '{{ .key_ring }}'
-    GCLOUD_SERVICE_KEY: '{{ .kmsAccount }}'
-    {{- end }}
-
+    {{- with $seal | get "transit" nil }}
+    VAULT_TOKEN: '{{ .token }}'
     {{- end }}
 
 persistence:

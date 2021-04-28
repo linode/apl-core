@@ -46,45 +46,6 @@ resources:
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
 
-        {{- if hasKey $kms "azurekeyvault" }}
-        {{- with $kms.azurekeyvault }}
-         # https://docs.microsoft.com/en-us/go/azure/azure-sdk-go-authorization#use-file-based-authentication
-        - name: AZURE_TENANT_ID
-          value: {{- .tenant_id }}
-        - name: AZURE_CLIENT_ID
-          value: {{- .client_id }}
-        - name: AZURE_CLIENT_SECRET
-          value: {{- .client_secret }}
-        - name: AZURE_ENVIRONMENT
-          value: "AZUREPUBLICCLOUD"
-        {{- end }}
-        {{- end }}
-
-        {{- if hasKey $kms "awskms" }}
-        {{- with $kms.awskms }}
-        - name: AWS_ACCESS_KEY_ID
-          value: {{- .access_key }}
-        - name: AWS_SECRET_ACCESS_KEY
-          value: {{- .secret_key }}
-        - name: AWS_REGION
-          value: {{- .region }}
-        - name: AWS_DEFAULT_REGION
-          value: {{- .region }}
-        {{- end }}
-        {{- end }}
-
-        {{- if hasKey $kms "gcpckms" }}
-        {{- with $kms.gcpckms }}
-        - name: GOOGLE_PROJECT
-          value: {{- .project }}
-        - name: GOOGLE_REGION
-          value: {{- .region }}
-        - name: VAULT_GCPCKMS_SEAL_KEY_RING
-          value: {{- .key_ring }}
-        - name: GCLOUD_SERVICE_KEY
-          value: {{- .kmsAccount }}
-        {{- end }}
-        {{- end }}
         # - name: SKIP_CHOWN
         #   value: "true"
         # - name: SKIP_SETCAP
@@ -139,31 +100,16 @@ resources:
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
         storage:
+          {{- if $vault | get "storage" nil }}
+            {{- $vault.storage | toYaml  | nindent 12 }}
+          {{- else }}
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
+          {{- end }}  
 
         # https://www.vaultproject.io/docs/configuration/seal
-        {{- if hasKey $seal "kmsKeyId" }}
-        seal:
-          {{- if hasKey $kms "azurekeyvault" }}
-          # https://www.vaultproject.io/docs/configuration/seal/azurekeyvault
-          azurekeyvault:
-            vault_name: {{ $kms.azurekeyvault.vault_name }}
-            key_name: {{ $seal.kmsKeyId }}
-          {{- else if hasKey $kms "awskms" }}
-          # https://www.vaultproject.io/docs/configuration/seal/awskms
-          awskms:
-            region: {{ $kms.awskms.region }}
-            kms_key_id: {{ $seal.kmsKeyId }}
-            endpoint: {{ $kms.awskms.endpoint }}
-          {{- else if hasKey $kms "gcpckms" }}
-          # https://www.vaultproject.io/docs/configuration/seal/gcpckms
-          gcpckms:
-            project: {{ $kms.gcpckms.project }}
-            region: {{ $kms.gcpckms.region }}
-            key_ring:  {{ $kms.gcpckms.key_ring }}
-            crypto_key: {{ $seal.kmsKeyId }}
-          {{- end }}
+        {{- with $vault | get "seal" nil }}
+        seal: {{- toYaml $seal | nindent 10 }}
         {{- end }}
         listener:
           tcp:
@@ -296,7 +242,7 @@ resources:
       name: service-account-key
     type: Opaque
     data:
-      service-account.json: "{{- $kms.gcpckms.kmsAccount | b64enc }}"
+      service-account.json: "{{ $kms.gcpckms.kmsAccount | b64enc }}"
 {{- end }}
 
 # RBAC

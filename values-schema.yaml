@@ -1382,22 +1382,75 @@ properties:
           schedule:
             type: string
       vault:
-        type: object
         additionalProperties: false
         properties:
           enabled:
             type: boolean
             default: true
-          seal:
-            description: Use Cloud KMS to encrypt and decrypt the master key
-            properties:
-              kmsKeyId:
-                title: Key name or key ID
-                description: Cloud KMS key to encrypt and decrypt the Vault master key.
-                type: string
-                nullable: true
           logLevel:
             $ref: '#/definitions/logLevel'
+          seal:
+            description: Use Cloud KMS to encrypt and decrypt the master key
+            oneOf:
+              - title: gcpckms
+                properties:
+                  gcpckms:
+                    properties:
+                      project:
+                        type: string
+                      region:
+                        type: string
+                      key_ring:
+                        type: string
+                      kmsAccount:
+                        type: string
+                    required:
+                      - project
+                      - region
+                      - key_ring
+                      - kmsAccount
+                required:
+                  - gcpckms
+              - title: awskms
+                properties:
+                  awskms:
+                    properties:
+                      region:
+                        type: string
+                      access_key:
+                        type: string
+                      secret_key:
+                        type: string
+                      endpoint:
+                        type: string
+                    required:
+                      - region
+                      - access_key
+                      - secret_key
+                      - endpoint
+                required:
+                  - awskms
+              - title: azurekeyvault
+                properties:
+                  azurekeyvault:
+                    properties:
+                      vault_name:
+                        type: string
+                      tenant_id:
+                        type: string
+                      client_id:
+                        type: string
+                      client_secret:
+                        type: string
+                    required:
+                      - vault_name
+                      - tenant_id
+                      - client_id
+                      - client_secret
+                required:
+                  - azurekeyvault
+          storage:
+            description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
       weave-scope:
         properties:
           _rawValues:
@@ -1454,8 +1507,9 @@ properties:
       name:
         type: string
   dns:
+    additionalProperties: false
     properties:
-      dnsZones:
+      zones:
         description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
         items:
           $ref: '#/definitions/domain'
@@ -1463,69 +1517,72 @@ properties:
       domain:
         $ref: '#/definitions/domain'
         description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
-    oneOf:
-      - title: aws
-        properties:
-          aws:
+      provider:
+        description: The DNS provider managing the domains.
+        oneOf:
+          - title: AWS
             properties:
-              region:
-                type: string
+              aws:
+                properties:
+                  region:
+                    type: string
+                required:
+                  - region
             required:
-              - region
-        required:
-          - aws
-      - title: azure
-        properties:
-          azure:
+              - aws
+          - title: Azure
             properties:
-              cloud:
-                type: string
-                description: Azure Cloud to use
-              resourceGroup:
-                type: string
-                description: Azure resource group to use
-              hostedZoneName:
-                type: string
-              tenantId:
-                type: string
-                description: Azure tenant ID to use (will default to global value)
-              subscriptionId:
-                type: string
-                description: Azure subscription ID to use (will default to global value)
-              aadClientId:
-                type: string
-                description: Azure Application Client ID to use
-              aadClientSecret:
-                type: string
-                description: Azure Application Client Secret to use
-              useManagedIdentityExtension:
-                type: boolean
-                description: If you use Azure MSI, this should be set to true
-                default: false
+              azure:
+                properties:
+                  cloud:
+                    type: string
+                    description: Azure Cloud to use
+                  resourceGroup:
+                    type: string
+                    description: Azure resource group to use
+                  hostedZoneName:
+                    type: string
+                  tenantId:
+                    type: string
+                    description: Azure tenant ID to use (will default to global value)
+                  subscriptionId:
+                    type: string
+                    description: Azure subscription ID to use (will default to global value)
+                  aadClientId:
+                    type: string
+                    description: Azure Application Client ID to use
+                  aadClientSecret:
+                    type: string
+                    description: Azure Application Client Secret to use
+                  useManagedIdentityExtension:
+                    type: boolean
+                    description: If you use Azure MSI, this should be set to true
+                    default: false
+                required:
+                  - resourceGroup
+                  - tenantId
+                  - subscriptionId
+                  - aadClientId
+                  - aadClientSecret
             required:
-              - resourceGroup
-              - tenantId
-              - subscriptionId
-              - aadClientId
-              - aadClientSecret
-        required:
-          - azure
-      - title: google
-        properties:
-          google:
+              - azure
+          - title: Google
             properties:
-              serviceAccountKey:
-                description: A service account key for managing a DNS zone.
-                type: string
-              project:
-                type: string
+              google:
+                properties:
+                  serviceAccountKey:
+                    description: A service account key for managing a DNS zone.
+                    type: string
+                  project:
+                    type: string
+                required:
+                  - serviceAccountKey
+                  - project
             required:
-              - serviceAccountKey
-              - project
-        required:
-          - google
+              - google
     required:
       - domain
+      - provider
   google:
     description: Google specific configuration.
     properties:
@@ -1552,67 +1609,6 @@ properties:
         type: array
     required:
       - namespaces
-  kms:
-    description: Use Cloud KMS to encrypt and decrypt the master key
-    oneOf:
-      - title: gcpckms
-        properties:
-          gcpckms:
-            properties:
-              project:
-                type: string
-              region:
-                type: string
-              key_ring:
-                type: string
-              kmsAccount:
-                type: string
-            required:
-              - project
-              - region
-              - key_ring
-              - kmsAccount
-        required:
-          - gcpckms
-      - title: awskms
-        properties:
-          awskms:
-            properties:
-              region:
-                type: string
-              access_key:
-                type: string
-              secret_key:
-                type: string
-              endpoint:
-                type: string
-            required:
-              - region
-              - access_key
-              - secret_key
-              - endpoint
-        required:
-          - awskms
-      - title: azurekeyvault
-        properties:
-          azurekeyvault:
-            properties:
-              vault_name:
-                type: string
-              tenant_id:
-                type: string
-              client_id:
-                type: string
-              client_secret:
-                type: string
-            required:
-              - vault_name
-              - tenant_id
-              - client_id
-              - client_secret
-        required:
-          - azurekeyvault
-
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
