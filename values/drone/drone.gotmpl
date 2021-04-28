@@ -67,31 +67,25 @@ kubernetes:
   envFile: |
     {{- if $v.sops.enabled }}
 
-    {{- if hasKey $kms "azurekeyvault" }}
-    {{- with $kms.azurekeyvault }}
-    AZURE_TENANT_ID: '{{- .tenant_id -}}'
-    AZURE_CLIENT_ID: '{{- .client_id -}}'
-    AZURE_CLIENT_SECRET: '{{- .client_secret -}}'
+    {{- with ($kms | get "azurekeyvault" nil) }}
+    AZURE_TENANT_ID: '{{ .tenant_id }}'
+    AZURE_CLIENT_ID: '{{ .client_id }}'
+    AZURE_CLIENT_SECRET: '{{ .client_secret }}'
     AZURE_ENVIRONMENT: "AZUREPUBLICCLOUD"
     {{- end }}
-    {{- end }}
 
-    {{- if hasKey $kms "awskms" }}
-    {{- with $kms.awskms }}
-    AWS_ACCESS_KEY_ID: '{{- .access_key -}}'
-    AWS_SECRET_ACCESS_KEY: '{{- .secret_key -}}'
-    AWS_REGION: '{{- .region -}}'
-    AWS_DEFAULT_REGION: '{{- .region -}}'
-    {{- end }}
+    {{- with ($kms | get "awskms" nil) }}
+    AWS_ACCESS_KEY_ID: '{{ .access_key }}'
+    AWS_SECRET_ACCESS_KEY: '{{ .secret_key }}'
+    AWS_REGION: '{{ .region }}'
+    AWS_DEFAULT_REGION: '{{ .region }}'
     {{- end }}
     
-    {{- if hasKey $kms "gcpckms" }}
-    {{- with $kms.gcpckms }}
-    GOOGLE_PROJECT: '{{- .project -}}'
-    GOOGLE_REGION: '{{- .region -}}'
-    VAULT_GCPCKMS_SEAL_KEY_RING: '{{- .key_ring -}}'
-    GCLOUD_SERVICE_KEY: '{{- .kmsAccount -}}'
-    {{- end }}
+    {{- with ($kms | get "gcpckms" nil) }}
+    GOOGLE_PROJECT: '{{ .project }}'
+    GOOGLE_REGION: '{{ .region }}'
+    VAULT_GCPCKMS_SEAL_KEY_RING: '{{ .key_ring }}'
+    GCLOUD_SERVICE_KEY: '{{ .kmsAccount }}'
     {{- end }}
 
     {{- end }}
