@@ -16,7 +16,7 @@ releases:
     namespace: kube-system
     <<: *default
   - name: kured
-    installed: {{ eq $v.cluster.provider "onprem" }}
+    installed: {{ list "onprem" "azure" | has $v.cluster.provider }}
     namespace: kube-system
     <<: *default
   - name: kube-descheduler
