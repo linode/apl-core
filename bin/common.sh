@@ -30,7 +30,7 @@ function err() {
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [ -z "${IN_DOCKER:-''}" ]; then
+  if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
       -e IN_DOCKER='1' \

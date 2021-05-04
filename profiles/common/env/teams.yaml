@@ -1,4 +1,4 @@
 teamConfig:
-  teams:
-    demo:
-      id: demo
+    teams:
+        demo:
+            id: demo
