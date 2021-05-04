@@ -42,5 +42,6 @@
     ".values/values-schema.yaml": ".demo/env/*.yaml"
   },
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
-  "shellformat.flag": "-i 2 -ci"
+  "shellformat.flag": "-i 2 -ci",
+  "opa.roots": ["${workspaceFolder}/policies"]
 }
