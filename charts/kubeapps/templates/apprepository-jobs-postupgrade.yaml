@@ -57,6 +57,13 @@ spec:
               {{- else }}
                   name: {{ template "kubeapps.postgresql.fullname" . }}
               {{- end }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
       {{- if .Values.postgresql.existingSecret }}
       initContainers:
         # Helm 3.1 supports a lookup template tag to create a secret if it does not exist
@@ -69,5 +76,12 @@ spec:
           args:
             - -c
             - 'kubectl -n {{ .Release.Namespace }} get secret {{ .Values.postgresql.existingSecret }} || kubectl -n {{ .Release.Namespace }} create secret generic {{ .Values.postgresql.existingSecret }} --from-literal=postgresql-password={{ randAlphaNum 10 | quote }} --from-literal=postgresql-replication-password={{ randAlphaNum 10 | quote }}'
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
       {{- end }}
 {{- end }}

@@ -4,7 +4,7 @@ package lib.annotations
 # Usage:
 #
 # import data.lib.annotations 
-# annotations = annotations.merge_annotations()
+# annotations := annotations.merge_annotations()
 # 
 
 import data.lib.core
@@ -31,12 +31,12 @@ get_container_ignore_field(cname) = return {
 get_default(object, field, _default) = output {
 	core.has_field(object, field)
 	object[field] != null
-	output = object[field]
+	output := object[field]
 }
 
 get_default(object, field, _default) = output {
 	core.has_field(object, field) == false
-	output = _default
+	output := _default
 }
 
 merge_annotations = return {
