@@ -36,7 +36,7 @@ For editing the `values-schema.yaml` please refer to the [meta-schema documentat
 
 For working with `bats` and adding tests to `bin/tests/*` please refer to the [online bats documentation](https://bats-core.readthedocs.io/en/latest/)
 
-You can define OPA policies in `policies/*.rego` files that are used both for statical analysis (also at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant.
+You can define OPA policies in `policies/*/src.rego` and unit tests in `policies/*/src_test.rego` files that are used both for statical analysis (also at build time), as well as by [gatekeeper](https://github.com/open-policy-agent/gatekeeper) (at run time) to check whether manifests are conformant. Please read [more about our setup in the docs](./docs/policies.md).
 
 ### 1. Validating changes
 

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
@@ -42,7 +42,15 @@ controller:
     {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-privileged")) | nindent 4 }}
+    policy.otomi.io/ignore: "psp-privileged"
+    policy.otomi.io/parameters.psp-capabilities: '{"allowedCapabilities":["NET_RAW","NET_BIND_SERVICE"]}'
+  podSecurityContext:
+    capabilities:
+        drop:
+        - ALL
+        add:
+        - NET_BIND_SERVICE
+
   replicaCount: 2
   minAvailable: 1
   autoscaling:

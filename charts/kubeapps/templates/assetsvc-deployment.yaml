@@ -68,6 +68,6 @@ spec:
           {{- if .Values.assetsvc.readinessProbe }}
           readinessProbe: {{- toYaml .Values.assetsvc.readinessProbe | nindent 12 }}
           {{- end }}
-          {{- if .Values.assetsvc.resource }}
+          {{- if .Values.assetsvc.resources }}
           resources: {{- toYaml .Values.assetsvc.resources | nindent 12 }}
           {{- end }}

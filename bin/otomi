@@ -12,49 +12,34 @@
 ##
 #####################################################################################
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-[ -n "$TRACE" ] && unset TRACE && PS4='$BASH_SOURCE:$LINENO:' bash -x bin/otomi "$@" && exit 1
 
 command=$1
-shift
+
+original_params="$@"
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
+[ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
 
 . bin/common.sh
+[ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
-[ $has_docker = 'false' ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
-
-function verbose_env() {
-  echo "has_docker=$has_docker"
-  echo "ENV_DIR=$ENV_DIR"
-  echo "stack_dir=$stack_dir"
-  echo "helm_config=$helm_config"
-  echo "cmd_image=$cmd_image"
-  echo "check_kube_context=$check_kube_context"
-  echo "K8S_CONTEXT=$K8S_CONTEXT"
-  echo "IN_DOCKER=$IN_DOCKER"
-  echo "command=$command"
-}
-
-# check_kube_context - a flag to indicate to use kube context and to refresh kube access token before running command in docker
-check_kube_context=0
-mount_stack_dir=0
 stack_dir='/home/app/stack'
 readonly image_tag=$(otomi_image_tag)
 readonly cmd_image="otomi/core:$image_tag"
+[ -n "$VERBOSE" ] && echo "cmd_image: $cmd_image"
+
 docker_terminal_params='-it'
-helm_config=''
 readme_url='https://github.com/redkubes/otomi-core'
 kubeconfig="-v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config"
 
 # check if we are in core or values repo (could be improved as it is based on name!)
 readonly cwd=$(basename "$PWD")
-[ -n "$VERBOSE" ] && echo "CWD: $cwd"
 if [ "$cwd" = "otomi-core" ]; then
-  [ -z "$CI" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
   [ -n "$VERBOSE" ] && echo "Mounting otomi-core dir"
   stack_dir=$PWD
+  [ -n "$VERBOSE" ] && echo "stack_dir: $stack_dir"
   mount_stack_dir=1
 fi
 # now we can retrieve customer name from settings
@@ -63,58 +48,61 @@ customer=$(echo customer_name || $CUSTOMER || "unknown")
 # set helm config
 helm_config="$HOME/.config/helm"
 uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
+[ -n "$VERBOSE" ] && echo "helm_config: $helm_config"
 
 function show_usage() {
   echo "otomi usage:
-    bash                run interactive bash shell in otomi-core container
-    bats                run BATS on bin/tests (see docs/BATS.md)
-    bootstrap           bootstrap values repo with artifacts corresponding to the target cluster's stack version
-    check-policies      check if generated manifests adhere to defined OPA policies (takes helmfile options)
-    commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
-    configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg).
-    console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
-    decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
-    deploy              execute otomi-core deploy script
-    destroy             destroy all or some charts (takes helmfile options)
-    diff                diff k8s resources (takes helmfile options)
-    encrypt             encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
-    help                print this help
-    hf                  run helmfile for a set target cluster (takes helmfile options)
-    pull                wrapper for git pull && bootstrap
-    sync                sync k8s resources (takes helmfile options)
-    switch              switch context to the target cluster and bootstraps
-    template            export k8s resources (takes helmfile options)
-    test                run tests against the target cluster
-    values              show helmfile values for target cluster (takes target options)
-    validate-templates  validate generated manifests against supported k8s versions/CRDs and best practices (takes helmfile & target options)
-    validate-values     validate values for each cluster against JSON schema (takes target options)
-    x                   execute command in container
+    apply *              apply k8s resources
+    bash                 run interactive bash shell in otomi-core container
+    bats                 run BATS on bin/tests (see docs/BATS.md)
+    bootstrap            bootstrap values repo with artifacts corresponding to the cluster's stack version
+    check-policies *     check if generated manifests adhere to defined OPA policies
+    commit               execute wrapper for encrypt -> generate pipelines -> git commit changed files
+    console              start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
+    decrypt              decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
+    deploy               execute otomi-core deploy script
+    destroy *            destroy all or some charts
+    diff *               diff k8s resources
+    encrypt              encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
+    help                 print this help
+    pull                 wrapper for git pull && bootstrap
+    sync *               sync k8s resources
+    switch               switch context to the target cluster and bootstraps
+    template *           export k8s resources
+    test                 run tests against the target cluster
+    values               show helmfile values for target cluster
+    validate-templates * validate generated manifests against supported k8s versions/CRDs and best practices
+    validate-values *    validate values for each cluster against JSON schema (takes target options)
+    x                    execute command in container
 
-  Env flags:
-    CI=1                Exit the script after first error
-    DEBUG=1             Run otomi CLI in debug mode. Keeps tmp files for inspection.
-    TRACE=1             Trace otomi CLI calls. Starts bash with -x and logs time.
-    VERBOSE=1;          Run otomi CLI in verbose mode
+  Common options:
+    -d | --debug        Run otomi CLI in debug mode. Runs bash with -x.
+    -t | --trace        Trace otomi CLI calls. Sets bash prompt with time.
+    -v | --verbose      Show more output.
+    -s | --skip-cleanup Keep temporary files for inspections.
 
-  Example helmfile options:
+  (*) Takes helmfile options:
     -l|--label          Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
     -f|--file           Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
   (For a full list of options please read the helmfile documentation.)   
   "
 }
-
-function evaluate_k8s_context() {
-  local env_path="$ENV_DIR/env/.env"
-  [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
-  . $env_path
-  [ -z "$K8S_CONTEXT" ] && err "The K8S_CONTEXT env is not defined in $env_path" && exit 1
+function check_env_dir() {
+  [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
   return 0
 }
 
 function validate_k8s_context() {
+  [ -n "$VERBOSE" ] && echo "Validating kube context"
+  check_env_dir
+  local env_path="$ENV_DIR/env/.env"
+  [ ! -f $env_path ] && err "The file '$env_path' does not exist" && exit 1
+  . $env_path
+  [ -z "$K8S_CONTEXT" ] && err "K8S_CONTEXT is not defined in $env_path" && exit 1
+  [ -n "$VERBOSE" ] && echo "Using kube context: $K8S_CONTEXT"
   local context=$(kubectl config current-context)
-  if [ "$K8S_CONTEXT" != "$context" ]; then
-    read -p "Warning: Your current kubernetes context does not match target context: $K8S_CONTEXT. Would you like to switch kube context to target first? [Yn]" ok
+  if [ -z "$CI" ] && [ "$K8S_CONTEXT" != "$context" ]; then
+    read -p "Warning: Your current kubernetes context does not match cluster context: $K8S_CONTEXT. Would you like to switch kube context to cluster first? [Yn]" ok
     if [ "${ok:-y}" = "y" ]; then
       kubectl config use $K8S_CONTEXT
       $is_repo && drun bin/bootstrap.sh
@@ -134,21 +122,13 @@ function check_sops_file() {
 }
 
 function evaluate_secrets() {
-  [ ! -f "$ENV_DIR/.sops.yaml" ] && {
-    [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
-    return 0
-  }
+  [ ! -f "$ENV_DIR/.sops.yaml" ] && [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
     . $secrets_path
   fi
   prepare_crypt
-  return 0
-}
-
-function validate_cluster_env() {
-  check_kube_context=1
   return 0
 }
 
@@ -178,32 +158,21 @@ function drun() {
   local stack_volume=''
   local socket_volume=''
 
-  [ "${VERBOSE-}" != '' ] && echo "Running in CI: $CI"
-  if [ -n "$CI" ]; then
-    check_kube_context=0
-  # else
-  #   socket_volume="-v /var/run/docker.sock:/var/run/docker.sock"
-  fi
+  [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
+  [ -n "$CI" ] && check_kube_context=0
 
   # execute any kubectl command to refresh access token
-  if [ $check_kube_context -eq 1 ]; then
-    evaluate_k8s_context
+  if [ -n "$check_kube_context" ]; then
     validate_k8s_context
     kubectl version >/dev/null
   fi
 
-  if [ $mount_stack_dir -eq 1 ]; then
-    stack_volume="-v $stack_dir:$stack_dir"
-  fi
+  [ -n "$mount_stack_dir" ] && stack_volume="-v ${stack_dir}:${stack_dir}"
 
-  [ -n "$VERBOSE" ] && verbose_env
-
-  # use docker run if has_docker AND either:
-  # - not in docker
-  # - in docker AND force docker
-  if [ "$has_docker" = 'true' ] && [ -z "$IN_DOCKER" ]; then
+  # use docker run if not in docker
+  if [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
-    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && docker pull "otomi/core:$image_tag" >/dev/null
+    [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ -z "$NOPULL" ] && docker pull "otomi/core:$image_tag" >/dev/null
     docker run $docker_terminal_params --rm \
       $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
       -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
@@ -222,51 +191,54 @@ function drun() {
       -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
       -e VAULT_TOKEN=$VAULT_TOKEN \
       -e CUSTOMER="$customer" \
-      -e VERBOSE="${VERBOSE-}" \
+      -e VERBOSE="${VERBOSE}" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
       -e DEBUG="$DEBUG" \
+      -e KEEP_DEBUGGING="$KEEP_DEBUGGING" \
       -e TRACE="$TRACE" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
-      $command
+      bash -c "$command"
   else
-    [ -n "$VERBOSE" ] && echo "Running native version of command: $command"
+    [ -n "$VERBOSE" ] && echo "Already in docker, will run native version of command: $command"
     $command
   fi
 }
 
 function execute() {
   shift
+  shift
   case $command in
     apply)
       evaluate_secrets
-      validate_cluster_env
+      check_kube_context=1
       set -o pipefail
-      drun helmfile "$@" apply --skip-deps | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     bash)
       docker_terminal_params='-ti'
-      drun bash
+      drun 'bash'
       ;;
     bats)
-      drun bats -T "$@" bin/tests
+      drun "bats -T $original_params bin/tests"
       ;;
     bootstrap)
-      drun bin/bootstrap.sh "$@"
+      drun "bin/bootstrap.sh $original_params"
       ;;
     check-policies)
+      check_env_dir
       evaluate_secrets
-      drun bin/check-policies.sh "$@"
+      drun "bin/check-policies.sh $original_params"
       ;;
     commit)
       is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
-      drun bin/validate-values.sh
-      drun bin/pre-commit.sh
+      drun 'bin/validate-values.sh'
+      drun 'bin/pre-commit.sh'
       git add . && git commit -m 'Manual commit' --no-verify
       ;;
     console)
@@ -279,29 +251,29 @@ function execute() {
       if [ "$*" != '' ]; then
         for f in "$@"; do
           echo "Decrypting $f"
-          drun helm secrets dec ./env/$f >/dev/null
+          drun "helm secrets dec ./env/$f" >/dev/null
         done
         exit
       else
-        drun bin/crypt.sh decrypt
+        drun "bin/crypt.sh decrypt"
       fi
       ;;
     deploy)
       evaluate_secrets
-      validate_cluster_env
-      drun bin/deploy.sh | grep -Ev $helmfile_output_hide
+      check_kube_context=1
+      drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       ;;
     diff)
       evaluate_secrets
-      validate_cluster_env
+      check_kube_context=1
       set -o pipefail
-      drun helmfile "$@" diff --skip-deps | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
-      validate_cluster_env
+      check_kube_context=1
       set -o pipefail
-      drun helmfile "$@" destroy | grep -Ev $helmfile_output_hide
+      drun "bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file
@@ -309,47 +281,47 @@ function execute() {
       if [ "$*" != '' ]; then
         for f in "$@"; do
           echo "Encrypting $f"
-          drun helm secrets enc ./env/$f >/dev/null
+          drun "helm secrets enc ./env/$f" >/dev/null
         done
         exit
       else
-        drun bin/crypt.sh encrypt
+        drun 'bin/crypt.sh encrypt'
       fi
       ;;
     gen-drone)
       evaluate_secrets
-      drun bin/gen-drone.sh
+      drun 'bin/gen-drone.sh'
       ;;
     hf)
       evaluate_secrets
-      validate_cluster_env
+      check_kube_context=1
       set -o pipefail
-      drun helmfile "$@" | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf $*" | grep -Ev $helmfile_output_hide
       ;;
     pull)
       is_repo
       evaluate_secrets
       git -C $ENV_DIR pull
-      drun bin/bootstrap.sh
+      drun 'bin/bootstrap.sh'
       ;;
     regcred)
-      drun bin/regcred.sh "$@"
+      drun "bin/regcred.sh $original_params"
       ;;
     rotate-keys)
       check_sops_file
       evaluate_secrets
-      drun bin/crypt.sh rotate
+      drun "bin/crypt.sh rotate"
       ;;
     sync)
       evaluate_secrets
-      validate_cluster_env
+      check_kube_context=1
       set -o pipefail
-      drun helmfile "$@" sync --skip-deps | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
-      set -o pipefail
-      drun bin/template.sh "$@"
+      check_env_dir
+      drun ". bin/common.sh $original_params && hf_template"
       ;;
     test)
       evaluate_secrets
@@ -357,19 +329,22 @@ function execute() {
       ;;
     validate-templates)
       evaluate_secrets
-      drun bin/validate-templates.sh "$@"
+      check_env_dir
+      drun "bin/validate-templates.sh $original_params"
       ;;
     validate-values)
       evaluate_secrets
-      drun bin/validate-values.sh "$@"
+      check_env_dir
+      drun "bin/validate-values.sh $original_params"
       ;;
     values)
       evaluate_secrets
+      check_env_dir
       set -o pipefail
-      drun helmfile -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun ". bin/common.sh && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
-      check_kube_context=0
+      check_env_dir
       drun "$@"
       ;;
     *)
@@ -379,7 +354,6 @@ function execute() {
   esac
   exit
 }
-
 [ -z "$command" ] && err "Missing command argument" && show_usage && exit 1
 
 execute $command "$@"

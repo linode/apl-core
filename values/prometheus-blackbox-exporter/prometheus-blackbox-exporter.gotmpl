@@ -7,6 +7,14 @@ persistence:
   size: 1Gi
 usePassword: false
 
+resources:
+  requests:
+    cpu: 50m
+    memory: 50Mi
+  limits:
+    cpu: 250m
+    memory: 300Mi
+
 sentinel:
   resources:
     requests:
