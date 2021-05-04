@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -e
 
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh

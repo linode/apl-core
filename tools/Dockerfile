@@ -14,6 +14,8 @@ ARG HELM_SECRETS_VERSION=2.0.3
 ARG SOPS_VERSION=3.7.1
 # https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.138.7
+# https://github.com/open-policy-agent/opa/releases
+ARG OPA_VERSION=0.28.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
@@ -98,6 +100,10 @@ RUN pip3 install --upgrade --no-cache-dir awscli
 # aws-iam-authenticator
 ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
 RUN chmod +x aws-iam-authenticator
+
+# opa
+ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
+RUN chmod +x opa
 
 # kubeval
 ADD https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp

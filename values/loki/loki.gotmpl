@@ -93,6 +93,13 @@ extraContainers:
     - name: http
       containerPort: 11811
       protocol: TCP
+  resources:
+    limits:
+      cpu: 250m
+      memory: 200Mi
+    requests:
+      cpu: 50m
+      memory: 40Mi
   volumeMounts:
     - name: reverse-proxy-auth-config
       mountPath: /etc/reverse-proxy-conf

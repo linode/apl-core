@@ -7,6 +7,12 @@ policies:
         cpu: '2'
         enabled: false
         memory: 2000Mi
+    psp-allowed-repos:
+        enabled: false
+        repos:
+            - harbor.demo.gke.otomi.cloud
+            - harbor.demo.aks.otomi.cloud
+            - harbor.demo.eks.otomi.cloud
     psp-allowed-users:
         enabled: true
         fsGroup:
@@ -34,7 +40,9 @@ policies:
         allowedCapabilities:
             - NET_BIND_SERVICE
             - NET_RAW
-        enabled: true
+        enabled: false # not working correctly as data.parameters is empty
+        requiredDropCapabilities:
+            - ALL
     psp-forbidden-sysctls:
         enabled: true
         forbiddenSysctls:

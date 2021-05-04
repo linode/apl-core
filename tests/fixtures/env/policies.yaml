@@ -1,80 +1,73 @@
 policies:
-  container-limits:
-    enabled: false
-    cpu: '2'
-    memory: 2Gi
-  banned-image-tags:
-    enabled: false
-    tags:
-      - latest
-      # - master
-  psp-host-filesystem:
-    enabled: true
-    allowedHostPaths:
-      - pathPrefix: /tmp/
-        readOnly: false
-  psp-allowed-users:
-    enabled: true
-    runAsUser:
-      rule: MustRunAsNonRoot
-    runAsGroup:
-      rule: MayRunAs
-      ranges:
-        - min: 1
-          max: 65535
-    supplementalGroups:
-      rule: MayRunAs
-      ranges:
-        - min: 1
-          max: 65535
-    fsGroup:
-      rule: MayRunAs
-      ranges:
-        - min: 1
-          max: 65535
-  psp-host-security:
-    enabled: true
-  psp-host-networking-ports:
-    enabled: true
-  psp-privileged:
-    enabled: true
-  psp-capabilities:
-    enabled: true
-    # requiredDropCapabilities:
-    #     - ALL
-    allowedCapabilities:
-      - NET_BIND_SERVICE
-      - NET_RAW
-  psp-forbidden-sysctls:
-    enabled: true
-    forbiddenSysctls:
-      - kernel.*
-      - net.*
-      - abi.*
-      - fs.*
-      - sunrpc.*
-      - user.*
-      - vm.*
-  psp-apparmor:
-    enabled: true
-    allowedProfiles:
-      - runtime/default
-      # - docker/default
-      # - unconfined
-      # - localhost/<profile-name>
-  psp-selinux:
-    enabled: false
-    seLinuxContext: RunAsAny
-  psp-seccomp:
-    enabled: false
-    allowedProfiles:
-      - runtime/default
-      # - docker/default
-      # - unconfined
-      # - localhost/<profile-name>
-  psp-allowed-repos:
-    enabled: false
-    repos:
-      - harbor.demo.gke.otomi.cloud
-      - harbor.demo.aks.otomi.cloud
-      - harbor.demo.eks.otomi.cloud
+    banned-image-tags:
+        enabled: false
+        tags:
+            - latest
+    container-limits:
+        cpu: '2'
+        enabled: false
+        memory: 2Gi
+    psp-allowed-repos:
+        enabled: false
+        repos:
+            - harbor.demo.gke.otomi.cloud
+            - harbor.demo.aks.otomi.cloud
+            - harbor.demo.eks.otomi.cloud
+    psp-allowed-users:
+        enabled: true
+        fsGroup:
+            ranges:
+                - max: 65535
+                  min: 1
+            rule: MayRunAs
+        runAsGroup:
+            ranges:
+                - max: 65535
+                  min: 1
+            rule: MayRunAs
+        runAsUser:
+            rule: MustRunAsNonRoot
+        supplementalGroups:
+            ranges:
+                - max: 65535
+                  min: 1
+            rule: MayRunAs
+    psp-apparmor:
+        allowedProfiles:
+            - runtime/default
+        enabled: true
+    psp-capabilities:
+        allowedCapabilities:
+            - NET_BIND_SERVICE
+            - NET_RAW
+        enabled: false # not working correctly as data.parameters is empty
+        requiredDropCapabilities:
+            - ALL
+    psp-forbidden-sysctls:
+        enabled: true
+        forbiddenSysctls:
+            - kernel.*
+            - net.*
+            - abi.*
+            - fs.*
+            - sunrpc.*
+            - user.*
+            - vm.*
+    psp-host-filesystem:
+        allowedHostPaths:
+            - pathPrefix: /tmp/
+              readOnly: false
+        enabled: true
+    psp-host-networking-ports:
+        enabled: true
+    psp-host-security:
+        enabled: true
+    psp-privileged:
+        enabled: true
+    psp-seccomp:
+        allowedProfiles:
+            - runtime/default
+        enabled: false
+    psp-selinux:
+        enabled: false
+        seLinuxContext: RunAsAny

@@ -4,9 +4,9 @@ package lib.parameters
 # Match by policyID and merge default parameters passed as data object with extra parameters from annotations
 # 
 # import data.lib.parameters
-# policyID = ...
+# policyID := ...
 # 
-# parameters = parameters.policy_parameters(policyID)
+# parameters := parameters.policy_parameters(policyID)
 # 
 
 import data.lib.annotations
