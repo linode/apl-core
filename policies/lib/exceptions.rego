@@ -4,7 +4,7 @@ package lib.exceptions
 # Usage:
 # 
 # import data.lib.exceptions
-# policyID = ...
+# policyID := ...
 # 
 # violation[{"msg": msg}] {
 #     not exceptions.is_exception(policyID)
@@ -24,6 +24,7 @@ get_safe_annotation[return] {
 	])
 
 	return := split(policy_list, ",")
+	trace(sprintf("get_safe_annotations: %v", [return]))
 }
 
 is_exception(policyID) {
@@ -33,11 +34,17 @@ is_exception(policyID) {
 
 is_container_exception(cname, policyID) {
 	all_annotations := annotations.merge_annotations()
+
+	# trace(sprintf("all_annotations: %v", [all_annotations]))
 	policy_list := object.get(all_annotations, annotations.get_container_ignore_field(cname), "")
 	ignore_list := split(policy_list, ",")
+
+	# trace(sprintf("policy_list: %v", [policy_list]))
+	# trace(sprintf("ignore_list: %v", [ignore_list]))
 	ignore_list[_] == policyID
 }
 
 is_exception(policyID) {
+	trace(sprintf("policy enabled: %b", [parameters.policy_parameters(policyID).enabled]))
 	not parameters.policy_parameters(policyID).enabled
 }

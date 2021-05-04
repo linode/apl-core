@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-set -eo pipefail
-
-. bin/common-modules.sh
 . bin/common.sh
+. bin/common-modules.sh
 
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
@@ -12,10 +10,7 @@ readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
 
 function cleanup() {
-  if [ -z "$DEBUG" ]; then
-    [ -n "$VERBOSE" ] && echo "custom cleanup called"
-    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path >/dev/null 2>&1
-  fi
+  rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path >/dev/null 2>&1
 }
 
 function setup() {
@@ -66,7 +61,7 @@ function process_crd_wrapper() {
   local k8s_version=$1
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests"
-  hf_templates "$k8s_resources_path/$k8s_version"
+  hf_template "$k8s_resources_path/$k8s_version"
 
   echo "Processing CRD files..."
   # generate canonical schemas
@@ -96,14 +91,9 @@ function validate_templates() {
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   echo "Validating resources"
-  set +eo pipefail
-  kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
+  kubeval $([ -z "$VERBOSE" ] && echo '--quiet') --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
     --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
-    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-  set -eo pipefail
-
-  grep -e "ERR\b" $tmp_out && exitcode=1
-  [ $exitcode -ne 0 ] && exit $exitcode
+    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -v 'PASS'
   return 0
 }
 
