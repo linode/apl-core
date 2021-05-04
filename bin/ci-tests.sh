@@ -6,9 +6,10 @@ testEnv=$PWD/tests/fixtures
 echo "Validating $testEnv values"
 ln -s $testEnv env
 bats -T bin/tests
+opa test policies
+bin/check-policies.sh
 bin/validate-values.sh
 bin/validate-templates.sh
-bin/check-policies.sh
 unlink env
 
 for dir in ./profiles/*; do

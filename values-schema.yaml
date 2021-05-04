@@ -1187,6 +1187,16 @@ properties:
           enabled:
             default: true
             type: boolean
+          postgres:
+            properties:
+              postgresqlPassword:
+                type: string
+              postgresqlPostgresPassword:
+                type: string
+          replication:
+            properties:
+              password:
+                type: string
       kubernetes-external-secrets:
         additionalProperties: false
         properties:

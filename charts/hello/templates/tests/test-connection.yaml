@@ -15,6 +15,13 @@ spec:
       image: busybox
       command: ['wget']
       args:  ['{{ include "hello.fullname" . }}:{{ .Values.service.port }}']
+      resources:
+        limits:
+          cpu: 250m
+          memory: 128Mi
+        requests:
+          cpu: 25m
+          memory: 32Mi
   restartPolicy: Never
   {{- with .Values.podSecurityContext }}
   securityContext: {{- toYaml . | nindent 4 }}

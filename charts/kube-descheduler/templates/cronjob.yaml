@@ -48,6 +48,13 @@ spec:
                 - {{ $value | quote }}
                 {{- end }}
                 {{- end }}
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 50Mi
               volumeMounts:
                 - mountPath: /policy-dir
                   name: policy-volume

@@ -103,8 +103,25 @@ alertmanager:
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
 grafana:
+  downloadDashboards:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
   image:
     tag: 7.4.2
+  initChownData:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
   resources:
     {{- with $p | get "resources.grafana" nil }}
       {{- toYaml . | nindent 4 }}
@@ -116,6 +133,14 @@ grafana:
       memory: 256Mi
       cpu: 500m
     {{- end }}
+  sidecar:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:

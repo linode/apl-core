@@ -1,4 +1,5 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+set -e
 
 # This script uses openapi2jsonschema to generate a set of JSON schemas for
 # the specified Kubernetes versions in different flavours:
@@ -9,9 +10,9 @@
 #   X.Y.Z-local - relative references, useful to avoid the network dependency
 
 declare -a arr=(
-  # v1.19.6
-  # v1.18.14
-  v1.17.16
+  v1.19.10
+  v1.18.18
+  v1.17.17
 )
 
 readonly tmp_path=$(mktemp -d)

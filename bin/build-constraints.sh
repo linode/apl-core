@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -eu
+set -e
 
-run_from_hook=${1:-''}
-[ "$run_from_hook" != '' ] && cd ..
+run_from_hook=$1
+[ -n "$run_from_hook" ] && cd ..
 
 . ./bin/common.sh
 

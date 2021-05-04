@@ -105,6 +105,13 @@ postgresql:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
     enabled: true
+    resources:
+      limits:
+        cpu: 250m
+        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 32Mi
     securityContext:
       enabled: true
       runAsUser: 1001
