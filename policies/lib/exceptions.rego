@@ -45,6 +45,6 @@ is_container_exception(cname, policyID) {
 }
 
 is_exception(policyID) {
-	trace(sprintf("policy enabled: %b", [parameters.policy_parameters(policyID).enabled]))
+	# trace(sprintf("policy enabled: %b", [parameters.policy_parameters(policyID).enabled]))
 	not parameters.policy_parameters(policyID).enabled
 }
