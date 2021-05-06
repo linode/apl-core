@@ -24,12 +24,14 @@ review = {"object": resource, "kind": {"group": group, "kind": kind, "version": 
 }
 
 parameters = input.parameters {
+	trace(sprintf("has input.parameters: %v", [input.parameters]))
 	is_gatekeeper
 }
 
 opa_upstream_bug_1046 := true
 
 parameters = data.parameters {
+	trace(sprintf("has data.parameters: %v", [data.parameters]))
 	not is_gatekeeper
 }
 
