@@ -4,7 +4,7 @@
 {{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
-clusterDomain: {{ $v.cluster.domain }}
+clusterDomain: {{ $v.dns.domain }}
 
 images:
   server:
@@ -44,14 +44,7 @@ server:
     {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- end }}
-<<<<<<< HEAD
-    {{- if hasKey $d "repoFilter" }}
-    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
-    {{- end }}
-    DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
-=======
     DRONE_SERVER_PROXY_HOST: proxy.{{ $v.dns.domain }}/drone
->>>>>>> master
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 kubernetes:

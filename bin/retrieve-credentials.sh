@@ -14,7 +14,7 @@ readonly drone_enabled=$(echo "$values" | yq r - 'charts.drone.enabled')
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 [ "$drone_enabled" != "true" ] && echo "Drone is disabled" && exit 0
 
-readonly domain=$(echo "$values" | yq r - 'cluster.domain')
+readonly domain=$(echo "$values" | yq r - 'dns.domain')
 readonly giteaServer="https://gitea.$domain"
 
 readonly cluster_overrides="$ENV_DIR/env/clouds/$CLOUD/$CLUSTER/overrides.$CLOUD-$CLUSTER.yaml"
