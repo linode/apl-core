@@ -73,11 +73,11 @@ function show_usage() {
     commit              execute wrapper for encrypt -> generate pipelines -> git commit changed files
     configure           Configure otomi settings (stored in $ENV_DIR/otomi.cfg).
     console             start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
-    decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
+    decrypt             decrypts file(s) given as arguments (relative to env folder), or all env/secrets.*.yaml to env/secrets.*.yaml.dec files
     deploy              execute otomi-core deploy script
     destroy             destroy all or some charts (takes helmfile options)
     diff                diff k8s resources (takes helmfile options)
-    encrypt             encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
+    encrypt             encrypt file(s) given as arguments (relative to env folder), or all env/secrets.*.yaml files
     help                print this help
     hf                  run helmfile for a set target cluster (takes helmfile options)
     pull                wrapper for git pull && bootstrap
@@ -365,6 +365,7 @@ function execute() {
       drun helmfile -f helmfile.tpl/helmfile-dump.yaml build | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
+      evaluate_secrets
       check_kube_context=0
       drun "$@"
       ;;
