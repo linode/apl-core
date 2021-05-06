@@ -269,7 +269,7 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
       ;;
     encrypt)
       check_sops_file

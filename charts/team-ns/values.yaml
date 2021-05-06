@@ -15,7 +15,6 @@ resourceQuota:
   services.loadbalancers: "0"
   # resourcequotas: "1"  
 services: []
-proxies: []
 limitRange:
   default:
     cpu: 100m

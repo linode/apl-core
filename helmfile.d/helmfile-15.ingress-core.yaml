@@ -26,7 +26,6 @@ releases:
         clusterDomain: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
-        proxies: {{- $v.proxies | toYaml | nindent 10 }}
         resourceQuota: null
         knative:
           enabled: true
