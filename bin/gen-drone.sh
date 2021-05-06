@@ -25,15 +25,10 @@ fi
 readonly webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 
 function template_drone_config() {
-<<<<<<< HEAD
-  local targetPath="$ENV_DIR/env/clouds/${CLOUD}/${CLUSTER}/.drone.yml"
-  local image_tag=$(otomi_image_tag)
-=======
   local targetPath="$ENV_DIR/.drone.yml"
   local image_tag="$(otomi_image_tag)"
   local cluster="$(yq r $clusters_file cluster.name)"
 
->>>>>>> master
   printf "${COLOR_LIGHT_PURPLE}Creating $targetPath ${COLOR_NC}\n"
 
   local target=$targetPath
