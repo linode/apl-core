@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -eu
-set -o pipefail
+set -eo pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
 . $ENV_DIR/.secrets

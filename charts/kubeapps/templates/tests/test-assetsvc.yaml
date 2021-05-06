@@ -30,6 +30,13 @@ spec:
             if [ "$n" -eq 5 ]; then
               exit 1
             fi
+      resources:
+        limits:
+          cpu: 250m
+          memory: 128Mi
+        requests:
+          cpu: 25m
+          memory: 32Mi
       {{- if .Values.securityContext.enabled }}
       securityContext:
         fsGroup: {{ .Values.securityContext.fsGroup }}

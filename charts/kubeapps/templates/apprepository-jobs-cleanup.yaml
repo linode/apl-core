@@ -45,3 +45,10 @@ spec:
             - |
               kubectl delete apprepositories.kubeapps.com -n {{ .Release.Namespace }} --all
               kubectl delete secrets -n {{ .Release.Namespace }} -l app={{ template "common.names.name" $ }},release={{ $.Release.Name }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
