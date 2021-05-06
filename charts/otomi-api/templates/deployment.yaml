@@ -42,13 +42,13 @@ spec:
           livenessProbe:
             # initialDelaySeconds: 20
             httpGet:
-              path: /v1/readiness
-              port: http
+              path: /live
+              port: 9000
           readinessProbe:
             # initialDelaySeconds: 10
             httpGet:
-              path: /v1/readiness
-              port: http
+              path: /ready
+              port: 9000
           resources: {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: repo
