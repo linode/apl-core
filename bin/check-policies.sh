@@ -37,9 +37,8 @@ check_policies() {
   local tmp_out=$(mktemp -u)
   [ -n "$TRACE" ] && trace='--trace'
   set -o pipefail
-  set +x
-  conftest test $([ -n "$CI" ] && echo '--no-color') $trace --fail-on-warn --all-namespaces --data "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" 2>&1 | tee $tmp_out | grep -v 'TRAC' | grep -v 'PASS' | grep -v 'no policies found'
-  x=$?
+  set -x
+  conftest test $([ -n "$CI" ] && echo '--no-color') $trace --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" 2>&1 | tee $tmp_out | grep -v 'TRAC' | grep -v 'PASS' | grep -v 'no policies found'
   grep "FAIL" $tmp_out >/dev/null && return 1
   return 0
 }

@@ -6,7 +6,7 @@ testEnv=$PWD/tests/fixtures
 echo "Validating $testEnv values"
 ln -s $testEnv env
 bats -T bin/tests
-opa test policies
+opa test policies -v
 # bin/check-policies.sh
 bin/validate-values.sh
 bin/validate-templates.sh
