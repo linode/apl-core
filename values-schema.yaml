@@ -1674,17 +1674,27 @@ properties:
     required:
       - namespaces
   kms:
+    additionalProperties: false
     properties:
       sops:
         oneOf:
           - aws:
               $ref: '#/definitions/awsCreds'
+            required:
+              - aws
           - azure:
               $ref: '#/definitions/azureCreds'
+            required:
+              - azure
           - google:
               $ref: '#/definitions/googleCreds'
+            required:
+              - google
           - vault:
               $ref: '#/definitions/vaultCreds'
+            required:
+              - vault
+        type: object
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
