@@ -9,7 +9,7 @@ bats -T bin/tests
 opa test policies -v
 # bin/check-policies.sh
 bin/validate-values.sh
-# bin/validate-templates.sh
+bin/validate-templates.sh
 unlink env
 
 for dir in ./profiles/*; do
@@ -20,7 +20,7 @@ for dir in ./profiles/*; do
   ln -s $valuesPath env
   bin/bootstrap.sh $profile
   bin/validate-values.sh
-  # bin/validate-templates.sh
+  bin/validate-templates.sh
   # bin/check-policies.sh
   rm -rf $valuesPath
   unlink env
