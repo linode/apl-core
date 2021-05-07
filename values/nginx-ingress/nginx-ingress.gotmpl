@@ -43,13 +43,6 @@ controller:
   podAnnotations:
     sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
     policy.otomi.io/ignore: "psp-privileged"
-    # policy.otomi.io/parameters.psp-capabilities: '{"allowedCapabilities":["NET_RAW","NET_BIND_SERVICE"]}'
-  podSecurityContext:
-    capabilities:
-        drop:
-        - ALL
-        add:
-        - NET_BIND_SERVICE
 
   replicaCount: 2
   minAvailable: 1
