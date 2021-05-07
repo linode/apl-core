@@ -43,7 +43,7 @@ if [ "$cwd" = "otomi-core" ]; then
   mount_stack_dir=1
 fi
 # now we can retrieve customer name from settings
-customer=$(customer_name || $CUSTOMER || "unknown")
+customer=$(echo customer_name || $CUSTOMER || "unknown")
 
 # set helm config
 helm_config="$HOME/.config/helm"
@@ -186,6 +186,10 @@ function drun() {
       -e AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
       -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
       -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      -e AWS_REGION=$AWS_REGION \
+      -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+      -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+      -e VAULT_TOKEN=$VAULT_TOKEN \
       -e CUSTOMER="$customer" \
       -e VERBOSE="${VERBOSE}" \
       -e IN_DOCKER='1' \

@@ -3,6 +3,7 @@
 {{- $debug := $d | get "debug" false }}
 {{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
 images:
   server:
@@ -13,7 +14,7 @@ images:
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
+sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
@@ -64,12 +65,7 @@ kubernetes:
   annotations:
     {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags")) | nindent 4 }}
   envFile: |
-    {{- if $v.sops.enabled }}
-    AZURE_TENANT_ID: '{{ $v | get "azure.keyVault.tenantId" ($v | get "azure.tenantId" "") }}'
-    AZURE_CLIENT_ID: '{{ $v | get "azure.keyVault.clientId" "" }}'
-    AZURE_CLIENT_SECRET: '{{ $v | get "azure.keyVault.clientSecret" "" }}'
-    GCLOUD_SERVICE_KEY='{{ $v | get "google.kmsAccount" "" | replace "\n" "" }}'
-    {{- end }}
+    {{- $sopsEnv | nindent 4 }}
 
 persistence:
   enabled: true
