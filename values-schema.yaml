@@ -64,13 +64,19 @@ definitions:
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
-  azureMonitorWithoutCreds:
+  azureMonitor:
     properties:
       appInsightsApiKey:
         description: An Azure AppInsights client secret (defaults to clientSecret).
         type: string
       appInsightsAppId:
         description: An Azure AppInsights client id (defaults to clientId).
+        type: string
+      clientId:
+        description: An Azure client id.
+        type: string
+      clientSecret:
+        description: An Azure client secret.
         type: string
       logAnalyticsClientId:
         description: An Azure client secret (defaults to clientSecret).
@@ -84,25 +90,11 @@ definitions:
       logAnalyticsWorkspace:
         description: An Azure monitor log analytics workspace.
         type: string
-  azureMonitorCreds:
-    properties:
+    dependencies:
       clientId:
-        description: An Azure client id.
-        type: string
+        - clientSecret
       clientSecret:
-        description: An Azure client secret.
-        type: string
-    required:
-      - clientId
-      - clientSecret
-  azureMonitor:
-    anyOf:
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - additionalProperties: false
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - $ref: '#/definitions/azureMonitorCreds'
+        - clientId
   cluster:
     additionalProperties: false
     properties:
