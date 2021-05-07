@@ -16,8 +16,7 @@ function teardown () {
     unset ENV_DIR env_path
 }
 
-@test "$validate_values_str  starts generating" {
+@test "Validating values should run successfully" {
     eval "run timeout 5 bin/validate-values.sh"
     assert_output --partial "/tmp/otomi/values/values.yaml passed test"
-    assert [ ! -f "/tmp/otomi/values/values.yaml" ]
 }

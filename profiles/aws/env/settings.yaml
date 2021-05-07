@@ -7,10 +7,11 @@ alerts:
 customer:
     name: demo
 dns:
-    dnsZones: []
+    zones: []
     domain: demo.eks.otomi.cloud
-    aws:
-        region: eu-central-1
+    provider:
+        aws:
+            region: eu-central-1
 oidc:
     adminGroupID: adminGroupID
     authUrl: https://oidc.local/oauth2/authorize
