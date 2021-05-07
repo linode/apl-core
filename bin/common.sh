@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -e
+. bin/aliases
+shopt -s expand_aliases
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-./env}
