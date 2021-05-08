@@ -14,10 +14,13 @@ policyID = "banned-image-tags"
 violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pods.containers[container]
+	trace(sprintf("container: %v", [container]))
 	not exceptions.is_container_exception(container.name, policyID)
 	img_split := split(container.image, ":")
 	tag := img_split[minus(count(img_split), 1)]
+	trace(sprintf("tag: %v", [tag]))
 	banned := {s | s = parameters.policy_parameters(policyID).tags[_]}
+	trace(sprintf("banned: %v", [banned]))
 	banned[tag]
 	msg := sprintf("Policy: %s - container <%v> has banned image tag <%v>, banned tags are %v", [policyID, container.name, tag, banned])
 }

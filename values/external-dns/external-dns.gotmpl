@@ -6,16 +6,10 @@ sources:
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
-{{- if hasKey $dns "google" }}
-provider: "google"
-google: {{- $dns.google | toYaml | nindent 2 }}
-{{- else if hasKey $dns "aws" }}
-provider: "aws"
-aws: {{- $dns.aws | toYaml | nindent 2 }}
-{{- else if hasKey $dns "azure" }}
-provider: "azure"
-azure: {{- $dns.azure | toYaml | nindent 2 }}
-{{- end }}  
+{{- range $provider, $config := $dns.provider }}
+provider: {{ $provider }}
+{{ $provider }}: {{- $config | toYaml | nindent 2 }}
+{{- end }}
 domainFilters: {{ $externalDns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $externalDns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"

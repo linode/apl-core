@@ -45,20 +45,22 @@ for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
 if [ ! -d "$ENV_DIR/env" ]; then
-  readonly profile=$1
-  readonly commonProfilePath=$PWD/profiles/common/env
-  readonly profilePath=$PWD/profiles/$profile/env
+  profile=$1
+  [ "$0" == "bin/otomi" ] && profile=$2
+  readonly common_profile_path=$PWD/profiles/common/env
+  readonly profile_path=$PWD/profiles/$profile/env
   [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
 
-  echo "No files found in "$ENV_DIR/env". Initiliazing configuration files"
-  cp -r $commonProfilePath $ENV_DIR
-  cp -r $profilePath $ENV_DIR
+  echo "No files found in "$ENV_DIR/env". Installing example files from profile $profile"
+  cp -r $common_profile_path $ENV_DIR
+  cp -r $profile_path $ENV_DIR
+  ls -als $ENV_DIR/
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 # to accomodate sops plugin in vscode:
 [ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
-secrets_file="$ENV_DIR/env/secrets.settings.yaml"
+readonly secrets_file="$ENV_DIR/env/secrets.settings.yaml"
 if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != '' ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
