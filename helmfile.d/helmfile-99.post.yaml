@@ -25,6 +25,7 @@ releases:
     installed: {{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
+      stage: post
     <<: *jobs
   - name: job-gitea
     installed: {{ $c | get "gitea.enabled" false }}
