@@ -115,7 +115,7 @@ function validate_k8s_context() {
 
 function check_sops_file() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && (
-    err "The $ENV_DIR/.sops.yaml does not exist"
+    err "$ENV_DIR/.sops.yaml does not exist"
     exit 1
   )
   return 0
