@@ -166,17 +166,13 @@ services:
     svc: drone
     namespace: team-admin
     ownHost: true
-    authz:
-      workload:
-        app: drone
-        component: server
   - name: drone
     svc: drone
     namespace: team-admin
     ownHost: true
     hide: true
     isPublic: true
-    paths: [/hook]
+    paths: [/hook, /api/user, /api/repo]
     forwardPath: true
   - name: vault
     namespace: vault
