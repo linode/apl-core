@@ -11,7 +11,8 @@ readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
 readonly cluster_domain=$(echo "$values" | yq r - 'dns.domain')
 readonly gitea_url="gitea.$cluster_domain"
 readonly gitea_password=$(echo "$values" | yq r - 'charts.gitea.admin.password')
-readonly gitea_user='otomi'
+readonly gitea_user='otomi-admin'
+readonly gitea_repo_org='otomi'
 readonly gitea_repo='values'
 cd $ENV_DIR
 # Initialize as clean slate
@@ -34,7 +35,7 @@ if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config rem
   fi
 fi
 if [ ! $(git config remote.$remote_name.url) ]; then
-  git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_user/$gitea_repo.git"
+  git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_repo_org/$gitea_repo.git"
   echo "Added gitea as a remote origin"
   echo "You can push using: \`git push main $remote_name\`"
 fi
