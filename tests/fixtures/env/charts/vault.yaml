@@ -1,5 +1,5 @@
 charts:
-  vault:
-    # seal:
-    #   type: no-kms
-    logLevel: warn
+    vault:
+        # seal:
+        #   type: no-kms
+        logLevel: warn

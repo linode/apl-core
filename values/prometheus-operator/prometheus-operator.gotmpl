@@ -173,7 +173,7 @@ grafana:
       url: http://loki:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
-    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
+    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
     {{- if $c | get "sitespeed.enabled" false }}
     - name: Graphite

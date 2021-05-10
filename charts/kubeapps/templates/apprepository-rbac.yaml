@@ -94,7 +94,7 @@ rules:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: "kubeapps:{{ .Release.Namespace }}:apprepositories-read"
+  name: "kubeapps-{{ .Release.Namespace }}-apprepositories-read"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.apprepository.fullname" . }}
 rules:
@@ -111,13 +111,13 @@ rules:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
-  name: "kubeapps:controller:{{ .Release.Namespace }}:apprepositories-read"
+  name: "kubeapps-controller-{{ .Release.Namespace }}-apprepositories-read"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.apprepository.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: "kubeapps:{{ .Release.Namespace }}:apprepositories-read"
+  name: "kubeapps-{{ .Release.Namespace }}-apprepositories-read"
 subjects:
   - kind: ServiceAccount
     name: {{ template "kubeapps.apprepository.fullname" . }}
@@ -126,7 +126,7 @@ subjects:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: "kubeapps:{{ .Release.Namespace }}:apprepositories-write"
+  name: "kubeapps-{{ .Release.Namespace }}-apprepositories-write"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.apprepository.fullname" . }}
 rules:
@@ -146,7 +146,7 @@ rules:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: "kubeapps:{{ .Release.Namespace }}:apprepositories-refresh"
+  name: "kubeapps-{{ .Release.Namespace }}-apprepositories-refresh"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.apprepository.fullname" . }}
 rules:

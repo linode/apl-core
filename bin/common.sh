@@ -34,6 +34,7 @@ function err() {
 # - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments
 # - https://stackoverflow.com/a/29754866
 #####
+# skip parsing args for some commands
 if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
   ! getopt --test >/dev/null
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
@@ -88,10 +89,6 @@ if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash ba
     esac
   done
 fi
-# skip parsing args for some commands
-# if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
-#   parse_args "$@"
-# fi
 
 function _rind() {
   local cmd="$1"

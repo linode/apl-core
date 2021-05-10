@@ -1,6 +1,6 @@
 {{- if .Values.cainjector.enabled -}}
 {{- if .Values.global.rbac.create -}}
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "cainjector.fullname" . }}
@@ -34,7 +34,7 @@ rules:
     resources: ["auditsinks"]
     verbs: ["get", "list", "watch", "update"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ template "cainjector.fullname" . }}
@@ -56,10 +56,10 @@ subjects:
 
 ---
 # leader election rules
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ template "cainjector.fullname" . }}:leaderelection
+  name: {{ template "cainjector.fullname" . }}-leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
     app: {{ include "cainjector.name" . }}
@@ -85,10 +85,10 @@ rules:
 
 # grant cert-manager permission to manage the leaderelection configmap in the
 # leader election namespace
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "cainjector.fullname" . }}:leaderelection
+  name: {{ include "cainjector.fullname" . }}-leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
     app: {{ include "cainjector.name" . }}
@@ -100,7 +100,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ template "cainjector.fullname" . }}:leaderelection
+  name: {{ template "cainjector.fullname" . }}-leaderelection
 subjects:
   - kind: ServiceAccount
     name: {{ template "cainjector.serviceAccountName" . }}
