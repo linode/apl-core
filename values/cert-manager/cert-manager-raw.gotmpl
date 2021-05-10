@@ -1,22 +1,23 @@
 {{- $v := .Environment.Values }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $dns := $v.dns }}
+{{- $p := $dns.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 
 resources:
-{{- if or (hasKey $dns "azure") (hasKey $dns "google") }}
+{{- if or (hasKey $p "azure") (hasKey $p "google") }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: "dns-secret"
     data:
-      {{- if hasKey $dns "google" }}
-      secret: "{{ $dns.google.serviceAccountKey | b64enc }}"
-      {{- else if hasKey $dns "azure" }}
+      {{- if hasKey $p "google" }}
+      secret: "{{ $p.google.serviceAccountKey | b64enc }}"
+      {{- else if hasKey $p "azure" }}
       # TODO: is aadClientSecret  same as azureClientSecret ?
-      secret: "{{ $dns.azure.aadClientSecret | b64enc }}"
-      {{- else if hasKey $dns "aws" }}
+      secret: "{{ $p.azure.aadClientSecret | b64enc }}"
+      {{- else if hasKey $p "aws" }}
       # aws via service account access not yet implemented, expecting role to be on node
       {{- end }}
 {{- end }}
@@ -34,24 +35,24 @@ resources:
         solvers:
           - selector: {}
             dns01:
-              {{- if hasKey $dns "aws" }}
+              {{- if hasKey $p "aws" }}
               route53:
-                region: {{ $dns.aws.region }}
-              {{- else if hasKey $dns "azure" }}
+                region: {{ $p.aws.region }}
+              {{- else if hasKey $p "azure" }}
               azuredns:
-                clientID: {{ $dns.azure.aadClientId }}
+                clientID: {{ $p.azure.aadClientId }}
                 clientSecretSecretRef:
                   key: secret
                   name: "dns-secret"
-                {{- if hasKey $dns.azure "hostedZoneName" }}
-                hostedZoneName: {{ $dns.azure.hostedZoneName }}
+                {{- if hasKey $p.azure "hostedZoneName" }}
+                hostedZoneName: {{ $p.azure.hostedZoneName }}
                 {{- end }}
-                resourceGroupName: {{ $dns.azure.resourceGroup }}
-                subscriptionID: {{ $dns.azure.subscriptionId }}
-                tenantID: {{ $dns.azure.tenantId }}
-              {{- else if hasKey $dns "google" }}
+                resourceGroupName: {{ $p.azure.resourceGroup }}
+                subscriptionID: {{ $p.azure.subscriptionId }}
+                tenantID: {{ $p.azure.tenantId }}
+              {{- else if hasKey $p "google" }}
               clouddns:
-                project: {{ $dns.google.project }}
+                project: {{ $p.google.project }}
                 serviceAccountSecretRef:
                   key: secret
                   name: "dns-secret"

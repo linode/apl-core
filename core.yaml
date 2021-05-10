@@ -170,6 +170,14 @@ services:
       workload:
         app: drone
         component: server
+  - name: drone
+    svc: drone
+    namespace: team-admin
+    ownHost: true
+    hide: true
+    isPublic: true
+    paths: [/hook]
+    forwardPath: true
   - name: vault
     namespace: vault
     svc: vault-0
@@ -187,11 +195,6 @@ services:
       name: kubernetes
     isPublic: true
     isShared: true
-
-proxies:
-  - name: drone
-    namespace: team-admin
-    path: /hook
 
 teamConfig:
   services:

@@ -7,10 +7,11 @@ alerts:
 customer:
     name: demo
 dns:
-    dnsZones: []
+    zones: []
     domain: demo.gks.otomi.cloud
-    google:
-        project: <projectId>
+    provider:
+        google:
+            project: <projectId>
 oidc:
     adminGroupID: adminGroupID
     authUrl: https://oidc.local/oauth2/authorize

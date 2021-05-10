@@ -1,0 +1,20 @@
+
+{{- with . | get "azure" nil  }}
+AZURE_TENANT_ID: {{ .tenantId }}
+AZURE_CLIENT_ID: {{ .clientId }}
+AZURE_CLIENT_SECRET: {{ .clientSecret }}
+AZURE_ENVIRONMENT: {{ . | get "environment" "AzurePublicCloud" }}
+{{- end }}
+{{- with . | get "aws" nil }}
+AWS_ACCESS_KEY_ID: {{ .accessKey }}
+AWS_SECRET_ACCESS_KEY: {{ .secretKey }}
+AWS_REGION: {{ .region }}
+{{- end }}  
+{{- with . | get "google" nil }}
+GOOGLE_PROJECT: {{ .project }}
+GOOGLE_REGION: {{ .region }}
+GCLOUD_SERVICE_KEY: '{{ .accountJson | replace "\n" "" }}'
+{{- end }}
+{{- with . | get "vault" nil }}
+VAULT_TOKEN: {{ .token }}
+{{- end }}

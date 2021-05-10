@@ -18,7 +18,7 @@ function clear_disallowed_refs() {
   echo "Clearing disallowed refs"
   for file in $(find $output_path -name "template_*" -exec bash -c "ls {}" \;); do
     local tmp_file=$(mktemp -u)
-    sed -e '/opa_upstream_bug_1046 /{N;N;N;N;d;}' $file >$tmp_file
+    sed -e '/opa_upstream_bug_1046 /{N;N;N;N;N;d;}' $file >$tmp_file
     mv -f $tmp_file $file
   done
 }
