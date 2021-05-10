@@ -1,4 +1,4 @@
 teamConfig:
-  teams:
-    demo:
-      services: []
+    teams:
+        demo:
+            services: []

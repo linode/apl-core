@@ -41,7 +41,7 @@ subjects:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: "kubeapps:controller:kubeops-ns-discovery-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-ns-discovery-{{ .Release.Namespace }}"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.kubeops.fullname" . }}
 rules:
@@ -55,13 +55,13 @@ rules:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
-  name: "kubeapps:controller:kubeops-ns-discovery-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-ns-discovery-{{ .Release.Namespace }}"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.kubeops.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: "kubeapps:controller:kubeops-ns-discovery-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-ns-discovery-{{ .Release.Namespace }}"
 subjects:
   - kind: ServiceAccount
     name: {{ template "kubeapps.kubeops.fullname" . }}
@@ -71,7 +71,7 @@ subjects:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: "kubeapps:controller:kubeops-operators-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-operators-{{ .Release.Namespace }}"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.kubeops.fullname" . }}
 rules:
@@ -85,13 +85,13 @@ rules:
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
-  name: "kubeapps:controller:kubeops-operators-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-operators-{{ .Release.Namespace }}"
   labels:{{ include "kubeapps.extraAppLabels" . | nindent 4 }}
     app: {{ template "kubeapps.kubeops.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: "kubeapps:controller:kubeops-operators-{{ .Release.Namespace }}"
+  name: "kubeapps-controller-kubeops-operators-{{ .Release.Namespace }}"
 subjects:
   - kind: ServiceAccount
     name: {{ template "kubeapps.kubeops.fullname" . }}

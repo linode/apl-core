@@ -54,7 +54,6 @@ if [ ! -d "$ENV_DIR/env" ]; then
   echo "No files found in "$ENV_DIR/env". Installing example files from profile $profile"
   cp -r $common_profile_path $ENV_DIR
   cp -r $profile_path $ENV_DIR
-  ls -als $ENV_DIR/
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/

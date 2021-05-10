@@ -301,6 +301,12 @@ function execute() {
       set -o pipefail
       drun ". bin/common.sh $original_params && hf $*" | grep -Ev $helmfile_output_hide
       ;;
+    lint)
+      evaluate_secrets
+      check_kube_context=1
+      set -o pipefail
+      drun ". bin/common.sh $original_params && hf lint --skip-deps"
+      ;;
     pull)
       is_repo
       evaluate_secrets

@@ -1,9 +1,9 @@
 {{- if .Values.global.rbac.create -}}
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ template "webhook.fullname" . }}:dynamic-serving
+  name: {{ template "webhook.fullname" . }}-dynamic-serving
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "webhook.name" . }}
@@ -24,10 +24,10 @@ rules:
   verbs: ["create"]
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ template "webhook.fullname" . }}:dynamic-serving
+  name: {{ template "webhook.fullname" . }}-dynamic-serving
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "webhook.name" . }}
@@ -39,7 +39,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ template "webhook.fullname" . }}:dynamic-serving
+  name: {{ template "webhook.fullname" . }}-dynamic-serving
 subjects:
 - apiGroup: ""
   kind: ServiceAccount

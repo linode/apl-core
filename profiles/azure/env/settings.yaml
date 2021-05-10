@@ -7,7 +7,6 @@ alerts:
 azure:
     appgw:
         isManaged: true
-    diskType: Standard_LRS
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue

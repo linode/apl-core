@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
-{{- $secrets := (include "itemsByName" ($v.externalSecrets | default list) | fromYaml) }}
+{{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
