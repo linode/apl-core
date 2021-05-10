@@ -14,8 +14,8 @@
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 
 command=$1
-
 original_params="$@"
+
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
@@ -23,7 +23,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 [ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
 
 . bin/common.sh
-[ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 stack_dir='/home/app/stack'
 readonly image_tag=$(otomi_image_tag)
@@ -218,12 +218,15 @@ function execute() {
       set -o pipefail
       drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
+    argstest)
+      echo "$@"
+      ;;
     bash)
       docker_terminal_params='-ti'
       drun 'bash'
       ;;
     bats)
-      drun "bats -T $original_params bin/tests"
+      drun "bats -T bin/tests"
       ;;
     bootstrap)
       drun "bin/bootstrap.sh $original_params"
@@ -344,7 +347,6 @@ function execute() {
       drun ". bin/common.sh && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
-      check_env_dir
       drun "$@"
       ;;
     *)
