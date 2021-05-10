@@ -34,7 +34,7 @@ function err() {
 # - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments
 # - https://stackoverflow.com/a/29754866
 #####
-function parse_args() {
+if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
   ! getopt --test >/dev/null
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
@@ -87,9 +87,11 @@ function parse_args() {
         ;;
     esac
   done
-}
+fi
 # skip parsing args for some commands
-{ [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash" == *"$1"* ]]; }; } && parse_args "$@"
+# if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
+#   parse_args "$@"
+# fi
 
 function _rind() {
   local cmd="$1"
