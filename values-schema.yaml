@@ -90,45 +90,43 @@ definitions:
       - clientId
       - clientSecret
       - tenantId
-  azureMonitorWithoutCreds:
+  azureMonitor:
     properties:
       appInsightsApiKey:
-        description: An Azure AppInsights client secret (defaults to clientSecret).
+        description: An Azure AppInsights client secret.
         type: string
       appInsightsAppId:
-        description: An Azure AppInsights client id (defaults to clientId).
+        description: An Azure AppInsights client id.
         type: string
-      logAnalyticsClientId:
-        description: An Azure client secret (defaults to clientSecret).
-        type: string
-      logAnalyticsClientSecret:
-        description: An Azure client secret (defaults to clientSecret).
-        type: string
-      logAnalyticsTenantId:
-        description: An Azure tenant id (defaults to tenantId).
-        type: string
-      logAnalyticsWorkspace:
-        description: An Azure monitor log analytics workspace.
-        type: string
-  azureMonitorCreds:
-    properties:
+      azureLogAnalyticsSameAs:
+        type: boolean
+        default: true
       clientId:
         description: An Azure client id.
         type: string
       clientSecret:
         description: An Azure client secret.
         type: string
-    required:
-      - clientId
-      - clientSecret
-  azureMonitor:
-    anyOf:
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - additionalProperties: false
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - $ref: '#/definitions/azureMonitorCreds'
+      logAnalyticsClientId:
+        description: An Azure client secret.
+        type: string
+      logAnalyticsClientSecret:
+        description: An Azure client secret.
+        type: string
+      logAnalyticsTenantId:
+        description: An Azure tenant id.
+        type: string
+      logAnalyticsWorkspace:
+        description: An Azure monitor log analytics workspace.
+        type: string
+      tenantId:
+        description: An Azure monitor log analytics workspace.
+        type: string
+    dependencies:
+      clientId:
+        - clientSecret
+      clientSecret:
+        - clientId
   cluster:
     additionalProperties: false
     properties:
