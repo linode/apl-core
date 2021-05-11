@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:{{ template "metrics-server.fullname" . }}
+  name: system-{{ template "metrics-server.fullname" . }}
   labels: {{- include "metrics-server.labels" . | nindent 4 }}
 rules:
   - apiGroups:

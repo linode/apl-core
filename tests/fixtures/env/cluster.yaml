@@ -1,9 +1,9 @@
 cluster:
-  apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
-  apiServer: 5B31672F99FF867B3CB4D8E0831B6FE7.gr7.eu-central-1.eks.amazonaws.com
-  domain: demo.eks.otomi.cloud
-  k8sVersion: '1.19'
-  name: demo
-  otomiVersion: v0.12.8
-  provider: aws
-  region: eu-central-1
+    apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
+    apiServer: 5B31672F99FF867B3CB4D8E0831B6FE7.gr7.eu-central-1.eks.amazonaws.com
+    domain: demo.eks.otomi.cloud
+    k8sVersion: '1.19'
+    name: demo
+    otomiVersion: v0.12.8
+    provider: aws
+    region: eu-central-1

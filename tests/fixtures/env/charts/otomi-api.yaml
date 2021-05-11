@@ -1,13 +1,13 @@
 charts:
-  otomi-api:
-    _rawValues: {}
-    git:
-      localPath: /tmp/otomi-values
-      repoUrl: github.com/redkubes/otomi-values-demo.git
-    image:
-      pullPolicy: Always
-      tag: latest
-    tools:
-      image:
-        tag: latest
-        pullPolicy: Always
+    otomi-api:
+        _rawValues: {}
+        git:
+            localPath: /tmp/otomi-values
+            repoUrl: github.com/redkubes/otomi-values-demo.git
+        image:
+            pullPolicy: Always
+            tag: latest
+        tools:
+            image:
+                tag: latest
+                pullPolicy: Always

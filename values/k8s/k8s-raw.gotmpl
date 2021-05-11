@@ -20,7 +20,7 @@ resources:
         name: {{ $ns }}
         istio-injection: enabled
       {{- $pullSecrets := list }}
-      {{- range $s := ($team | get "secrets" list) | concat ($team | get "externalSecrets" list) }}
+      {{- range $s := ($team | get "secrets" list) | concat ($team | get "secrets" list) }}
         {{- if eq $s.type "docker-registry" }}
           {{- $pullSecrets = (append $pullSecrets $s) }}
         {{- end }}

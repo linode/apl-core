@@ -90,45 +90,57 @@ definitions:
       - clientId
       - clientSecret
       - tenantId
-  azureMonitorWithoutCreds:
+  azureMonitor:
     properties:
       appInsightsApiKey:
-        description: An Azure AppInsights client secret (defaults to clientSecret).
+        title: AppInsights api key
+        description: An Azure AppInsights client secret.
         type: string
       appInsightsAppId:
-        description: An Azure AppInsights client id (defaults to clientId).
+        title: AppInsights app id
+        description: An Azure AppInsights client id.
         type: string
-      logAnalyticsClientId:
-        description: An Azure client secret (defaults to clientSecret).
-        type: string
-      logAnalyticsClientSecret:
-        description: An Azure client secret (defaults to clientSecret).
-        type: string
-      logAnalyticsTenantId:
-        description: An Azure tenant id (defaults to tenantId).
-        type: string
-      logAnalyticsWorkspace:
-        description: An Azure monitor log analytics workspace.
-        type: string
-  azureMonitorCreds:
-    properties:
+      azureLogAnalyticsSameAs:
+        title: LogAnalytics using same creds?
+        type: boolean
+        default: true
       clientId:
+        title: Azure client id
         description: An Azure client id.
         type: string
       clientSecret:
+        title: Azure client secret
         description: An Azure client secret.
+        type: string
+      logAnalyticsClientId:
+        title: LogAnalytics client id
+        description: An Azure client secret.
+        type: string
+      logAnalyticsClientSecret:
+        title: LogAnalytics client secret
+        description: An Azure client secret.
+        type: string
+      logAnalyticsTenantId:
+        title: LogAnalytics tenant id
+        description: An Azure tenant id.
+        type: string
+      logAnalyticsDefaultWorkspace:
+        title: LogAnalytics default workspace to show
+        description: An Azure LogAnalytics workspace.
+        type: string
+      subscriptionId:
+        title: Azure subscription id
+        description: An Azure subscription id.
+        type: string
+      tenantId:
+        title: LogAnalytics tenant id
+        description: An Azure monitor log analytics workspace.
         type: string
     required:
       - clientId
       - clientSecret
-  azureMonitor:
-    anyOf:
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - additionalProperties: false
-      - allOf:
-          - $ref: '#/definitions/azureMonitorWithoutCreds'
-          - $ref: '#/definitions/azureMonitorCreds'
+      - subscriptionId
+      - tenantId
   cluster:
     additionalProperties: false
     properties:
@@ -377,7 +389,7 @@ definitions:
   subdomainType:
     type: string
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
-  externalSecret:
+  secret:
     type: object
     properties:
       id:
@@ -442,69 +454,6 @@ definitions:
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
-  secret:
-    oneOf:
-      - properties:
-          password:
-            type: string
-          server:
-            $ref: '#/definitions/registry'
-          type:
-            default: docker-registry
-            enum:
-              - docker-registry
-            type: string
-          username:
-            type: string
-        required:
-          - server
-          - username
-          - password
-        title: Docker Registry
-      - properties:
-          entries:
-            description: Key names and their values.
-            items:
-              properties:
-                key:
-                  description: Key or file name.
-                  example: secretstuff.conf
-                  type: string
-                value:
-                  description: Value to be encrypted.
-                  example: password=yoursecretpassword
-                  type: string
-              required:
-                - key
-                - value
-            type: array
-          type:
-            default: generic
-            enum:
-              - generic
-            type: string
-        required:
-          - entries
-        title: Generic
-      - properties:
-          ca:
-            description: The CA certificate content.
-            type: string
-          crt:
-            description: The PEM encoded public key certificate content.
-            type: string
-          key:
-            description: The private key certificate content.
-            type: string
-          type:
-            default: tls
-            enum:
-              - tls
-            type: string
-        required:
-          - crt
-          - key
-        title: TLS
     properties:
       id:
         readOnly: true
@@ -546,9 +495,9 @@ definitions:
         items:
           type: string
         type: array
-      externalSecrets:
+      secrets:
         items:
-          $ref: '#/definitions/externalSecret'
+          $ref: '#/definitions/secret'
         type: array
       id:
         $ref: '#/definitions/idName'
@@ -573,8 +522,6 @@ definitions:
         type: string
       resourceQuota:
         description: Kubernetes resource quota. As is.
-      secrets:
-        $ref: '#/definitions/secrets'
       services:
         items:
           additionalProperties: false
@@ -732,33 +679,6 @@ properties:
             default: true
             description: Is this appgw installed as AKS addon?
             type: boolean
-      diskType:
-        description: An Azure disk type (SKU Type).
-        enum:
-          - Standard_LRS
-          - Standard_GRS
-          - Standard_RAGRS
-          - Standard_ZRS
-          - Premium_LRS
-          - Premium_ZRS
-          - Standard_GZRS
-          - Standard_RAGZRS
-        type: string
-      keyVault:
-        description: Azure Key Vault access credentials. Will use azure.tenantId if tenantId is not provided.
-        properties:
-          tenantId:
-            description: An Azure tenant ID.
-            type: string
-          clientId:
-            description: An Azure client ID.
-            type: string
-          clientSecret:
-            description: An Azure client secret.
-            type: string
-        required:
-          - clientId
-          - clientSecret
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
@@ -771,7 +691,6 @@ properties:
         description: An Azure tenant ID.
         type: string
     required:
-      - diskType
       - resourceGroup
       - subscriptionId
       - tenantId
@@ -786,6 +705,7 @@ properties:
           email:
             $ref: '#/definitions/email'
           stage:
+            default: staging
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
@@ -1097,7 +1017,7 @@ properties:
                 type: string
               usePrivateIP:
                 default: false
-                description: Whether to use a private ip range or not.
+                description: Whether a private ip range or not.
                 type: boolean
             required:
               - subscriptionId
@@ -1599,26 +1519,34 @@ properties:
               azure:
                 properties:
                   cloud:
+                    title: Cloud
                     type: string
-                    description: Azure Cloud to use
+                    description: Azure Cloud
                   resourceGroup:
+                    title: Resource group
                     type: string
-                    description: Azure resource group to use
+                    description: Azure resource group
                   hostedZoneName:
+                    title: Hosted zone name
                     type: string
                   tenantId:
+                    title: Tenant ID
                     type: string
-                    description: Azure tenant ID to use (will default to global value)
+                    description: Azure tenant ID
                   subscriptionId:
+                    title: Subscription ID
                     type: string
-                    description: Azure subscription ID to use (will default to global value)
+                    description: Azure subscription ID
                   aadClientId:
+                    title: Client ID
                     type: string
-                    description: Azure Application Client ID to use
+                    description: Azure Application Client ID
                   aadClientSecret:
+                    title: Client secret
                     type: string
-                    description: Azure Application Client Secret to use
+                    description: Azure Application Client Secret
                   useManagedIdentityExtension:
+                    title: Using managed identities?
                     type: boolean
                     description: If you use Azure MSI, this should be set to true
                     default: false
@@ -1647,12 +1575,6 @@ properties:
     required:
       - domain
       - provider
-  google:
-    description: Google specific configuration.
-    properties:
-      kmsAccount:
-        description: A service account key for managing a KMS vault.
-        type: string
   home:
     $ref: '#/definitions/alerts'
   k8s:
@@ -1758,7 +1680,7 @@ properties:
         type: string
       teamPrefix:
         default: team-
-        description: The prefix to use in URLs for team domains.
+        description: The prefix in URLs for team domains.
         pattern: '^[a-z]+[-]{1}$'
         type: string
       addons:
@@ -2005,21 +1927,6 @@ properties:
                   type: string
                 user:
                   type: string
-  proxies:
-    items:
-      additionalProperties: false
-      properties:
-        name:
-          type: string
-        namespace:
-          type: string
-        path:
-          type: string
-      required:
-        - name
-        - namespace
-        - path
-    type: array
   services:
     items:
       additionalProperties: false
