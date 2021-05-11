@@ -42,8 +42,8 @@ if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash ba
     exit 1
   fi
 
-  OPTIONS=dtvsf:l:
-  LONGOPTS=debug,trace,verbose,skip-cleanup,file:,label:
+  OPTIONS=dtvsp:f:l:
+  LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
   ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
@@ -69,6 +69,10 @@ if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash ba
       -s | --skip-cleanup)
         SKIP_CLEANUP='--skip-cleanup'
         shift 1
+        ;;
+      -p | --profile)
+        PROFILE=$2
+        shift 2
         ;;
       -f | --file)
         FILE_OPT=$2

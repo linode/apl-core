@@ -13,25 +13,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Ready")].status
-    name: Ready
-    type: string
-  - JSONPath: .spec.issuerRef.name
-    name: Issuer
-    priority: 1
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].message
-    name: Status
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -52,8 +33,6 @@ spec:
     - crs
     singular: certificaterequest
   scope: Namespaced
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
@@ -223,28 +202,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Ready")].status
-    name: Ready
-    type: string
-  - JSONPath: .spec.secretName
-    name: Secret
-    type: string
-  - JSONPath: .spec.issuerRef.name
-    name: Issuer
-    priority: 1
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].message
-    name: Status
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -265,8 +222,6 @@ spec:
     - certs
     singular: certificate
   scope: Namespaced
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
@@ -978,24 +933,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.state
-    name: State
-    type: string
-  - JSONPath: .spec.dnsName
-    name: Domain
-    type: string
-  - JSONPath: .status.reason
-    name: Reason
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: acme.cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -1013,8 +950,6 @@ spec:
     plural: challenges
     singular: challenge
   scope: Namespaced
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
@@ -2430,21 +2365,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Ready")].status
-    name: Ready
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].message
-    name: Status
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -2462,8 +2382,6 @@ spec:
     plural: clusterissuers
     singular: clusterissuer
   scope: Cluster
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
@@ -4236,21 +4154,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Ready")].status
-    name: Ready
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Ready")].message
-    name: Status
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -4268,8 +4171,6 @@ spec:
     plural: issuers
     singular: issuer
   scope: Namespaced
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
@@ -6042,25 +5943,6 @@ metadata:
     app.kubernetes.io/managed-by: '{{ .Release.Service }}'
     helm.sh/chart: '{{ template "cert-manager.chart" . }}'
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.state
-    name: State
-    type: string
-  - JSONPath: .spec.issuerRef.name
-    name: Issuer
-    priority: 1
-    type: string
-  - JSONPath: .status.reason
-    name: Reason
-    priority: 1
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when
-      this object was created. It is not guaranteed to be set in happens-before order
-      across separate operations. Clients may not set this value. It is represented
-      in RFC3339 form and is in UTC.
-    name: Age
-    type: date
   group: acme.cert-manager.io
   preserveUnknownFields: false
   conversion:
@@ -6078,8 +5960,6 @@ spec:
     plural: orders
     singular: order
   scope: Namespaced
-  subresources:
-    status: {}
   versions:
   - name: v1alpha2
     served: true
