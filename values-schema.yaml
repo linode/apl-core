@@ -823,6 +823,8 @@ properties:
                   - bitbucketCloud
                   - bitbucketServer
                 type: string
+              secret:
+                type: string
       external-dns:
         additionalProperties: false
         properties:
