@@ -56,12 +56,17 @@
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-commit": "lint-staged && npm run spellcheck",
-    "lint": "bin/otomi validate-templates",
+    "lint": "CI=1 ENV_DIR=$PWD/tests/fixtures ./bin/otomi hf lint",
     "lint:fix": "prettier --write profiles/**/*",
     "lint:all": "run-p spellcheck lint",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
+    "validate-templates": "CI=1 ENV_DIR=$PWD/tests/fixtures ./bin/otomi validate-templates",
+    "check-policies": "CI=1 ENV_DIR=$PWD/tests/fixtures ./bin/otomi check-policies",
+    "test": "run-s spellcheck test:bats lint validate-templates check-policies",
+    "test:bats": "CI=1 ENV_DIR=$PWD/tests/fixtures ./bin/otomi x bats -T bin/tests",
+    "test:opa": "CI=1 ENV_DIR=$PWD/tests/fixtures ./bin/otomi x 'ls -als /home/app/tools'",
     "un-release": "sh -c 'git tag -d $1 && git push origin :refs/tags/$1' sh"
   },
   "standard-version": {

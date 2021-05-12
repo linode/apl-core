@@ -14,8 +14,8 @@
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 
 command=$1
-
 original_params="$@"
+
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 ENV_DIR=${ENV_DIR:-$PWD}
@@ -23,7 +23,7 @@ ENV_DIR=${ENV_DIR:-$PWD}
 [ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
 
 . bin/common.sh
-[ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
+[ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
 stack_dir='/home/app/stack'
 readonly image_tag=$(otomi_image_tag)
@@ -115,7 +115,7 @@ function validate_k8s_context() {
 
 function check_sops_file() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && (
-    err "The $ENV_DIR/.sops.yaml does not exist"
+    err "$ENV_DIR/.sops.yaml does not exist"
     exit 1
   )
   return 0
@@ -216,14 +216,21 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+        drun "bin/deploy.sh $original_params" | grep -Ev $helmfile_output_hide
+      else
+        drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      fi
+      ;;
+    argstest)
+      echo "$@"
       ;;
     bash)
       docker_terminal_params='-ti'
       drun 'bash'
       ;;
     bats)
-      drun "bats -T $original_params bin/tests"
+      drun "bats -T bin/tests"
       ;;
     bootstrap)
       drun "bin/bootstrap.sh $original_params"
@@ -258,11 +265,6 @@ function execute() {
         drun "bin/crypt.sh decrypt"
       fi
       ;;
-    deploy)
-      evaluate_secrets
-      check_kube_context=1
-      drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
-      ;;
     diff)
       evaluate_secrets
       check_kube_context=1
@@ -273,7 +275,11 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
+      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+        drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
+      else
+        drun ". bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
+      fi
       ;;
     encrypt)
       check_sops_file
@@ -297,6 +303,11 @@ function execute() {
       check_kube_context=1
       set -o pipefail
       drun ". bin/common.sh $original_params && hf $*" | grep -Ev $helmfile_output_hide
+      ;;
+    lint)
+      evaluate_secrets
+      set -o pipefail
+      drun ". bin/common.sh $original_params && hf lint --skip-deps"
       ;;
     pull)
       is_repo
@@ -344,7 +355,6 @@ function execute() {
       drun ". bin/common.sh && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
-      check_env_dir
       drun "$@"
       ;;
     *)

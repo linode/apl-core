@@ -11,12 +11,12 @@ env:
   GITEA_REPO: values
 secret:
   GITEA_USER: otomi
-  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
+  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
   env:
-    GITEA_URL: https://gitea.{{ $v.cluster.domain }}
+    GITEA_URL: https://gitea.{{ $v.dns.domain }}
   image:
     repository: badouralix/curl-http2
   script: |

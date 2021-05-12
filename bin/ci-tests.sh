@@ -18,7 +18,7 @@ for dir in ./profiles/*; do
   [ "$profile" == "common" ] && continue
   valuesPath=$(mktemp -d)
   ln -s $valuesPath env
-  bin/bootstrap.sh $profile
+  bin/bootstrap.sh -p $profile
   bin/validate-values.sh
   bin/validate-templates.sh
   # bin/check-policies.sh

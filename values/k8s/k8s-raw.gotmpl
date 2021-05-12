@@ -9,6 +9,7 @@ resources:
       labels:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
+        {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }} 
   {{- end }}
   {{- range $id, $team := $t.teams }}
     {{- $ns := printf "team-%s" $id }}
@@ -20,7 +21,7 @@ resources:
         name: {{ $ns }}
         istio-injection: enabled
       {{- $pullSecrets := list }}
-      {{- range $s := ($team | get "secrets" list) | concat ($team | get "externalSecrets" list) }}
+      {{- range $s := ($team | get "secrets" list) | concat ($team | get "secrets" list) }}
         {{- if eq $s.type "docker-registry" }}
           {{- $pullSecrets = (append $pullSecrets $s) }}
         {{- end }}

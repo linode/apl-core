@@ -9,7 +9,6 @@
 {{- $appsDomain := printf "apps.%s" $v.dns.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: po
 fullnameOverride: po
@@ -173,7 +172,7 @@ grafana:
       url: http://loki:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
-    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
+    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
     {{- if $c | get "sitespeed.enabled" false }}
     - name: Graphite
@@ -222,5 +221,5 @@ prometheus-node-exporter:
     pspEnabled: false
   priorityClassName: "otomi-critical"
   podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security")) | nindent 4 }}
+    policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
 

@@ -64,9 +64,8 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- if and (eq .teamId "admin") .otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" .clusterDomain) list)) }}
-  {{- $routes = (merge $routes (dict (printf "proxy.%s" .domain) list)) }}
 {{- end }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:

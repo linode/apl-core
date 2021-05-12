@@ -34,15 +34,16 @@ function err() {
 # - https://github.com/google/styleguide/blob/gh-pages/shellguide.md#s4.2-function-comments
 # - https://stackoverflow.com/a/29754866
 #####
-function parse_args() {
+# skip parsing args for some commands
+if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
   ! getopt --test >/dev/null
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
     exit 1
   fi
 
-  OPTIONS=dtvsf:l:
-  LONGOPTS=debug,trace,verbose,skip-cleanup,file:,label:
+  OPTIONS=dtvsp:f:l:
+  LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
   ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
@@ -69,6 +70,10 @@ function parse_args() {
         SKIP_CLEANUP='--skip-cleanup'
         shift 1
         ;;
+      -p | --profile)
+        PROFILE=$2
+        shift 2
+        ;;
       -f | --file)
         FILE_OPT=$2
         shift 2
@@ -87,9 +92,7 @@ function parse_args() {
         ;;
     esac
   done
-}
-# skip parsing args for some commands
-{ [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash" == *"$1"* ]]; }; } && parse_args "$@"
+fi
 
 function _rind() {
   local cmd="$1"

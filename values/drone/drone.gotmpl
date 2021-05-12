@@ -2,7 +2,6 @@
 {{- $d := $v.charts | get "drone" dict }}
 {{- $debug := $d | get "debug" false }}
 {{- $host := printf "drone.%s" $v.dns.domain }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
 images:
@@ -17,7 +16,8 @@ fullnameOverride: drone
 sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
-  annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -63,7 +63,7 @@ kubernetes:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
   annotations:
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags")) | nindent 4 }}
+    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
   envFile: |
     {{- $sopsEnv | nindent 4 }}
 
