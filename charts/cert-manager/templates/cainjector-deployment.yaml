@@ -35,6 +35,9 @@ spec:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: "cainjector"
         helm.sh/chart: {{ include "cainjector.chart" . }}
+{{- if .Values.cainjector.podLabels }}
+{{ toYaml .Values.cainjector.podLabels | indent 8 }}
+{{- end }}
       {{- if .Values.cainjector.podAnnotations }}
       annotations:
 {{ toYaml .Values.cainjector.podAnnotations | indent 8 }}
@@ -50,13 +53,26 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.cainjector.image.repository }}:{{ default .Chart.AppVersion .Values.cainjector.image.tag }}"
+          {{- with .Values.cainjector.image }}
+          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{.digest}}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
+          {{- end }}
           imagePullPolicy: {{ .Values.cainjector.image.pullPolicy }}
           args:
           {{- if .Values.global.logLevel }}
           - --v={{ .Values.global.logLevel }}
           {{- end }}
-          - --leader-election-namespace={{ .Values.global.leaderElection.namespace }}
+          {{- with .Values.global.leaderElection }}
+          - --leader-election-namespace={{ .namespace }}
+          {{- if .leaseDuration }}
+          - --leader-election-lease-duration={{ .leaseDuration }}
+          {{- end }}
+          {{- if .renewDeadline }}
+          - --leader-election-renew-deadline={{ .renewDeadline }}
+          {{- end }}
+          {{- if .retryPeriod }}
+          - --leader-election-retry-period={{ .retryPeriod }}
+          {{- end }}
+          {{- end }}
           {{- if .Values.cainjector.extraArgs }}
 {{ toYaml .Values.cainjector.extraArgs | indent 10 }}
           {{- end }}
@@ -65,6 +81,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          {{- if .Values.cainjector.containerSecurityContext }}
+          securityContext:
+            {{- toYaml .Values.cainjector.containerSecurityContext | nindent 12 }}
+          {{- end }}
           resources:
 {{ toYaml .Values.cainjector.resources | indent 12 }}
     {{- with .Values.cainjector.nodeSelector }}

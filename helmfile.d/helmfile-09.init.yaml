@@ -8,9 +8,9 @@ bases:
 releases:
   - name: cert-manager
     installed: {{ $c | get "cert-manager.enabled" true }}
-    namespace: ingress
+    namespace: cert-manager
     labels:
-      tag: cert-manager
+      pkg: cert-manager
     <<: *default
   - name: cluster-autoscaler
     installed: {{ eq $v.cluster.provider "aws" }}

@@ -25,8 +25,8 @@ releases:
     installed: false
     namespace: team-admin
     <<: *default
-  - name: olm
+  - name: operator-lifecycle-manager
     installed: true
-    disableValidationOnInstall: true
-    namespace: olm
+    # disableValidationOnInstall: true
+    namespace: operator-lifecycle-manager
     <<: *default

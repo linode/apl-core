@@ -24,9 +24,8 @@ get_safe_annotation[return] {
 		object.get(all_annotations, annotations.sidecarAnnotationField, ""),
 	])
 
-	trace(sprintf("policy_list: %v", [policy_list]))
+	trace(sprintf("pod ignore list: %v", [policy_list]))
 	return := split(policy_list, ",")
-	trace(sprintf("get_safe_annotations: %v", [return]))
 }
 
 is_exception(policyID) {
@@ -36,12 +35,9 @@ is_exception(policyID) {
 
 is_container_exception(cname, policyID) {
 	all_annotations := annotations.merge_annotations()
-
 	policy_list := object.get(all_annotations, annotations.get_container_ignore_field(cname), "")
+	trace(sprintf("container ignore list: %v", [policy_list]))
 	ignore_list := split(policy_list, ",")
-
-	trace(sprintf("policy_list: %v", [policy_list]))
-	trace(sprintf("ignore_list: %v", [ignore_list]))
 	ignore_list[_] == policyID
 }
 

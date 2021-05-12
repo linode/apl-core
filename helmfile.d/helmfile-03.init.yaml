@@ -34,7 +34,6 @@ releases:
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
     disableValidationOnInstall: true
-    disableValidation: true
     namespace: vault
     labels:
       pkg: vault

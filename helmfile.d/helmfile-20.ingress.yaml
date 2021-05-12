@@ -19,9 +19,9 @@ releases:
     <<: *raw
   - name: cert-manager-artifacts
     installed: {{ $c | get "cert-manager.enabled" true }}
-    namespace: ingress
+    namespace: cert-manager
     labels:
-      tag: cert-manager
+      pkg: cert-manager
     <<: *raw
   - name: external-dns
     installed: {{ $c | get "external-dns.enabled" true }}

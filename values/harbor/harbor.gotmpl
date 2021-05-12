@@ -6,7 +6,6 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
  # logLevel - debug, info, warning, error or fatal
 logLevel: info
@@ -28,7 +27,8 @@ nginx:
   podAnnotations:
     sidecar.istio.io/inject: "false"
 core:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
   secret: {{ $h | get "core.secret" nil }}
   # secretName: {{ $harborSecretName }}
@@ -56,7 +56,8 @@ jobservice:
       memory: 512Mi
       cpu: 100m
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
 
 # If Harbor is deployed behind the proxy, set it as the URL of proxy
 externalURL: {{ $externalUrl }}
@@ -120,7 +121,7 @@ persistence:
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: {{ $h | get "adminPassword" "bladibla" }}
+harborAdminPassword: {{ $h | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
 # The secret key used for encryption. Must be a string of 16 chars.
 secretKey: {{ $h | get "secretKey" nil }}
 
@@ -137,7 +138,8 @@ proxy:
 
 registry:
   secret: {{ $h | get "registry.secret" nil }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
 
   registry:
     resources:
@@ -162,12 +164,13 @@ registry:
   relativeurls: false
   credentials:
     username: {{ $h | get "registry.credentials.username" "admin" }}
-    password: {{ $h | get "registry.credentials.password" "bladibla" }}
-    htpasswd: {{ $h | get "registry.credentials.htpasswd" "admin:$2y$10$WfCM9Hs6dxe/HXloj.xOruwKZb.U18hwhCSGymZ40Z0Is5e/KMteS" }}
+    password: {{ $h | get "registry.credentials.password" ($v.otomi | get "adminPassword" "bladibla") }}
+    htpasswd: {{ htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" ($v.otomi | get "adminPassword" "bladibla")) }}
 
 database:
   type: internal
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
   internal:
     resources:
       {{- with $h | get "resources.database" nil }}
@@ -182,7 +185,8 @@ database:
       {{- end }}
 
 clair:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
   clair:
     resources:
       {{- with $h | get "resources.clair" nil }}
@@ -220,7 +224,8 @@ chartmuseum:
       cpu: 400m
       memory: 256Mi
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
 
 portal:
   resources:
@@ -234,10 +239,12 @@ portal:
       cpu: 400m
       memory: 128Mi
     {{- end }}
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
 
 redis:
-  podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
   internal:
     resources:
       requests:

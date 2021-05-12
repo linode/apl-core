@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $promtail := $v.charts | get "promtail" dict }}
 {{- $t := $v.teamConfig }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
@@ -31,7 +30,7 @@ serviceMonitor:
 podAnnotations:
   sidecar.istio.io/inject: "false"
   # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
-  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem")) | nindent 2 }}
+  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem
 
 pipelineStages:
   - docker: {}

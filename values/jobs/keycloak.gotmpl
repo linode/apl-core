@@ -41,7 +41,7 @@ secret:
   # DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
   KEYCLOAK_REALM: master
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
