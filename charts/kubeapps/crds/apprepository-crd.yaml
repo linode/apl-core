@@ -10,8 +10,11 @@ spec:
     plural: apprepositories
     shortNames:
       - apprepos
-  version: v1alpha1
   versions:
   - name: v1alpha1
     served: true
     storage: true
+    schema:
+      openAPIV3Schema:
+        properties: {}
+        type: object

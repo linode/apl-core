@@ -10,7 +10,6 @@ releases:
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
     disableValidationOnInstall: true
-    disableValidation: true
     createNamespace: false
     labels:
       pkg: gatekeeper
@@ -23,6 +22,7 @@ releases:
   - name: istio-operator
     installed: true
     namespace: default
+    disableValidationOnInstall: true
     labels:
       pkg: istio
     <<: *default

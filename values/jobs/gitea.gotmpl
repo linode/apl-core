@@ -11,7 +11,8 @@ env:
   DRONE_URL: https://drone.{{ $v.dns.domain }}
   GITEA_REPO: values
 secret:
-  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
+  GITEA_USER: otomi-admin
+  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:

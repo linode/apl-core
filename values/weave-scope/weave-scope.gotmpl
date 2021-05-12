@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
 {{- $w := $v.charts | get "weaveScope" dict }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
   
 global:
   image:
@@ -28,7 +27,7 @@ weave-scope:
 # container requires "privileged: true", thus we cannot add a securityContext and remove "psp-allowed-users" policy annotation exception
 weave-scope-agent:
   podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-host-filesystem" "psp-privileged" "psp-host-security" "psp-host-networking-ports")) | nindent 4 }}
+    policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem,psp-privileged,psp-host-security,psp-host-networking-ports
   resources:
     requests:
       cpu: 200m

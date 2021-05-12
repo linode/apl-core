@@ -7,18 +7,17 @@
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
 
 {{- $giteadomain := printf "gitea.%s" $v.dns.domain}}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
 # clusterDomain: {{ $v.dns.domain }}
 
 gitea:
-  podAnnotations: 
-    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
   admin:
     username: otomi-admin
-    password: {{ $g | get "admin.password" "bladibla" }}
+    password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
   config:
     server:
       DOMAIN: {{ $giteadomain }}

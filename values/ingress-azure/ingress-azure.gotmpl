@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
 {{- $i := $v.charts | get "ingress-azure" dict }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 ################################################################################
 # Specify the authentication with Azure Resource Manager
@@ -31,4 +30,5 @@ rbac:
   enabled: true
 verbosityLevel: 5
 
-podAnnotations:  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-host-filesystem")) | nindent 2 }}
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem

@@ -5,13 +5,6 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
 secrets_file="$ENV_DIR/.secrets"
-
-if [ -f $secrets_file ]; then
-  source $secrets_file
-else
-  cp $PWD/.values/.secrets.sample $secrets_file
-fi
-
 has_otomi='false'
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
 
@@ -38,20 +31,19 @@ cp -r $PWD/.values/.vscode $ENV_DIR/
 
 generate_loose_schema
 
-for f in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
-  [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
+for file in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
+  f=${file%.sample}
+  [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$file $ENV_DIR/
 done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
 if [ ! -d "$ENV_DIR/env" ]; then
-  profile=$1
-  [ "$0" == "bin/otomi" ] && profile=$2
+  [ -z "$PROFILE" ] && printf "Missing -p|--profile argument.\n\\tprofiles available: [%s]\n" "$(ls profiles | xargs)" && exit 1
   readonly common_profile_path=$PWD/profiles/common/env
-  readonly profile_path=$PWD/profiles/$profile/env
-  [ -z $profile ] && echo "Missing profile argument: Possible options: [$(ls profiles | xargs)]" && exit 1
+  readonly profile_path=$PWD/profiles/$PROFILE/env
 
-  echo "No files found in "$ENV_DIR/env". Installing example files from profile $profile"
+  echo "No files found in "$ENV_DIR/env". Installing example files from profile $PROFILE"
   cp -r $common_profile_path $ENV_DIR
   cp -r $profile_path $ENV_DIR
 fi

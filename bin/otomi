@@ -216,7 +216,11 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+        drun "bin/deploy.sh $original_params" | grep -Ev $helmfile_output_hide
+      else
+        drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      fi
       ;;
     argstest)
       echo "$@"
@@ -261,11 +265,6 @@ function execute() {
         drun "bin/crypt.sh decrypt"
       fi
       ;;
-    deploy)
-      evaluate_secrets
-      check_kube_context=1
-      drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
-      ;;
     diff)
       evaluate_secrets
       check_kube_context=1
@@ -276,7 +275,11 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
+      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+        drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
+      else
+        drun ". bin/common.sh $original_params && hf destroy" | grep -Ev $helmfile_output_hide
+      fi
       ;;
     encrypt)
       check_sops_file
@@ -303,7 +306,6 @@ function execute() {
       ;;
     lint)
       evaluate_secrets
-      check_kube_context=1
       set -o pipefail
       drun ". bin/common.sh $original_params && hf lint --skip-deps"
       ;;

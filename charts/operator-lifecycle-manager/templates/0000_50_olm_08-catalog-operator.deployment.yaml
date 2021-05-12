@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-operator
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: catalog-operator
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: {{ .Values.catalog.replicaCount }}
+  selector:
+    matchLabels:
+      app: catalog-operator
+  template:
+    metadata:
+      labels:
+        app: catalog-operator
+    spec:
+      serviceAccountName: olm-operator-serviceaccount
+      {{- if and .Values.installType (eq .Values.installType "ocp") }}
+      priorityClassName: "system-cluster-critical"
+      {{- end }}
+      containers:
+        - name: catalog-operator
+          command:
+          - /bin/catalog
+          args:
+          - '-namespace'
+          - {{ .Values.catalog_namespace }}
+          {{- if .Values.debug }}
+          - '-debug'
+          {{- end }}
+          {{- if .Values.catalog.commandArgs }}
+          - {{ .Values.catalog.commandArgs }}
+          {{- end }}
+          - -util-image
+          -  {{ .Values.catalog.image.ref }}
+          {{- if .Values.writeStatusNameCatalog }}
+          - -writeStatusName
+          - {{ .Values.writeStatusNameCatalog }}
+          {{- end }}
+          {{- if .Values.olm.tlsCertPath }}
+          - -tls-cert
+          - {{ .Values.olm.tlsCertPath }}
+          {{- end }}
+          {{- if .Values.olm.tlsKeyPath }}
+          - -tls-key
+          - {{ .Values.olm.tlsKeyPath }}
+          {{- end }}
+          image: {{ .Values.catalog.image.ref }}
+          imagePullPolicy: {{ .Values.catalog.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.catalog.service.internalPort }}
+            - containerPort: 8081
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.catalog.service.internalPort }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.catalog.service.internalPort }}
+          terminationMessagePolicy: FallbackToLogsOnError
+          env:
+          {{ if and .Values.installType (eq .Values.installType "ocp") }}
+          - name: RELEASE_VERSION
+            value: "0.0.1-snapshot"
+          {{ end }}
+          {{- if .Values.catalog.resources }}
+          resources:
+{{ toYaml .Values.catalog.resources | indent 12 }}
+          {{- end}}
+          {{ if and .Values.installType (eq .Values.installType "ocp") }}
+          volumeMounts:
+          - mountPath: /var/run/secrets/serving-cert
+            name: serving-cert
+          {{ end }}
+      {{ if and .Values.installType (eq .Values.installType "ocp") }}
+      volumes:
+      - name: serving-cert
+        secret:
+          secretName: catalog-operator-serving-cert
+      {{ end }}
+    {{- if .Values.catalog.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.catalog.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.catalog.tolerations }}
+      tolerations:
+{{ toYaml .Values.catalog.tolerations | indent 6 }}
+    {{- end }}
