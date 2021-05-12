@@ -1,6 +1,5 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts | get "kured" dict }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 # Using --annotation-ttl=30m will allow other nodes to take over if TTL has expired (in this case 30min) and continue reboot process.
 
@@ -18,4 +17,4 @@ resources:
 
 # the container's securityContext must have "privileged:true" thus we cannot set a non-root user for this chart
 podAnnotations: 
-  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-security")) | nindent 2 }}
+  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security

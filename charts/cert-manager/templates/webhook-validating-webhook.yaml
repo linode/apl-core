@@ -1,4 +1,4 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ include "webhook.fullname" . }}
@@ -11,6 +11,9 @@ metadata:
     helm.sh/chart: {{ include "webhook.chart" . }}
   annotations:
     cert-manager.io/inject-ca-from-secret: "{{ .Release.Namespace }}/{{ template "webhook.fullname" . }}-ca"
+  {{- if .Values.webhook.validatingWebhookConfigurationAnnotations }}
+{{ toYaml .Values.webhook.validatingWebhookConfigurationAnnotations | indent 4 }}
+  {{- end }}
 webhooks:
   - name: webhook.cert-manager.io
     namespaceSelector:
@@ -28,24 +31,17 @@ webhooks:
           - "cert-manager.io"
           - "acme.cert-manager.io"
         apiVersions:
-          - v1alpha2
-          - v1alpha3
+          - "*"
         operations:
           - CREATE
           - UPDATE
         resources:
           - "*/*"
+    admissionReviewVersions: ["v1", "v1beta1"]
+    timeoutSeconds: {{ .Values.webhook.timeoutSeconds }}
     failurePolicy: Fail
-{{- if (semverCompare ">=1.12-0" .Capabilities.KubeVersion.GitVersion) }}
-    # Only include 'sideEffects' field in Kubernetes 1.12+
     sideEffects: None
-{{- end }}
     clientConfig:
-{{- if (semverCompare "<=1.12-0" .Capabilities.KubeVersion.GitVersion) }}
-      # Set caBundle to empty to avoid https://github.com/kubernetes/kubernetes/pull/70138
-      # in Kubernetes 1.12 and below.
-      caBundle: ""
-{{- end }}
       service:
         name: {{ template "webhook.fullname" . }}
         namespace: {{ .Release.Namespace | quote }}

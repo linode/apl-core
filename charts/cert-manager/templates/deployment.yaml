@@ -73,7 +73,9 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- with .Values.image }}
+          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{.digest}}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
         {{- if .Values.global.logLevel }}
@@ -84,7 +86,18 @@ spec:
         {{- else }}
           - --cluster-resource-namespace=$(POD_NAMESPACE)
         {{- end }}
-          - --leader-election-namespace={{ .Values.global.leaderElection.namespace }}
+        {{- with .Values.global.leaderElection }}
+          - --leader-election-namespace={{ .namespace }}
+        {{- if .leaseDuration }}
+          - --leader-election-lease-duration={{ .leaseDuration }}
+        {{- end }}
+        {{- if .renewDeadline }}
+          - --leader-election-renew-deadline={{ .renewDeadline }}
+        {{- end }}
+        {{- if .retryPeriod }}
+          - --leader-election-retry-period={{ .retryPeriod }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.extraArgs }}
 {{ toYaml .Values.extraArgs | indent 10 }}
         {{- end }}
@@ -105,6 +118,10 @@ spec:
           ports:
           - containerPort: 9402
             protocol: TCP
+          {{- if .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           {{- if .Values.volumeMounts }}
           volumeMounts:
 {{ toYaml .Values.volumeMounts | indent 12 }}

@@ -9,6 +9,7 @@ resources:
       labels:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
+        {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }} 
   {{- end }}
   {{- range $id, $team := $t.teams }}
     {{- $ns := printf "team-%s" $id }}
