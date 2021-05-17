@@ -4,7 +4,7 @@
 {{- $domain := printf "otomi.%s" $v.dns.domain -}}
 {{- $services := list -}}
 {{- range $s := $v.services -}}
-{{- if hasKey $v.charts $s.name -}}
+{{- if hasKey $v.apps $s.name -}}
   {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
   {{- $s := set $s "enabled" $enabled -}}
   {{- $services = append $services $s -}}

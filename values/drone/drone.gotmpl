@@ -44,7 +44,6 @@ server:
     {{- with $d.repoFilter }}
     DRONE_REPOSITORY_FILTER: {{ . }}
     {{- end }}
-    DRONE_SERVER_PROXY_HOST: proxy.{{ $v.dns.domain }}/drone
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
 kubernetes:

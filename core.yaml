@@ -1,4 +1,15 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
+apps:
+  alertmanager: {}
+  drone: {}
+  gitea: {}
+  harbor: {}
+  httpbin: {}
+  keycloak: {}
+  kubeapps: {}
+  prometheus: {}
+  sitespeed: {}
+  weave-scope: {}
 
 k8s:
   namespaces:
