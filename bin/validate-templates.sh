@@ -62,14 +62,13 @@ function process_crd_wrapper() {
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests"
   hf_template "$k8s_resources_path/$k8s_version"
-
   echo "Processing CRD files..."
   # generate canonical schemas
   local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
-    process_crd $file
-  done
+  # for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+  #   process_crd $file
+  # done
   # schemas for chart crds
   for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
@@ -83,21 +82,36 @@ function process_crd_wrapper() {
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
   process_crd_wrapper $k8s_version
-
-  local kubeval_schema_location="file://$schema_output_path"
+  local schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
   echo "Validating resources"
-  kubeval $([ -z "$VERBOSE" ] && echo '--quiet') --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
-    --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
-    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -v 'PASS'
+  [ -z "$VERBOSE" ] && quiet='--quiet'
+  set +e
+  cmd="kubeval $quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
+    --force-color -d $k8s_resources_path --schema-location $schema_location \
+    --kubernetes-version ${k8s_version#v}"
+  if [ -n "$VERBOSE" ]; then
+    echo "schema_output_path: $schema_output_path"
+    echo "skip_kinds: $skip_kinds"
+    echo "skip_filenames: $skip_filenames"
+    echo "k8s_resources_path: $k8s_resources_path"
+    echo "schema_location: $schema_location"
+    echo "kubeval output: $tmp_out"
+    echo "cmd: $cmd"
+  fi
+
+  $cmd >$tmp_out
+  cat $tmp_out | grep -F "PASS "
+  grep "ERR " $tmp_out && exit 1
   return 0
 }
 
 function main() {
+  echo $script_message STARTED
   validate_templates "$@"
 }
 

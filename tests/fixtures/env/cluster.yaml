@@ -4,6 +4,6 @@ cluster:
     domain: demo.eks.otomi.cloud
     k8sVersion: '1.19'
     name: demo
-    otomiVersion: v0.12.8
+    otomiVersion: master
     provider: aws
     region: eu-central-1

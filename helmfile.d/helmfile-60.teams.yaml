@@ -20,6 +20,7 @@ releases:
     chart: ../charts/team-ns
     labels:
       tag: teams
+      ingress: "true"
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
