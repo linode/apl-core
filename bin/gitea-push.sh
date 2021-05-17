@@ -3,7 +3,7 @@
 . bin/common.sh
 [ -n "$CI" ] && exit 1
 set -eo pipefail
-prepare_crypt
+run_crypt
 readonly values=$(hf_values)
 readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0

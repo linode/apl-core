@@ -32,7 +32,6 @@ readonly cmd_image="otomi/core:$image_tag"
 
 docker_terminal_params='-it'
 readme_url='https://github.com/redkubes/otomi-core'
-kubeconfig="-v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config"
 
 # check if we are in core or values repo (could be improved as it is based on name!)
 readonly cwd=$(basename "$PWD")
@@ -128,7 +127,7 @@ function evaluate_secrets() {
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
     . $secrets_path
   fi
-  prepare_crypt
+  run_crypt
   return 0
 }
 
@@ -161,9 +160,9 @@ function drun() {
   [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
   [ -n "$CI" ] && check_kube_context=0
 
-  # execute any kubectl command to refresh access token
   if [ -n "$check_kube_context" ]; then
     validate_k8s_context
+    # refresh access token:
     kubectl version >/dev/null
   fi
 
@@ -173,25 +172,24 @@ function drun() {
   if [ -z "$IN_DOCKER" ]; then
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ -z "$NOPULL" ] && docker pull "otomi/core:$image_tag" >/dev/null
-    docker run $docker_terminal_params --rm \
-      $stack_volume $socket_volume $kubeconfig -v /tmp:/tmp \
-      -v $GOOGLE_APPLICATION_CREDENTIALS:$GOOGLE_APPLICATION_CREDENTIALS \
-      -v ${HOME}/.ssh:/home/app/.ssh \
-      -v ${helm_config}:/home/app/.config/helm \
-      -v ${HOME}/.config/gcloud:/home/app/.config/gcloud \
-      -v ${HOME}/.aws:/home/app/.aws \
-      -v ${HOME}/.azure:/home/app/.azure \
-      -v ${ENV_DIR}:${stack_dir}/env \
+    docker run $docker_terminal_params --network host --rm \
+      $stack_volume $socket_volume -v /tmp:/tmp \
+      -v ${KUBECONFIG:-$HOME/.kube}:/home/app/.kube \
+      -v $HOME/.ssh:/home/app/.ssh \
+      -v $helm_config:/home/app/.config/helm \
+      -v $HOME/.config/gcloud:/home/app/.config/gcloud \
+      -v $HOME/.aws:/home/app/.aws \
+      -v $HOME/.azure:/home/app/.azure \
+      -v $ENV_DIR:$stack_dir/env \
       -e AZURE_TENANT_ID=$AZURE_TENANT_ID \
       -e AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
       -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
-      -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
       -e AWS_REGION=$AWS_REGION \
       -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
       -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
       -e VAULT_TOKEN=$VAULT_TOKEN \
       -e CUSTOMER="$customer" \
-      -e VERBOSE="${VERBOSE}" \
+      -e VERBOSE="$VERBOSE" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
       -e K8S_CONTEXT="$K8S_CONTEXT" \
@@ -217,7 +215,7 @@ function execute() {
       check_kube_context=1
       set -o pipefail
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
-        drun "bin/deploy.sh $original_params" | grep -Ev $helmfile_output_hide
+        drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       else
         drun ". bin/common.sh $original_params && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       fi
@@ -226,7 +224,7 @@ function execute() {
       echo "$@"
       ;;
     bash)
-      docker_terminal_params='-ti'
+      docker_terminal_params='-it'
       drun 'bash'
       ;;
     bats)
@@ -262,7 +260,7 @@ function execute() {
         done
         exit
       else
-        drun "bin/crypt.sh decrypt"
+        drun '. bin/common.sh $original_params && run_crypt decrypt'
       fi
       ;;
     diff)
@@ -291,7 +289,7 @@ function execute() {
         done
         exit
       else
-        drun 'bin/crypt.sh encrypt'
+        drun '. bin/common.sh $original_params && run_crypt encrypt'
       fi
       ;;
     gen-drone)
@@ -319,9 +317,13 @@ function execute() {
       drun "bin/regcred.sh $original_params"
       ;;
     rotate-keys)
-      check_sops_file
       evaluate_secrets
       drun "bin/crypt.sh rotate"
+      ;;
+    score-templates)
+      evaluate_secrets
+      check_env_dir
+      drun ". bin/common.sh $original_params && hf_template \| kube-score score --ignore-test -"
       ;;
     sync)
       evaluate_secrets
@@ -330,9 +332,10 @@ function execute() {
       drun ". bin/common.sh $original_params && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
+      QUIET=1
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && hf_template"
+      drun ". bin/common.sh $original_params && hf_template" | grep -Ev $helmfile_output_hide
       ;;
     test)
       evaluate_secrets

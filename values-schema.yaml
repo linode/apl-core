@@ -1204,6 +1204,11 @@ properties:
             required:
               - duration
               - period
+          schemaConfigs:
+            type: array
+            items:
+              properties: {}
+            description: 'A list of schema_config as documented: https://grafana.com/docs/loki/latest/configuration/examples/'
           storageType:
             type: string
         required:
@@ -1316,8 +1321,6 @@ properties:
             properties:
               adminPassword:
                 type: string
-            required:
-              - adminPassword
           prometheus:
             additionalProperties: false
             properties:

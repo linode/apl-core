@@ -1,0 +1,328 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kiali-operator.fullname" . }}
+  labels:
+  {{- include "kiali-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - endpoints
+  - events
+  - persistentvolumeclaims
+  - pods
+  - serviceaccounts
+  - services
+  - services/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: [""]
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups: [""]
+  resources:
+  - secrets
+  verbs:
+  - create
+  - list
+  - watch
+- apiGroups: [""]
+  resourceNames:
+  - kiali-signing-key
+  resources:
+  - secrets
+  verbs:
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["apps"]
+  resources:
+  - deployments
+  - replicasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["autoscaling"]
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["monitoring.coreos.com"]
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - get
+- apiGroups: ["apps"]
+  resourceNames:
+  - kiali-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups: ["kiali.io"]
+  resources:
+  - '*'
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+  {{- if or (and (.Values.cr.create) (has "**" .Values.cr.spec.deployment.accessible_namespaces)) (.Values.clusterRoleCreator) }}
+  - clusterrolebindings
+  - clusterroles
+  {{- end }}
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["apiextensions.k8s.io"]
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups: ["extensions", "networking.k8s.io"]
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["route.openshift.io"]
+  resources:
+  - routes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["oauth.openshift.io"]
+  resources:
+  - oauthclients
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["config.openshift.io"]
+  resources:
+  - clusteroperators
+  verbs:
+  - list
+  - watch
+- apiGroups: ["config.openshift.io"]
+  resourceNames:
+  - kube-apiserver
+  resources:
+  - clusteroperators
+  verbs:
+  - get
+- apiGroups: ["console.openshift.io"]
+  resources:
+  - consolelinks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["monitoring.kiali.io"]
+  resources:
+  - monitoringdashboards
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+# The permissions below are for Kiali itself; operator needs these so it can escalate when creating Kiali's roles
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - endpoints
+  - pods/log
+  - pods/proxy
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - pods
+  - replicationcontrollers
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - patch
+  {{- end }}
+- apiGroups: [""]
+  resources:
+  - pods/portforward
+  verbs:
+  - create
+  - post
+- apiGroups: ["extensions", "apps"]
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - patch
+  {{- end }}
+- apiGroups: ["batch"]
+  resources:
+  - cronjobs
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - patch
+  {{- end }}
+- apiGroups:
+  - config.istio.io
+  - networking.istio.io
+  - authentication.istio.io
+  - rbac.istio.io
+  - security.istio.io
+  resources: ["*"]
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - create
+  - delete
+  - patch
+  {{- end }}
+- apiGroups: ["authentication.maistra.io"]
+  resources:
+  - servicemeshpolicies
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - create
+  - delete
+  - patch
+  {{- end }}
+- apiGroups: ["rbac.maistra.io"]
+  resources:
+  - servicemeshrbacconfigs
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - create
+  - delete
+  - patch
+  {{- end }}
+- apiGroups: ["apps.openshift.io"]
+  resources:
+  - deploymentconfigs
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - patch
+  {{- end }}
+- apiGroups: ["project.openshift.io"]
+  resources:
+  - projects
+  verbs:
+  - get
+- apiGroups: ["route.openshift.io"]
+  resources:
+  - routes
+  verbs:
+  - get
+- apiGroups: ["monitoring.kiali.io"]
+  resources:
+  - monitoringdashboards
+  verbs:
+  - get
+  - list
+- apiGroups: ["iter8.tools"]
+  resources:
+  - experiments
+  verbs:
+  - get
+  - list
+  - watch
+  {{- if eq .Values.onlyViewOnlyMode false }}
+  - create
+  - delete
+  - patch
+  {{- end }}
+- apiGroups: ["authentication.k8s.io"]
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+...

@@ -6,7 +6,7 @@
 {{- if (index $s.mtls "gatewayDisabled") }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.svc) $s.svc) }}
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: {{ $s.name }}-notls

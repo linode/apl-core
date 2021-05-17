@@ -14,7 +14,7 @@ image:
 config:
   clientID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
   clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
-  cookieSecret: {{ $v | getOrNil "charts.oauth2-proxy.config.cookieSecret" | default "blajajaaa" }}
+  cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
 replicas: 2
 podDisruptionBudget:
