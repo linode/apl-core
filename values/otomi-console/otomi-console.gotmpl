@@ -38,11 +38,12 @@ resources:
 image:
   registry: docker.io
   repository: otomi/console
-  tag: {{ $o | get "image.tag" "v0.4.36" }}
+  tag: {{ $o | get "image.tag" "master" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 env:
   API_BASE_URL: /api
+  CLUSTER: '{{ $v.cluster | toJson }}'
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
   CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $teamServices | toJson }}}}'
