@@ -3,12 +3,19 @@ apps:
   alertmanager: {}
   drone: {}
   gitea: {}
+  grafana: {}
+  grafana-istio: {}
   harbor: {}
   httpbin: {}
   keycloak: {}
+  kiali: {}
   kubeapps: {}
+  loki: {}
   prometheus: {}
+  prometheus-istio: {}
   sitespeed: {}
+  tracing: {}
+  vault: {}
   weave-scope: {}
 
 k8s:

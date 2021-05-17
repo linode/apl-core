@@ -1,19 +1,20 @@
 {{- $v := .Environment.Values -}}
 {{- $c := $v.cluster -}}
 {{- $o := $v.charts | get "otomi-console" dict -}}
+{{- $core := readFile "../../core.yaml" | fromYaml -}}
 {{- $domain := printf "otomi.%s" $v.dns.domain -}}
 {{- $services := list -}}
 {{- range $s := $v.services -}}
-{{- if hasKey $v.apps $s.name -}}
-  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+{{- if hasKey $core.apps $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true -}}
   {{- $s := set $s "enabled" $enabled -}}
   {{- $services = append $services $s -}}
 {{- end }}
 {{- end }}
 {{- $teamServices := list -}}
 {{- range $s := $v.teamConfig.services -}}
-{{- if hasKey $v.charts $s.name -}}
-  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+{{- if hasKey $core.apps $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true -}}
   {{- $s := set $s "enabled" $enabled -}}
   {{- $teamServices = append $teamServices $s -}}
 {{- end }}

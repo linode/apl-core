@@ -1,0 +1,3 @@
+charts:
+    gitea:
+        enabled: false
