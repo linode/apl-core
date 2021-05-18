@@ -5,6 +5,13 @@ alerts:
         - slack
         - email
     repeatInterval: 3h
+clusters:
+    - name: a
+      url: a.otomi.cloud
+    - name: b
+      url: b.otomi.cloud
+    - name: c
+      url: c.otomi.cloud
 azure:
     appgw:
         isManaged: true
@@ -49,11 +56,6 @@ otomi:
     addons:
         conftest:
             enabled: true
-otomiInstanceUrls:
-    - demo.aks.otomi.cloud
-    - demo.eks.otomi.cloud
-    - demo.gks.otomi.cloud
-    - demo.onprem.otomi.cloud
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
