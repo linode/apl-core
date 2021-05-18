@@ -25,13 +25,17 @@ config:
     reject_old_samples_max_age: {{ $l.retention.duration }}
   schema_config:
     configs:
-    - from: "2018-04-15"
+    {{- if $l | get "schemaConfigs" nil }}
+    {{- toYaml $l.schemaConfigs | nindent 4 }}
+    {{- else }}
+    - from: '2021-05-12'
       store: boltdb
       object_store: {{ $l.storageType }}
-      schema: v9
+      schema: v11
       index:
         prefix: index_
         period: {{ $l.retention.duration }}
+    {{- end }}
   storage_config:
     boltdb:
       directory: /data/loki/index

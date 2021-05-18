@@ -670,6 +670,10 @@ definitions:
 properties:
   alerts:
     $ref: '#/definitions/alerts'
+  apps:
+    description: The list of otomi apps that are shown in the console.
+    type: object
+    properties: {}
   azure:
     description: Azure specific configuration.
     properties:
@@ -1206,6 +1210,11 @@ properties:
             required:
               - duration
               - period
+          schemaConfigs:
+            type: array
+            items:
+              properties: {}
+            description: 'A list of schema_config as documented: https://grafana.com/docs/loki/latest/configuration/examples/'
           storageType:
             type: string
         required:
@@ -1318,8 +1327,6 @@ properties:
             properties:
               adminPassword:
                 type: string
-            required:
-              - adminPassword
           prometheus:
             additionalProperties: false
             properties:
@@ -1452,6 +1459,9 @@ properties:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         type: string
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       entrypoint:
         description: A Kubernetes API public IP address (onprem only).
         type: string

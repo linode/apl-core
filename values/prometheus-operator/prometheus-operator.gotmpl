@@ -111,7 +111,7 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: 7.4.2
+    tag: 7.5.6
   initChownData:
     resources:
       limits:
@@ -181,7 +181,7 @@ grafana:
       access: proxy
       url: http://graphite:80
     {{- end }}
-  adminPassword: {{ $p.grafana.adminPassword }}
+  adminPassword: {{ $p | get "grafana.adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
   service:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}

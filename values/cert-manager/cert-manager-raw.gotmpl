@@ -39,7 +39,7 @@ resources:
               route53:
                 region: {{ $p.aws.region }}
               {{- else if hasKey $p "azure" }}
-              azuredns:
+              azureDNS:
                 clientID: {{ $p.azure.aadClientId }}
                 clientSecretSecretRef:
                   key: secret
@@ -51,7 +51,7 @@ resources:
                 subscriptionID: {{ $p.azure.subscriptionId }}
                 tenantID: {{ $p.azure.tenantId }}
               {{- else if hasKey $p "google" }}
-              clouddns:
+              cloudDNS:
                 project: {{ $p.google.project }}
                 serviceAccountSecretRef:
                   key: secret

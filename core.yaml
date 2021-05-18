@@ -1,4 +1,22 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
+apps:
+  alertmanager: {}
+  drone: {}
+  gitea: {}
+  grafana: {}
+  grafana-istio: {}
+  harbor: {}
+  httpbin: {}
+  keycloak: {}
+  kiali: {}
+  kubeapps: {}
+  loki: {}
+  prometheus: {}
+  prometheus-istio: {}
+  sitespeed: {}
+  tracing: {}
+  vault: {}
+  weave-scope: {}
 
 k8s:
   namespaces:
@@ -30,7 +48,7 @@ k8s:
     - name: operator-lifecycle-manager
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: operators
+    - name: otomi
     - name: overprovisioner
       disableIstioInjection: true
     - name: shared
@@ -94,14 +112,14 @@ services:
     hide: true
     isShared: true
   - name: otomi
-    namespace: shared
+    namespace: otomi
     ownHost: true
     isShared: true
     svc: otomi-api
     hide: true
     paths: [/api/]
   - name: otomi
-    namespace: shared
+    namespace: otomi
     ownHost: true
     isShared: true
     svc: otomi-console
@@ -155,7 +173,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: istio-apps
+    namespace: kiali
   - name: tracing
     svc: tracing
     forwardPath: true

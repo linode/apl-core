@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+# . bin/colors.sh
 . bin/aliases
 shopt -s expand_aliases
 
@@ -13,8 +14,8 @@ readonly otomi_tools_image="otomi/tools:latest"
 
 # Mutliple files vars
 readonly clusters_file="$ENV_DIR/env/cluster.yaml"
-readonly helmfile_output_hide="(^\W+$|skipping|basePath=|Decrypting)"
-readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=|Decrypting)"
+readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
+readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
 has_docker='false'
@@ -35,7 +36,8 @@ function err() {
 # - https://stackoverflow.com/a/29754866
 #####
 # skip parsing args for some commands
-if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash bats" == *"$1"* ]]; }; }; then
+caller=${1#./}
+if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
   ! getopt --test >/dev/null
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
@@ -58,7 +60,7 @@ if { [ "$0" != './bin/otomi' ] || { [ "$0" == './bin/otomi' ] && [[ ! "x bash ba
         ;;
       -t | --trace)
         TRACE=1
-        PS4='$BASH_SOURCE:$LINENO:'
+        PS4='[\D{%F %T}] $BASH_SOURCE:$LINENO:'
         set -x
         shift 1
         ;;
@@ -141,11 +143,33 @@ function customer_name() {
   return 1
 }
 
-function prepare_crypt() {
-  [ -z "$GCLOUD_SERVICE_KEY" ] && return 0
-  GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-  echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-  export GOOGLE_APPLICATION_CREDENTIALS
+function rotate() {
+  cd $ENV_DIR/env >/dev/null
+  find . -type f -name 'secrets.*.yaml' -exec bash -c "sops --input-type=yaml --output-type yaml -r {} > {}" \;
+  cd - >/dev/null
+}
+
+function crypt() {
+  cd $ENV_DIR/env >/dev/null
+  local out='/dev/stdout'
+  [ -n "$QUIET" ] && out='/dev/null'
+  if [ "$command" = 'encrypt' ]; then
+    find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
+  else
+    find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+  fi
+  cd - >/dev/null
+}
+
+function run_crypt() {
+  if [ -n "$GCLOUD_SERVICE_KEY" ]; then
+    GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+    export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  fi
+  action=${1:-decrypt}
+  crypt $action
+  unset GOOGLE_APPLICATION_CREDENTIALS
 }
 
 function hf() {

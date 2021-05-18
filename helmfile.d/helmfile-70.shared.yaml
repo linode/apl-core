@@ -28,12 +28,12 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
-    namespace: shared
+    installed: false #{{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
+    namespace: otomi
     <<: *default
   - name: otomi-console
     installed: true
-    namespace: shared
+    namespace: otomi
     <<: *default
   - name: redis-shared
     installed: {{ $c | get "redis-shared.enabled" false }}

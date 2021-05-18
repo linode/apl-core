@@ -6,3 +6,18 @@ charts:
             duration: 24h
             period: 24h
         storageType: filesystem
+        schemaConfigs:
+            - from: '2018-04-15'
+              store: boltdb
+              object_store: filesystem
+              schema: v9
+              index:
+                  prefix: index_
+                  period: 24h
+            - from: '2021-05-12'
+              store: boltdb
+              object_store: filesystem
+              schema: v11
+              index:
+                  prefix: index_
+                  period: 24h

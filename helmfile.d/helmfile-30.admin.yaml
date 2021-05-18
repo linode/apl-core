@@ -29,6 +29,6 @@ releases:
     <<: *default
   - name: operator-lifecycle-manager
     installed: true
-    # disableValidationOnInstall: true
+    disableValidationOnInstall: true
     namespace: operator-lifecycle-manager
     <<: *default

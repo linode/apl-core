@@ -7,7 +7,7 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 . bin/colors.sh
 
-prepare_crypt
+run_crypt
 readonly values=$(hf_values)
 readonly raw_receiver=$(echo "$values" | yq r - alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}

@@ -26,6 +26,7 @@ function validate_values() {
 }
 
 function main() {
+  echo $script_message STARTED
   validate_values "$@"
 }
 

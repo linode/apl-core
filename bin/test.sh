@@ -2,7 +2,7 @@
 set -e
 
 . bin/common.sh
-prepare_crypt
+run_crypt
 
 bin/validate-templates.sh 1
 hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps | kubectl apply --dry-run -f -
