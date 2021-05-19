@@ -51,11 +51,11 @@ definitions:
         additionalProperties: false
         properties:
           channel:
-            default: mon-otomi
+            default: dev-mon-otomi
             description: The Slack channel for non-critical notifications.
             type: string
           channelCrit:
-            default: mon-otomi
+            default: dev-mon-otomi
             description: The Slack channel for critical notifications.
             type: string
           url:

@@ -28,8 +28,8 @@ home:
     receivers:
         - slack
     slack:
-        channel: mon-otomi
-        channelCrit: mon-otomi-crit
+        channel: dev-mon-otomi
+        channelCrit: dev-mon-otomi-crit
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID

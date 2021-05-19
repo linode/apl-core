@@ -59,14 +59,12 @@ function show_usage() {
     commit               execute wrapper for encrypt -> generate pipelines -> git commit changed files
     console              start Otomi Console (add any arg to quit) on http://127.0.0.1:3000 (licensed, so pull secret required for api)
     decrypt              decrypts file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml to env/*.secrets.yaml.dec files
-    deploy               execute otomi-core deploy script
     destroy *            destroy all or some charts
     diff *               diff k8s resources
     encrypt              encrypt file(s) given as arguments (relative to env folder), or all env/*.secrets.yaml files
     help                 print this help
     pull                 wrapper for git pull && bootstrap
     sync *               sync k8s resources
-    switch               switch context to the target cluster and bootstraps
     template *           export k8s resources
     test                 run tests against the target cluster
     values               show helmfile values for target cluster
@@ -75,14 +73,14 @@ function show_usage() {
     x                    execute command in container
 
   Common options:
-    -d | --debug        Run otomi CLI in debug mode. Runs bash with -x.
-    -t | --trace        Trace otomi CLI calls. Sets bash prompt with time.
-    -v | --verbose      Show more output.
-    -s | --skip-cleanup Keep temporary files for inspections.
+    -d | --debug         Run otomi CLI in debug mode. Runs bash with -x.
+    -t | --trace         Trace otomi CLI calls. Sets bash prompt with time.
+    -v | --verbose       Show more output.
+    -s | --skip-cleanup  Keep temporary files for inspections.
 
   (*) Takes helmfile options:
-    -l|--label          Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
-    -f|--file           Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
+    -l|--label           Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
+    -f|--file            Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'
   (For a full list of options please read the helmfile documentation.)   
   "
 }
@@ -127,7 +125,7 @@ function evaluate_secrets() {
     [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
     . $secrets_path
   fi
-  run_crypt
+  [ -f "$ENV_DIR/.sops.yaml" ] && run_crypt
   return 0
 }
 
@@ -158,7 +156,7 @@ function drun() {
   local socket_volume=''
 
   [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
-  [ -n "$CI" ] && check_kube_context=0
+  [ -n "$CI" ] && unset check_kube_context
 
   if [ -n "$check_kube_context" ]; then
     validate_k8s_context
@@ -335,7 +333,7 @@ function execute() {
       QUIET=1
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && hf_template" | grep -Ev $helmfile_output_hide
+      drun ". bin/common.sh $original_params && hf_template"
       ;;
     test)
       evaluate_secrets

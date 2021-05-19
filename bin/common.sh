@@ -15,7 +15,6 @@ readonly otomi_tools_image="otomi/tools:latest"
 # Mutliple files vars
 readonly clusters_file="$ENV_DIR/env/cluster.yaml"
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
-readonly helmfile_output_hide_tpl="(^[\W^-]+$|skipping|basePath=)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
 has_docker='false'
@@ -189,7 +188,7 @@ function hf_template() {
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
     hf template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
   else
-    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $SKIP_CLEANUP 2>&1 | grep -Ev $helmfile_output_hide_tpl
-    hf template --skip-deps $SKIP_CLEANUP 2>&1 | grep -Ev $helmfile_output_hide_tpl
+    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $SKIP_CLEANUP
+    hf template --skip-deps $SKIP_CLEANUP
   fi
 }
