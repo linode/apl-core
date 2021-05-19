@@ -37,7 +37,7 @@ spec:
       initContainers:
         - name: init
           image: "{{ include "gitea.image" . }}"
-          command: ["/bin/sh", "-c", "cat /usr/local/share/ca-certificates/tls.key >> /etc/ssl/certs/ca-certificates.crt && exit 1"]
+          command: ["/usr/sbin/init_gitea.sh"]
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
