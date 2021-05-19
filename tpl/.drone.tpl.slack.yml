@@ -22,7 +22,7 @@ steps:
     image: plugins/slack
     settings:
       webhook: __WEBHOOK
-      channel: mon-otomi
+      channel: dev-mon-otomi
       username: Drone
       template: >
         Started syncing cluster '__CLUSTER' for customer '__CUSTOMER'...
@@ -55,7 +55,7 @@ steps:
       - deploy
     settings:
       webhook: __WEBHOOK
-      channel: mon-otomi
+      channel: dev-mon-otomi
       username: Drone
       template: >
         {{#success build.status}}

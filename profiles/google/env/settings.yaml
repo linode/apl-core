@@ -2,8 +2,8 @@ alerts:
     receivers:
         - slack
     slack:
-        channel: mon-otomi
-        channelCrit: mon-otomi-crit
+        channel: dev-mon-otomi
+        channelCrit: dev-mon-otomi-crit
 customer:
     name: demo
 dns:
