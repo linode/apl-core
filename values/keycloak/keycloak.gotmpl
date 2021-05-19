@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 init:
   resources:
@@ -17,7 +16,7 @@ keycloak:
   #   repository: docker.io/jboss/keycloak
   #   tag: "11.0.3"
   username: {{ $k | get "admin.username" "admin" }}
-  password: {{ $k | get "admin.password" "bladibla" }}
+  password: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
   basepath: ""
   cli:
     custom: |
@@ -27,7 +26,7 @@ keycloak:
       /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=redirect-socket, value=proxy-https)
       /socket-binding-group=standard-sockets/socket-binding=proxy-https:add(port=443)
       # hostname SPI modification
-      /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.frontendUrl,value="https://keycloak.{{ $v.cluster.domain }}/")
+      /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.frontendUrl,value="https://keycloak.{{ $v.dns.domain }}/")
       /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=true)
       
   persistence:
@@ -89,11 +88,13 @@ keycloak:
     runAsUser: 1000
     fsGroup: 1000
   podAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 4 }}
+    # policy.otomi.io/ignore: banned-image-tags
+    policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
   commonAnnotations: 
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 4}}
+    # policy.otomi.io/ignore: banned-image-tags
+    policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
     enabled: true
     fsGroup: 1001
@@ -105,6 +106,13 @@ postgresql:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
     enabled: true
+    resources:
+      limits:
+        cpu: 250m
+        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 32Mi
     securityContext:
       enabled: true
       runAsUser: 1001

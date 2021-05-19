@@ -32,6 +32,16 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
+Create image name and tag used by the deployment.
+*/}}
+{{- define "gitea.image" -}}
+{{- $name := .Values.image.repository -}}
+{{- $tag := ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") -}}
+{{- $rootless := ternary "-rootless" "" (.Values.image.rootless) -}}
+{{- printf "%s:%s%s" $name $tag $rootless -}}
+{{- end -}}
+
+{{/*
 Common labels
 */}}
 {{- define "gitea.labels" -}}
@@ -60,7 +70,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-mysql" .Release.Name -}}
 {{- else if .Values.gitea.database.builtIn.mariadb.enabled -}}
 {{- printf "%s-mariadb" .Release.Name -}}
-{{- else -}}
+{{- else if ne .Values.gitea.config.database.DB_TYPE "sqlite3" -}}
 {{- $parts := split ":" .Values.gitea.config.database.HOST -}}
 {{- printf "%s %s" $parts._0 $parts._1 -}}
 {{- end -}}

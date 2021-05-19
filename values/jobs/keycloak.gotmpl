@@ -24,8 +24,8 @@ init:
     repository: badouralix/curl-http2
   script: |
     {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domain }}"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domain }}); do 
+    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.dns.domain }}"
+    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.dns.domain }}); do 
       printf '.'
       sleep 5
     done
@@ -36,23 +36,39 @@ image:
   pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
 name: keycloak
 env:
+<<<<<<< HEAD
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+||||||| merged common ancestors
+  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
+secret:
+  # DEBUG: '*'
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
+  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
+=======
+  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
+secret:
+  # DEBUG: '*'
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
+  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+>>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   KEYCLOAK_REALM: master
   IDP_ALIAS: {{ $k.idp.alias }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
   REDIRECT_URIS: '[
-      "https://otomi.{{ $v.cluster.domain }}",
-      "https://auth.{{ $v.cluster.domain }}/*",
-      "https://apps.{{ $v.cluster.domain }}/*",
-      "https://otomi.{{ $v.cluster.domain }}/*",
-      "https://gitea.{{ $v.cluster.domain }}/*",
+      "https://otomi.{{ $v.dns.domain }}",
+      "https://auth.{{ $v.dns.domain }}/*",
+      "https://apps.{{ $v.dns.domain }}/*",
+      "https://otomi.{{ $v.dns.domain }}/*",
+      "https://gitea.{{ $v.dns.domain }}/*",
       {{- range $name, $team := $teams }}
-      "https://apps.team-{{ $name }}.{{ $v.cluster.domain }}/*",
+      "https://apps.team-{{ $name }}.{{ $v.dns.domain }}/*",
       {{- end }}
-      "https://harbor.{{ $v.cluster.domain }}/*",
-      "https://vault.{{ $v.cluster.domain }}/*"
+      "https://harbor.{{ $v.dns.domain }}/*",
+      "https://vault.{{ $v.dns.domain }}/*"
   ]'
 secret:
   # DEBUG: '*'

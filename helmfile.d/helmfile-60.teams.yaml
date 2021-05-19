@@ -11,7 +11,7 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domain }}
+  {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.dns.domain }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}
@@ -20,6 +20,7 @@ releases:
     chart: ../charts/team-ns
     labels:
       tag: teams
+      ingress: "true"
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
@@ -27,6 +28,7 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         domain: {{ $domain }}
+        clusterDomain: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         knative:
           enabled: true
@@ -50,7 +52,7 @@ releases:
         {{- end }}
   {{- if $v.otomi.isMultitenant }}  
   - name: prometheus-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-operator
     labels:
@@ -137,19 +139,19 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if $c.sitespeed.enabled }}
+            {{- if $c | get "sitespeed.enabled" false }}
             - name: Graphite
               editable: false
               type: graphite
               access: proxy
               url: http://graphite.monitoring:80
             {{- end }}
-            {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" ($v | get "azure.monitor" nil)) }}
-            - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" ($team | get "azureMonitor" dict) "azure" $v.azure) | toString | nindent 14 }}
+            {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
+            - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
             {{- end }}
   {{ if has "msteams" ($team | get "receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -168,7 +170,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
   {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: {{ has $v.cluster.id $team.clusters }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
@@ -181,7 +183,7 @@ releases:
         folders:
           - k8s
           - istio
-          {{- if and (eq $v.cluster.provider "azure") ($team | get "azure.monitor" ($v.clouds | get "azure.monitor" nil)) }}
+          {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
           - sitespeed{{ end }}

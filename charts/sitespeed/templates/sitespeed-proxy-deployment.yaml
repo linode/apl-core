@@ -1,5 +1,5 @@
 # {{- $v := .Values }}
-# apiVersion: extensions/v1beta1
+# apiVersion: networking.k8s.io/v1beta1
 # kind: Deployment
 # metadata:
 #   name: sitespeed-throttling-proxy

@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
-set -eu
+set -e
 
 ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 
 secrets_file="$ENV_DIR/.secrets"
-
-if [ -f $secrets_file ]; then
-  source $secrets_file
-else
-  cp $PWD/.values/.secrets.sample $secrets_file
-fi
-
 has_otomi='false'
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
 
@@ -29,9 +22,7 @@ function generate_loose_schema() {
 bin_path="${ENV_DIR}/bin"
 mkdir -p $bin_path &>/dev/null
 
-# The very first time we use latest image
-img='otomi/core:latest'
-[ "$has_otomi" = 'true' ] && img="otomi/core:$(otomi_image_tag)"
+img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
 for f in 'aliases' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
@@ -40,20 +31,27 @@ cp -r $PWD/.values/.vscode $ENV_DIR/
 
 generate_loose_schema
 
-for f in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
-  [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$f $ENV_DIR/
+for file in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
+  f=${file%.sample}
+  [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$file $ENV_DIR/
 done
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
 if [ ! -d "$ENV_DIR/env" ]; then
-  echo "No files found in env, installing demo files"
-  cp -r $PWD/.demo/env $ENV_DIR/env
+  [ -z "$PROFILE" ] && printf "Missing -p|--profile argument.\n\\tprofiles available: [%s]\n" "$(ls profiles | xargs)" && exit 1
+  readonly common_profile_path=$PWD/profiles/common/env
+  readonly profile_path=$PWD/profiles/$PROFILE/env
+
+  echo "No files found in "$ENV_DIR/env". Installing example files from profile $PROFILE"
+  cp -r $common_profile_path $ENV_DIR
+  cp -r $profile_path $ENV_DIR
 fi
+git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 # to accomodate sops plugin in vscode:
 [ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
-secrets_file="$ENV_DIR/env/secrets.settings.yaml"
+readonly secrets_file="$ENV_DIR/env/secrets.settings.yaml"
 if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != '' ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/

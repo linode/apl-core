@@ -20,15 +20,12 @@ environment:
 steps:
   - name: slack-start
     image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     settings:
       webhook: __WEBHOOK
-      channel: mon-otomi
+      channel: dev-mon-otomi
       username: Drone
       template: >
-        Started syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER'...
+        Started syncing cluster '__CLUSTER' for customer '__CUSTOMER'...
         Drone: <{{ build.link }}>
 
   - name: prepare-env
@@ -39,41 +36,32 @@ steps:
   - name: test
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
       - prepare-env
     commands:
       - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-console; cd ..; bin/otomi test"
 
-  - name: deploy
+  - name: apply
     image: otomi/core:__IMAGE_TAG
     pull: always
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/otomi apply
     depends_on:
       - test
 
   - name: slack-result
     image: plugins/slack
-    environment:
-      CLUSTER: __CLUSTER
-      CLOUD: __CLOUD
     depends_on:
-      - deploy
+      - apply
     settings:
       webhook: __WEBHOOK
-      channel: mon-otomi
+      channel: dev-mon-otomi
       username: Drone
       template: >
         {{#success build.status}}
-          Completed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' :)
+          Completed syncing cluster '__CLUSTER' for customer '__CUSTOMER' :)
         {{else}}
-          Failed syncing cluster '__CLOUD-__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
+          Failed syncing cluster '__CLUSTER' for customer '__CUSTOMER' ;( Please take a look.
         {{/success}}
 
         Drone: <{{ build.link }}>

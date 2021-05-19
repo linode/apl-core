@@ -31,13 +31,14 @@ spec:
         imagePullPolicy: "{{ $v.init.image.pullPolicy | default "IfNotPresent"}}"
         name: "job-{{ $v.name }}-init"
         command: ["{{ $v.init.shell | default "sh" }}", "-c"]
+        resources: {{- toYaml (coalesce $v.init.resources $v.resources) | nindent 10 }}
         args:
           - |
             {{- toString $v.init.script | nindent 12 }}
         {{- if $v.init.env }}
         envFrom:
         - configMapRef:
-            name: job-{{ $v.name }}
+            name: job-{{ $v.name }}-init
         {{- end }}
         {{- with $v.secrets }}
         env:

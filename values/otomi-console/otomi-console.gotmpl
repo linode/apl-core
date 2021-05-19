@@ -1,29 +1,20 @@
 {{- $v := .Environment.Values -}}
 {{- $c := $v.cluster -}}
 {{- $o := $v.charts | get "otomi-console" dict -}}
-{{- $domain := printf "otomi.%s" $v.cluster.domain -}}
-{{- $clusters := list -}}
-{{- range $cloudName, $cloud := $v.clouds -}}
-{{- range $clusterName, $cluster := $cloud.clusters -}}
-{{- $cluster = set $cluster "cloud" $cloudName -}}
-{{- $cluster = set $cluster "name" $clusterName -}}
-{{- $cluster = set $cluster "id" (printf "%s/%s" $cloudName $clusterName) -}}
-{{- $cluster = set $cluster "domain" (printf "%s.%s" $clusterName $cloud.domain) -}}
-{{- $clusters = append $clusters $cluster -}}
-{{- end -}}
-{{- end -}}
+{{- $core := readFile "../../core.yaml" | fromYaml -}}
+{{- $domain := printf "otomi.%s" $v.dns.domain -}}
 {{- $services := list -}}
 {{- range $s := $v.services -}}
-{{- if hasKey $v.charts $s.name -}}
-  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+{{- if hasKey $core.apps $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true -}}
   {{- $s := set $s "enabled" $enabled -}}
   {{- $services = append $services $s -}}
 {{- end }}
 {{- end }}
 {{- $teamServices := list -}}
 {{- range $s := $v.teamConfig.services -}}
-{{- if hasKey $v.charts $s.name -}}
-  {{- $enabled := ($v.charts | get $s.name) | get "enabled" true -}}
+{{- if hasKey $core.apps $s.name -}}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true -}}
   {{- $s := set $s "enabled" $enabled -}}
   {{- $teamServices = append $teamServices $s -}}
 {{- end }}
@@ -31,7 +22,6 @@
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 replicaCount: 1
 
 resources:
@@ -49,19 +39,20 @@ resources:
 image:
   registry: docker.io
   repository: otomi/console
-  tag: {{ $o | get "image.tag" "v0.4.36" }}
+  tag: {{ $o | get "image.tag" "master" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 env:
   API_BASE_URL: /api
+  CLUSTER: '{{ $v.cluster | toJson }}'
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
-  CLUSTER_ID: '{{ printf "%s/%s" $c.provider $c.name }}'
-  CLUSTERS: '{{ $clusters | toJson }}'
   CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $teamServices | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
 
 
-podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags" "psp-allowed-users")) | nindent 2 }}
+podAnnotations:
+  policy.otomi.io/ignore: "banned-image-tags,psp-allowed-users"
+  policy.otomi.io/ignore.wget: "container-limits"
 

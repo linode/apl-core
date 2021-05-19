@@ -1,6 +1,9 @@
 {{- if or .Values.additionalPrometheusRules .Values.additionalPrometheusRulesMap}}
 apiVersion: v1
 kind: List
+metadata:
+  name: {{ include "prometheus-operator.fullname" $ }}-additional-rules
+  namespace: {{ template "prometheus-operator.namespace" . }}
 items:
 {{- if .Values.additionalPrometheusRulesMap }}
 {{- range $prometheusRuleName, $prometheusRule := .Values.additionalPrometheusRulesMap }}

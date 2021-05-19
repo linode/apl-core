@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -eu
-set -o pipefail
+set -eo pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
 . $ENV_DIR/.secrets
@@ -8,7 +7,7 @@ ENV_DIR=${ENV_DIR:-./env}
 . bin/common.sh
 . bin/colors.sh
 
-prepare_crypt
+run_crypt
 readonly values=$(hf_values)
 readonly raw_receiver=$(echo "$values" | yq r - alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}
@@ -26,17 +25,22 @@ fi
 readonly webhook=$(echo "$values" | yq r - "alerts.$receiver.$key")
 
 function template_drone_config() {
-  local targetPath="$ENV_DIR/env/clouds/${CLOUD}/${CLUSTER}/.drone.yml"
-  local image_tag=$(otomi_image_tag)
+  local targetPath="$ENV_DIR/.drone.yml"
+  local image_tag="$(otomi_image_tag)"
+  local cluster="$(yq r $clusters_file cluster.name)"
+
   printf "${COLOR_LIGHT_PURPLE}Creating $targetPath ${COLOR_NC}\n"
 
   local target=$targetPath
   [ "${DRY_RUN-'false'}" = 'false' ] && target="/dev/stdout"
 
-  cat $templatePath | sed -e "s/__CLOUD/${CLOUD}/g" -e "s/__CLUSTER/${CLUSTER}/g" \
-    -e "s/__IMAGE_TAG/${image_tag}/g" -e "s|__WEBHOOK|${webhook}|g" \
-    -e "s/__CUSTOMER/${customer_name}/g" -e "s/__BRANCH/${branch}/g" \
+  cat $templatePath | sed \
+    -e "s/__CLUSTER/${cluster}/g" \
+    -e "s/__IMAGE_TAG/${image_tag}/g" \
+    -e "s|__WEBHOOK|${webhook}|g" \
+    -e "s/__CUSTOMER/${customer_name}/g" \
+    -e "s/__BRANCH/${branch}/g" \
     >$target
 }
 
-for_each_cluster template_drone_config
+template_drone_config

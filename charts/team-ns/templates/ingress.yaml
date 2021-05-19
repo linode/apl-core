@@ -31,74 +31,31 @@
 {{- end }}
 
 # apps.* that need their path rewritten to /
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomain" $v.clusterDomain "otomi" $v.otomi "isApps" true "hasForward" false "hasAuth" true "services" $private) }}
 ---
 
 # apps.* that need their path forwarded instead of rewritten to /
 {{- if gt (len $privateForward) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-forward" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomain" $v.clusterDomain "otomi" $v.otomi  "isApps" true "hasForward" true "hasAuth" true "services" $privateForward) }}
 ---
 {{- end }}
 
 # apps with custom domains
 {{- if gt (len $privateCustom) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "private-custom" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomain" $v.clusterDomain "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" true "services" $privateCustom) }}
 ---
 {{- end }}
 
 # public services
 {{- if gt (len $public) 0 }}
-{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "public" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomain" $v.clusterDomain "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $public) }}
 ---
 {{- end }}
 
 {{- if $v.otomi.hasCloudLB }}
 # external LB ingress
-{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
+{{ include "ingress" (dict "dot" . "provider" $v.cluster.provider "name" "external" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomain" $v.clusterDomain "otomi" $v.otomi  "isApps" false "hasForward" false "hasAuth" false "services" $v.services) }}
 ---
 {{- end }}
 
-{{- if gt (len $v.proxies) 0 }}
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    {{- if not $v.otomi.hasCloudLB }}
-    externaldns: "true"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    {{- end }}
-    {{- if eq $v.cluster.provider "onprem" }}
-    external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
-    {{- end }}
-    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
-    nginx.ingress.kubernetes.io/rewrite-target: $2
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    # nginx.ingress.kubernetes.io/limit-connections: "20" # per ip
-    # nginx.ingress.kubernetes.io/limit-rps: "5" # per second per conn
-    # nginx.ingress.kubernetes.io/limit-rpm: "30" # per minute per conn
-    # nginx.ingress.kubernetes.io/limit-rate-after: "50000000" # After 50Mb throughput rate limiting will start
-    # nginx.ingress.kubernetes.io/limit-rate: "0" # stop after
-  labels: {{- include "chart-labels" . | nindent 4 }}
-  name: nginx-team-{{ $v.teamId }}-proxy
-  namespace: istio-system
-spec:
-  rules:
-  {{ range $p := $v.proxies }}
-  - host: proxy.{{ $v.domain }}
-    http:
-      paths:
-      - backend:
-          serviceName: istio-ingressgateway-auth
-          servicePort: 80
-        path: /({{ $p.name }})({{ $p.path }})
-  {{- end }}
-  {{- if not $v.otomi.hasCloudLB }}
-  tls:
-    - hosts:
-        - {{ printf "proxy.%s" $v.domain }}
-      secretName: proxy-{{ $v.domain | replace "." "-" }}
-  {{- end }}
-{{- end }}
----
 {{- end }}

@@ -1,0 +1,27 @@
+alerts:
+    receivers:
+        - slack
+    slack:
+        channel: dev-mon-otomi
+        channelCrit: dev-mon-otomi-crit
+customer:
+    name: demo
+dns:
+    zones: []
+    domain: demo.gks.otomi.cloud
+    provider:
+        google:
+            project: <projectId>
+oidc:
+    adminGroupID: adminGroupID
+    authUrl: https://oidc.local/oauth2/authorize
+    clientID: clientId
+    issuer: https://oidc.local/
+    scope: openid email profile
+    teamAdminGroupID: teamAdminGroupID
+    tenantID: tenantID
+    tokenUrl: https://oidc.local/oauth2/token
+otomi:
+    isMultitenant: true
+    mode: ce
+    teamPrefix: team-

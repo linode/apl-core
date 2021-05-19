@@ -1,0 +1,170 @@
+FROM docker:19.03.11 as static-docker-source
+FROM ubuntu:18.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# https://cloud.google.com/sdk/docs/downloads-versioned-archives
+ARG CLOUD_SDK_VERSION=340.0.0
+ENV PATH "$PATH:/opt/google-cloud-sdk/bin/"
+# https://github.com/helm/helm/tags
+ARG HELM_VERSION=3.5.4
+# https://github.com/databus23/helm-diff/releases
+ARG HELM_DIFF_VERSION=3.1.3
+# https://github.com/zendesk/helm-secrets/releases
+ARG HELM_SECRETS_VERSION=2.0.3
+# https://github.com/mozilla/sops/releases
+ARG SOPS_VERSION=3.7.1
+# https://github.com/roboll/helmfile/releases
+ARG HELMFILE_VERSION=0.138.7
+# https://github.com/open-policy-agent/opa/releases
+ARG OPA_VERSION=0.28.0
+# https://github.com/instrumenta/kubeval/releases
+ARG KUBEVAL_VERSION=0.16.1
+# https://github.com/open-policy-agent/conftest/releases
+ARG CONFTEST_VERSION=0.24.0
+# https://github.com/plexsystems/konstraint/releases
+ARG KONSTRAINT_VERSION=0.12.1
+
+ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
+
+# https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
+ARG BATS_VERSION=1.2.1
+ARG BATS_ASSERT_VERSION=0.3.0
+ARG BATS_SUPPORT_VERSION=0.3.0
+ARG BATS_FILE_VERSION=0.2.0
+
+WORKDIR /
+ENV HOME=/home/app
+
+COPY --from=static-docker-source /usr/local/bin/docker /usr/local/bin/docker
+
+RUN groupadd -r -g 1000 app && \
+  useradd -r -u 1000 -m -s /bin/bash -g app -d $HOME app
+
+RUN apt-get update -qqy && apt install -qqy \
+  apt-transport-https \
+  awscli \
+  ca-certificates \
+  curl \
+  coreutils \
+  gettext \
+  gcc \
+  git \
+  gnupg \
+  gnupg2 \
+  groff \
+  lsb-release \
+  make \
+  nano \
+  netcat \
+  openssh-client \
+  openssh-server \
+  python3-crcmod \
+  python-crcmod \
+  python3-dev \
+  python3-pip \
+  rlwrap \
+  vim \
+  nano \
+  groff \
+  awscli \
+  && export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
+  echo "deb https://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+  apt-get update && \
+  apt-get install -y google-cloud-sdk=${CLOUD_SDK_VERSION}-0 \
+  kubectl && \
+  gcloud --version && \
+  docker --version && kubectl version --client  
+
+RUN pip3 install --upgrade pip
+RUN pip3 install pyopenssl
+
+# jq
+RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
+  echo 'af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44  /usr/bin/jq' | sha256sum -c && \
+  chmod +x /usr/bin/jq
+
+# yq
+COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
+
+
+ENV APP_HOME=/home/app/tools
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+ENV PATH $PATH:$APP_HOME
+
+# kubectl
+# ADD https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl kubectl
+# RUN chmod +x kubectl
+
+# sops
+ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
+RUN chmod +x sops
+
+# helm
+ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
+RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm && rm -rf /tmp/*
+RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
+RUN echo "exec $*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
+RUN helm plugin install https://github.com/futuresimple/helm-secrets --version ${HELM_SECRETS_VERSION}
+
+# helmfile
+ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
+RUN chmod +x helmfile
+
+# gcloud
+# ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
+# RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk $APP_HOME/gsdk && rm -rf /tmp/*
+# ENV PATH $PATH:$APP_HOME/gsdk/bin
+
+# aws
+RUN pip3 install awscli
+
+# aws-iam-authenticator
+ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+RUN chmod +x aws-iam-authenticator
+
+# opa
+ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
+RUN chmod +x opa
+
+# kubeval
+ADD https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
+
+# conftest
+ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
+RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
+
+# konstraint
+ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
+RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
+
+# node lts
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+RUN apt-get install -y nodejs && \
+  npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2
+
+# bats
+ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_VERSION} -C /tmp && /tmp/bats-core-${BATS_VERSION}/install.sh /usr/local
+
+# bats libs
+ADD https://codeload.github.com/ztombol/bats-assert/tar.gz/v${BATS_ASSERT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_ASSERT_VERSION} -C /tmp && mv /tmp/bats-assert-${BATS_ASSERT_VERSION} /usr/local/lib/bats-assert
+
+ADD https://codeload.github.com/ztombol/bats-support/tar.gz/v${BATS_SUPPORT_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_SUPPORT_VERSION} -C /tmp && mv /tmp/bats-support-${BATS_SUPPORT_VERSION} /usr/local/lib/bats-support
+
+ADD https://codeload.github.com/ztombol/bats-file/tar.gz/v${BATS_FILE_VERSION} /tmp
+RUN tar -zxvf /tmp/v${BATS_FILE_VERSION} -C /tmp && mv /tmp/bats-file-${BATS_FILE_VERSION} /usr/local/lib/bats-file
+
+RUN git config --system credential.'https://source.developers.google.com'.helper gcloud.sh
+
+RUN chown -R app:app /home/app
+USER app
+
+VOLUME ["/home/app/.config", "/home/app/.kube"]
+
+CMD "/bin/bash"

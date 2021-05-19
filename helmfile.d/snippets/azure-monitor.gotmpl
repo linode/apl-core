@@ -2,18 +2,18 @@ name: Azure Monitor
 type: grafana-azure-monitor-datasource
 access: proxy
 jsonData:
+  appInsightsAppId: {{ . | get "appInsightsAppId" nil }}
+  clientId: {{ .clientId }}
   cloudName: azuremonitor
-  subscriptionId: {{ .azure.subscriptionId }}
-  tenantId: {{ .azure.tenantId }}
-  clientId: {{ .monitor | get "clientId" (.azure | get "monitor.clientId") }}
-  logAnalyticsTenantId: {{ .monitor | get "logAnalyticsTenantId" (.azure | get "monitor.logAnalyticsTenantId" .azure.tenantId) }}
-  logAnalyticsClientId: {{ .monitor | get "logAnalyticsClientId" (.azure | get "monitor.logAnalyticsClientId" (.azure | get "monitor.clientId")) }}
-  logAnalyticsDefaultWorkspace: {{ .monitor | get "logAnalyticsWorkspace" (.azure | get "monitor.logAnalyticsWorkspace" nil) }}
-  appInsightsAppId: {{ .monitor | get "appInsightsAppId" (.monitor | get "clientId" (.azure | get "monitor.appInsightsAppId" (.azure | get "monitor.clientId"))) }}
+  subscriptionId: {{ . | get "subscriptionId" nil }}
+  tenantId: {{ . | get "tenantId" nil }}
+  logAnalyticsTenantId: {{ . | get "logAnalyticsTenantId" nil }}
+  logAnalyticsClientId: {{ . | get "logAnalyticsClientId" nil }}
+  logAnalyticsDefaultWorkspace: {{ . | get "logAnalyticsDefaultWorkspace" nil }}
   keepCookies: []
 secureJsonData:
-  clientSecret: {{ .monitor | get "clientSecret" (.azure | get "monitor.clientSecret") }}
-  logAnalyticsClientSecret: {{ .monitor | get "logAnalyticsClientSecret" (.azure | get "monitor.logAnalyticsSecret" (.azure | get "monitor.clientSecret")) }}
-  appInsightsApiKey : {{ .monitor | get "appInsightsApiKey" (.azure | get "monitor.appInsightsApiKey" (.azure | get "monitor.clientSecret")) }}
+  clientSecret: {{ .clientSecret }}
+  logAnalyticsClientSecret: {{ . | get "logAnalyticsClientSecret" nil }}
+  appInsightsApiKey : {{ . | get "appInsightsApiKey" nil }}
 version: 4
 editable: false

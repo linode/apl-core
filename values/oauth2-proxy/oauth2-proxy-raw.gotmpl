@@ -1,11 +1,11 @@
 {{- $v := .Values }}
-{{- $domain := printf "auth.%s" $v.cluster.domain }}
+{{- $domain := printf "auth.%s" $v.dns.domain }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $name := $domain | replace "." "-" }}
 resources:
-  - apiVersion: extensions/v1beta1
+  - apiVersion: networking.k8s.io/v1beta1
     kind: Ingress
     metadata:
       annotations:

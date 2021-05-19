@@ -5,27 +5,31 @@ set -eo pipefail
 . bin/common.sh
 . bin/common-modules.sh
 
+run_crypt
+
 readonly k8s_resources_path="/tmp/otomi/values"
 readonly script_message="Values validation"
 
 function cleanup() {
-  if [ -z "$DEBUG" ]; then
-    rm -rf $k8s_resources_path
-  fi
+  rm -rf $k8s_resources_path
 }
 
-mkdir -p $k8s_resources_path >/dev/null
+function setup() {
+  mkdir -p $k8s_resources_path >/dev/null
+}
 
 function validate_values() {
-  [ -n "$LABEL_OPT" ] && err "Cannot pass option $LABEL_OPT: please specify --all|-A or --cluster|-c" && exit 1
-  local values_path="$k8s_resources_path/$(cluster_env).yaml"
+  [ -n "$LABEL_OPT" ] && err "Cannot pass option $LABEL_OPT." && exit 1
+  setup
+  local values_path="$k8s_resources_path/values.yaml"
   hf_values >$values_path
   ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
   return 0
 }
 
 function main() {
-  process_clusters validate_values "$@"
+  echo $script_message STARTED
+  validate_values "$@"
 }
 
 main "$@"

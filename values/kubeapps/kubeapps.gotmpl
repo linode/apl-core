@@ -1,11 +1,38 @@
+{{- $v := .Environment.Values }}
+assetsvc:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 50Mi
 authProxy:
   enabled: false
   external: true
+metrics:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 50Mi
+
 postgresql:
   existingSecret: null
-  postgresqlPassword: duzz1tmadda
-  postgresqlPostgresPassword: asamm4lunch1o
+  postgresqlPassword: {{ $v | get "postgres.postgresqlPassword" "duzz1tmadda" }}
+  postgresqlPostgresPassword: {{ $v | get "postgres.postgresqlPostgresPassword" "asamm4lunch1o" }}
   replication:
-    password: agennoshom00
+    password: {{ $v | get "replication.password" "agennoshom00" }}
+  resources:
+    limits:
+      memory: 768Mi
+      cpu: 750m
+    requests:
+      memory: 256Mi
+      cpu: 250m
+
 securityContext:
   enabled: true

@@ -51,11 +51,11 @@ definitions:
         additionalProperties: false
         properties:
           channel:
-            default: mon-otomi
+            default: dev-mon-otomi
             description: The Slack channel for non-critical notifications.
             type: string
           channelCrit:
-            default: mon-otomi
+            default: dev-mon-otomi
             description: The Slack channel for critical notifications.
             type: string
           url:
@@ -64,96 +64,91 @@ definitions:
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
+  awsCreds:
+    properties:
+      accessKey:
+        type: string
+      secretKey:
+        type: string
+      region:
+        type: string
+    required:
+      - accessKey
+      - secretKey
+      - region
+  azureCreds:
+    properties:
+      clientId:
+        type: string
+      clientSecret:
+        type: string
+      environment:
+        type: string
+      tenantId:
+        type: string
+    required:
+      - clientId
+      - clientSecret
+      - tenantId
   azureMonitor:
     properties:
       appInsightsApiKey:
-        description: An Azure AppInsights client secret (defaults to clientSecret).
+        title: AppInsights api key
+        description: An Azure AppInsights client secret.
         type: string
       appInsightsAppId:
-        description: An Azure AppInsights client id (defaults to clientId).
+        title: AppInsights app id
+        description: An Azure AppInsights client id.
         type: string
+      azureLogAnalyticsSameAs:
+        title: LogAnalytics using same creds?
+        type: boolean
+        default: true
       clientId:
+        title: Azure client id
         description: An Azure client id.
         type: string
       clientSecret:
+        title: Azure client secret
         description: An Azure client secret.
         type: string
       logAnalyticsClientId:
-        description: An Azure client secret (defaults to clientSecret).
+        title: LogAnalytics client id
+        description: An Azure client secret.
         type: string
       logAnalyticsClientSecret:
-        description: An Azure client secret (defaults to clientSecret).
+        title: LogAnalytics client secret
+        description: An Azure client secret.
         type: string
       logAnalyticsTenantId:
-        description: An Azure tenant id (defaults to tenantId).
+        title: LogAnalytics tenant id
+        description: An Azure tenant id.
         type: string
-      logAnalyticsWorkspace:
+      logAnalyticsDefaultWorkspace:
+        title: LogAnalytics default workspace to show
+        description: An Azure LogAnalytics workspace.
+        type: string
+      subscriptionId:
+        title: Azure subscription id
+        description: An Azure subscription id.
+        type: string
+      tenantId:
+        title: LogAnalytics tenant id
         description: An Azure monitor log analytics workspace.
         type: string
-  cloud:
-    description: A common cloud configuration.
-    properties:
-      clusters:
-        additionalProperties: false
-        patternProperties:
-          '^[a-z-]+$':
-            $ref: '#/definitions/cluster'
-      domain:
-        $ref: '#/definitions/domain'
     required:
-      - domain
-      - clusters
+      - clientId
+      - clientSecret
+      - subscriptionId
+      - tenantId
   cluster:
     additionalProperties: false
     properties:
-      apiName:
-        description: Only used for API/UI to show in app.
-        type: string
-      apiServer:
-        description: Used by kubectl for local deployment to target cluster.
-        type: string
-      dnsProvider:
-        description: Only set it if you want DNS provider to be different than cloud provider of this cluster.
-        enum:
-          - azure
-          - google
-          - aws
-        type: string
-      dnsZones:
-        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
-        items:
-          $ref: '#/definitions/domain'
-        type: array
-      domain:
-        $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       enabled:
         default: true
         type: boolean
-      entrypoint:
-        description: A Kubernetes API public IP address (onprem only).
-        type: string
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
-      otomiVersion:
-        default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-        type: string
-      region:
-        description: Dependent on provider.
-        examples:
-          - europe-west4
-          - eu-central-1
-          - westeurope
-        type: string
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        type: string
     required:
-      - apiServer
-      - k8sVersion
-      - otomiVersion
-      - region
+      - enabled
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -181,6 +176,12 @@ definitions:
         type: string
     nullable: true
     title: Environment variables
+  googleCreds:
+    properties:
+      accountJson:
+        type: string
+      project:
+        type: string
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
@@ -388,7 +389,7 @@ definitions:
   subdomainType:
     type: string
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
-  externalSecret:
+  secret:
     type: object
     properties:
       id:
@@ -453,69 +454,6 @@ definitions:
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
-  secret:
-    oneOf:
-      - properties:
-          password:
-            type: string
-          server:
-            $ref: '#/definitions/registry'
-          type:
-            default: docker-registry
-            enum:
-              - docker-registry
-            type: string
-          username:
-            type: string
-        required:
-          - server
-          - username
-          - password
-        title: Docker Registry
-      - properties:
-          entries:
-            description: Key names and their values.
-            items:
-              properties:
-                key:
-                  description: Key or file name.
-                  example: secretstuff.conf
-                  type: string
-                value:
-                  description: Value to be encrypted.
-                  example: password=yoursecretpassword
-                  type: string
-              required:
-                - key
-                - value
-            type: array
-          type:
-            default: generic
-            enum:
-              - generic
-            type: string
-        required:
-          - entries
-        title: Generic
-      - properties:
-          ca:
-            description: The CA certificate content.
-            type: string
-          crt:
-            description: The PEM encoded public key certificate content.
-            type: string
-          key:
-            description: The private key certificate content.
-            type: string
-          type:
-            default: tls
-            enum:
-              - tls
-            type: string
-        required:
-          - crt
-          - key
-        title: TLS
     properties:
       id:
         readOnly: true
@@ -557,9 +495,9 @@ definitions:
         items:
           type: string
         type: array
-      externalSecrets:
+      secrets:
         items:
-          $ref: '#/definitions/externalSecret'
+          $ref: '#/definitions/secret'
         type: array
       id:
         $ref: '#/definitions/idName'
@@ -584,8 +522,6 @@ definitions:
         type: string
       resourceQuota:
         description: Kubernetes resource quota. As is.
-      secrets:
-        $ref: '#/definitions/secrets'
       services:
         items:
           additionalProperties: false
@@ -725,9 +661,19 @@ definitions:
             name:
               type: string
     type: array
+  vaultCreds:
+    properties:
+      token:
+        type: string
+    required:
+      - token
 properties:
   alerts:
     $ref: '#/definitions/alerts'
+  apps:
+    description: The list of otomi apps that are shown in the console.
+    type: object
+    properties: {}
   azure:
     description: Azure specific configuration.
     properties:
@@ -737,33 +683,6 @@ properties:
             default: true
             description: Is this appgw installed as AKS addon?
             type: boolean
-      diskType:
-        description: An Azure disk type (SKU Type).
-        enum:
-          - Standard_LRS
-          - Standard_GRS
-          - Standard_RAGRS
-          - Standard_ZRS
-          - Premium_LRS
-          - Premium_ZRS
-          - Standard_GZRS
-          - Standard_RAGZRS
-        type: string
-      keyVault:
-        description: Azure Key Vault access credentials. Will use azure.tenantId if tenantId is not provided.
-        properties:
-          tenantId:
-            description: An Azure tenant ID.
-            type: string
-          clientId:
-            description: An Azure client ID.
-            type: string
-          clientSecret:
-            description: An Azure client secret.
-            type: string
-        required:
-          - clientId
-          - clientSecret
       monitor:
         $ref: '#/definitions/azureMonitor'
       resourceGroup:
@@ -776,7 +695,6 @@ properties:
         description: An Azure tenant ID.
         type: string
     required:
-      - diskType
       - resourceGroup
       - subscriptionId
       - tenantId
@@ -788,59 +706,10 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          azureClientSecret:
-            type: string
           email:
             $ref: '#/definitions/email'
-          provider:
-            additionalProperties: false
-            properties:
-              aws:
-                additionalProperties: false
-                properties:
-                  route53:
-                    additionalProperties: false
-                    properties:
-                      region:
-                        type: string
-              azure:
-                additionalProperties: false
-                properties:
-                  azuredns:
-                    additionalProperties: false
-                    properties:
-                      clientID:
-                        type: string
-                      hostedZoneName:
-                        type: string
-                      resourceGroupName:
-                        type: string
-                      subscriptionID:
-                        type: string
-                      tenantID:
-                        type: string
-                    required:
-                      - clientID
-                      - tenantID
-                      - subscriptionID
-                      - resourceGroupName
-                      - hostedZoneName
-              google:
-                additionalProperties: false
-                properties:
-                  clouddns:
-                    additionalProperties: false
-                    properties:
-                      project:
-                        type: string
-                      serviceAccountSecretRef:
-                        additionalProperties: false
-                        properties:
-                          key:
-                            type: string
-                          name:
-                            type: string
           stage:
+            default: staging
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
@@ -849,6 +718,9 @@ properties:
               - staging
               - production
             type: string
+        required:
+          - email
+          - stage
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -969,36 +841,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          aws:
-            properties:
-              region:
-                type: string
-            required:
-              - region
-          azure:
-            properties:
-              cloud:
-                type: string
-                description: Azure Cloud to use
-              resourceGroup:
-                type: string
-                description: Azure resource group to use
-              tenantId:
-                type: string
-                description: Azure tenant ID to use (will default to global value)
-              subscriptionId:
-                type: string
-                description: Azure subscription ID to use (will default to global value)
-              aadClientId:
-                type: string
-                description: Azure Application Client ID to use
-              aadClientSecret:
-                type: string
-                description: Azure Application Client Secret to use
-              useManagedIdentityExtension:
-                type: boolean
-                description: If you use Azure MSI, this should be set to true
-                default: false
           domainFilters:
             items:
               type: string
@@ -1188,7 +1030,7 @@ properties:
                 type: string
               usePrivateIP:
                 default: false
-                description: Whether to use a private ip range or not.
+                description: Whether a private ip range or not.
                 type: boolean
             required:
               - subscriptionId
@@ -1311,8 +1153,6 @@ properties:
                 type: string
               clientSecret:
                 type: string
-          realm:
-            type: string
           resources:
             additionalProperties: false
             properties:
@@ -1331,6 +1171,16 @@ properties:
           enabled:
             default: true
             type: boolean
+          postgres:
+            properties:
+              postgresqlPassword:
+                type: string
+              postgresqlPostgresPassword:
+                type: string
+          replication:
+            properties:
+              password:
+                type: string
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
@@ -1364,8 +1214,21 @@ properties:
                 type: string
               period:
                 type: string
+            required:
+              - duration
+              - period
+          schemaConfigs:
+            type: array
+            items:
+              properties: {}
+            description: 'A list of schema_config as documented: https://grafana.com/docs/loki/latest/configuration/examples/'
           storageType:
             type: string
+        required:
+          - adminPassword
+          - persistence
+          - retention
+          - storageType
       nginx-ingress:
         additionalProperties: false
         properties:
@@ -1382,6 +1245,10 @@ properties:
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
+          loadBalancerIP:
+            type: string
+          loadBalancerRG:
+            type: string
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1477,6 +1344,8 @@ properties:
             properties:
               grafana:
                 $ref: '#/definitions/resources'
+        required:
+          - grafana
       redis-shared:
         additionalProperties: false
         properties:
@@ -1512,22 +1381,76 @@ properties:
           schedule:
             type: string
       vault:
-        type: object
         additionalProperties: false
         properties:
           enabled:
             type: boolean
             default: true
-          seal:
-            description: Use Cloud KMS to encrypt and decrypt the master key
-            properties:
-              kmsKeyId:
-                title: Key name or key ID
-                description: Cloud KMS key to encrypt and decrypt the Vault master key.
-                type: string
-                nullable: true
           logLevel:
             $ref: '#/definitions/logLevel'
+          seal:
+            description: Use a KMS to encrypt and decrypt the master key
+            nullable: true
+            oneOf:
+              - title: gcpckms
+                properties:
+                  gcpckms:
+                    properties:
+                      project:
+                        type: string
+                      region:
+                        type: string
+                      key_ring:
+                        type: string
+                      kmsAccount:
+                        type: string
+                    required:
+                      - project
+                      - region
+                      - key_ring
+                      - kmsAccount
+                required:
+                  - gcpckms
+              - title: awskms
+                properties:
+                  awskms:
+                    properties:
+                      region:
+                        type: string
+                      access_key:
+                        type: string
+                      secret_key:
+                        type: string
+                      endpoint:
+                        type: string
+                    required:
+                      - region
+                      - access_key
+                      - secret_key
+                      - endpoint
+                required:
+                  - awskms
+              - title: azurekeyvault
+                properties:
+                  azurekeyvault:
+                    properties:
+                      vault_name:
+                        type: string
+                      tenant_id:
+                        type: string
+                      client_id:
+                        type: string
+                      client_secret:
+                        type: string
+                    required:
+                      - vault_name
+                      - tenant_id
+                      - client_id
+                      - client_secret
+                required:
+                  - azurekeyvault
+          storage:
+            description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
       weave-scope:
         properties:
           _rawValues:
@@ -1535,39 +1458,142 @@ properties:
           enabled:
             type: boolean
             default: false
-  clouds:
-    additionalProperties: false
-    properties:
-      aws:
-        $ref: '#/definitions/cloud'
-      azure:
-        $ref: '#/definitions/cloud'
-      google:
-        $ref: '#/definitions/cloud'
-      onprem:
-        $ref: '#/definitions/cloud'
   cluster:
-    description: An internal otomi object (do not edit it).
+    properties:
+      apiName:
+        description: Only used for API/UI to show in app.
+        type: string
+      apiServer:
+        description: Used by kubectl for local deployment to target cluster.
+        type: string
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
+      entrypoint:
+        description: A Kubernetes API public IP address (onprem only).
+        type: string
+      k8sVersion:
+        $ref: '#/definitions/k8sVersion'
+      name:
+        type: string
+      otomiVersion:
+        default: latest
+        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
+        type: string
+      provider:
+        type: string
+        enum:
+          - aws
+          - azure
+          - google
+          - oneprem
+      region:
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
+        type: string
+      vpcID:
+        description: AWS only. If provided will override autodiscovery from metadata.
+        type: string
+    required:
+      - apiServer
+      - k8sVersion
+      - name
+      - otomiVersion
+      - provider
+      - region
   customer:
     additionalProperties: false
     properties:
       name:
         type: string
-  google:
-    description: Google specific configuration.
+  dns:
+    additionalProperties: false
     properties:
-      cloudDnsKey:
-        description: A service account key for managing a DNS zone.
-        type: string
-      kmsAccount:
-        description: A service account key for managing a KMS vault.
-        type: string
-      projectId:
-        description: A Google Cloud project ID for accessing DNS zone.
-        type: string
+      zones:
+        description: Extra dns zones that the cluster can administer (see dns). Team services can use this to publish their URLs on.
+        items:
+          $ref: '#/definitions/domain'
+        type: array
+      domain:
+        $ref: '#/definitions/domain'
+        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
+      provider:
+        description: The DNS provider managing the domains.
+        oneOf:
+          - title: AWS
+            properties:
+              aws:
+                properties:
+                  region:
+                    type: string
+                required:
+                  - region
+            required:
+              - aws
+          - title: Azure
+            properties:
+              azure:
+                properties:
+                  cloud:
+                    title: Cloud
+                    type: string
+                    description: Azure Cloud
+                  resourceGroup:
+                    title: Resource group
+                    type: string
+                    description: Azure resource group
+                  hostedZoneName:
+                    title: Hosted zone name
+                    type: string
+                  tenantId:
+                    title: Tenant ID
+                    type: string
+                    description: Azure tenant ID
+                  subscriptionId:
+                    title: Subscription ID
+                    type: string
+                    description: Azure subscription ID
+                  aadClientId:
+                    title: Client ID
+                    type: string
+                    description: Azure Application Client ID
+                  aadClientSecret:
+                    title: Client secret
+                    type: string
+                    description: Azure Application Client Secret
+                  useManagedIdentityExtension:
+                    title: Using managed identities?
+                    type: boolean
+                    description: If you use Azure MSI, this should be set to true
+                    default: false
+                required:
+                  - resourceGroup
+                  - tenantId
+                  - subscriptionId
+                  - aadClientId
+                  - aadClientSecret
+            required:
+              - azure
+          - title: Google
+            properties:
+              google:
+                properties:
+                  serviceAccountKey:
+                    description: A service account key for managing a DNS zone.
+                    type: string
+                  project:
+                    type: string
+                required:
+                  - serviceAccountKey
+                  - project
+            required:
+              - google
     required:
-      - cloudDnsKey
-      - projectId
+      - domain
+      - provider
   home:
     $ref: '#/definitions/alerts'
   k8s:
@@ -1589,66 +1615,27 @@ properties:
     required:
       - namespaces
   kms:
-    description: Use Cloud KMS to encrypt and decrypt the master key
-    oneOf:
-      - title: gcpckms
-        properties:
-          gcpckms:
-            properties:
-              project:
-                type: string
-              region:
-                type: string
-              key_ring:
-                type: string
-              kmsAccount:
-                type: string
+    additionalProperties: false
+    properties:
+      sops:
+        oneOf:
+          - aws:
+              $ref: '#/definitions/awsCreds'
             required:
-              - project
-              - region
-              - key_ring
-              - kmsAccount
-        required:
-          - gcpckms
-      - title: awskms
-        properties:
-          awskms:
-            properties:
-              region:
-                type: string
-              access_key:
-                type: string
-              secret_key:
-                type: string
-              endpoint:
-                type: string
+              - aws
+          - azure:
+              $ref: '#/definitions/azureCreds'
             required:
-              - region
-              - access_key
-              - secret_key
-              - endpoint
-        required:
-          - awskms
-      - title: azurekeyvault
-        properties:
-          azurekeyvault:
-            properties:
-              vault_name:
-                type: string
-              tenant_id:
-                type: string
-              client_id:
-                type: string
-              client_secret:
-                type: string
+              - azure
+          - google:
+              $ref: '#/definitions/googleCreds'
             required:
-              - vault_name
-              - tenant_id
-              - client_id
-              - client_secret
-        required:
-          - azurekeyvault
-
+              - google
+          - vault:
+              $ref: '#/definitions/vaultCreds'
+            required:
+              - vault
+        type: object
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
@@ -1683,6 +1670,9 @@ properties:
   otomi:
     additionalProperties: false
     properties:
+      adminPassword:
+        type: string
+        default: bladibla
       hasCloudLB:
         default: false
         description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
@@ -1712,7 +1702,7 @@ properties:
         type: string
       teamPrefix:
         default: team-
-        description: The prefix to use in URLs for team domains.
+        description: The prefix in URLs for team domains.
         pattern: '^[a-z]+[-]{1}$'
         type: string
       addons:
@@ -1725,6 +1715,13 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
+  otomiInstanceUrls:
+    description: Use this property to indicate other otomi instances and easily navigate between them from otomi-console
+    type: array
+    properties:
+      items:
+        type: string
+    default: []
   policies:
     type: object
     description: |
@@ -1952,21 +1949,6 @@ properties:
                   type: string
                 user:
                   type: string
-  proxies:
-    items:
-      additionalProperties: false
-      properties:
-        name:
-          type: string
-        namespace:
-          type: string
-        path:
-          type: string
-      required:
-        - name
-        - namespace
-        - path
-    type: array
   services:
     items:
       additionalProperties: false
@@ -2062,7 +2044,7 @@ properties:
             $ref: '#/definitions/team'
 required:
   - alerts
-  - clouds
+  - cluster
   - customer
   - oidc
   - otomi

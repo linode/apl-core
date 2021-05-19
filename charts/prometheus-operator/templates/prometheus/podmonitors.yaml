@@ -1,6 +1,9 @@
 {{- if and .Values.prometheus.enabled .Values.prometheus.additionalPodMonitors }}
 apiVersion: v1
 kind: List
+metadata:
+  name: {{ include "prometheus-operator.fullname" $ }}-additional-podmonitors
+  namespace: {{ template "prometheus-operator.namespace" . }}
 items:
 {{- range .Values.prometheus.additionalPodMonitors }}
   - apiVersion: monitoring.coreos.com/v1

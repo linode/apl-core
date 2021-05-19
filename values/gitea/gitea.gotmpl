@@ -4,21 +4,26 @@
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
 
-{{- $giteadomain := printf "gitea.%s" $v.cluster.domain}}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $giteadomain := printf "gitea.%s" $v.dns.domain}}
 
 nameOverride: gitea
 fullnameOverride: gitea
-# clusterDomain: {{ $v.cluster.domain }}
+# clusterDomain: {{ $v.dns.domain }}
 
 gitea:
-  podAnnotations: 
-    {{-  tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users"))  | nindent 4 }}
   admin:
+<<<<<<< HEAD
     username: otomi-admin
     password: {{ $g | get "admin.password" "bladibla" }}
+||||||| merged common ancestors
+    username: otomi
+    password: {{ $g | get "admin.password" "bladibla" }}
+=======
+    username: otomi-admin
+    password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+>>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   config:
     log:
       LEVEL: debug
@@ -29,6 +34,10 @@ gitea:
       ENABLE_OPENID_SIGNIN: true
     repository:
       DEFAULT_BRANCH: main
+    {{- with $g | get "config" nil }}
+      {{- toYaml . | nindent 4}}
+    {{- end }}
+    
   metrics:
     enabled: true
     serviceMonitor:
@@ -48,8 +57,18 @@ postgresql:
   persistence:
     size: 1Gi
 
+extraVolumes:
+- name: cert
+  secret:
+    secretName: letsencrypt-staging
+
+extraVolumeMounts:
+- name: cert
+  readOnly: true
+  mountPath: "/usr/local/share/ca-certificates"
+
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image
-# securityContext:
-#   runAsNonRoot: true
-#   runAsUser: 1000
-#   runAsGroup: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000

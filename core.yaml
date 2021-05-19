@@ -1,4 +1,22 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
+apps:
+  alertmanager: {}
+  drone: {}
+  gitea: {}
+  grafana: {}
+  grafana-istio: {}
+  harbor: {}
+  httpbin: {}
+  keycloak: {}
+  kiali: {}
+  kubeapps: {}
+  loki: {}
+  prometheus: {}
+  prometheus-istio: {}
+  sitespeed: {}
+  tracing: {}
+  vault: {}
+  weave-scope: {}
 
 k8s:
   namespaces:
@@ -8,11 +26,6 @@ k8s:
     - name: drone-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: gatekeeper-system
-      disableIstioInjection: true
-      disablePolicyChecks: true
-    - name: gitea
-      disableIstioInjection: true
     - name: harbor
     - name: gitea
     - name: istio-system
@@ -20,8 +33,6 @@ k8s:
     - name: ingress
       disableIstioInjection: true
     - name: istio-apps
-    - name: istio-system
-      disableIstioInjection: true
     - name: keycloak
     - name: knative-serving
       disableIstioInjection: true
@@ -34,16 +45,14 @@ k8s:
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
-    - name: olm
+    - name: operator-lifecycle-manager
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: operators
+    - name: otomi
     - name: overprovisioner
       disableIstioInjection: true
     - name: shared
     - name: team-admin
-    - name: vault
-      disableIstioInjection: true
     - name: vault
 
 services:
@@ -103,14 +112,14 @@ services:
     hide: true
     isShared: true
   - name: otomi
-    namespace: shared
+    namespace: otomi
     ownHost: true
     isShared: true
     svc: otomi-api
     hide: true
     paths: [/api/]
   - name: otomi
-    namespace: shared
+    namespace: otomi
     ownHost: true
     isShared: true
     svc: otomi-console
@@ -164,7 +173,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: istio-apps
+    namespace: kiali
   - name: tracing
     svc: tracing
     forwardPath: true
@@ -179,14 +188,14 @@ services:
       workload:
         app: drone
         component: server
-  # - name: drone
-  #   svc: drone
-  #   namespace: team-admin
-  #   ownHost: true
-  #   hide: true
-  #   isPublic: true
-  #   paths: [/api/]
-  #   forwardPath: true
+  - name: drone
+    svc: drone
+    namespace: team-admin
+    ownHost: true
+    hide: true
+    isPublic: true
+    paths: [/hook, /api/user, /api/repo]
+    forwardPath: true
   - name: vault
     namespace: vault
     svc: vault-0
@@ -204,11 +213,6 @@ services:
       name: kubernetes
     isPublic: true
     isShared: true
-
-proxies:
-  - name: drone
-    namespace: team-admin
-    path: /hook
 
 teamConfig:
   services:

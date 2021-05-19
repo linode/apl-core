@@ -1,5 +1,0 @@
-charts:
-    vault:
-        seal:
-            type: kms
-            kmsKeyId: '19ec80b0-dfdd-4d97-8164-c6examplekey'

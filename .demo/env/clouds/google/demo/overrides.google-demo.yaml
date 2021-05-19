@@ -1,5 +1,0 @@
-charts:
-    vault:
-        seal:
-            type: kms
-            kmsKeyId: 'vault-key'

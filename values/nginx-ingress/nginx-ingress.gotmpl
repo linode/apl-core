@@ -1,7 +1,6 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
-{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domain }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
 
 rbac:
   create: true
@@ -42,7 +41,8 @@ controller:
     {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-privileged")) | nindent 4 }}
+    policy.otomi.io/ignore: "psp-privileged"
+
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -83,6 +83,16 @@ controller:
   service:
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
+    loadBalancerIP: {{ $n | get "loadBalancerIP" nil }}
+    {{ if or ($n | get "loadBalancerRG" nil) ($n | get "service.annotations" nil) }}
+    annotations:
+      {{- with $n | get "service.annotations" nil }}
+      {{ . | toYaml | indent 6 }}
+      {{- end }}
+      {{- with $n | get "loadBalancerRG" nil }}
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
+      {{- end }}
+    {{- end }}
   publishService:
     enabled: true
 

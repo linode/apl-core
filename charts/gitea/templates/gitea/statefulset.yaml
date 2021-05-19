@@ -9,6 +9,9 @@ spec:
   selector:
     matchLabels:
       {{- include "gitea.selectorLabels" . | nindent 6 }}
+      {{- if .Values.statefulset.labels }}
+      {{- toYaml .Values.statefulset.labels | nindent 6 }}
+      {{- end }}
   serviceName: {{ include "gitea.fullname" . }}
   template:
     metadata:
@@ -20,7 +23,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "gitea.selectorLabels" . | nindent 8 }}
+        {{- include "gitea.labels" . | nindent 8 }}
+        {{- if .Values.statefulset.labels }}
+        {{- toYaml .Values.statefulset.labels | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -30,13 +36,20 @@ spec:
         fsGroup: 1000
       initContainers:
         - name: init
-          image: "{{ .Values.image.repository }}:{{ ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") }}"
+          image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/init_gitea.sh"]
           env:
-          {{- range .Values.statefulset.env }}
-          - name: {{ .name | quote | nospace }}
-            value: {{ .value | quote }}
-          {{- end }}
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
@@ -50,7 +63,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") }}"
+          image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             # SSH Port values have to be set here as well for openssh configuration
@@ -58,9 +71,16 @@ spec:
               value: {{ .Values.gitea.config.server.SSH_LISTEN_PORT | quote }}
             - name: SSH_PORT
               value: {{ .Values.gitea.config.server.SSH_PORT | quote }}
-            {{- range .Values.statefulset.env }}
-            - name: {{ .name | quote | nospace }}
-              value: {{ .value | quote }}
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
           ports:
             - name: ssh
@@ -71,26 +91,52 @@ spec:
             - name: profiler
               containerPort: 6060
             {{- end }}
+          {{- if .Values.gitea.livenessProbe.enabled }}
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 200
-            timeoutSeconds: 1
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 10
+            initialDelaySeconds: {{ .Values.gitea.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.livenessProbe.failureThreshold }}
+          {{- else if .Values.gitea.customLivenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.gitea.customLivenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.gitea.readinessProbe.enabled }}
           readinessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.gitea.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.readinessProbe.failureThreshold }}
+          {{- else if .Values.gitea.customReadinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.gitea.customReadinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.gitea.startupProbe.enabled }}
+          startupProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: {{ .Values.gitea.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.startupProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.startupProbe.failureThreshold }}
+          {{- else if .Values.gitea.customStartupProbe }}
+          startupProbe:
+            {{- toYaml .Values.gitea.customStartupProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
+            - name: temp
+              mountPath: /tmp/gitea
             - name: data
               mountPath: /data
             {{- if .Values.extraVolumeMounts }}
@@ -119,6 +165,8 @@ spec:
         {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 8 }}
         {{- end }}
+        - name: temp
+          emptyDir: {}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:

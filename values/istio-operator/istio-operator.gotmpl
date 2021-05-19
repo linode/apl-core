@@ -1,2 +1,5 @@
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
-podAnnotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 2 }}
+hub: istio
+tag: 1.6.14
+# tag: 1.9.5
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users

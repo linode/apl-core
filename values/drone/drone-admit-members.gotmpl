@@ -1,7 +1,6 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
-{{- $host := printf "drone.%s" $v.cluster.domain }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $host := printf "drone.%s" $v.dns.domain }}
 
 nameOverride: "drone-admit-members"
 fullnameOverride: "drone-admit-members"
@@ -24,4 +23,4 @@ env:
   DRONE_DEBUG: {{ $d | get "debug" false }}
 
 podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
+  policy.otomi.io/ignore: banned-image-tags

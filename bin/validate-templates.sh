@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -eo pipefail
-
-. bin/common-modules.sh
 . bin/common.sh
+. bin/common-modules.sh
+
+run_crypt
 
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"
@@ -12,10 +12,7 @@ readonly jq_file=$(mktemp -u)
 readonly script_message="Templates validation"
 
 function cleanup() {
-  if [ -z "$DEBUG" ]; then
-    [ -n "$VERBOSE" ] && echo "custom cleanup called"
-    rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path >/dev/null 2>&1
-  fi
+  rm -rf $jq_file $k8s_resources_path $output_path $schema_output_path >/dev/null 2>&1
 }
 
 function setup() {
@@ -64,18 +61,16 @@ function process_crd() {
 
 function process_crd_wrapper() {
   local k8s_version=$1
-  local cluster_env=$2
   setup $k8s_version
-  echo "Generating k8s $k8s_version manifests for cluster '$cluster_env'..."
-  hf_templates "$k8s_resources_path/$k8s_version"
-
+  echo "Generating k8s $k8s_version manifests"
+  hf_template "$k8s_resources_path/$k8s_version"
   echo "Processing CRD files..."
   # generate canonical schemas
   local target_yaml_files="*.yaml"
   # schemas for otomi templates
-  for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
-    process_crd $file
-  done
+  # for file in $(find "$k8s_resources_path/$k8s_version" -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
+  #   process_crd $file
+  # done
   # schemas for chart crds
   for file in $(find charts/**/crds -name "$target_yaml_files" -exec bash -c "ls {}" \;); do
     process_crd $file
@@ -88,29 +83,38 @@ function process_crd_wrapper() {
 
 function validate_templates() {
   local k8s_version="v${get_k8s_version:-1.18}"
-  local cluster_env=$(cluster_env)
-  process_crd_wrapper $k8s_version $cluster_env
-
-  local kubeval_schema_location="file://$schema_output_path"
+  process_crd_wrapper $k8s_version
+  local schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
   local skip_filenames="crd,knative-services,constraint"
   local tmp_out=$(mktemp -u)
-  echo "Validating resources for cluster '$cluster_env'..."
-  set +eo pipefail
-  kubeval --quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
-    --force-color -d $k8s_resources_path --schema-location $kubeval_schema_location \
-    --kubernetes-version $(echo $k8s_version | sed 's/v//') | tee $tmp_out | grep -Ev 'PASS\b'
-  set -eo pipefail
+  echo "Validating resources"
+  [ -z "$VERBOSE" ] && quiet='--quiet'
+  set +e
+  cmd="kubeval $quiet --skip-kinds $skip_kinds --ignored-filename-patterns $skip_filenames \
+    --force-color -d $k8s_resources_path --schema-location $schema_location \
+    --kubernetes-version ${k8s_version#v}"
+  if [ -n "$VERBOSE" ]; then
+    echo "schema_output_path: $schema_output_path"
+    echo "skip_kinds: $skip_kinds"
+    echo "skip_filenames: $skip_filenames"
+    echo "k8s_resources_path: $k8s_resources_path"
+    echo "schema_location: $schema_location"
+    echo "kubeval output: $tmp_out"
+    echo "cmd: $cmd"
+  fi
 
-  grep -e "ERR\b" $tmp_out && exitcode=1
-  [ $exitcode -ne 0 ] && exit $exitcode
+  $cmd >$tmp_out
+  cat $tmp_out | grep -F "PASS "
+  grep "ERR " $tmp_out && exit 1
   return 0
 }
 
 function main() {
-  process_clusters validate_templates "$@"
+  echo $script_message STARTED
+  validate_templates "$@"
 }
 
 main "$@"

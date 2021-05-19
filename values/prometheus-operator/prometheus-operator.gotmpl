@@ -5,11 +5,10 @@
 {{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domain $realm }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domain }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
+{{- $appsDomain := printf "apps.%s" $v.dns.domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
 
 nameOverride: po
 fullnameOverride: po
@@ -103,8 +102,31 @@ alertmanager:
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
 grafana:
+  downloadDashboards:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
   image:
+<<<<<<< HEAD
     tag: 7.5.4
+||||||| merged common ancestors
+    tag: 7.4.2
+=======
+    tag: 7.5.6
+  initChownData:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+>>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   resources:
     {{- with $p | get "resources.grafana" nil }}
       {{- toYaml . | nindent 4 }}
@@ -116,6 +138,14 @@ grafana:
       memory: 256Mi
       cpu: 500m
     {{- end }}
+  sidecar:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   rbac:
@@ -148,16 +178,16 @@ grafana:
       url: http://loki:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
-    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") (dict "monitor" dict "azure" $v.azure) | toString | nindent 6 }}
+    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
-    {{- if $c.sitespeed.enabled }}
+    {{- if $c | get "sitespeed.enabled" false }}
     - name: Graphite
       editable: false
       type: graphite
       access: proxy
       url: http://graphite:80
     {{- end }}
-  adminPassword: {{ $p.grafana.adminPassword }}
+  adminPassword: {{ $p | get "grafana.adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
   service:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}
@@ -197,5 +227,5 @@ prometheus-node-exporter:
     pspEnabled: false
   priorityClassName: "otomi-critical"
   podAnnotations:
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-host-filesystem" "psp-host-networking-ports" "psp-host-security")) | nindent 4 }}
+    policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
 

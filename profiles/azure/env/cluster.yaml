@@ -1,0 +1,8 @@
+cluster:
+    apiName: FILL
+    apiServer: FILL.aks.azure.com
+    k8sVersion: '1.19'
+    name: demo
+    otomiVersion: master
+    provider: azure
+    region: eu-central-1

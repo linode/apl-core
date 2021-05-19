@@ -7,14 +7,14 @@ bases:
 
 releases:
   - name: drone
-    installed: {{ $c | get "drone.enabled" true }}
+    installed: {{ $c | get "drone.enabled" false }}
     namespace: team-admin
     labels:
       pkg: drone
       stage: post
     <<: *default
   - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled" true) (eq ($c | get "drone.sourceControl.provider" "github") "github") }}
+    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "github") "github") }}
     namespace: team-admin
     labels:
       pkg: drone
@@ -27,7 +27,8 @@ releases:
     installed: false
     namespace: team-admin
     <<: *default
-  - name: olm
+  - name: operator-lifecycle-manager
     installed: true
-    namespace: olm
+    disableValidationOnInstall: true
+    namespace: operator-lifecycle-manager
     <<: *default

@@ -4,7 +4,7 @@
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
 replicaCount: 1
 
@@ -23,13 +23,8 @@ secrets:
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
-  {{- if $v.sops.enabled }}
-  AZURE_TENANT_ID: '{{ $v | get "azure.keyVault.tenantId" ($v | get "azure.tenantId" "") }}'
-  AZURE_CLIENT_ID: '{{ $v | get "azure.keyVault.clientId" "" }}'
-  AZURE_CLIENT_SECRET: '{{ $v | get "azure.keyVault.clientSecret" "" }}'
-  GCLOUD_SERVICE_KEY: '{{ $v | get "google.kmsAccount" "" }}'
-  {{- end }}
-
+  {{- $sopsEnv | nindent 2 }}
+  
 env:
   # DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
@@ -65,7 +60,9 @@ tools:
   {{- end }}
 
 podAnnotations:
-  {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "banned-image-tags")) | nindent 2 }}
+  policy.otomi.io/ignore: psp-allowed-users
+  policy.otomi.io/ignore-sidecar: psp-allowed-users
+  policy.otomi.io/ignore.istio-init: psp-allowed-users
 
 podSecurityContext:
   runAsUser: 1000

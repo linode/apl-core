@@ -1,14 +1,15 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
 {{- $homeReceivers := .root | get "home.receivers" (list "slack") }}
+{{- $isHomeMonitored:= .root | get "otomi.isHomeMonitored" false }}
 global:
-{{- if or (has "slack" $receivers ) (and .root.otomi.isHomeMonitored (has "slack" $homeReceivers)) }}
+{{- if or (has "slack" $receivers ) (and $isHomeMonitored (has "slack" $homeReceivers)) }}
   slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
 {{- end }}
-{{- if or (has "email" $receivers) (and .root.otomi.isHomeMonitored (has "email" $homeReceivers))  }}
+{{- if or (has "email" $receivers) (and $isHomeMonitored (has "email" $homeReceivers))  }}
   smtp_smarthost: {{ .root | get "smtp.smarthost" }}
-  smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domain }}
-  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domain) }}
+  smtp_hello: {{ .root | get "smtp.hello" .root.dns.domain }}
+  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.dns.domain) }}
   smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
   smtp_auth_password: {{ .root | get "smtp.auth_password" nil }}
   smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil }}
@@ -34,7 +35,7 @@ route:
     - match:
         severity: critical
       receiver: critical
-    {{- if .root.otomi.isHomeMonitored }}
+    {{- if $isHomeMonitored }}
       continue: true
     - match:
         severity: critical
@@ -45,7 +46,7 @@ receivers:
   - name: default
 {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"
+      - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "dev-mon-otomi") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
@@ -64,7 +65,7 @@ receivers:
   - name: critical
 {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "mon-otomi-crit") }}"
+      - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "dev-mon-otomi-crit") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
@@ -80,13 +81,13 @@ receivers:
         send_resolved: true
     {{- end }}
 {{- end }}
-{{- if .root.otomi.isHomeMonitored }}
+{{- if $isHomeMonitored }}
   - name: critical-home
   {{- $receivers := .root.home | get "receivers" }}
     # sending criticals also to home to be aware of issues
   {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .root | get "home.slack.channelCrit" "mon-otomi-crit" }}"
+      - channel: "#{{ .root | get "home.slack.channelCrit" "dev-mon-otomi-crit" }}"
         {{- .slackTpl | nindent 8 }}
   {{- end }}
   {{- if has "msteams" $receivers  }}

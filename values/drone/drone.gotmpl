@@ -1,10 +1,10 @@
 {{- $v := .Environment.Values }}
 {{- $d := $v.charts | get "drone" dict }}
 {{- $debug := $d | get "debug" false }}
-{{- $host := printf "drone.%s" $v.cluster.domain }}
-{{- $addIgnorePolicyAnnotation := readFile "../../helmfile.d/utils/addIgnorePolicyAnnotation.gotmpl" }}
+{{- $host := printf "drone.%s" $v.dns.domain }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
-clusterDomain: {{ $v.cluster.domain }}
+clusterDomain: {{ $v.dns.domain }}
 
 images:
   server:
@@ -15,10 +15,11 @@ images:
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: {{ $d.sharedSecret | default "zumsecreetz" }}
+sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
-  annotations: {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users")) | nindent 4 }}
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d.adminUser }}
@@ -44,11 +45,19 @@ server:
     {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- end }}
+<<<<<<< HEAD
     {{- if hasKey $d "repoFilter" }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
     {{- if eq $d.sourceControl.provider "github" }}
+||||||| merged common ancestors
+    {{- if hasKey $d "repoFilter" }}
+    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
+    {{- end }}
+    DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
+=======
+>>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
     {{- end }}
@@ -67,16 +76,10 @@ kubernetes:
   env:
     # DRONE_TRACE: true
     # DRONE_DEBUG: true
-    DRONE_RUNNER_ENVIRON: "CLOUD:{{ $v.cluster.provider }},CLUSTER:{{ $v.cluster.name }}"
   annotations:
-    {{- tpl $addIgnorePolicyAnnotation (dict "policies" (list "psp-allowed-users" "psp-privileged" "psp-host-filesystem" "banned-image-tags")) | nindent 4 }}
+    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
   envFile: |
-    {{- if $v.sops.enabled }}
-    AZURE_TENANT_ID: '{{ $v | get "azure.keyVault.tenantId" ($v | get "azure.tenantId" "") }}'
-    AZURE_CLIENT_ID: '{{ $v | get "azure.keyVault.clientId" "" }}'
-    AZURE_CLIENT_SECRET: '{{ $v | get "azure.keyVault.clientSecret" "" }}'
-    GCLOUD_SERVICE_KEY='{{ $v | get "google.kmsAccount" "" | replace "\n" "" }}'
-    {{- end }}
+    {{- $sopsEnv | nindent 4 }}
 
 persistence:
   enabled: true

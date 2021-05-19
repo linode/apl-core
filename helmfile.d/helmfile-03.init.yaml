@@ -28,11 +28,13 @@ releases:
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
+    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     <<: *default
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
+    disableValidationOnInstall: true
     namespace: vault
     labels:
       pkg: vault
