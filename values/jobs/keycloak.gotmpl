@@ -36,23 +36,13 @@ image:
   pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
 name: keycloak
 env:
-<<<<<<< HEAD
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
-||||||| merged common ancestors
-  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
-secret:
-  # DEBUG: '*'
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domain }}
-  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
-=======
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
 secret:
   # DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   KEYCLOAK_REALM: master
   IDP_ALIAS: {{ $k.idp.alias }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}

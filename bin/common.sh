@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-# . bin/colors.sh
+. bin/colors.sh
 . bin/aliases
 shopt -s expand_aliases
 
@@ -152,19 +152,38 @@ function rotate() {
   cd - >/dev/null
 }
 
+function pushd() {
+  command pushd "$@" >/dev/null
+}
+
+function popd() {
+  command popd "$@" >/dev/null
+}
+
 function crypt() {
-  cd $ENV_DIR >/dev/null
+  if [ ! -f "$ENV_DIR/.sops.yaml" ]; then
+    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping decryption"
+    return 0
+  fi
+  pushd $ENV_DIR/env
+  command=${1:-'decrypt'}
+  shift
+  files="$*"
   local out='/dev/stdout'
   [ -n "$QUIET" ] && out='/dev/null'
-  # Need to pipe the find for the overloaded helm function: https://stackoverflow.com/a/8489394/14982291
-  local encDec='dec'
-  if [ "$command" = 'encrypt' ]; then
-    encDec='enc'
+  if [ -n "$files" ]; then
+    for f in $files; do
+      echo "${command}ing $f" >$out
+      drun "helm secrets enc ./env/$f" >$out
+    done
+  else
+    if [ "$command" = 'encrypt' ]; then
+      find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
+    else
+      find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+    fi
   fi
-  find ./env -type f -name 'secrets.*.yaml' | while read params; do
-    helm secrets $encDec "$params"
-  done >$out
-  cd - >/dev/null
+  popd
 }
 
 function run_crypt() {
@@ -190,6 +209,7 @@ function hf_values() {
 }
 
 function hf_template() {
+  QUIET=1
   if [ -n "$1" ]; then
     local out_dir="$1"
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
