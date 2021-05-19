@@ -40,18 +40,18 @@ steps:
     commands:
       - bash -c "kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-api; kubectl -n shared delete po -l app.kubernetes.io/instance=otomi-console; cd ..; bin/otomi test"
 
-  - name: deploy
+  - name: apply
     image: otomi/core:__IMAGE_TAG
     pull: always
     commands:
-      - cd .. && bin/otomi deploy
+      - cd .. && bin/otomi apply
     depends_on:
       - test
 
   - name: notify-success
     image: diyfr/drone_plugin_teams
     depends_on:
-      - deploy
+      - apply
     settings:
       webhook: __WEBHOOK
       content:
@@ -65,7 +65,7 @@ steps:
   - name: notify-error
     image: diyfr/drone_plugin_teams
     depends_on:
-      - deploy
+      - apply
     settings:
       webhook: __WEBHOOK
       content:
