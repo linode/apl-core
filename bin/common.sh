@@ -101,7 +101,11 @@ function _rind() {
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
+      -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
       -e IN_DOCKER='1' \
+      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
+      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
+      -w ${ENV_DIR} \
       $otomi_tools_image $cmd "$@"
     return $?
   elif command -v $cmd &>/dev/null; then
@@ -122,6 +126,11 @@ function yq() {
 }
 
 function jq() {
+  _rind "${FUNCNAME[0]}" "$@"
+  return $?
+}
+
+function helm() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
 }
@@ -149,14 +158,17 @@ function rotate() {
 }
 
 function crypt() {
-  cd $ENV_DIR/env >/dev/null
+  cd $ENV_DIR >/dev/null
   local out='/dev/stdout'
   [ -n "$QUIET" ] && out='/dev/null'
+  # Need to pipe the find for the overloaded helm function: https://stackoverflow.com/a/8489394/14982291
+  local encDec='dec'
   if [ "$command" = 'encrypt' ]; then
-    find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
-  else
-    find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+    encDec='enc'
   fi
+  find ./env -type f -name 'secrets.*.yaml' | while read params; do 
+    helm secrets $encDec "$params"
+  done > $out
   cd - >/dev/null
 }
 

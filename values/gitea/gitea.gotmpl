@@ -13,8 +13,6 @@ fullnameOverride: gitea
 # clusterDomain: {{ $v.dns.domain }}
 
 gitea:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   admin:
     username: otomi-admin
     password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
@@ -26,6 +24,10 @@ gitea:
       ENABLE_OPENID_SIGNIN: true
     repository:
       DEFAULT_BRANCH: main
+    {{- with $g | get "config" nil }}
+      {{- toYaml . | nindent 4}}
+    {{- end }}
+    
   metrics:
     enabled: true
     serviceMonitor:
@@ -45,8 +47,18 @@ postgresql:
   persistence:
     size: 1Gi
 
+extraVolumes:
+- name: cert
+  secret:
+    secretName: letsencrypt-staging
+
+extraVolumeMounts:
+- name: cert
+  readOnly: true
+  mountPath: "/usr/local/share/ca-certificates"
+
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image
-# securityContext:
-#   runAsNonRoot: true
-#   runAsUser: 1000
-#   runAsGroup: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
