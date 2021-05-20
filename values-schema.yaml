@@ -1605,15 +1605,16 @@ properties:
         type: array
     required:
       - namespaces
-    kms:
-      properties:
-        sops:
-          oneOf:
-            - $ref: '#/definitions/awsCreds'
-            - $ref: '#/definitions/azureCreds'
-            - $ref: '#/definitions/googleCreds'
-            - $ref: '#/definitions/vaultCreds'
-      type: object
+  kms:
+    additionalProperties: false
+    properties:
+      sops:
+        oneOf:
+          - $ref: '#/definitions/awsCreds'
+          - $ref: '#/definitions/azureCreds'
+          - $ref: '#/definitions/googleCreds'
+          - $ref: '#/definitions/vaultCreds'
+    type: object
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
