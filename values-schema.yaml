@@ -1606,7 +1606,6 @@ properties:
     required:
       - namespaces
     kms:
-      additionalProperties: false
       properties:
         sops:
           oneOf:
