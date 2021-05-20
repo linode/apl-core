@@ -212,9 +212,9 @@ function execute() {
       check_kube_context=1
       set -o pipefail
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
-        drun "bin/deploy.sh \| grep -Ev $helmfile_output_hide"
+        drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       else
-        drun ". bin/common.sh $original_params && run_crypt && hf apply --skip-deps $SKIP_CLEANUP \| grep -Ev $helmfile_output_hide"
+        drun ". bin/common.sh $original_params && run_crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       fi
       ;;
     argstest)
@@ -256,15 +256,15 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf diff --skip-deps $SKIP_CLEANUP \| grep -Ev $helmfile_output_hide"
+      drun ". bin/common.sh $original_params && run_crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
       check_kube_context=1
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
-        drun "bin/destroy.sh $original_params \| grep -Ev $helmfile_output_hide"
+        drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
       else
-        drun ". bin/common.sh $original_params && run_crypt && hf destroy \| grep -Ev $helmfile_output_hide"
+        drun ". bin/common.sh $original_params && run_crypt && hf destroy" | grep -Ev $helmfile_output_hide
       fi
       ;;
     encrypt)
@@ -280,7 +280,7 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf $* \| grep -Ev $helmfile_output_hide"
+      drun ". bin/common.sh $original_params && run_crypt && hf $*" | grep -Ev $helmfile_output_hide
       ;;
     lint)
       evaluate_secrets
@@ -303,13 +303,13 @@ function execute() {
     score-templates)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && run_crypt && hf_template \| kube-score score --ignore-test -"
+      drun ". bin/common.sh $original_params && run_crypt && hf_template | kube-score score --ignore-test -"
       ;;
     sync)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf sync --skip-deps $SKIP_CLEANUP \| grep -Ev $helmfile_output_hide"
+      drun ". bin/common.sh $original_params && run_crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
