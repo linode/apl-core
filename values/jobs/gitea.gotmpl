@@ -7,26 +7,12 @@ type: Job
 name: gitea
 enabled: true
 env:
-<<<<<<< HEAD
-  GITEA_URL: https://gitea.{{ $v.cluster.domain }}
-||||||| merged common ancestors
-  GITEA_URL: https://gitea.{{ $v.cluster.domain }}
-  GITEA_REPO: values
-=======
   GITEA_URL: https://gitea.{{ $v.dns.domain }}
   DRONE_URL: https://drone.{{ $v.dns.domain }}
   GITEA_REPO: values
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
 secret:
-<<<<<<< HEAD
-  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
-||||||| merged common ancestors
-  GITEA_USER: otomi
-  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
-=======
   GITEA_USER: otomi-admin
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:

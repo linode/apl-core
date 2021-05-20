@@ -45,19 +45,11 @@ server:
     {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- end }}
-<<<<<<< HEAD
     {{- if hasKey $d "repoFilter" }}
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
     {{- if eq $d.sourceControl.provider "github" }}
-||||||| merged common ancestors
-    {{- if hasKey $d "repoFilter" }}
-    DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
-    {{- end }}
-    DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
-=======
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
     {{- end }}

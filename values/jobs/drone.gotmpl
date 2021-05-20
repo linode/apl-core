@@ -19,16 +19,9 @@ name: drone
 secret:
   DRONE_TOKEN: {{ $d | get "adminToken" }}
 env:
-<<<<<<< HEAD
-||||||| merged common ancestors
-  DRONE_CONFIG_PATH: env/clouds/{{ $v.cluster.provider }}/{{ $v.cluster.name }}/.drone.yml
-  DRONE_OWNER: {{ $d | get "owner" }}
-  DRONE_REPO: {{ $d | get "repo" }}
-=======
   DRONE_CONFIG_PATH: ".drone.yml"
   DRONE_OWNER: {{ $d | get "owner" }}
   DRONE_REPO: {{ $d | get "repo" }}
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   DRONE_URL: http://drone.team-admin
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:drone
 runPolicy: OnSpecChange

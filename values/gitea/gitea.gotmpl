@@ -14,16 +14,8 @@ fullnameOverride: gitea
 
 gitea:
   admin:
-<<<<<<< HEAD
-    username: otomi-admin
-    password: {{ $g | get "admin.password" "bladibla" }}
-||||||| merged common ancestors
-    username: otomi
-    password: {{ $g | get "admin.password" "bladibla" }}
-=======
     username: otomi-admin
     password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
->>>>>>> 8703dfc7ef06d2b6e0ebf5fa4295d1e14da1da66
   config:
     log:
       LEVEL: debug
