@@ -31,6 +31,6 @@ init:
 image:
   repository: otomi/tasks
   tag: gitea-drone
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
 runPolicy: OnSpecChange

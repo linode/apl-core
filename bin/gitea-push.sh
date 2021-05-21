@@ -6,7 +6,9 @@ set -eo pipefail
 run_crypt
 readonly values=$(hf_values)
 readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
+readonly stage=$(echo "$values" | yq r - charts.cert-manager.stage)
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
+[ "$stage" = "staging" ] && git_args='-c http.sslVerify=false'
 
 readonly cluster_domain=$(echo "$values" | yq r - 'dns.domain')
 readonly gitea_url="gitea.$cluster_domain"
@@ -41,7 +43,7 @@ if [ ! $(git config remote.$remote_name.url) ]; then
 fi
 
 # Try to pull, if repo is not new, it will get data
-git fetch $remote_name main || true
+git $git_args fetch $remote_name main || true
 # Which will show how many commits are there.
 readonly commit_count=$(git rev-list --count --remotes=$remote_name)
 
@@ -51,7 +53,7 @@ if [ "$commit_count" -eq "0" ]; then
   git add -A
 
   git commit --no-verify -m "Initial commit of otomi-values"
-  git push -u $remote_name main
+  git $git_args push -u $remote_name main
   echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"
