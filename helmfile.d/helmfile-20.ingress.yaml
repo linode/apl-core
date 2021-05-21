@@ -25,7 +25,7 @@ releases:
     <<: *raw
   - name: external-dns
     installed: {{ $c | get "external-dns.enabled" true }}
-    namespace: ingress
+    namespace: external-dns
     <<: *default
   - name: ingress-azure
     installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v| get "azure.appgw.isManaged" true)) }}
