@@ -22,6 +22,7 @@ spec:
         {{- with .Values.gitea.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        policy.otomi.io/ignore.init-ca: psp-allowed-users
       labels:
         {{- include "gitea.labels" . | nindent 8 }}
         {{- if .Values.statefulset.labels }}
@@ -35,9 +36,53 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
+      {{- if eq .Values.certManagerStage "staging" }}
+        - name: init-ca
+          image: "{{ include "gitea.rootimage" . }}"
+          command: ["bash"]
+          args:
+            - '-c'
+            - |
+              letsencryptCA="/etc/ssl/certs/letsencrypt-staging.pem"
+              rootCA="/etc/ssl/certs/ca-certificates.crt"
+              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
+              ls -als $rootCA
+              cat $rootCA > $rootCAnew
+              cat $letsencryptCA >> $rootCAnew
+              ls -als $rootCAnew
+          volumeMounts:
+          - name: letsencrypt-staging-ca
+            mountPath: "/etc/ssl/certs/letsencrypt-staging.pem"
+            subPath: "letsencrypt-staging.pem"
+          - name: ca-new
+            mountPath: "/etc/ssl/certs-new"
+        - name: init-ca-finish
+          image: "{{ include "gitea.rootimage" . }}"
+          command: ["bash"]
+          args:
+            - '-c'
+            - |
+              rootCA="/etc/ssl/certs/ca-certificates.crt"
+              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
+              ls -als $rootCA
+              cat $rootCAnew > $rootCA
+              ls -als $rootCA
+          volumeMounts:
+          - name: ca-new
+            mountPath: "/etc/ssl/certs-new"
+          - name: ca
+            mountPath: "/etc/ssl/certs/ca-certificates.crt"
+            subPath: "ca-certificates.crt"
+      {{- end }}
         - name: init
           image: "{{ include "gitea.image" . }}"
-          command: ["/usr/sbin/init_gitea.sh"]
+          # command: ["/usr/sbin/init_gitea.sh"]
+          command: ["bash"]
+          args:
+            - '-c'
+            - |
+              rootCA="/etc/ssl/certs/ca-certificates.crt"
+              ls -als $rootCA
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -57,6 +102,11 @@ spec:
               mountPath: /etc/gitea/conf
             - name: data
               mountPath: /data
+            {{- if eq .Values.certManagerStage "staging" }}
+            - name: ca
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              subPath: "ca-certificates.crt"
+            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -139,6 +189,11 @@ spec:
               mountPath: /tmp/gitea
             - name: data
               mountPath: /data
+            {{- if eq .Values.certManagerStage "staging" }}
+            - name: ca
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              subPath: "ca-certificates.crt"
+            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -167,6 +222,15 @@ spec:
         {{- end }}
         - name: temp
           emptyDir: {}
+        {{- if eq .Values.certManagerStage "staging" }}
+        - name: letsencrypt-staging-ca
+          configMap:
+            name: letsencrypt-staging-ca
+        - name: ca
+          emptyDir: {}
+        - name: ca-new
+          emptyDir: {}
+        {{- end }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:

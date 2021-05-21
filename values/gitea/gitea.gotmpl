@@ -5,8 +5,9 @@
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
-
-{{- $giteadomain := printf "gitea.%s" $v.dns.domain}}
+{{- $giteadomain := printf "gitea.%s" $v.dns.domain }}
+{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $skipVerify := eq $stage "staging" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -18,7 +19,7 @@ gitea:
     password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
   config:
     log:
-      LEVEL: debug
+      LEVEL: trace
     server:
       DOMAIN: {{ $giteadomain }}
       ROOT_URL: "https://{{ $giteadomain }}/"
@@ -49,15 +50,9 @@ postgresql:
   persistence:
     size: 1Gi
 
-extraVolumes:
-- name: cert
-  secret:
-    secretName: letsencrypt-staging
-
-extraVolumeMounts:
-- name: cert
-  readOnly: true
-  mountPath: "/usr/local/share/ca-certificates"
+certManagerStage: {{ $stage }}
+letsencryptCA: |
+  {{- $v.letsencryptCA | nindent 2 }}
 
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image
 securityContext:

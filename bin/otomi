@@ -171,7 +171,7 @@ function drun() {
     [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ -z "$NOPULL" ] && docker pull "otomi/core:$image_tag" >/dev/null
     docker run $docker_terminal_params --network host --rm \
       $stack_volume $socket_volume -v /tmp:/tmp \
-      -v ${KUBECONFIG:-$HOME/.kube}:/home/app/.kube \
+      -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
       -v $HOME/.ssh:/home/app/.ssh \
       -v $helm_config:/home/app/.config/helm \
       -v $HOME/.config/gcloud:/home/app/.config/gcloud \
