@@ -12,23 +12,28 @@ releases:
     <<: *jobs
     labels:
       pkg: ingress-azure
-    {{ tpl (readFile "snippets/job-presync.gotmpl") (dict "name" "job-ingress-azure" "runPolicy" "Always") | nindent 4 }}
+      job: true
   - name: job-harbor
     installed: {{ $c | get "harbor.enabled" false }}
     labels:
       pkg: harbor
+      job: true
     <<: *jobs
   - name: job-certs-aws
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
+    labels:
+      job: true
   - name: job-drone
     installed: {{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
       stage: post
+      job: true
     <<: *jobs
   - name: job-gitea-add-users
     installed: {{ $c | get "gitea.enabled" false }}
     labels:
       pkg: gitea
-    <<: *jobs
+      job: true
+    <<: *jobs 

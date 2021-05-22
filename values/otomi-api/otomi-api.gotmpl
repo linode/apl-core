@@ -20,7 +20,7 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-api
-  tag: {{ $o | get "image.tag" "v0.4.46" }}
+  tag: {{ $o | get "image.tag" "v0.4.49" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 secrets:
@@ -64,7 +64,7 @@ tools:
   {{- if $v.sops.enabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" "v0.12.9" }}
+    tag: {{ $o | get "tools.image.tag" "v0.13.0" }}
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     {{- with $o | get "resources.tools" nil }}
     resources:

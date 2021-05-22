@@ -15,7 +15,7 @@ secret:
 schedule: "0/5 * * * *" # every 5 minutes
 image:
   repository: otomi/tasks
-  tag: gitea-drone
-  pullPolicy: Always
+  tag: v0.2.6
+  # pullPolicy: Always
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea-add-users
 runPolicy: Always

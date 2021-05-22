@@ -10,10 +10,10 @@ files: {}
   #     some data on another line
   #     another line
 
-image: {}
+image:
   # repository: busybox
   # tag: latest
-  # pullPolicy: IfNotPresent
+  pullPolicy: IfNotPresent
 
 init: {}
   # env: {}
