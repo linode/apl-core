@@ -26,12 +26,13 @@ k8s:
     - name: drone-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: external-dns
+      disableIstioInjection: true
     - name: harbor
     - name: gitea
     - name: istio-system
       disableIstioInjection: true
     - name: ingress
-      disableIstioInjection: true
     - name: istio-apps
     - name: keycloak
     - name: knative-serving
