@@ -150,13 +150,47 @@ definitions:
       - subscriptionId
       - tenantId
   cluster:
-    additionalProperties: false
     properties:
-      enabled:
-        default: true
-        type: boolean
+      apiName:
+        description: Only used for API/UI to show in app.
+        type: string
+      apiServer:
+        description: Used by kubectl for local deployment to target cluster.
+        type: string
+      domainSuffix:
+        $ref: '#/definitions/domain'
+        description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
+      entrypoint:
+        description: A Kubernetes API public IP address (onprem only).
+        type: string
+      k8sVersion:
+        $ref: '#/definitions/k8sVersion'
+      name:
+        type: string
+      otomiVersion:
+        default: latest
+        description: 'Best pin this to a valid release version found in the repo.'
+        type: string
+      provider:
+        type: string
+        enum:
+          - aws
+          - azure
+          - google
+          - oneprem
+      region:
+        description: Dependent on provider.
+        examples:
+          - europe-west4
+          - eu-central-1
+          - westeurope
+        type: string
+      vpcID:
+        description: AWS only. If provided will override autodiscovery from metadata.
+        type: string
     required:
-      - enabled
+      - name
+      - provider
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -1481,51 +1515,7 @@ properties:
             type: boolean
             default: false
   cluster:
-    properties:
-      apiName:
-        description: Only used for API/UI to show in app.
-        type: string
-      apiServer:
-        description: Used by kubectl for local deployment to target cluster.
-        type: string
-      domain:
-        $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
-      entrypoint:
-        description: A Kubernetes API public IP address (onprem only).
-        type: string
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
-      name:
-        type: string
-      otomiVersion:
-        default: latest
-        description: 'Please pin this a valid release version found in the repo. Suggestion: try the most recent stable version.'
-        type: string
-      provider:
-        type: string
-        enum:
-          - aws
-          - azure
-          - google
-          - oneprem
-      region:
-        description: Dependent on provider.
-        examples:
-          - europe-west4
-          - eu-central-1
-          - westeurope
-        type: string
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        type: string
-    required:
-      - apiServer
-      - k8sVersion
-      - name
-      - otomiVersion
-      - provider
-      - region
+    $ref: '#/definitions/cluster'
   customer:
     additionalProperties: false
     properties:
@@ -1683,6 +1673,10 @@ properties:
   otomi:
     additionalProperties: false
     properties:
+      additionalClusters:
+        type: array
+        items:
+          $ref: '#/definitions/cluster'
       adminPassword:
         type: string
         default: bladibla
