@@ -1,0 +1,7 @@
+dependencies:
+  - name: weave-scope-agent
+    version: '1.1.8'
+  - name: weave-scope-cluster-agent
+    version: '1.1.8'
+  - name: weave-scope-frontend
+    version: '1.1.8'

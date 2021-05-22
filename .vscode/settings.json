@@ -43,5 +43,8 @@
   },
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci",
-  "opa.roots": ["${workspaceFolder}/policies"]
+  "opa.roots": [
+    "${workspaceFolder}/policies"
+  ],
+  "python.pythonPath": "/usr/local/bin/python3"
 }

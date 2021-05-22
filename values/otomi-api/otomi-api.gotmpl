@@ -65,7 +65,7 @@ tools:
   image:
     repository: otomi/core
     tag: {{ $o | get "tools.image.tag" "v0.13.0" }}
-    pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
+    # pullPolicy: Always
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}

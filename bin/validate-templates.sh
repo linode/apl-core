@@ -20,10 +20,8 @@ function setup() {
   mkdir -p $k8s_resources_path $output_path $schema_output_path
   touch $schemas_bundle_file
   # use standalone schemas
-  if [ ! -d "$schema_output_path/$k8s_version-standalone" ]; then
-    tar -xzf "schemas/$k8s_version-standalone.tar.gz" -C "$schema_output_path/"
-    tar -xzf "schemas/generated-crd-schemas.tar.gz" -C "$schema_output_path/$k8s_version-standalone"
-  fi
+  tar -xzf schemas/$k8s_version-standalone.tar.gz -C $schema_output_path/
+  tar -xzf schemas/generated-crd-schemas.tar.gz -C $schema_output_path/$k8s_version-standalone
 
   # loop over .spec.versions[] and generate one file for each version
   cat <<'EOF' >$jq_file
@@ -88,7 +86,7 @@ function validate_templates() {
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
   local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
-  local skip_filenames="crd,knative-services,constraint"
+  local skip_filenames="crd,constraint"
   local tmp_out=$(mktemp -u)
   echo "Validating resources"
   [ -z "$VERBOSE" ] && quiet='--quiet'
