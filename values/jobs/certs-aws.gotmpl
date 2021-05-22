@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values -}}
+{{- $v := .Values -}}
 {{- $c := $v.charts -}}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}

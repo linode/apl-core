@@ -27,12 +27,21 @@ stringData:
     {{- $_ := set .Values.gitea.config "security" dict -}}
     {{- end -}}
 
-    {{- /* security default settings */ -}}   
+    {{- if not .Values.gitea.config.repository -}}
+    {{- $_ := set .Values.gitea.config "repository" dict -}}
+    {{- end -}}
+
+    {{- /* repository default settings */ -}}
+    {{- if not .Values.gitea.config.repository.ROOT -}}
+    {{- $_ := set .Values.gitea.config.repository "ROOT" "/data/git/gitea-repositories" -}}
+    {{- end -}}
+
+    {{- /* security default settings */ -}}
     {{- if not .Values.gitea.config.security.INSTALL_LOCK -}}
     {{- $_ := set .Values.gitea.config.security "INSTALL_LOCK" "true" -}}
     {{- end -}}
 
-    {{- /* server default settings */ -}}   
+    {{- /* server default settings */ -}}
     {{- if not (hasKey .Values.gitea.config.server "HTTP_PORT") -}}
     {{- $_ := set .Values.gitea.config.server "HTTP_PORT" .Values.service.http.port -}}
     {{- end -}}
@@ -64,7 +73,16 @@ stringData:
     {{- $_ := set .Values.gitea.config.server "SSH_PORT" .Values.service.ssh.port -}}
     {{- end -}}
     {{- if not (hasKey .Values.gitea.config.server "SSH_LISTEN_PORT") -}}
+    {{- if not .Values.image.rootless -}}
     {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" .Values.gitea.config.server.SSH_PORT -}}
+    {{- else -}}
+    {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" "2222" -}}
+    {{- end -}}
+    {{- end -}}
+    {{- if not (hasKey .Values.gitea.config.server "START_SSH_SERVER") -}}
+    {{- if .Values.image.rootless -}}
+    {{- $_ := set .Values.gitea.config.server "START_SSH_SERVER" "true" -}}
+    {{- end -}}
     {{- end -}}
     {{- if not (hasKey .Values.gitea.config.server "APP_DATA_PATH") -}}
     {{- $_ := set .Values.gitea.config.server "APP_DATA_PATH" "/data" -}}
@@ -80,7 +98,7 @@ stringData:
 
     {{- /* database default settings */ -}}
     {{- if .Values.gitea.database.builtIn.postgresql.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "postgres" -}} 
+    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "postgres" -}}
     {{- if not (.Values.gitea.config.database.HOST) -}}
     {{- $_ := set .Values.gitea.config.database "HOST"      (include "postgresql.dns" .) -}}
     {{- end -}}
@@ -88,7 +106,7 @@ stringData:
     {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.postgresqlUsername -}}
     {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.postgresqlPassword -}}
     {{ else if .Values.gitea.database.builtIn.mysql.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}} 
+    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
     {{- if not (.Values.gitea.config.database.HOST) -}}
     {{- $_ := set .Values.gitea.config.database "HOST"      (include "mysql.dns" .) -}}
     {{- end -}}
@@ -113,7 +131,7 @@ stringData:
     {{- $_ := set .Values.gitea.config.cache "HOST" (include "memcached.dns" .) -}}
     {{- end -}}
     {{- end -}}
-    
+
     {{- /* autogenerate app.ini */ -}}
     {{- range $key, $value := .Values.gitea.config  }}
     {{- if kindIs "map" $value }}

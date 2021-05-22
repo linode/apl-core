@@ -5,6 +5,8 @@ set -e
 . bin/common.sh
 . bin/common-modules.sh
 
+run_crypt
+
 readonly k8s_resources_path="/tmp/otomi/templates"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly policies_path="policies"

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $p := $v.charts | get "prometheus-operator" dict }}
@@ -120,7 +120,6 @@ grafana:
       requests:
         cpu: 100m
         memory: 128Mi
-
   resources:
     {{- with $p | get "resources.grafana" nil }}
       {{- toYaml . | nindent 4 }}

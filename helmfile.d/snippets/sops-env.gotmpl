@@ -8,11 +8,11 @@ AZURE_ENVIRONMENT: {{ . | get "environment" "AzurePublicCloud" }}
 {{- with . | get "aws" nil }}
 AWS_ACCESS_KEY_ID: {{ .accessKey }}
 AWS_SECRET_ACCESS_KEY: {{ .secretKey }}
-AWS_REGION: {{ .region }}
+AWS_REGION: {{ . | get "region" nil }}
 {{- end }}  
 {{- with . | get "google" nil }}
 GOOGLE_PROJECT: {{ .project }}
-GOOGLE_REGION: {{ .region }}
+GOOGLE_REGION: {{ . | get "region" nil }}
 GCLOUD_SERVICE_KEY: '{{ .accountJson | replace "\n" "" }}'
 {{- end }}
 {{- with . | get "vault" nil }}

@@ -1,29 +1,38 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $o := $v.oidc }}
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
-
-{{- $giteadomain := printf "gitea.%s" $v.dns.domain}}
+{{- $giteaDomain := printf "gitea.%s" $v.dns.domain }}
+{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $skipVerify := eq $stage "staging" }}
+{{- $rnd := randAlpha 32 }}
 
 nameOverride: gitea
 fullnameOverride: gitea
 # clusterDomain: {{ $v.dns.domain }}
 
 gitea:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   admin:
-    username: otomi
-    password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+    username: otomi-admin
+    password: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
   config:
-    server:
-      DOMAIN: {{ $giteadomain }}
-      ROOT_URL: "https://{{ $giteadomain }}/"
+    log:
+      LEVEL: trace
     openid:
       ENABLE_OPENID_SIGNIN: true
+    repository:
+      DEFAULT_BRANCH: main
+    {{- with $g | get "config" nil }}
+      {{- toYaml . | nindent 4}}
+    {{- end }}
+    server:
+      DOMAIN: {{ $giteaDomain }}
+      ROOT_URL: "https://{{ $giteaDomain }}/"
+      DISABLE_SSH: true
+    
   metrics:
     enabled: true
     serviceMonitor:
@@ -42,9 +51,17 @@ persistence:
 postgresql:
   persistence:
     size: 1Gi
+  global:
+    postgresql:
+      postgresqlPassword: {{ $g | get "postgresqlPassword" $rnd }}
+      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" $rnd }}
+
+extraRootCA: |
+  {{- $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.letsencryptCA | nindent 2 }}
 
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image
-# securityContext:
-#   runAsNonRoot: true
-#   runAsUser: 1000
-#   runAsGroup: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000

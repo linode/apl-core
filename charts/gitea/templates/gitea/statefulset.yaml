@@ -9,6 +9,9 @@ spec:
   selector:
     matchLabels:
       {{- include "gitea.selectorLabels" . | nindent 6 }}
+      {{- if .Values.statefulset.labels }}
+      {{- toYaml .Values.statefulset.labels | nindent 6 }}
+      {{- end }}
   serviceName: {{ include "gitea.fullname" . }}
   template:
     metadata:
@@ -19,8 +22,13 @@ spec:
         {{- with .Values.gitea.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        policy.otomi.io/ignore.init-ca: psp-allowed-users
+        policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
       labels:
-        {{- include "gitea.selectorLabels" . | nindent 8 }}
+        {{- include "gitea.labels" . | nindent 8 }}
+        {{- if .Values.statefulset.labels }}
+        {{- toYaml .Values.statefulset.labels | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -29,14 +37,58 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
+      {{- if ne .Values.extraRootCA "" }}
+        - name: init-ca
+          image: "{{ include "gitea.rootimage" . }}"
+          command: ["bash"]
+          args:
+            - '-c'
+            - |
+              extraRootCA="/etc/ssl/certs/extra-root-ca.pem"
+              rootCA="/etc/ssl/certs/ca-certificates.crt"
+              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
+              ls -als $rootCA
+              cat $rootCA > $rootCAnew
+              cat $extraRootCA >> $rootCAnew
+              ls -als $rootCAnew
+          volumeMounts:
+          - name: extra-root-ca
+            mountPath: "/etc/ssl/certs/extra-root-ca.pem"
+            subPath: "extra-root-ca.pem"
+          - name: ca-new
+            mountPath: "/etc/ssl/certs-new"
+        - name: init-ca-finish
+          image: "{{ include "gitea.rootimage" . }}"
+          command: ["bash"]
+          args:
+            - '-c'
+            - |
+              rootCA="/etc/ssl/certs/ca-certificates.crt"
+              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
+              cat $rootCAnew > $rootCA
+              ls -als $rootCA
+          volumeMounts:
+          - name: ca-new
+            mountPath: "/etc/ssl/certs-new"
+          - name: ca
+            mountPath: "/etc/ssl/certs/"
+            subPath: "ca-certificates.crt"
+      {{- end }}
         - name: init
-          image: "{{ .Values.image.repository }}:{{ ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") }}"
+          image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/init_gitea.sh"]
           env:
-          {{- range .Values.statefulset.env }}
-          - name: {{ .name | quote | nospace }}
-            value: {{ .value | quote }}
-          {{- end }}
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
@@ -44,13 +96,18 @@ spec:
               mountPath: /etc/gitea/conf
             - name: data
               mountPath: /data
+            {{- if ne .Values.extraRootCA "" }}
+            - name: ca
+              mountPath: "/etc/ssl/certs/"
+              subPath: "ca-certificates.crt"
+            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") }}"
+          image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             # SSH Port values have to be set here as well for openssh configuration
@@ -58,9 +115,16 @@ spec:
               value: {{ .Values.gitea.config.server.SSH_LISTEN_PORT | quote }}
             - name: SSH_PORT
               value: {{ .Values.gitea.config.server.SSH_PORT | quote }}
-            {{- range .Values.statefulset.env }}
-            - name: {{ .name | quote | nospace }}
-              value: {{ .value | quote }}
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
           ports:
             - name: ssh
@@ -71,28 +135,59 @@ spec:
             - name: profiler
               containerPort: 6060
             {{- end }}
+          {{- if .Values.gitea.livenessProbe.enabled }}
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 200
-            timeoutSeconds: 1
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 10
+            initialDelaySeconds: {{ .Values.gitea.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.livenessProbe.failureThreshold }}
+          {{- else if .Values.gitea.customLivenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.gitea.customLivenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.gitea.readinessProbe.enabled }}
           readinessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.gitea.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.readinessProbe.failureThreshold }}
+          {{- else if .Values.gitea.customReadinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.gitea.customReadinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.gitea.startupProbe.enabled }}
+          startupProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: {{ .Values.gitea.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gitea.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gitea.startupProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.gitea.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.gitea.startupProbe.failureThreshold }}
+          {{- else if .Values.gitea.customStartupProbe }}
+          startupProbe:
+            {{- toYaml .Values.gitea.customStartupProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
+            - name: temp
+              mountPath: /tmp/gitea
             - name: data
               mountPath: /data
+            {{- if ne .Values.extraRootCA "" }}
+            - name: ca
+              mountPath: "/etc/ssl/certs/"
+              subPath: "ca-certificates.crt"
+            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -118,6 +213,17 @@ spec:
             secretName: {{ include "gitea.fullname" . }}
         {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 8 }}
+        {{- end }}
+        - name: temp
+          emptyDir: {}
+        {{- if ne .Values.extraRootCA "" }}
+        - name: extra-root-ca
+          secret:
+            secretName: {{ include "gitea.fullname" . }}-extra-root-ca
+        - name: ca
+          emptyDir: {}
+        - name: ca-new
+          emptyDir: {}
         {{- end }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data

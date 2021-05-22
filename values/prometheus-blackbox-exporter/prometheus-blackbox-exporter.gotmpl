@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $pbe := $v.charts | get "prometheus-blackbox-exporter" dict }}
 
 cluster:

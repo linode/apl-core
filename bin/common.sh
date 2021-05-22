@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-# . bin/colors.sh
+. bin/colors.sh
 . bin/aliases
 shopt -s expand_aliases
 
@@ -76,11 +76,11 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
         shift 2
         ;;
       -f | --file)
-        FILE_OPT=$2
+        FILE_OPT="$FILE_OPT -f $2"
         shift 2
         ;;
       -l | --label)
-        LABEL_OPT=$2
+        LABEL_OPT="$LABEL_OPT -l $2"
         shift 2
         ;;
       --)
@@ -101,7 +101,11 @@ function _rind() {
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
+      -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
       -e IN_DOCKER='1' \
+      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
+      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
+      -w ${ENV_DIR} \
       $otomi_tools_image $cmd "$@"
     return $?
   elif command -v $cmd &>/dev/null; then
@@ -121,18 +125,26 @@ function yq() {
   return $?
 }
 
+all_values=
+function yqr() {
+  [ -z "$all_values" ] && all_values=$(hf_values)
+  local ret=$(echo "$all_values" | yq r - "$@")
+  echo $ret
+  [ -z "$ret" ] && return 1
+}
+
 function jq() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
 }
 
 function get_k8s_version() {
-  yq r $clusters_file "cluster.k8sVersion"
+  yqr "cluster.k8sVersion"
 }
 
 function otomi_image_tag() {
   local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file "cluster.otomiVersion")
+  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file cluster.otomiVersion)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }
@@ -148,16 +160,38 @@ function rotate() {
   cd - >/dev/null
 }
 
+function pushd() {
+  command pushd "$@" >/dev/null
+}
+
+function popd() {
+  command popd "$@" >/dev/null
+}
+
 function crypt() {
-  cd $ENV_DIR/env >/dev/null
-  local out='/dev/stdout'
-  [ -n "$QUIET" ] && out='/dev/null'
-  if [ "$command" = 'encrypt' ]; then
-    find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
-  else
-    find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+  if [ ! -f "$ENV_DIR/.sops.yaml" ]; then
+    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping decryption"
+    return 0
   fi
-  cd - >/dev/null
+  pushd $ENV_DIR/env
+  command=${1:-'decrypt'}
+  shift
+  files="$*"
+  local out='/dev/stdout'
+  [ -z "$VERBOSE" ] && out='/dev/null'
+  if [ -n "$files" ]; then
+    for f in $files; do
+      echo "${command}ing $f" >$out
+      drun "helm secrets enc ./env/$f" >$out
+    done
+  else
+    if [ "$command" = 'encrypt' ]; then
+      find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
+    else
+      find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+    fi
+  fi
+  popd
 }
 
 function run_crypt() {
@@ -172,7 +206,7 @@ function run_crypt() {
 }
 
 function hf() {
-  helmfile $(echo ${FILE_OPT:+"-f $FILE_OPT"} ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) $LOG_LEVEL "$@"
+  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@"
 }
 
 function hf_values() {
@@ -183,6 +217,7 @@ function hf_values() {
 }
 
 function hf_template() {
+  QUIET=1
   if [ -n "$1" ]; then
     local out_dir="$1"
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null

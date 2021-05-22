@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $t := $v.teamConfig }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
@@ -76,7 +76,7 @@ resources:
       name: default
       namespace: team-admin
   {{- if $v | get "otomi.pullSecret" nil }}
-  {{- range $ns := list "drone-pipelines" "shared" "maintenance" }}
+  {{- range $ns := list "drone-pipelines" "otomi" "maintenance" }}
   - apiVersion: v1
     kind: Secret
     metadata:

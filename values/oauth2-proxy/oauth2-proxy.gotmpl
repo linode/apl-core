@@ -1,7 +1,8 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $oauth2 := $v.charts | get "oauth2-proxy" dict }}
+{{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
 {{- $o := $v.oidc }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
@@ -62,6 +63,7 @@ extraArgs:
   scope: {{ $o | get "scope" "openid email profile" }}
   session-store-type: redis
   redis-connection-url: redis://oauth2-proxy-redis-master
+  redis-password: {{ $r | get "password" "str1cli4u" }}
   redirect-url: https://auth.{{ $v.dns.domain }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $m := $v.charts | get "metrics-server" dict }}
 
 extraArgs:

@@ -22,8 +22,37 @@
                 key: {{ .Values.sourceControl.gitlab.clientSecretKey }}
 {{- end -}}
 {{- if eq .Values.sourceControl.provider "gitea" -}}
+          - name: DRONE_GITEA_CLIENT_ID
+            {{- if .Values.sourceControl.gitea.clientID }}
+            value: {{ .Values.sourceControl.gitea.clientID }}
+            {{- else }}
+            valueFrom:
+              secretKeyRef:
+                name: drone-source-control
+                key: clientId
+            {{- end }}
           - name: DRONE_GITEA_SERVER
+            {{- if .Values.sourceControl.gitea.server }}
             value: {{ .Values.sourceControl.gitea.server }}
+            {{- else }}
+            value: https://gitea.{{ .Values.clusterDomain }}
+            {{- end }}
+          {{- if not (eq .Values.sourceControl.provider "bitbucketServer") }}
+          - name: DRONE_GIT_USERNAME
+            value: {{ .Values.sourceControl.username | default "otomi-admin" }}
+          - name: DRONE_GIT_USERNAME
+            value: {{ .Values.sourceControl.password | default "bladibla" }}
+          {{- end }}
+          - name: DRONE_GITEA_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.sourceControl.gitea.clientSecretKey }}
+                name: {{ template "drone.sourceControlSecret" . }}
+                key: {{ .Values.sourceControl.gitea.clientSecretKey }}
+                {{- else }}
+                name: drone-source-control
+                key: clientSecret
+                {{- end }}
 {{- end -}}
 {{- if eq .Values.sourceControl.provider "gogs" -}}
           - name: DRONE_GOGS_SERVER
@@ -72,9 +101,7 @@ Check if a valid source control provider has been set
       true
     {{- end -}}
   {{- else if eq .Values.sourceControl.provider "gitea" -}}
-    {{- if .Values.sourceControl.gitea.server -}}
       true
-    {{- end -}}
   {{- else if eq .Values.sourceControl.provider "gogs" -}}
     {{- if .Values.sourceControl.gogs.server -}}
       true

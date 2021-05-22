@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $httpbin := $v | get "charts.hello" dict }}
 
 nameOverride: hello

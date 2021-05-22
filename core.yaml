@@ -95,7 +95,7 @@ services:
     ownHost: true
     isShared: true
     port: 3000
-    paths: [/api/, /otomi/values]
+    paths: [/api/, /otomi/values, /otomi-admin/values, /login/oauth]
     forwardPath: true
     isPublic: true
   - name: gitea
@@ -105,6 +105,10 @@ services:
     isShared: true
     port: 3000
     hide: true
+    authz:
+      workload:
+        app: gitea
+        component: server
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -174,7 +178,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: kiali
+    namespace: istio-apps
   - name: tracing
     svc: tracing
     forwardPath: true
@@ -195,7 +199,7 @@ services:
     ownHost: true
     hide: true
     isPublic: true
-    paths: [/hook]
+    paths: [/hook, /api/user, /api/repo]
     forwardPath: true
   - name: vault
     namespace: vault

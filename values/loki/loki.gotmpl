@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values -}}
+{{- $v := .Values -}}
 {{- $l := $v.charts | get "loki" dict }}
 {{- $teamNames := "" }}
 {{- range $name, $config := $v.teamConfig.teams }}

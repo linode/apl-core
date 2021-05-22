@@ -1,0 +1,21 @@
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+{{- $g := $c | get "gitea" dict }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+
+type: CronJob
+name: gitea-add-users
+enabled: true
+env:
+  GITEA_URL: https://gitea.{{ $v.dns.domain }}
+  GITEA_REPO: values
+secret:
+  GITEA_PASSWORD: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
+schedule: "0/5 * * * *" # every 5 minutes
+image:
+  repository: otomi/tasks
+  tag: gitea-drone
+  pullPolicy: Always
+script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea-add-users
+runPolicy: Always

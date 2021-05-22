@@ -4,12 +4,15 @@
 
 replicaCount: 1
 
+extraRootCA: ""
+
 clusterDomain: cluster.local
 
 image:
   repository: gitea/gitea
-  tag: 1.13.4
-  pullPolicy: Always
+  tag: 1.14.2
+  pullPolicy: IfNotPresent
+  rootless: true
 
 imagePullSecrets: []
 
@@ -73,6 +76,7 @@ statefulset:
     # - name: VARIABLE
     #   value: my-value
   terminationGracePeriodSeconds: 60
+  labels: {}
 
 persistence:
   enabled: true
@@ -171,6 +175,52 @@ gitea:
   cache:
     builtIn:
       enabled: true
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 200
+    timeoutSeconds: 1
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    timeoutSeconds: 1
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10
+
+  # customLivenessProbe:
+  #   httpGet:
+  #     path: /user/login
+  #     port: http
+  #   initialDelaySeconds: 60
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   failureThreshold: 10
+  # customReadinessProbe:
+  #   httpGet:
+  #     path: /user/login
+  #     port: http
+  #   initialDelaySeconds: 5
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   failureThreshold: 3
+  # customStartupProbe:
+  #   httpGet:
+  #     path: /user/login
+  #     port: http
+  #   initialDelaySeconds: 60
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   failureThreshold: 10
 
 memcached:
   service:

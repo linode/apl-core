@@ -46,7 +46,7 @@ receivers:
   - name: default
 {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "dev-mon-otomi") }}"
+      - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "dev-mon") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
@@ -65,7 +65,7 @@ receivers:
   - name: critical
 {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "dev-mon-otomi-crit") }}"
+      - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "dev-mon-crit") }}"
         {{- .slackTpl | nindent 8 }}
 {{- end }}
 {{- if has "msteams" $receivers }}
@@ -87,7 +87,7 @@ receivers:
     # sending criticals also to home to be aware of issues
   {{- if has "slack" $receivers  }}
     slack_configs:
-      - channel: "#{{ .root | get "home.slack.channelCrit" "dev-mon-otomi-crit" }}"
+      - channel: "#{{ .root | get "home.slack.channelCrit" "dev-mon-crit" }}"
         {{- .slackTpl | nindent 8 }}
   {{- end }}
   {{- if has "msteams" $receivers  }}

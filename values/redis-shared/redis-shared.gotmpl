@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $r := $v.charts | get "redis-shared" dict }}
 
 cluster:

@@ -28,7 +28,7 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         domain: {{ $domain }}
-        clusterDomain: {{ $v.dns.domain }}
+        clusterDomainSuffix: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         knative:
           enabled: true

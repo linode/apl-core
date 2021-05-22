@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak | default dict }}
+{{- $hasKeycloak := $k.enabled | default true }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 {{- $ := . }}
 {{- range $s := $v.services }}
@@ -8,7 +9,8 @@
 {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
 {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomain $v.domain))) }}
+{{- $kkMaster := printf "https://keycloak.%s/realms/master" $v.clusterDomainSuffix }}
+{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
 {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
 {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
@@ -33,8 +35,8 @@ spec:
       - uri:
           prefix: /logout-otomi
       redirect:
-        authority: auth.{{ $v.clusterDomain }}
-        uri: /oauth2/sign_out?rd=https://keycloak.{{ $v.clusterDomain }}/realms/master/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.clusterDomain }}
+        authority: auth.{{ $v.clusterDomainSuffix }}
+        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.clusterDomainSuffix }}
       # route:
       #   - destination:
       #       host: istio-ingressgateway.istio-system.svc.cluster.local
@@ -89,19 +91,24 @@ spec:
   selector:
     matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
-  {{- if $k.enabled }}
-    - issuer: https://keycloak.{{ $v.clusterDomain }}/realms/master
-      jwksUri: https://keycloak.{{ $v.clusterDomain }}/realms/master/protocol/openid-connect/certs
+  {{- if $hasKeycloak }}
+    - issuer: {{ $kkMaster }}
+      jwksUri: {{ $kkMaster }}/protocol/openid-connect/certs
       audiences:
         - {{ $k.idp.clientID }}
   {{- else }}
     - issuer: {{ $v.oidc.issuer }}
+      {{- if hasKey $v.oidc "jwks" }}
+      jwks: {{ $v.oidc.jwks }}
+      {{- else if hasKey $v.oidc "jwksUri" }}
+      jwksUri: {{ $v.oidc.jwksUri }}
+      {{- end }}
   {{- end }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
-{{- if $k.enabled }}
+{{- if $hasKeycloak }}
 {{- $realm := $k.realm | default "master" }}
-{{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.clusterDomain $realm }}
+{{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.clusterDomainSuffix $realm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:

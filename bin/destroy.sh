@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-set +e
+run_crypt
 
 k -n olm delete deploy --all
 

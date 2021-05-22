@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $a := $v.charts | get "cluster-autoscaler" dict }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler

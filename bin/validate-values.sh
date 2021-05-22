@@ -5,6 +5,8 @@ set -eo pipefail
 . bin/common.sh
 . bin/common-modules.sh
 
+run_crypt
+
 readonly k8s_resources_path="/tmp/otomi/values"
 readonly script_message="Values validation"
 

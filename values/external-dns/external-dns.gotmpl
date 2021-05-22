@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $externalDns := $v | get "charts.external-dns" }}
 {{- $dns := $v.dns }}
 sources:

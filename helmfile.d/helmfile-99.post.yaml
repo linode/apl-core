@@ -22,11 +22,12 @@ releases:
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
   - name: job-drone
-    installed: false # {{ $c | get "drone.enabled" false }}
+    installed: {{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
+      stage: post
     <<: *jobs
-  - name: job-gitea
+  - name: job-gitea-add-users
     installed: {{ $c | get "gitea.enabled" false }}
     labels:
       pkg: gitea

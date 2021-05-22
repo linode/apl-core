@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
@@ -8,9 +8,8 @@ name: gitea
 enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.dns.domain }}
-  GITEA_REPO: values
+  DRONE_URL: https://drone.{{ $v.dns.domain }}
 secret:
-  GITEA_USER: otomi
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
@@ -29,7 +28,7 @@ init:
     echo READY!
 image:
   repository: otomi/tasks
-  tag: v0.2.5
-  pullPolicy: IfNotPresent
+  tag: gitea-drone
+  pullPolicy: Always
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
 runPolicy: OnSpecChange
