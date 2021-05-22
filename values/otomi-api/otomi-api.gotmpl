@@ -64,7 +64,7 @@ tools:
   {{- if $v.sops.enabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" "v0.13.0" }}
+    tag: {{ $o | get "tools.image.tag" "v0.13.1" }}
     # pullPolicy: Always
     {{- with $o | get "resources.tools" nil }}
     resources:
