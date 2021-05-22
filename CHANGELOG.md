@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.13.0](https://github.com/redkubes/otomi-core/compare/v0.12.10...v0.13.0) (2021-05-22)
+
+
+### Features
+
+* create a separate configmap for init containers in jobs ([#408](https://github.com/redkubes/otomi-core/issues/408)) ([8bc0513](https://github.com/redkubes/otomi-core/commit/8bc0513fbaed978221dff309e23bd70c3c7d3924))
+* Gitea drone ([#409](https://github.com/redkubes/otomi-core/issues/409)) ([c013701](https://github.com/redkubes/otomi-core/commit/c01370130082e0c284b58e082cb1da11bb40f981))
+* single repo single cluster ([#404](https://github.com/redkubes/otomi-core/issues/404)) ([9362043](https://github.com/redkubes/otomi-core/commit/9362043381ffaa087af2ac8e0e42ef160f314ce8))
+
+
+### Bug Fixes
+
+* [#424](https://github.com/redkubes/otomi-core/issues/424) ([abc9248](https://github.com/redkubes/otomi-core/commit/abc92489b4094132eaf6340af9c5f4581e3c6b06))
+* add loadBalancerRG to nginx-ingeress in values-schema.yaml ([#421](https://github.com/redkubes/otomi-core/issues/421)) ([3558e7d](https://github.com/redkubes/otomi-core/commit/3558e7d9f3b1277ad11bc8d52f6fc80e9327ea6b))
+* added apps to schema to accomodate console ce mode ([e6f80a8](https://github.com/redkubes/otomi-core/commit/e6f80a86546ed176ab05fdbfaab113d300c059cf))
+* added missing cluster env to console ([ea47386](https://github.com/redkubes/otomi-core/commit/ea473865b24082aa83e9404eee2999a7e89ac361))
+* added more apps also to profiles ([a018804](https://github.com/redkubes/otomi-core/commit/a018804b30bc057c3999cd3e4f66ac0a8685c2d6))
+* autoscaling issues due to pdb conflict [ci skip] ([494f785](https://github.com/redkubes/otomi-core/commit/494f78596506834377758de9aeb5369e17dde745))
+* AWS env vars to drun and vault operator ([#415](https://github.com/redkubes/otomi-core/issues/415)) ([92b92c9](https://github.com/redkubes/otomi-core/commit/92b92c9ff67c60016679ce38bfd1d625b6236885))
+* crds issues ([b86903c](https://github.com/redkubes/otomi-core/commit/b86903c2de22e40c66a3f2e1224a3716f5c66143))
+* crds, policies ([6ea8a22](https://github.com/redkubes/otomi-core/commit/6ea8a22dbe63f1362089762108ae92a964c62537))
+* disabled policy checking in build for now ([e299758](https://github.com/redkubes/otomi-core/commit/e2997583ee305852856f449c5cd7df39fc97de74))
+* docker check ([2e64b19](https://github.com/redkubes/otomi-core/commit/2e64b194a1addd4fe58cb51818b173da43eb0708))
+* in azureMonitor you need to provide either both of dlientId and clientSecret together or non of them ([#422](https://github.com/redkubes/otomi-core/issues/422)) ([8e3ef5e](https://github.com/redkubes/otomi-core/commit/8e3ef5e745008251a63dbe1c280e94531c10f678))
+* konftest gen ([89902c9](https://github.com/redkubes/otomi-core/commit/89902c984d46ec094097d44b2c005f25c3272499))
+* konstraint gen, gatekeeper artifacts install, fix [#99](https://github.com/redkubes/otomi-core/issues/99) ([499cda2](https://github.com/redkubes/otomi-core/commit/499cda2100928c3cbe80d39ce2ab3b346876379c))
+* lint, dev channel, oauth2-proxy img update ([242a608](https://github.com/redkubes/otomi-core/commit/242a6089935f63dd36b31d9b5694f3bbbf5e6f5c))
+* liveness and readiness probe endpoints fixed for LightShip in otomi-api ([#417](https://github.com/redkubes/otomi-core/issues/417)) ([d400528](https://github.com/redkubes/otomi-core/commit/d40052829e41401b7f5468f77c313bc5a997c88b))
+* lm regression ([df31659](https://github.com/redkubes/otomi-core/commit/df316599533205dcac358de719ca2a3ec64ab66b))
+* many policy fixes, added example test, otomi cli unified ([8f4f5f6](https://github.com/redkubes/otomi-core/commit/8f4f5f6675104f587a6c8986dfa9ee5644ea9a5a))
+* nginx-ingress had wrong config ([65e6d81](https://github.com/redkubes/otomi-core/commit/65e6d814bb304b9415d38e0d723455390acca825))
+* pipeline referring to apply now ([53570ab](https://github.com/redkubes/otomi-core/commit/53570ab3210cad5a59835788616124f9bb4a2760))
+* prettified profile resources [ci skip] ([f7a2e83](https://github.com/redkubes/otomi-core/commit/f7a2e83e4efe22405aaf0558d07bc84abd933fbb))
+* provider in external-dns ([#413](https://github.com/redkubes/otomi-core/issues/413)) ([00fa352](https://github.com/redkubes/otomi-core/commit/00fa3528a90cd887b90958b74b2b32616d39792d))
+* reboots on azure needed with kured, fixes [#411](https://github.com/redkubes/otomi-core/issues/411) ([9629c19](https://github.com/redkubes/otomi-core/commit/9629c190864ac9c9a75ba3e3a126fb079ace0281))
+* refactor azureMonitor credentials ([#418](https://github.com/redkubes/otomi-core/issues/418)) ([4f30e9a](https://github.com/redkubes/otomi-core/commit/4f30e9a870e9da24ff0f1128d96faa9e605607b5))
+* schema and bootstrap ([cecf761](https://github.com/redkubes/otomi-core/commit/cecf76125dc892ab3f3072b067c5862f235aa268))
+* schema inconsistencies ([fa958f1](https://github.com/redkubes/otomi-core/commit/fa958f10c99de6e9113f79386d3e3e6a03e8237f))
+* tests ([e7a5cb4](https://github.com/redkubes/otomi-core/commit/e7a5cb4b7f79029efa70c45e14e261d0d0f73406))
+* turning back on the templates validation ([ab55553](https://github.com/redkubes/otomi-core/commit/ab55553a336e6bb5b4af8315408f0894d0c32cd6))
+
+
+### Others
+
+* **upgraded tools:** latest versions of the tooling ([2b0e28b](https://github.com/redkubes/otomi-core/commit/2b0e28b2055cda6b1dacf9329f075f842cb50753))
+
 ### [0.12.10](https://github.com/redkubes/otomi-core/compare/v0.12.9...v0.12.10) (2021-04-14)
 
 
