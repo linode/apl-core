@@ -16,6 +16,7 @@ readonly customer_name=$(customer_name)
 
 if [ "$receiver" = 'slack' ]; then
   key="url"
+  channel=$(yqr alerts.$receiver.channel | echo dev-mon)
 else
   key="lowPrio"
 fi
@@ -38,6 +39,7 @@ function template_drone_config() {
     -e "s|__WEBHOOK|${webhook}|g" \
     -e "s/__CUSTOMER/${customer_name}/g" \
     -e "s/__BRANCH/${branch}/g" \
+    -e "s/__CHANNEL/${channel}/g" \
     >$target
 }
 

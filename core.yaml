@@ -178,7 +178,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: kiali
+    namespace: istio-apps
   - name: tracing
     svc: tracing
     forwardPath: true
