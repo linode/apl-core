@@ -852,6 +852,9 @@ properties:
                 type: string
               username:
                 type: string
+          trace:
+            default: false
+            type: boolean
       external-dns:
         additionalProperties: false
         properties:
@@ -1642,6 +1645,10 @@ properties:
           - $ref: '#/definitions/azureCreds'
           - $ref: '#/definitions/googleCreds'
           - $ref: '#/definitions/vaultCreds'
+  letsencryptCA:
+    type: string
+  letsencryptRootCA:
+    type: string
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
