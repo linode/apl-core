@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
@@ -37,17 +37,21 @@ image:
 name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
-  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "default" }}
+  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
 secret:
   # DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
-  KEYCLOAK_REALM: master
+  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   IDP_ALIAS: {{ $k.idp.alias }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
+  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
+  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
+  IDP_OIDC_URL: {{ $v.oidc.issuer }}
   REDIRECT_URIS: '[
       "https://otomi.{{ $v.dns.domain }}",
       "https://auth.{{ $v.dns.domain }}/*",
@@ -60,17 +64,8 @@ secret:
       "https://harbor.{{ $v.dns.domain }}/*",
       "https://vault.{{ $v.dns.domain }}/*"
   ]'
-secret:
-  # DEBUG: '*'
-  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" "bladibla" }}
-  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
-  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   TENANT_ID: {{ $v.oidc.tenantID }}
   TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
   TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
-  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
-  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-  IDP_OIDC_URL: {{ $v.oidc.issuer }}
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange

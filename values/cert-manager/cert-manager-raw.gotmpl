@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $dns := $v.dns }}
 {{- $p := $dns.provider }}

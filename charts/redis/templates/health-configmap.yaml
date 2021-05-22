@@ -1,26 +1,36 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "redis.fullname" . }}-health
-  labels:
-    app: {{ template "redis.name" . }}
-    chart: {{ template "redis.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+  name: {{ printf "%s-health" (include "common.names.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 data:
   ping_readiness_local.sh: |-
-{{- if .Values.usePasswordFile }}
-    password_aux=`cat ${REDIS_PASSWORD_FILE}`
-    export REDIS_PASSWORD=$password_aux
-{{- end }}
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    export REDISCLI_AUTH="$REDIS_PASSWORD"
     response=$(
-      timeout -s 9 $1 \
+      timeout -s 3 $1 \
       redis-cli \
-{{- if .Values.usePassword }}
-        -a $REDIS_PASSWORD --no-auth-warning \
-{{- end }}
         -h localhost \
+{{- if .Values.tls.enabled }}
+        -p $REDIS_TLS_PORT \
+        --tls \
+        --cacert {{ template "redis.tlsCACert" . }} \
+        {{- if .Values.tls.authClients }}
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
+        {{- end }}
+{{- else }}
         -p $REDIS_PORT \
+{{- end }}
         ping
     )
     if [ "$response" != "PONG" ]; then
@@ -28,18 +38,25 @@ data:
       exit 1
     fi
   ping_liveness_local.sh: |-
-{{- if .Values.usePasswordFile }}
-    password_aux=`cat ${REDIS_PASSWORD_FILE}`
-    export REDIS_PASSWORD=$password_aux
-{{- end }}
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    export REDISCLI_AUTH="$REDIS_PASSWORD"
     response=$(
-      timeout -s 9 $1 \
+      timeout -s 3 $1 \
       redis-cli \
-{{- if .Values.usePassword }}
-        -a $REDIS_PASSWORD --no-auth-warning \
-{{- end }}
         -h localhost \
+{{- if .Values.tls.enabled }}
+        -p $REDIS_TLS_PORT \
+        --tls \
+        --cacert {{ template "redis.tlsCACert" . }} \
+        {{- if .Values.tls.authClients }}
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
+        {{- end }}
+{{- else }}
         -p $REDIS_PORT \
+{{- end }}
         ping
     )
     if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then
@@ -48,18 +65,25 @@ data:
     fi
 {{- if .Values.sentinel.enabled }}
   ping_sentinel.sh: |-
-{{- if .Values.usePasswordFile }}
-    password_aux=`cat ${REDIS_PASSWORD_FILE}`
-    export REDIS_PASSWORD=$password_aux
-{{- end }}
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    export REDISCLI_AUTH="$REDIS_PASSWORD"
     response=$(
-      timeout -s 9 $1 \
+      timeout -s 3 $1 \
       redis-cli \
-{{- if .Values.usePassword }}
-        -a $REDIS_PASSWORD --no-auth-warning \
-{{- end }}
         -h localhost \
+{{- if .Values.tls.enabled }}
+        -p $REDIS_SENTINEL_TLS_PORT_NUMBER \
+        --tls \
+        --cacert {{ template "redis.tlsCACert" . }} \
+        {{- if .Values.tls.authClients }}
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
+        {{- end }}
+{{- else }}
         -p $REDIS_SENTINEL_PORT \
+{{- end }}
         ping
     )
     if [ "$response" != "PONG" ]; then
@@ -83,18 +107,23 @@ data:
     }
 {{- end }}
   ping_readiness_master.sh: |-
-{{- if .Values.usePasswordFile }}
-    password_aux=`cat ${REDIS_MASTER_PASSWORD_FILE}`
-    export REDIS_MASTER_PASSWORD=$password_aux
-{{- end }}
+    #!/bin/bash
+
+    [[ -f $REDIS_MASTER_PASSWORD_FILE ]] && export REDIS_MASTER_PASSWORD="$(< "${REDIS_MASTER_PASSWORD_FILE}")"
+    export REDISCLI_AUTH="$REDIS_MASTER_PASSWORD"
     response=$(
-      timeout -s 9 $1 \
+      timeout -s 3 $1 \
       redis-cli \
-{{- if .Values.usePassword }}
-        -a $REDIS_MASTER_PASSWORD --no-auth-warning \
-{{- end }}
         -h $REDIS_MASTER_HOST \
         -p $REDIS_MASTER_PORT_NUMBER \
+{{- if .Values.tls.enabled }}
+        --tls \
+        --cacert {{ template "redis.tlsCACert" . }} \
+        {{- if .Values.tls.authClients }}
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
+        {{- end }}
+{{- end }}
         ping
     )
     if [ "$response" != "PONG" ]; then
@@ -102,18 +131,23 @@ data:
       exit 1
     fi
   ping_liveness_master.sh: |-
-{{- if .Values.usePasswordFile }}
-    password_aux=`cat ${REDIS_MASTER_PASSWORD_FILE}`
-    export REDIS_MASTER_PASSWORD=$password_aux
-{{- end }}
+    #!/bin/bash
+
+    [[ -f $REDIS_MASTER_PASSWORD_FILE ]] && export REDIS_MASTER_PASSWORD="$(< "${REDIS_MASTER_PASSWORD_FILE}")"
+    export REDISCLI_AUTH="$REDIS_MASTER_PASSWORD"
     response=$(
-      timeout -s 9 $1 \
+      timeout -s 3 $1 \
       redis-cli \
-{{- if .Values.usePassword }}
-        -a $REDIS_MASTER_PASSWORD --no-auth-warning \
-{{- end }}
         -h $REDIS_MASTER_HOST \
         -p $REDIS_MASTER_PORT_NUMBER \
+{{- if .Values.tls.enabled }}
+        --tls \
+        --cacert {{ template "redis.tlsCACert" . }} \
+        {{- if .Values.tls.authClients }}
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
+        {{- end }}
+{{- end }}
         ping
     )
     if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then

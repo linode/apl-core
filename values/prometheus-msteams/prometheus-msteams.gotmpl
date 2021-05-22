@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $ms := $v | get "charts.prometheus-operator.alertmanager.msteams" }}
 replicaCount: 1
 image:

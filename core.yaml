@@ -104,6 +104,10 @@ services:
     isShared: true
     port: 3000
     hide: true
+    authz:
+      workload:
+        app: gitea
+        component: server
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $k := $v | get "charts.keycloak" dict }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v | get "charts.vault" dict }}

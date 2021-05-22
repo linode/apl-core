@@ -1,13 +1,14 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $o := $v.oidc }}
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
-{{- $giteadomain := printf "gitea.%s" $v.dns.domain }}
+{{- $giteaDomain := printf "gitea.%s" $v.dns.domain }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $skipVerify := eq $stage "staging" }}
+{{- $rnd := randAlpha 32 }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -16,13 +17,10 @@ fullnameOverride: gitea
 gitea:
   admin:
     username: otomi-admin
-    password: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+    password: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
   config:
     log:
       LEVEL: trace
-    server:
-      DOMAIN: {{ $giteadomain }}
-      ROOT_URL: "https://{{ $giteadomain }}/"
     openid:
       ENABLE_OPENID_SIGNIN: true
     repository:
@@ -30,6 +28,10 @@ gitea:
     {{- with $g | get "config" nil }}
       {{- toYaml . | nindent 4}}
     {{- end }}
+    server:
+      DOMAIN: {{ $giteaDomain }}
+      ROOT_URL: "https://{{ $giteaDomain }}/"
+      DISABLE_SSH: true
     
   metrics:
     enabled: true
@@ -49,9 +51,13 @@ persistence:
 postgresql:
   persistence:
     size: 1Gi
+  global:
+    postgresql:
+      postgresqlPassword: {{ $g | get "postgresqlPassword" $rnd }}
+      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" $rnd }}
 
-certManagerStage: {{ $stage }}
-letsencryptCA: |
+extraRootCA: |
+  {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}
 
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image

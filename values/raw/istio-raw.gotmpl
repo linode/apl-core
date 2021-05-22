@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 
 resources:
 {{- if $v | get "charts.istio.egressGateway.enabled" false }}

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $promtail := $v.charts | get "promtail" dict }}
 {{- $t := $v.teamConfig }}
 

@@ -1,11 +1,14 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
 
 cluster:
   enabled: {{ $r | get "cluster.enabled" false }}
 persistence:
   size: 1Gi
-usePassword: false
+
+architecture: {{ $r | get "architecture" "standalone" }}
+auth:
+  password: {{ $r | get "password" "str1cli4u" }}
 
 sentinel:
   podAnnotations:

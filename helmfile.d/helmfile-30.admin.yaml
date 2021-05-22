@@ -14,7 +14,7 @@ releases:
       stage: post
     <<: *default
   - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "github") "github") }}
+    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "gitea") "github") }}
     namespace: team-admin
     labels:
       pkg: drone

@@ -37,24 +37,24 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
-      {{- if eq .Values.certManagerStage "staging" }}
+      {{- if ne .Values.extraRootCA "" }}
         - name: init-ca
           image: "{{ include "gitea.rootimage" . }}"
           command: ["bash"]
           args:
             - '-c'
             - |
-              letsencryptCA="/etc/ssl/certs/letsencrypt-staging.pem"
+              extraRootCA="/etc/ssl/certs/extra-root-ca.pem"
               rootCA="/etc/ssl/certs/ca-certificates.crt"
               rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
               ls -als $rootCA
               cat $rootCA > $rootCAnew
-              cat $letsencryptCA >> $rootCAnew
+              cat $extraRootCA >> $rootCAnew
               ls -als $rootCAnew
           volumeMounts:
-          - name: letsencrypt-staging-ca
-            mountPath: "/etc/ssl/certs/letsencrypt-staging.pem"
-            subPath: "letsencrypt-staging.pem"
+          - name: extra-root-ca
+            mountPath: "/etc/ssl/certs/extra-root-ca.pem"
+            subPath: "extra-root-ca.pem"
           - name: ca-new
             mountPath: "/etc/ssl/certs-new"
         - name: init-ca-finish
@@ -96,7 +96,7 @@ spec:
               mountPath: /etc/gitea/conf
             - name: data
               mountPath: /data
-            {{- if eq .Values.certManagerStage "staging" }}
+            {{- if ne .Values.extraRootCA "" }}
             - name: ca
               mountPath: "/etc/ssl/certs/"
               subPath: "ca-certificates.crt"
@@ -183,7 +183,7 @@ spec:
               mountPath: /tmp/gitea
             - name: data
               mountPath: /data
-            {{- if eq .Values.certManagerStage "staging" }}
+            {{- if ne .Values.extraRootCA "" }}
             - name: ca
               mountPath: "/etc/ssl/certs/"
               subPath: "ca-certificates.crt"
@@ -216,10 +216,10 @@ spec:
         {{- end }}
         - name: temp
           emptyDir: {}
-        {{- if eq .Values.certManagerStage "staging" }}
-        - name: letsencrypt-staging-ca
-          configMap:
-            name: letsencrypt-staging-ca
+        {{- if ne .Values.extraRootCA "" }}
+        - name: extra-root-ca
+          secret:
+            secretName: {{ include "gitea.fullname" . }}-extra-root-ca
         - name: ca
           emptyDir: {}
         - name: ca-new

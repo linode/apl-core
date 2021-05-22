@@ -24,7 +24,7 @@ releases:
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $v.dns.domain  }}
-        clusterDomain: {{ $v.dns.domain }}
+        clusterDomainSuffix: {{ $v.dns.domain }}
         certStage: {{ $cm.stage }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null

@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $p := $v.charts | get "prometheus-operator" dict }}

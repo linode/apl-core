@@ -1,10 +1,14 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-api" dict }}
+{{- $g := $v.charts | get "gitea" dict }}
+{{- $cm := $v.charts | get "cert-manager" dict }}
+{{- $hasGitea := $g | get "enabled" true }}
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
 
 replicaCount: 1
 
@@ -20,13 +24,19 @@ image:
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 secrets:
+  {{- if $hasGitea }}
+  GIT_USER: otomi-admin
+  GIT_EMAIL: not@us.ed
+  GIT_PASSWORD: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+  {{- else }}
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
+  {{- end }}
   {{- $sopsEnv | nindent 2 }}
   
 env:
-  # DEBUG: '*'
+  DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o.git | get "branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
@@ -40,6 +50,9 @@ env:
   {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
   NO_AUTHZ: true
   {{- end }}
+  {{- if $skipVerify }}
+  NODE_TLS_REJECT_UNAUTHORIZED: '0'
+  {{- end }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -51,7 +64,7 @@ tools:
   {{- if $v.sops.enabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" "0.12.2" }}
+    tag: {{ $o | get "tools.image.tag" "v0.12.9" }}
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     {{- with $o | get "resources.tools" nil }}
     resources:

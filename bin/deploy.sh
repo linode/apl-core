@@ -9,9 +9,9 @@ hf -f helmfile.tpl/helmfile-init.yaml template | kubectl apply -f -
 kubectl apply -f charts/prometheus-operator/crds
 
 # helm charts after
-hf apply --skip-deps -l stage!=post
+hf -l stage!=post apply --skip-deps
 
 # Post deploy tasks
 bin/gitea-push.sh
 
-hf apply --skip-deps -l stage=post
+hf -l stage=post apply --skip-deps

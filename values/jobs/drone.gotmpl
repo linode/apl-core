@@ -1,6 +1,8 @@
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 {{- $d := $c | get "drone" dict }}
+{{- $g := $v.charts | get "gitea" dict }}
+{{- $hasGitea := $g | get "enabled" true }}
 {{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
@@ -12,16 +14,22 @@ type: Job
 enabled: true
 description: Configure Drone to use the right pipeline file
 image:
-  repository: "otomi/tasks"
-  tag: "drone"
-  pullPolicy: "Always"
+  repository: otomi/tasks
+  tag: gitea-drone
+  pullPolicy: Always
 name: drone
 secret:
   DRONE_TOKEN: {{ $d | get "adminToken" }}
 env:
-  DRONE_CONFIG_PATH: ".drone.yml"
+  DEBUG: '*'
+  DRONE_CONFIG_PATH: .drone.yml
+  {{- if $hasGitea }}
+  DRONE_OWNER: "otomi-admin"
+  DRONE_REPO: "values"
+  {{- else }}
   DRONE_OWNER: {{ $d | get "owner" }}
   DRONE_REPO: {{ $d | get "repo" }}
+  {{- end }}
   DRONE_URL: http://drone.team-admin
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:drone
 runPolicy: OnSpecChange

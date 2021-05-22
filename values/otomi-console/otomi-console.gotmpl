@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values -}}
+{{- $v := .Values -}}
 {{- $c := $v.cluster -}}
 {{- $o := $v.charts | get "otomi-console" dict -}}
 {{- $core := readFile "../../core.yaml" | fromYaml -}}
@@ -39,7 +39,7 @@ resources:
 image:
   registry: docker.io
   repository: otomi/console
-  tag: {{ $o | get "image.tag" "master" }}
+  tag: {{ $o | get "image.tag" "v0.4.43" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 env:

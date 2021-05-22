@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 
@@ -53,7 +53,7 @@ keycloak:
       cp -Rv /themes/* /opt/jboss/keycloak/themes/
   extraInitContainers:
     - name: keycloak-otomi-branding
-      image: otomi/console:v0.4.37
+      image: otomi/console:v0.4.43
       imagePullPolicy: IfNotPresent
       securityContext:
         runAsUser: 1000
@@ -99,9 +99,7 @@ postgresql:
     enabled: true
     fsGroup: 1001
     runAsUser: 1001
-  postgresqlUsername: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
-  postgresqlPassword: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
-  postgresqlDatabase: {{ $k | get "postgresql.postgresqlUsername" "keycloak" }}
+  postgresqlPassword: {{ $k | get "postgresqlPassword" (randAlpha 32) }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:

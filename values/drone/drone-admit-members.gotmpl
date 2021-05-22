@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $d := $v.charts | get "drone" dict }}
 {{- $host := printf "drone.%s" $v.dns.domain }}
 

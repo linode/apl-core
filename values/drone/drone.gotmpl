@@ -1,6 +1,12 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $d := $v.charts | get "drone" dict }}
+{{- $cm := $v.charts | get "cert-manager" dict }}
+{{- $g := $v.charts | get "gitea" dict }}
+{{- $hasGitea := $g | get "enabled" true }}
+{{- $provider := $d | get "sourceControl.provider" ($hasGitea | ternary "gitea" nil) }}
+{{- $hasStagingCerts := eq ($cm | get "stage" "production") "staging" }}
 {{- $debug := $d | get "debug" false }}
+{{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.dns.domain }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
@@ -16,14 +22,20 @@ images:
 nameOverride: drone
 fullnameOverride: drone
 sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
-sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
+sourceControl:
+{{- with $d | get "sourceControl" nil }}
+{{- . | toYaml | nindent 2 }}
+{{- else }}
+  secret: drone-source-control
+  provider: gitea
+{{- end }}
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users
   host: {{ $host }}
   protocol: https
-  adminUser: {{ $d.adminUser }}
-  adminToken: {{ $d | get "adminToken" nil }}
+  adminUser: {{ $d | get "adminUser" "otomi-admin" }}
+  adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla")) }}
   dind:
     enabled: false
   resources:
@@ -39,7 +51,7 @@ server:
     {{- end }}
   env:
     DRONE_LOGS_DEBUG: {{ $debug }}
-    DRONE_LOGS_TRACE: {{ $debug }}
+    DRONE_LOGS_TRACE: {{ $trace }}
     DRONE_LOGS_PRETTY: false
     DRONE_RPC_DEBUG: {{ $debug }}
     {{- if hasKey $d "orgsFilter" }}
@@ -49,9 +61,12 @@ server:
     DRONE_REPOSITORY_FILTER: {{ $d.repoFilter }}
     {{- end }}
     DRONE_SERVER_PROXY_HOST: {{ $host }}/hook
-    {{- if eq $d.sourceControl.provider "github" }}
+    {{- if eq $provider "github" }}
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
-    DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+    DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
+    {{- end }}
+    {{- if and $hasGitea $hasStagingCerts }}
+    DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
   resources:
@@ -66,12 +81,19 @@ kubernetes:
       cpu: 1
     {{- end }}
   env:
-    # DRONE_TRACE: true
-    # DRONE_DEBUG: true
+    DRONE_TRACE: {{ $trace }}
+    DRONE_DEBUG: {{ $debug }}
+    {{- if and $hasGitea $hasStagingCerts }}
+    DRONE_GITEA_SKIP_VERIFY: true
+    {{- end }}
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
   envFile: |
     {{- $sopsEnv | nindent 4 }}
+    {{- if and $hasGitea $hasStagingCerts }}
+    DRONE_GITEA_SKIP_VERIFY: true
+    DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
+    {{- end }}
 
 persistence:
   enabled: true

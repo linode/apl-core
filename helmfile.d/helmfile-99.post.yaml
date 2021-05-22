@@ -27,11 +27,6 @@ releases:
       pkg: drone
       stage: post
     <<: *jobs
-  - name: job-gitea
-    installed: {{ $c | get "gitea.enabled" false }}
-    labels:
-      pkg: gitea
-    <<: *jobs
   - name: job-gitea-add-users
     installed: {{ $c | get "gitea.enabled" false }}
     labels:

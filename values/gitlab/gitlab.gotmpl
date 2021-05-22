@@ -1,4 +1,4 @@
-{{ $v := .Environment.Values }}
+{{ $v := .Values }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
 global:
   hosts:

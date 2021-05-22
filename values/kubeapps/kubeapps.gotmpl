@@ -1,4 +1,6 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
+{{- $k := $v | get "charts.kubeapps" dict }}
+{{- $rnd := randAlpha 32 }}
 assetsvc:
   resources:
     limits:
@@ -22,10 +24,10 @@ metrics:
 
 postgresql:
   existingSecret: null
-  postgresqlPassword: {{ $v | get "postgres.postgresqlPassword" "duzz1tmadda" }}
-  postgresqlPostgresPassword: {{ $v | get "postgres.postgresqlPostgresPassword" "asamm4lunch1o" }}
+  postgresqlPassword: {{ $k | get "postgresqlPassword" $rnd }}
+  postgresqlPostgresPassword: {{ $k | get "postgresqlPassword" $rnd }}
   replication:
-    password: {{ $v | get "replication.password" "agennoshom00" }}
+    password: {{ $k | get "postgresqlPassword" $rnd }}
   resources:
     limits:
       memory: 768Mi

@@ -2,19 +2,23 @@
 
 . bin/common.sh
 [ -n "$CI" ] && exit 1
-set -eo pipefail
-run_crypt
-readonly values=$(hf_values)
-readonly gitea_enabled=$(echo "$values" | yq r - 'charts.gitea.enabled')
-readonly stage=$(echo "$values" | yq r - charts.cert-manager.stage)
-[ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
-[ "$stage" = "staging" ] && git_args='-c http.sslVerify=false'
 
-readonly cluster_domain=$(echo "$values" | yq r - 'dns.domain')
+run_crypt
+
+readonly gitea_enabled=$(yqr charts.gitea.enabled)
+readonly stage=$(yqr charts.cert-manager.stage)
+[ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
+if [ "$stage" = "staging" ]; then
+  function git() {
+    command git -c http.sslVerify=false "$@"
+  }
+fi
+
+readonly cluster_domain=$(yqr dns.domain)
 readonly gitea_url="gitea.$cluster_domain"
-readonly gitea_password=$(echo "$values" | yq r - 'charts.gitea.admin.password')
+readonly gitea_password=$(yqr charts.gitea.adminPassword | yqr otomi.adminPassword)
 readonly gitea_user='otomi-admin'
-readonly gitea_repo_org='otomi'
+readonly gitea_org='otomi'
 readonly gitea_repo='values'
 cd $ENV_DIR
 # Initialize as clean slate
@@ -23,10 +27,8 @@ if [ ! -d .git ]; then
   git checkout -b main
 fi
 
-set +o pipefail
 tmp_remote_name=$(git remote -v | grep "$gitea_url" | grep "push" | cut -f1)
 remote_name=${tmp_remote_name:-origin}
-set -o pipefail
 
 if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
   read -p "Another origin already exists, do you want to add Gitea as a remote? [y/N]" add_remote
@@ -37,23 +39,23 @@ if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config rem
   fi
 fi
 if [ ! $(git config remote.$remote_name.url) ]; then
-  git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_repo_org/$gitea_repo.git"
+  git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_org/$gitea_repo.git"
   echo "Added gitea as a remote origin"
   echo "You can push using: \`git push main $remote_name\`"
 fi
 
 # Try to pull, if repo is not new, it will get data
-git $git_args fetch $remote_name main || true
+git fetch $remote_name main || true
 # Which will show how many commits are there.
 readonly commit_count=$(git rev-list --count --remotes=$remote_name)
 
 if [ "$commit_count" -eq "0" ]; then
-  git config user.name "Otomi"
-  git config user.email "otomi@$cluster_domain"
+  git config user.name "Otomi Admin"
+  git config user.email "otomi-admin@$cluster_domain"
   git add -A
 
   git commit --no-verify -m "Initial commit of otomi-values"
-  git $git_args push -u $remote_name main
+  git push -u $remote_name main
   echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"

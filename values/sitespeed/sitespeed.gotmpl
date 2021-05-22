@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $s := $v.charts | get "sitespeed" dict }}
 sites: {{- $v.sites | toYaml | nindent 2 }}
 schedule: {{- $s.schedule | toYaml | nindent 2 }}

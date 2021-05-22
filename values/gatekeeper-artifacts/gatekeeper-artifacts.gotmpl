@@ -1,5 +1,5 @@
 
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $gk := $v.charts | get "gatekeeper-operator" dict }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 

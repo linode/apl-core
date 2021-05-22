@@ -4,9 +4,7 @@
 
 replicaCount: 1
 
-certManagerStage: "production"
-# injected value coming from core.yaml:
-letsencryptCA: ""
+extraRootCA: ""
 
 clusterDomain: cluster.local
 

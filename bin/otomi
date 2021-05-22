@@ -334,7 +334,7 @@ function execute() {
       evaluate_secrets
       check_env_dir
       set -o pipefail
-      drun ". bin/common.sh && run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build \| grep -Ev $helmfile_output_hide \| sed -e $replace_paths_pattern"
+      drun ". bin/common.sh && run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       drun "$@"

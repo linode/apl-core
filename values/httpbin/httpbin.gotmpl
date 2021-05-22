@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $httpbin := $v.charts | get "httpbin" dict }}
 
 nameOverride: httpbin

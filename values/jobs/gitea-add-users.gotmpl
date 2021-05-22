@@ -1,6 +1,7 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" -}}
+{{- $g := $c | get "gitea" dict }}
+{{- $cm := $c | get "cert-manager" }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 
 type: CronJob
@@ -10,7 +11,7 @@ env:
   GITEA_URL: https://gitea.{{ $v.dns.domain }}
   GITEA_REPO: values
 secret:
-  GITEA_PASSWORD: {{ $c | get "gitea.admin.password" "bladibla"}}
+  GITEA_PASSWORD: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
 schedule: "0/5 * * * *" # every 5 minutes
 image:
   repository: otomi/tasks

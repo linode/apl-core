@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $aaic := $v.charts | get "aws-alb-ingress-controller" dict }}
 clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true

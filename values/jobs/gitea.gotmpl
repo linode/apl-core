@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
@@ -9,9 +9,7 @@ enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.dns.domain }}
   DRONE_URL: https://drone.{{ $v.dns.domain }}
-  GITEA_REPO: values
 secret:
-  GITEA_USER: otomi-admin
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"

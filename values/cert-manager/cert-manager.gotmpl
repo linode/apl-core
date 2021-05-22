@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 
 global:

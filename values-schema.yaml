@@ -883,10 +883,10 @@ properties:
         properties:
           enabled:
             type: boolean
-          admin:
-            properties:
-              password:
-                type: string
+          adminPassword:
+            type: string
+          postgresqlPassword:
+            type: string
       harbor:
         additionalProperties: false
         properties:
@@ -1144,6 +1144,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+            default: true
           idp:
             additionalProperties: false
             properties:
@@ -1153,6 +1154,8 @@ properties:
                 type: string
               clientSecret:
                 type: string
+          postgresqlPassword:
+            type: string
           resources:
             additionalProperties: false
             properties:
@@ -1171,16 +1174,8 @@ properties:
           enabled:
             default: true
             type: boolean
-          postgres:
-            properties:
-              postgresqlPassword:
-                type: string
-              postgresqlPostgresPassword:
-                type: string
-          replication:
-            properties:
-              password:
-                type: string
+          postgresqlPassword:
+            type: string
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
@@ -1265,6 +1260,14 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          architecture:
+            type: string
+            enum:
+              - standalone
+              - replication
+            default: standalone
+          password:
+            type: string
           resources:
             additionalProperties: false
             properties:

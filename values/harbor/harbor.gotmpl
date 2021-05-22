@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $h := $v.charts | get "harbor" dict }}
 {{- $hp := $v.charts.harbor.persistence }}
 {{- $harborDomain := printf "harbor.%s" $v.dns.domain }}

@@ -76,11 +76,11 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
         shift 2
         ;;
       -f | --file)
-        FILE_OPT=$2
+        FILE_OPT="$FILE_OPT -f $2"
         shift 2
         ;;
       -l | --label)
-        LABEL_OPT=$2
+        LABEL_OPT="$LABEL_OPT -l $2"
         shift 2
         ;;
       --)
@@ -125,18 +125,26 @@ function yq() {
   return $?
 }
 
+all_values=
+function yqr() {
+  [ -z "$all_values" ] && all_values=$(hf_values)
+  local ret=$(echo "$all_values" | yq r - "$@")
+  echo $ret
+  [ -z "$ret" ] && return 1
+}
+
 function jq() {
   _rind "${FUNCNAME[0]}" "$@"
   return $?
 }
 
 function get_k8s_version() {
-  yq r $clusters_file "cluster.k8sVersion"
+  yqr "cluster.k8sVersion"
 }
 
 function otomi_image_tag() {
   local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file "cluster.otomiVersion")
+  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file cluster.otomiVersion)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }
@@ -170,7 +178,7 @@ function crypt() {
   shift
   files="$*"
   local out='/dev/stdout'
-  [ -n "$QUIET" ] && out='/dev/null'
+  [ -z "$VERBOSE" ] && out='/dev/null'
   if [ -n "$files" ]; then
     for f in $files; do
       echo "${command}ing $f" >$out
@@ -198,7 +206,7 @@ function run_crypt() {
 }
 
 function hf() {
-  helmfile $(echo ${FILE_OPT:+"-f $FILE_OPT"} ${LABEL_OPT:+"-l $LABEL_OPT"} | xargs) $LOG_LEVEL "$@"
+  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@"
 }
 
 function hf_values() {

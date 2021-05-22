@@ -1,4 +1,4 @@
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $i := $v.charts | get "istio" dict }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
