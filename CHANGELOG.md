@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.1](https://github.com/redkubes/otomi-core/compare/v0.13.0...v0.13.1) (2021-05-22)
+
+
+### Bug Fixes
+
+* templates validation, linting, k8s api json generation tooling ([8a93078](https://github.com/redkubes/otomi-core/commit/8a930784517c9fb42b8a3cd3ec393ba5a22f0b10))
+
+
+### Others
+
+* **release:** 0.13.0 ([981c2e8](https://github.com/redkubes/otomi-core/commit/981c2e800b2e393de2e9770131c42c73498eed13))
+
 ## [0.13.0](https://github.com/redkubes/otomi-core/compare/v0.12.10...v0.13.0) (2021-05-22)
 
 
