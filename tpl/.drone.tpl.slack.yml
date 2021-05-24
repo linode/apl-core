@@ -16,6 +16,7 @@ trigger:
 
 environment:
   IN_DOCKER: '1'
+  VERBOSE: '1'
 
 steps:
   - name: slack-start

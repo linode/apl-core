@@ -24,7 +24,7 @@ mkdir -p $bin_path &>/dev/null
 
 img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"
-for f in 'aliases' 'common.sh' 'otomi'; do
+for f in 'aliases' 'colors.sh' 'common.sh' 'otomi'; do
   cp $PWD/bin/$f $bin_path/
 done
 cp -r $PWD/.values/.vscode $ENV_DIR/

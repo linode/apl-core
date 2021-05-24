@@ -12,6 +12,6 @@ kubectl apply -f charts/prometheus-operator/crds
 hf -l stage!=post apply --skip-deps
 
 # Post deploy tasks
-bin/gitea-push.sh
+[ -z "$CI" ] && bin/gitea-push.sh
 
 hf -l stage=post apply --skip-deps

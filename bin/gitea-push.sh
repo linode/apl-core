@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 . bin/common.sh
-[ -n "$CI" ] && exit 1
 
 run_crypt
 
