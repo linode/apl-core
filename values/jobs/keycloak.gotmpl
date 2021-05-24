@@ -38,7 +38,7 @@ name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
-secret:
+nativeSecrets:
   # DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}

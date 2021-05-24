@@ -18,7 +18,7 @@ image:
   tag: v0.2.6
   # pullPolicy: Always
 name: drone
-secret:
+nativeSecrets:
   DRONE_TOKEN: {{ $d | get "adminToken" }}
 env:
   DEBUG: '*'

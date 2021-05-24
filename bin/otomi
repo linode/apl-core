@@ -42,7 +42,7 @@ if [ "$cwd" = "otomi-core" ]; then
   mount_stack_dir=1
 fi
 # now we can retrieve customer name from settings
-customer=$(echo customer_name || $CUSTOMER || "unknown")
+customer=$(customer_name)
 
 # set helm config
 helm_config="$HOME/.config/helm"
@@ -250,7 +250,7 @@ function execute() {
     decrypt)
       check_sops_file
       evaluate_secrets
-      drun '. bin/common.sh $original_params && run_crypt dec' "$@"
+      drun '. bin/common.sh $original_params && run_crypt decrypt' "$@"
       ;;
     diff)
       evaluate_secrets
@@ -270,7 +270,7 @@ function execute() {
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun '. bin/common.sh $original_params && run_crypt enc' "$@"
+      drun '. bin/common.sh $original_params && run_crypt encrypt' "$@"
       ;;
     gen-drone)
       evaluate_secrets

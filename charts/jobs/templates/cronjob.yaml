@@ -1,17 +1,13 @@
 {{- $v := .Values }}
-{{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) }}
-{{- $podSecurityContext := get $v "podSecurityContext" | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) }}
-
 {{- if eq $v.type "CronJob" }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: job-{{ $v.name }}
+  name: {{ .Release.Name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
   annotations:
     checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") $ | sha256sum | trunc 63 }}
     checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum | trunc 63 }}
-    
 spec:
   schedule: "{{ $v.schedule }}"
   successfulJobsHistoryLimit: 1
@@ -20,97 +16,6 @@ spec:
   startingDeadlineSeconds: 300
   suspend: false
   jobTemplate:
-    spec:
-      template:
-        spec:
-          serviceAccountName: {{ $v.serviceAccountName | default "default" }}
-          securityContext: {{- toYaml $podSecurityContext | nindent 12 }}
-          {{- with $v.init }}
-          initContainers:
-          - image: "{{ .image.repository }}:{{ .image.tag | default "latest" }}"
-            imagePullPolicy: "{{ .image.pullPolicy | default "IfNotPresent" }}"
-            name: "job-{{ .name }}-init"
-            command: ["{{ .shell | default "sh" }}", "-c"]
-            resources: {{- toYaml (coalesce $v.init.resources $v.resources) | nindent 14 }}
-            args: 
-              - | 
-                {{- toString .script | nindent 16 }}
-            {{- if .env }}
-            envFrom:
-            - configMapRef:
-                name: job-{{ .name }}
-            {{- end }}
-            {{- with $v.secrets }}
-            env:
-              {{- range $secret := . }} 
-                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
-                {{- range $entry := $entries }}
-              - name: {{ $entry | upper }}
-                valueFrom:
-                  secretKeyRef:
-                    name: {{ $secret.name }}
-                    key: {{ $entry }}
-                {{- end }}
-              {{- end }}
-            {{- end }}
-            {{- with $v.files }}
-            volumeMounts:
-              {{- range $location, $content := $v.files }}
-              - name: {{ include "fileConfigMapName" $location }}
-                mountPath: {{ $location }}
-              {{- end }}
-            {{- end }}
-          {{- end }}
-          containers:
-          - image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
-            imagePullPolicy: "{{ $v.image.pullPolicy }}"
-            name: {{ $v.name }}
-            command: ["{{ $v.shell | default "sh" }}", "-c"]
-            resources: {{- toYaml $v.resources | nindent 14 }}
-            args:
-              - |
-                {{- toString $v.script | nindent 16 }}
-            {{- with $v.secrets }}
-            env:
-              {{- range $secret := . }} 
-                {{- $entries := ($secret.entries | default (index $teamSecrets $secret.name)) }}
-                {{- range $entry := $entries }}
-              - name: {{ $entry | upper }}
-                valueFrom:
-                  secretKeyRef:
-                    name: {{ $secret.name }}
-                    key: {{ $entry }}
-                {{- end }}
-              {{- end }}
-            {{- end }}
-            {{- if or $v.secret $v.env }}
-            envFrom:
-            {{- if $v.secret }}
-            - secretRef:
-                name: job-{{ $v.name }}
-            {{- end }}
-            {{- if or $v.env }}
-            - configMapRef:
-                name: job-{{ $v.name }}
-            {{- end }}
-            {{- end }}
-            {{- with $v.files }}
-            volumeMounts:
-              {{- range $location, $content := $v.files }}
-              - name: {{ include "fileConfigMapName" $location }}
-                mountPath: {{ $location }}
-              {{- end }}
-            {{- end }}
-          restartPolicy: Never
-          {{- with $v.files }}
-          volumes:
-            {{- range $location, $content := $v.files }}
-            - name: {{ include "fileConfigMapName" $location }}
-              configMap:
-                name: {{ include "fileConfigMapName" $location }}
-            {{- end }}
-          {{- end }}
-      backoffLimit: 3
-      ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
+    spec: {{- include "podspec" . | nindent 6 }}
 ---
 {{- end }}

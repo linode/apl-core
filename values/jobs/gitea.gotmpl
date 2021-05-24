@@ -9,7 +9,7 @@ enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.dns.domain }}
   DRONE_URL: https://drone.{{ $v.dns.domain }}
-secret:
+nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
