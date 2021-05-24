@@ -120,13 +120,13 @@ template:
     {{- end }}
     {{- with $c.secrets }}
         env:
-      {{- range $secret := . }} 
-        {{- $entries := ($secret.entries | default (index $v.teamSecrets $secret.name)) }}
-        {{- range $entry := $entries }}
-          - name: {{ $entry | upper }}
+      {{- range $secretName := . }}
+        {{- $secret := index $teamSecrets $secretName }}
+        {{- range $entry := $secret.entries }}
+          - name: {{ $entry }}
             valueFrom:
               secretKeyRef:
-                name: {{ $secret.name }}
+                name: {{ $secretName }}
                 key: {{ $entry }}
         {{- end }}
       {{- end }}

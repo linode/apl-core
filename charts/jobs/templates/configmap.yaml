@@ -1,35 +1,39 @@
 {{- $v := .Values }}
-{{- if $v.env }}
+{{ $ := . }}
+{{- with $v.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ $.Release.Name }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- range $key, $value := $v.env }}
-  {{$key }}: {{ $value | quote }}
+  {{- range $key, $value := . }}
+  {{ $key }}: {{ $value | quote }}
   {{- end }}
 ---
 {{- end }}
-{{- if $v.init.env }}
+{{- if hasKey $v "init" }}
+{{- with $v.init.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-init
+  name: {{ $.Release.Name }}-init
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- range $key, $value := $v.init.env }}
-  {{$key }}: {{ $value | quote }}
+  {{- range $key, $value := . }}
+  {{ $key }}: {{ $value | quote }}
   {{- end }}
 ---
+{{- end }}
 {{- end }}
 {{- range $location, $content := $v.files }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-{{ include "fileConfigMapName" $location }}
+  name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{ include "fileConfigMapName" $location }}: {{- toYaml $content | quote | nindent 2 }} 
+  {{ include "fileConfigMapName" $location }}: |
+    {{- toYaml $content | quote | nindent 4 }} 
 ---
 {{- end }}

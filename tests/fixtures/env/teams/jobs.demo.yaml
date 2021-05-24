@@ -22,30 +22,24 @@ teamConfig:
                   init:
                       env:
                           foo: bar
+                      nativeSecrets:
+                          foo: bar
                       image:
                           repository: busybox
                           tag: latest
                           pullPolicy: IfNotPresent
                       script: echo "hello $receiver and $SOME-KEY"
                       secrets:
-                          - name: generic-example
-                            entries:
-                                - some-key
-                                - some-key2
-                          - name: another-generic-secret
-                            entries:
-                                - some-key3
+                          - mysecret-generic
+                          - hello-otomi
                   name: contains-everything
+                  nativeSecrets:
+                      foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
                   secrets:
-                      - name: generic-example
-                        entries:
-                            - some-key
-                            - some-key2
-                      - name: another-generic-secret
-                        entries:
-                            - some-key3
+                      - mysecret-generic
+                      - hello-otomi
                   type: Job
                 - enabled: true
                   env:
@@ -68,26 +62,13 @@ teamConfig:
                           tag: latest
                           pullPolicy: IfNotPresent
                       script: echo "hello $receiver"
-                      secrets:
-                          - name: generic-example
-                            entries:
-                                - some-key
-                                - some-key2
-                          - name: another-generic-secret
-                            entries:
-                                - some-key3
                   name: also-contains-everything-and-cron
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
                   secrets:
-                      - name: generic-example
-                        entries:
-                            - some-key
-                            - some-key2
-                      - name: another-generic-secret
-                        entries:
-                            - some-key3
+                      - generic-example
+                      - hello-otomi
                   type: CronJob
                 - enabled: true
                   image:
