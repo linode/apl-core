@@ -296,6 +296,8 @@ definitions:
               $ref: '#/definitions/env'
             image:
               $ref: '#/definitions/image'
+            nativeSecrets:
+              $ref: '#/definitions/nativeSecrets'
             script:
               $ref: '#/definitions/script'
             secrets:
@@ -305,6 +307,8 @@ definitions:
           description: Must be a unique name.
           pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
           type: string
+        nativeSecrets:
+          $ref: '#/definitions/nativeSecrets'
         resources:
           $ref: '#/definitions/resources'
         runPolicy:
@@ -374,6 +378,15 @@ definitions:
       - 0.5M
     pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
+  nativeSecrets:
+    description: List of kubernetes secret names.
+    additionalProperties: false
+    patternProperties:
+      '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
+        maxLength: 131072
+        type: string
+    nullable: true
+    title: Kubernetes secrets
   portNumber:
     maximum: 32768
     minimum: 80
@@ -459,7 +472,7 @@ definitions:
               minItems: 1
               pattern: '^[a-zA-Z0-9_]*$'
               type: string
-              uniqueItems: true
+            uniqueItems: true
         required:
           - type
           - entries

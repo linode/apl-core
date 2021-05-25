@@ -110,6 +110,5 @@
     "sysctls",
     "testmode",
     "untrusted"
-  ],
-  "language": "en"
+  ]
 }
