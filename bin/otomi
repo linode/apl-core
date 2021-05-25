@@ -31,6 +31,7 @@ readonly cmd_image="otomi/core:$image_tag"
 [ -n "$VERBOSE" ] && echo "cmd_image: $cmd_image"
 
 docker_terminal_params='-it'
+[ -n "$CI" ] && docker_terminal_params=""
 readme_url='https://github.com/redkubes/otomi-core'
 
 # check if we are in core or values repo (could be improved as it is based on name!)
