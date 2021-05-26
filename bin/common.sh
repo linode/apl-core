@@ -147,10 +147,11 @@ function get_k8s_version() {
 }
 
 function otomi_image_tag() {
-  local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file cluster.otomiVersion)
-  [ -z "$otomi_version" ] && otomi_version='master'
-  echo $otomi_version
+  [ -n "$OTOMI_IMAGE_TAG" ] && echo "$OTOMI_IMAGE_TAG" && return 0
+  local otomi_tag=''
+  [ -f $clusters_file ] && otomi_tag=$(yq r $clusters_file "cluster.otomiVersion")
+  [ -z "$otomi_tag" ] && otomi_tag='master'
+  echo $otomi_tag
 }
 
 function customer_name() {
