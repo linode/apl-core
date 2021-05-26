@@ -43,8 +43,8 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
     exit 1
   fi
 
-  OPTIONS=dtvsp:f:l:
-  LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
+  OPTIONS=dtvsp:f:l:i:
+  LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:,image:
   ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
@@ -52,45 +52,49 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
   eval set -- "$PARSED"
   while true; do
     case "$1" in
-      -d | --debug)
-        DEBUG=1
-        LOG_LEVEL='--log-level debug'
-        shift 1
-        ;;
-      -t | --trace)
-        TRACE=1
-        PS4='[\D{%F %T}] $BASH_SOURCE:$LINENO:'
-        set -x
-        shift 1
-        ;;
-      -v | --verbose)
-        VERBOSE=1
-        shift 1
-        ;;
-      -s | --skip-cleanup)
-        SKIP_CLEANUP='--skip-cleanup'
-        shift 1
-        ;;
-      -p | --profile)
-        PROFILE=$2
-        shift 2
-        ;;
-      -f | --file)
-        FILE_OPT="$FILE_OPT -f $2"
-        shift 2
-        ;;
-      -l | --label)
-        LABEL_OPT="$LABEL_OPT -l $2"
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-      *)
-        err "Programming error: expected '--' but got $1"
-        exit 1
-        ;;
+    -d | --debug)
+      DEBUG=1
+      LOG_LEVEL='--log-level debug'
+      shift 1
+      ;;
+    -t | --trace)
+      TRACE=1
+      PS4='[\D{%F %T}] $BASH_SOURCE:$LINENO:'
+      set -x
+      shift 1
+      ;;
+    -v | --verbose)
+      VERBOSE=1
+      shift 1
+      ;;
+    -i | --image)
+      OTOMI_IMAGE_TAG=$2
+      shift 2
+      ;;
+    -s | --skip-cleanup)
+      SKIP_CLEANUP='--skip-cleanup'
+      shift 1
+      ;;
+    -p | --profile)
+      PROFILE=$2
+      shift 2
+      ;;
+    -f | --file)
+      FILE_OPT="$FILE_OPT -f $2"
+      shift 2
+      ;;
+    -l | --label)
+      LABEL_OPT="$LABEL_OPT -l $2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      err "Programming error: expected '--' but got $1"
+      exit 1
+      ;;
     esac
   done
 fi
