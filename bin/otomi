@@ -78,6 +78,7 @@ function show_usage() {
     -t | --trace         Trace otomi CLI calls. Sets bash prompt with time.
     -v | --verbose       Show more output.
     -s | --skip-cleanup  Keep temporary files for inspections.
+    -i | --image         Override image tag normally defined in env/cluster.yaml
 
   (*) Takes helmfile options:
     -l|--label           Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'
