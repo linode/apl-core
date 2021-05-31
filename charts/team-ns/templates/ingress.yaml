@@ -15,11 +15,11 @@
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-  {{- if (eq $s.type "tlsPass")  }}
+  {{- $type := $s.type | default "sso" }}
+  {{- if eq $type "tlsPass" }}
     {{- $tls = append $tls $s }}
-    #{{ $s.name }}
-  {{- else if and (not $s.internal) (not $s.host ) }}
-    {{- if $s.isPublic }}
+  {{- else if and (not (eq $type "cluster")) (not $s.host ) }}
+    {{- if eq $type "public" }}
       {{- $public = append $public $s }}
     {{- else }}
       {{- if or $s.domain $s.ownHost $s.isShared }}

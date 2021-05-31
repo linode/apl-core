@@ -4,8 +4,9 @@
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
   {{- $ := . }}
   {{- range $s := $v.services }}
+    {{- $type := $s.type | default "sso" }}
     {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-    {{- if not (or $s.internal (hasKey $s "host")) }}
+    {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
       {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
       {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
@@ -18,7 +19,7 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if and (not (hasKey $s "isPublic")) (not (eq $s.type "tlsPass")) }}
+        {{- if eq $type "sso" }}
     auth: "true"
         {{- end }}
 spec:
@@ -26,11 +27,11 @@ spec:
         {{- if hasKey $s "ksvc" }}
   - knative-serving/knative-ingress-gateway
         {{- else }}
-  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ hasKey $s "isPublic" | ternary "public" ((eq $s.type "tlsPass") | ternary "tls" "auth") }}
+  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ $type }}
         {{- end }}
   hosts:
   - {{ $domain }}
-        {{- if (eq $s.type "tlsPass") }}
+        {{- if eq $type "tlsPass" }}
   tls:
   - match:
     - port: 443
@@ -90,7 +91,7 @@ spec:
                 X-Forwarded-Proto: https
         {{- end }}
 ---
-        {{- if and (not (hasKey $s "isPublic")) (hasKey $s "authz") }}
+        {{- if and (not (eq $type "public")) (hasKey $s "authz") }}
           {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication

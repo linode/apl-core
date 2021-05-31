@@ -39,7 +39,8 @@ resources:
 {{- range $teamId, $team := $tc.teams }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
-      {{- if and (hasKey $s "domain") (not (hasKey $s "isPublic")) }}
+      {{- $type := $s.type | default "sso" }}
+      {{- if and (hasKey $s "domain") (not (eq $type "public")) }}
         {{- if and (not (has $s.domain $domains)) (not (contains $v.dns.domain $s.domain)) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}

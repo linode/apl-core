@@ -570,14 +570,6 @@ definitions:
       id:
         description: Unique identifier created by and used in API. Optional.
         type: string
-      internal:
-        default: false
-        description: If true, service is not going to be exposed to the public domain.
-        type: boolean
-      isPublic:
-        default: false
-        description: If true then no SSO will be used.
-        type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean

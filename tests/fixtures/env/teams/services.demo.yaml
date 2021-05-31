@@ -20,7 +20,6 @@ teamConfig:
                               memory: 64Mi
                       secrets:
                           - mysecret-generic
-                  isPublic: true
                   type: public
                 - name: my-nginx
                   port: 443

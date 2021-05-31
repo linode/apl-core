@@ -3,6 +3,7 @@
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
+{{- $type := $s.type | default "sso" }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}
@@ -14,7 +15,7 @@ metadata:
     {{- with $k.labels }}
     {{- . | toYaml | nindent 4 }}
     {{- end }}
-    {{- if $s.internal }}
+    {{- if eq $type "cluster" }}
     serving.knative.dev/visibility: cluster-local
     {{- end }}
 spec:

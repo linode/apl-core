@@ -61,7 +61,6 @@ services:
     namespace: keycloak
     svc: keycloak-http
     ownHost: true
-    isPublic: true
     type: public
   - name: httpbin
     namespace: shared
@@ -91,7 +90,6 @@ services:
     paths: [/service/, /v1/, /v2/]
     forwardPath: true
     hide: true
-    isPublic: true
     type: public
   - name: gitea
     namespace: gitea
@@ -101,7 +99,6 @@ services:
     port: 3000
     paths: [/api/, /otomi/values, /otomi-admin/values, /login/oauth]
     forwardPath: true
-    isPublic: true
     type: public
   - name: gitea
     namespace: gitea
@@ -216,7 +213,6 @@ services:
     namespace: team-admin
     ownHost: true
     hide: true
-    isPublic: true
     type: public
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
@@ -236,7 +232,6 @@ services:
     ownHost: true
     logo:
       name: kubernetes
-    isPublic: true
     type: public
     isShared: true
 

@@ -6,12 +6,13 @@
 {{- $publicDomains := list }}
 {{- $tlsDomains := list }}
 {{- range $s := $v.services }}
+{{- $type := $s.type | default "sso" }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
-{{- if and (eq $s.type "tlsPass") (not (has $domain $tlsDomains)) }}
+{{- if and (eq $type "tlsPass") (not (has $domain $tlsDomains)) }}
   {{- $tlsDomains = (append $tlsDomains $domain) }}
-{{- else if and $s.isPublic (not (has $domain $publicDomains)) }}
+{{- else if and (eq $type "public") (not (has $domain $publicDomains)) }}
   {{- $publicDomains = (append $publicDomains $domain) }}
 {{- else if not (has $domain $authDomains) }}
   {{- $authDomains = (append $authDomains $domain) }}
