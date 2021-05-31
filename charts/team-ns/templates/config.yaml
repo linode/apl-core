@@ -1,0 +1,19 @@
+{{- $v := .Values }}
+{{- range $s := $v.services }}
+{{- if hasKey $s "ksvc" }}
+{{- $k := $s.ksvc }}
+{{- if not $k.predeployed }}
+{{- range $location, $content := $k.files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+  labels: {{- include "chart-labels" $ | nindent 4 }}
+data:
+  {{ include "flatten-name" $location }}: |
+    {{- toYaml $content | quote | nindent 4 }} 
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

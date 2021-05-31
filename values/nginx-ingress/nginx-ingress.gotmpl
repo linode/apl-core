@@ -1,31 +1,13 @@
 {{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
 {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.dns.domain }}
-
-rbac:
-  create: true
-
-defaultBackend:
-  useComponentLabel: true
-  priorityClassName: "otomi-critical"
-  resources:
-    limits:
-      cpu: 20m
-      memory: 20Mi
-    requests:
-      cpu: 10m
-      memory: 10Mi
-
-  podAnnotations:
-    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-{{- if eq $v.cluster.provider "azure" }}
-  nodeSelector: 
-    beta.kubernetes.io/os: linux
-{{- end }}
-  service:
-    omitClusterIP: true
-
+nameOverride: nginx-ingress
 controller:
+  admissionWebhooks:
+    enabled: false
+    patch:
+      priorityClassName: "otomi-critical"
+  ingressClass: nginx
   useComponentLabel: true
   # set fixed allocation with limits same as requests
   resources:
@@ -96,6 +78,26 @@ controller:
   publishService:
     enabled: true
 
-  admissionWebhooks:
-    patch:
-      priorityClassName: "otomi-critical"
+defaultBackend:
+  enabled: true
+  useComponentLabel: true
+  priorityClassName: "otomi-critical"
+  resources:
+    limits:
+      cpu: 20m
+      memory: 20Mi
+    requests:
+      cpu: 10m
+      memory: 10Mi
+
+  podAnnotations:
+    sidecar.istio.io/inject: "true" # {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+{{- if eq $v.cluster.provider "azure" }}
+  nodeSelector: 
+    beta.kubernetes.io/os: linux
+{{- end }}
+  service:
+    omitClusterIP: true
+
+rbac:
+  create: true

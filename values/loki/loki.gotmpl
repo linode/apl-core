@@ -10,46 +10,41 @@ tracing:
 
 config:
   auth_enabled: {{ $v.otomi.isMultitenant }}
-  ingester:
-    chunk_idle_period: 15m
-    chunk_block_size: 262144
-    lifecycler:
-      ring:
-        kvstore:
-          store: inmemory
-        replication_factor: 1
-
   limits_config:
-    enforce_metric_name: false
-    reject_old_samples: true
-    reject_old_samples_max_age: {{ $l.retention.duration }}
+    reject_old_samples_max_age: {{ $l | get "retention.duration" "24h" }}
   schema_config:
     configs:
-    {{- if $l | get "schemaConfigs" nil }}
-    {{- toYaml $l.schemaConfigs | nindent 4 }}
-    {{- else }}
-    - from: '2021-05-12'
+    {{- if $l | get "v11StartDate" nil }}
+    - from: '2018-04-15'
       store: boltdb
-      object_store: {{ $l.storageType }}
+      object_store: filesystem
+      schema: v9
+      index:
+        prefix: index_
+        period: {{ $l | get "retention.period" "24h" }}
+    {{- end }}
+    - from: {{ $l | get "v11StartDate" "2021-05-12" }}
+      store: boltdb-shipper
+      object_store: {{ $l | get "storageType" "filesystem" }}
       schema: v11
       index:
         prefix: index_
-        period: {{ $l.retention.duration }}
-    {{- end }}
+        period: 24h
   storage_config:
-    boltdb:
-      directory: /data/loki/index
+    boltdb_shipper:
+      shared_store: {{ $l | get "storageType" "filesystem" }}
     filesystem:
       directory: /data/loki/chunks
-    {{- if eq $l.storageType "aws" }}
-    aws: 
-      s3: s3://{{ $v.cluster.region }}/logs.{{ $v.dns.domain }}
+    {{- if ne ($l | get "storageType" "filesystem") "filesystem" }}
+    {{ $l.storageType }}: {{- $l | get $l.storageType | toYaml | nindent 6 }}
     {{- end }}
+  compactor:
+    shared_store: {{ $l | get "storageType" "filesystem" }}
   chunk_store_config:
-    max_look_back_period: {{ $l.retention.period }}
+    max_look_back_period: {{ $l | get "retention.period" "24h" }}
   table_manager:
     retention_deletes_enabled: true
-    retention_period: {{ $l.retention.period }}
+    retention_period: {{ $l | get "retention.period" "24h" }}
 
 networkPolicy:
   enabled: false
@@ -62,7 +57,7 @@ persistence:
   enabled: true
   accessModes:
   - ReadWriteOnce
-  size: {{ $l.persistence.size }}
+  size: {{ $l | get "persistence.size" "20Gi" }}
   storageClassName: fast
 
 ## Assign a PriorityClassName to pods if set

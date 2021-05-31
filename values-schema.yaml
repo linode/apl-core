@@ -212,12 +212,21 @@ definitions:
     type: string
   env:
     additionalProperties: false
+    examples:
+      - FOO: bar
+      - bar: foo
     patternProperties:
       '[a-zA-Z_]{1,}[a-zA-Z0-9_]*':
         maxLength: 131072
         type: string
     nullable: true
     title: Environment variables
+  files:
+    additionalProperties: false
+    description: Dictionary of absolute path > content pairs.
+    patternProperties:
+      '^[/].*':
+        type: string
   googleCreds:
     properties:
       google:
@@ -274,20 +283,9 @@ definitions:
           default: true
           type: boolean
         env:
-          default:
-            foo: bar
           $ref: '#/definitions/env'
         files:
-          default:
-            foo: bar.log
-          description: May mount files directly into the container.
-            The mount path is /, so a user can specify anything that comes after it.
-            E.g.
-            foo/bar.log -> /foo/bar.log
-            foo.log -> /foo.log
-          patternProperties:
-            '^(.*/)|[a-z-]+([^/]*)$':
-              type: string
+          $ref: '#/definitions/files'
         image:
           $ref: '#/definitions/image'
         init:
@@ -326,6 +324,8 @@ definitions:
           type: string
         secrets:
           $ref: '#/definitions/secrets'
+        secretMounts:
+          $ref: '#/definitions/secretMounts'
         script:
           $ref: '#/definitions/script'
         podSecurityContext:
@@ -388,6 +388,7 @@ definitions:
     nullable: true
     title: Kubernetes secrets
   portNumber:
+    default: 80
     maximum: 32768
     minimum: 80
     type: number
@@ -523,26 +524,185 @@ definitions:
       - name
       - type
   secrets:
+    description: List of secret names that will have their props injected as env vars into the container.
     items:
-      additionalProperties: true
-      properties:
-        entries:
-          items:
-            properties:
-              key:
-                type: string
-              value:
-                type: string
-          title: Entries
-          type: array
-          uniqueItems: true
-        name:
-          type: string
-      required:
-        - name
+      type: string
+      pattern: '[a-zA-Z_]{1,}[a-zA-Z0-9_]*'
     nullable: true
     title: Secrets
     type: array
+  secretMounts:
+    description: Dictionary of absolute folder path > secret name. Will mount the contents of the secret in the container at the specified folder path.
+    examples:
+      - /foo: bar
+    nullable: true
+    patternProperties:
+      '^[/].*$':
+        type: string
+    title: Secret mounts
+    type: object
+  service:
+    additionalProperties: false
+    properties:
+      authz:
+        additionalProperties: false
+        description: Identifies a workload to authorize.
+        properties:
+          forwardOriginalToken:
+            default: false
+            description: If true istio will forward the bearer token instead of removing it from the headers.
+            type: boolean
+          workload:
+            $ref: '#/definitions/labelsAnnotations'
+      domain:
+        description: A custom service domain name.
+        type: string
+      forwardPath:
+        default: false
+        description: Whether to forward the path into the service, or 'terminate' it.
+        type: boolean
+      hide:
+        description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
+        type: boolean
+      host:
+        description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
+        type: string
+      id:
+        description: Unique identifier created by and used in API. Optional.
+        type: string
+      internal:
+        default: false
+        description: If true, service is not going to be exposed to the public domain.
+        type: boolean
+      isPublic:
+        default: false
+        description: If true then no SSO will be used.
+        type: boolean
+      isShared:
+        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+        type: boolean
+      ksvc:
+        additionalProperties: false
+        description: Details for a knative service that will be deployed and operated.
+        properties:
+          annotations:
+            $ref: '#/definitions/annotations'
+          autoCD:
+            additionalProperties: false
+            description: NOT IN USE YET! Deploys new images based on a tagging strategy.
+            oneOf:
+              - additionalProperties: false
+                nullable: true
+                title: 'Off'
+              - nullable: true
+                properties:
+                  additionalProperties: false
+                  semver:
+                    description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
+                    example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
+                    title: Semver version pattern
+                    type: string
+                  tagMatcher:
+                    default: semver
+                    enum:
+                      - semver
+                    type: string
+                required:
+                  - semver
+                title: Semver versioning
+              - additionalProperties: false
+                properties:
+                  glob:
+                    description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
+                    example: master-v1.*.*
+                    title: Glob string pattern
+                    type: string
+                  tagMatcher:
+                    default: glob
+                    enum:
+                      - glob
+                    type: string
+                required:
+                  - glob
+                title: Glob pattern matching
+            title: Continuous delivery pipeline
+          env:
+            $ref: '#/definitions/env'
+          files:
+            $ref: '#/definitions/files'
+          image:
+            $ref: '#/definitions/image'
+          predeployed:
+            default: false
+            description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
+            type: boolean
+          resources:
+            $ref: '#/definitions/resources'
+          scaleToZero:
+            default: false
+            description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
+            title: Scale to zero
+            type: boolean
+          secrets:
+            $ref: '#/definitions/secrets'
+          secretMounts:
+            $ref: '#/definitions/secretMounts'
+          type:
+            type: string
+            enum:
+              - public
+              - sso
+              - private
+              - cluster
+              - tlsPass
+      logo:
+        description: Used by otomi-console as an override mechanism to display another logo.
+        properties:
+          name:
+            type: string
+        required:
+          - name
+      name:
+        $ref: '#/definitions/idName'
+        description: Short name. Will be used for generation of knative service name, as well as service URL.
+      namespace:
+        $ref: '#/definitions/idName'
+        description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
+      ownHost:
+        default: true
+        description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
+        type: boolean
+      path:
+        description: Used by otomi-console to render a path for the app. Only used by core services.
+        type: string
+      paths:
+        items:
+          description: |
+            Path mapping to only route certain paths to the service. This allows micro services to operate on the same domain and port.
+            When left empty all paths will go to this service.
+          type: string
+        # nullable: true
+        type: array
+      port:
+        $ref: '#/definitions/portNumber'
+        description: Points to the backing k8s service (only used when 'svc' is set).
+      svc:
+        $ref: '#/definitions/idName'
+        description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
+      type:
+        nullable: true
+        default: sso
+        description: Will determine the ingress routing.
+        enum:
+          - public
+          - sso
+          - private
+          - cluster
+          - tlsPass
+        type: string
+    required:
+      - name
+      - type
   team:
     additionalProperties: false
     properties:
@@ -583,125 +743,7 @@ definitions:
         description: Kubernetes resource quota. As is.
       services:
         items:
-          additionalProperties: false
-          properties:
-            authz:
-              additionalProperties: false
-              description: Identifies a workload to authorize.
-              properties:
-                forwardOriginalToken:
-                  default: false
-                  description: If true istio will forward the bearer token instead of removing it from the headers.
-                  type: boolean
-                workload:
-                  $ref: '#/definitions/labelsAnnotations'
-            domain:
-              description: A custom service domain name.
-              type: string
-            forwardPath:
-              default: false
-              description: Whether to forward the path into the service, or 'terminate' it.
-              type: boolean
-            id:
-              description: Unique identifier created by and used in API. Optional.
-              type: string
-            internal:
-              default: false
-              description: If true, service is not going to be exposed to the public domain.
-              type: boolean
-            isPublic:
-              default: false
-              description: If true then no SSO will be used.
-              type: boolean
-            isShared:
-              description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
-              type: boolean
-            ksvc:
-              additionalProperties: false
-              description: Details for a knative service that will be deployed and operated.
-              properties:
-                annotations:
-                  $ref: '#/definitions/annotations'
-                autoCD:
-                  additionalProperties: false
-                  description: NOT IN USE YET! Deploys new images based on a tagging strategy.
-                  oneOf:
-                    - additionalProperties: false
-                      nullable: true
-                      title: 'Off'
-                    - nullable: true
-                      properties:
-                        additionalProperties: false
-                        semver:
-                          description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
-                          example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
-                          title: Semver version pattern
-                          type: string
-                        tagMatcher:
-                          default: semver
-                          enum:
-                            - semver
-                          type: string
-                      required:
-                        - semver
-                      title: Semver versioning
-                    - additionalProperties: false
-                      properties:
-                        glob:
-                          description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
-                          example: master-v1.*.*
-                          title: Glob string pattern
-                          type: string
-                        tagMatcher:
-                          default: glob
-                          enum:
-                            - glob
-                          type: string
-                      required:
-                        - glob
-                      title: Glob pattern matching
-                  title: Continuous delivery pipeline
-                env:
-                  $ref: '#/definitions/env'
-                image:
-                  $ref: '#/definitions/image'
-                predeployed:
-                  default: false
-                  description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
-                  type: boolean
-                resources:
-                  $ref: '#/definitions/resources'
-                scaleToZero:
-                  default: false
-                  description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
-                  title: Scale to zero
-                  type: boolean
-                secrets:
-                  $ref: '#/definitions/secrets'
-            name:
-              $ref: '#/definitions/idName'
-              description: Short name. Will be used for generation of knative service name, as well as service URL.
-            ownHost:
-              default: true
-              description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
-              type: boolean
-            paths:
-              items:
-                description: |
-                  Path mapping to only let this path go to the service. This allows micro services to operate on the same domain and port.
-                  When left empty all paths will go to this service.
-                type: string
-              type: array
-            port:
-              $ref: '#/definitions/portNumber'
-              default: 80
-              description: Points to the backing k8s service (only used when 'svc' is set).
-            svc:
-              $ref: '#/definitions/idName'
-              description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
-          required:
-            - id
-            - name
+          $ref: '#/definitions/service'
         type: array
     required:
       - id
@@ -1267,23 +1309,57 @@ properties:
             additionalProperties: false
             properties:
               size:
+                default: 20Gi
                 type: string
           retention:
             additionalProperties: false
             properties:
               duration:
+                default: 24h
                 type: string
               period:
+                default: 24h
+                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
                 type: string
             required:
               - duration
               - period
-          schemaConfigs:
-            type: array
-            items:
-              properties: {}
-            description: 'A list of schema_config as documented: https://grafana.com/docs/loki/latest/configuration/examples/'
+          aws:
+            type: object
+          azure:
+            description: Missing from docs but available with this schema.
+            properties:
+              account_key:
+                type: string
+              account_name:
+                type: string
+              container_name:
+                type: string
+            type: object
+          bigtable:
+            type: object
+          cassandra:
+            type: object
+          gcs:
+            type: object
+          swift:
+            type: object
+          local:
+            type: object
           storageType:
+            type: string
+            enum:
+              - aws
+              - azure
+              - bigtable
+              - cassandra
+              - filesystem
+              - gcs
+              - swift
+              - local
+          v11StartDate:
+            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
+            title: Schema v11 start date
             type: string
         required:
           - adminPassword
@@ -1301,15 +1377,27 @@ properties:
               enabled:
                 default: true
                 type: boolean
+          loadBalancerIP:
+            type: string
+          loadBalancerRG:
+            type: string
           maxBodySize:
             type: string
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
-          loadBalancerIP:
-            type: string
-          loadBalancerRG:
-            type: string
+          tls:
+            description: TLS loadbalancer configuration.
+            properties:
+              enabled:
+                title: Enable TLS passthrough?
+                description: Enable to start an extra loadbalancer for TLS passthrough when outside mTLS traffic is expected.
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+            title: TLS passthrough
+            type: object
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1735,13 +1823,6 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
-  otomiInstanceUrls:
-    description: Use this property to indicate other otomi instances and easily navigate between them from otomi-console
-    type: array
-    properties:
-      items:
-        type: string
-    default: []
   policies:
     type: object
     description: |
@@ -1971,62 +2052,7 @@ properties:
                   type: string
   services:
     items:
-      additionalProperties: false
-      properties:
-        authz:
-          properties:
-            forwardOriginalToken:
-              type: boolean
-            workload:
-              properties:
-                app:
-                  type: string
-                app.kubernetes.io/instance:
-                  type: string
-                app.kubernetes.io/name:
-                  type: string
-                component:
-                  type: string
-          required:
-            - workload
-        forwardPath:
-          type: boolean
-        hide:
-          type: boolean
-        host:
-          type: string
-        isPublic:
-          type: boolean
-        isShared:
-          type: boolean
-        logo:
-          properties:
-            name:
-              type: string
-          required:
-            - name
-        name:
-          type: string
-        namespace:
-          type: string
-        ownHost:
-          type: boolean
-        path:
-          type: string
-        paths:
-          anyOf:
-            - type: 'null'
-            - items:
-                type: string
-              type: array
-        port:
-          type: integer
-        svc:
-          type: string
-      required:
-        - name
-        - namespace
-        - svc
+      $ref: '#/definitions/service'
     type: array
   smtp:
     additionalProperties: false

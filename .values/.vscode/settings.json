@@ -18,6 +18,6 @@
   "sops.defaults.gcpCredentialsPath": "gcp-key.json",
   "sops.enabled": true,
   "yaml.schemas": {
-    ".vscode/values-schema.yaml": "env/*.yaml"
+    ".vscode/values-schema.yaml": "*.yaml"
   }
 }

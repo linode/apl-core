@@ -2,24 +2,24 @@
 {{- $ns := .Release.Namespace }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 # collect unique domains for this GW
-{{- $publicDomains := list }}
 {{- $authDomains := list }}
+{{- $publicDomains := list }}
+{{- $tlsDomains := list }}
 {{- range $s := $v.services }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
-{{- if $s.isPublic }}
-  {{- if not (has $domain $publicDomains) }}
-    {{- $publicDomains = (append $publicDomains $domain) }}
-  {{- end }}
-{{- else }}
-  {{- if not (has $domain $authDomains) }}
-    {{- $authDomains = (append $authDomains $domain) }}
-  {{- end }}
+{{- if and (eq $s.type "tlsPass") (not (has $domain $tlsDomains)) }}
+  {{- $tlsDomains = (append $tlsDomains $domain) }}
+{{- else if and $s.isPublic (not (has $domain $publicDomains)) }}
+  {{- $publicDomains = (append $publicDomains $domain) }}
+{{- else if not (has $domain $authDomains) }}
+  {{- $authDomains = (append $authDomains $domain) }}
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range $type := (list "public" "auth") }}
+{{- $domains := dict "auth" $authDomains "public" $publicDomains "tls" $tlsDomains }}
+{{- range $type, $typeDomains := $domains }}
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -27,17 +27,26 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 spec:
   selector:
-    istio: ingressgateway{{ if eq $type "auth" }}-auth{{ end }}
+    istio: ingressgateway{{ if ne $type "public" }}-{{ $type }}{{ end }}
   servers:
   - hosts:
       - '{{ $ns }}/*.{{ $v.domain }}'
-      {{- range $domain := (eq $type "public") | ternary $publicDomains $authDomains }}
+      {{- range $domain := $typeDomains }}
       - {{ $ns }}/{{ $domain }}
       {{- end }}
+    {{- if ne $type "tls" }}
     port:
       name: http
       number: 80
       protocol: HTTP
+    {{- else }}
+    tls:
+      mode: PASSTHROUGH
+    port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    {{- end }}
 ---
 {{- end }}
 {{- end }}

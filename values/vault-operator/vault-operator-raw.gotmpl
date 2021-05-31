@@ -203,6 +203,23 @@ resources:
         # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
         startupSecrets:
         {{- range $teamId, $team := $tc.teams }}
+          {{- if eq $teamId "demo" }}
+          - type: kv
+            path: secret/data/teams/team-{{ $teamId }}/mysecret-generic
+            data:
+              data:
+                TARGET: "secret demo world"
+          - type: kv
+            path: secret/data/teams/team-{{ $teamId }}/mysecret-tls
+            data:
+              data:
+                ca.crt: |
+                  {{- exec "cat" (list "../../ssl/example.com.crt") | nindent 18 }}
+                tls.crt: |
+                  {{- exec "cat" (list "../../ssl/nginx.example.com.crt") | nindent 18 }}
+                tls.key: |
+                  {{- exec "cat" (list "../../ssl/nginx.example.com.crt") | nindent 18 }}
+          {{- end }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/otomi-welcome
             data:

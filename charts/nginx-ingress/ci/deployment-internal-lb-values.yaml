@@ -1,5 +1,8 @@
 controller:
+  admissionWebhooks:
+    enabled: false
   service:
+    type: ClusterIP
     internal:
       enabled: true
       annotations:

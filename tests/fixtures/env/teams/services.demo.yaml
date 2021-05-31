@@ -1,4 +1,66 @@
 teamConfig:
     teams:
         demo:
-            services: []
+            services:
+                - name: hello
+                  port: 80
+                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+                  ownHost: true
+                  ksvc:
+                      image:
+                          repository: otomi/nodejs-helloworld
+                          tag: v1.2.12
+                      scaleToZero: false
+                      resources:
+                          limits:
+                              cpu: 50m
+                              memory: 64Mi
+                          requests:
+                              cpu: 50m
+                              memory: 64Mi
+                      secrets:
+                          - mysecret-generic
+                  isPublic: true
+                  type: public
+                - name: my-nginx
+                  port: 443
+                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
+                  domain: nginx.example.com
+                  ksvc:
+                      image:
+                          repository: nginx
+                          tag: latest
+                      scaleToZero: false
+                      resources:
+                          limits:
+                              cpu: 50m
+                              memory: 64Mi
+                          requests:
+                              cpu: 50m
+                              memory: 64Mi
+                      files:
+                          /etc/nginx.conf: |
+                              events {
+                              }
+
+                              http {
+                                log_format main '$remote_addr - $remote_user [$time_local]  $status '
+                                '"$request" $body_bytes_sent "$http_referer" '
+                                '"$http_user_agent" "$http_x_forwarded_for"';
+                                access_log /var/log/nginx/access.log main;
+                                error_log  /var/log/nginx/error.log;
+
+                                server {
+                                  listen 443 ssl;
+
+                                  root /usr/share/nginx/html;
+                                  index index.html;
+
+                                  server_name nginx.example.com;
+                                  ssl_certificate /etc/nginx-server-certs/tls.crt;
+                                  ssl_certificate_key /etc/nginx-server-certs/tls.key;
+                                }
+                              }
+                      secretMounts:
+                          /etc/nginx-server-certs: mysecret-tls
+                  type: tlsPass

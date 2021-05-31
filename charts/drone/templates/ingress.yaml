@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "drone.fullname" . }}
 {{- $httpPort := .Values.service.httpPort }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -33,8 +33,11 @@ spec:
           - path: /
         {{- end }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $httpPort }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $httpPort }}
+            pathType: Prefix
   {{- end -}}
   {{- if .Values.ingress.tls }}
   tls:
