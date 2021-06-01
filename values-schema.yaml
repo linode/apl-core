@@ -1315,7 +1315,6 @@ properties:
                 type: string
             required:
               - duration
-              - period
           aws:
             type: object
           azure:
@@ -1369,6 +1368,10 @@ properties:
               enabled:
                 default: true
                 type: boolean
+              maxReplicas:
+                type: number
+              minReplicas:
+                type: number
           loadBalancerIP:
             type: string
           loadBalancerRG:

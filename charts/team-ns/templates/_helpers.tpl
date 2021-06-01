@@ -34,6 +34,20 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end -}}
 
+{{- define "common.capabilities.kubeVersion" -}}
+{{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
+{{- end -}}
+
+{{- define "ingress.apiVersion" -}}
+{{- if semverCompare "<1.14-0" (include "common.capabilities.kubeVersion" .) -}}
+{{- print "extensions/v1beta1" -}}
+{{- else if semverCompare "<1.19-0" (include "common.capabilities.kubeVersion" .) -}}
+{{- print "networking.k8s.io/v1beta1" -}}
+{{- else -}}
+{{- print "networking.k8s.io/v1" -}}
+{{- end }}
+{{- end -}}
+
 {{- define "ingress" -}}
 {{- $appsDomain := printf "apps.%s" .domain }}
 {{- $ := . }}
@@ -65,7 +79,7 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- if and (eq .teamId "admin") .otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" .clusterDomainSuffix ) list)) }}
 {{- end }}
-apiVersion: networking.k8s.io/v1
+apiVersion: {{ template "ingress.apiVersion" .dot }}
 kind: Ingress
 metadata:
   annotations:

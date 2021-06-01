@@ -86,7 +86,7 @@ function show_usage() {
   "
 }
 function check_env_dir() {
-  [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  [ -z "$CI" ] && [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
   return 0
 }
 
@@ -156,7 +156,11 @@ function drun() {
   local socket_volume=''
 
   [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
-  [ -n "$CI" ] && unset check_kube_context
+  if [ -n "$CI" ]; then
+    unset check_kube_context
+  else
+    env_mount="-v $ENV_DIR:$stack_dir/env"
+  fi
 
   if [ -n "$check_kube_context" ]; then
     validate_k8s_context
@@ -178,7 +182,7 @@ function drun() {
       -v $HOME/.config/gcloud:/home/app/.config/gcloud \
       -v $HOME/.aws:/home/app/.aws \
       -v $HOME/.azure:/home/app/.azure \
-      -v $ENV_DIR:$stack_dir/env \
+      $env_mount \
       -e AZURE_TENANT_ID=$AZURE_TENANT_ID \
       -e AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
       -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \

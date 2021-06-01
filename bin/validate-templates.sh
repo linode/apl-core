@@ -61,7 +61,7 @@ function process_crd_wrapper() {
   local k8s_version=$1
   setup $k8s_version
   echo "Generating k8s $k8s_version manifests"
-  hf_template "$k8s_resources_path/$k8s_version"
+  KUBE_VERSION_OVERRIDE="${k8s_version}.0" hf_template "$k8s_resources_path/$k8s_version"
   echo "Processing CRD files..."
   # generate canonical schemas
   local target_yaml_files="*.yaml"
