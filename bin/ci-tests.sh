@@ -5,7 +5,7 @@ set -ex
 
 . bin/common.sh
 
-# bin/gen-demo-mtls-cert-secret.sh
+bin/gen-demo-mtls-cert-secret.sh
 
 testEnv=$PWD/tests/fixtures
 echo "Validating $testEnv values"
