@@ -21,7 +21,7 @@ ARG KUBESCORE_VERSION=1.11.0
 # https://github.com/instrumenta/kubeval/releases:
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases:
-ARG CONFTEST_VERSION=0.24.0
+ARG CONFTEST_VERSION=0.25.0
 # https://github.com/plexsystems/konstraint/releases:
 ARG KONSTRAINT_VERSION=0.12.1
 

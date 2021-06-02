@@ -13,14 +13,15 @@ import data.lib.annotations
 import data.lib.core
 
 policy_parameters(policyID) = params {
-	# trace(sprintf("policy_parameters - policyID: %s", [policyID]))
 	trace(sprintf("core_params: %v", [{c | c = core.parameters}]))
 	core_params := {c | c = core.parameters[policyID]}
-	trace(sprintf("core_params[policyID]: %v", [core_params]))
+
+	# trace(sprintf("core_params[policyID]: %v", [core_params]))
 	extra_params := {e | e = extra_parameters(policyID)}
-	trace(sprintf("extra_params: %v", [extra_params]))
+
+	# trace(sprintf("extra_params: %v", [extra_params]))
 	params := object.union(core.parameters[policyID], extra_parameters(policyID))
-	trace(sprintf("policy_parameters: %v", [params]))
+	# trace(sprintf("policy_parameters: %v", [params]))
 }
 
 extra_parameters(policyID) = params {

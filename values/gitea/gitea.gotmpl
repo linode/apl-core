@@ -14,6 +14,30 @@ nameOverride: gitea
 fullnameOverride: gitea
 # clusterDomain: {{ $v.dns.domain }}
 
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  privileged: false
+  readOnlyRootFilesystem: true
+  runAsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+image:
+  tag: 1.14.2
+  pullPolicy: IfNotPresent
+  rootless: true
+
 gitea:
   admin:
     username: otomi-admin
@@ -37,6 +61,7 @@ gitea:
     enabled: true
     serviceMonitor:
       enabled: true
+      prometheusSelector: system
   oauth:
     enabled: true
     name: {{ $hasKeycloak | ternary $k.idp.alias "otomi" }}
@@ -44,6 +69,24 @@ gitea:
     key: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
     secret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
     autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}/.well-known/openid-configuration'
+
+init:
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+memcached:
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
 persistence:
   size: 1Gi
@@ -55,6 +98,13 @@ postgresql:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" $rnd }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" $rnd }}
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
 
 extraRootCA: |
   {{- $v.letsencryptRootCA | nindent 2 }}

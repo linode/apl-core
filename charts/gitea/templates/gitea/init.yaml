@@ -26,7 +26,7 @@ stringData:
     chmod a+rwx /data/gitea/conf/app.ini
     {{- if include "db.servicename" . }}
     # Wait for database to become avialble
-    while ! nc -v -w2 -z {{ include "db.servicename" . }} {{ include "db.port" . }}; do sleep 1; done && \
+    nc -v -w2 -z {{ include "db.servicename" . }} {{ include "db.port" . }} && \
     {{- end }}
     {{- if not .Values.image.rootless }}
     su git -c ' \

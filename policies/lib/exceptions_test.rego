@@ -1,9 +1,3 @@
-# @title Containers must not allow added capabilities
-#
-# Privileged containers can easily escalate to root privileges on the node. 
-# As such containers with sufficient capabilities granted to obtain escalated access are not allowed.
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package lib.exceptions
 
 import data.lib.annotations
@@ -24,6 +18,10 @@ pod_allowed := {
 	"spec": {"containers": [{"name": "allowed"}]},
 }
 
+policy_disabled := {"somepol": {"enabled": false}}
+
+policy_enabled := {"somepol": {"enabled": true}}
+
 pod_exception := {
 	"kind": "Pod",
 	"metadata": {"name": "podexception", "annotations": annotations_pod_exception},
@@ -34,6 +32,16 @@ container_exception := {
 	"kind": "Pod",
 	"metadata": {"name": "containerexception", "annotations": annotations_container_exception},
 	"spec": {"containers": [{"name": container}]},
+}
+
+test_policy_enabled {
+	not is_exception(policyID) with data.parameters as policy_enabled
+		 with policyID as "somepol"
+}
+
+test_policy_disabled {
+	is_exception(policyID) with data.parameters as policy_disabled
+		 with policyID as "somepol"
 }
 
 test_no_exception {

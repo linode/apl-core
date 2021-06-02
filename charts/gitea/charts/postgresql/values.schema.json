@@ -67,9 +67,9 @@
           "title": "Enable Replication",
           "form": true
         },
-        "readReplicas": {
+        "slaveReplicas": {
           "type": "integer",
-          "title": "read Replicas",
+          "title": "Slave Replicas",
           "form": true,
           "hidden": {
             "value": false,

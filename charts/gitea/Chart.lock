@@ -1,9 +1,15 @@
 dependencies:
 - name: memcached
   repository: https://charts.bitnami.com/bitnami
-  version: 5.9.0
+  version: 4.2.20
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 6.14.10
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 10.3.17
-digest: sha256:f77c53f133e2870b5df193609c1e8dc6fd9bb25cd689d1dbfd677a09795e0a79
-generated: "2021-05-17T16:38:28.748197+02:00"
+  version: 9.7.2
+- name: mariadb
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.0.0
+digest: sha256:b5af711e2213d0ff446dd2261addb9f4fabacecdbe32a794dfdee6069b460a36
+generated: "2021-04-29T09:14:20.733259232Z"

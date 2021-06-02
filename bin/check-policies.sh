@@ -38,9 +38,12 @@ check_policies() {
   echo "Checking manifests against policies"
   local tmp_out=$(mktemp -u)
   [ -n "$TRACE" ] && trace='--trace'
-  conftest test $([ -n "$CI" ] && echo '--no-color') $trace --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" 2>&1 | tee $tmp_out | grep -v 'TRAC' | grep -v 'PASS' | grep -v 'no policies found'
+  set -o pipefail
+  conftest test $([ -n "$CI" ] && echo '--no-color') $trace --fail-on-warn --all-namespaces --data "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" 2>&1 | tee $tmp_out | grep -v 'TRAC' | grep -v 'PASS' | grep -v 'no policies found'
+  ret=$?
+  [ -n "$TRACE" ] && return $ret
   grep "FAIL" $tmp_out >/dev/null && return 1
-  return 0
+  return $ret
 }
 
 [ -f $otomi_settings ] && ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0

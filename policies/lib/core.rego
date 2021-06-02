@@ -2,6 +2,8 @@ package lib.core
 
 default is_gatekeeper = false
 
+import data.parameters as data_parameters
+
 is_gatekeeper {
 	has_field(input, "review")
 	has_field(input.review, "object")
@@ -23,17 +25,19 @@ review = {"object": resource, "kind": {"group": group, "kind": kind, "version": 
 	not is_gatekeeper
 }
 
-parameters = input.parameters {
-	trace(sprintf("has input.parameters: %v", [input.parameters]))
-	is_gatekeeper
-}
+# parameters = input.parameters {
+# 	trace(sprintf("has input.parameters: %v", [input.parameters]))
+# 	is_gatekeeper
+# }
 
 opa_upstream_bug_1046 := true
 
-parameters = data.parameters {
-	trace(sprintf("has data.parameters: %v", [data.parameters]))
-	not is_gatekeeper
-}
+parameters := data_parameters
+
+# parameters = data_parameters {
+# 	trace(sprintf("has data.parameters: %v", [data_parameters]))
+# 	not is_gatekeeper
+# }
 
 format(msg) = {"msg": msg}
 

@@ -18,7 +18,15 @@ original_params="$@"
 
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
+
 ENV_DIR=${ENV_DIR:-$PWD}
+if [ -n "$TESTING" ]; then
+  CI=1
+  ENV_DIR="$PWD/tests/fixtures"
+else
+  ENV_DIR=${ENV_DIR:-$PWD}
+fi
+
 [ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 [ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
 
@@ -158,8 +166,6 @@ function drun() {
   [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
   if [ -n "$CI" ]; then
     unset check_kube_context
-  else
-    env_mount="-v $ENV_DIR:$stack_dir/env"
   fi
 
   if [ -n "$check_kube_context" ]; then
@@ -182,7 +188,7 @@ function drun() {
       -v $HOME/.config/gcloud:/home/app/.config/gcloud \
       -v $HOME/.aws:/home/app/.aws \
       -v $HOME/.azure:/home/app/.azure \
-      $env_mount \
+      -v $ENV_DIR:$stack_dir/env \
       -e AZURE_TENANT_ID=$AZURE_TENANT_ID \
       -e AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
       -e AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
