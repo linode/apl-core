@@ -159,15 +159,7 @@ spec:
               name: istio-ingressgateway-auth
               port:
                 number: 80
-          path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)\
-          pathType: Prefix
-        # fix for tracing not having a trailing slash:
-        - backend:
-            service:
-              name: istio-ingressgateway-auth
-              port:
-                number: 80
-          path: /tracing
+          path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
           pathType: Prefix
 {{- else }}
   {{- range $domain, $paths := $routes }}

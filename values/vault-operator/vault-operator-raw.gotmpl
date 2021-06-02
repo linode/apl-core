@@ -216,9 +216,9 @@ resources:
                 ca.crt: |
                   {{- exec "cat" (list "../../ssl/example.com.crt") | nindent 18 }}
                 tls.crt: |
-                  {{- exec "cat" (list "../../ssl/nginx.example.com.crt") | nindent 18 }}
+                  {{- exec "cat" (list "../../ssl/tlspass.eks.dev.otomi.cloud.crt") | nindent 18 }}
                 tls.key: |
-                  {{- exec "cat" (list "../../ssl/nginx.example.com.crt") | nindent 18 }}
+                  {{- exec "cat" (list "../../ssl/tlspass.eks.dev.otomi.cloud.crt") | nindent 18 }}
           {{- end }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/otomi-welcome

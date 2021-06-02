@@ -14,7 +14,6 @@ resourceQuota:
   # persistentvolumeclaims: "1"
   services.loadbalancers: "0"
   # resourcequotas: "1"  
-  ingresses: "0"
 services: []
 limitRange:
   default:

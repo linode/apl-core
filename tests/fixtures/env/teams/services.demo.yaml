@@ -24,7 +24,7 @@ teamConfig:
                 - name: my-nginx
                   port: 443
                   id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
-                  domain: nginx.example.com
+                  domain: tlspass.eks.dev.otomi.cloud
                   ksvc:
                       image:
                           repository: nginx
@@ -55,7 +55,7 @@ teamConfig:
                                   root /usr/share/nginx/html;
                                   index index.html;
 
-                                  server_name nginx.example.com;
+                                  server_name tlspass.eks.dev.otomi.cloud;
                                   ssl_certificate /etc/nginx-server-certs/tls.crt;
                                   ssl_certificate_key /etc/nginx-server-certs/tls.key;
                                 }
