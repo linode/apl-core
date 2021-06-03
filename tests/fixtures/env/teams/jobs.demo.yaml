@@ -40,14 +40,16 @@ teamConfig:
                   secrets:
                       - mysecret-generic
                       - hello-otomi
+                  secretMounts:
+                      /config/some-folder: someSecret
                   type: Job
                 - enabled: true
                   env:
                       receiver: world
                   files:
-                      some-file: someData
-                      some-file2: someData2
-                      some-file3: |-
+                      /some-file: someData
+                      /some-file2: someData2
+                      /some-file3: |-
                           some data on another line
                           another line
                   image:

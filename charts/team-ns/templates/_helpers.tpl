@@ -34,6 +34,37 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end }}
 {{- end -}}
 
+{{- define "common.capabilities.kubeVersion" -}}
+{{- default .Capabilities.KubeVersion.Version .Values.kubeVersionOverride -}}
+{{- end -}}
+
+{{- define "ingress.apiVersion" -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+networking.k8s.io/v1beta1
+{{- else -}}
+extensions/v1beta1
+{{- end -}}
+{{- end -}}
+
+{{- define "ingress.path" }}
+- backend:
+{{- if ne (include "ingress.apiVersion" .dot) "networking.k8s.io/v1" }}
+    serviceName: {{ .svc }}
+    servicePort: {{ .port | default 80 }}
+{{- else }}
+    service:
+      name: {{ .svc }}
+      port:
+        number: {{ .port | default 80 }}
+{{- end }}
+  path: {{ .path | default "/" }}
+{{- if ne (include "ingress.apiVersion" .dot) "extensions/v1beta1" }}
+  pathType: {{ .pathType | default "Prefix" }}
+{{- end }}
+{{- end }}
+
 {{- define "ingress" -}}
 {{- $appsDomain := printf "apps.%s" .domain }}
 {{- $ := . }}
@@ -41,56 +72,60 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- $routes := dict }}
 {{- $names := list }}
 {{- range $s := .services }}
-{{- $isShared := $s.isShared | default false }}
-{{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
-{{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.clusterDomainSuffix $.domain))) }}
-{{- if not $isApps }}
-  {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
-  {{- if (not (hasKey $routes $domain)) }}
-    {{- $routes = merge $routes (dict $domain $paths) }}
-  {{- else }}
-    {{- $paths = concat (index $routes $domain) $paths }}
-    {{- $routes = (merge (dict $domain $paths) $routes) }}
+  {{- $isShared := $s.isShared | default false }}
+  {{- $isApps := or .isApps (and $s.isCore (not (or $s.ownHost $s.isShared))) }}
+  {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($isShared | ternary $.clusterDomainSuffix $.domain))) }}
+  {{- if not $isApps }}
+    {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
+    {{- if (not (hasKey $routes $domain)) }}
+      {{- $routes = merge $routes (dict $domain $paths) }}
+    {{- else }}
+      {{- $paths = concat (index $routes $domain) $paths }}
+      {{- $routes = (merge (dict $domain $paths) $routes) }}
+    {{- end }}
+  {{- end }}
+  {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
+    {{- $names = (append $names $s.name) }}
   {{- end }}
 {{- end }}
-{{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
-  {{- $names = (append $names $s.name) }}
-{{- end }}
-{{- end }}
 {{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not .otomi.hasCloudLB) (eq .provider "nginx")) }}
-{{- if and $internetFacing }}
+{{- if and (not .tlsPass) $internetFacing }}
   # also add apps on cloud lb
   {{- $routes = (merge $routes (dict $appsDomain list)) }}
 {{- end }}
 {{- if and (eq .teamId "admin") .otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" .clusterDomainSuffix ) list)) }}
 {{- end }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: {{ template "ingress.apiVersion" .dot }}
 kind: Ingress
 metadata:
   annotations:
-{{- if $internetFacing }}
-    # register hosts when we are an outside facing ingress:
+{{- if .tlsPass | default false }}  
+    kubernetes.io/ingress.class: nginx-tls
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+{{- else }}
+  {{- if $internetFacing }}
     externaldns: "true"
-{{- end }}
-{{- if eq .provider "aws" }}
+  {{- end }}
+  {{- if eq .provider "aws" }}
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
     alb.ingress.kubernetes.io/tags: "team=team-{{ .teamId }}"
     ingress.kubernetes.io/ssl-redirect: "true"
-{{- end }}
-{{- if eq .provider "azure" }}
+  {{- end }}
+  {{- if eq .provider "azure" }}
     kubernetes.io/ingress.class: azure/application-gateway
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     appgw.ingress.kubernetes.io/backend-protocol: "http"
-{{- end }}
-{{- if eq .provider "nginx" }}
+  {{- end }}
+  {{- if eq .provider "nginx" }}
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     # nginx.ingress.kubernetes.io/proxy-buffering: "off"
     # nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
-  {{- if not .hasCloudLB }}
+    {{- if not .hasCloudLB }}
     ingress.kubernetes.io/ssl-redirect: "true"
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- if and (eq .cluster.provider "onprem") $internetFacing }}
@@ -121,23 +156,16 @@ metadata:
   namespace: {{ if ne .provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
   rules:
-{{- if .isApps }}
+{{- if .tlsPass }}
+  {{- range $domain, $paths := $routes }}
+  - host: {{ $domain }}
+  {{- end }}
+{{- else if .isApps }}
     - host: {{ $appsDomain }}
       http:
         paths:
-        - backend:
-            serviceName: istio-ingressgateway-auth
-            servicePort: 80
-          path: /
-        - backend:
-            serviceName: istio-ingressgateway-auth
-            servicePort: 80
-          path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
-        # fix for tracing not having a trailing slash:
-        - backend:
-            serviceName: istio-ingressgateway-auth
-            servicePort: 80
-          path: /tracing
+        {{- include "ingress.path" (dict "dot" $.dot "svc" "istio-ingressgateway-auth") | nindent 8 }}
+        {{- include "ingress.path" (dict "dot" $.dot "svc" "istio-ingressgateway-auth" "path" (printf "/(%s)/(.*)" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|")))) | nindent 8 }}
 {{- else }}
   {{- range $domain, $paths := $routes }}
     - host: {{ $domain }}
@@ -145,31 +173,21 @@ spec:
         paths:
     {{- if not (eq $.provider "nginx") }}
       {{- if eq $.provider "aws" }}
-          - backend:
-              serviceName: ssl-redirect
-              servicePort: use-annotation
-            path: /*
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
       {{- end }}
-          - backend:
-              serviceName: nginx-ingress-controller
-              servicePort: 80
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "nginx-ingress-controller") | nindent 8 }}
     {{- else }}
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}
-          - backend:
-              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
-              servicePort: 80
-            path: {{ $path }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" (printf "istio-ingressgateway%s" ($.hasAuth | ternary "-auth" "")) "path" $path) | nindent 8 }}
         {{- end }}
       {{- else }}
-          - backend:
-              serviceName: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
-              servicePort: 80
+          {{- include "ingress.path" (dict "dot" $.dot "svc" (printf "istio-ingressgateway%s" ($.hasAuth | ternary "-auth" ""))) | nindent 8 }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if $internetFacing }}
+{{- if and (not .tlsPass) $internetFacing }}
   tls:
   {{- range $domain, $paths := $routes }}
     - hosts:

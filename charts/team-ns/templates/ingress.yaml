@@ -11,24 +11,34 @@
 # - custom domain (not 'apps.*'): custom
 {{- $public := list }}
 {{- $private := list }}
+{{- $tls := list }}
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-  {{- if and (not $s.internal) (not $s.host ) }}
-    {{- if $s.isPublic }}
-      {{- $public = (append $public $s) }}
+  {{- $type := $s.type | default "auth" }}
+  {{- if eq $type "tlsPass" }}
+    {{- $tls = append $tls $s }}
+  {{- else if and (not (eq $type "cluster")) (not $s.host ) }}
+    {{- if eq $type "public" }}
+      {{- $public = append $public $s }}
     {{- else }}
       {{- if or $s.domain $s.ownHost $s.isShared }}
-        {{- $privateCustom = (append $privateCustom $s) }}
+        {{- $privateCustom = append $privateCustom $s }}
       {{- else }}
         {{- if $s.forwardPath -}}
-          {{- $privateForward = (append $privateForward $s) }}
+          {{- $privateForward = append $privateForward $s }}
         {{- else }}
-          {{- $private = (append $private $s) }}
+          {{- $private = append $private $s }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
+{{- end }}
+
+# tls passthrough
+{{- if gt (len $tls) 0 }}
+{{ include "ingress" (dict "dot" . "provider" "nginx" "name" "tlspass" "teamId" $v.teamId "domain" $v.domain "cluster" $v.cluster "clusterDomainSuffix" $v.clusterDomainSuffix "otomi" $v.otomi "isApps" false "hasForward" false "hasAuth" false "services" $tls "tlsPass" true) }}
+---
 {{- end }}
 
 # apps.* that need their path rewritten to /

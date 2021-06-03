@@ -28,7 +28,7 @@ releases:
     namespace: external-dns
     <<: *default
   - name: ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v| get "azure.appgw.isManaged" true)) }}
+    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v | get "azure.appgw.isManaged" true)) }}
     namespace: ingress
     labels:
       tag: ingress
@@ -46,4 +46,13 @@ releases:
     labels:
       tag: ingress
     <<: *default
+  - name: nginx-ingress-tls
+    installed: {{ $c | get "nginx-ingress.tls.enabled" false }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    chart: ../charts/nginx-ingress
+    values:
+      - ../values/nginx-ingress/nginx-ingress.gotmpl
+      - ../values/nginx-ingress/nginx-ingress-tls.gotmpl
 

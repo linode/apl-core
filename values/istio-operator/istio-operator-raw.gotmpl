@@ -29,6 +29,7 @@ resources:
           k8s:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             hpaSpec:
               minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 1 }}
@@ -188,8 +189,8 @@ resources:
           namespace: istio-apps
           k8s:
             podAnnotations:
-              sidecar.istio.io/inject: "true"
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.grafana" nil }}
@@ -208,6 +209,7 @@ resources:
           k8s:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.prometheus" nil }}
@@ -226,6 +228,7 @@ resources:
           k8s:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.tracing" nil }}
@@ -244,6 +247,7 @@ resources:
           k8s:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.kiali" nil }}

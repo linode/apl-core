@@ -69,7 +69,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "fileConfigMapName" -}}
-{{ printf "job-%s" (. | replace "." "" | replace "/" "") }}
+{{ printf "job-%s" (. | replace "." "-" | replace "/" "-") }}
 {{- end -}}
 
 {{- define "podspec" -}}
@@ -134,6 +134,14 @@ template:
     {{- with $c.securityContext }}
         securityContext: {{- toYaml . | nindent 10 }}
     {{- end }}
+  {{- end }}
+{{- end }}
+{{- with $v.files }}
+        volumeMounts:
+  {{- range $location, $content := $v.files }}
+          - name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
+            mountPath: {{ $location }}
+            readOnly: true
   {{- end }}
 {{- end }}
     restartPolicy: Never

@@ -1,27 +1,33 @@
-{{- if .Values.podSecurityPolicy.enabled}}
-apiVersion: {{ template "podSecurityPolicy.apiVersion" . }}
+{{- if and .Values.podSecurityPolicy.enabled (empty .Values.controller.existingPsp) -}}
+apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ template "nginx-ingress.fullname" . }}
+  name: {{ include "ingress-nginx.fullname" . }}
   labels:
-    app: {{ template "nginx-ingress.name" . }}
-    chart: {{ template "nginx-ingress.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ template "nginx-ingress.releaseLabel" . }}
+    {{- include "ingress-nginx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
 spec:
   allowedCapabilities:
     - NET_BIND_SERVICE
+{{- if .Values.controller.sysctls }}
+  allowedUnsafeSysctls:
+  {{- range $sysctl, $value := .Values.controller.sysctls }}
+  - {{ $sysctl }}
+  {{- end }}
+{{- end }}
   privileged: false
   allowPrivilegeEscalation: true
   # Allow core volume types.
   volumes:
     - 'configMap'
-    #- 'emptyDir'
-    - 'projected'
+    - 'emptyDir'
+    #- 'projected'
     - 'secret'
     #- 'downwardAPI'
+{{- if .Values.controller.hostNetwork }}
   hostNetwork: {{ .Values.controller.hostNetwork }}
-{{- if or .Values.controller.hostNetwork .Values.controller.daemonset.useHostPort }}
+{{- end }}
+{{- if or .Values.controller.hostNetwork .Values.controller.hostPort.enabled }}
   hostPorts:
 {{- if .Values.controller.hostNetwork }}
 {{- range $key, $value := .Values.controller.containerPort }}
@@ -29,8 +35,8 @@ spec:
   - min: {{ $value }}
     max: {{ $value }}
 {{- end }}
-{{- else if .Values.controller.daemonset.useHostPort }}
-{{- range $key, $value := .Values.controller.daemonset.hostPorts }}
+{{- else if .Values.controller.hostPort.enabled }}
+{{- range $key, $value := .Values.controller.hostPort.ports }}
   # {{ $key }}
   - min: {{ $value }}
     max: {{ $value }}

@@ -203,6 +203,13 @@ resources:
         # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
         startupSecrets:
         {{- range $teamId, $team := $tc.teams }}
+          {{- if eq $teamId "demo" }}
+          - type: kv
+            path: secret/data/teams/team-{{ $teamId }}/mysecret-generic
+            data:
+              data:
+                TARGET: "secret demo world"
+          {{- end }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/otomi-welcome
             data:

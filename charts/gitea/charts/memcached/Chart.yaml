@@ -1,16 +1,10 @@
 annotations:
   category: Infrastructure
-apiVersion: v2
-appVersion: 1.6.9
-dependencies:
-- name: common
-  repository: https://charts.bitnami.com/bitnami
-  tags:
-  - bitnami-common
-  version: 1.x.x
+apiVersion: v1
+appVersion: 1.6.6
 description: Chart for Memcached
-home: https://github.com/bitnami/charts/tree/master/bitnami/memcached
-icon: https://bitnami.com/assets/stacks/memcached/img/memcached-stack-220x234.png
+home: http://memcached.org/
+icon: https://bitnami.com/assets/stacks/memcached/img/memcached-stack-110x117.png
 keywords:
 - memcached
 - cache
@@ -20,5 +14,4 @@ maintainers:
 name: memcached
 sources:
 - https://github.com/bitnami/bitnami-docker-memcached
-- http://memcached.org/
-version: 5.9.0
+version: 4.2.20

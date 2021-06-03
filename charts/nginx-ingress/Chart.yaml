@@ -1,16 +1,19 @@
-apiVersion: v1
-appVersion: v0.34.1
-deprecated: true
-description: DEPRECATED! An nginx Ingress controller that uses ConfigMap to store
-  the nginx configuration.
-engine: gotpl
+annotations:
+  artifacthub.io/changes: |
+    - Removes the possibility of using localhost in ExternalNames as endpoints
+apiVersion: v2
+appVersion: 0.46.0
+description: Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 home: https://github.com/kubernetes/ingress-nginx
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
 keywords:
 - ingress
 - nginx
-kubeVersion: '>=1.10.0-0'
-name: nginx-ingress
+kubeVersion: '>=1.16.0-0'
+maintainers:
+- name: ChiefAlexander
+name: ingress-nginx
 sources:
 - https://github.com/kubernetes/ingress-nginx
-version: 1.41.3
+type: application
+version: 3.31.0

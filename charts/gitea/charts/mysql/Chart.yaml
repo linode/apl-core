@@ -1,0 +1,21 @@
+annotations:
+  category: Database
+apiVersion: v1
+appVersion: 8.0.21
+description: Chart to create a Highly available MySQL cluster
+home: https://github.com/bitnami/charts/tree/master/bitnami/mysql
+icon: https://bitnami.com/assets/stacks/mysql/img/mysql-stack-220x234.png
+keywords:
+- mysql
+- database
+- sql
+- cluster
+- high availablity
+maintainers:
+- email: containers@bitnami.com
+  name: Bitnami
+name: mysql
+sources:
+- https://github.com/bitnami/bitnami-docker-mysql
+- https://mysql.com
+version: 6.14.10

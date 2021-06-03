@@ -151,6 +151,7 @@ function otomi_image_tag() {
 
 function customer_name() {
   [ -f $otomi_settings ] && yq r $otomi_settings "customer.name" && return 0
+  [ -n "$CI" ] && return 0
   return 1
 }
 
@@ -206,7 +207,8 @@ function run_crypt() {
 }
 
 function hf() {
-  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@"
+  [ -n "$KUBE_VERSION_OVERRIDE" ] && args="--set kubeVersionOverride=${KUBE_VERSION_OVERRIDE}"
+  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@" $args
 }
 
 function hf_values() {

@@ -16,8 +16,6 @@ parameters_disabled := {policyID: {"enabled": false, "disAllowedCapabilities": a
 
 parameters_allowed := {policyID: {"enabled": true, "allowedCapabilities": allowed_caps}}
 
-parameters_disallowed := {policyID: {"enabled": true, "disAllowedCapabilities": disallowed_caps}}
-
 sec_allowed := {"capabilities": {"add": allowed_caps}}
 
 sec_disallowed := {"capabilities": {"add": disallowed_caps}}

@@ -23,7 +23,8 @@ function validate_values() {
   setup
   local values_path="$k8s_resources_path/values.yaml"
   hf_values >$values_path
-  ajv test -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
+  [ -n "$VERBOSE" ] && v='--verbose'
+  ajv test $v -s './values-schema.yaml' -d $values_path --all-errors --extend-refs=fail --valid
   return 0
 }
 

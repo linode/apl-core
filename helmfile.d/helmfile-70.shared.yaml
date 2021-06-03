@@ -30,6 +30,8 @@ releases:
   - name: otomi-api
     installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
     namespace: otomi
+    labels:
+      stage: post
     <<: *default
   - name: otomi-console
     installed: true

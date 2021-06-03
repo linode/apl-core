@@ -2,13 +2,12 @@
 apiVersion: {{ include "podsecuritypolicy.apiVersion" . }}
 kind: PodSecurityPolicy
 metadata:
-  name: {{ template "common.names.fullname" . }}
+  name: {{ template "postgresql.fullname" . }}
   labels:
   {{- include "common.labels.standard" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-  namespace: {{ .Release.Namespace }}
 spec:
   privileged: false
   volumes:
@@ -21,7 +20,7 @@ spec:
   hostIPC: false
   hostPID: false
   runAsUser:
-    rule: 'RunAsAny'
+    rule: 'MustRunAsNonRoot'
   seLinux:
     rule: 'RunAsAny'
   supplementalGroups:

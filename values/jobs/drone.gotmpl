@@ -11,8 +11,8 @@
 {{- end -}}
 
 type: Job
-enabled: true
-description: Configure Drone to use the right pipeline file
+enabled: false
+description: Configure Drone to sync the values repo
 image:
   repository: otomi/tasks
   tag: v0.2.6
@@ -21,7 +21,7 @@ name: drone
 nativeSecrets:
   DRONE_TOKEN: {{ $d | get "adminToken" }}
 env:
-  DEBUG: '*'
+  # DEBUG: '*'
   DRONE_CONFIG_PATH: .drone.yml
   {{- if $hasGitea }}
   DRONE_OWNER: "otomi-admin"

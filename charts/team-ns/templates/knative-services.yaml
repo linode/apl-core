@@ -3,6 +3,7 @@
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
+{{- $type := $s.type | default "auth" }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}
@@ -14,7 +15,7 @@ metadata:
     {{- with $k.labels }}
     {{- . | toYaml | nindent 4 }}
     {{- end }}
-    {{- if $s.internal }}
+    {{- if eq $type "cluster" }}
     serving.knative.dev/visibility: cluster-local
     {{- end }}
 spec:
@@ -22,10 +23,10 @@ spec:
     metadata:
       annotations:
         policy.otomi.io/ignore: psp-allowed-users
-        {{- $hasMinScale := false -}}
-        {{- range $a := $k.annotations -}}
-          {{- if (contains "autoscaling.knative.dev/minScale" $a) -}}{{ $hasMinScale = true }}{{ end }}
-        {{- end -}}
+        {{- $hasMinScale := false }}
+        {{- range $a := $k.annotations }}
+          {{- if (contains "autoscaling.knative.dev/minScale" $a) }}{{ $hasMinScale = true }}{{ end }}
+        {{- end }}
         {{- if or (not $k.annotations) (not $hasMinScale) }}
         autoscaling.knative.dev/minScale: {{ $k.scaleToZero | ternary "0" "1" | quote }}
         {{- end }}
@@ -63,6 +64,30 @@ spec:
           {{- with $k.args }}
           args: {{ . | toYaml | nindent 12 }}
           {{- end }}
+{{- if or $k.files $k.secretMounts }}
+          volumeMounts:
+  {{- range $location, $content := $k.files }}
+            - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+              mountPath: {{ $location }}
+              readOnly: true
+  {{- end }}
+  {{- range $location, $secret := $k.secretMounts }}
+            - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+              mountPath: {{ $location }}
+              readOnly: true
+  {{- end }}
+      volumes:
+  {{- range $location, $content := $k.files }}
+        - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+          configMap:
+            name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+  {{- end }}
+  {{- range $location, $secret := $k.secretMounts }}
+        - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+          secret:
+            secretName: {{ $secret }}
+  {{- end }}
+{{- end }}
 ---      
 {{- end }}
 {{- end }}

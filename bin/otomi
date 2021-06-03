@@ -18,7 +18,15 @@ original_params="$@"
 
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
+
 ENV_DIR=${ENV_DIR:-$PWD}
+if [ -n "$TESTING" ]; then
+  CI=1
+  ENV_DIR="$PWD/tests/fixtures"
+else
+  ENV_DIR=${ENV_DIR:-$PWD}
+fi
+
 [ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
 [ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
 
@@ -86,7 +94,7 @@ function show_usage() {
   "
 }
 function check_env_dir() {
-  [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  [ -z "$CI" ] && [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
   return 0
 }
 
@@ -156,7 +164,9 @@ function drun() {
   local socket_volume=''
 
   [ "$VERBOSE" != '' ] && echo "Running in CI: $CI"
-  [ -n "$CI" ] && unset check_kube_context
+  if [ -n "$CI" ]; then
+    unset check_kube_context
+  fi
 
   if [ -n "$check_kube_context" ]; then
     validate_k8s_context

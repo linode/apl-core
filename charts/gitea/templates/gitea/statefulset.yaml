@@ -22,8 +22,6 @@ spec:
         {{- with .Values.gitea.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        policy.otomi.io/ignore.init-ca: psp-allowed-users
-        policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
       labels:
         {{- include "gitea.labels" . | nindent 8 }}
         {{- if .Values.statefulset.labels }}
@@ -36,44 +34,9 @@ spec:
       {{- end }}
       securityContext:
         fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       initContainers:
-      {{- if ne .Values.extraRootCA "" }}
-        - name: init-ca
-          image: "{{ include "gitea.rootimage" . }}"
-          command: ["bash"]
-          args:
-            - '-c'
-            - |
-              extraRootCA="/etc/ssl/certs/extra-root-ca.pem"
-              rootCA="/etc/ssl/certs/ca-certificates.crt"
-              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
-              ls -als $rootCA
-              cat $rootCA > $rootCAnew
-              cat $extraRootCA >> $rootCAnew
-              ls -als $rootCAnew
-          volumeMounts:
-          - name: extra-root-ca
-            mountPath: "/etc/ssl/certs/extra-root-ca.pem"
-            subPath: "extra-root-ca.pem"
-          - name: ca-new
-            mountPath: "/etc/ssl/certs-new"
-        - name: init-ca-finish
-          image: "{{ include "gitea.rootimage" . }}"
-          command: ["bash"]
-          args:
-            - '-c'
-            - |
-              rootCA="/etc/ssl/certs/ca-certificates.crt"
-              rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
-              cat $rootCAnew > $rootCA
-              ls -als $rootCA
-          volumeMounts:
-          - name: ca-new
-            mountPath: "/etc/ssl/certs-new"
-          - name: ca
-            mountPath: "/etc/ssl/certs/"
-            subPath: "ca-certificates.crt"
-      {{- end }}
         - name: init
           image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/init_gitea.sh"]
@@ -87,8 +50,8 @@ spec:
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.init.resources | nindent 12 }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
@@ -96,11 +59,6 @@ spec:
               mountPath: /etc/gitea/conf
             - name: data
               mountPath: /data
-            {{- if ne .Values.extraRootCA "" }}
-            - name: ca
-              mountPath: "/etc/ssl/certs/"
-              subPath: "ca-certificates.crt"
-            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -183,11 +141,6 @@ spec:
               mountPath: /tmp/gitea
             - name: data
               mountPath: /data
-            {{- if ne .Values.extraRootCA "" }}
-            - name: ca
-              mountPath: "/etc/ssl/certs/"
-              subPath: "ca-certificates.crt"
-            {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -216,15 +169,6 @@ spec:
         {{- end }}
         - name: temp
           emptyDir: {}
-        {{- if ne .Values.extraRootCA "" }}
-        - name: extra-root-ca
-          secret:
-            secretName: {{ include "gitea.fullname" . }}-extra-root-ca
-        - name: ca
-          emptyDir: {}
-        - name: ca-new
-          emptyDir: {}
-        {{- end }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:

@@ -25,22 +25,16 @@ check_policies() {
   # generate_manifests
   echo "Generating k8s $k8s_version manifests for cluster"
   hf_template "$k8s_resources_path/$k8s_version"
-
-  echo "Processing templates..."
-  # generate parameter constraints file from values
-  local parse_constraints_expression='.policies as $constraints | $constraints | keys[] | {(.): $constraints[.]}'
-  local policies=$(yq r $policies_file -j | jq --raw-output -S -c "$parse_constraints_expression")
-  for policy in $policies; do
-    echo $policy | yq r -P - >>$constraints_file
-  done
-  yq r -j $constraints_file | jq '{parameters: .}' | yq r -P - >$parameters_file
-
+  cat $policies_file | sed -e 's/policies:/parameters/' >$parameters_file
   echo "Checking manifests against policies"
   local tmp_out=$(mktemp -u)
   [ -n "$TRACE" ] && trace='--trace'
+  set -o pipefail
   conftest test $([ -n "$CI" ] && echo '--no-color') $trace --fail-on-warn --all-namespaces -d "$parameters_file" -p $policies_path "$k8s_resources_path/$k8s_version" 2>&1 | tee $tmp_out | grep -v 'TRAC' | grep -v 'PASS' | grep -v 'no policies found'
+  ret=$?
+  [ -n "$TRACE" ] && return $ret
   grep "FAIL" $tmp_out >/dev/null && return 1
-  return 0
+  return $ret
 }
 
 [ -f $otomi_settings ] && ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0

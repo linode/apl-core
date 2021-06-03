@@ -61,18 +61,19 @@ services:
     namespace: keycloak
     svc: keycloak-http
     ownHost: true
-    isPublic: true
+    type: public
   - name: httpbin
     namespace: shared
     svc: httpbin
     ownHost: true
     isShared: true
+    type: auth
   - name: harbor
     svc: harbor-harbor-portal
     namespace: harbor
     ownHost: true
-    paths: [/]
     isShared: true
+    type: auth
   - name: harbor
     svc: harbor-harbor-core
     namespace: harbor
@@ -81,6 +82,7 @@ services:
     forwardPath: true
     hide: true
     isShared: true
+    type: auth
   - name: harbor
     svc: harbor-harbor-core
     namespace: harbor
@@ -88,27 +90,15 @@ services:
     paths: [/service/, /v1/, /v2/]
     forwardPath: true
     hide: true
-    isPublic: true
+    type: public
   - name: gitea
     namespace: gitea
     svc: gitea-http
     ownHost: true
     isShared: true
     port: 3000
-    paths: [/api/, /otomi/values, /otomi-admin/values, /login/oauth]
     forwardPath: true
-    isPublic: true
-  - name: gitea
-    namespace: gitea
-    svc: gitea-http
-    ownHost: true
-    isShared: true
-    port: 3000
-    hide: true
-    authz:
-      workload:
-        app: gitea
-        component: server
+    type: public
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -116,6 +106,7 @@ services:
     ownHost: true
     hide: true
     isShared: true
+    type: auth
   - name: otomi
     namespace: otomi
     ownHost: true
@@ -123,20 +114,23 @@ services:
     svc: otomi-api
     hide: true
     paths: [/api/]
+    type: auth
   - name: otomi
     namespace: otomi
     ownHost: true
     isShared: true
     svc: otomi-console
-    paths: [/]
+    type: auth
   - name: loki
     svc: po-grafana
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
     path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
+    type: auth
   - name: weave-scope
     svc: weave-scope
     namespace: monitoring
+    type: auth
   - name: grafana
     svc: po-grafana
     namespace: monitoring
@@ -147,6 +141,7 @@ services:
       workload:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: po-grafana
+    type: auth
   - name: grafana-istio
     svc: grafana
     port: 3000
@@ -157,10 +152,12 @@ services:
       workload:
         app: grafana
         release: istio-system
+    type: auth
   - name: prometheus
     svc: po-prometheus
     port: 9090
     namespace: monitoring
+    type: auth
   - name: prometheus-istio
     svc: prometheus
     ownHost: true
@@ -168,23 +165,27 @@ services:
     logo:
       name: prometheus
     namespace: istio-apps
+    type: auth
   - name: alertmanager
     svc: po-alertmanager
     port: 9093
     logo:
       name: prometheus
     namespace: monitoring
+    type: auth
   - name: kiali
     svc: kiali
     forwardPath: true
     port: 20001
     namespace: istio-apps
+    type: auth
   - name: tracing
     svc: tracing
     forwardPath: true
     logo:
       name: jaeger
     namespace: istio-apps
+    type: auth
   - name: drone
     svc: drone
     namespace: team-admin
@@ -193,12 +194,13 @@ services:
       workload:
         app: drone
         component: server
+    type: auth
   - name: drone
     svc: drone
     namespace: team-admin
     ownHost: true
     hide: true
-    isPublic: true
+    type: public
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
   - name: vault
@@ -210,13 +212,14 @@ services:
       name: vault
     isShared: true
     path: ui/vault/auth?with=oidc
+    type: auth
   - name: kubeapps
     svc: kubeapps
     namespace: kubeapps
     ownHost: true
     logo:
       name: kubernetes
-    isPublic: true
+    type: public
     isShared: true
 
 teamConfig:
@@ -226,11 +229,13 @@ teamConfig:
       namespace: harbor
       isShared: true
       host: harbor
+      type: auth
     - name: httpbin
       namespace: shared
       svc: httpbin
       isShared: true
       host: httpbin
+      type: auth
     - name: vault
       namespace: vault
       svc: vault-0
@@ -240,6 +245,7 @@ teamConfig:
         name: vault
       isShared: true
       path: ui/vault/secrets/secret/list/teams/#NS#/
+      type: auth
     - name: kubeapps
       namespace: kubeapps
       svc: kubeapps
@@ -247,10 +253,12 @@ teamConfig:
       host: kubeapps
       logo:
         name: kubernetes
+      type: auth
     - name: loki
       svc: po-grafana
       host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
       path: explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
+      type: auth
     - name: grafana
       svc: po-grafana
       hasPrefix: true
@@ -258,13 +266,16 @@ teamConfig:
         workload:
           app.kubernetes.io/instance: prometheus-__TEAM
           app.kubernetes.io/name: __TEAM-po-grafana
+      type: auth
     - name: prometheus
       svc: po-prometheus
       hasPrefix: true
       port: 9090
+      type: auth
     - name: alertmanager
       svc: po-alertmanager
       hasPrefix: true
       port: 9093
       logo:
         name: prometheus
+      type: auth
