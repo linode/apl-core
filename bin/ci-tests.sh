@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export CI=1
 export IN_DOCKER=1
-unlink env >/dev/null
+unlink env 2>&1 >/dev/null
 set -e
 
 . bin/common.sh
