@@ -643,7 +643,7 @@ definitions:
             type: string
             enum:
               - public
-              - sso
+              - auth
               - private
               - cluster
               - tlsPass
@@ -683,11 +683,11 @@ definitions:
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
       type:
         nullable: true
-        default: sso
+        default: auth
         description: Will determine the ingress routing.
         enum:
           - public
-          - sso
+          - auth
           - private
           - cluster
           - tlsPass
@@ -1458,14 +1458,6 @@ properties:
           tools:
             additionalProperties: false
             properties:
-              azureTenantId:
-                type: string
-              azureClientId:
-                type: string
-              azureClientSecret:
-                type: string
-              gcloudServiceKey:
-                type: string
               image:
                 $ref: '#/definitions/imageSimple'
       otomi-console:

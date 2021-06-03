@@ -65,7 +65,9 @@ controller:
   service:
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
-    loadBalancerIP: {{ $n | get "loadBalancerIP" nil }}
+    {{- with $n | get "loadBalancerIP" nil }}
+    loadBalancerIP: {{ . }}
+    {{- end }}
     {{ if or ($n | get "loadBalancerRG" nil) ($n | get "service.annotations" nil) }}
     annotations:
       {{- with $n | get "service.annotations" nil }}

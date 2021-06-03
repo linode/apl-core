@@ -39,14 +39,31 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- end -}}
 
 {{- define "ingress.apiVersion" -}}
-{{- if semverCompare "<1.14-0" (include "common.capabilities.kubeVersion" .) -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if semverCompare "<1.19-0" (include "common.capabilities.kubeVersion" .) -}}
-{{- print "networking.k8s.io/v1beta1" -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
+networking.k8s.io/v1beta1
 {{- else -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- end }}
+extensions/v1beta1
 {{- end -}}
+{{- end -}}
+
+{{- define "ingress.path" }}
+- backend:
+{{- if ne (include "ingress.apiVersion" .dot) "networking.k8s.io/v1" }}
+    serviceName: {{ .svc }}
+    servicePort: {{ .port | default 80 }}
+{{- else }}
+    service:
+      name: {{ .svc }}
+      port:
+        number: {{ .port | default 80 }}
+{{- end }}
+  path: {{ .path | default "/" }}
+{{- if ne (include "ingress.apiVersion" .dot) "extensions/v1beta1" }}
+  pathType: {{ .pathType | default "Prefix" }}
+{{- end }}
+{{- end }}
 
 {{- define "ingress" -}}
 {{- $appsDomain := printf "apps.%s" .domain }}
@@ -147,20 +164,8 @@ spec:
     - host: {{ $appsDomain }}
       http:
         paths:
-        - backend:
-            service:
-              name: istio-ingressgateway-auth
-              port:
-                number: 80
-          path: /
-          pathType: Prefix
-        - backend:
-            service:
-              name: istio-ingressgateway-auth
-              port:
-                number: 80
-          path: /({{ range $i, $name := $names }}{{ if gt $i 0 }}|{{ end }}{{ $name }}{{ end }})/(.*)
-          pathType: Prefix
+        {{- include "ingress.path" (dict "dot" $.dot "svc" "istio-ingressgateway-auth") | nindent 8 }}
+        {{- include "ingress.path" (dict "dot" $.dot "svc" "istio-ingressgateway-auth" "path" (printf "/(%s)/(.*)" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|")))) | nindent 8 }}
 {{- else }}
   {{- range $domain, $paths := $routes }}
     - host: {{ $domain }}
@@ -168,40 +173,16 @@ spec:
         paths:
     {{- if not (eq $.provider "nginx") }}
       {{- if eq $.provider "aws" }}
-          - backend:
-              service:
-                name: ssl-redirect
-                port:
-                  number: use-annotation
-            path: /*
-            pathType: Prefix
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
       {{- end }}
-          - backend:
-              service:
-                name: nginx-ingress-controller
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "nginx-ingress-controller") | nindent 8 }}
     {{- else }}
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}
-          - backend:
-              service:
-                name: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
-                port:
-                  number: 80
-            path: {{ $path }}
-            pathType: Prefix
+          {{- include "ingress.path" (dict "dot" $.dot "svc" (printf "istio-ingressgateway%s" ($.hasAuth | ternary "-auth" "")) "path" $path) | nindent 8 }}
         {{- end }}
       {{- else }}
-          - backend:
-              service:
-                name: istio-ingressgateway{{ if $.hasAuth }}-auth{{ end }}
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
+          {{- include "ingress.path" (dict "dot" $.dot "svc" (printf "istio-ingressgateway%s" ($.hasAuth | ternary "-auth" ""))) | nindent 8 }}
       {{- end }}
     {{- end }}
   {{- end }}

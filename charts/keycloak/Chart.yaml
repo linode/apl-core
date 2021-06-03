@@ -5,7 +5,7 @@ description: Open Source Identity and Access Management For Modern Applications 
 home: https://www.keycloak.org/
 icon: https://www.keycloak.org/resources/images/keycloak_logo_480x108.png
 keywords:
-- sso
+- auth
 - idm
 - openid connect
 - saml

@@ -190,6 +190,7 @@ resources:
           k8s:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             resources:
               {{- with $i | get "resources.grafana" nil }}

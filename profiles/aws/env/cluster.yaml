@@ -1,6 +1,7 @@
 cluster:
-    apiName: 'FILL'
-    apiServer: 'FILL.eks.amazonaws.com'
+    apiName: FILL
+    apiServer: FILL.eks.amazonaws.com
+    domainSuffix: demo.eks.otomi.cloud
     k8sVersion: '1.19'
     name: demo
     otomiVersion: master

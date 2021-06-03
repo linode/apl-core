@@ -2,27 +2,27 @@ FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# https://github.com/kubernetes/kubernetes/releases:
+# https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.20.6
-# https://github.com/helm/helm/tags:
+# https://github.com/helm/helm/tags
 ARG HELM_VERSION=3.5.4
-# https://github.com/databus23/helm-diff/releases:
+# https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.1.3
-# https://github.com/zendesk/helm-secrets/releases:
+# https://github.com/zendesk/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=2.0.3
-# https://github.com/mozilla/sops/releases:
+# https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.1
-# https://github.com/roboll/helmfile/releases:
+# https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.138.7
-# https://github.com/open-policy-agent/opa/releases:
+# https://github.com/open-policy-agent/opa/releases
 ARG OPA_VERSION=0.28.0
-# https://github.com/zegl/kube-score/releases:
+# https://github.com/zegl/kube-score/releases
 ARG KUBESCORE_VERSION=1.11.0
-# https://github.com/instrumenta/kubeval/releases:
+# https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
-# https://github.com/open-policy-agent/conftest/releases:
+# https://github.com/open-policy-agent/conftest/releases
 ARG CONFTEST_VERSION=0.25.0
-# https://github.com/plexsystems/konstraint/releases:
+# https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.12.1
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz

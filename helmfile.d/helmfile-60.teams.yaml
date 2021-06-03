@@ -94,7 +94,7 @@ releases:
                   - targets:
                     {{ $registry := list }}
                     {{- range $s := $team | get "services" list }}
-                    {{- $type := $s.type | default "sso" }}
+                    {{- $type := $s.type | default "auth" }}
                     {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
                     {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
                     {{- $path := "/" }}{{ if hasKey $s "paths" }}{{ $path = index $s.paths 0 }}{{ end }}

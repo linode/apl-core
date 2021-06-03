@@ -4,7 +4,7 @@
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
   {{- $ := . }}
   {{- range $s := $v.services }}
-    {{- $type := $s.type | default "sso" }}
+    {{- $type := $s.type | default "auth" }}
     {{- $ns := index $s "namespace" | default $.Release.Namespace }}
     {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
@@ -19,7 +19,7 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if eq $type "sso" }}
+        {{- if eq $type "auth" }}
     auth: "true"
         {{- end }}
 spec:
@@ -51,16 +51,11 @@ spec:
         authority: auth.{{ $v.clusterDomainSuffix }}
         uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.clusterDomainSuffix }}
     -
-          {{- if hasKey $s "paths" }}
+          {{- with $s.paths | default (list "/") }}
       match:
-            {{- range $path := $s.paths }}
-              {{- if eq $path "/" }}
-        - uri:
-            prefix: /
-              {{- else }}
+            {{- range $path := . }}
         - uri:
             prefix: '{{ $path }}'        
-              {{- end }}
             {{- end }}
           {{- end }}
           {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}

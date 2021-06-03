@@ -36,7 +36,7 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
   
 env:
-  DEBUG: '*'
+  # DEBUG: '*'
   GIT_REPO_URL: {{ $o.git.repoUrl }}
   GIT_BRANCH: {{ $o.git | get "branch" "master" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}

@@ -3,7 +3,7 @@
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
-{{- $type := $s.type | default "sso" }}
+{{- $type := $s.type | default "auth" }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}
@@ -67,23 +67,23 @@ spec:
 {{- if or $k.files $k.secretMounts }}
           volumeMounts:
   {{- range $location, $content := $k.files }}
-            - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}
+            - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
               mountPath: {{ $location }}
               readOnly: true
   {{- end }}
   {{- range $location, $secret := $k.secretMounts }}
-            - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}
+            - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
               mountPath: {{ $location }}
               readOnly: true
   {{- end }}
       volumes:
   {{- range $location, $content := $k.files }}
-        - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}
+        - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
           configMap:
-            name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}
+            name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
   {{- end }}
   {{- range $location, $secret := $k.secretMounts }}
-        - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}
+        - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
           secret:
             secretName: {{ $secret }}
   {{- end }}

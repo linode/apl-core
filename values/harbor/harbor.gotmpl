@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $h := $v.charts | get "harbor" dict }}
-{{- $hp := $v.charts.harbor.persistence }}
+{{- $hp := $h | get "persistence" dict }}
 {{- $harborDomain := printf "harbor.%s" $v.dns.domain }}
 {{- $notaryDomain := printf "notary.%s" $v.dns.domain }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
@@ -116,9 +116,11 @@ persistence:
   # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
   # for the detail.
   imageChartStorage:
-    {{ $imageChartStorageType := $hp.imageChartStorage | get "type" "filesystem" }}
+    {{ $imageChartStorageType := $hp | get "imageChartStorage.type" "filesystem" }}
     type: {{ $imageChartStorageType }}
-    {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType dict) | nindent 6 }}
+    {{- if ne $imageChartStorageType "filesystem" }}
+    {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType) | nindent 6 }}
+    {{- end }}
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
 harborAdminPassword: {{ $h | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
