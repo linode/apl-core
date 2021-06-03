@@ -3,7 +3,7 @@
 
 run_crypt
 
-bin/gen-demo-mtls-cert-secret.sh
+[ -z "$CI" ] && bin/gen-demo-mtls-cert-secret.sh
 
 # install some stuff that we never want to end up as charts
 hf -f helmfile.tpl/helmfile-init.yaml template | kubectl apply -f -
