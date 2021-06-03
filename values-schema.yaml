@@ -1356,7 +1356,6 @@ properties:
           - adminPassword
           - persistence
           - retention
-          - storageType
       nginx-ingress:
         additionalProperties: false
         properties:
