@@ -8,7 +8,7 @@ readonly root=$(yqr dns.domain)
 readonly dom="tlspass.$root"
 
 loc='/tmp/otomi/ssl'
-[ -d "$loc/$root.crt" ] && exit
+[ -f "$loc/$root.crt" ] && exit
 [ ! -d "$loc" ] && mkdir -p $loc
 
 # for demonstration of mtls passthrough

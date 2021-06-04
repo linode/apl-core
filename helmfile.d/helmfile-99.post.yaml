@@ -25,7 +25,7 @@ releases:
     labels:
       job: true
   - name: job-drone
-    installed: {{ $c | get "drone.enabled" false }}
+    installed: false #{{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
       stage: post

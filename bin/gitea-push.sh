@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 . bin/common.sh
 
 run_crypt
@@ -21,9 +21,11 @@ readonly gitea_org='otomi'
 readonly gitea_repo='values'
 cd $ENV_DIR
 # Initialize as clean slate
+git_found=true
 if [ ! -d .git ]; then
   git init
   git checkout -b main
+  git_found=false
 fi
 
 tmp_remote_name=$(git remote -v | grep "$gitea_url" | grep "push" | cut -f1)
@@ -44,17 +46,15 @@ if [ ! $(git config remote.$remote_name.url) ]; then
 fi
 
 # Try to pull, if repo is not new, it will get data
-git fetch $remote_name main || true
-# Which will show how many commits are there.
-readonly commit_count=$(git rev-list --count --remotes=$remote_name)
+if ! git fetch $remote_name main >/dev/null; then
+  if ! $git_found; then
+    git config user.name "Otomi Admin"
+    git config user.email "otomi-admin@$cluster_domain"
+    git add -A
 
-if [ "$commit_count" -eq "0" ]; then
-  git config user.name "Otomi Admin"
-  git config user.email "otomi-admin@$cluster_domain"
-  git add -A
-
-  git commit --no-verify -m "Initial commit of otomi-values"
-  git push -u $remote_name main
+    git commit --no-verify -m "Initial commit of otomi-values"
+  fi
+  git push -u $remote_name main -f
   echo "Otomi-values has been pushed to gitea"
 else
   err "There is already data in gitea, manual intervention necessary"
