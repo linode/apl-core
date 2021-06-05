@@ -15,7 +15,7 @@
 {{- $privateForward := list }}
 {{- $privateCustom := list }}
 {{- range $s := $v.services }}
-  {{- $type := $s.type | default "auth" }}
+  {{- $type := $s.type | default "public" }}
   {{- if eq $type "tlsPass" }}
     {{- $tls = append $tls $s }}
   {{- else if and (not (eq $type "cluster")) (not $s.host ) }}

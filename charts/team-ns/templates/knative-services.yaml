@@ -3,7 +3,7 @@
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
-{{- $type := $s.type | default "auth" }}
+{{- $type := $s.type | default "public" }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}

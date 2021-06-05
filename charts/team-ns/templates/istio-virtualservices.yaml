@@ -4,7 +4,8 @@
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
   {{- $ := . }}
   {{- range $s := $v.services }}
-    {{- $type := $s.type | default "auth" }}
+    {{- $type := $s.type | default "public" }}
+    {{- $isAuthenticated := $s.isAuthenticated | default false }}
     {{- $ns := index $s "namespace" | default $.Release.Namespace }}
     {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
@@ -19,7 +20,7 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if eq $type "auth" }}
+        {{- if $isAuthenticated }}
     auth: "true"
         {{- end }}
 spec:

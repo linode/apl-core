@@ -11,22 +11,7 @@ autoDiscovery:
 
 cloudProvider: {{ $v.cluster.provider }}
 
-{{- if eq $v.cluster.provider "azure" }}
-{{- $a := $v.azure }}
-azureClientID: {{ $a.clientId }}
-azureClientSecret: {{ $a.clientSecret }}
-azureResourceGroup: {{ $a.resourceGroup }}
-azureSubscriptionID: {{ $a.subscriptionId }}
-azureTenantID: {{ $a.tenantId }}
-# if using AKS azureVMType should be set to "AKS"
-azureVMType: "AKS"
-azureClusterName: {{ $v.clusterName }}
-# azureNodeResourceGroup: "" # not needed for managed group
-# if using MSI, ensure subscription ID and resource group are set
-azureUseManagedIdentityExtension: false
-# only azure does not have autodiscovery, so list groups:
-autoscalingGroups: {{- $a.autoscalingGroups | toYaml | nindent 2 }}
-{{- else if eq $v.cluster.provider "aws" }}
+{{- if eq $v.cluster.provider "aws" }}
 awsRegion: {{ $v.cluster.region }}
 {{- end }}
 

@@ -6,16 +6,23 @@
 {{- $publicDomains := list }}
 {{- $tlsDomains := list }}
 {{- range $s := $v.services }}
-{{- $type := $s.type | default "auth" }}
+{{- $type := $s.type | default "public" }}
+{{- $isAuthenticated := $s.isAuthenticated | default false }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
 {{- if and (eq $type "tlsPass") (not (has $domain $tlsDomains)) }}
   {{- $tlsDomains = (append $tlsDomains $domain) }}
-{{- else if and (eq $type "public") (not (has $domain $publicDomains)) }}
-  {{- $publicDomains = (append $publicDomains $domain) }}
-{{- else if not (has $domain $authDomains) }}
-  {{- $authDomains = (append $authDomains $domain) }}
+{{- else if eq $type "public" }}
+  {{- if $isAuthenticated }}
+    {{- if not (has $domain $authDomains) }}
+      {{- $authDomains = (append $authDomains $domain) }}
+    {{- end }}
+  {{- else }}
+    {{- if not (has $domain $publicDomains) }}
+      {{- $publicDomains = (append $publicDomains $domain) }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

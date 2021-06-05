@@ -570,6 +570,9 @@ definitions:
       id:
         description: Unique identifier created by and used in API. Optional.
         type: string
+      isAuthenticated:
+        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+        type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
@@ -687,7 +690,6 @@ definitions:
         description: Will determine the ingress routing.
         enum:
           - public
-          - auth
           - private
           - cluster
           - tlsPass
@@ -782,19 +784,6 @@ properties:
             type: boolean
       monitor:
         $ref: '#/definitions/azureMonitor'
-      resourceGroup:
-        description: An Azure resource group.
-        type: string
-      subscriptionId:
-        description: An Azure subscription ID.
-        type: string
-      tenantId:
-        description: An Azure tenant ID.
-        type: string
-    required:
-      - resourceGroup
-      - subscriptionId
-      - tenantId
   charts:
     additionalProperties: true
     properties:
@@ -1616,9 +1605,6 @@ properties:
         items:
           $ref: '#/definitions/domain'
         type: array
-      domain:
-        $ref: '#/definitions/domain'
-        description: Base cloud domain for the cluster domain. Also added to list of dns zones in the Otomi Console.
       provider:
         description: The DNS provider managing the domains.
         oneOf:
@@ -1670,8 +1656,6 @@ properties:
                     default: false
                 required:
                   - resourceGroup
-                  - tenantId
-                  - subscriptionId
                   - aadClientId
                   - aadClientSecret
             required:
@@ -1691,7 +1675,6 @@ properties:
             required:
               - google
     required:
-      - domain
       - provider
   home:
     $ref: '#/definitions/alerts'

@@ -21,6 +21,26 @@ teamConfig:
                       secrets:
                           - mysecret-generic
                   type: public
+                - name: hello-auth
+                  port: 80
+                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
+                  ownHost: true
+                  isAuthenticated: true
+                  ksvc:
+                      image:
+                          repository: otomi/nodejs-helloworld
+                          tag: v1.2.12
+                      scaleToZero: false
+                      resources:
+                          limits:
+                              cpu: 50m
+                              memory: 64Mi
+                          requests:
+                              cpu: 50m
+                              memory: 64Mi
+                      secrets:
+                          - mysecret-generic
+                  type: public
                 - name: my-nginx
                   port: 443
                   id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
