@@ -2,7 +2,7 @@
 {{- $c := $v.cluster -}}
 {{- $o := $v.charts | get "otomi-console" dict -}}
 {{- $core := readFile "../../core.yaml" | fromYaml -}}
-{{- $domain := printf "otomi.%s" $v.dns.domain -}}
+{{- $domain := printf "otomi.%s" $v.cluster.domainSuffix -}}
 {{- $services := list -}}
 {{- range $s := $v.services -}}
 {{- if hasKey $core.apps $s.name -}}

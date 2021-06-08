@@ -5,7 +5,7 @@
   {{- $ := . }}
   {{- range $s := $v.services }}
     {{- $type := $s.type | default "public" }}
-    {{- $isAuthenticated := $s.isAuthenticated | default false }}
+    {{- $auth := $s.auth | default false }}
     {{- $ns := index $s "namespace" | default $.Release.Namespace }}
     {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
@@ -20,7 +20,7 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if $isAuthenticated }}
+        {{- if $auth }}
     auth: "true"
         {{- end }}
 spec:

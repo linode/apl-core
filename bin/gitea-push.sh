@@ -13,7 +13,7 @@ if [ "$stage" = "staging" ]; then
   }
 fi
 
-readonly cluster_domain=$(yqr dns.domain)
+readonly cluster_domain=$(yqr cluster.domainSuffix)
 readonly gitea_url="gitea.$cluster_domain"
 readonly gitea_password=$(yqr charts.gitea.adminPassword | yqr otomi.adminPassword)
 readonly gitea_user='otomi-admin'

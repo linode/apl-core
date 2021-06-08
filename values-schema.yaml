@@ -191,6 +191,28 @@ definitions:
     required:
       - name
       - provider
+  containerSpec:
+    properties:
+      image:
+        $ref: '#/definitions/image'
+      securityContext:
+        $ref: '#/definitions/securityContext'
+        description: Security context for the container.
+        title: Security context
+      resources:
+        $ref: '#/definitions/resources'
+      env:
+        $ref: '#/definitions/env'
+      files:
+        $ref: '#/definitions/files'
+      secrets:
+        $ref: '#/definitions/secrets'
+      secretMounts:
+        $ref: '#/definitions/secretMounts'
+    required:
+      - image
+      - resources
+    type: object
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -275,76 +297,61 @@ definitions:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
       Jobs).
-    additionalProperties: false
     items:
-      additionalProperties: false
-      properties:
-        enabled:
-          default: true
-          type: boolean
-        env:
-          $ref: '#/definitions/env'
-        files:
-          $ref: '#/definitions/files'
-        image:
-          $ref: '#/definitions/image'
-        init:
-          properties:
-            env:
-              $ref: '#/definitions/env'
-            image:
-              $ref: '#/definitions/image'
-            nativeSecrets:
-              $ref: '#/definitions/nativeSecrets'
-            script:
-              $ref: '#/definitions/script'
-            secrets:
-              $ref: '#/definitions/secrets'
-        name:
-          default: foo
-          description: Must be a unique name.
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
-          type: string
-        nativeSecrets:
-          $ref: '#/definitions/nativeSecrets'
-        resources:
-          $ref: '#/definitions/resources'
-        runPolicy:
-          default: OnSpecChange
-          description: |
-            If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
-            If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
-          enum:
-            - Always
-            - OnSpecChange
-          type: string
-        schedule:
-          default: 0 1 * * *
-          description: Must give a cron-type expression if the job-type is 'cronjob' (job.type).
-          type: string
-        secrets:
-          $ref: '#/definitions/secrets'
-        secretMounts:
-          $ref: '#/definitions/secretMounts'
-        script:
-          $ref: '#/definitions/script'
-        podSecurityContext:
-          $ref: '#/definitions/podSecurityContext'
-        ttlSecondsAfterFinished:
-          default: 86400
-          type: number
-        type:
-          default: Job
-          enum:
-            - Job
-            - CronJob
-          type: string
+      items:
+        allOf:
+          - properties:
+              id:
+                type: string
+                readOnly: true
+            type: object
+          - $ref: '#/definitions/jobSpec'
+          - $ref: '#/definitions/podSpec'
+    type: array
+  jobSpec:
+    properties:
+      type:
+        default: Job
+        enum:
+          - Job
+          - CronJob
+        type: string
+      name:
+        $ref: '#/definitions/idName'
+        title: Name
+        description: A job name
+        example: some-job
+      enabled:
+        default: true
+        type: boolean
+      runPolicy:
+        default: OnSpecChange
+        description: |
+          If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
+          If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
+        enum:
+          - Always
+          - OnSpecChange
+        type: string
+      schedule:
+        default: 0 1 * * *
+        description: Must give a cron-type expression if the job type is 'Cronjob'.
+        type: string
+      script:
+        $ref: '#/definitions/script'
+      ttlSecondsAfterFinished:
+        default: 86400
+        description: Time To Live after job is finished in seconds. Will be removed afterwards.
+        title: TTL after finished
+        type: integer
+      init:
+        $ref: '#/definitions/containerSpec'
+        nullable: true
     required:
-      - image
       - name
       - script
       - type
-    type: array
+    type: object
   k8sVersion:
     default: '1.19'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
@@ -387,12 +394,27 @@ definitions:
         type: string
     nullable: true
     title: Kubernetes secrets
+  podSpec:
+    allOf:
+      - properties:
+          annotations:
+            $ref: '#/definitions/annotations'
+            title: Pod annotations
+          podSecurityContext:
+            $ref: '#/definitions/securityContext'
+            description: Security context for the pod.
+            title: Pod security context
+        required:
+          - podSecurityContext
+        type: object
+      - $ref: '#/definitions/containerSpec'
+    type: object
   portNumber:
     default: 80
     maximum: 32768
     minimum: 80
     type: number
-  podSecurityContext:
+  securityContext:
     properties:
       runAsNonRoot:
         type: boolean
@@ -443,9 +465,9 @@ definitions:
     description: Min and max number of replicas.
     properties:
       maxReplicas:
-        type: number
+        type: integer
       minReplicas:
-        type: number
+        type: integer
   subdomainType:
     type: string
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
@@ -484,11 +506,6 @@ definitions:
             enum:
               - docker-registry
             type: string
-          dockerconfig:
-            type: string
-            enum:
-              - '.dockerconfig.json'
-            readOnly: true
         required:
           - type
       - title: TLS
@@ -570,86 +587,68 @@ definitions:
       id:
         description: Unique identifier created by and used in API. Optional.
         type: string
-      isAuthenticated:
+      auth:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
       ksvc:
-        additionalProperties: false
-        description: Details for a knative service that will be deployed and operated.
-        properties:
-          annotations:
-            $ref: '#/definitions/annotations'
-          autoCD:
-            additionalProperties: false
-            description: NOT IN USE YET! Deploys new images based on a tagging strategy.
-            oneOf:
-              - additionalProperties: false
-                nullable: true
-                title: 'Off'
-              - nullable: true
-                properties:
-                  additionalProperties: false
-                  semver:
-                    description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
-                    example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
-                    title: Semver version pattern
-                    type: string
-                  tagMatcher:
-                    default: semver
-                    enum:
-                      - semver
-                    type: string
-                required:
-                  - semver
-                title: Semver versioning
-              - additionalProperties: false
-                properties:
-                  glob:
-                    description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
-                    example: master-v1.*.*
-                    title: Glob string pattern
-                    type: string
-                  tagMatcher:
-                    default: glob
-                    enum:
-                      - glob
-                    type: string
-                required:
-                  - glob
-                title: Glob pattern matching
-            title: Continuous delivery pipeline
-          env:
-            $ref: '#/definitions/env'
-          files:
-            $ref: '#/definitions/files'
-          image:
-            $ref: '#/definitions/image'
-          predeployed:
-            default: false
-            description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
-            type: boolean
-          resources:
-            $ref: '#/definitions/resources'
-          scaleToZero:
-            default: false
-            description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
-            title: Scale to zero
-            type: boolean
-          secrets:
-            $ref: '#/definitions/secrets'
-          secretMounts:
-            $ref: '#/definitions/secretMounts'
-          type:
-            type: string
-            enum:
-              - public
-              - auth
-              - private
-              - cluster
-              - tlsPass
+        anyOf:
+          - description: Details for a knative service that will be deployed and operated.
+            allOf:
+              - $ref: '#/definitions/podSpec'
+              - properties:
+                  autoCD:
+                    additionalProperties: false
+                    description: NOT IN USE YET! Deploys new images based on a tagging strategy.
+                    oneOf:
+                      - additionalProperties: false
+                        nullable: true
+                        title: 'Off'
+                      - nullable: true
+                        properties:
+                          additionalProperties: false
+                          semver:
+                            description: 'Use this filter if your images tags follow semantic versioning rules (MAJOR.MINOR.PATCH). E.g.: PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*".'
+                            example: 'PATCH only: "~1.1", MINOR and PATCH only "~1", ALL "*",  ">=1.2.3-0"'
+                            title: Semver version pattern
+                            type: string
+                          tagMatcher:
+                            default: semver
+                            enum:
+                              - semver
+                            type: string
+                        required:
+                          - semver
+                        title: Semver versioning
+                      - additionalProperties: false
+                        properties:
+                          glob:
+                            description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
+                            example: master-v1.*.*
+                            title: Glob string pattern
+                            type: string
+                          tagMatcher:
+                            default: glob
+                            enum:
+                              - glob
+                            type: string
+                        required:
+                          - glob
+                        title: Glob pattern matching
+                    title: Continuous delivery pipeline
+                  scaleToZero:
+                    default: false
+                    description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
+                    title: Scale to zero
+                    type: boolean
+          - description: Choose this when the ks.vc is already deployed
+            properties:
+              predeployed:
+                default: true
+                description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
+                type: boolean
       logo:
         description: Used by otomi-console as an override mechanism to display another logo.
         properties:
@@ -686,7 +685,7 @@ definitions:
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
       type:
         nullable: true
-        default: auth
+        default: public
         description: Will determine the ingress routing.
         enum:
           - public
@@ -735,12 +734,33 @@ definitions:
         type: string
       resourceQuota:
         description: Kubernetes resource quota. As is.
+      selfService:
+        $ref: '#/definitions/teamSelfService'
       services:
         items:
           $ref: '#/definitions/service'
         type: array
     required:
       - id
+  teamSelfService:
+    title: Team self service flags
+    description: Grant team permissions to modify certain configuration parameters.
+    type: object
+    properties:
+      Service:
+        title: Service
+        type: array
+        items:
+          type: string
+          enum: [ingress]
+        uniqueItems: true
+      Team:
+        title: Team
+        type: array
+        items:
+          type: string
+          enum: [alerts, oidc, resourceQuota]
+        uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
@@ -959,11 +979,11 @@ properties:
           logLevel:
             type: string
           constraintViolationsLimit:
-            type: number
+            type: integer
           auditInterval:
-            type: number
+            type: integer
           replicas:
-            type: number
+            type: integer
           dataSync:
             type: array
             items:
@@ -1357,9 +1377,9 @@ properties:
                 default: true
                 type: boolean
               maxReplicas:
-                type: number
+                type: integer
               minReplicas:
-                type: number
+                type: integer
           loadBalancerIP:
             type: string
           loadBalancerRG:

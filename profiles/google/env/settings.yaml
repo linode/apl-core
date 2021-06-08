@@ -8,7 +8,6 @@ customer:
     name: demo
 dns:
     zones: []
-    domain: demo.gks.otomi.cloud
     provider:
         google:
             project: <projectId>

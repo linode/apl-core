@@ -7,14 +7,14 @@
 {{- $tlsDomains := list }}
 {{- range $s := $v.services }}
 {{- $type := $s.type | default "public" }}
-{{- $isAuthenticated := $s.isAuthenticated | default false }}
+{{- $auth := $s.auth | default false }}
 {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
 {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
 {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
 {{- if and (eq $type "tlsPass") (not (has $domain $tlsDomains)) }}
   {{- $tlsDomains = (append $tlsDomains $domain) }}
 {{- else if eq $type "public" }}
-  {{- if $isAuthenticated }}
+  {{- if $auth }}
     {{- if not (has $domain $authDomains) }}
       {{- $authDomains = (append $authDomains $domain) }}
     {{- end }}

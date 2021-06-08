@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $domain := printf "auth.%s" $v.dns.domain }}
+{{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}

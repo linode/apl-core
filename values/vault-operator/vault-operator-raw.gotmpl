@@ -148,7 +148,7 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.dns.domain }}/realms/master
+              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/master
               oidc_client_id: {{ $k.idp.clientID }}
               oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true
@@ -161,7 +161,7 @@ resources:
               token_policies: [allow-list-all-secrets, allow_sandbox]
               ttl: 1h
               #  http://localhost:8250/oidc/callback - for: vault login -method oidc
-              allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.dns.domain }}/ui/vault/auth/oidc/oidc/callback"
+              allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.cluster.domainSuffix }}/ui/vault/auth/oidc/oidc/callback"
           - type: kubernetes
             roles:
               # Allow every pod in the vault namespace to use the secret kv store

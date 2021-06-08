@@ -6,7 +6,7 @@
 {{- $domainNames := list }}
 {{- $teams := set $tc.teams "admin" dict }}
 {{- range $teamId, $team := $tc.teams }}
-  {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.dns.domain }}
+  {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domainSuffix }}
   {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
   {{- range $s := $services }}
     {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) }}
@@ -14,7 +14,7 @@
       {{- if hasKey $s "domain" }}
         {{- $domain = $s.domain }}
       {{- else if hasKey $s "isShared" }}
-        {{- $domain = printf "%s.%s" $s.name $v.dns.domain }}
+        {{- $domain = printf "%s.%s" $s.name $v.cluster.domainSuffix }}
       {{- else if hasKey $s "ownHost" }}
         {{- $domain = printf "%s.%s" $s.name $baseDomain }}
       {{- end }}
@@ -26,8 +26,8 @@
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $proxyDomain := print "proxy." $v.dns.domain }}
-{{- $authDomain := print "auth." $v.dns.domain }}
+{{- $proxyDomain := print "proxy." $v.cluster.domainSuffix }}
+{{- $authDomain := print "auth." $v.cluster.domainSuffix }}
 {{- $domains = concat $domains (list (dict "domain" $proxyDomain "hasCert" false "certArn" "" "certName" "") (dict "domain" $authDomain "hasCert" false "certArn" "" "certName" "")) }}
 domains:
   {{- range $domInfo := $domains }}

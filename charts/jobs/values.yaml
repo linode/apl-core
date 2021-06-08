@@ -27,6 +27,7 @@ init: {}
   #   entries:
   #       - foo
   #       - bar
+  # files: {}
 
 resources:
   limits:

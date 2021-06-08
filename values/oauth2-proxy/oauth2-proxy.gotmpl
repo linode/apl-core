@@ -6,7 +6,7 @@
 {{- $o := $v.oidc }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.dns.domain $realm }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:
   tag: "v7.1.3"
@@ -41,14 +41,14 @@ resources:
     {{- range $s := $team.services }}
       {{- $type := $s.type | default "auth" }}
       {{- if and (hasKey $s "domain") (not (eq $type "public")) }}
-        {{- if and (not (has $s.domain $domains)) (not (contains $v.dns.domain $s.domain)) }}
+        {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domainSuffix $s.domain)) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.dns.domain)) "sep" ",") }}
+{{- $domainList := tpl $joinTpl (dict "list" (append $domains (printf ".%s" $v.cluster.domainSuffix)) "sep" ",") }}
 
 # securityContext:
 #   enabled: true
@@ -65,7 +65,7 @@ extraArgs:
   session-store-type: redis
   redis-connection-url: redis://oauth2-proxy-redis-master
   redis-password: {{ $r | get "password" "str1cli4u" }}
-  redirect-url: https://auth.{{ $v.dns.domain }}/oauth2/callback
+  redirect-url: https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}
   cookie-samesite: none

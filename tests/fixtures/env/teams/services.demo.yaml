@@ -25,7 +25,7 @@ teamConfig:
                   port: 80
                   id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
                   ownHost: true
-                  isAuthenticated: true
+                  auth: true
                   ksvc:
                       image:
                           repository: otomi/nodejs-helloworld
