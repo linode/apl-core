@@ -1797,11 +1797,6 @@ properties:
         default: ''
         description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
         type: string
-      teamPrefix:
-        default: team-
-        description: The prefix in URLs for team domains.
-        pattern: '^[a-z]+[-]{1}$'
-        type: string
       addons:
         description: Manage addon configuration
         additionalProperties: false

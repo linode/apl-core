@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" dict }}
-{{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix "admin" $v.cluster.domainSuffix }}
+{{- $domain := printf "team-%s.%s" "admin" $v.cluster.domainSuffix }}
 nameOverride: nginx-ingress
 controller:
   admissionWebhooks:

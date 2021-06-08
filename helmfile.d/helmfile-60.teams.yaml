@@ -11,7 +11,7 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc.teams }}
-  {{- $domain := printf "%s%s.%s" $v.otomi.teamPrefix $teamId $v.cluster.domainSuffix }}
+  {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}

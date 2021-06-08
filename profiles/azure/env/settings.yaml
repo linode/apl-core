@@ -32,4 +32,3 @@ oidc:
 otomi:
     isMultitenant: true
     mode: ce
-    teamPrefix: team-
