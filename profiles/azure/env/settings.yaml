@@ -10,6 +10,9 @@ azure:
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
+    storageType:
+        fast: Premium_LRS
+        standard: StandardSSD_LRS
 customer:
     name: demo
 dns:
