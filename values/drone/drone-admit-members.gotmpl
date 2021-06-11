@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $d := $v.charts | get "drone" dict }}
-{{- $host := printf "drone.%s" $v.dns.domain }}
+{{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 
 nameOverride: "drone-admit-members"
 fullnameOverride: "drone-admit-members"

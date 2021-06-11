@@ -7,15 +7,15 @@ type: Job
 name: gitea
 enabled: true
 env:
-  GITEA_URL: https://gitea.{{ $v.dns.domain }}
-  DRONE_URL: https://drone.{{ $v.dns.domain }}
+  GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
+  DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
 nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
   env:
-    GITEA_URL: https://gitea.{{ $v.dns.domain }}
+    GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   image:
     repository: badouralix/curl-http2
   script: |

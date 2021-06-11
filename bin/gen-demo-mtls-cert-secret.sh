@@ -4,7 +4,7 @@
 set +e
 run_crypt
 
-readonly root=$(yqr dns.domain)
+readonly root=$(yqr cluster.domainSuffix)
 readonly dom="tlspass.$root"
 
 loc='/tmp/otomi/ssl'

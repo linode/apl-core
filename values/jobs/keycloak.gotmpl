@@ -24,8 +24,8 @@ init:
     repository: badouralix/curl-http2
   script: |
     {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.dns.domain }}"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.dns.domain }}); do 
+    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
+    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domainSuffix }}); do 
       printf '.'
       sleep 5
     done
@@ -36,11 +36,11 @@ image:
   pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
 name: keycloak
 env:
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
 nativeSecrets:
   # DEBUG: '*'
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.dns.domain }}
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
@@ -53,16 +53,16 @@ nativeSecrets:
   IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
   IDP_OIDC_URL: {{ $v.oidc.issuer }}
   REDIRECT_URIS: '[
-      "https://otomi.{{ $v.dns.domain }}",
-      "https://auth.{{ $v.dns.domain }}/*",
-      "https://apps.{{ $v.dns.domain }}/*",
-      "https://otomi.{{ $v.dns.domain }}/*",
-      "https://gitea.{{ $v.dns.domain }}/*",
+      "https://otomi.{{ $v.cluster.domainSuffix }}",
+      "https://auth.{{ $v.cluster.domainSuffix }}/*",
+      "https://apps.{{ $v.cluster.domainSuffix }}/*",
+      "https://otomi.{{ $v.cluster.domainSuffix }}/*",
+      "https://gitea.{{ $v.cluster.domainSuffix }}/*",
       {{- range $name, $team := $teams }}
-      "https://apps.team-{{ $name }}.{{ $v.dns.domain }}/*",
+      "https://apps.team-{{ $name }}.{{ $v.cluster.domainSuffix }}/*",
       {{- end }}
-      "https://harbor.{{ $v.dns.domain }}/*",
-      "https://vault.{{ $v.dns.domain }}/*"
+      "https://harbor.{{ $v.cluster.domainSuffix }}/*",
+      "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
   TENANT_ID: {{ $v.oidc.tenantID }}
   TENANT_CLIENT_ID: {{ $v.oidc.clientID }}

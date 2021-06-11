@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $h := $v.charts | get "harbor" dict }}
 {{- $hp := $h | get "persistence" dict }}
-{{- $harborDomain := printf "harbor.%s" $v.dns.domain }}
-{{- $notaryDomain := printf "notary.%s" $v.dns.domain }}
+{{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
+{{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}

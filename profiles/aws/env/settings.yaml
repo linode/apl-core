@@ -8,7 +8,6 @@ customer:
     name: demo
 dns:
     zones: []
-    domain: demo.eks.otomi.cloud
     provider:
         aws:
             region: eu-central-1
@@ -24,4 +23,3 @@ oidc:
 otomi:
     isMultitenant: true
     mode: ce
-    teamPrefix: team-

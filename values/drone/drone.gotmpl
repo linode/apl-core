@@ -7,10 +7,10 @@
 {{- $hasStagingCerts := eq ($cm | get "stage" "production") "staging" }}
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
-{{- $host := printf "drone.%s" $v.dns.domain }}
+{{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
-clusterDomain: {{ $v.dns.domain }}
+clusterDomain: {{ $v.cluster.domainSuffix }}
 
 images:
   server:

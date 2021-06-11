@@ -23,7 +23,6 @@ dns:
             subscriptionId: <subscriptionId>
             tenantId: <tenantId>
     zones: []
-    domain: demo.aks.otomi.cloud
 oidc:
     adminGroupID: adminGroupID
     authUrl: https://oidc.local/oauth2/authorize
@@ -36,4 +35,3 @@ oidc:
 otomi:
     isMultitenant: true
     mode: ce
-    teamPrefix: team-

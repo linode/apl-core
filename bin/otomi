@@ -261,7 +261,7 @@ function execute() {
     decrypt)
       check_sops_file
       evaluate_secrets
-      drun '. bin/common.sh $original_params && run_crypt decrypt' "$@"
+      drun ". bin/common.sh $original_params && run_crypt decrypt" "$@"
       ;;
     diff)
       evaluate_secrets
@@ -281,7 +281,7 @@ function execute() {
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun '. bin/common.sh $original_params && run_crypt encrypt' "$@"
+      drun ". bin/common.sh $original_params && run_crypt encrypt" "$@"
       ;;
     gen-drone)
       evaluate_secrets
@@ -345,7 +345,7 @@ function execute() {
       evaluate_secrets
       check_env_dir
       set -o pipefail
-      drun ". bin/common.sh && run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun ". bin/common.sh $original_params && run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       drun "$@"

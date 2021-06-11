@@ -99,8 +99,8 @@ template:
     containers:
   {{- end }}
   {{- if $c }}
-      - image: {{ $c.image.repository }}:{{ $c.image.tag | default "latest" }}
-        imagePullPolicy: {{ $c.image.pullPolicy | default "IfNotPresent"}}
+      - image: {{ $c.image.repository | default $v.image.repository }}:{{ $c.image.tag | default $v.image.tag | default "latest" }}
+        imagePullPolicy: {{ $c.image.pullPolicy | default $v.image.pullPolicy | default "IfNotPresent"}}
         name: {{ $.Release.Name }}{{ $initSuffix }}
         command: ["{{ $c.shell | default "sh" }}", "-c"]
         resources: {{- toYaml (coalesce $c.resources $v.resources) | nindent 10 }}

@@ -57,7 +57,7 @@
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
-    "husky:pre-commit": "run-p husky:lint-staged lint spellcheck",
+    "husky:pre-push": "run-p husky:lint-staged lint spellcheck",
     "lint": "TESTING=1 bin/otomi hf lint",
     "lint:fix": "prettier --write profiles/**/*",
     "lint:all": "npx run-p spellcheck lint",
