@@ -49,10 +49,10 @@ if ! git fetch $remote_name main >/dev/null; then
   if ! $git_found; then
     git config user.name "Otomi Admin"
     git config user.email "otomi-admin@$cluster_domain"
-    git add -A
-
-    git commit --no-verify -m "Initial commit of otomi-values"
   fi
+
+  git add -A
+  git commit --no-verify -m "automated commit of otomi-values"
   git push -u $remote_name main -f
   echo "Otomi-values has been pushed to gitea"
 else
