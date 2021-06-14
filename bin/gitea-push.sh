@@ -52,7 +52,7 @@ if ! git fetch $remote_name main >/dev/null; then
   fi
 
   git add -A
-  git commit --no-verify -m "Initial commit of otomi-values"
+  git commit --no-verify -m "automated commit of otomi-values"
   git push -u $remote_name main -f
   echo "Otomi-values has been pushed to gitea"
 else
