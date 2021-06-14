@@ -52,10 +52,7 @@ if ! git fetch $remote_name main >/dev/null; then
   fi
 
   git add -A
-  countFiles=$(git status -s | wc -l)
-  if [ "$countFiles" != "0" ]; then
-    git commit --no-verify -m "Initial commit of otomi-values"
-  fi
+  git commit --no-verify -m "Initial commit of otomi-values"
   git push -u $remote_name main -f
   echo "Otomi-values has been pushed to gitea"
 else
