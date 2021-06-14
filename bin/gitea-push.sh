@@ -49,8 +49,11 @@ if ! git fetch $remote_name main >/dev/null; then
   if ! $git_found; then
     git config user.name "Otomi Admin"
     git config user.email "otomi-admin@$cluster_domain"
-    git add -A
+  fi
 
+  git add -A
+  countFiles=$(git status -s | wc -l)
+  if [ "$countFiles" != "0" ]; then
     git commit --no-verify -m "Initial commit of otomi-values"
   fi
   git push -u $remote_name main -f
