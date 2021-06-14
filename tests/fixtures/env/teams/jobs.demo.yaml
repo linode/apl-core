@@ -28,7 +28,8 @@ teamConfig:
                           repository: busybox
                           tag: latest
                           pullPolicy: IfNotPresent
-                      script: echo "hello $receiver and $SOME-KEY"
+                      script: |
+                          echo "hello $receiver and $SOME-KEY"
                       secrets:
                           - mysecret-generic
                           - hello-otomi
@@ -63,7 +64,8 @@ teamConfig:
                           repository: busybox
                           tag: latest
                           pullPolicy: IfNotPresent
-                      script: echo "hello $receiver"
+                      script: |
+                          echo "hello $receiver"
                   name: also-contains-everything-and-cron
                   runPolicy: Always
                   schedule: 0 1 * * *

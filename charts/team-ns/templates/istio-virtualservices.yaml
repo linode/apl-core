@@ -1,18 +1,18 @@
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak | default dict }}
 {{- $hasKeycloak := $k.enabled | default true }}
+{{- $kkMaster := printf "https://keycloak.%s/realms/master" $v.cluster.domainSuffix }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
   {{- $ := . }}
   {{- range $s := $v.services }}
     {{- $type := $s.type | default "public" }}
-    {{- $auth := $s.auth | default false }}
+    {{- $hasAuth := $s.auth | default false }}
+    {{- $hasTlsPass := $s.tlsPass | default false }}
     {{- $ns := index $s "namespace" | default $.Release.Namespace }}
     {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
-      {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false}}
-      {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
-      {{- $kkMaster := printf "https://keycloak.%s/realms/master" $v.clusterDomainSuffix }}
-      {{- $domain := (index $s "domain" | default (printf "%s.%s" $s.name ($shared | ternary $v.clusterDomainSuffix $v.domain))) }}
+      {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
+      {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.cluster.domainSuffix }}
       {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
         {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
@@ -20,37 +20,37 @@ kind: VirtualService
 metadata:
   name: {{ $vsName }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if $auth }}
+        {{- if $hasAuth }}
     auth: "true"
         {{- end }}
 spec:
   gateways:
         {{- if hasKey $s "ksvc" }}
-  - knative-serving/knative-ingress-gateway
+    - knative-serving/knative-ingress-gateway
         {{- else }}
-  - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ $type }}
+    - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ $type }}-tls{{ if $hasTlsPass }}pass{{ else }}term{{ end }}
         {{- end }}
   hosts:
-  - {{ $domain }}
-        {{- if eq $type "tlsPass" }}
+    - {{ $domain }}
+        {{- if $hasTlsPass }}
   tls:
-  - match:
-    - port: 443
-      sniHosts:
-        - {{ $domain }}
-    route:
-      - destination:
-          host: {{ $svc }}.{{ $ns }}.svc.cluster.local
-          port:
-            number: 443      
+    - match:
+        - port: 443
+          sniHosts:
+            - {{ $domain }}
+      route:
+        - destination:
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            port:
+              number: 443      
         {{- else }}
   http:
     - match:
-      - uri:
-          prefix: /logout-otomi
+        - uri:
+            prefix: /logout-otomi
       redirect:
-        authority: auth.{{ $v.clusterDomainSuffix }}
-        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.clusterDomainSuffix }}
+        authority: auth.{{ $v.cluster.domainSuffix }}
+        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.cluster.domainSuffix }}
     -
           {{- with $s.paths | default (list "/") }}
       match:
@@ -62,7 +62,7 @@ spec:
           {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
       rewrite:
             {{- if hasKey $s "ksvc" }}
-        authority: {{ $s.name }}.{{ $v.domain }}
+        authority: {{ $s.name }}.{{ $v.cluster.domainSuffix }}
             {{- end }}
             {{- if not (hasKey $s "forwardPath") }}
         uri: /
@@ -87,7 +87,7 @@ spec:
                 X-Forwarded-Proto: https
         {{- end }}
 ---
-        {{- if and (not (eq $type "public")) (hasKey $s "authz") }}
+        {{- if and ($hasAuth) (hasKey $s "authz") }}
           {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
@@ -115,7 +115,7 @@ spec:
 ---    
         {{- if $hasKeycloak }}
           {{- $realm := $k.realm | default "master" }}
-          {{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.clusterDomainSuffix $realm }}
+          {{- $principal := printf "https://keycloak.%s/realms/%s/*" $v.cluster.domainSuffix $realm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:

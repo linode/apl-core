@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 . bin/common.sh
 
 run_crypt
@@ -57,5 +56,5 @@ if ! git fetch $remote_name main >/dev/null; then
   git push -u $remote_name main -f
   echo "Otomi-values has been pushed to gitea"
 else
-  err "There is already data in gitea, manual intervention necessary"
+  echo "There is already data in gitea."
 fi

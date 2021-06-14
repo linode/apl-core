@@ -46,8 +46,11 @@ resources:
                 memory: 128Mi
               {{- end }}
         ingressGateways:
-          - name: istio-ingressgateway
+          - name: istio-ingressgateway-public
             enabled: true
+            label:
+              istio: ingressgateway-public
+              app: ingressgateway
             k8s:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
@@ -79,11 +82,11 @@ resources:
               readinessProbe:
                 failureThreshold: 20
             {{- end }}
-          - name: istio-ingressgateway-auth
+          - name: istio-ingressgateway-private
             enabled: true
             label:
-              istio: ingressgateway-auth
-              app: ingressgateway-auth
+              istio: ingressgateway-private
+              app: ingressgateway
             k8s:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users

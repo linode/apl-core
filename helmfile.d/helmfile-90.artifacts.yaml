@@ -19,6 +19,6 @@ releases:
     installed: {{ $c | get "gitea.enabled" false }}
     labels:
       pkg: gitea
-      job: true
+      group: jobs
     <<: *jobs
 

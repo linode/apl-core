@@ -9,7 +9,7 @@ charts:
             requests:
                 cpu: 100m
                 memory: 192Mi
-        tls:
+        private:
             enabled: true
             resources:
                 limits:
@@ -18,3 +18,6 @@ charts:
                 requests:
                     cpu: 100m
                     memory: 192Mi
+            service:
+                annotations:
+                    private: 'true'

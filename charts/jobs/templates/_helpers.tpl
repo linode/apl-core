@@ -68,7 +68,7 @@ Create the name of the service account to use
 {{- end }}
 {{- end -}}
 
-{{- define "fileConfigMapName" -}}
+{{- define "flatten-name" -}}
 {{ printf "job-%s" (. | replace "." "-" | replace "/" "-") }}
 {{- end -}}
 
@@ -77,82 +77,112 @@ Create the name of the service account to use
 {{- $ := . }}
 {{- $teamSecrets := (include "itemsByName" ($v.teamSecrets | default list) | fromYaml) -}}
 {{- $podSecurityContext := $v.podSecurityContext | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) -}}
+{{- $containers := list (dict "isInit" false "container" $v) }}
+{{- $hasMounts := or $v.files $v.secretMounts }}
+{{- if $v.init }}
+  {{- $containers = prepend $containers (dict "isInit" true "container" $v.init) }}
+  {{- if or $v.init.files $v.init.SecretMounts }}{{ $hasMounts = true }}{{ end }}
+{{ end }}
 template:
   metadata:
     labels: {{- include "jobs.labels" . | nindent 6 }}
     annotations:
       checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum | trunc 63 }}
       checksum/config: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
-{{- range $key, $value := $v.annotations }}
+      sidecar.istio.io/inject: "false"
+  {{- range $key, $value := $v.annotations }}
       {{ $key }}: {{ $value | quote }}
-{{- end }}
+  {{- end }}
   spec:
     serviceAccountName: {{ $v.serviceAccountName | default "default" }}
-    securityContext: {{- toYaml $podSecurityContext | nindent 6 }}
-{{- range $item := list (dict "isInit" true "container" $v.init) (dict "isInit" false "container" $v) }}
-  {{- $c := $item.container }}
-  {{ $initSuffix := $item.isInit | ternary "-init" "" }}
-  {{- if and $item.isInit $c }}
+    securityContext:
+      {{- with $podSecurityContext }}
+      {{- toYaml . | nindent 6 }}
+      {{- else }}
+      runAsNonRoot: true
+      {{- end }}
+  {{- range $item := $containers }}
+    {{- $c := $item.container }}
+    {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+    {{- if and $item.isInit $c }}
     initContainers:
-  {{- end }}
-  {{- if not $item.isInit }}
+    {{- end }}
+    {{- if not $item.isInit }}
     containers:
-  {{- end }}
-  {{- if $c }}
-      - image: {{ $c.image.repository | default $v.image.repository }}:{{ $c.image.tag | default $v.image.tag | default "latest" }}
+    {{- end }}
+    {{- if $c }}
+      - image: {{ $c.image.repository | default $v.image.repository }}:{{ $c.image.tag | default (hasKey $c.image "repository" | ternary "latest" ($v.image.tag | default "latest")) }}
         imagePullPolicy: {{ $c.image.pullPolicy | default $v.image.pullPolicy | default "IfNotPresent"}}
         name: {{ $.Release.Name }}{{ $initSuffix }}
-        command: ["{{ $c.shell | default "sh" }}", "-c"]
-        resources: {{- toYaml (coalesce $c.resources $v.resources) | nindent 10 }}
-        args:
+        command:
+          - {{ $c.shell | default "/bin/sh" }}
+          - -c
           - |
             {{- toString $c.script | nindent 12 }}
-    {{- if or $c.env $c.nativeSecrets }}
+        resources: {{- toYaml (coalesce $c.resources $v.resources) | nindent 10 }}
+      {{- if or $c.env $c.nativeSecrets }}
         envFrom:
-      {{- if $c.env }}
+        {{- if $c.env }}
         - configMapRef:
-            name: {{ $.Release.Name }}{{ $initSuffix }}
-      {{- end }}
-      {{- if $c.nativeSecrets }}
+            name: {{ $.Release.Name }}-env{{ $initSuffix }}
+        {{- end }}
+        {{- if $c.nativeSecrets }}
         - secretRef:
             name: {{ $.Release.Name }}{{ $initSuffix }}
+        {{- end }}
       {{- end }}
-    {{- end }}
-    {{- with $c.secrets }}
+      {{- with $c.secrets }}
         env:
-      {{- range $secretName := . }}
-        {{- $secret := index $teamSecrets $secretName }}
-        {{- range $entry := $secret.entries }}
+        {{- range $secretName := . }}
+          {{- $secret := index $teamSecrets $secretName }}
+          {{- range $entry := $secret.entries }}
           - name: {{ $entry }}
             valueFrom:
               secretKeyRef:
                 name: {{ $secretName }}
                 key: {{ $entry }}
+          {{- end }}
         {{- end }}
       {{- end }}
+        securityContext:
+      {{- with $c.securityContext }}
+          {{- toYaml . | nindent 10 }}
+      {{- else }}
+          runAsNonRoot: true
+      {{- end }}
     {{- end }}
-    {{- with $c.securityContext }}
-        securityContext: {{- toYaml . | nindent 10 }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-{{- with $v.files }}
+    {{- if or $c.files $c.secretMounts }}
         volumeMounts:
-  {{- range $location, $content := $v.files }}
-          - name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
+      {{- range $location, $content := $c.files }}
+          - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
             mountPath: {{ $location }}
             readOnly: true
+      {{- end }}
+      {{- range $location, $secret := $c.secretMounts }}
+          - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+            mountPath: {{ $location }}
+            readOnly: true
+      {{- end }}
+    {{- end }}
   {{- end }}
-{{- end }}
     restartPolicy: Never
-{{- with $v.files }}
+  {{- if $hasMounts }}
     volumes:
-  {{- range $location, $content := $v.files }}
-      - name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
+    {{- range $item := $containers }}    
+      {{- $c := $item.container }}
+      {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+      {{- range $location, $content := $c.files }}
+      - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
         configMap:
-          name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
+          name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+      {{- end }}
+      {{- range $location, $secret := $c.secretMounts }}
+      - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+        secret:
+          secretName: {{ $secret }}
+      {{- end }}
+    {{- end }}
   {{- end }}
-{{- end }}
 backoffLimit: 3
 ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 {{- end -}}

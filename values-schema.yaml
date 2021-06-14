@@ -64,6 +64,18 @@ definitions:
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
+  autoscaling:
+    additionalProperties: false
+    properties:
+      enabled:
+        default: true
+        type: boolean
+      maxReplicas:
+        type: integer
+        default: 10
+      minReplicas:
+        type: integer
+        default: 2
   awsCreds:
     properties:
       aws:
@@ -339,6 +351,10 @@ definitions:
         type: string
       script:
         $ref: '#/definitions/script'
+      shell:
+        default: /bin/sh
+        description: Full path to a shell binary that exists in the image.
+        type: string
       ttlSecondsAfterFinished:
         default: 86400
         description: Time To Live after job is finished in seconds. Will be removed afterwards.
@@ -415,6 +431,8 @@ definitions:
     minimum: 80
     type: number
   securityContext:
+    additionalProperties:
+      uniqueItems: true
     properties:
       runAsNonRoot:
         type: boolean
@@ -683,6 +701,10 @@ definitions:
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
+      tlsPass:
+        description: Will pass the request to the backing service without TLS termination.
+        type: boolean
+        default: false
       type:
         nullable: true
         default: public
@@ -691,7 +713,6 @@ definitions:
           - public
           - private
           - cluster
-          - tlsPass
         type: string
     required:
       - name
@@ -1371,15 +1392,7 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           autoscaling:
-            additionalProperties: false
-            properties:
-              enabled:
-                default: true
-                type: boolean
-              maxReplicas:
-                type: integer
-              minReplicas:
-                type: integer
+            $ref: '#/definitions/autoscaling'
           loadBalancerIP:
             type: string
           loadBalancerRG:
@@ -1389,18 +1402,32 @@ properties:
             default: 1024m
           resources:
             $ref: '#/definitions/resources'
-          tls:
-            description: TLS loadbalancer configuration.
+          private:
+            description: Private loadbalancer configuration.
             properties:
               enabled:
-                title: Enable TLS passthrough?
-                description: Enable to start an extra loadbalancer for TLS passthrough when outside mTLS traffic is expected.
+                title: Enable private loadbalancer
+                description: Enable to start an extra loadbalancer for private network traffic.
                 type: boolean
                 default: false
+              autoscaling:
+                $ref: '#/definitions/autoscaling'
+              loadBalancerIP:
+                type: string
+              loadBalancerRG:
+                type: string
               resources:
                 $ref: '#/definitions/resources'
-            title: TLS passthrough
+              service:
+                properties:
+                  annotations:
+                    $ref: '#/definitions/annotations'
+            title: Private loadbalancer
             type: object
+          service:
+            properties:
+              annotations:
+                $ref: '#/definitions/annotations'
       oauth2-proxy:
         additionalProperties: false
         properties:

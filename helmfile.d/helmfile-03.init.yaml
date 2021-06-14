@@ -10,7 +10,7 @@ releases:
     installed: true
     namespace: maintenance
     labels:
-      tag: jobs
+      group: jobs
     <<: *raw
   - name: knative-init
     installed: true

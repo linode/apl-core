@@ -12,28 +12,28 @@ releases:
     <<: *jobs
     labels:
       pkg: ingress-azure
-      job: true
+      group: jobs
   - name: job-harbor
     installed: {{ $c | get "harbor.enabled" false }}
     labels:
       pkg: harbor
-      job: true
+      group: jobs
     <<: *jobs
   - name: job-certs-aws
     installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
     <<: *jobs
     labels:
-      job: true
+      group: jobs
   - name: job-drone
     installed: false #{{ $c | get "drone.enabled" false }}
     labels:
       pkg: drone
       stage: post
-      job: true
+      group: jobs
     <<: *jobs
   - name: job-gitea-add-users
     installed: {{ $c | get "gitea.enabled" false }}
     labels:
       pkg: gitea
-      job: true
+      group: jobs
     <<: *jobs 

@@ -3,6 +3,9 @@
 {{- $domain := printf "team-%s.%s" "admin" $v.cluster.domainSuffix }}
 nameOverride: nginx-ingress
 controller:
+  containerPort:
+    http: 80
+    https: 443
   admissionWebhooks:
     enabled: false
     patch:
@@ -30,7 +33,7 @@ controller:
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
     minReplicas: {{ $n | get "autoscaling.minReplicas" 1 }}
-    maxReplicas: {{ $n | get "autoscaling.maxReplicas" 6 }}
+    maxReplicas: {{ $n | get "autoscaling.maxReplicas" 10 }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}
@@ -41,6 +44,7 @@ controller:
   extraArgs:
     v: 3
   config:
+    enable-ssl-passthrough: true
     ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     hsts: "true"
     disable-ipv6: "true"

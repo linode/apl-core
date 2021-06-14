@@ -238,6 +238,7 @@ services:
       name: kubernetes
     type: public
     isShared: true
+    auth: true
 
 teamConfig:
   services:

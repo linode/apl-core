@@ -1,0 +1,35 @@
+{{- $v := .Values }}
+{{- $n := $v.charts | get "nginx-ingress" dict }}
+nameOverride: nginx-ingress-private
+controller:
+  ingressClass: nginx-private
+  resources:
+    {{- with $n | get "private.resources" nil  }}
+      {{- . | toYaml | nindent 4 }}
+    {{- else }}
+    limits:
+        cpu: 2000m
+        memory: 512Mi
+    requests:
+        cpu: 200m
+        memory: 512Mi
+    {{- end }}
+  autoscaling:
+    minReplicas: {{ $n | get "private.autoscaling.minReplicas" 1 }}
+    maxReplicas: {{ $n | get "private.autoscaling.maxReplicas" 6 }}
+  service:
+    loadBalancerIP: {{ $n | get "private.loadBalancerIP" nil }}
+    {{ if or ($n | get "private.loadBalancerRG" nil) ($n | get "private.service.annotations" nil) }}
+    annotations:
+      {{- if eq $v.cluster.provider "azure" }}
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        {{- with $n | get "private.loadBalancerRG" nil }}
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with $n | get "private.service.annotations" nil }}
+      {{ . | toYaml | indent 6 }}
+      {{- end }}
+    {{- end }}
+  publishService:
+    enabled: false

@@ -46,13 +46,13 @@ releases:
     labels:
       tag: ingress
     <<: *default
-  - name: nginx-ingress-tls
-    installed: {{ $c | get "nginx-ingress.tls.enabled" false }}
+  - name: nginx-ingress-private
+    installed: {{ $c | get "nginx-ingress.private.enabled" false }}
     namespace: ingress
     labels:
       tag: ingress
     chart: ../charts/nginx-ingress
     values:
       - ../values/nginx-ingress/nginx-ingress.gotmpl
-      - ../values/nginx-ingress/nginx-ingress-tls.gotmpl
+      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
 

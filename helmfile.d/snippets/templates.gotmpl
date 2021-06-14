@@ -19,8 +19,6 @@ templates:
         args:
           - "{{ .Release.Name }}"
           - OnSpecChange
-    labels:
-      group: jobs
     values:
       - ../values/jobs/{{ .Release.Name | replace "job-" "" }}.gotmpl
   skeleton: &skeleton

@@ -1,39 +1,31 @@
 {{- $v := .Values }}
-{{ $ := . }}
-{{- with $v.env }}
+{{- $ := . }}
+{{- $containers := list (dict "isInit" false "container" $v) }}
+{{- if $v.init }}{{ $containers = prepend $containers (dict "isInit" true "container" $v.init) }}{{ end }}
+{{- range $item := $containers }}
+  {{- $c := $item.container }}
+  {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+  {{- with $c.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}
+  name: {{ $.Release.Name }}-env{{ $initSuffix }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- range $key, $value := . }}
+    {{- range $key, $value := . }}
   {{ $key }}: {{ $value | quote }}
-  {{- end }}
+    {{- end }}
 ---
-{{- end }}
-{{- if hasKey $v "init" }}
-{{- with $v.init.env }}
+  {{- end }}
+  {{- range $location, $content := $c.files }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-init
+  name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{- range $key, $value := . }}
-  {{ $key }}: {{ $value | quote }}
-  {{- end }}
----
-{{- end }}
-{{- end }}
-{{- range $location, $content := $v.files }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ $.Release.Name }}-{{ include "fileConfigMapName" $location }}
-  labels: {{- include "jobs.labels" $ | nindent 4 }}
-data:
-  {{ include "fileConfigMapName" $location }}: |
+  {{ include "flatten-name" $location }}: |
     {{- toYaml $content | quote | nindent 4 }} 
 ---
+  {{- end }}
 {{- end }}
