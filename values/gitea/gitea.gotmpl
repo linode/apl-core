@@ -8,7 +8,6 @@
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $skipVerify := eq $stage "staging" }}
-{{- $rnd := randAlpha 32 }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -96,8 +95,8 @@ postgresql:
     size: 1Gi
   global:
     postgresql:
-      postgresqlPassword: {{ $g | get "postgresqlPassword" $rnd }}
-      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" $rnd }}
+      postgresqlPassword: {{ $g | get "postgresqlPassword" }}
+      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:
     limits:
       memory: 512Mi
