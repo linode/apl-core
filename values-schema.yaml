@@ -817,6 +817,12 @@ properties:
   azure:
     description: Azure specific configuration.
     properties:
+      storageType:
+        properties:
+          fast:
+            type: string
+          standard:
+            type: string
       appgw:
         properties:
           isManaged:
