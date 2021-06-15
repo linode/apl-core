@@ -14,7 +14,7 @@ fi
 
 readonly cluster_domain=$(yqr cluster.domainSuffix)
 readonly gitea_url="gitea.$cluster_domain"
-readonly gitea_password=$(yqr charts.gitea.adminPassword | yqr otomi.adminPassword)
+readonly gitea_password=$(yqr charts.gitea.adminPassword || yqr otomi.adminPassword)
 readonly gitea_user='otomi-admin'
 readonly gitea_org='otomi'
 readonly gitea_repo='values'
