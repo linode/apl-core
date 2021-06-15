@@ -41,7 +41,7 @@ image:
 gitea:
   admin:
     username: otomi-admin
-    password: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
+    password: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   config:
     log:
       LEVEL: trace

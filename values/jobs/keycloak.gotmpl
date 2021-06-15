@@ -42,7 +42,7 @@ nativeSecrets:
   # DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "admin.password" $v.otomi.adminPassword }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   IDP_ALIAS: {{ $k.idp.alias }}

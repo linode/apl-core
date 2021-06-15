@@ -35,7 +35,7 @@ server:
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
-  adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla")) }}
+  adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" $v.otomi.adminPassword) }}
   dind:
     enabled: false
   resources:

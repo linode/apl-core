@@ -123,7 +123,7 @@ persistence:
     {{- end }}
 
 # The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: {{ $h | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
+harborAdminPassword: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
 # The secret key used for encryption. Must be a string of 16 chars.
 secretKey: {{ $h | get "secretKey" nil }}
 
@@ -166,8 +166,8 @@ registry:
   relativeurls: false
   credentials:
     username: {{ $h | get "registry.credentials.username" "admin" }}
-    password: {{ $h | get "registry.credentials.password" ($v.otomi | get "adminPassword" "bladibla") }}
-    htpasswd: {{ htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" ($v.otomi | get "adminPassword" "bladibla")) }}
+    password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
+    htpasswd: {{ htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" $v.otomi.adminPassword) }}
 
 database:
   type: internal

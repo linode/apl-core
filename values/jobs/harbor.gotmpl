@@ -25,7 +25,7 @@ image:
   tag: v0.2.6
   pullPolicy: IfNotPresent
 nativeSecrets:
-  HARBOR_PASSWORD:  {{ $h | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla")  }}
+  HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
   HARBOR_USER: admin
   OIDC_CLIENT_ID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
   OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
