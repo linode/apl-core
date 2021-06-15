@@ -31,9 +31,9 @@ init:
     done
     echo READY!
 image:
-  repository: {{ $c | get "jobs.keycloak.image.repository" "otomi/tasks" }}
-  tag: {{ $c | get "jobs.keycloak.image.tag" "v0.2.4" }}
-  pullPolicy: {{ $c | get "jobs.keycloak.image.pullPolicy" "IfNotPresent" }}
+  repository: otomi/tasks
+  tag: v0.2.6
+  # pullPolicy: Always
 name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
