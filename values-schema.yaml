@@ -1316,7 +1316,6 @@ properties:
               - otomi
             type: string
         required:
-          - enabled
           - postgresqlPassword
       kubeapps:
         additionalProperties: false
@@ -1328,7 +1327,6 @@ properties:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
         required:
-          - enabled
           - postgresqlPassword
       kubernetes-external-secrets:
         additionalProperties: false
@@ -1546,6 +1544,20 @@ properties:
               server:
                 type: string
                 default: docker.io
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - properties:
+                  registry:
+                    required:
+                      - username
+                      - password
+        type: object
       prometheus-operator:
         properties:
           _rawValues:

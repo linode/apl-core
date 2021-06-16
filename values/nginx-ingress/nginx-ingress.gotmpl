@@ -58,6 +58,7 @@ controller:
     proxy-buffer-size: 16k
     large-client-header-buffers: 8 16k
     proxy-body-size: {{ $n | get "maxBodySize" "1024m" }}
+    log-format-upstream: '$remote_addr - $remote_user [$time_local] $host "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status'
   stats:
     enabled: true
   metrics:
@@ -67,6 +68,7 @@ controller:
       additionalLabels: # needed to be picked up by our one and only prometheus-operator:
         prometheus: system
   service:
+    # externalTrafficPolicy: Local
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
     {{- with $n | get "loadBalancerIP" nil }}

@@ -112,6 +112,9 @@ spec:
 {{- if $hasTlsPass }}
   {{- range $domain, $paths := $routes }}
   - host: {{ $domain }}
+    http:
+      paths:
+      {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
   {{- end }}
 {{- else if .isApps }}
     - host: {{ $appsDomain }}
@@ -135,7 +138,7 @@ spec:
           {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "path" $path) | nindent 8 }}
         {{- end }}
       {{- else }}
-          {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
+        {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
       {{- end }}
     {{- end }}
   {{- end }}
