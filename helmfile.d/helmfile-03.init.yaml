@@ -28,10 +28,13 @@ releases:
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: default
+    chart: ../charts/gatekeeper-operator
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
-    <<: *default
+    values:
+      - ../values/gatekeeper/gatekeeper-operator.gotmpl
+      - snippets/rawValues.gotmpl
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
     disableValidationOnInstall: true

@@ -9,16 +9,18 @@ releases:
   - name: gatekeeper-artifacts
     installed: {{ $c | get "gatekeeper-operator.enabled" false }}
     namespace: gatekeeper-system
-    disableValidationOnInstall: true
+    chart: ../charts/gatekeeper-artifacts
     createNamespace: false
     labels:
       pkg: gatekeeper
     hooks:
       - events: ["prepare"]
         showlogs: true
-        command: "../bin/build-constraints.sh"
+        command: "../bin/build-gatekeeper-artifacts.sh"
         args: [true]
-    <<: *default
+    values:
+      - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
+      - snippets/rawValues.gotmpl
   - name: istio-operator
     installed: true
     namespace: default

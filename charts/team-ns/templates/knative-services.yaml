@@ -44,7 +44,10 @@ spec:
           {{- end }}
           {{- if or $k.env $k.secrets }}
           env:
-            {{- with $k.env }}{{ . | toYaml | nindent 12 }}{{ end }}
+            {{- range $key, $value := $k.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
             {{- range $secretName := ($k.secrets | default list) }} 
             {{- if hasKey $secrets $secretName -}}
               {{- $secret := index $secrets $secretName  }}

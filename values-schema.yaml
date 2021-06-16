@@ -1516,7 +1516,26 @@ properties:
             $ref: '#/definitions/rawValues'
           image:
             $ref: '#/definitions/imageSimple'
-
+      pullsecret-patcher:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          env:
+            $ref: '#/definitions/env'
+          registry:
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+              email:
+                type: string
+                default: not@us.ed
+              server:
+                type: string
+                default: docker.io
       prometheus-operator:
         properties:
           _rawValues:

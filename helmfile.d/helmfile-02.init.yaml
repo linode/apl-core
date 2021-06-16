@@ -1,0 +1,12 @@
+bases:
+  - snippets/defaults.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: pullsecret-patcher
+    installed: {{ $c | get "pullsecret-patcher.enabled" false }}
+    namespace: pullsecret-patcher
+    <<: *default

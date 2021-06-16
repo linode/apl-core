@@ -1,0 +1,11 @@
+
+{{- $v := .Values }}
+{{- $gk := $v.charts | get "gatekeeper-operator" dict }}
+{{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
+
+### Render Constraints (CRs)
+{{- $constraints := (exec "bash" (list "-c" "find /tmp/otomi/constraints -name 'constraint_*.yaml'")) | splitList "\n" }}
+constraintFiles:
+{{- range $constraint := $constraints }}{{ if ne $constraint "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
+  - {{ tpl (readFile $constraint) . | nindent 4  }}
+{{- end }}{{ end }}
