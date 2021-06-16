@@ -129,8 +129,8 @@ all_values=
 function yqr() {
   [ -z "$all_values" ] && all_values=$(hf_values)
   local ret=$(echo "$all_values" | yq r - "$@")
-  echo $ret
   [ -z "$ret" ] && return 1
+  echo $ret
 }
 
 function jq() {
