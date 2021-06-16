@@ -1031,6 +1031,10 @@ properties:
             type: string
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+        required:
+          - enabled
+          - postgresqlPassword
       harbor:
         additionalProperties: false
         properties:
@@ -1300,6 +1304,7 @@ properties:
                 type: string
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
           resources:
             additionalProperties: false
             properties:
@@ -1312,6 +1317,9 @@ properties:
               - default
               - otomi
             type: string
+        required:
+          - enabled
+          - postgresqlPassword
       kubeapps:
         additionalProperties: false
         properties:
@@ -1320,6 +1328,10 @@ properties:
             type: boolean
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+        required:
+          - enabled
+          - postgresqlPassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:

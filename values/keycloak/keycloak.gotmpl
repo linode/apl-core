@@ -99,7 +99,7 @@ postgresql:
     enabled: true
     fsGroup: 1001
     runAsUser: 1001
-  postgresqlPassword: {{ $k | get "postgresqlPassword" (randAlpha 32) }}
+  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
