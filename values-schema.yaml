@@ -1283,8 +1283,6 @@ properties:
                 $ref: '#/definitions/resources'
               pilot:
                 $ref: '#/definitions/resources'
-      jobs:
-        $ref: '#/definitions/jobs'
       keycloak:
         additionalProperties: false
         properties:
