@@ -16,15 +16,6 @@ releases:
     installed: {{ eq $v.cluster.provider "aws" }}
     namespace: kube-system
     <<: *default
-  - name: gatekeeper-constraints
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
-    namespace: gatekeeper-system
-    chart: ../charts/gatekeeper-constraints
-    labels:
-      pkg: gatekeeper
-    values:
-      - ../values/gatekeeper/gatekeeper-constraints.gotmpl
-      - snippets/rawValues.gotmpl
   - name: knative-serving
     installed: true
     namespace: knative-serving
