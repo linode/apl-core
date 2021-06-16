@@ -11,7 +11,7 @@ metadata:
   labels: {{- include "chart-labels" $ | nindent 4 }}
 data:
   {{ include "flatten-name" $location }}: |
-    {{- toYaml $content | quote | nindent 4 }} 
+    {{- toString $content| nindent 4 }} 
 ---
 {{- end }}
 {{- end }}
