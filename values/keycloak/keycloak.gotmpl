@@ -16,7 +16,7 @@ keycloak:
   #   repository: docker.io/jboss/keycloak
   #   tag: "11.0.3"
   username: {{ $k | get "admin.username" "admin" }}
-  password: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+  password: {{ $k | get "admin.password" $v.otomi.adminPassword }}
   basepath: ""
   cli:
     custom: |

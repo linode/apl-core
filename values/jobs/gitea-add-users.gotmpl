@@ -11,7 +11,7 @@ env:
   GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   GITEA_REPO: values
 nativeSecrets:
-  GITEA_PASSWORD: {{ $g | get "adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
+  GITEA_PASSWORD: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
 schedule: "0/5 * * * *" # every 5 minutes
 image:
   repository: otomi/tasks
