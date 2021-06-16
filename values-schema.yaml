@@ -221,6 +221,14 @@ definitions:
         $ref: '#/definitions/secrets'
       secretMounts:
         $ref: '#/definitions/secretMounts'
+      command:
+        type: array
+        items:
+          type: string
+      args:
+        type: array
+        items:
+          type: string
     required:
       - image
       - resources
