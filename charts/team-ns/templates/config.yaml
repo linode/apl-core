@@ -3,15 +3,18 @@
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
 {{- if not $k.predeployed }}
-{{- range $location, $content := $k.files }}
+{{- $vols := include "file-volumes" $k }}
+{{- range $dir, $files := $vols | fromYaml }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
+  name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $dir }}
   labels: {{- include "chart-labels" $ | nindent 4 }}
 data:
-  {{ include "flatten-name" $location }}: |
-    {{- toString $content| nindent 4 }} 
+  {{- range $fileContent := $files }}
+  {{ $fileContent.name }}: |
+    {{- toString $fileContent.content| nindent 4 }}
+  {{- end }}
 ---
 {{- end }}
 {{- end }}

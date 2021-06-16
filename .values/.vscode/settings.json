@@ -19,5 +19,6 @@
   "sops.enabled": true,
   "yaml.schemas": {
     ".vscode/values-schema.yaml": "*.yaml"
-  }
+  },
+  "sops.creationEnabled": true
 }

@@ -50,3 +50,22 @@ helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 {{- print $domain -}}
 {{- end -}}
 {{- end -}}
+
+{{/* aggregate all the files and create a dict by dirname > list (filename content) */}}
+{{- define "file-volumes" }}
+{{- $vols := dict }}
+{{- range $location, $content := .files }}
+  {{- $dir := $location | dir }}
+  {{- $file := $location | base }}
+  {{- $fileContent := (dict "name" $file "content" $content) }}
+  {{- $files := list }}
+  {{- if hasKey $vols $dir }}
+    {{- $files = (index $vols $dir) }}
+  {{- end }}
+  {{- $files = append $files $fileContent }}
+  {{- $vols = set $vols $dir $files }}
+{{- end }}  
+{{- range $dir, $files := $vols }}
+{{ $dir }}: {{- $files | toYaml | nindent 2 }}
+{{- end }}
+{{- end }}
