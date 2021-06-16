@@ -14,7 +14,7 @@ fi
 
 readonly cluster_domain=$(yqr cluster.domainSuffix)
 readonly gitea_url="gitea.$cluster_domain"
-readonly gitea_password=$(yqr charts.gitea.adminPassword | yqr otomi.adminPassword)
+readonly gitea_password=$(yqr charts.gitea.adminPassword || yqr otomi.adminPassword)
 readonly gitea_user='otomi-admin'
 readonly gitea_org='otomi'
 readonly gitea_repo='values'
@@ -50,7 +50,7 @@ if ! git fetch $remote_name main >/dev/null; then
     git config user.name "Otomi Admin"
     git config user.email "otomi-admin@$cluster_domain"
   fi
-
+  git branch --set-upstream-to=${remote_name}/main main
   git add -A
   git commit --no-verify -m "automated commit of otomi-values"
   git push -u $remote_name main -f

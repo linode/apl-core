@@ -27,7 +27,7 @@ secrets:
   {{- if $hasGitea }}
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+  GIT_PASSWORD: {{ $g | get "admin.password" $v.otomi.adminPassword }}
   {{- else }}
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}

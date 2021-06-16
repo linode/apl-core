@@ -180,7 +180,7 @@ grafana:
       access: proxy
       url: http://graphite:80
     {{- end }}
-  adminPassword: {{ $p | get "grafana.adminPassword" ($v.otomi | get "adminPassword" "bladibla") }}
+  adminPassword: {{ $p | get "grafana.adminPassword" $v.otomi.adminPassword }}
   service:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}

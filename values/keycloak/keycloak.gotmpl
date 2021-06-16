@@ -16,7 +16,7 @@ keycloak:
   #   repository: docker.io/jboss/keycloak
   #   tag: "11.0.3"
   username: {{ $k | get "admin.username" "admin" }}
-  password: {{ $k | get "admin.password" ($v.otomi | get "adminPassword" "bladibla") }}
+  password: {{ $k | get "admin.password" $v.otomi.adminPassword }}
   basepath: ""
   cli:
     custom: |
@@ -99,7 +99,7 @@ postgresql:
     enabled: true
     fsGroup: 1001
     runAsUser: 1001
-  postgresqlPassword: {{ $k | get "postgresqlPassword" (randAlpha 32) }}
+  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:

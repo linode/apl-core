@@ -1031,6 +1031,10 @@ properties:
             type: string
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+        required:
+          - enabled
+          - postgresqlPassword
       harbor:
         additionalProperties: false
         properties:
@@ -1279,8 +1283,6 @@ properties:
                 $ref: '#/definitions/resources'
               pilot:
                 $ref: '#/definitions/resources'
-      jobs:
-        $ref: '#/definitions/jobs'
       keycloak:
         additionalProperties: false
         properties:
@@ -1300,6 +1302,7 @@ properties:
                 type: string
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
           resources:
             additionalProperties: false
             properties:
@@ -1312,6 +1315,9 @@ properties:
               - default
               - otomi
             type: string
+        required:
+          - enabled
+          - postgresqlPassword
       kubeapps:
         additionalProperties: false
         properties:
@@ -1320,6 +1326,10 @@ properties:
             type: boolean
           postgresqlPassword:
             type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+        required:
+          - enabled
+          - postgresqlPassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
@@ -1867,6 +1877,8 @@ properties:
                 type: boolean
                 default: true
                 description: Use this flag to enable conftest for policy validation
+    required:
+      - adminPassword
   policies:
     type: object
     description: |

@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $k := $v | get "charts.kubeapps" dict }}
-{{- $rnd := randAlpha 32 }}
 assetsvc:
   resources:
     limits:
@@ -24,10 +23,10 @@ metrics:
 
 postgresql:
   existingSecret: null
-  postgresqlPassword: {{ $k | get "postgresqlPassword" $rnd }}
-  postgresqlPostgresPassword: {{ $k | get "postgresqlPassword" $rnd }}
+  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
+  postgresqlPostgresPassword: {{ $k | get "postgresqlPassword" }}
   replication:
-    password: {{ $k | get "postgresqlPassword" $rnd }}
+    password: {{ $k | get "postgresqlPassword" }}
   resources:
     limits:
       memory: 768Mi
