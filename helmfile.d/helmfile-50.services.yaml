@@ -6,6 +6,10 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
+  - name: demo-tlspass
+    installed: false # {{ $c | get "demo-tlspass.enabled" false }}
+    namespace: team-otomi
+    <<: *default
   - name: hello
     installed: {{ $c | get "hello.enabled" false }}
     namespace: team-otomi
@@ -19,7 +23,7 @@ releases:
     namespace: kubeapps
     <<: *default
   - name: gitea
-    installed: {{ $c | get "gitea.enabled" false }}
+    installed: {{ $c | get "gitea.enabled" true }}
     namespace: gitea
     chart: ../charts/gitea
     labels:

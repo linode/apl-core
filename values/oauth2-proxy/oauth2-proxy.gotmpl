@@ -82,3 +82,4 @@ extraArgs:
   # set-xauthrequest: true
   oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}
   insecure-oidc-allow-unverified-email: true
+  show-debug-on-error: true

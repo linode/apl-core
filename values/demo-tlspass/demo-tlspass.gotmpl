@@ -1,0 +1,26 @@
+{{- $v := .Values }}
+{{- $t := $v.charts | get "demo-tlspass" dict }}
+
+nameOverride: tlspass
+fullnameOverride: tlspass
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: latest
+
+podAnnotations:
+  policy.otomi.io/ignore: banned-image-tags
+
+securityContext:
+#   capabilities:
+#     drop:
+#     - ALL
+#   runAsNonRoot: true
+  runAsUser: 1001
+
+clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
+
+tlsCert: |-
+  {{- $t.tlsCert | nindent 2 }}
+tlsKey: |-
+  {{- $t.tlsKey | nindent 2 }}

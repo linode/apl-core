@@ -56,12 +56,12 @@ apiVersion: {{ template "ingress.apiVersion" .dot }}
 kind: Ingress
 metadata:
   annotations:
-{{- if $hasTlsPass }}
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-{{- else }}
   {{- if $internetFacing }}
     externaldns: "true"
   {{- end }}
+{{- if $hasTlsPass }}
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+{{- else }}
   {{- if eq .provider "aws" }}
     kubernetes.io/ingress.class: merge
     merge.ingress.kubernetes.io/config: merged-ingress
