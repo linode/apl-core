@@ -167,7 +167,7 @@ registry:
   credentials:
     username: {{ $h | get "registry.credentials.username" "admin" }}
     password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
-    htpasswd: {{ htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" $v.otomi.adminPassword) }}
+    htpasswd: {{ $h | get "registry.credentials.htpasswd" (htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" $v.otomi.adminPassword)) }}
 
 database:
   type: internal

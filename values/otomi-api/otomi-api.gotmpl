@@ -51,6 +51,7 @@ env:
   NO_AUTHZ: true
   {{- end }}
   {{- if $skipVerify }}
+  GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   {{- end }}
 
