@@ -1129,6 +1129,8 @@ properties:
                 type: string
               credentials:
                 properties:
+                  htpasswd:
+                    type: string
                   username:
                     type: string
                   password:

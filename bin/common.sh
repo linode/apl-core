@@ -208,7 +208,7 @@ function run_crypt() {
 
 function hf() {
   [ -n "$KUBE_VERSION_OVERRIDE" ] && args="--set kubeVersionOverride=${KUBE_VERSION_OVERRIDE}"
-  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@" $args --concurrency=1
+  helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@" $args
 }
 
 function hf_values() {
