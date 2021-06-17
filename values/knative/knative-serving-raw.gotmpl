@@ -20,3 +20,11 @@ resources:
           loglevel.controller: "debug"
         domain:
           {{ $v.cluster.domainSuffix }}: ""
+        istio:
+          gateway.knative-serving.knative-ingress-gateway: "istio-ingressgateway-public.istio-system.svc.cluster.local"
+        kubernetes:
+          podspec-securitycontext: "enabled"
+      knative-ingress-gateway:
+        selector:
+          istio: ingressgateway-public
+            

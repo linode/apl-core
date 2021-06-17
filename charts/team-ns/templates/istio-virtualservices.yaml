@@ -62,7 +62,7 @@ spec:
           {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
       rewrite:
             {{- if hasKey $s "ksvc" }}
-        authority: {{ $s.name }}.{{ $v.cluster.domainSuffix }}
+        authority: {{ $s.name }}.{{ $v.domain }}
             {{- end }}
             {{- if not (hasKey $s "forwardPath") }}
         uri: /
