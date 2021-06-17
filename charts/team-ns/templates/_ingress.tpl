@@ -114,7 +114,7 @@ spec:
   - host: {{ $domain }}
     http:
       paths:
-      {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
+      {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "port" 443) | nindent 8 }}
   {{- end }}
 {{- else if .isApps }}
     - host: {{ $appsDomain }}

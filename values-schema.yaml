@@ -1124,8 +1124,15 @@ properties:
                   type:
                     type: string
           registry:
-            secret:
-              type: string
+            properties:
+              secret:
+                type: string
+              credentials:
+                properties:
+                  username:
+                    type: string
+                  password:
+                    type: string
           resources:
             additionalProperties: false
             properties:

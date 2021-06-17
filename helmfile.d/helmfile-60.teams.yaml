@@ -208,7 +208,7 @@ releases:
           - "{{ $job.runPolicy }}"    
           {{- end }}
     values:
-      - teamSecrets: {{- $team.secrets | toYaml | nindent 10 }}
+      - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
   {{- end }}
