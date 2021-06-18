@@ -1061,8 +1061,9 @@ properties:
           enabled:
             type: boolean
           jobservice:
-            secret:
-              type: string
+            properties:
+              secret:
+                type: string
           persistence:
             additionalProperties: false
             properties:

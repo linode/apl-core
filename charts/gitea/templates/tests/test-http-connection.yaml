@@ -16,12 +16,4 @@ spec:
       image: busybox
       command: ['wget']
       args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
-      resources:
-        limits:
-          cpu: 250m
-          memory: 256Mi
-        requests:
-          cpu: 50m
-          memory: 64Mi
-
   restartPolicy: Never

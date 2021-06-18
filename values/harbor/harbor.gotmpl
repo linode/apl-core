@@ -171,6 +171,7 @@ registry:
 
 database:
   type: internal
+  password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   internal:

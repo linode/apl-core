@@ -402,3 +402,5 @@ serviceAccount:
   ## These imagePullSecrets are automatically attached to pods in the Service Account namespace
   ## imagePullSecrets:
   ## - dockerconfig
+
+extraRootCA: ''

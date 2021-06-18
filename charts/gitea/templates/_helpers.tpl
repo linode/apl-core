@@ -41,6 +41,12 @@ Create image name and tag used by the deployment.
 {{- printf "%s:%s%s" $name $tag $rootless -}}
 {{- end -}}
 
+{{- define "gitea.rootimage" -}}
+{{- $name := .Values.image.repository -}}
+{{- $tag := ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") -}}
+{{- printf "%s:%s" $name $tag -}}
+{{- end -}}
+
 {{/*
 Common labels
 */}}

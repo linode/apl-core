@@ -8,7 +8,7 @@ readonly root=$(yqr cluster.domainSuffix)
 readonly dom="tlspass.$root"
 
 loc='/tmp/otomi/ssl'
-rm -rf /tmp/otomi/ssl
+# rm -rf /tmp/otomi/ssl
 [ -f "$loc/$root.crt" ] && exit
 [ ! -d "$loc" ] && mkdir -p $loc
 

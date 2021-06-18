@@ -1,4 +1,5 @@
 {{- if eq (include "drone.providerOK" .) "true" }}
+{{- $image := (print .Values.images.server.repository .Values.images.server.tag) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -52,6 +53,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 6 }}
 {{- end }}
+      initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
       containers:
       - name: server
         image: "{{ .Values.images.server.repository }}:{{ .Values.images.server.tag }}"
@@ -123,6 +125,7 @@ spec:
         {{ end }}
         - name: data
           mountPath: /var/lib/drone
+        {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 8 }}
 {{- with .Values.server.extraContainers }}
 {{ tpl . $ | indent 6 }}
 {{- end }}
@@ -142,6 +145,7 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end -}}
+      {{- include "extraRootCA.volumes" (dict "rootCA" .Values.extraRootCA) | nindent 6 }}
 {{- with .Values.server.extraVolumes }}
 {{ tpl . $ | indent 6 }}
 {{- end }}

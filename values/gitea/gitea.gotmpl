@@ -55,6 +55,12 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
+  {{- if $skipVerify }}
+      SKIP_TLS_VERIFY: true
+    webhook:
+      SKIP_TLS_VERIFY: true
+  {{- end }}
+    
     
   metrics:
     enabled: true

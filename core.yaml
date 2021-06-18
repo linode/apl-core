@@ -175,7 +175,7 @@ services:
     port: 9090
     logo:
       name: prometheus
-    namespace: istio-apps
+    namespace: istio-system
     type: public
     auth: true
   - name: alertmanager

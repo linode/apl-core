@@ -65,6 +65,8 @@ server:
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
     {{- if and $hasGitea $hasStagingCerts }}
+    DRONE_TLS_CERT:
+    DRONE_TLS_KEY:
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -101,3 +103,7 @@ persistence:
 metrics:
   prometheus:
     enabled: true
+
+extraRootCA: |
+  {{- $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.letsencryptCA | nindent 2 }}

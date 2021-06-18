@@ -4,44 +4,35 @@
 
 replicaCount: 1
 
+extraRootCA: ""
+
 clusterDomain: cluster.local
 
 image:
   repository: gitea/gitea
-  tag: 1.14.1
-  pullPolicy: Always
-  rootless: false # only possible when running 1.14 or later
+  tag: 1.14.2
+  pullPolicy: IfNotPresent
+  rootless: true
 
 imagePullSecrets: []
-
-securityContext: {}
-#  allowPrivilegeEscalation: false
-#  capabilities:
-#    drop:
-#      - ALL
-#  privileged: false
-#  readOnlyRootFilesystem: true
-#  runAsGroup: 1000
-#  runAsNonRoot: true
-#  runAsUser: 1000
 
 service:
   http:
     type: ClusterIP
     port: 3000
-    clusterIP: None
+    clusterIP: 
     #loadBalancerIP:
     #nodePort:
     annotations:
   ssh:
     type: ClusterIP
     port: 22
-    clusterIP: None
+    clusterIP:
     #loadBalancerIP:
     #nodePort:
     #externalTrafficPolicy:
     #externalIPs:
-    loadBalancerSourceRanges: []
+    # loadBalancerSourceRanges: []
     annotations:
 
 ingress:
@@ -56,7 +47,13 @@ ingress:
   #    hosts:
   #      - git.example.com
 
-resources: {}
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -125,35 +122,34 @@ gitea:
     enabled: false
     serviceMonitor:
       enabled: false
-      # prometheusSelector: default
 
   ldap:
     enabled: false
-    #name:
-    #securityProtocol:
-    #host:
-    #port:
-    #userSearchBase:
-    #userFilter:
-    #adminFilter:
-    #emailAttribute:
-    #bindDn:
-    #bindPassword:
-    #usernameAttribute:
+    #name: 
+    #securityProtocol: 
+    #host: 
+    #port: 
+    #userSearchBase: 
+    #userFilter: 
+    #adminFilter: 
+    #emailAttribute: 
+    #bindDn: 
+    #bindPassword: 
+    #usernameAttribute: 
     #sshPublicKeyAttribute:
 
   oauth:
     enabled: false
     #name:
-    #provider:
-    #key:
-    #secret:
+    #provider
+    #key: 
+    #secret: 
     #autoDiscoverUrl:
-    #useCustomUrls:
-    #customAuthUrl:
-    #customTokenUrl:
-    #customProfileUrl:
-    #customEmailUrl:
+    #useCustomUrls
+    #customAuthUrl
+    #customTokenUrl
+    #customProfileUrl
+    #customEmailUrl
 
   config: {}
   #  APP_NAME: "Gitea: Git with a cup of tea"
