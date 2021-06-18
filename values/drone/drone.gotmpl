@@ -32,6 +32,8 @@ sourceControl:
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users
+    # TODO: find solution to use isto sidecars
+    sidecar.istio.io/inject: "false"
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
@@ -87,6 +89,9 @@ kubernetes:
     {{- end }}
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
+    # TODO: find solution to use isto sidecars
+    sidecar.istio.io/inject: "false"
+
   envFile: |
     {{- $sopsEnv | nindent 4 }}
     {{- if and $hasGitea $hasStagingCerts }}
