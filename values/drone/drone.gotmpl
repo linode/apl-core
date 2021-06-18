@@ -65,8 +65,6 @@ server:
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
     {{- if and $hasGitea $hasStagingCerts }}
-    DRONE_TLS_CERT:
-    DRONE_TLS_KEY:
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -94,6 +92,7 @@ kubernetes:
     {{- if and $hasGitea $hasStagingCerts }}
     DRONE_GITEA_SKIP_VERIFY: true
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
+    GIT_SSL_NO_VERIFY: true
     {{- end }}
 
 persistence:
