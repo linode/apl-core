@@ -103,6 +103,8 @@ metrics:
   prometheus:
     enabled: true
 
+{{- if $hasStagingCerts }}
 extraRootCA: |
   {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}
+{{- end }}
