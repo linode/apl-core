@@ -1,1 +1,0 @@
-{{- .Environment.Values | get (printf "charts.%s._rawValues" .Release.Name) dict | toYaml }}

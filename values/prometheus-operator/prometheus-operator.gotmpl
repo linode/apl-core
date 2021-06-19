@@ -52,6 +52,8 @@ commonLabels:
   prometheus: system
 prometheus:
   prometheusSpec:
+    image:
+      tag: v2.27.1
     serviceMonitorSelector:
       matchLabels:
         prometheus: system

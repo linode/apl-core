@@ -20,7 +20,7 @@ releases:
         args: [true]
     values:
       - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
-      - snippets/rawValues.gotmpl
+      - snippets/common.gotmpl
   - name: istio-operator
     installed: true
     namespace: default

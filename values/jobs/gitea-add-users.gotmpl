@@ -12,7 +12,7 @@ env:
   GITEA_REPO: values
 nativeSecrets:
   GITEA_PASSWORD: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
-schedule: "0/5 * * * *" # every 5 minutes
+schedule: "0/3 * * * *" # every 5 minutes
 image:
   repository: otomi/tasks
   tag: v0.2.6

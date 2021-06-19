@@ -14,7 +14,7 @@ releases:
     chart: ../charts/raw
     values:
       - ../values/raw/istio-raw.gotmpl
-      - snippets/rawValues.gotmpl
+      - snippets/common.gotmpl
   - name: job-gitea
     installed: {{ $c | get "gitea.enabled" false }}
     labels:

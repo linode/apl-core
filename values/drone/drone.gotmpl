@@ -32,8 +32,6 @@ sourceControl:
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users
-    # TODO: find solution to use isto sidecars
-    sidecar.istio.io/inject: "false"
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
@@ -70,6 +68,8 @@ server:
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
   resources:
     {{- with $d | get "resources.runner" nil }}
       {{- toYaml . | nindent 4 }}
@@ -87,11 +87,6 @@ kubernetes:
     {{- if and $hasGitea $hasStagingCerts }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
-  annotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
-    # TODO: find solution to use isto sidecars
-    sidecar.istio.io/inject: "false"
-
   envFile: |
     {{- $sopsEnv | nindent 4 }}
     {{- if and $hasGitea $hasStagingCerts }}
