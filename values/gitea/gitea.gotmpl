@@ -7,7 +7,7 @@
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
-{{- $skipVerify := eq $stage "staging" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -55,7 +55,7 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-  {{- if $skipVerify }}
+  {{- if $hasStagingCerts }}
       SKIP_TLS_VERIFY: true
     webhook:
       SKIP_TLS_VERIFY: true
@@ -111,9 +111,11 @@ postgresql:
       memory: 256Mi
       cpu: 250m
 
+{{- if $hasStagingCerts }}
 extraRootCA: |
   {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}
+{{- end }}
 
 # Can't be used (until Gitea 1.14) as gitea requires root in the docker image
 securityContext:

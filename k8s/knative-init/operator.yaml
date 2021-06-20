@@ -1,4 +1,4 @@
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,23 +17,17 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeeventings.operator.knative.dev
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 spec:
   group: operator.knative.dev
-  names:
-    kind: KnativeEventing
-    listKind: KnativeEventingList
-    plural: knativeeventings
-    singular: knativeeventing
-  preserveUnknownFields: false
-  scope: Namespaced
   versions:
     - name: v1alpha1
       served: true
       storage: true
+      subresources:
+        status: {}
       schema:
         openAPIV3Schema:
-          type: object
           description: Schema for the knativeeventings API
           properties:
             apiVersion:
@@ -47,18 +41,15 @@ spec:
             spec:
               description: Spec defines the desired state of KnativeEventing
               properties:
-                version:
-                  description: The version of Knative Eventing to be installed
-                  type: string
-                manifests:
-                  description: A list of eventing manifests, which will be installed by the operator
-                  type: array
+                additionalManifests:
+                  description: A list of the additional eventing manifests, which will be installed by the operator
                   items:
-                    type: object
                     properties:
                       URL:
-                        description: The link of the manifest URL
+                        description: The link of the additional manifest URL
                         type: string
+                    type: object
+                  type: array
                 config:
                   additionalProperties:
                     additionalProperties:
@@ -66,78 +57,118 @@ spec:
                     type: object
                   description: A means to override the corresponding entries in the upstream configmaps
                   type: object
-                registry:
-                  description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
-                  type: object
-                  properties:
-                    default:
-                      description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
-                      type: string
-                    override:
-                      description: A map of a container name or image name to the full image location of the individual knative image.
-                      type: object
-                      additionalProperties:
-                        type: string
-                    imagePullSecrets:
-                      description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-eventing deployments, and not the namespace of this resource.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            description: The name of the secret.
-                            type: string
                 defaultBrokerClass:
                   description: The default broker type to use for the brokers Knative creates. If no value is provided, MTChannelBasedBroker will be used.
                   type: string
-                resources:
-                  description: A mapping of deployment name to resource requirements
+                high-availability:
+                  description: Allows specification of HA control plane
+                  properties:
+                    replicas:
+                      description: The number of replicas that HA parts of the control plane will be scaled to
+                      minimum: 1
+                      type: integer
+                  type: object
+                deployments:
+                  description: A mapping of deployment name to override
                   type: array
                   items:
                     type: object
                     properties:
+                      name:
+                        description: The name of the deployment
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels overrides labels for the deployment and its template.
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations overrides labels for the deployment and its template.
+                        type: object
+                      replicas:
+                        description: The number of replicas that HA parts of the control plane will be scaled to
+                        type: integer
+                        minimum: 1
+                manifests:
+                  description: A list of eventing manifests, which will be installed by the operator
+                  items:
+                    properties:
+                      URL:
+                        description: The link of the manifest URL
+                        type: string
+                    type: object
+                  type: array
+                registry:
+                  description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+                  properties:
+                    default:
+                      description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                      type: string
+                    imagePullSecrets:
+                      description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-eventing deployments, and not the namespace of this resource.
+                      items:
+                        properties:
+                          name:
+                            description: The name of the secret.
+                            type: string
+                        type: object
+                      type: array
+                    override:
+                      additionalProperties:
+                        type: string
+                      description: A map of a container name or image name to the full image location of the individual knative image.
+                      type: object
+                  type: object
+                resources:
+                  description: A mapping of deployment name to resource requirements
+                  items:
+                    properties:
                       container:
                         description: The name of the container
                         type: string
-                      requests:
-                        type: object
-                        properties:
-                          memory:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          cpu:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          storage:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          ephemeral-storage:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                       limits:
-                        type: object
                         properties:
-                          memory:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                           cpu:
-                            type: string
                             pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          storage:
                             type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                           ephemeral-storage:
-                            type: string
                             pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          memory:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                        type: object
+                      requests:
+                        properties:
+                          cpu:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          ephemeral-storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          memory:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                        type: object
+                    type: object
+                  type: array
                 sinkBindingSelectionMode:
                   description: Specifies the selection mode for the sinkbinding webhook. If the value is `inclusion`, only namespaces/objects labelled as `bindings.knative.dev/include:true` will be considered. If `exclusion` is selected, only `bindings.knative.dev/exclude:true` label is checked and these will NOT be considered. The default is `exclusion`.
+                  type: string
+                version:
+                  description: The version of Knative Eventing to be installed
                   type: string
               type: object
             status:
               properties:
-                observedGeneration:
-                  description: The generation last processed by the controller
-                  type: integer
                 conditions:
                   description: The latest available observations of a resource's current state.
                   items:
@@ -165,18 +196,40 @@ spec:
                       - status
                     type: object
                   type: array
+                manifests:
+                  description: The list of eventing manifests, which have been installed by the operator
+                  items:
+                    type: string
+                  type: array
+                observedGeneration:
+                  description: The generation last processed by the controller
+                  type: integer
                 version:
                   description: The version of the installed release
                   type: string
-                manifests:
-                  description: The list of eventing manifests, which have been installed by the operator
-                  type: array
-                  items:
-                    type: string
               type: object
+          type: object
+      additionalPrinterColumns:
+        - jsonPath: .status.version
+          name: Version
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Ready")].status
+          name: Ready
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Ready")].reason
+          name: Reason
+          type: string
+  names:
+    kind: KnativeEventing
+    listKind: KnativeEventingList
+    plural: knativeeventings
+    singular: knativeeventing
+  scope: Namespaced
+  conversion:
+    strategy: None
 
 ---
-# Copyright 2020 The Knative Authors
+# Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -195,23 +248,17 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeservings.operator.knative.dev
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 spec:
   group: operator.knative.dev
-  names:
-    kind: KnativeServing
-    listKind: KnativeServingList
-    plural: knativeservings
-    singular: knativeserving
-  preserveUnknownFields: false
-  scope: Namespaced
   versions:
     - name: v1alpha1
       served: true
       storage: true
+      subresources:
+        status: {}
       schema:
         openAPIV3Schema:
-          type: object
           description: Schema for the knativeservings API
           properties:
             apiVersion:
@@ -225,18 +272,24 @@ spec:
             spec:
               description: Spec defines the desired state of KnativeServing
               properties:
-                version:
-                  description: The version of Knative Serving to be installed
-                  type: string
-                manifests:
-                  description: A list of serving manifests, which will be installed by the operator
-                  type: array
+                additionalManifests:
+                  description: A list of the additional serving manifests, which will be installed by the operator
                   items:
-                    type: object
                     properties:
                       URL:
-                        description: The link of the manifest URL
+                        description: The link of the additional manifest URL
                         type: string
+                    type: object
+                  type: array
+                cluster-local-gateway:
+                  description: A means to override the cluster-local-gateway. This field is deprecated. Use `spec.ingres.istio.knative-local-gateway`
+                  properties:
+                    selector:
+                      additionalProperties:
+                        type: string
+                      description: The selector for the ingress-gateway.
+                      type: object
+                  type: object
                 config:
                   additionalProperties:
                     additionalProperties:
@@ -244,113 +297,178 @@ spec:
                     type: object
                   description: A means to override the corresponding entries in the upstream configmaps
                   type: object
-                knative-ingress-gateway:
-                  description: A means to override the knative-ingress-gateway
-                  type: object
-                  properties:
-                    selector:
-                      description: The selector for the ingress-gateway.
-                      type: object
-                      additionalProperties:
-                        type: string
-                cluster-local-gateway:
-                  description: A means to override the cluster-local-gateway
-                  type: object
-                  properties:
-                    selector:
-                      description: The selector for the ingress-gateway.
-                      type: object
-                      additionalProperties:
-                        type: string
-                registry:
-                  description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
-                  type: object
-                  properties:
-                    default:
-                      description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
-                      type: string
-                    override:
-                      description: A map of a container name or image name to the full image location of the individual knative image.
-                      type: object
-                      additionalProperties:
-                        type: string
-                    imagePullSecrets:
-                      description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-serving deployments, and not the namespace of this resource.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            description: The name of the secret.
-                            type: string
                 controller-custom-certs:
                   description: Enabling the controller to trust registries with self-signed certificates
-                  type: object
                   properties:
+                    name:
+                      description: The name of the ConfigMap or Secret
+                      type: string
                     type:
                       description: One of ConfigMap or Secret
-                      type: string
                       enum:
                         - ConfigMap
                         - Secret
                         - ''
-                    name:
-                      description: The name of the ConfigMap or Secret
                       type: string
+                  type: object
                 high-availability:
                   description: Allows specification of HA control plane
-                  type: object
                   properties:
                     replicas:
                       description: The number of replicas that HA parts of the control plane will be scaled to
-                      type: integer
                       minimum: 1
-                resources:
-                  description: A mapping of deployment name to resource requirements
+                      type: integer
+                  type: object
+                deployments:
+                  description: A mapping of deployment name to override
                   type: array
                   items:
                     type: object
                     properties:
+                      name:
+                        description: The name of the deployment
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels overrides labels for the deployment and its template.
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations overrides labels for the deployment and its template.
+                        type: object
+                      replicas:
+                        description: The number of replicas that HA parts of the control plane will be scaled to
+                        type: integer
+                        minimum: 1
+                ingress:
+                  description: The ingress configuration for Knative Serving
+                  properties:
+                    contour:
+                      description: Contour settings
+                      properties:
+                        enabled:
+                          type: boolean
+                      type: object
+                    istio:
+                      description: Istio settings
+                      properties:
+                        enabled:
+                          type: boolean
+                        knative-ingress-gateway:
+                          description: A means to override the knative-ingress-gateway
+                          properties:
+                            selector:
+                              additionalProperties:
+                                type: string
+                              description: The selector for the ingress-gateway.
+                              type: object
+                          type: object
+                        knative-local-gateway:
+                          description: A means to override the knative-local-gateway
+                          properties:
+                            selector:
+                              additionalProperties:
+                                type: string
+                              description: The selector for the ingress-gateway.
+                              type: object
+                          type: object
+                      type: object
+                    kourier:
+                      description: Kourier settings
+                      properties:
+                        enabled:
+                          type: boolean
+                        service-type:
+                          type: string
+                      type: object
+                  type: object
+                knative-ingress-gateway:
+                  description: A means to override the knative-ingress-gateway. This field is deprecated. Use `spec.ingres.istio.knative-ingress-gateway`
+                  properties:
+                    selector:
+                      additionalProperties:
+                        type: string
+                      description: The selector for the ingress-gateway.
+                      type: object
+                  type: object
+                manifests:
+                  description: A list of serving manifests, which will be installed by the operator
+                  items:
+                    properties:
+                      URL:
+                        description: The link of the manifest URL
+                        type: string
+                    type: object
+                  type: array
+                registry:
+                  description: A means to override the corresponding deployment images in the upstream. This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+                  properties:
+                    default:
+                      description: The default image reference template to use for all knative images. Takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+                      type: string
+                    imagePullSecrets:
+                      description: A list of secrets to be used when pulling the knative images. The secret must be created in the same namespace as the knative-serving deployments, and not the namespace of this resource.
+                      items:
+                        properties:
+                          name:
+                            description: The name of the secret.
+                            type: string
+                        type: object
+                      type: array
+                    override:
+                      additionalProperties:
+                        type: string
+                      description: A map of a container name or image name to the full image location of the individual knative image.
+                      type: object
+                  type: object
+                resources:
+                  description: A mapping of deployment name to resource requirements
+                  items:
+                    properties:
                       container:
                         description: The name of the container
                         type: string
-                      requests:
-                        type: object
-                        properties:
-                          memory:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          cpu:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          storage:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          ephemeral-storage:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                       limits:
-                        type: object
                         properties:
-                          memory:
-                            type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                           cpu:
-                            type: string
                             pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                          storage:
                             type: string
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                           ephemeral-storage:
-                            type: string
                             pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          memory:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                        type: object
+                      requests:
+                        properties:
+                          cpu:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          ephemeral-storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          memory:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                          storage:
+                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                            type: string
+                        type: object
+                    type: object
+                  type: array
+                version:
+                  description: The version of Knative Serving to be installed
+                  type: string
               type: object
             status:
               description: Status defines the observed state of KnativeServing
               properties:
-                observedGeneration:
-                  description: The generation last processed by the controller
-                  type: integer
                 conditions:
                   description: The latest available observations of a resource's current state.
                   items:
@@ -378,15 +496,37 @@ spec:
                       - status
                     type: object
                   type: array
+                manifests:
+                  description: The list of serving manifests, which have been installed by the operator
+                  items:
+                    type: string
+                  type: array
+                observedGeneration:
+                  description: The generation last processed by the controller
+                  type: integer
                 version:
                   description: The version of the installed release
                   type: string
-                manifests:
-                  description: The list of serving manifests, which have been installed by the operator
-                  type: array
-                  items:
-                    type: string
               type: object
+          type: object
+      additionalPrinterColumns:
+        - jsonPath: .status.version
+          name: Version
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Ready")].status
+          name: Ready
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Ready")].reason
+          name: Reason
+          type: string
+  names:
+    kind: KnativeServing
+    listKind: KnativeServingList
+    plural: knativeservings
+    singular: knativeserving
+  scope: Namespaced
+  conversion:
+    strategy: None
 
 ---
 # Copyright 2019 The Knative Authors
@@ -409,7 +549,7 @@ metadata:
   name: config-logging
   namespace: default
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 data:
   _example: |
     ################################
@@ -471,7 +611,7 @@ metadata:
   name: config-observability
   namespace: default
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 data:
   _example: |
     ################################
@@ -573,7 +713,7 @@ metadata:
   name: knative-operator
   namespace: default
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 spec:
   replicas: 1
   selector:
@@ -583,14 +723,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
-        policy.otomi.io/ignore: psp-allowed-users
       labels:
         name: knative-operator
     spec:
       serviceAccountName: knative-operator
       containers:
         - name: knative-operator
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:e15834faad8d2f98aca11b015c2ba49d34efcc22a18c18618b666f351fa9c6bf
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:967bcc176c5034ec60d87da975246393e87c5d78fc44935fffcd783328523911
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
@@ -610,13 +749,6 @@ spec:
           ports:
             - name: metrics
               containerPort: 9090
-          resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
-            requests:
-              cpu: 25m
-              memory: 40Mi
 
 ---
 # Copyright 2020 The Knative Authors
@@ -637,7 +769,7 @@ kind: ClusterRole
 metadata:
   name: knative-serving-operator-aggregated
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 aggregationRule:
   clusterRoleSelectors:
     # This (along with escalate below) allows the Operator to pick up any
@@ -652,7 +784,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 rules:
   - apiGroups:
       - operator.knative.dev
@@ -839,7 +971,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-operator-aggregated
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 aggregationRule:
   clusterRoleSelectors:
     # This (along with escalate below) allows the Operator to pick up any
@@ -854,7 +986,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 rules:
   - apiGroups:
       - operator.knative.dev
@@ -1027,7 +1159,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1042,7 +1174,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator-aggregated
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1058,7 +1190,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1073,7 +1205,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator-aggregated
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1104,7 +1236,7 @@ metadata:
   name: knative-operator
   namespace: default
   labels:
-    operator.knative.dev/release: 'v0.19.0'
+    operator.knative.dev/release: 'v0.23.1'
 
 ---
 

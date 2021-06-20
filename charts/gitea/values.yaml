@@ -4,8 +4,6 @@
 
 replicaCount: 1
 
-extraRootCA: ""
-
 clusterDomain: cluster.local
 
 image:
@@ -259,3 +257,6 @@ mariadb:
       port: 3306
     persistence:
       size: 10Gi
+
+extraRootCA: ''
+
