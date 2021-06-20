@@ -14,7 +14,7 @@ apps:
   prometheus: {}
   prometheus-istio: {}
   sitespeed: {}
-  tracing: {}
+  jaeger: {}
   vault: {}
   weave-scope: {}
 
@@ -100,6 +100,13 @@ services:
     port: 3000
     forwardPath: true
     type: public
+  - name: kiali
+    svc: kiali
+    forwardPath: true
+    port: 20001
+    namespace: kiali-operator
+    type: public
+    auth: true
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -181,6 +188,12 @@ services:
     type: public
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
+  - name: jaeger
+    svc: jaeger
+    forwardPath: true
+    namespace: jaeger-operator
+    type: public
+    auth: true
   - name: vault
     namespace: vault
     svc: vault-0

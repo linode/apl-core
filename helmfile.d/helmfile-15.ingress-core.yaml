@@ -26,5 +26,3 @@ releases:
         certStage: {{ $cm.stage }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null
-        knative:
-          enabled: true

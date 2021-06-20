@@ -50,8 +50,6 @@ if [ "$cwd" = "otomi-core" ]; then
   [ -n "$VERBOSE" ] && echo "stack_dir: $stack_dir"
   mount_stack_dir=1
 fi
-# now we can retrieve customer name from settings
-customer=$(customer_name)
 
 # set helm config
 helm_config="$HOME/.config/helm"
@@ -94,7 +92,10 @@ function show_usage() {
   "
 }
 function check_env_dir() {
+  # when devving in otomi-core we require ENV_DIR to be set
   [ -z "$CI" ] && [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
+  # now we can retrieve customer name from settings
+  customer=$(customer_name)
   return 0
 }
 

@@ -10,6 +10,16 @@ releases:
     installed: false
     namespace: monitoring
     <<: *default
+  - name: jaeger-operator
+    installed: true
+    namespace: jaeger-operator
+    disableValidationOnInstall: true
+    <<: *default
+  - name: kiali-operator
+    installed: true
+    namespace: kiali-operator
+    disableValidationOnInstall: true
+    <<: *default
   - name: loki
     installed: true
     namespace: monitoring

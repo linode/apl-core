@@ -29,8 +29,6 @@ releases:
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
-        knative:
-          enabled: true
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}

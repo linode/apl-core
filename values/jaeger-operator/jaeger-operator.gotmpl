@@ -1,0 +1,47 @@
+{{- $v := .Values }}
+{{- $j := $v.charts | get "jaeger" dict }}
+{{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
+{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
+
+# podAnnotations:
+#   policy.otomi.io/ignore: psp-allowed-users
+
+jaeger:
+  create: true
+  spec:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+    agent:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      sidecarSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+    collector:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+    ingester:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+    ingress:
+      enabled: false
+
+rbac:
+  clusterRole: true
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 32Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000

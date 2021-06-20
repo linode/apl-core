@@ -34,11 +34,6 @@ releases:
     labels:
       pkg: keycloak
     <<: *default
-  - name: kiali-operator
-    installed: false
-    namespace: kiali-operator
-    disableValidationOnInstall: true
-    <<: *default
   - name: vault-operator-artifacts
     installed: {{ $c | get "vault.enabled" true }}
     namespace: vault

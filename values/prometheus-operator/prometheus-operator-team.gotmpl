@@ -1,7 +1,7 @@
 defaultRules:
   create: true
   rules:
-    alertmanager: false
+    alertmanager: true
     etcd: false
     general: false
     k8s: true
@@ -15,21 +15,21 @@ defaultRules:
     kubePrometheusNodeRecording: false
     kubernetesAbsent: false
     kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
+    kubernetesResources: true
+    kubernetesStorage: true
     kubernetesSystem: false
     kubeScheduler: false
     kubeStateMetrics: false
     network: false
     node: false
-    prometheus: false
+    prometheus: true
     prometheusOperator: false
     time: false
 
 kubeApiServer:
   enabled: false
 kubelet:
-  enabled: true
+  enabled: false
 nodeExporter:
   enabled: false
 prometheusOperator:
