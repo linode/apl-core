@@ -80,12 +80,12 @@ function process_crd_wrapper() {
 }
 
 function validate_templates() {
-  local k8s_version="v${get_k8s_version:-1.18}"
+  local k8s_version="v$(get_k8s_version)"
   process_crd_wrapper $k8s_version
   local schema_location="file://$schema_output_path"
   local constraint_kinds="PspAllowedRepos,BannedImageTags,ContainerLimits,PspAllowedUsers,PspHostFilesystem,PspHostNetworkingPorts,PspPrivileged,PspApparmor,PspCapabilities,PspForbiddenSysctls,PspHostSecurity,PspSeccomp,PspSelinux"
   # TODO: revisit these excluded resources and see it they exist now
-  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds"
+  local skip_kinds="CustomResourceDefinition,AppRepository,$constraint_kinds,IstioOperator,Jaeger,Kiali"
   local skip_filenames="crd,constraint"
   local tmp_out=$(mktemp -u)
   echo "Validating resources"
