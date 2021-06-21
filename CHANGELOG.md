@@ -2,129 +2,134 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.13.1](https://github.com/redkubes/otomi-core/compare/v0.13.0...v0.13.1) (2021-05-22)
+## [0.13.0](https://github.com/redkubes/otomi-core/compare/v0.13.1...v0.13.0) (2021-06-21)
 
 
-### Bug Fixes
+### ⚠ BREAKING CHANGES
 
-* templates validation, linting, k8s api json generation tooling ([8a93078](https://github.com/redkubes/otomi-core/commit/8a930784517c9fb42b8a3cd3ec393ba5a22f0b10))
-
-
-### Others
-
-* **release:** 0.13.0 ([981c2e8](https://github.com/redkubes/otomi-core/commit/981c2e800b2e393de2e9770131c42c73498eed13))
-
-## [0.13.0](https://github.com/redkubes/otomi-core/compare/v0.12.10...v0.13.0) (2021-05-22)
-
+* **istio + knative upgrade:** A new values configuration architecture together with a long awaited new istio +
+knative warrants a minor bump, so here we go!
 
 ### Features
 
-* create a separate configmap for init containers in jobs ([#408](https://github.com/redkubes/otomi-core/issues/408)) ([8bc0513](https://github.com/redkubes/otomi-core/commit/8bc0513fbaed978221dff309e23bd70c3c7d3924))
-* Gitea drone ([#409](https://github.com/redkubes/otomi-core/issues/409)) ([c013701](https://github.com/redkubes/otomi-core/commit/c01370130082e0c284b58e082cb1da11bb40f981))
-* single repo single cluster ([#404](https://github.com/redkubes/otomi-core/issues/404)) ([9362043](https://github.com/redkubes/otomi-core/commit/9362043381ffaa087af2ac8e0e42ef160f314ce8))
+* add GIT_SSL_NO_VERIFY to drone ([2c79ab4](https://github.com/redkubes/otomi-core/commit/2c79ab4c6ff5120ee9cba2a127a546988c1a9db6))
+* always commit files if there are any ([#436](https://github.com/redkubes/otomi-core/issues/436)) ([7bbccf5](https://github.com/redkubes/otomi-core/commit/7bbccf592c20f91c680da51134af774cb1ab25ff))
+* default branch is main ([cfbe790](https://github.com/redkubes/otomi-core/commit/cfbe7903654c140ddadd7a13e551bb01ab3294c9))
+* drone extra root ca ([4879d93](https://github.com/redkubes/otomi-core/commit/4879d93ce3c9240b2051f06d6bdfa95cb28938ee))
+* jaeger operator ([c84dace](https://github.com/redkubes/otomi-core/commit/c84dace9082036b98e862781ab8eb3991e997ba2))
+* lots ([27dcdbc](https://github.com/redkubes/otomi-core/commit/27dcdbcfd9ab924581387bda2b252a4ed6d30875))
+* pullsecret-patcher, gatekeeper splitup ([e012166](https://github.com/redkubes/otomi-core/commit/e012166c2958539f26424c9c154e4d77e16f626c))
+* set storageClass ([#435](https://github.com/redkubes/otomi-core/issues/435)) ([dd23765](https://github.com/redkubes/otomi-core/commit/dd237650b47617e2a30d9239df81c93f84a090cd))
+* tls passthrough ([#433](https://github.com/redkubes/otomi-core/issues/433)) ([74a5b09](https://github.com/redkubes/otomi-core/commit/74a5b09b76f1f750186451f6d8f335ac5f56d68b))
 
 
 ### Bug Fixes
 
-* [#424](https://github.com/redkubes/otomi-core/issues/424) ([abc9248](https://github.com/redkubes/otomi-core/commit/abc92489b4094132eaf6340af9c5f4581e3c6b06))
-* add loadBalancerRG to nginx-ingeress in values-schema.yaml ([#421](https://github.com/redkubes/otomi-core/issues/421)) ([3558e7d](https://github.com/redkubes/otomi-core/commit/3558e7d9f3b1277ad11bc8d52f6fc80e9327ea6b))
-* added apps to schema to accomodate console ce mode ([e6f80a8](https://github.com/redkubes/otomi-core/commit/e6f80a86546ed176ab05fdbfaab113d300c059cf))
-* added missing cluster env to console ([ea47386](https://github.com/redkubes/otomi-core/commit/ea473865b24082aa83e9404eee2999a7e89ac361))
-* added more apps also to profiles ([a018804](https://github.com/redkubes/otomi-core/commit/a018804b30bc057c3999cd3e4f66ac0a8685c2d6))
-* autoscaling issues due to pdb conflict [ci skip] ([494f785](https://github.com/redkubes/otomi-core/commit/494f78596506834377758de9aeb5369e17dde745))
-* AWS env vars to drun and vault operator ([#415](https://github.com/redkubes/otomi-core/issues/415)) ([92b92c9](https://github.com/redkubes/otomi-core/commit/92b92c9ff67c60016679ce38bfd1d625b6236885))
-* crds issues ([b86903c](https://github.com/redkubes/otomi-core/commit/b86903c2de22e40c66a3f2e1224a3716f5c66143))
-* crds, policies ([6ea8a22](https://github.com/redkubes/otomi-core/commit/6ea8a22dbe63f1362089762108ae92a964c62537))
-* disabled policy checking in build for now ([e299758](https://github.com/redkubes/otomi-core/commit/e2997583ee305852856f449c5cd7df39fc97de74))
-* docker check ([2e64b19](https://github.com/redkubes/otomi-core/commit/2e64b194a1addd4fe58cb51818b173da43eb0708))
-* in azureMonitor you need to provide either both of dlientId and clientSecret together or non of them ([#422](https://github.com/redkubes/otomi-core/issues/422)) ([8e3ef5e](https://github.com/redkubes/otomi-core/commit/8e3ef5e745008251a63dbe1c280e94531c10f678))
-* konftest gen ([89902c9](https://github.com/redkubes/otomi-core/commit/89902c984d46ec094097d44b2c005f25c3272499))
-* konstraint gen, gatekeeper artifacts install, fix [#99](https://github.com/redkubes/otomi-core/issues/99) ([499cda2](https://github.com/redkubes/otomi-core/commit/499cda2100928c3cbe80d39ce2ab3b346876379c))
-* lint, dev channel, oauth2-proxy img update ([242a608](https://github.com/redkubes/otomi-core/commit/242a6089935f63dd36b31d9b5694f3bbbf5e6f5c))
-* liveness and readiness probe endpoints fixed for LightShip in otomi-api ([#417](https://github.com/redkubes/otomi-core/issues/417)) ([d400528](https://github.com/redkubes/otomi-core/commit/d40052829e41401b7f5468f77c313bc5a997c88b))
-* lm regression ([df31659](https://github.com/redkubes/otomi-core/commit/df316599533205dcac358de719ca2a3ec64ab66b))
-* many policy fixes, added example test, otomi cli unified ([8f4f5f6](https://github.com/redkubes/otomi-core/commit/8f4f5f6675104f587a6c8986dfa9ee5644ea9a5a))
-* nginx-ingress had wrong config ([65e6d81](https://github.com/redkubes/otomi-core/commit/65e6d814bb304b9415d38e0d723455390acca825))
-* pipeline referring to apply now ([53570ab](https://github.com/redkubes/otomi-core/commit/53570ab3210cad5a59835788616124f9bb4a2760))
-* prettified profile resources [ci skip] ([f7a2e83](https://github.com/redkubes/otomi-core/commit/f7a2e83e4efe22405aaf0558d07bc84abd933fbb))
-* provider in external-dns ([#413](https://github.com/redkubes/otomi-core/issues/413)) ([00fa352](https://github.com/redkubes/otomi-core/commit/00fa3528a90cd887b90958b74b2b32616d39792d))
-* reboots on azure needed with kured, fixes [#411](https://github.com/redkubes/otomi-core/issues/411) ([9629c19](https://github.com/redkubes/otomi-core/commit/9629c190864ac9c9a75ba3e3a126fb079ace0281))
-* refactor azureMonitor credentials ([#418](https://github.com/redkubes/otomi-core/issues/418)) ([4f30e9a](https://github.com/redkubes/otomi-core/commit/4f30e9a870e9da24ff0f1128d96faa9e605607b5))
-* schema and bootstrap ([cecf761](https://github.com/redkubes/otomi-core/commit/cecf76125dc892ab3f3072b067c5862f235aa268))
-* schema inconsistencies ([fa958f1](https://github.com/redkubes/otomi-core/commit/fa958f10c99de6e9113f79386d3e3e6a03e8237f))
-* tests ([e7a5cb4](https://github.com/redkubes/otomi-core/commit/e7a5cb4b7f79029efa70c45e14e261d0d0f73406))
-* turning back on the templates validation ([ab55553](https://github.com/redkubes/otomi-core/commit/ab55553a336e6bb5b4af8315408f0894d0c32cd6))
+* admin password for gitea and keycloak ([#442](https://github.com/redkubes/otomi-core/issues/442)) ([186917f](https://github.com/redkubes/otomi-core/commit/186917fa3e83d8baf8caed80d36e8a05730e2c87))
+* admin password required ([#439](https://github.com/redkubes/otomi-core/issues/439)) ([20335b7](https://github.com/redkubes/otomi-core/commit/20335b76ea97b9383410affd874c9a1b9c2e4c93))
+* bootstrap postgresqlPassword ([#437](https://github.com/redkubes/otomi-core/issues/437)) ([91359cd](https://github.com/redkubes/otomi-core/commit/91359cd411b8018c48a81e90be03ff9061ec90ce))
+* disable istio sidecar for drone ([6be6cb4](https://github.com/redkubes/otomi-core/commit/6be6cb47c60fe980204fa917a969beab7f9cb449))
+* excluding root ca for staging ([5ae1463](https://github.com/redkubes/otomi-core/commit/5ae146391f7018cfd8f41d98424c2d4408177df3))
+* gitea push ([bd57ddc](https://github.com/redkubes/otomi-core/commit/bd57ddc95a3c88755a91780103beead2783873e2))
+* gitea push script ([8a23767](https://github.com/redkubes/otomi-core/commit/8a237679f4a6485b04bbebd8fe5dd4366fb55505))
+* gitea-push script ([#438](https://github.com/redkubes/otomi-core/issues/438)) ([317ca42](https://github.com/redkubes/otomi-core/commit/317ca421eec41fad353f673a42230fa957700d54))
+* harbor fixed htpasswd, api skip ssl verify when staging ([a075186](https://github.com/redkubes/otomi-core/commit/a07518628beaa4757fbec9e00af8d468d8eea1ea))
+* harbor perms, destroy script ([4cf1573](https://github.com/redkubes/otomi-core/commit/4cf15730cef92032e918a536b310d1841c627aa6))
+* helm flag ([d617b08](https://github.com/redkubes/otomi-core/commit/d617b0893fff658656dd15d5da5626b7b67ea0e7))
+* husky ([f108851](https://github.com/redkubes/otomi-core/commit/f108851edb90528311e12e82bad7a59b55284ff5))
+* ingress design, schema, bugs ([c8d8ea8](https://github.com/redkubes/otomi-core/commit/c8d8ea8e1323d447b2117484620897c6202b205e))
+* istio version tag ([075c60f](https://github.com/redkubes/otomi-core/commit/075c60f365dd047057fcbe79e9b49973ac64e56d))
+* jobs, lint ([45892a9](https://github.com/redkubes/otomi-core/commit/45892a92d68d1e84866be29c634c9786cceacef4))
+* knative gw ([597b0ad](https://github.com/redkubes/otomi-core/commit/597b0ad2eeedda40c55547a610a0cd5b0d51af55))
+* knative schema, file mounts ([3390ca1](https://github.com/redkubes/otomi-core/commit/3390ca1e5ca9ae4aa6fc4c3e54b7ac1780ae0f79))
+* lots ([48a6ccf](https://github.com/redkubes/otomi-core/commit/48a6ccf575c15d72b86ebcfb557be39ad426a8a8))
+* missing colors ([14252f6](https://github.com/redkubes/otomi-core/commit/14252f6b3cc2de734151eabd72974bd34f80b0b1))
+* missing container resources ([adf3418](https://github.com/redkubes/otomi-core/commit/adf34183028bf8edb2c2376ec2fe9647e433ebbe))
+* missing files ([a06e2b0](https://github.com/redkubes/otomi-core/commit/a06e2b06006af782f0cee3e7b7981b562d558b53))
+* moved gatekeeper constraints to later stage ([d85f239](https://github.com/redkubes/otomi-core/commit/d85f239a82826dade195c7a03679d9f914b58e51))
+* moved gatekeeper constraints to later stage: missing file ([77a7b2c](https://github.com/redkubes/otomi-core/commit/77a7b2c725be71de521a95f35a03a9e727192cbf))
+* nativeSecrets was missing from schema, added npm scripts ([13bd1d1](https://github.com/redkubes/otomi-core/commit/13bd1d1833fe6b5b8c11d33fea29736b5cdff747))
+* opa wait job, drone needs istio ([e46ecdd](https://github.com/redkubes/otomi-core/commit/e46ecdd0ca61b1b14b4909d2f1298774e36f1daf))
+* path to rendered values ([#444](https://github.com/redkubes/otomi-core/issues/444)) ([25fd4b7](https://github.com/redkubes/otomi-core/commit/25fd4b7ab79cbd071d75c64733fd6d5c56f57f00))
+* policy exclusions for operators without schema: kiali, jaeger, istio ([c90f999](https://github.com/redkubes/otomi-core/commit/c90f999bbca9c9ea980c15e66a38352d06caa477))
+* remove jobs from charts schema ([#441](https://github.com/redkubes/otomi-core/issues/441)) ([dd839d3](https://github.com/redkubes/otomi-core/commit/dd839d378156326d0f743c09d7a7d4b5da3141eb))
+* schema additions from api ([08aafc0](https://github.com/redkubes/otomi-core/commit/08aafc03b4685ce46c5e27c4b170d678922ee4fc))
+* schema unrequired props ([07c3108](https://github.com/redkubes/otomi-core/commit/07c3108d85e3156106a76f8c7212092ff2e8e009))
+* schema, gitea push ([67b9b61](https://github.com/redkubes/otomi-core/commit/67b9b6136df4c52c2a92ba1604b25aad088f8f5a))
+* secrets, job logic ([e91713e](https://github.com/redkubes/otomi-core/commit/e91713e14e0cbd1a7e4529404f3a173f1c4b836a))
+* set upstream for local main branch ([#440](https://github.com/redkubes/otomi-core/issues/440)) ([4720365](https://github.com/redkubes/otomi-core/commit/472036537569879fc9461f2d2488045c8f9d5186))
+* spelling ([d5df2bc](https://github.com/redkubes/otomi-core/commit/d5df2bce100a16d85d8c84e61d21a6605f965a64))
+* variable expansion ([#434](https://github.com/redkubes/otomi-core/issues/434)) ([a4ac2dc](https://github.com/redkubes/otomi-core/commit/a4ac2dcfb7c41ec66bcedc4b74a0bbaf3f386850))
 
 
 ### Others
 
-* **upgraded tools:** latest versions of the tooling ([2b0e28b](https://github.com/redkubes/otomi-core/commit/2b0e28b2055cda6b1dacf9329f075f842cb50753))
+* **istio + knative upgrade:** istio upgraded to 1.10.1 and Knative to 0.23.0 ([2599790](https://github.com/redkubes/otomi-core/commit/2599790ecdb54e4b51489e13892831b5a034b1f8))
+* knative upgrade to 1.20 ([230d42d](https://github.com/redkubes/otomi-core/commit/230d42d894912047f8977f047c8437677fa01153))
+
+
+### Code Refactoring
+
+* **istio:** moved dashboards into chart, configured kiali, jaeger ([2f47f7c](https://github.com/redkubes/otomi-core/commit/2f47f7c420bc32ff9c1427364eee1d00e33f1d12))
+* added flag for auth svc, removed azure autoscaler config ([c833128](https://github.com/redkubes/otomi-core/commit/c83312815ccecc3529d3b71b2a07581b9593d8b3))
+* removed unused team prefix ([a564009](https://github.com/redkubes/otomi-core/commit/a5640090c829ff9b3f211bd650019e82408c1e49))
 
 ### [0.12.10](https://github.com/redkubes/otomi-core/compare/v0.12.9...v0.12.10) (2021-04-14)
 
-
 ### Features
 
-* **team-ns:** exposed resourceQuota and limitRange for teams ([6b8fb6e](https://github.com/redkubes/otomi-core/commit/6b8fb6e9acc0b94b6bf9f07d0b1f5d6354bbeea7)), closes [redkubes/unassigned-issues#155](https://github.com/redkubes/unassigned-issues/issues/155)
-
+- **team-ns:** exposed resourceQuota and limitRange for teams ([6b8fb6e](https://github.com/redkubes/otomi-core/commit/6b8fb6e9acc0b94b6bf9f07d0b1f5d6354bbeea7)), closes [redkubes/unassigned-issues#155](https://github.com/redkubes/unassigned-issues/issues/155)
 
 ### Bug Fixes
 
-* [#397](https://github.com/redkubes/otomi-core/issues/397) ([#402](https://github.com/redkubes/otomi-core/issues/402)) ([bd34257](https://github.com/redkubes/otomi-core/commit/bd342576118e4e6885b2dc66f05ab4c20707f680))
-* team demo file ([fc33544](https://github.com/redkubes/otomi-core/commit/fc3354467d0d5b4630d399a49edaf91c6f01687a))
-
+- [#397](https://github.com/redkubes/otomi-core/issues/397) ([#402](https://github.com/redkubes/otomi-core/issues/402)) ([bd34257](https://github.com/redkubes/otomi-core/commit/bd342576118e4e6885b2dc66f05ab4c20707f680))
+- team demo file ([fc33544](https://github.com/redkubes/otomi-core/commit/fc3354467d0d5b4630d399a49edaf91c6f01687a))
 
 ### Others
 
-* added new format 2 for package json files [ci skip] ([6c43b93](https://github.com/redkubes/otomi-core/commit/6c43b93df095e5049f6acc6615599b056f4234f0))
+- added new format 2 for package json files [ci skip] ([6c43b93](https://github.com/redkubes/otomi-core/commit/6c43b93df095e5049f6acc6615599b056f4234f0))
 
 ### [0.12.9](https://github.com/redkubes/otomi-core/compare/v0.12.8...v0.12.9) (2021-04-09)
 
-
 ### Features
 
-* docker pull before run ([#382](https://github.com/redkubes/otomi-core/issues/382)) ([e96abb0](https://github.com/redkubes/otomi-core/commit/e96abb0d9ac1c12e429a9a1b3d10a39f025fdb3c))
-* storage classes added for Immediate binding, fixed harbor on azure not starting ([#401](https://github.com/redkubes/otomi-core/issues/401)) ([52b6f67](https://github.com/redkubes/otomi-core/commit/52b6f673d329076a46ca862fd41d693ed30c6745))
-
+- docker pull before run ([#382](https://github.com/redkubes/otomi-core/issues/382)) ([e96abb0](https://github.com/redkubes/otomi-core/commit/e96abb0d9ac1c12e429a9a1b3d10a39f025fdb3c))
+- storage classes added for Immediate binding, fixed harbor on azure not starting ([#401](https://github.com/redkubes/otomi-core/issues/401)) ([52b6f67](https://github.com/redkubes/otomi-core/commit/52b6f673d329076a46ca862fd41d693ed30c6745))
 
 ### Bug Fixes
 
-* added istio-apps ns to fix istio-system injection problem ([#400](https://github.com/redkubes/otomi-core/issues/400)) ([ae442ea](https://github.com/redkubes/otomi-core/commit/ae442ea87002bb212c47b01c36969306ab4869c5))
-* bin/otomi and bin/common.sh conditionals ([#392](https://github.com/redkubes/otomi-core/issues/392)) ([ae6711a](https://github.com/redkubes/otomi-core/commit/ae6711a6e937fb6d5bd6eec6bec82a83cdf64e45))
-* fixes bug introduced by [#370](https://github.com/redkubes/otomi-core/issues/370)/[#382](https://github.com/redkubes/otomi-core/issues/382) ([#395](https://github.com/redkubes/otomi-core/issues/395)) ([88df926](https://github.com/redkubes/otomi-core/commit/88df9265eb78e7536a0fee5fdec8d6908d46ef56)), closes [#394](https://github.com/redkubes/otomi-core/issues/394)
-* hf_templates function fix, scripts always exit on error ([bfb5761](https://github.com/redkubes/otomi-core/commit/bfb5761eecca5094ce07d8e0d685fac8403f01e7))
-* smaller window for blackbox alert trigger ([b09d8ec](https://github.com/redkubes/otomi-core/commit/b09d8ecab97b4960ab1baf4b0fbc88ad1d755935))
-* stderr diff between github pipeline runner and local docker runner ([c0b5443](https://github.com/redkubes/otomi-core/commit/c0b544357900af19dba8e9067bf2cf521b9d017f))
-* team service without path now appears with slash in ingress ([19989e5](https://github.com/redkubes/otomi-core/commit/19989e58f71bcfcb8d06692ba026292ae4c7a5b4))
-* tests now readable ([edd93e7](https://github.com/redkubes/otomi-core/commit/edd93e7e733cf1b0699000312bd6b2de0ed155ff))
-* unset var ([9008621](https://github.com/redkubes/otomi-core/commit/90086214adf13d7a5ea11e0b550a9f9e6630e2cf))
-
+- added istio-apps ns to fix istio-system injection problem ([#400](https://github.com/redkubes/otomi-core/issues/400)) ([ae442ea](https://github.com/redkubes/otomi-core/commit/ae442ea87002bb212c47b01c36969306ab4869c5))
+- bin/otomi and bin/common.sh conditionals ([#392](https://github.com/redkubes/otomi-core/issues/392)) ([ae6711a](https://github.com/redkubes/otomi-core/commit/ae6711a6e937fb6d5bd6eec6bec82a83cdf64e45))
+- fixes bug introduced by [#370](https://github.com/redkubes/otomi-core/issues/370)/[#382](https://github.com/redkubes/otomi-core/issues/382) ([#395](https://github.com/redkubes/otomi-core/issues/395)) ([88df926](https://github.com/redkubes/otomi-core/commit/88df9265eb78e7536a0fee5fdec8d6908d46ef56)), closes [#394](https://github.com/redkubes/otomi-core/issues/394)
+- hf_templates function fix, scripts always exit on error ([bfb5761](https://github.com/redkubes/otomi-core/commit/bfb5761eecca5094ce07d8e0d685fac8403f01e7))
+- smaller window for blackbox alert trigger ([b09d8ec](https://github.com/redkubes/otomi-core/commit/b09d8ecab97b4960ab1baf4b0fbc88ad1d755935))
+- stderr diff between github pipeline runner and local docker runner ([c0b5443](https://github.com/redkubes/otomi-core/commit/c0b544357900af19dba8e9067bf2cf521b9d017f))
+- team service without path now appears with slash in ingress ([19989e5](https://github.com/redkubes/otomi-core/commit/19989e58f71bcfcb8d06692ba026292ae4c7a5b4))
+- tests now readable ([edd93e7](https://github.com/redkubes/otomi-core/commit/edd93e7e733cf1b0699000312bd6b2de0ed155ff))
+- unset var ([9008621](https://github.com/redkubes/otomi-core/commit/90086214adf13d7a5ea11e0b550a9f9e6630e2cf))
 
 ### Others
 
-* **deps:** bump y18n from 4.0.0 to 4.0.1 ([#387](https://github.com/redkubes/otomi-core/issues/387)) ([6717776](https://github.com/redkubes/otomi-core/commit/67177769cff315f279cb4ba37d38c369bea16a6d))
+- **deps:** bump y18n from 4.0.0 to 4.0.1 ([#387](https://github.com/redkubes/otomi-core/issues/387)) ([6717776](https://github.com/redkubes/otomi-core/commit/67177769cff315f279cb4ba37d38c369bea16a6d))
 
 ### [0.12.8](https://github.com/redkubes/otomi-core/compare/v0.12.7...v0.12.8) (2021-03-25)
 
-
 ### Features
 
-* exposed maxBodySize for nginx ([db6d186](https://github.com/redkubes/otomi-core/commit/db6d18671ff62276841aa5e7b1f6723cb5d5e175))
-* otomi regcred ([29d06c7](https://github.com/redkubes/otomi-core/commit/29d06c72d46e59bdadc27da2f129319c24dffcfe))
-* support sub claim mapper ([#377](https://github.com/redkubes/otomi-core/issues/377)) ([a1fd9c5](https://github.com/redkubes/otomi-core/commit/a1fd9c5888ecdba3d84130dc154bfe3389ba92bf))
-
+- exposed maxBodySize for nginx ([db6d186](https://github.com/redkubes/otomi-core/commit/db6d18671ff62276841aa5e7b1f6723cb5d5e175))
+- otomi regcred ([29d06c7](https://github.com/redkubes/otomi-core/commit/29d06c72d46e59bdadc27da2f129319c24dffcfe))
+- support sub claim mapper ([#377](https://github.com/redkubes/otomi-core/issues/377)) ([a1fd9c5](https://github.com/redkubes/otomi-core/commit/a1fd9c5888ecdba3d84130dc154bfe3389ba92bf))
 
 ### Bug Fixes
 
-* added conf for drone branch ([b43cdb8](https://github.com/redkubes/otomi-core/commit/b43cdb87881da4c7603bdcf98629bd41fd32a913))
-* missing schema [ci skip] ([54263db](https://github.com/redkubes/otomi-core/commit/54263dbde6ff36df72a446474e5c2d1eb795615c))
-* removed interfering CI flag from run-if-changed [ci skip] ([bfd16ae](https://github.com/redkubes/otomi-core/commit/bfd16aebb5aac1e82b79a398d993ef49286d48e6))
-* service paths may have underscores...doh! ([e9a8e31](https://github.com/redkubes/otomi-core/commit/e9a8e312451dae0aa1d85479c64da666dccce7b3))
-
+- added conf for drone branch ([b43cdb8](https://github.com/redkubes/otomi-core/commit/b43cdb87881da4c7603bdcf98629bd41fd32a913))
+- missing schema [ci skip] ([54263db](https://github.com/redkubes/otomi-core/commit/54263dbde6ff36df72a446474e5c2d1eb795615c))
+- removed interfering CI flag from run-if-changed [ci skip] ([bfd16ae](https://github.com/redkubes/otomi-core/commit/bfd16aebb5aac1e82b79a398d993ef49286d48e6))
+- service paths may have underscores...doh! ([e9a8e31](https://github.com/redkubes/otomi-core/commit/e9a8e312451dae0aa1d85479c64da666dccce7b3))
 
 ### Others
 
-* **deps:** upgraded harbor to 2.2.0 ([96f0bb3](https://github.com/redkubes/otomi-core/commit/96f0bb35af5f5231b7027ff06b8fd025767ced5d))
+- **deps:** upgraded harbor to 2.2.0 ([96f0bb3](https://github.com/redkubes/otomi-core/commit/96f0bb35af5f5231b7027ff06b8fd025767ced5d))
 
 ### [0.12.7](https://github.com/redkubes/otomi-core/compare/v0.12.6...v0.12.7) (2021-03-19)
 
