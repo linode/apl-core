@@ -27,17 +27,10 @@ if [ ! -d .git ]; then
   git_found=false
 fi
 
-tmp_remote_name=$(git remote -v | grep "$gitea_url" | grep "push" | cut -f1)
-remote_name=${tmp_remote_name:-origin}
+git config user.name "Otomi Admin"
+git config user.email "otomi-admin@$cluster_domain"
+readonly remote_name="origin"
 
-if [ $(git config remote.$remote_name.url) ] && [ $gitea_url != $(git config remote.$remote_name.url | cut -d@ -f2 | cut -d/ -f1 | cut -d: -f1) ]; then
-  read -p "Another origin already exists, do you want to add Gitea as a remote? [y/N]" add_remote
-  if [ "${add_remote:-n}" = 'y' ] || [ "${add_remote:-n}" = 'Y' ]; then
-    remote_name='otomi-values'
-  else
-    exit 0
-  fi
-fi
 if [ ! $(git config remote.$remote_name.url) ]; then
   git remote add $remote_name "https://$gitea_user:$gitea_password@$gitea_url/$gitea_org/$gitea_repo.git"
   echo "Added gitea as a remote origin"
