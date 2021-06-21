@@ -1424,10 +1424,6 @@ properties:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
             type: string
-        required:
-          - adminPassword
-          - persistence
-          - retention
       nginx-ingress:
         additionalProperties: false
         properties:
