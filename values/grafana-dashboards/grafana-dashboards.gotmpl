@@ -2,7 +2,7 @@
 {{- $c := $v.charts }}
 folders:
   # - k8s
-  # - istio
+  - istio-admin
   {{- if and (eq $v.cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
   - azure
   {{- end }}

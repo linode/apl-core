@@ -4,16 +4,21 @@
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
-# podAnnotations:
-#   policy.otomi.io/ignore: psp-allowed-users
-
 jaeger:
   create: true
   spec:
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
+    allInOne:
+      options:
+        query:
+          base-path: /jaeger
     agent:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -21,15 +26,40 @@ jaeger:
         runAsNonRoot: true
         runAsUser: 1000
     collector:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
     ingester:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
     ingress:
       enabled: false
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+    strategy: allInOne
 
 rbac:
   clusterRole: true

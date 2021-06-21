@@ -104,7 +104,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: kiali-operator
+    namespace: istio-system
     type: public
     auth: true
   - name: notary
@@ -189,7 +189,8 @@ services:
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
   - name: jaeger
-    svc: jaeger
+    svc: jaeger-operator-jaeger-query
+    port: 16686
     forwardPath: true
     namespace: jaeger-operator
     type: public

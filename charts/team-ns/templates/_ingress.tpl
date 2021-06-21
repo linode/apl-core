@@ -102,7 +102,7 @@ metadata:
 {{- if .isApps }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
-      rewrite ^(/tracing)$ $1/ permanent;
+      rewrite ^(/jaeger)$ $1/ permanent;
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
   name: {{ $.provider }}-team-{{ $v.teamId }}-{{ .type }}-{{ .name }}

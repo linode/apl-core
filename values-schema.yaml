@@ -1442,6 +1442,17 @@ properties:
           maxBodySize:
             type: string
             default: 1024m
+          modsecurity:
+            title: MOD Security
+            description: Enables MOD Security functionality.
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              owasp:
+                type: boolean
+                default: false
+            type: object
           resources:
             $ref: '#/definitions/resources'
           private:

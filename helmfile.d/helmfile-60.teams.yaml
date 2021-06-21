@@ -124,11 +124,6 @@ releases:
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
-            - name: Prometheus-Istio
-              editable: false
-              type: prometheus
-              access: proxy
-              url: http://prometheus.istio-system:9090
             - name: Loki
               editable: false
               type: loki
@@ -175,7 +170,6 @@ releases:
       tag: teams
       team: {{ $teamId }}
     values:
-      - ../values/grafana-dashboards/grafana-dashboards.gotmpl
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         team: {{ $teamId }}
         folders:

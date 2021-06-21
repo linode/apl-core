@@ -84,6 +84,7 @@ prometheus:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
+  additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
 {{ if eq $v.cluster.provider "aws" }}  
 additionalPrometheusRules:
@@ -115,7 +116,7 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: 7.5.8
+    tag: 8.0.3
   initChownData:
     resources:
       limits:
