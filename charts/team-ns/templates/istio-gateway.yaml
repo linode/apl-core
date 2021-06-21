@@ -2,7 +2,7 @@
 {{- $ns := .Release.Namespace }}
 {{- $ := . }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
-  # collect unique domains for this GW
+# collect unique domains for this GW
   {{- $publicDomainsTerm :=  list }}
   {{- $privateDomainsTerm := list }}
   {{- $publicDomainsPass :=  list }}
