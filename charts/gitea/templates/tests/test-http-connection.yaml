@@ -17,3 +17,10 @@ spec:
       command: ['wget']
       args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
   restartPolicy: Never
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 16Mi
