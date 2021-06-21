@@ -3,6 +3,7 @@
 {{- if .rootCA }}
 - name: extra-root-ca-init
   image: {{ $image }}
+  {{- include "common.resources" . | nindent 2 }}
   command: ["sh"]
   args:
     - '-c'
@@ -22,6 +23,7 @@
     mountPath: "/etc/ssl/certs-new"
 - name: extra-root-ca-finish
   image: {{ $image }}
+  {{- include "common.resources" . | nindent 2 }}
   command: ["sh"]
   args:
     - '-c'

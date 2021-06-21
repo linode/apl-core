@@ -47,6 +47,10 @@ spec:
         command: ["/bin/sh"]
         # args: ["-c", "[ -e /var/lib/postgresql/data/postgresql.conf ] && [ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || true"]
         args: ["-c", "[ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && [ -e /var/lib/postgresql/data/postgresql.conf ] && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || chmod 0700 /var/lib/postgresql/data/pgdata || true"]
+{{- if .Values.database.internal.resources }}
+        resources:
+{{ toYaml .Values.database.internal.resources | indent 10 }}
+{{- end }}
         volumeMounts:
           - name: database-data
             mountPath: /var/lib/postgresql/data

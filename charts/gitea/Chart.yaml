@@ -28,6 +28,9 @@ maintainers:
     email: lucas.hahn@novum-rgi.de
 
 dependencies:
+- name: common
+  version: 0.1.0
+  repository: file://
 - name: memcached
   repository: https://charts.bitnami.com/bitnami
   version: 5.9.0
