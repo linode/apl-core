@@ -14,7 +14,7 @@ apps:
   prometheus: {}
   prometheus-istio: {}
   sitespeed: {}
-  tracing: {}
+  jaeger: {}
   vault: {}
   weave-scope: {}
 
@@ -33,10 +33,8 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
     - name: ingress
-    - name: istio-apps
     - name: keycloak
     - name: knative-serving
-      disableIstioInjection: true
       disablePolicyChecks: true
     - name: kubeapps
       disableIstioInjection: true
@@ -102,6 +100,13 @@ services:
     port: 3000
     forwardPath: true
     type: public
+  - name: kiali
+    svc: kiali
+    forwardPath: true
+    port: 20001
+    namespace: istio-system
+    type: public
+    auth: true
   - name: notary
     svc: harbor-harbor-notary-server
     port: 4443
@@ -134,11 +139,11 @@ services:
     path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
     type: public
     auth: true
-  - name: weave-scope
-    svc: weave-scope
-    namespace: monitoring
-    type: public
-    auth: true
+  # - name: weave-scope
+  #   svc: weave-scope
+  #   namespace: monitoring
+  #   type: public
+  #   auth: true
   - name: grafana
     svc: po-grafana
     namespace: monitoring
@@ -151,31 +156,10 @@ services:
         app.kubernetes.io/name: po-grafana
     type: public
     auth: true
-  - name: grafana-istio
-    svc: grafana
-    port: 3000
-    logo:
-      name: istio
-    namespace: istio-apps
-    authz:
-      workload:
-        app: grafana
-        release: istio-system
-    type: public
-    auth: true
   - name: prometheus
     svc: po-prometheus
     port: 9090
     namespace: monitoring
-    type: public
-    auth: true
-  - name: prometheus-istio
-    svc: prometheus
-    ownHost: true
-    port: 9090
-    logo:
-      name: prometheus
-    namespace: istio-system
     type: public
     auth: true
   - name: alertmanager
@@ -184,21 +168,6 @@ services:
     logo:
       name: prometheus
     namespace: monitoring
-    type: public
-    auth: true
-  - name: kiali
-    svc: kiali
-    forwardPath: true
-    port: 20001
-    namespace: istio-apps
-    type: public
-    auth: true
-  - name: tracing
-    svc: tracing
-    forwardPath: true
-    logo:
-      name: jaeger
-    namespace: istio-apps
     type: public
     auth: true
   - name: drone
@@ -219,6 +188,13 @@ services:
     type: public
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
+  - name: jaeger
+    svc: jaeger-operator-jaeger-query
+    port: 16686
+    forwardPath: true
+    namespace: jaeger-operator
+    type: public
+    auth: true
   - name: vault
     namespace: vault
     svc: vault-0

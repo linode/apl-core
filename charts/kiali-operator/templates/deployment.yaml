@@ -44,6 +44,10 @@ spec:
         args:
         - "--zap-log-level=info"
         - "--leader-election-id={{ include "kiali-operator.fullname" . }}"
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+          runAsNonRoot: true
         volumeMounts:
         - mountPath: /tmp/ansible-operator/runner
           name: runner

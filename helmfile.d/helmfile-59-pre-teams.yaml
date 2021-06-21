@@ -13,4 +13,4 @@ releases:
       pkg: gatekeeper
     values:
       - ../values/gatekeeper/gatekeeper-constraints.gotmpl
-      - snippets/rawValues.gotmpl
+      - snippets/common.gotmpl

@@ -52,6 +52,8 @@ commonLabels:
   prometheus: system
 prometheus:
   prometheusSpec:
+    image:
+      tag: v2.27.1
     serviceMonitorSelector:
       matchLabels:
         prometheus: system
@@ -82,6 +84,7 @@ prometheus:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
+  additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
 {{ if eq $v.cluster.provider "aws" }}  
 additionalPrometheusRules:
@@ -90,6 +93,8 @@ additionalPrometheusRules:
 {{- end }}
 alertmanager:
   alertmanagerSpec:
+    image:
+      tag: v0.22.2
     priorityClassName: "otomi-critical"
     resources:
       requests:
@@ -111,7 +116,7 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: 7.5.6
+    tag: 8.0.3
   initChownData:
     resources:
       limits:

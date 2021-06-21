@@ -1,0 +1,2 @@
+{{- .Environment.Values | get (printf "charts.%s._rawValues" .Release.Name) dict | toYaml }}
+certStage: {{ .Values.charts | get "cert-manager.stage" "staging" }}

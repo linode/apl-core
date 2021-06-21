@@ -1,0 +1,104 @@
+{{- $v := .Values }}
+{{- $k := $v.charts | get "kiali" dict }}
+{{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
+{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
+
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users
+
+cr:
+  create: true
+  spec:
+    auth:
+      strategy: anonymous
+    deployment:
+      accessible_namespaces:
+        - '**'
+      pod_annotations:
+        policy.otomi.io/ignore: psp-allowed-users
+        resources:
+      ingress_enabled: false
+      namespace: istio-system
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      verbose_mode: "4"
+    external_services:
+      grafana:
+        auth:
+          insecure_skip_verify: {{ $hasStagingCerts }}
+          password: {{ $v.otomi.adminPassword }}
+          type: basic
+          username: admin
+        dashboards:
+          - name: Istio Service Dashboard
+          - name: Istio Workload Dashboard
+          - name: Istio Mesh Dashboard
+          - name: Istio Control Plane Dashboard
+          - name: Istio Performance Dashboard
+          - name: Istio Wasm Extension Dashboard
+        enabled: true
+        in_cluster_url: http://po-grafana.monitoring:3000
+        is_core: false
+        url: https://{{ $appsDomain }}/grafana/
+      istio:
+        component_status:
+          enabled: true
+          components:
+          - app_label: istiod
+            is_core: true
+          - app_label: istio-ingressgateway-public
+            is_core: false
+            is_proxy: true
+          - app_label: istio-ingressgateway-private
+            is_core: false
+            is_proxy: true
+          - app_label: istio-egressgateway
+            is_core: false
+            is_proxy: true
+        # url_service_version: http://istiod.istio-system:15014/version
+      prometheus:
+        auth:
+          insecure_skip_verify: {{ $hasStagingCerts }}
+          password: {{ $v.otomi.adminPassword }}
+          type: "basic"
+          username: admin
+        cache_duration: 10
+        cache_enabled: true
+        cache_expiration: 300
+        in_cluster_url: http://po-prometheus.monitoring:9090/
+        is_core: false
+        url: https://{{ $appsDomain }}/prometheus/
+      tracing:
+        auth:
+          insecure_skip_verify: {{ $hasStagingCerts }}
+          password: {{ $v.otomi.adminPassword }}
+          type: "basic"
+          username: admin
+        enabled: true
+        in_cluster_url: http://jaeger-operator-jaeger-query.jaeger-operator:16686/
+        is_core: false
+        namespace_selector: true
+        url: https://{{ $appsDomain }}/jaeger/
+        #use_grpc:
+        whitelist_istio_system: ["jaeger-query", "istio-ingressgateway"]
+    istio_component_namespaces:
+      prometheus: monitoring
+      grafana: monitoring
+    istio_namespace: istio-system
+    server:
+      web_root: /kiali
+      web_fqdn: {{ $appsDomain }}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 150Mi

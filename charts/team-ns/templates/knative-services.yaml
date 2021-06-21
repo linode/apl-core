@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- if (get $v "knative.enabled" | default true) }}
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
@@ -23,7 +22,8 @@ spec:
   template:
     metadata:
       annotations:
-        policy.otomi.io/ignore: psp-allowed-users
+        # policy.otomi.io/ignore: psp-allowed-users
+        policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users
         {{- $hasMinScale := false }}
         {{- range $a := $k.annotations }}
           {{- if (contains "autoscaling.knative.dev/minScale" $a) }}{{ $hasMinScale = true }}{{ end }}
@@ -102,7 +102,6 @@ spec:
   {{- end }}
 {{- end }}
 ---      
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

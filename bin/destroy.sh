@@ -7,10 +7,10 @@ k -n olm delete deploy --all
 
 hf destroy
 
-# hf -f helmfile.tpl/helmfile-init.yaml template | kubectl delete -f -
+hf -f helmfile.tpl/helmfile-init.yaml template | kubectl delete -f -
 
 # delete all crds installed by us
-crds="(appgw.ingress.k8s.io|cert-manager.io|externalsecrets.kubernetes-client.io|gatekeeper.sh|istio.io|kubeapps.com|monitoring.coreos.com|monitoring.kiali.io|operators.coreos.com|vault.banzaicloud.com)"
+crds="(appgw.ingress.k8s.io|cert-manager.io|externalsecrets.kubernetes-client.io|gatekeeper.sh|istio.io|knative.dev|kubeapps.com|monitoring.coreos.com|monitoring.kiali.io|operators.coreos.com|vault.banzaicloud.com)"
 k get crd --no-headers -o custom-columns=":metadata.name" | grep -E $crds | xargs kubectl delete crd
 
 # and to finally remove all hanging namespaces which are stuck on:

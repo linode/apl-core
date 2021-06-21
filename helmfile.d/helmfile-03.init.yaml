@@ -34,7 +34,7 @@ releases:
       pkg: gatekeeper
     values:
       - ../values/gatekeeper/gatekeeper-operator.gotmpl
-      - snippets/rawValues.gotmpl
+      - snippets/common.gotmpl
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
     disableValidationOnInstall: true

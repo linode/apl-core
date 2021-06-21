@@ -12,6 +12,7 @@ metadata:
     release: {{ $.Release.Name }}
     heritage: {{ $.Release.Service }}
     dashboard-provider: {{ $provider }}
+    custom_label: {{ $provider }}
     {{ $v.sidecar.dashboards.label }}: "1"
 data:
   {{- range $path, $bytes := $files.Glob (printf "%s/*" $provider) }}

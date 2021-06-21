@@ -50,8 +50,8 @@ controller:
     disable-ipv6: "true"
     client-body-timeout: "5"
     client-header-timeout: "5"
-    # enable-modsecurity: "true"
-    # enable-owasp-modsecurity-crs: "true"
+    enable-modsecurity: {{ $n | get "modsecurity.enabled" "false" }}
+    enable-owasp-modsecurity-crs: {{ and ($n | get "modsecurity.enabled" "false") ($n | get "modsecurity.owasp" "false") }}
     http2-max-field-size: 64k
     http2-max-header-size: 128k
     proxy-buffers-number: "8"

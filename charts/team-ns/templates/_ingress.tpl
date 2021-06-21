@@ -87,7 +87,7 @@ metadata:
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}
-    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.cluster.domainSuffix }}
+    nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
   {{- if .hasForward }}
     nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
   {{- else }}
@@ -102,7 +102,7 @@ metadata:
 {{- if .isApps }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
-      rewrite ^(/tracing)$ $1/ permanent;
+      rewrite ^(/jaeger)$ $1/ permanent;
 {{- end }}
   labels: {{- include "chart-labels" .dot | nindent 4 }}
   name: {{ $.provider }}-team-{{ $v.teamId }}-{{ .type }}-{{ .name }}

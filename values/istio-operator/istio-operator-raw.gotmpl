@@ -2,7 +2,6 @@
 {{- $i := $v.charts | get "istio" dict }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
-{{- $ia := $i | get "addonComponents" dict }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
 {{- $stage := $v.charts | get "cert-manager.stage" }}
@@ -22,6 +21,15 @@ resources:
       name: istiocontrolplane
     spec:
       profile: default
+      addonComponents:
+        grafana:
+          enabled: false
+        kiali:
+          enabled: false
+        prometheus:
+          enabled: false
+        tracing:
+          enabled: false
       components:
         cni:
           enabled: false
@@ -33,7 +41,7 @@ resources:
             priorityClassName: "otomi-critical"
             hpaSpec:
               minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 1 }}
-              maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 6 }}
+              maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 10 }}
             resources:
               {{- with $i | get "resources.pilot" nil }}
                 {{- toYaml . | nindent 14 }}
@@ -46,6 +54,8 @@ resources:
                 memory: 128Mi
               {{- end }}
         ingressGateways:
+          - name: istio-ingressgateway
+            enabled: false
           - name: istio-ingressgateway-public
             enabled: true
             label:
@@ -68,16 +78,20 @@ resources:
               {{- end }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 6 }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 10 }}
               service:
                 type: ClusterIP
                 ports:
-                - port: 15020
-                  name: status-port
-                - port: 80
-                  name: http2
-                - port: 443
-                  name: https
+                  - port: 15021
+                    name: status-port
+                  - port: 80
+                    targetPort: 8080
+                    name: http2
+                  - port: 443
+                    targetPort: 8443
+                    name: https
+                  - port: 15443
+                    name: tls
             {{- if eq $v.cluster.provider "azure" }}
               readinessProbe:
                 failureThreshold: 20
@@ -92,7 +106,7 @@ resources:
                 policy.otomi.io/ignore: psp-allowed-users
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway-auth.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 6 }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 10 }}
               priorityClassName: "otomi-critical"
               resources:
                 {{- with $i | get "resources.ingressgateway-auth" nil }}
@@ -108,48 +122,20 @@ resources:
               service:
                 type: ClusterIP
                 ports:
-                - port: 15020
-                  name: status-port
-                - port: 80
-                  name: http2
-                - port: 443
-                  name: https
+                  - port: 15021
+                    name: status-port
+                  - port: 80
+                    targetPort: 8080
+                    name: http2
+                  - port: 443
+                    targetPort: 8443
+                    name: https
+                  - port: 15443
+                    name: tls
             {{- if eq $v.cluster.provider "azure" }}
               readinessProbe:
                 failureThreshold: 20
             {{- end }}
-          - name: cluster-local-gateway
-            enabled: true
-            label:
-              istio: cluster-local-gateway
-              app: cluster-local-gateway
-            k8s:
-              podAnnotations:
-                policy.otomi.io/ignore: psp-allowed-users
-              hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.gateway-local.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.gateway-local.maxReplicas" 6 }}
-              priorityClassName: "otomi-critical"
-              resources:
-                {{- with $i | get "resources.gateway-local" nil }}
-                  {{- toYaml . | nindent 16 }}
-                {{- else }}
-                limits:
-                  cpu: '1'
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                {{- end }}
-              service:
-                type: ClusterIP
-                ports:
-                - port: 15020
-                  name: status-port
-                - port: 80
-                  name: http2
-                - port: 443
-                  name: https
         {{ if $i | get "egressGateway.enabled" false }}
         egressGateways:
           - name: istio-egressgateway
@@ -171,122 +157,28 @@ resources:
               {{- end }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 6 }}
+                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 10 }}
               service:
                 type: ClusterIP
                 ports:
-                - port: 15020
-                  name: status-port
-                - port: 80
-                  name: http2
-                - port: 443
-                  name: https
+                  - port: 15021
+                    name: status-port
+                  - port: 80
+                    targetPort: 8080
+                    name: http2
+                  - port: 443
+                    targetPort: 8443
+                    name: https
             {{- if eq $v.cluster.provider "azure" }}
               readinessProbe:
                 failureThreshold: 20
             {{- end }}
         {{- end }}  
-      addonComponents:
-        grafana:
-          enabled: {{ $ia | get "grafana.enabled" true }}
-          namespace: istio-apps
-          k8s:
-            podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
-              sidecar.istio.io/inject: "true"
-            priorityClassName: "otomi-critical"
-            resources:
-              {{- with $i | get "resources.grafana" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: 500m
-                memory: 2Gi
-              requests:
-                cpu: 100m
-                memory: 512Mi
-              {{- end }}
-        prometheus:
-          enabled: {{ $ia | get "prometheus.enabled" true }}
-          # namespace: istio-apps
-          k8s:
-            podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
-              sidecar.istio.io/inject: "true"
-            priorityClassName: "otomi-critical"
-            resources:
-              {{- with $i | get "resources.prometheus" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: 500m
-                memory: 2Gi
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              {{- end }}
-        tracing:
-          enabled: {{ $ia | get "tracing.enabled" true }}
-          namespace: istio-apps
-          k8s:
-            podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
-              sidecar.istio.io/inject: "true"
-            priorityClassName: "otomi-critical"
-            resources:
-              {{- with $i | get "resources.tracing" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: 500m
-                memory: 500Mi
-              requests:
-                cpu: 50m
-                memory: 50Mi
-              {{- end }}
-        kiali:
-          enabled: {{ $ia | get "kiali.enabled" true }}
-          namespace: istio-apps
-          k8s:
-            podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
-              sidecar.istio.io/inject: "true"
-            priorityClassName: "otomi-critical"
-            resources:
-              {{- with $i | get "resources.kiali" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: 500m
-                memory: 1Gi
-              requests:
-                cpu: 100m
-                memory: 512Mi
-              {{- end }}
       values:
         cni:
           excludeNamespaces: {{- $excludedNamespaces | toYaml | nindent 12 }}
-        kiali:
-          contextPath: '/kiali'
-          dashboard:
-            auth:
-              strategy: anonymous #openid
-              # openid:
-              #   issuer_uri: {{ $keycloakBase }}
-              #   client_id: {{ $v.oidc.clientID }}
-            jaegerURL: https://{{ $appsDomain }}/tracing/
-            grafanaURL: https://{{ $appsDomain }}/grafana-istio/
-        gateways:
-          istio-ingressgateway:
-            sds:
-              enabled: {{ $ig | get "sds.enabled" false }}
         global:
           imagePullPolicy: IfNotPresent
-          sds:
-            enabled: {{ $ig | get "sds.enabled" false }}
-          mtls:
-            auto: {{ $ig | get "mtls.enabled" false }}
-          # controlPlaneSecurityEnabled: true
           logging:
             level: {{ $ig | get "logging.level" "default:info" }}
           proxy:
@@ -302,14 +194,10 @@ resources:
                   memory: 80Mi
             {{- end }}
             autoInject: enabled
+          tracer:
+            zipkin:
+              address: jaeger-operator-jaeger-collector.jaeger-operator:9411 
           useMCP: false
-        grafana:
-          contextPath: '/grafana-istio'
-          env:
-            GF_SERVER_ROOT_URL: /grafana-istio/
-          grafana.ini: {{- $grafanaIni | nindent 12 }}
-          image: 
-            tag: 7.5.6
         meshConfig:
           accessLogFile: "/dev/stdout"
           defaultConfig:
@@ -325,11 +213,7 @@ resources:
           jwksResolverExtraRootCA: |
             {{- $v.letsencryptCA | nindent 12 }}
           {{- end }}
-        prometheus:
-          contextPath: '/prometheus-istio'
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
           injectedAnnotations: 
             policy.otomi.io/ignore-sidecar: psp-allowed-users,psp-capabilities
-        tracing:
-          contextPath: '/tracing'

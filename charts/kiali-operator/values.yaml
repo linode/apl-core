@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator
-  tag: v1.34.1
+  tag: v1.35.0
   pullPolicy: Always
   pullSecrets: []
 
@@ -57,7 +57,7 @@ allowAdHocKialiImage: false
 # For what a Kiali CR spec can look like, see:
 # https://github.com/kiali/kiali-operator/blob/master/deploy/kiali/kiali_cr.yaml
 cr:
-  create: true
+  create: false
   name: kiali
   # If you elect to create a Kiali CR (--set cr.create=true)
   # and the operator is watching all namespaces (--set watchNamespace="")
@@ -65,10 +65,6 @@ cr:
   namespace: ""
 
   spec:
-    auth:
-      strategy: anonymous
     deployment:
       accessible_namespaces:
       - '**'
-      ingress_enabled: false
-    istio_namespace: "istio-system"

@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $httpbin := $v | get "charts.hello" dict }}
 
-nameOverride: tlspass
-fullnameOverride: tlspass
+nameOverride: hello
+fullnameOverride: hello
 
 image:
   tag: latest

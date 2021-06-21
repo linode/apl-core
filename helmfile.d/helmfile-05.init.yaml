@@ -20,7 +20,7 @@ releases:
         args: [true]
     values:
       - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
-      - snippets/rawValues.gotmpl
+      - snippets/common.gotmpl
   - name: istio-operator
     installed: true
     namespace: default
@@ -33,11 +33,6 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-    <<: *default
-  - name: kiali-operator
-    installed: false
-    namespace: kiali-operator
-    disableValidationOnInstall: true
     <<: *default
   - name: vault-operator-artifacts
     installed: {{ $c | get "vault.enabled" true }}

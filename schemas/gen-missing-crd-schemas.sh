@@ -14,7 +14,7 @@ rm -rf ./$gen_folder/*
 mkdir $input_folder >/dev/null
 rm -rf $input_folder/*
 
-for pkg in "cert-manager" "istio" "knative"; do
+for pkg in "cert-manager" "istio" "jaeger" "kiali" "knative"; do
   pkg_file="$input_folder/$pkg.yaml"
   echo '' >$pkg_file
   for crd in $(kubectl get crd | grep $pkg | awk '{print $1}'); do printf "$(kubectl get crd $crd -o yaml | yq d - 'metadata' | yq d - 'status')\n---\n" >>$pkg_file; done
