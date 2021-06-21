@@ -122,3 +122,11 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
+
+initPreScript: |
+  echo "Waiting until keycloak service is accessible"
+  while ! nc -w2 -zv {{ printf "keycloak.%s" $v.cluster.domainSuffix }} 443; do
+    printf '.'
+    sleep 5
+  done
+  echo READY!

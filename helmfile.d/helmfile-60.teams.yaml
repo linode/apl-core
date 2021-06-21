@@ -174,7 +174,7 @@ releases:
         team: {{ $teamId }}
         folders:
           - k8s
-          - istio
+          - istio-teams
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}

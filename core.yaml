@@ -38,6 +38,7 @@ k8s:
       disablePolicyChecks: true
     - name: kubeapps
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: kube-system
       disableIstioInjection: true
       disablePolicyChecks: true
