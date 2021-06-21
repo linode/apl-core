@@ -129,6 +129,7 @@ function check_sops_file() {
 }
 
 function evaluate_secrets() {
+  check_env_dir
   [ ! -f "$ENV_DIR/.sops.yaml" ] && [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
