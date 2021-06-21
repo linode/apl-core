@@ -15,6 +15,13 @@ spec:
       image: busybox
       command: ['wget']
       args:  ['{{ include "otomi-api.fullname" . }}:{{ .Values.service.port }}']
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 16Mi
   restartPolicy: Never
   {{- with .Values.podSecurityContext }}
   securityContext: {{- toYaml . | nindent 4 }}

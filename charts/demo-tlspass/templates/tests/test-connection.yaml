@@ -12,4 +12,11 @@ spec:
       image: busybox
       command: ['wget']
       args: ['{{ include "demo-tlspass.fullname" . }}:{{ .Values.service.port }}']
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 16Mi
   restartPolicy: Never
