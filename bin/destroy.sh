@@ -15,3 +15,6 @@ k get crd --no-headers -o custom-columns=":metadata.name" | grep -E $crds | xarg
 
 # and to finally remove all hanging namespaces which are stuck on:
 k delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com
+
+echo "The following PVCs remain in the cluster:"
+k get pvc -A
