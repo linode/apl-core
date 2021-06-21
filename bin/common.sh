@@ -215,7 +215,7 @@ function hf_values() {
   hf -f helmfile.tpl/helmfile-dump.yaml build |
     grep -Ev $helmfile_output_hide |
     sed -e $replace_paths_pattern |
-    yq read -P - 'releases[0].values[0]'
+    yq read -P - 'renderedvalues'
 }
 
 function hf_template() {
