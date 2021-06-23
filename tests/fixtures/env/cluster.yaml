@@ -1,6 +1,6 @@
 cluster:
     apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
-    apiServer: 5B31672F99FF867B3CB4D8E0831B6FE7.gr7.eu-central-1.eks.amazonaws.com
+    apiServer: https://mycluster.otomi.io
     domainSuffix: demo.eks.otomi.cloud
     k8sVersion: '1.19'
     name: demo
