@@ -1,6 +1,6 @@
 cluster:
     apiName: FILL
-    apiServer: FILL.eks.amazonaws.com
+    apiServer: https://mycluster.otomi.io
     domainSuffix: demo.eks.otomi.cloud
     k8sVersion: '1.19'
     name: demo

@@ -1,6 +1,6 @@
 cluster:
     apiName: FILL
-    apiServer: FILL.gke.google.com
+    apiServer: https://mycluster.otomi.io
     domainSuffix: demo.gke.otomi.cloud
     k8sVersion: '1.19'
     name: demo
