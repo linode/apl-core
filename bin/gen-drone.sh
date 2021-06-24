@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# ENV_DIR=${ENV_DIR:-./env}
-# . $ENV_DIR/.secrets
-
 . bin/common.sh
 . bin/colors.sh
 
 run_crypt
+readonly enabled=$(yqr charts.drone.enabled || echo 'false')
+[ "$enabled" != 'true' ] && exit
+
 readonly raw_receiver=$(yqr alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}
 readonly raw_branch=$(yqr charts.otomi-api.git.branch)

@@ -1,0 +1,5 @@
+{{- $v := .Values }}
+{{/*- $_ := */}}
+{{- $kmsProviderName := required "kms.sops.provider" $v.kms.sops.provider }}
+{{- $kmsProvider := required (print "kms.sops.provider." $kmsProviderName) (index $v.kms.sops $kmsProviderName) }}
+{{/*- $_ = required "" */}}

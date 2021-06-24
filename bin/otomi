@@ -94,8 +94,6 @@ function show_usage() {
 function check_env_dir() {
   # when devving in otomi-core we require ENV_DIR to be set
   [ -z "$CI" ] && [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
-  # now we can retrieve customer name from settings
-  customer=$(customer_name)
   return 0
 }
 
@@ -133,8 +131,11 @@ function evaluate_secrets() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
-    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
-    . $secrets_path
+    if [ ! -r "$secrets_path" ]; then
+      echo "Unable to find '$secrets_path'.\nContinuing without local secrets."
+    else
+      . $secrets_path
+    fi
   fi
   return 0
 }
@@ -198,7 +199,6 @@ function drun() {
       -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
       -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
       -e VAULT_TOKEN=$VAULT_TOKEN \
-      -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
@@ -241,6 +241,7 @@ function execute() {
       drun "bats -T bin/tests"
       ;;
     bootstrap)
+      check_env_dir
       drun "bin/bootstrap.sh $original_params"
       ;;
     check-policies)
@@ -288,6 +289,10 @@ function execute() {
     gen-drone)
       evaluate_secrets
       drun 'bin/gen-drone.sh'
+      ;;
+    gen-sops)
+      check_env_dir
+      drun 'bin/gen-sops.sh'
       ;;
     hf)
       evaluate_secrets

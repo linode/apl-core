@@ -127,7 +127,12 @@ function yq() {
 
 all_values=
 function yqr() {
-  [ -z "$all_values" ] && all_values=$(hf_values)
+  if [ -f /secret/values.yaml ]; then
+    # we are in the chart installer and will read from the given file
+    [ -z "$all_values" ] && all_values=$(cat /secret/values.yaml)
+  else
+    [ -z "$all_values" ] && all_values=$(hf_values)
+  fi
   local ret=$(echo "$all_values" | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
