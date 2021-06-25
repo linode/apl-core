@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-set -x
 readonly gitea_enabled=$(yqr charts.gitea.enabled || echo 'true')
 readonly stage=$(yqr charts.cert-manager.stage)
 readonly cluster_domain=$(yqr cluster.domainSuffix)
@@ -9,6 +8,11 @@ readonly cluster_domain=$(yqr cluster.domainSuffix)
 if [ "$stage" = "staging" ]; then
   export GIT_SSL_NO_VERIFY=true
 fi
+
+# only for devving, since this chart starts with an empty ENV_DIR anyway:
+rm -rf $ENV_DIR/.git
+rm -rf $ENV_DIR/.vscode
+rm -rf $ENV_DIR/*
 
 # init git setup pointing to repo
 pushd $ENV_DIR
@@ -54,10 +58,22 @@ bin/bootstrap.sh
 bin/gen-sops.sh
 
 echo 'Trying to decrypt...'
-crypt decrypt
+crypt dec
 
-if [ "$?" != "0" ]; then
+found=$(find $ENV_DIR -type f -name 'secrets.*.yaml.dec')
+
+if [ "$found" == "" ]; then
   # no decryptable files found, so encrypt and decrypt
-  crypt encrypt
-  crypt decrypt
+  # but first get the credentials into the environment
+
+  helmfile -f chart/helmfile.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >/env/sops-creds.env
+  source /env/sops-creds.env
+  # exception for google:
+  [ -n "$GCLOUD_SERVICE_KEY" ] && echo $GCLOUD_SERVICE_KEY >/tmp/gcloud_service_key && export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud_service_key
+  crypt enc
+  crypt dec
 fi
+
+ls -als /env/env
+# lastly copy the schema file
+cp values-schema.yaml /env

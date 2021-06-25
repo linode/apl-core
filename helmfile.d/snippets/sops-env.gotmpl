@@ -1,5 +1,6 @@
 
 {{- with . | get "azure" nil  }}
+###ENVSTART
 AZURE_TENANT_ID: {{ .tenantId }}
 AZURE_CLIENT_ID: {{ .clientId }}
 AZURE_CLIENT_SECRET: {{ .clientSecret }}
@@ -17,4 +18,5 @@ GCLOUD_SERVICE_KEY: '{{ .accountJson | replace "\n" "" }}'
 {{- end }}
 {{- with . | get "vault" nil }}
 VAULT_TOKEN: {{ .token }}
+###ENVEND
 {{- end }}

@@ -7,35 +7,22 @@ spec:
     metadata:
       name: otomi-install-{{ randAlphaNum 8 }} # FIXME: remove random part
     spec:
+      imagePullSecrets:
+      - name: regcred
       serviceAccountName: {{ .Release.Name }}
       initContainers:
         - name: bootstrap-values
           image: otomi/core:otomi-install-chart # FIXME: fix the tag
           imagePullPolicy: Always
           command: ['/bin/bash', '-c']
-          args: [bin/chart-prepare.sh && chmod a+w -R $ENV_DIR]
+          args: 
+            - |
+              {{ .Files.Get "scripts/bootstrap-values.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'
-          volumeMounts:
-            - name: otomi-values
-              mountPath: /home/app/stack/env
-            - name: values-secret
-              mountPath: /secret
-        - name: map-values
-          image: otomi/tasks:otomi-chart # FIXME: go back to correct tag
-          imagePullPolicy: Always
-          command: ['sh', '-c']
-          args: [npm run tasks:otomi-chart -- true]
-          env:
-            - name: IN_DOCKER
-              value: '1'
-            - name: OTOMI_VALUES_INPUT
-              value: /secret/values.yaml
-            - name: OTOMI_ENV_DIR
-              value: /env
-            - name: OTOMI_SCHEMA_PATH
-              value: /env/values-schema.yaml
+            - name: ENV_DIR
+              value: /env              
           volumeMounts:
             - name: otomi-values
               mountPath: /env
@@ -47,10 +34,7 @@ spec:
           command: ['sh', '-c']
           args:
             - |
-              echo Merging given values with the bootstrapped value files
-              # while true; do sleep 30; done
-              npm run tasks:otomi-chart
-              echo Done.
+              {{ .Files.Get "scripts/map-values.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'
@@ -65,39 +49,31 @@ spec:
               mountPath: /env
             - name: values-secret
               mountPath: /secret
-        - name: bootstrap-values
-          # image: otomi/core:master
+        - name: encrypt-values
           image: otomi/core:otomi-install-chart # FIXME: fix the tag
           imagePullPolicy: Always
-          command: ['/bin/bash', '-x']
+          command: [/bin/bash, -c]
           args:
-            - bin/chart-prepare.sh
+            - |
+              {{ .Files.Get "scripts/encrypt-values.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'
+            - name: CI
+              value: 'true'
+            - name: ENV_DIR
+              value: /env
           volumeMounts:
             - name: otomi-values
-              mountPath: /home/app/stack/env
-        - name: bootstrap-values
-          # image: otomi/core:master
-          image: otomi/core:otomi-install-chart # FIXME: fix the tag
-          imagePullPolicy: Always
-          command: ['/bin/bash', '-x']
-          args:
-            - bin/chart-prepare.sh
-          env:
-            - name: IN_DOCKER
-              value: '1'
-          volumeMounts:
-            - name: otomi-values
-              mountPath: /home/app/stack/env
+              mountPath: /env
       containers:
         - name: otomi-install
-          # image: otomi/core:master
           image: otomi/core:otomi-install-chart # FIXME: fix the tag
           imagePullPolicy: Always
-          command: [/bin/bash, -x]
-          args: [bin/deploy.sh]
+          command: [/bin/bash, -c]
+          args:
+            - |
+              {{ .Files.Get "scripts/deploy.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'

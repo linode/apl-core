@@ -1,0 +1,11 @@
+{{- $v := (readFile "/secret/values.yaml") | fromYaml }}
+{{- $provider := $v.kms.sops.provider }}
+{{- $sopsEnvTpl := readFile "../helmfile.d/snippets/sops-env.gotmpl" }}
+releases:
+  - name: otomi-chart
+    installed: true
+    namespace: nonexisting
+    chart: ../charts/raw
+    values:
+    - resources:
+      - {{- tpl $sopsEnvTpl $v.kms.sops | nindent 8 }}

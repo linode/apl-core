@@ -180,18 +180,18 @@ function crypt() {
     return 0
   fi
   pushd $ENV_DIR/env
-  command=${1:-'decrypt'}
+  command=${1:-'dec'}
   shift
   files="$*"
   local out='/dev/stdout'
   [ -z "$VERBOSE" ] && out='/dev/null'
   if [ -n "$files" ]; then
     for f in $files; do
-      echo "${command}ing $f" >$out
-      drun "helm secrets enc ./env/$f" >$out
+      echo "${command}rypting $f" >$out
+      drun "helm secrets $command ./env/$f" >$out
     done
   else
-    if [ "$command" = 'encrypt' ]; then
+    if [ "$command" = 'enc' ]; then
       find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
     else
       find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
@@ -233,4 +233,20 @@ function hf_template() {
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $SKIP_CLEANUP
     hf template --skip-deps $SKIP_CLEANUP
   fi
+}
+
+parse_yaml() {
+  local prefix=$2
+  local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @ | tr @ '\034')
+  echo $1 | sed -e "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+    -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" |
+    awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+        vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+        printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+    }'
 }

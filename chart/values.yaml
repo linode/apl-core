@@ -10,22 +10,22 @@ cluster:
 kms:
   sops:
     # provider can be one of aws|azure|google|vault
-    provider: ''
-    aws:
-      clientID: ''
-      clientSecret: ''
-      keys: ''
-    azure:
-      tenantID: ''
-      clientID: ''
-      clientSecret: ''
-      keys: ''
-    google:
-      accountJson: ''
-      project: ''
-      keys: ''
-    vault:
-      token: ''
+    # provider: ''
+    # aws:
+    #   clientID: ''
+    #   clientSecret: ''
+    #   keys: ''
+    # azure:
+    #   tenantID: ''
+    #   clientID: ''
+    #   clientSecret: ''
+    #   keys: ''
+    # google:
+    #   accountJson: ''
+    #   project: ''
+    #   keys: ''
+    # vault:
+    #   token: ''
 oidc:
   clientID: ''
   clientSecret: ''

@@ -1,4 +1,2 @@
 charts:
-    otomi-api:
-        git:
-            repoUrl: 
+    otomi-api: {}

@@ -1,7 +1,7 @@
 ---
 # see https://github.com/mozilla/sops
 creation_rules:
-    - path_regex: '.*?/secrets.*?\.yaml$'
+    - path_regex: 'secrets.*.yaml'
       
       # Google KMS
       gcp_kms: projects/demo/locations/europe-west4/keyRings/demo/cryptoKeys/vault
