@@ -56,7 +56,6 @@ popd
 
 bin/bootstrap.sh
 
-echo 'Trying to decrypt...'
 run_crypt dec
 
 found=$(find $ENV_DIR -type f -name 'secrets.*.yaml.dec')

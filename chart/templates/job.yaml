@@ -21,6 +21,8 @@ spec:
           env:
             - name: IN_DOCKER
               value: '1'
+            - name: VERBOSE
+              value: '1'
             - name: ENV_DIR
               value: /env
             - name: OTOMI_VALUES_INPUT
@@ -64,6 +66,8 @@ spec:
           env:
             - name: IN_DOCKER
               value: '1'
+            - name: VERBOSE
+              value: '1'
             - name: CI
               value: 'true'
             - name: ENV_DIR
@@ -84,6 +88,8 @@ spec:
               {{ .Files.Get "scripts/deploy.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
+              value: '1'
+            - name: VERBOSE
               value: '1'
             - name: CI
               value: 'true'

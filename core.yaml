@@ -20,6 +20,8 @@ apps:
 
 k8s:
   namespaces:
+    - name: cert-manager
+      disableIstioInjection: true
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -33,7 +35,13 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
     - name: ingress
+    - name: jaeger
+    - name: jaeger-operator
+      disableIstioInjection: true
     - name: keycloak
+    - name: kiali
+    - name: kiali-operator
+      disableIstioInjection: true
     - name: knative-serving
       disablePolicyChecks: true
     - name: kubeapps
