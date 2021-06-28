@@ -57,20 +57,15 @@ popd
 bin/bootstrap.sh
 
 echo 'Trying to decrypt...'
-crypt dec
+run_crypt dec
 
 found=$(find $ENV_DIR -type f -name 'secrets.*.yaml.dec')
 
 if [ "$found" == "" ]; then
   # no decryptable files found, so encrypt and decrypt
-  # but first get the credentials into the environment
-
-  # exception for google:
-  [ -n "$GCLOUD_SERVICE_KEY" ] && echo $GCLOUD_SERVICE_KEY >/tmp/gcloud_service_key && export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud_service_key
-  crypt enc
-  crypt dec
+  run_crypt enc
+  run_crypt dec
 fi
 
-ls -als /env/env
 # lastly copy the schema file
-cp values-schema.yaml /env
+cp values-schema.yaml $ENV_DIR/

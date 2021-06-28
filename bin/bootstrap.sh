@@ -31,10 +31,11 @@ set -e
 cp -r $PWD/.values/.vscode $ENV_DIR/
 generate_loose_schema
 
-for file in '.gitattributes' '.sops.yaml.sample' '.secrets.sample'; do
-  f=${file%.sample}
-  [ ! -f $ENV_DIR/$f ] && cp $PWD/.values/$file $ENV_DIR/
-done
+# check if we wanted encryption and copy some related stuff
+if [ -f $ENV_DIR/.sops.yaml ] && [ ! -f $ENV_DIR/.gitattributes ]; then
+  cp $PWD/.values/.gitattributes $ENV_DIR/
+fi
+
 for f in '.gitignore' '.prettierrc.yml' 'README.md'; do
   cp $PWD/.values/$f $ENV_DIR/
 done
@@ -54,10 +55,8 @@ if [ ! -d $ENV_DIR/env ]; then
 fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
-# to accomodate sops plugin in vscode:
-[ "${GCLOUD_SERVICE_KEY-}" != '' ] && echo $GCLOUD_SERVICE_KEY | jq '.' >$ENV_DIR/gcp-key.json
 readonly secrets_file="$ENV_DIR/env/secrets.settings.yaml"
-if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - 'otomi.pullSecret')" != '' ]; then
+if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - otomi.pullSecret)" != '' ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
   cp -f $PWD/core.yaml $ENV_DIR/

@@ -101,10 +101,7 @@ function _rind() {
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
-      -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
       -e IN_DOCKER='1' \
-      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
       -w ${ENV_DIR} \
       $otomi_tools_image $cmd "$@"
     return $?
@@ -127,9 +124,9 @@ function yq() {
 
 all_values=
 function yqr() {
-  if [ -f /secret/values.yaml ]; then
+  if [ -n "$OTOMI_VALUES_INPUT" ]; then
     # we are in the chart installer and will read from the given file
-    [ -z "$all_values" ] && all_values=$(cat /secret/values.yaml)
+    [ -z "$all_values" ] && all_values=$(cat $OTOMI_VALUES_INPUT)
   else
     [ -z "$all_values" ] && all_values=$(hf_values)
   fi
@@ -149,7 +146,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file cluster.otomiVersion)
+  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file otomi.version)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }

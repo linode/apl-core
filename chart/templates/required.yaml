@@ -1,5 +1,0 @@
-{{- $v := .Values }}
-{{/*- $_ := */}}
-{{- $kmsProviderName := required "MISSING: kms.sops.provider" $v.kms.sops.provider }}
-{{- $kmsProvider := required (print "MISSING: kms.sops.provider." $kmsProviderName) (index $v.kms.sops $kmsProviderName) }}
-{{/*- $_ = required "" */}}

@@ -4,7 +4,6 @@ cluster:
   domainSuffix: ''
   k8sVersion: '1.19'
   name: 'dev'
-  otomiVersion: master
   provider: ''
   region: ''
 kms:
@@ -39,6 +38,7 @@ otomi:
   pullSecret: ''
   adminPassword: ''
   isMultitenant: true
+  version: master
 customer:
   name: ''
 dns:
@@ -81,6 +81,6 @@ charts:
       enabled: false # enable to start a LB on the private network
   kubeapps:
     postgresqlPassword: '' # for now this needs to be set to avoid generating a new one each time
-  oauth2-proxy: 
+  oauth2-proxy:
     config:
       cookieSecret: '' # for now this needs to be set to avoid generating a new one each time

@@ -12,7 +12,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}
       initContainers:
         - name: bootstrap-values
-          image: otomi/core:otomi-install-chart # FIXME: fix the tag
+          image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: ['/bin/bash', '-c']
           args: 
@@ -22,14 +22,19 @@ spec:
             - name: IN_DOCKER
               value: '1'
             - name: ENV_DIR
-              value: /env              
+              value: /env
+            - name: OTOMI_VALUES_INPUT
+              value: /secret/values.yaml
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /env
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:otomi-chart # FIXME: go back to correct tag
+          image: otomi/tasks:otomi-chart # FIXME: tag
           imagePullPolicy: Always
           command: ['sh', '-c']
           args:
@@ -50,7 +55,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: encrypt-values
-          image: otomi/core:otomi-install-chart # FIXME: fix the tag
+          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:
@@ -63,12 +68,15 @@ spec:
               value: 'true'
             - name: ENV_DIR
               value: /env
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /env
       containers:
         - name: otomi-install
-          image: otomi/core:otomi-install-chart # FIXME: fix the tag
+          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:
@@ -81,6 +89,9 @@ spec:
               value: 'true'
             - name: ENV_DIR
               value: /home/app/stack/env
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env

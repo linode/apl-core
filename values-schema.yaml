@@ -228,10 +228,6 @@ definitions:
         $ref: '#/definitions/k8sVersion'
       name:
         type: string
-      otomiVersion:
-        default: latest
-        description: 'Best pin this to a valid release version found in the repo.'
-        type: string
       provider:
         type: string
         enum:
@@ -2043,16 +2039,10 @@ properties:
         description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
         type: string
         x-secret: true
-      addons:
-        description: Manage addon configuration
-        additionalProperties: false
-        properties:
-          conftest:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-                description: Use this flag to enable conftest for policy validation
+      version:
+        default: latest
+        description: 'Best pin this to a valid release version found in the repo.'
+        type: string
     required:
       - adminPassword
   policies:

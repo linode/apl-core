@@ -1,9 +1,8 @@
 cluster:
-    apiName: 
+    apiName:
     apiServer:
     domainSuffix:
     k8sVersion:
     name:
-    otomiVersion: master
     provider:
     region:
