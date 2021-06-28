@@ -66,11 +66,23 @@ definitions:
             $ref: '#/definitions/url'
             description: A Slack webhook URL.
             x-secret: true
-    oneOf:
-      - required:
-          - slack
-      - required:
-          - msteams
+    allOf:
+      - anyOf:
+          - properties:
+              receivers:
+                const: slack
+          - properties:
+              registry:
+                required:
+                  - username
+                  - password
+      - oneOf:
+          - required:
+              - slack
+          - required:
+              - msteams
+          - required:
+              - email
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -430,8 +442,8 @@ definitions:
   labelsAnnotations:
     additionalProperties: false
     patternProperties:
-      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
-      : pattern: '^((.){1,253}\/)?(.){1,63}$'
+      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$':
+        pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   logLevel:
     type: string
