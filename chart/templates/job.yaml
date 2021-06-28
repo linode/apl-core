@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: otomi-install-{{ randAlphaNum 8 }} # FIXME: remove random part
+      name: otomi-install
     spec:
       imagePullSecrets:
       - name: regcred
