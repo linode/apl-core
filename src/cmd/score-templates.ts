@@ -1,0 +1,48 @@
+import { unlinkSync, writeFileSync } from 'fs'
+import { Argv } from 'yargs'
+import { $, nothrow } from 'zx'
+import { cleanupHandler, hfTemplate, otomi, OtomiDebugger, PrepareEnvironmentOptions, terminal } from '../common/index'
+import { Arguments, helmOptions } from '../helm.opts'
+
+const fileName = 'score-template'
+const templatePath = '/tmp/template.yaml'
+let debug: OtomiDebugger
+
+/*
+Note: Colors do not work: https://github.com/google/zx/issues/124
+*/
+const cleanup = (argv: Arguments): void => {
+  if (argv['skip-cleanup']) return
+  unlinkSync(templatePath)
+}
+
+const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(fileName)
+
+  if (options) await otomi.prepareEnvironment(debug, options)
+}
+
+export const scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+  await setup(argv, options)
+  debug.verbose('Scoring STARTED')
+  const result = await hfTemplate(argv)
+  debug.verbose('Scoring DONE')
+
+  writeFileSync(templatePath, result)
+
+  const scoreResult = await nothrow($`kube-score score ${templatePath}`)
+  debug.log(scoreResult.stdout.trim())
+}
+
+export const module = {
+  command: fileName,
+  describe: '',
+  builder: (parser: Argv): Argv => helmOptions(parser),
+
+  handler: async (argv: Arguments): Promise<void> => {
+    await scoreTemplate(argv, { skipKubeContextCheck: true })
+  },
+}
+
+export default module

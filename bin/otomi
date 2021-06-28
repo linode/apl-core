@@ -316,7 +316,7 @@ function execute() {
     score-templates)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && run_crypt && hf_template | kube-score score --ignore-test -"
+      drun ". bin/common.sh $original_params && run_crypt && hf_template | kube-score score -"
       ;;
     sync)
       evaluate_secrets

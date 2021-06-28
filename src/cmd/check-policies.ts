@@ -1,0 +1,75 @@
+import { rmSync } from 'fs'
+import { load } from 'js-yaml'
+import { Argv } from 'yargs'
+import { $, nothrow } from 'zx'
+import {
+  cleanupHandler,
+  ENV,
+  hfTemplate,
+  otomi,
+  OtomiDebugger,
+  PrepareEnvironmentOptions,
+  terminal,
+} from '../common/index'
+import { Arguments, helmOptions } from '../helm.opts'
+
+const fileName = 'check-policies'
+const policiesFile = `${ENV.DIR}/env/policies.yaml`
+const settingsFile = `${ENV.DIR}/env/settings.yaml`
+const outDir = '/tmp/otomi/conftest'
+let debug: OtomiDebugger
+
+const cleanup = (argv: Arguments): void => {
+  if (argv['skip-cleanup']) return
+  rmSync(outDir, { force: true, recursive: true })
+}
+
+const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(fileName)
+  if (options) await otomi.prepareEnvironment(debug, options)
+}
+
+export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+  await setup(argv, options)
+  debug.verbose('Policy checking STARTED')
+
+  const settings = load(settingsFile) as any
+  if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
+    debug.log('Skipping')
+    return
+  }
+  debug.verbose('Generating k8s manifest for cluster')
+  const template = await hfTemplate(argv, outDir)
+  debug.debug(template)
+
+  const extraArgs: string[] = []
+  if (process.env.TRACE || argv.trace) extraArgs.push('--trace')
+  if (process.env.CI || argv.ci) extraArgs.push('--no-color')
+
+  debug.verbose('Checking manifest against policies')
+  const confTestOutput = (
+    await nothrow(
+      $`conftest test ${extraArgs} --fail-on-warn --all-namespaces -d ${policiesFile} -p policies ${outDir}`,
+    )
+  ).stdout
+  const cleanConftest: string = confTestOutput
+    .replace(/^.*no policies found.*[\r\n]/gm, '')
+    .replace(/^.*TRAC.*[\r\n]/gm, '')
+    .replace(/^.*PASS.*[\r\n]/gm, '')
+  if (cleanConftest.indexOf('FAIL') > -1) {
+    debug.exit(1, cleanConftest)
+  }
+}
+
+export const module = {
+  command: fileName,
+  describe: 'Check if generated manifests adhere to defined OPA policies',
+  builder: (parser: Argv): Argv => helmOptions(parser),
+
+  handler: async (argv: Arguments): Promise<void> => {
+    await checkPolicies(argv, { skipKubeContextCheck: true })
+  },
+}
+
+export default module

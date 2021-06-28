@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+#####################################################################################
+##
+## NOTE:
+## This is a command line tool to operate on otomi-core.
+## All commands are executed in docker container.
+## Keep this file as simple as possible:
+## - do not depend on any external files.
+## - do not use any non standard tooling.
+## - only Docker is needed to run otomi-core image
+## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
+##
+#####################################################################################
+# shellcheck disable=SC2128
+[ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
+if [ -z ${ENV_DIR+x} ]; then 
+  if [ ! "$(ls -A $PWD)" ]; then
+    export ENV_DIR=$PWD
+  elif [ -f "$PWD/env/cluster.yaml" ] && [ -f "$PWD/env/settings.yaml" ] && [ -d "$PWD/env/charts" ]; then
+    export ENV_DIR=$PWD
+  else
+    echo -e "ENV_DIR is not set, otomi needs ENV_DIR to function. \nENV_DIR can be a (yet) non-existing path, but needs to be an absolute path." && exit 1
+  fi
+else
+  mkdir -p $ENV_DIR
+fi
+THIS_IS_BASH=$(ps -o ppid= $$)
+EXECUTIING_SHELL=$(ps -o comm= $THIS_IS_BASH | sed "s/[^[:alnum:]\/]//g")
+PATH_TO_EXEC_SHELL=$(which $EXECUTIING_SHELL)
+# TODO: change image tag to latest
+DOCKER_TAG=${DOCKER_TAG:-otomi-zx}
+readonly otomi_tools_image="otomi/core:${DOCKER_TAG}"
+# shellcheck disable=SC2155
+readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+readonly callingArgs="$*"
+scriptFullPath="$base_dir/${BASH_SOURCE[0]##*/}"
+if [[ ${BASH_SOURCE[0]} == '/'*  ]]; then
+  scriptFullPath="${BASH_SOURCE[0]}"
+fi
+readonly scriptFullPath
+
+UPDATE_BASE="https://raw.githubusercontent.com/redkubes/otomi-core/${DOCKER_TAG}/binzx/otomi"
+
+runSelfUpdate() {
+  echo "Performing self-update..."
+
+  # Download new version
+  echo -n "Downloading latest version..."
+  if ! wget --quiet --output-document="$0.tmp" $UPDATE_BASE ; then
+    echo "Failed: Error while trying to wget new version!"
+    echo "File requested: $UPDATE_BASE"
+    exit 1
+  fi
+  echo "Done."
+
+  # Copy over modes from old version
+  OCTAL_MODE=$(stat -c '%a' $scriptFullPath)
+  if ! chmod $OCTAL_MODE "$0.tmp" ; then
+    echo "Failed: Error while trying to set mode on $0.tmp."
+    exit 1
+  fi
+
+  # Spawn update script
+  cat > updateScript.sh << EOF
+#!/bin/bash
+# Overwrite old file with new
+if mv "$0.tmp" "$0"; then
+  echo "Done. Update complete."
+  rm \$0
+  exec "$0" "$callingArgs"
+else
+  echo "Failed!"
+fi
+EOF
+
+  echo -n "Inserting update process..."
+  exec /bin/bash updateScript.sh
+}
+
+checkUpdate() {
+  if [[ $base_dir == *"otomi-core"* ]] || \
+      [[ $(pwd) == *"otomi-core"* ]] || \
+      [[ $callingArgs == *'-no-interactive'* ]] || \
+      [[ $callingArgs == *'-ni'* ]]; then
+    return 0
+  fi
+
+  lastCommitDate=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${DOCKER_TAG}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}')
+  lastFileChange=$(date -u -r $scriptFullPath "+%Y-%m-%dT%H:%M:%SZ")
+  lastCommitDate=$(echo $lastCommitDate | tr -d '"')
+  lastCommitDateSec=$(date --date="$lastCommitDate" +%s)
+  lastFileChangeSec=$(date --date="$lastFileChange" +%s)
+
+
+  if [ "$lastCommitDateSec" -ne "0" ] && [ "$lastCommitDateSec" -gt "$lastFileChangeSec" ]; then
+    read -r -p "Newer version is available, do you want to update (yes/No)? " answer
+    case ${answer:0:1} in
+        y|Y )
+            runSelfUpdate
+        ;;
+        * )
+            return 0
+        ;;
+    esac
+  fi
+}
+[ -z $CI ] && checkUpdate
+
+tmpEnv=$(mktemp)
+env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= >$tmpEnv
+
+cat >> $tmpEnv << EOF
+SHELL=${PATH_TO_EXEC_SHELL}
+DOCKER_TAG=${DOCKER_TAG}
+OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
+OTOMI_IN_DOCKER=true
+EOF
+
+helm_config="$HOME/.config/helm"
+uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
+
+stack_dir='/home/app/stack'
+executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
+stack_volume=""
+if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+  if [[ $base_dir == *"otomi-core"* ]]; then
+    stack_dir=$(cd "$base_dir/.." && pwd )
+  elif [[ $(pwd) == *"otomi-core"* ]]; then
+    stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
+  fi
+
+  stack_volume="-v ${stack_dir}:${stack_dir} -v /tmp:/tmp"
+
+  if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
+    executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
+  fi
+  echo "OTOMI_DEV=true" >> $tmpEnv
+fi
+
+cmd="${executable} $*"
+if [ "$1" = "bash" ] && [ "$#" = "1" ]; then # If command is "otomi bash"
+  cmd="bash"
+fi
+
+pullOutput=$(docker pull $otomi_tools_image 2>&1 >/dev/null)
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "$pullOutput"
+  echo "Could not find an image for the supplied DOCKER_TAG: '${DOCKER_TAG}'"
+  exit $status
+fi
+
+docker run --network host --rm -it \
+  $stack_volume \
+  -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
+  -v $HOME/.ssh:/home/app/.ssh \
+  -v $helm_config:/home/app/.config/helm \
+  -v $HOME/.config/gcloud:/home/app/.config/gcloud \
+  -v $HOME/.aws:/home/app/.aws \
+  -v $HOME/.azure:/home/app/.azure \
+  -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
+  -v $ENV_DIR:$stack_dir/env \
+  -v $ENV_DIR:$ENV_DIR \
+  --env-file $tmpEnv \
+  -w $stack_dir \
+  $otomi_tools_image \
+  bash -c "$cmd"
+status=$?
+rm -f "$tmpEnv"
+exit $status

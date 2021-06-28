@@ -262,6 +262,7 @@ definitions:
         maxLength: 131072
         type: string
     nullable: true
+    type: object
     title: Environment variables
   files:
     additionalProperties: false
@@ -370,7 +371,6 @@ definitions:
         type: integer
       init:
         $ref: '#/definitions/containerSpec'
-        nullable: true
     required:
       - name
       - script
@@ -390,8 +390,8 @@ definitions:
   labelsAnnotations:
     additionalProperties: false
     patternProperties:
-      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
-      : pattern: '^((.){1,253}\/)?(.){1,63}$'
+      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$':
+        pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   logLevel:
     type: string
@@ -417,6 +417,7 @@ definitions:
         maxLength: 131072
         type: string
     nullable: true
+    type: object
     title: Kubernetes secrets
   podSpec:
     allOf:
@@ -632,7 +633,9 @@ definitions:
                       - additionalProperties: false
                         nullable: true
                         title: 'Off'
+                        type: string
                       - nullable: true
+                        type: object
                         properties:
                           additionalProperties: false
                           semver:
@@ -1652,6 +1655,7 @@ properties:
           seal:
             description: Use a KMS to encrypt and decrypt the master key
             nullable: true
+            type: object
             oneOf:
               - title: gcpckms
                 properties:
