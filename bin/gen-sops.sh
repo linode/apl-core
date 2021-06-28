@@ -24,7 +24,8 @@ function create_from_template() {
 create_from_template
 
 echo "Creating and sourcing sops env file for vscode"
-helmfile -f helmfile.tpl/helmfile-sops.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >$ENV_DIR/.sops-creds.env
+set -o pipefail
+hf -f helmfile.tpl/helmfile-sops.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >$ENV_DIR/.sops-creds.env
 source $ENV_DIR/.sops-creds.env
 
 if [ "$kmsProvider" = "google" ]; then
