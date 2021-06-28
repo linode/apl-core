@@ -122,111 +122,94 @@ definitions:
       minReplicas:
         type: integer
         default: 2
-  awsCreds:
-    properties:
-      provider:
+  aws:
+    definitions:
+      accessKey:
+        title: AWS access key
+        description: An AWS access key ID.
         type: string
-        const: aws
-      aws:
-        properties:
-          keys:
-            description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec.
-            title: AWS KMS keys
-            type: string
-          accessKey:
-            type: string
-            x-secret: true
-          secretKey:
-            type: string
-            x-secret: true
-          region:
-            type: string
-        required:
-          - accessKey
-          - secretKey
-          - region
-    required:
-      - aws
-  azureCreds:
-    properties:
-      provider:
-        type: string
-        const: azure
-      azure:
-        properties:
-          keys:
-            description: Comma separated list of one or two paths to keys as defined in Azure Keyvault. One if used for both enc+dec. Two if one for enc, other for dec.
-            title: Azure Keyvault keys
-            type: string
-          clientId:
-            type: string
-          clientSecret:
-            type: string
-            x-secret: true
-          environment:
-            type: string
-          tenantId:
-            type: string
-        required:
-          - clientId
-          - clientSecret
-          - tenantId
-    required:
-      - azure
-  azureMonitor:
-    properties:
-      appInsightsApiKey:
-        title: AppInsights api key
-        description: An Azure AppInsights client secret.
-        type: string
+        pattern: (?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])
         x-secret: true
-      appInsightsAppId:
-        title: AppInsights app id
-        description: An Azure AppInsights client id.
+      region:
         type: string
-      azureLogAnalyticsSameAs:
-        title: LogAnalytics using same creds?
-        type: boolean
-        default: true
+      secretKey:
+        title: AWS secret key
+        description: An AWS secret key.
+        type: string
+        pattern: (?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])
+        x-secret: true
+  azure:
+    definitions:
       clientId:
         title: Azure client id
         description: An Azure client id.
         type: string
+        x-secret: true
       clientSecret:
         title: Azure client secret
         description: An Azure client secret.
         type: string
         x-secret: true
-      logAnalyticsClientId:
-        title: LogAnalytics client id
-        description: An Azure client secret.
+      environment:
+        title: Azure environment
+        description: An Azure environment. Don't specify this if you don't know what you are doing!
         type: string
-      logAnalyticsClientSecret:
-        title: LogAnalytics client secret
-        description: An Azure client secret.
-        type: string
-        x-secret: true
-      logAnalyticsTenantId:
-        title: LogAnalytics tenant id
+        default: AzureCloud
+        enum:
+          - AzureCloud
+          - AzureChinaCloud
+          - AzureUSGovernment
+          - AzureGermanCloud
+      monitor:
+        properties:
+          appInsightsApiKey:
+            $ref: '#/definitions/azure/definitions/clientSecret'
+            title: AppInsights api key
+            description: An Azure AppInsights client secret.
+          appInsightsAppId:
+            $ref: '#/definitions/azure/definitions/clientId'
+            title: AppInsights app id
+          azureLogAnalyticsSameAs:
+            title: LogAnalytics using same creds?
+            type: boolean
+            default: true
+          clientId:
+            $ref: '#/definitions/azure/definitions/clientId'
+          clientSecret:
+            $ref: '#/definitions/azure/definitions/clientSecret'
+          logAnalyticsClientId:
+            $ref: '#/definitions/azure/definitions/clientId'
+            title: LogAnalytics client id
+            description: An Azure client secret.
+          logAnalyticsClientSecret:
+            $ref: '#/definitions/azure/definitions/clientSecret'
+            title: LogAnalytics client secret
+            description: An Azure client secret.
+          logAnalyticsTenantId:
+            $ref: '#/definitions/azure/definitions/tenantId'
+            title: LogAnalytics tenant id
+            description: An Azure tenant id.
+          logAnalyticsDefaultWorkspace:
+            title: LogAnalytics default workspace to show
+            description: An Azure LogAnalytics workspace.
+            type: string
+          subscriptionId:
+            $ref: '#/definitions/azure/definitions/subscriptionId'
+          tenantId:
+            $ref: '#/definitions/azure/definitions/tenantId'
+        required:
+          - clientId
+          - clientSecret
+          - subscriptionId
+          - tenantId
+      tenantId:
+        title: Azure tenant id
         description: An Azure tenant id.
-        type: string
-      logAnalyticsDefaultWorkspace:
-        title: LogAnalytics default workspace to show
-        description: An Azure LogAnalytics workspace.
         type: string
       subscriptionId:
         title: Azure subscription id
         description: An Azure subscription id.
         type: string
-      tenantId:
-        title: LogAnalytics tenant id
-        description: An Azure monitor log analytics workspace.
-        type: string
-    required:
-      - clientId
-      - clientSecret
-      - subscriptionId
-      - tenantId
   cluster:
     properties:
       apiName:
@@ -337,27 +320,19 @@ definitions:
     patternProperties:
       '^[/].*':
         type: string
-  googleCreds:
-    properties:
-      provider:
+  google:
+    definitions:
+      accountJson:
         type: string
-        const: google
-      google:
-        properties:
-          keys:
-            description: Comma separated list of one or two paths to keys as defined in GCP KMS. One if used for both enc+dec. Two if one for enc, other for dec.
-            title: GCP KMS keys
-            type: string
-          accountJson:
-            type: string
-            x-secret: true
-          project:
-            type: string
-    required:
-      - google
+        x-secret: true
+      projectId:
+        type: string
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
+  htpasswd:
+    type: string
+    x-secret: true
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
@@ -807,7 +782,7 @@ definitions:
       alerts:
         $ref: '#/definitions/alerts'
       azureMonitor:
-        $ref: '#/definitions/azureMonitor'
+        $ref: '#/definitions/azure/definitions/monitor'
       clusters:
         items:
           type: string
@@ -923,7 +898,7 @@ properties:
             description: Is this appgw installed as AKS addon?
             type: boolean
       monitor:
-        $ref: '#/definitions/azureMonitor'
+        $ref: '#/definitions/azure/definitions/monitor'
   charts:
     additionalProperties: true
     properties:
@@ -1171,13 +1146,11 @@ properties:
                     additionalProperties: false
                     properties:
                       accesskey:
-                        type: string
-                        x-secret: true
+                        $ref: '#/definitions/aws/definitions/accessKey'
                       secretkey:
-                        type: string
-                        x-secret: true
+                        $ref: '#/definitions/aws/definitions/secretKey'
                       region:
-                        type: string
+                        $ref: '#/definitions/aws/definitions/region'
                       regionendpoint:
                         type: string
                       bucket:
@@ -1232,8 +1205,7 @@ properties:
               credentials:
                 properties:
                   htpasswd:
-                    type: string
-                    x-secret: true
+                    $ref: '#/definitions/htpasswd'
                   username:
                     type: string
                   password:
@@ -1914,11 +1886,10 @@ properties:
               google:
                 properties:
                   serviceAccountKey:
-                    description: A service account key for managing a DNS zone.
-                    type: string
-                    x-secret: true
+                    $ref: '#/definitions/google/definitions/accountJson'
+                    description: A service account key in json format for managing a DNS zone.
                   project:
-                    type: string
+                    $ref: '#/definitions/google/definitions/projectId'
                 required:
                   - serviceAccountKey
                   - project
@@ -1951,9 +1922,51 @@ properties:
     properties:
       sops:
         oneOf:
-          - $ref: '#/definitions/awsCreds'
-          - $ref: '#/definitions/azureCreds'
-          - $ref: '#/definitions/googleCreds'
+          - properties:
+              provider:
+                type: string
+                const: aws
+              aws:
+                properties:
+                  keys:
+                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec.
+                    title: AWS KMS keys
+                    type: string
+                  region:
+                    $ref: '#/definitions/aws/definitions/region'
+            required:
+              - aws
+          - properties:
+              provider:
+                type: string
+                const: azure
+              azure:
+                properties:
+                  keys:
+                    description: Comma separated list of one or two paths to keys as defined in Azure Keyvault. One if used for both enc+dec. Two if one for enc, other for dec.
+                    title: Azure Keyvault keys
+                    type: string
+                  tenantId:
+                    $ref: '#/definitions/azure/definitions/tenantId'
+            required:
+              - azure
+          - properties:
+              provider:
+                type: string
+                const: google
+              google:
+                properties:
+                  keys:
+                    description: Comma separated list of one or two paths to keys as defined in GCP KMS. One if used for both enc+dec. Two if one for enc, other for dec.
+                    title: GCP KMS keys
+                    type: string
+                  accountJson:
+                    $ref: '#/definitions/google/definitions/accountJson'
+                  project:
+                    $ref: '#/definitions/google/definitions/projectId'
+            required:
+              - google
+
           - $ref: '#/definitions/vaultCreds'
   letsencryptCA:
     type: string

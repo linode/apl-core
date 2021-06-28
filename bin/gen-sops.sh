@@ -23,15 +23,9 @@ function create_from_template() {
 }
 create_from_template
 
-echo "Creating and sourcing sops env file for vscode"
-set -o pipefail
-hf -f helmfile.tpl/helmfile-sops.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >$ENV_DIR/.sops-creds.env
-source $ENV_DIR/.sops-creds.env
-
-if [ "$kmsProvider" = "google" ]; then
+if [ -z "$CI" ] && [ "$kmsProvider" = "google" ]; then
   # we create gcp-key.json with the google creds for the vscode SOPS plugin,
   # which has been configured to also read credentials from that file
-  echo "Also creating gcp-key.json for vscode"
-  accountJson=$(yqr kms.sops.google.accountJson)
-  cat $accountJson >$ENV_DIR/gcp-key.json
+  echo "Creating gcp-key.json for vscode."
+  cat $GCLOUD_SERVICE_KEY >$ENV_DIR/gcp-key.json
 fi
