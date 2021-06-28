@@ -75,21 +75,29 @@ jobs:
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
       - if: "contains(github.event.head_commit.message, 'chore(chart)')"
+        name: Prepare chart for publishing
+        id: chart_prepare
+        run: |
+          [ $(git diff --name-only chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
+          echo ::set-output name=has_chart_changes::true
+          release_tag=v${COMMIT_MSG#* }
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
+      - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
         name: Create and publish chart
         id: chart_release
-        uses: quay.io/helmpack/chart-releaser
+        uses: helm/chart-releaser-action@v1.2.1
         env:
           # See: https://github.com/helm/chart-releaser
           CR_OWNER: redkubes
           CR_GIT_REPO: charts
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          [ $(git diff --name-only chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
-          release_tag=v${COMMIT_MSG#* }
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
-          cr package
-          cr upload
-          cr index
+        # run: |
+        #   [ $(git diff --name-only chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
+        #   release_tag=v${COMMIT_MSG#* }
+        #   sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
+        #   cr package
+        #   cr upload
+        #   cr index
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
