@@ -3,7 +3,6 @@
 . bin/colors.sh
 
 readonly target_path="$ENV_DIR/.sops.yaml"
-[ -f $target_path ] && exit
 
 declare -A map=(["aws"]="kms" ["azure"]="azure_keyvault" ["google"]="gcp_kms" ["vault"]="hc_vault_transit_uri")
 
@@ -23,3 +22,15 @@ function create_from_template() {
     >$target
 }
 create_from_template
+
+echo "Creating and sourcing sops env file for vscode"
+helmfile -f helmfile.tpl/helmfile-sops.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >$ENV_DIR/.sops-creds.env
+source $ENV_DIR/.sops-creds.env
+
+if [ "$kmsProvider" = "google" ]; then
+  # we create gcp-key.json with the google creds for the vscode SOPS plugin,
+  # which has been configured to also read credentials from that file
+  echo "Also creating gcp-key.json for vscode"
+  accountJson=$(yqr kms.sops.google.accountJson)
+  cat $accountJson >$ENV_DIR/gcp-key.json
+fi

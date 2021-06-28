@@ -55,7 +55,6 @@ set -e
 popd
 
 bin/bootstrap.sh
-bin/gen-sops.sh
 
 echo 'Trying to decrypt...'
 crypt dec
@@ -66,8 +65,6 @@ if [ "$found" == "" ]; then
   # no decryptable files found, so encrypt and decrypt
   # but first get the credentials into the environment
 
-  helmfile -f chart/helmfile.yaml template | yq d - 'metadata' | yq r -j - | jq -r "with_entries( select( .value != null ) ) | to_entries|map(\"export \(.key)='\(.value|tostring)'\")|.[]" >/env/sops-creds.env
-  source /env/sops-creds.env
   # exception for google:
   [ -n "$GCLOUD_SERVICE_KEY" ] && echo $GCLOUD_SERVICE_KEY >/tmp/gcloud_service_key && export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud_service_key
   crypt enc

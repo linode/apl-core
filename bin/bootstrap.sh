@@ -4,6 +4,8 @@
 has_otomi='false'
 [ -f $ENV_DIR/bin/otomi ] && has_otomi='true'
 
+bin/gen-sops.sh
+
 function generate_loose_schema() {
   local schema_path=".vscode/values-schema.yaml"
   local targetPath="$ENV_DIR/$schema_path"
