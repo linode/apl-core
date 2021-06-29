@@ -36,7 +36,7 @@ steps:
 
   - name: test
     image: otomi/core:__IMAGE_TAG
-    pull: always
+    pull: __PULL_POLICY
     depends_on:
       - prepare-env
     commands:
@@ -44,7 +44,7 @@ steps:
 
   - name: apply
     image: otomi/core:__IMAGE_TAG
-    pull: always
+    pull: __PULL_POLICY
     commands:
       - cd .. && bin/otomi apply
     depends_on:
