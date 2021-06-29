@@ -6,11 +6,14 @@
 . bin/common.sh
 . bin/colors.sh
 
+readonly drone_enabled=$(yqr charts.drone.enabled)
+[ "$drone_enabled" != 'true' ] && exit
+
 run_crypt
+
 readonly raw_receiver=$(yqr alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}
-readonly raw_branch=$(yqr charts.otomi-api.git.branch)
-readonly branch=${raw_branch:-'main'}
+readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
 readonly template_path=$PWD/tpl/.drone.tpl.$receiver.yml
 readonly customer_name=$(customer_name)
 
