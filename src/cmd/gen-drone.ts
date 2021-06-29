@@ -6,9 +6,9 @@ import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
-  dryRun: number
-  d: number
-  'dry-run': number
+  dryRun: boolean
+  d: boolean
+  'dry-run': boolean
 }
 
 const fileName = 'gen-drone'
@@ -53,7 +53,7 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
     .replaceAll('__BRANCH', branch)
     .replaceAll('__CHANNEL', channel)
 
-  if (process.env.DRY_RUN || argv['dry-run'] > 0) {
+  if (process.env.DRY_RUN || argv.dryRun) {
     debug.log(output)
   } else {
     writeFileSync(`${ENV.DIR}/.drone.yaml`, output)
@@ -69,7 +69,8 @@ export const module = {
         alias: ['d'],
         describe: "Dry Run, don't write to file, but to STDOUT",
         group: 'otomi gen-drone options',
-        count: true,
+        boolean: true,
+        default: false,
       },
     }),
 

@@ -7,6 +7,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
 import { ask } from '../common/zx-enhance'
+import { genSops } from './gen-sops'
 
 const fileName = 'bootstrap'
 let debug: OtomiDebugger
@@ -57,7 +58,9 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   args.p = process.env.PROFILE
   args.profile = process.env.PROFILE
 
-  const currDir = (await $`pwd`).stdout.trim()
+  genSops({ ...argv, dryRun: false, d: false, 'dry-run': false })
+
+  const currDir = await ENV.PWD
 
   const secretsFile = `${ENV.DIR}/.secrets`
   const hasOtomi = existsSync(`${ENV.DIR}/bin/otomi`)

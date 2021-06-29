@@ -1,24 +1,26 @@
+import { readFileSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
+import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments } from '../common/no-deps'
+import { hfValues } from '../common/hf'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-/* Steps:
- * 1. Follow all TODO in this file
- * 2. Update src/cmd/index.ts and add:
- *      `export { default as <fileName> } from './<fileName>.ts'
- * 3. Add new command to `src/otomi.ts`
- */
-
-// TODO: extend this interface with the HelmArguments from '../helm.opts.ts' or add the options that you define in the `builder` at the bottom
-interface Arguments extends BasicArguments {
-  // TODO: Define custom options, if necessary
-  TODO: string
+export interface Arguments extends BasicArguments {
+  dryRun: boolean
+  d: boolean
+  'dry-run': boolean
 }
 
-// TODO: Rename fileName var to name of file / otomi command
 const fileName = 'gen-sops'
 let debug: OtomiDebugger
+
+const providerMap = {
+  aws: 'kms',
+  azure: 'azure_keyvault',
+  google: 'gcp_kms',
+  vault: 'hc_vault_transit_uri',
+}
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
@@ -33,22 +35,51 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(debug, options)
 }
 
-// TODO: Rename function name to filename
-export const example = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
+  const currDir = await ENV.PWD
+  const hfVals = await hfValues()
+  const provider = hfVals.kms?.sops?.provider
+  if (!provider) debug.exit(0, 'No sops information given. Assuming no sops enc/decryption needed.')
 
-  // TODO: Write your code here
-  console.log(fileName)
-  console.log(argv)
+  const targetPath = `${ENV.DIR}/.sops.yaml`
+  const templatePath = `${currDir}/tpl/.sops.yaml`
+  const kmsProvider = providerMap[provider]
+  const kmsKeys = hfVals.kms.sops[provider].key
+
+  debug.log(`Creating ${chalk.italic(targetPath)}`)
+
+  let templateContent: string = readFileSync(templatePath, 'utf-8')
+  templateContent = templateContent.replaceAll('__PROVIDER', kmsProvider).replaceAll('__KEYS', kmsKeys)
+
+  if (process.env.DRY_RUN || argv.dryRun) {
+    debug.log(templateContent)
+  } else {
+    writeFileSync(targetPath, templateContent)
+  }
+
+  if (provider === 'google') {
+    debug.log('Creating gcp-key.json for vscode.')
+    writeFileSync(`${ENV.DIR}/gcp-key.json`, process.env.GCLOUD_SERVICE_KEY ?? '')
+  }
 }
 
 export const module = {
   command: fileName,
   describe: '',
-  builder: (parser: Argv): Argv => parser,
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      'dry-run': {
+        alias: ['d'],
+        describe: "Dry Run, don't write to file, but to STDOUT",
+        group: 'otomi gen-sops options',
+        boolean: true,
+        default: false,
+      },
+    }),
 
   handler: async (argv: Arguments): Promise<void> => {
-    await example(argv, {}) // TODO: Replace with function name
+    await genSops(argv, {})
   },
 }
 

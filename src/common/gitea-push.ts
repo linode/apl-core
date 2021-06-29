@@ -24,7 +24,8 @@ export const giteaPush = async (debugPar: OtomiDebugger): Promise<void> => {
   const giteaOrg = 'otomi'
   const giteaRepo = 'values'
 
-  const currDir = (await $`pwd`).stdout.trim()
+  const currDir = await ENV.PWD
+
   cd(`${ENV.DIR}`)
   try {
     if (!existsSync('.git')) {
