@@ -2,7 +2,7 @@ import { unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm.opts'
+import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfTemplate } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 

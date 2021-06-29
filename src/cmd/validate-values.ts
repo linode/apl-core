@@ -4,7 +4,7 @@ import { load } from 'js-yaml'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm.opts'
+import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
