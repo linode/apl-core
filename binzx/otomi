@@ -13,7 +13,7 @@
 #####################################################################################
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
-if [ -z ${ENV_DIR+x} ]; then 
+if [ -z ${ENV_DIR+x} ]; then
   if [ ! "$(ls -A $PWD)" ]; then
     export ENV_DIR=$PWD
   elif [ -f "$PWD/env/cluster.yaml" ] && [ -f "$PWD/env/settings.yaml" ] && [ -d "$PWD/env/charts" ]; then
@@ -34,7 +34,7 @@ readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly callingArgs="$*"
 scriptFullPath="$base_dir/${BASH_SOURCE[0]##*/}"
-if [[ ${BASH_SOURCE[0]} == '/'*  ]]; then
+if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   scriptFullPath="${BASH_SOURCE[0]}"
 fi
 readonly scriptFullPath
@@ -46,7 +46,7 @@ runSelfUpdate() {
 
   # Download new version
   echo -n "Downloading latest version..."
-  if ! wget --quiet --output-document="$0.tmp" $update_base ; then
+  if ! wget --quiet --output-document="$0.tmp" $update_base; then
     echo "Failed: Error while trying to wget new version!"
     echo "File requested: $update_base"
     exit 1
@@ -55,13 +55,13 @@ runSelfUpdate() {
 
   # Copy over modes from old version
   OCTAL_MODE=$(stat -c '%a' $scriptFullPath)
-  if ! chmod $OCTAL_MODE "$0.tmp" ; then
+  if ! chmod $OCTAL_MODE "$0.tmp"; then
     echo "Failed: Error while trying to set mode on $0.tmp."
     exit 1
   fi
 
   # Spawn update script
-  cat > updateScript.sh << EOF
+  cat >updateScript.sh <<EOF
 #!/bin/bash
 # Overwrite old file with new
 if mv "$0.tmp" "$0"; then
@@ -78,10 +78,10 @@ EOF
 }
 
 checkUpdate() {
-  if [[ $base_dir == *"otomi-core"* ]] || \
-      [[ $(pwd) == *"otomi-core"* ]] || \
-      [[ $callingArgs == *'-no-interactive'* ]] || \
-      [[ $callingArgs == *'-ni'* ]]; then
+  if [[ $base_dir == *"otomi-core"* ]] ||
+    [[ $(pwd) == *"otomi-core"* ]] ||
+    [[ $callingArgs == *'-no-interactive'* ]] ||
+    [[ $callingArgs == *'-ni'* ]]; then
     return 0
   fi
 
@@ -91,15 +91,14 @@ checkUpdate() {
   lastCommitDateSec=$(date --date="$lastCommitDate" +%s)
   lastFileChangeSec=$(date --date="$lastFileChange" +%s)
 
-
   if [ "$lastCommitDateSec" -ne "0" ] && [ "$lastCommitDateSec" -gt "$lastFileChangeSec" ]; then
     read -r -p "Newer version is available, do you want to update (yes/No)? " answer
     case ${answer:0:1} in
-        y|Y )
-            runSelfUpdate
+      y | Y)
+        runSelfUpdate
         ;;
-        * )
-            return 0
+      *)
+        return 0
         ;;
     esac
   fi
@@ -109,7 +108,7 @@ checkUpdate() {
 tmpEnv=$(mktemp)
 env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= >$tmpEnv
 
-cat >> $tmpEnv << EOF
+cat >>$tmpEnv <<EOF
 SHELL=${path_to_exec_shell}
 OTOMI_TAG=${OTOMI_TAG}
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
@@ -124,7 +123,7 @@ executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otom
 stack_volume=""
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   if [[ $base_dir == *"otomi-core"* ]]; then
-    stack_dir=$(cd "$base_dir/.." && pwd )
+    stack_dir=$(cd "$base_dir/.." && pwd)
   elif [[ $(pwd) == *"otomi-core"* ]]; then
     stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
   fi
@@ -134,7 +133,7 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
   fi
-  echo "OTOMI_DEV=true" >> $tmpEnv
+  echo "OTOMI_DEV=true" >>$tmpEnv
 fi
 
 cmd="${executable} $*"
