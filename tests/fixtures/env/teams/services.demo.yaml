@@ -46,6 +46,7 @@ teamConfig:
                   id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
                   domain: tlspass.eks.dev.otomi.cloud
                   ksvc:
+                      containerPort: 80
                       image:
                           repository: nginx
                           tag: latest

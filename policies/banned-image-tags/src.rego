@@ -16,6 +16,16 @@ violation[{"msg": msg}] {
 	pods.containers[container]
 	trace(sprintf("container: %v", [container]))
 	not exceptions.is_container_exception(container.name, policyID)
+	tag := [contains(container.image, ":")]
+	not all(tag)
+	msg := sprintf("Policy: %s - container <%v> didn't specify an image tag <%v>", [policyID, container.name, container.image])
+}
+
+violation[{"msg": msg}] {
+	not exceptions.is_exception(policyID)
+	pods.containers[container]
+	trace(sprintf("container: %v", [container]))
+	not exceptions.is_container_exception(container.name, policyID)
 	img_split := split(container.image, ":")
 	tag := img_split[minus(count(img_split), 1)]
 	trace(sprintf("tag: %v", [tag]))

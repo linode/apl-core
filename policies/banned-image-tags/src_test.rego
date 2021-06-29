@@ -22,10 +22,16 @@ pod_allowed := {
 	"spec": {"containers": [{"name": "allowed", "image": "bla:oktag"}]},
 }
 
-pod_disallowed := {
+pod_disallowed_tag := {
 	"kind": "Pod",
 	"metadata": {"name": "disallowed"},
-	"spec": {"containers": [{"name": "disallowed", "image": "bla:badtag"}]},
+	"spec": {"containers": [{"name": "disallowed-tag", "image": "bla:badtag"}]},
+}
+
+pod_disallowed_notag := {
+	"kind": "Pod",
+	"metadata": {"name": "disallowed"},
+	"spec": {"containers": [{"name": "disallowed-notag", "image": "bla"}]},
 }
 
 test_disabled {
@@ -42,8 +48,15 @@ test_pod_allowed {
 	count(ret) == 0
 }
 
-test_pod_disallowed {
-	ret := violation with input as pod_disallowed
+test_pod_disallowed_tag {
+	ret := violation with input as pod_disallowed_tag
+		 with data.parameters as parameters_enabled
+
+	count(ret) == 1
+}
+
+test_pod_disallowed_notag {
+	ret := violation with input as pod_disallowed_notag
 		 with data.parameters as parameters_enabled
 
 	count(ret) == 1

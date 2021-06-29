@@ -9,6 +9,7 @@
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $giteaValuesUrl := print "https://gitea." $v.cluster.domainSuffix }}
 
 replicaCount: 1
 
@@ -37,8 +38,8 @@ secrets:
   
 env:
   # DEBUG: '*'
-  GIT_REPO_URL: {{ $o.git.repoUrl }}
-  GIT_BRANCH: {{ $o.git | get "branch" "main" }}
+  GIT_REPO_URL: {{ $o | get "git.repoUrl" }}
+  GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}

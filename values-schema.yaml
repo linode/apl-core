@@ -434,7 +434,6 @@ definitions:
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
-    default: 80
     maximum: 32768
     minimum: 80
     type: number
@@ -664,6 +663,10 @@ definitions:
                           - glob
                         title: Glob pattern matching
                     title: Continuous delivery pipeline
+                  containerPort:
+                    $ref: '#/definitions/portNumber'
+                    description: Container port the knative pod will connect with. Leaving this empty will let knative infer the port from the container, which usually works, but might be problematic when the container does not specifically expose a port. (As is the case with nginx derived images!)
+                    title: Container port
                   scaleToZero:
                     default: false
                     description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.

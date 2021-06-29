@@ -40,6 +40,10 @@ spec:
           {{- with $k.command }}
           command: {{ . | toYaml | nindent 12 }}
           {{- end }}
+          {{- with $k.containerPort }}
+          ports:
+            - containerPort: {{ . }}
+          {{- end }}
           {{- with $k.args }}
           args: {{ . | toYaml | nindent 12 }}
           {{- end }}
