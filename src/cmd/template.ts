@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { Arguments as HelmArgs, helmOptions } from '../common/helm.opts'
 import { hfTemplate } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { Arguments as HelmArgs, helmOptions } from '../helm.opts'
 
 interface Arguments extends HelmArgs {
   outDir: string

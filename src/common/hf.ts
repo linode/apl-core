@@ -1,6 +1,6 @@
 import { load } from 'js-yaml'
 import { $ } from 'zx'
-import { Arguments } from '../helm.opts'
+import { Arguments } from './helm.opts'
 import { asArray, ENV } from './no-deps'
 
 let value: any

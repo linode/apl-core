@@ -5,10 +5,10 @@ import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { Arguments, helmOptions } from '../common/helm.opts'
 import { hfTemplate } from '../common/hf'
 import { readdirRecurse } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { Arguments, helmOptions } from '../helm.opts'
 
 const fileName = 'validate-templates'
 let debug: OtomiDebugger
