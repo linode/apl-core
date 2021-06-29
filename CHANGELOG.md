@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.5](https://github.com/redkubes/otomi-core/compare/v0.13.4...v0.13.5) (2021-06-29)
+
+
+### Bug Fixes
+
+* sops detection [ci skip] ([91d8eed](https://github.com/redkubes/otomi-core/commit/91d8eed1efff5648311113b41c10b41e257533ee))
+
 ### [0.13.4](https://github.com/redkubes/otomi-core/compare/v0.13.3...v0.13.4) (2021-06-29)
 
 
