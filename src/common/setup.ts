@@ -151,12 +151,9 @@ export const otomi = {
     const debug = debugPar.extend('prep environment')
     debug.verbose('Checking environment')
     if (!options?.skipEnvDirCheck && noExport.checkENVdir(debug)) {
-      debug.verbose('Evaluate secrets')
-      if (!options?.skipEvaluateSecrets) await evaluateSecrets(debug)
-
+      if (!('CI' in process.env) && !options?.skipEvaluateSecrets) await evaluateSecrets(debug)
       if (!('CI' in process.env) && !options?.skipKubeContextCheck) await noExport.checkKubeContext(debug)
-
-      if (!options?.skipDecrypt) await decrypt(debug)
+      if (!('CI' in process.env) && !options?.skipDecrypt) await decrypt(debug)
     }
   },
   /**

@@ -87,7 +87,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   }
 
   await Promise.allSettled(
-    ['.gitattributes', '.sops.yaml.sample', '.secrets.sample']
+    ['.gitattributes', '.secrets.sample']
       .filter((val) => !existsSync(`${ENV.DIR}/${val.replace(/\.sample$/g, '')}`))
       .map(async (val) => copyFile(`${currDir}/.values/${val}`, `${ENV.DIR}/${val}`)),
   )

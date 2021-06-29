@@ -46,6 +46,7 @@ RUN apt-get update -qq \
   git \
   gnupg2 \
   groff \
+  locales \
   nano \
   netcat \
   openssh-server \
@@ -58,6 +59,9 @@ RUN apt-get update -qq \
   groff \
   awscli \
   && rm -rf /var/lib/apt/lists/*
+
+# set locale
+RUN locale-gen en_US.UTF-8
 
 # jq
 RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
