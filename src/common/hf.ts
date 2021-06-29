@@ -51,7 +51,6 @@ export const values = async (replacePath = false, asString = false): Promise<any
 }
 
 export const hfValues = async (): Promise<any> => {
-  // TODO: Check this! https://github.com/redkubes/otomi-core/pull/444/files
   return (await values(true)).renederedValues
 }
 

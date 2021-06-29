@@ -33,7 +33,6 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
 
   const gitDiff: string = (await $`git -C ${ENV.DIR} diff --name-only`).stdout.trim()
   if (gitDiff.includes('cluster.yaml')) genDrone(argv)
-  // TODO: Double check if it should be in the ENV.DIR?
   await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} -m 'Manual commit' --no-verify`
 }
 
