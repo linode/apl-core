@@ -73,7 +73,7 @@ npm run compile:watch &
 |  ✅   | bin/gen-demo-mtls-cert-secret.sh   |
 |  ✅   | bin/gen-drone.sh                   |
 |  ⬜   | bin/gen-ssh-key.sh                 |
-|  ⬜   | bin/get-team-kubeconf.sh           |
+|  🟥   | bin/get-team-kubeconf.sh           |
 |  ✅   | bin/gitea-push.sh                  |
 |  ⬜   | bin/job-presync.sh                 |
 |  ✅   | bin/otomi                          |
@@ -100,4 +100,4 @@ npm run compile:watch &
 |  ✅   | Implement cleanup functions |
 |  ✅   | Upgrade node to non-LTS     |
 |  ⬜   | Use a git package for node? |
-|  ⬜   | Validate against linters    |
+|  ✅   | Validate against linters    |
