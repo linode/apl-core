@@ -10,7 +10,7 @@
 {{- $coreVersion := (printf "v%s" $version) }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
-{{- $sopsEnabled := ne ($v | get "kms.sops" "") "" }}
+{{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
 
 replicaCount: 1
 
