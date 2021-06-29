@@ -4,11 +4,15 @@
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $hasGitea := $g | get "enabled" true }}
+{{- $giteaValuesUrl := print "https://gitea." $v.cluster.domainSuffix }}
 {{- $teamConfig := dict "services" $v.teamConfig.services }}
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $sopsEnabled := $v | get "kms.sops" nil | ternary true false }}
+{{- $pkgVersion := (exec "bash" (list "-c" "require('./package.json').version")) }}
+{{- $coreVersion := (printf "v%s" $pkgVersion) }}
 
 replicaCount: 1
 
@@ -37,15 +41,15 @@ secrets:
   
 env:
   # DEBUG: '*'
-  GIT_REPO_URL: {{ $o.git.repoUrl }}
-  GIT_BRANCH: {{ $o.git | get "branch" "main" }}
+  GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
+  GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
   CLUSTER_NAME: {{ $c.apiName }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
-  USE_SOPS: {{ $v.sops.enabled }}
+  USE_SOPS: {{ $v | get "kms.sops" nil | ternary true false }}
   CORE_VERSION: '{{ $version }}'
   {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
   NO_AUTHZ: true
@@ -61,11 +65,11 @@ core:
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:
-  enabled: {{ $v.sops.enabled }}
-  {{- if $v.sops.enabled }}
+  enabled: {{ $sopsEnabled }}
+  {{- if $sopsEnabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" "v0.13.1" }}
+    tag: {{ $o | get "tools.image.tag" $coreVersion }}
     # pullPolicy: Always
     {{- with $o | get "resources.tools" nil }}
     resources:
