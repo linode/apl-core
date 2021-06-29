@@ -83,4 +83,4 @@ charts:
     postgresqlPassword: '' # for now this needs to be set to avoid generating a new one each time
   oauth2-proxy:
     config:
-      cookieSecret: '' # for now this needs to be set to avoid generating a new one each time 2
+      cookieSecret: '' # for now this needs to be set to avoid generating a new one each time 3
