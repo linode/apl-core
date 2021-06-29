@@ -765,7 +765,7 @@ definitions:
         description: Will be used to separate team resources.
         type: string
       resourceQuota:
-        description: Kubernetes resource quota. As is.
+        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
