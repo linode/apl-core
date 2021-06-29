@@ -25,9 +25,15 @@ function create_from_template() {
 }
 create_from_template
 
-if [ "$provider" = "google" ]; then
-  # we create gcp-key.json with the google creds for the vscode SOPS plugin,
-  # which has been configured to also read credentials from that file
-  echo "Creating gcp-key.json for vscode."
-  echo $GCLOUD_SERVICE_KEY >$ENV_DIR/gcp-key.json
+if [ -z "$CI" ]; then
+  # we know we are in dev/ops mode and need to read the credentials for SOPS. We provide a location to
+  # provide those to this context: $ENV_DIR/.secrets (gitignored)
+  [ ! -f $ENV_DIR/.secrets ] && err "Expecting $ENV_DIR/.secrets to exist and hold credentials for SOPS." && exit 1
+  . $ENV_DIR/.secrets
+  if [ "$provider" = "google" ]; then
+    # we create gcp-key.json with the google creds for the vscode SOPS plugin,
+    # which has been configured to also read credentials from that file
+    echo "Creating gcp-key.json for vscode."
+    echo $GCLOUD_SERVICE_KEY >$ENV_DIR/gcp-key.json
+  fi
 fi
