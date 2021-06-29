@@ -9,6 +9,7 @@ import destroyModule from './destroy'
 import diffModule from './diff'
 import encryptModule from './encrypt'
 import genDroneModule from './gen-drone'
+import genSopsModule from './gen-sops'
 import hfModule from './hf'
 import lintModule from './lint'
 import playgroundModule from './playground'
@@ -34,6 +35,7 @@ export { default as destroy } from './destroy'
 export { default as diff } from './diff'
 export { default as encrypt } from './encrypt'
 export { default as genDrone } from './gen-drone'
+export { default as genSops } from './gen-sops'
 export { default as hf } from './hf'
 export { default as lint } from './lint'
 export { default as pull } from './pull'
@@ -59,6 +61,7 @@ export const commands: CommandModule[] = [
   diffModule,
   encryptModule,
   genDroneModule,
+  genSopsModule,
   hfModule,
   lintModule,
   playgroundModule,

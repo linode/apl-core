@@ -3,7 +3,7 @@ import { load } from 'js-yaml'
 import { fileURLToPath } from 'url'
 import { $, nothrow } from 'zx'
 import { decrypt } from './crypt'
-import { OtomiDebugger, terminal } from './debug'
+import { OtomiDebugger } from './debug'
 import { values } from './hf'
 import { BasicArguments, ENV, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
@@ -129,7 +129,7 @@ export const otomi = {
     const file = `${ENV.DIR}/env/cluster.yaml`
     if (!existsSync(file)) return process.env.DOCKER_TAG ?? 'master'
     const clusterFile = load(file) as any
-    otomiImageTag = clusterFile.cluster?.otomiVersion ?? 'master'
+    otomiImageTag = clusterFile.otomi?.version ?? 'master'
     return otomiImageTag
   },
   /**
@@ -148,7 +148,7 @@ export const otomi = {
    * @param debugPar
    */
   prepareEnvironment: async (debugPar: OtomiDebugger, options?: PrepareEnvironmentOptions): Promise<void> => {
-    const debug = terminal('prep environment', debugPar)
+    const debug = debugPar.extend('prep environment')
     debug.verbose('Checking environment')
     if (!options?.skipEnvDirCheck && noExport.checkENVdir(debug)) {
       debug.verbose('Evaluate secrets')

@@ -1,14 +1,8 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import {
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  parser,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments, parser } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'bash'
 let debug: OtomiDebugger

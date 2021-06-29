@@ -4,15 +4,10 @@ import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
-import {
-  cleanupHandler,
-  hfTemplate,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  readdirRecurse,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { readdirRecurse } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../helm.opts'
 
 const fileName = 'validate-templates'

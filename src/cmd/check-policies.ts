@@ -2,15 +2,10 @@ import { rmSync } from 'fs'
 import { load } from 'js-yaml'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import {
-  cleanupHandler,
-  ENV,
-  hfTemplate,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { ENV } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../helm.opts'
 
 const fileName = 'check-policies'

@@ -1,5 +1,7 @@
 import { Argv } from 'yargs'
-import { cleanupHandler, hfTemplate, otomi, OtomiDebugger, PrepareEnvironmentOptions, terminal } from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../helm.opts'
 
 interface Arguments extends HelmArgs {

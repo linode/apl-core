@@ -15,11 +15,7 @@ export const evaluateSecrets = async (debug = terminal('evaluateSecrets')): Prom
   try {
     await source(secretPath)
   } catch (error) {
-    debug.exit(
-      1,
-      `Unable to find the '${secretPath}' file.`,
-      `Please follow to documentation: https://github.com/redkubes/otomi-core`,
-    )
+    debug.error('%s\n', `Unable to find the '${secretPath}' file.`, `Continuing without local secrets`)
   }
 }
 

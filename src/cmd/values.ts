@@ -1,14 +1,9 @@
 import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-  values as hfValues,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { values as valuesFunc } from '../common/hf'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'values'
 let debug: OtomiDebugger
@@ -29,7 +24,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 export const values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.verbose('Get values')
-  const hfVal = await hfValues(true)
+  const hfVal = await valuesFunc(true)
 
   debug.verbose('Print values')
   console.log(dump(hfVal))

@@ -1,13 +1,8 @@
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  encrypt as encryptFunc,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { encrypt as encryptFunc } from '../common/crypt'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 interface Arguments extends BasicArguments {
   files?: string[]

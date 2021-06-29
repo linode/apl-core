@@ -3,7 +3,10 @@ import { copyFile } from 'fs/promises'
 import { load } from 'js-yaml'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { ask, BasicArguments, cleanupHandler, ENV, otomi, OtomiDebugger, terminal } from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments, ENV } from '../common/no-deps'
+import { cleanupHandler, otomi } from '../common/setup'
+import { ask } from '../common/zx-enhance'
 
 const fileName = 'bootstrap'
 let debug: OtomiDebugger
@@ -26,13 +29,15 @@ const setup = (argv: Arguments): void => {
 }
 
 const generateLooseSchema = (currDir: string) => {
-  const targetPath = `${ENV.DIR}/.vscode/values-schema.yaml`
+  const schemaPath = '.vscode/values-schema.yaml'
+  const targetPath = `${ENV.DIR}/${schemaPath}`
   const sourcePath = `${currDir}/values-schema.yaml`
 
   const valuesSchema = load(sourcePath) as any
   const trimmedVS = JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v)))
   writeFileSync(targetPath, trimmedVS)
-  if (currDir !== '/home/app/stack') writeFileSync(`${currDir}/.values/values-schema.yaml`, trimmedVS)
+  if (currDir !== '/home/app/stack' && !existsSync(`${currDir}/${schemaPath}`))
+    writeFileSync(`${currDir}/.values/values-schema.yaml`, trimmedVS)
   debug.verbose(`Stored YAML schema at: ${targetPath}`)
 }
 
@@ -90,17 +95,21 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     ),
   )
 
-  debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
-  await $`cp -r ${currDir}/profiles/commonenv ${ENV.DIR}`
-  await $`cp -r ${currDir}/profiles/${args.profile}/env ${ENV.DIR}`
-
+  if (args.profile.length === 0) {
+    debug.log(`PROFILE was empty, copying basic values`)
+    await $`cp -r ${currDir}/.values/env ${ENV.DIR}`
+  } else {
+    debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
+    await $`cp -r ${currDir}/profiles/commonenv ${ENV.DIR}`
+    await $`cp -r ${currDir}/profiles/${args.profile}/env ${ENV.DIR}`
+  }
   await $`git init ${ENV.DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
   if (process.env.GCLOUD_SERVICE_KEY?.length) {
     writeFileSync(`${ENV.DIR}/gcp-key.json`, JSON.stringify(JSON.parse(process.env.GCLOUD_SERVICE_KEY), null, 2))
   }
 
-  const secretsFileEnv = `${ENV.DIR}/env/secrets.settings.yamls`
+  const secretsFileEnv = `${ENV.DIR}/env/secrets.settings.yaml`
   if (existsSync(secretsFile)) {
     const secretsContent = load(secretsFileEnv) as any
     if (secretsContent?.otomi?.pullSecret?.length) {

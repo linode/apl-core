@@ -1,18 +1,14 @@
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 /* Steps:
  * 1. Follow all TODO in this file
  * 2. Update src/cmd/index.ts and add:
- *      `export { default as <fileName> } from './<fileName>.ts'
- * 3. Add new command to `src/otomi.ts`
+ *      `import <fileName>Module from './<fileName>'`
+ *      `export { default as <fileName> } from './<fileName>'
+ *      add `<fileName>Module` to commands constant
  */
 
 // TODO: extend this interface with the HelmArguments from '../helm.opts.ts' or add the options that you define in the `builder` at the bottom

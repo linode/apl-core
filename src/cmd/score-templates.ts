@@ -1,7 +1,9 @@
 import { unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { cleanupHandler, hfTemplate, otomi, OtomiDebugger, PrepareEnvironmentOptions, terminal } from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../helm.opts'
 
 const fileName = 'score-template'

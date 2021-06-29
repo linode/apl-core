@@ -1,13 +1,8 @@
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  rotate,
-  terminal,
-} from '../common/index'
+import { rotate } from '../common/crypt'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'rotate-keys'
 let debug: OtomiDebugger

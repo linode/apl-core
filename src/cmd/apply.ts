@@ -1,19 +1,11 @@
 import { existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
-import { $, cd, nothrow } from 'zx'
-import {
-  ask,
-  cleanupHandler,
-  ENV,
-  hf,
-  hfTrimmed,
-  hfValues,
-  LOG_LEVEL_STRING,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { $ } from 'zx'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { giteaPush } from '../common/gitea-push'
+import { hf, hfTrimmed, hfValues } from '../common/hf'
+import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../helm.opts'
 import { decrypt } from './decrypt'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -64,86 +56,6 @@ const genDemoMtlsCertSecret = async () => {
   }
 }
 
-const giteaPush = async () => {
-  debug.verbose('Gitea push')
-  const hfVals = await hfValues()
-  if (!hfVals.charts?.gitea?.enabled) {
-    debug.verbose('Gitea is disabled')
-    return
-  }
-  const stage = hfVals.charts?.['cert-manager']?.stage === 'staging' ? ' -c http.sslVerify=false' : ' '
-  debug.log(hfVals.cluster)
-  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.exit(1, 'cluster.domainSuffix is not set')
-  const giteaUrl = `gitea.${clusterDomain}`
-  const giteaPassword =
-    hfVals.charts?.gitea?.adminPassword ??
-    hfVals.otomi?.adminPassword ??
-    debug.exit(1, 'otomi.adminPassword is not set')
-  const giteaUser = 'otomi-admin'
-  const giteaOrg = 'otomi'
-  const giteaRepo = 'values'
-
-  const currDir = (await $`pwd`).stdout.trim()
-  cd(`${ENV.DIR}`)
-  try {
-    let gitFound = true
-    if (!existsSync('.git')) {
-      await $`git init`
-      await $`git checkout -b main`
-      gitFound = false
-    }
-    const remotes = (await $`git remote -v`).stdout
-      .trim()
-      .split('\n')
-      .filter((item) => item.includes('push') && item.includes(giteaUrl))
-    let remoteOrigin = !remotes.length ? 'origin' : remotes[0].split(/\s/)[0]
-
-    let remoteOriginUrl = (await nothrow($`git config remote.${remoteOrigin}.url`)).stdout.trim()
-    if (!!remoteOriginUrl.length && !remoteOriginUrl.includes(giteaUrl)) {
-      const yes = ['y', 'yes']
-      const options = [...yes, 'n', 'no']
-      const addExtraRemote = await ask(
-        'Another origin already exists, do you want to add Gitea as a remote? [yes/No]',
-        {
-          choices: ['Yes', 'No'],
-          matching: options,
-        },
-      )
-      if (yes.includes(addExtraRemote)) {
-        remoteOrigin = 'otomi-values'
-      } else {
-        debug.error('Other origin already exists, and no new remote is added, cannot continue')
-        return
-      }
-    }
-    remoteOriginUrl = (await nothrow($`git config remote.${remoteOrigin}.url`)).stdout.trim()
-    if (!remoteOriginUrl.length) {
-      await $`git remote add ${remoteOrigin} "https://${giteaUser}:${giteaPassword}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git"`
-      debug.log('Added gitea as a remote origin')
-      debug.log(`You can push using: \`git push main ${remoteOrigin}\``)
-    }
-
-    try {
-      await $`git${stage} fetch ${remoteOrigin} main >/dev/null`
-      if (!gitFound) {
-        await $`git config user.name "Otomi Admin"`
-        await $`git config user.email "otomi-admin@${clusterDomain}"`
-      }
-
-      await $`git add -A`
-      await $`git commit --no-verify -m "Automated commit of otomi-values"`
-      await $`git${stage} push -u ${remoteOrigin} main -f`
-      debug.log('Otomi-values has been pushed to gitea')
-    } catch (error) {
-      debug.error('There is already data in gitea.')
-    }
-  } catch (error) {
-    debug.error(error)
-  } finally {
-    cd(currDir)
-  }
-}
-
 const deployAll = async (argv: Arguments) => {
   if (!ENV.isCI) {
     await genDemoMtlsCertSecret()
@@ -160,7 +72,7 @@ const deployAll = async (argv: Arguments) => {
   })
   if (!ENV.isCI) {
     await genDrone(argv)
-    await giteaPush()
+    await giteaPush(debug)
   }
   hf({
     fileOpts: argv.file,

@@ -1,12 +1,7 @@
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 /**
  * This file is a scripting playground to test basic code

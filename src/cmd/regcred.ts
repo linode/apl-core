@@ -1,14 +1,9 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import {
-  ask,
-  BasicArguments,
-  cleanupHandler,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { BasicArguments } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { ask } from '../common/zx-enhance'
 
 interface Arguments extends BasicArguments {
   server: string

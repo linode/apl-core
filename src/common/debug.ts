@@ -16,6 +16,7 @@ export type OtomiDebugger = {
   warn: Debug.Debugger
   error: Debug.Debugger
   exit: (exitCode: number, ...args: any[]) => void
+  extend: (namespace: string) => OtomiDebugger
 }
 
 const xtermColors = {
@@ -66,6 +67,23 @@ export function terminal(namespace: string, enabledOrDebugger?: boolean | OtomiD
   if (SET_STATIC_COLORS) warn.color = getColor(base.namespace, xtermColors.orange)
   if (SET_STATIC_COLORS) verbose.color = getColor(base.namespace, xtermColors.green)
 
-  return { enabled: terminalEnabled, base, log, trace, debug, verbose, warn, error, exit }
+  const newDebugger: OtomiDebugger = {
+    enabled: terminalEnabled,
+    base,
+    log,
+    trace,
+    debug,
+    verbose,
+    warn,
+    error,
+    exit,
+    extend: (newNS: string) => {
+      return terminal(newNS)
+    },
+  }
+  newDebugger.extend = (newNS: string) => {
+    return terminal(newNS, newDebugger)
+  }
+  return newDebugger
 }
 /* eslint-enable no-redeclare */

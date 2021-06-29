@@ -1,15 +1,9 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import {
-  BasicArguments,
-  cleanupHandler,
-  ENV,
-  hfValues,
-  otomi,
-  OtomiDebugger,
-  PrepareEnvironmentOptions,
-  terminal,
-} from '../common/index'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { hfValues } from '../common/hf'
+import { BasicArguments, ENV } from '../common/no-deps'
+import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
   dryRun: number
@@ -36,7 +30,9 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   const hfVals = await hfValues()
-
+  if (!hfVals.charts?.drone?.enabled) {
+    return
+  }
   const receiver = hfVals.alerts?.drone ?? 'slack'
   const branch = hfVals.charts?.['otomi-api']?.git?.branch ?? 'main'
 
