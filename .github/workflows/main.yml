@@ -78,7 +78,7 @@ jobs:
         name: Prepare chart for publishing
         id: chart_prepare
         run: |
-          [ $(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
+          [[ "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} chart | wc -l)" == "0" ]] && echo "No chart changes detected. Skipping." && exit
           echo ::set-output name=has_chart_changes::true
           release_tag=v${COMMIT_MSG#* }
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
