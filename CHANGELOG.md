@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.3](https://github.com/redkubes/otomi-core/compare/v0.13.2...v0.13.3) (2021-06-29)
+
+
+### Bug Fixes
+
+* don't gen drone when chart disabled ([113aaac](https://github.com/redkubes/otomi-core/commit/113aaaca5214b4a3b1bea03a327c6f73acac93ea))
+* gitea url [ci skip] ([d05f08b](https://github.com/redkubes/otomi-core/commit/d05f08bf19a6c8c9f3a9c4367deaedd0834da4be))
+
 ### [0.13.2](https://github.com/redkubes/otomi-core/compare/v0.13.1...v0.13.2) (2021-06-29)
 
 
