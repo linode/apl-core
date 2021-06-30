@@ -1,8 +1,0 @@
-- name: istio-sidecars
-  namespace: istio-system
-  selector:
-    matchLabels:
-      security.istio.io/tlsMode: istio
-  podMetricsEndpoints:
-    - port: http-envoy-prom
-      path: /stats/prometheus

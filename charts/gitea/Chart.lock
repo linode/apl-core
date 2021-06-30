@@ -1,9 +1,0 @@
-dependencies:
-- name: memcached
-  repository: https://charts.bitnami.com/bitnami
-  version: 5.9.0
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.3.17
-digest: sha256:f77c53f133e2870b5df193609c1e8dc6fd9bb25cd689d1dbfd677a09795e0a79
-generated: "2021-05-17T16:38:28.748197+02:00"

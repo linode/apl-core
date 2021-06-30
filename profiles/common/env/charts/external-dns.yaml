@@ -1,6 +1,0 @@
-charts:
-    external-dns:
-        domainFilters:
-            - otomi.cloud
-        zoneIdFilters:
-            - otomi

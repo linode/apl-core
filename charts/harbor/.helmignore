@@ -1,6 +1,0 @@
-docs/*
-.git/*
-.gitignore
-CONTRIBUTING.md
-.travis.yaml
-test/*

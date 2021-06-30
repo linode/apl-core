@@ -1,3 +1,0 @@
-{{- $v := .Values }}
-resources:
-{{ tpl (readFile (printf "pv-%s.gotmpl" $v.cluster.provider)) $v}}

@@ -1,1 +1,0 @@
-{"auths":{"{{ .server }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"{{ .email | default "not@val.id" }}","auth":"{{ print .username ":" .password | b64enc}}"}}}

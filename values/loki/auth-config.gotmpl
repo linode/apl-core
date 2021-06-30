@@ -1,9 +1,0 @@
-users:
-  - username: admins
-    password: {{ .adminPassword }}
-    orgId: admins
-  {{- range $id, $team := .teams }}
-  - username: {{ $id }}
-    password: {{ $team.password }}
-    orgId: {{ $id }}
-  {{- end }}

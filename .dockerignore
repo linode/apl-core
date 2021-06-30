@@ -1,8 +1,0 @@
-/.*
-!/.values
-/env
-/node_modules
-/tools
-/*.json
-!/package.json
-!/.cspell.json

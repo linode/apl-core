@@ -1,9 +1,0 @@
-apiVersion: {{ template "PriorityClass.apiVersion" . }}
-kind: PriorityClass
-metadata:
-  name: {{ .Values.priorityClassOverprovision.name }}
-  labels:
-    {{- include "cluster-overprovisioner.labels" . | nindent 4 }}
-value: {{ .Values.priorityClassOverprovision.value }}
-globalDefault: false
-description: "Priority class used for overprovision pods"

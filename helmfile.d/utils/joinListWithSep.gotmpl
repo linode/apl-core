@@ -1,3 +1,0 @@
-{{- $first := true -}}
-{{- $ := . -}}
-{{- range $k, $v := .list -}}{{- if not $first -}}{{- $.sep -}}{{- end -}}{{- $v -}}{{- $first = false -}}{{- end -}}
