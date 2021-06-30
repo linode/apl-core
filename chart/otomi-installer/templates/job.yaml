@@ -36,7 +36,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:otomi-chart
+          image: otomi/tasks:master
           imagePullPolicy: Always
           command: ['sh', '-c']
           args:
