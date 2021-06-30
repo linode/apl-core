@@ -74,16 +74,7 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
-      - name: Create GitHub release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.git_tag.outputs.tag }}
-          release_name: Release ${{ steps.git_tag.outputs.tag }}
-          body: ${{ steps.git_tag.outputs.changes }}
-      - if: "contains(github.event.head_commit.message, 'chore(chart)')"
-        name: Prepare chart for publishing
+      - name: Prepare chart for publishing
         id: chart_prepare
         run: |
           # Release new chart only if its version changes
