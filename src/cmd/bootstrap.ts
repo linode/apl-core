@@ -1,4 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs'
+import { emptyDirSync } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { load } from 'js-yaml'
 import { Argv } from 'yargs'
@@ -27,6 +28,10 @@ const cleanup = (argv: Arguments): void => {
 const setup = (argv: Arguments): void => {
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
+}
+
+const rollBack = (): void => {
+  emptyDirSync(ENV.DIR)
 }
 
 const generateLooseSchema = (currDir: string) => {
@@ -58,9 +63,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   args.p = process.env.PROFILE
   args.profile = process.env.PROFILE
 
-  genSops({ ...argv, dryRun: false, d: false, 'dry-run': false })
-
-  const currDir = await ENV.PWD
+  const currDir = ENV.PWD
 
   const secretsFile = `${ENV.DIR}/.secrets`
   const hasOtomi = existsSync(`${ENV.DIR}/bin/otomi`)
@@ -103,11 +106,13 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     await $`cp -r ${currDir}/.values/env ${ENV.DIR}`
   } else {
     debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
-    await $`cp -r ${currDir}/profiles/commonenv ${ENV.DIR}`
+    await $`cp -r ${currDir}/profiles/common/env ${ENV.DIR}`
     await $`cp -r ${currDir}/profiles/${args.profile}/env ${ENV.DIR}`
   }
   await $`git init ${ENV.DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
+
+  genSops({ ...argv, d: false, dryRun: false, 'dry-run': false }, { skipAll: true })
   if (process.env.GCLOUD_SERVICE_KEY?.length) {
     writeFileSync(`${ENV.DIR}/gcp-key.json`, JSON.stringify(JSON.parse(process.env.GCLOUD_SERVICE_KEY), null, 2))
   }
@@ -150,6 +155,8 @@ export const module = {
     try {
       await bootstrap(argv)
     } catch (error) {
+      debug.error('Error occurred, rolling back')
+      rollBack()
       debug.exit(1, error)
     }
   },
