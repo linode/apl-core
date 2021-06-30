@@ -24,6 +24,7 @@ jobs:
           tag=$(echo $(basename $GITHUB_REF))
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
+          pwd
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -83,12 +84,12 @@ jobs:
           echo ::set-output name=has_chart_changes::true
           release_tag=v${COMMIT_MSG#* }
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
-      - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
-        name: Create and publish chart
+      # - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
+      - name: Create and publish chart
         id: chart_release
         uses: helm/chart-releaser-action@v1.2.1
         with:
-          charts_dir: ./
+          charts_dir: .
         env:
           # See: https://github.com/helm/chart-releaser
           CR_OWNER: redkubes
