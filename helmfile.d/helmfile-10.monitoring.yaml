@@ -33,7 +33,7 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ or (eq ($v.alerts | get "receiver" "slack") "msteams") (eq ($v.home | get "receiver" "slack") "msteams") }}
+    installed: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
     namespace: monitoring
     <<: *default
   - name: sitespeed

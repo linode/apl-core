@@ -37,8 +37,6 @@ check_policies() {
   return $ret
 }
 
-[ -f $otomi_settings ] && ! $(yq r $otomi_settings "otomi.addons.conftest.enabled") && echo "skipping" && exit 0
-
 function main() {
   echo $script_message STARTED
   check_policies "$@"

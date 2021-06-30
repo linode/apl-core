@@ -29,6 +29,9 @@ home:
     slack:
         channel: dev-mon-otomi
         channelCrit: dev-mon-otomi-crit
+kms:
+    sops:
+        provider: azure
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
@@ -44,9 +47,7 @@ otomi:
     isManaged: true
     isMultitenant: true
     mode: ce
-    addons:
-        conftest:
-            enabled: true
+    version: otomi-install-chart
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
