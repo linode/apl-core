@@ -97,12 +97,12 @@ check_update() {
   if [ "$last_commit_date_sec" -ne "0" ] && [ "$last_commit_date_sec" -gt "$last_file_change_sec" ]; then
     read -r -p "Newer version is available, do you want to update (yes/No)? " answer
     case ${answer:0:1} in
-      y | Y)
-        run_self_update
-        ;;
-      *)
-        return 0
-        ;;
+    y | Y)
+      run_self_update
+      ;;
+    *)
+      return 0
+      ;;
     esac
   fi
 }
@@ -152,9 +152,28 @@ if [ "$status" -ne 0 ]; then
   exit $status
 fi
 
+function named_volume() {
+  set -x
+
+  [ -z "$NAMED_VOLUME" ] && volume_name='otomi-volume'
+  helper_container_name="named-volume-tmp-helper-container"
+
+  docker volume rm $volume_name >/dev/null 2>&1
+
+  source_files=$1
+  destination_path=$2
+
+  docker container inspect $helper_container_name >/dev/null 2>&1 && docker rm $helper_container_name >/dev/null 2>&1
+  docker container create --name $helper_container_name -v $volume_name:$destination_path hello-world >/dev/null 2>&1 &&
+    docker cp $source_files $helper_container_name:$destination_path >/dev/null 2>&1 &&
+    docker rm $helper_container_name >/dev/null 2>&1
+
+  echo "$volume_name:$destination_path"
+}
+set -x
 docker run --network host --rm -it \
   $stack_volume \
-  -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
+  -v $(named_volume ${KUBECONFIG:-$HOME/.kube/config} /home/app/.kube/config) \
   -v $HOME/.ssh:/home/app/.ssh \
   -v $helm_config:/home/app/.config/helm \
   -v $HOME/.config/gcloud:/home/app/.config/gcloud \
@@ -167,6 +186,8 @@ docker run --network host --rm -it \
   -w $stack_dir \
   $otomi_tools_image \
   bash -c "$cmd"
+
 status=$?
 rm -f "$tmp_env"
+set +x
 exit $status
