@@ -89,7 +89,7 @@ jobs:
         id: chart_release
         uses: helm/chart-releaser-action@v1.2.1
         with:
-          charts_dir: .
+          charts_dir: chart
         env:
           # See: https://github.com/helm/chart-releaser
           CR_OWNER: redkubes
