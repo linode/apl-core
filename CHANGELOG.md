@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.6](https://github.com/redkubes/otomi-core/compare/v0.13.5...v0.13.6) (2021-06-29)
+
+
+### Others
+
+* **chart:** 0.13.5 ([7668f9b](https://github.com/redkubes/otomi-core/commit/7668f9b683a15f770701fbbd03a7b7b8f138ee30))
+
+### [0.13.5](https://github.com/redkubes/otomi-core/compare/v0.13.4...v0.13.5) (2021-06-29)
+
+
+### Bug Fixes
+
+* sops detection [ci skip] ([91d8eed](https://github.com/redkubes/otomi-core/commit/91d8eed1efff5648311113b41c10b41e257533ee))
+
+### [0.13.4](https://github.com/redkubes/otomi-core/compare/v0.13.3...v0.13.4) (2021-06-29)
+
+
+### Bug Fixes
+
+* sops detection [ci skip] ([2032a04](https://github.com/redkubes/otomi-core/commit/2032a048a6638a534465cb59d107b82bd6d21b39))
+
+### [0.13.3](https://github.com/redkubes/otomi-core/compare/v0.13.2...v0.13.3) (2021-06-29)
+
+
+### Bug Fixes
+
+* don't gen drone when chart disabled ([113aaac](https://github.com/redkubes/otomi-core/commit/113aaaca5214b4a3b1bea03a327c6f73acac93ea))
+* gitea url [ci skip] ([d05f08b](https://github.com/redkubes/otomi-core/commit/d05f08bf19a6c8c9f3a9c4367deaedd0834da4be))
+
 ### [0.13.2](https://github.com/redkubes/otomi-core/compare/v0.13.1...v0.13.2) (2021-06-29)
 
 
