@@ -42,6 +42,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await commit(argv, { skipKubeContextCheck: true })
   },
 }

@@ -1,7 +1,7 @@
 import { load } from 'js-yaml'
 import { $ } from 'zx'
 import { Arguments } from './helm-opts'
-import { asArray, ENV } from './no-deps'
+import { asArray, ENV, LOG_LEVELS } from './no-deps'
 
 let value: any
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
@@ -19,6 +19,22 @@ export const hf = async (args: HFParams): Promise<string> => {
   paramsCopy.fileOpts = asArray(paramsCopy.fileOpts ?? [])
   paramsCopy.labelOpts = asArray(paramsCopy.labelOpts ?? [])
   paramsCopy.logLevel ??= 'warn'
+
+  // Only ERROR, WARN, INFO or DEBUG are allowed, map other to closest neighbor
+  switch (LOG_LEVELS[paramsCopy.logLevel.toUpperCase()]) {
+    case LOG_LEVELS.FATAL:
+      paramsCopy.logLevel = 'error'
+      break
+    case LOG_LEVELS.VERBOSE:
+      paramsCopy.logLevel = 'info'
+      break
+    case LOG_LEVELS.TRACE:
+      paramsCopy.logLevel = 'debug'
+      break
+    default:
+      break
+  }
+
   paramsCopy.args = asArray(paramsCopy.args).filter(Boolean)
   if (!paramsCopy.args || paramsCopy.args.length === 0) {
     throw new Error('No arguments were passed')
@@ -32,6 +48,7 @@ export const hf = async (args: HFParams): Promise<string> => {
   const files = paramsCopy.fileOpts?.map((item: string) => `-f=${item}`)
 
   const stringArray = [...(labels ?? []), ...(files ?? [])]
+
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   const res = await $`helmfile ${stringArray} ${paramsCopy.args}`
   return `${res.stderr.trim()}\n${res.stdout.trim()}\n`

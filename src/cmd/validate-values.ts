@@ -6,6 +6,7 @@ import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
+import { ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'validate-values'
@@ -77,6 +78,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await validateValues(argv, { skipKubeContextCheck: true })
   },
 }

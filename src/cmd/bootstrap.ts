@@ -146,6 +146,7 @@ export const module = {
     }),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     try {
       await bootstrap(argv)
     } catch (error) {

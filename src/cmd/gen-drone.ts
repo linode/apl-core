@@ -75,6 +75,7 @@ export const module = {
     }),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await genDrone(argv, { skipKubeContextCheck: true })
   },
 }

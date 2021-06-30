@@ -112,5 +112,6 @@
       "tag": true
     }
   },
+  "type": "module",
   "version": "0.13.6"
 }

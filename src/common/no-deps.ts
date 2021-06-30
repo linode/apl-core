@@ -36,6 +36,9 @@ export const ENV = {
   get isCI(): boolean {
     return 'CI' in process.env
   },
+  get isTESTING(): boolean {
+    return 'TESTING' in process.env
+  },
 }
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
@@ -66,8 +69,8 @@ export const LOG_LEVEL = (): number => {
   if (!ENV.PARSED_ARGS) return LOG_LEVELS.ERROR
   if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
 
-  const LL = Number(LOG_LEVELS[(parser?.argv as BasicArguments).logLevel])
-  const verbosity = Number((parser?.argv as BasicArguments).verbose)
+  const LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
+  const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
   logLevel = LL < 0 && verbosity === 0 ? LL : Math.max(LL, verbosity)
   if (logLevel === LOG_LEVELS.TRACE) {
     $.verbose = true

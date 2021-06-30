@@ -2,6 +2,7 @@ import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
 import { hfTemplate } from '../common/hf'
+import { ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 interface Arguments extends HelmArgs {
@@ -38,6 +39,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await template(argv, { skipKubeContextCheck: true })
   },
 }

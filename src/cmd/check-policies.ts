@@ -63,6 +63,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await checkPolicies(argv, { skipKubeContextCheck: true })
   },
 }

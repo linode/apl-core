@@ -77,4 +77,4 @@ export const commands: CommandModule[] = [
   valuesModule,
   xModule,
 ]
-export const defaultCommand: CommandModule | null = null // bootstrap
+export const defaultCommand: CommandModule | null = null // bootstrapModule

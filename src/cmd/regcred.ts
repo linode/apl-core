@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments } from '../common/no-deps'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { ask } from '../common/zx-enhance'
 
@@ -73,6 +73,7 @@ export const module = {
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await regCred(argv, { skipKubeContextCheck: true })
   },
 }

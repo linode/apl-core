@@ -4,7 +4,7 @@ import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
 import { hf, hfTrimmed } from '../common/hf'
-import { LOG_LEVEL_STRING } from '../common/no-deps'
+import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { decrypt } from './decrypt'
 
@@ -79,6 +79,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await destroy(argv, { skipDecrypt: true })
   },
 }
