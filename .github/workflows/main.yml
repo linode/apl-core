@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ env.GIT_PASSWORD }}
-          fetch-depth: 0
+          fetch-depth: 2
       - name: CI tests, image build and push tag for master or branch
         uses: whoan/docker-build-with-cache-action@v5
         with:
@@ -74,46 +74,6 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
-      - if: "contains(github.event.head_commit.message, 'chore(chart)')"
-        name: Prepare chart for publishing
-        id: chart_prepare
-        run: |
-          # Release new chart only if its version changes
-          [ ! "$(git diff -r ${{ github.sha }} chart/otomi-installer/Chart.yaml | grep '^+version:.*$' ] && echo "No chart changes detected. Skipping." && exit
-          echo ::set-output name=has_chart_changes::true
-          release_tag=v${COMMIT_MSG#* }
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
-      - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
-        name: Create and publish chart
-        id: chart_release
-        uses: helm/chart-releaser-action@v1.2.1
-        with:
-          charts_dir: chart
-        env:
-          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: CI run ${{ job.status }}
-          SLACK_USERNAME: RedKubesBot
-        if: always() # failure
-
-  build-test-push-release-chart:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set env
-        run: |
-          git config --global user.email $GIT_USER@users.noreply.github.com
-          git config --global user.name $GIT_USER
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          token: ${{ env.GIT_PASSWORD }}
-          fetch-depth: 2
       - name: Create GitHub release
         uses: actions/create-release@v1
         env:
@@ -132,10 +92,20 @@ jobs:
           release_tag=v${COMMIT_MSG#* }
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
       - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
-        name: Create and publish chart
+        name: Create and publish otomi-installer chart release
         id: chart_release
         uses: helm/chart-releaser-action@v1.2.1
         with:
           charts_dir: chart
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: CI run ${{ job.status }}
+          SLACK_USERNAME: RedKubesBot
+        if: always() # failure
