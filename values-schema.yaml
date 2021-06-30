@@ -766,6 +766,7 @@ definitions:
         type: string
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+        type: object
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
