@@ -1,20 +1,24 @@
-
 {{- with . | get "azure" nil  }}
-AZURE_TENANT_ID: {{ .tenantId }}
-AZURE_CLIENT_ID: {{ .clientId }}
-AZURE_CLIENT_SECRET: {{ .clientSecret }}
-AZURE_ENVIRONMENT: {{ . | get "environment" "AzurePublicCloud" }}
+AZURE_CLIENT_ID: {{ requiredEnv "AZURE_CLIENT_ID" }}
+AZURE_CLIENT_SECRET: {{ requiredEnv "AZURE_CLIENT_SECRET" }}
+{{- if env "AZURE_TENANT_ID" }}
+AZURE_TENANT_ID: {{ env "AZURE_TENANT_ID" }}{{ end }}
+{{- if env "AZURE_ENVIRONMENT" }}
+AZURE_ENVIRONMENT: {{ env "AZURE_ENVIRONMENT" }}{{ end }}
 {{- end }}
 {{- with . | get "aws" nil }}
-AWS_ACCESS_KEY_ID: {{ .accessKey }}
-AWS_SECRET_ACCESS_KEY: {{ .secretKey }}
-AWS_REGION: {{ . | get "region" nil }}
+AWS_ACCESS_KEY_ID: {{ requiredEnv "AWS_ACCESS_KEY_ID" }}
+AWS_SECRET_ACCESS_KEY: {{ requiredEnv "AWS_SECRET_ACCESS_KEY" }}
+{{- if env "AWS_REGION" }}
+AWS_REGION: {{ requiredEnv "AWS_REGION" }}{{ end }}  
 {{- end }}  
 {{- with . | get "google" nil }}
-GOOGLE_PROJECT: {{ .project }}
-GOOGLE_REGION: {{ . | get "region" nil }}
-GCLOUD_SERVICE_KEY: '{{ .accountJson | replace "\n" "" }}'
+GCLOUD_SERVICE_KEY: '{{ requiredEnv "GCLOUD_SERVICE_KEY" | replace "\n" "" }}'
+{{- if env "GOOGLE_PROJECT" }}
+GOOGLE_PROJECT: {{ requiredEnv "GOOGLE_PROJECT" }}{{ end }}
+{{- if env "GOOGLE_REGION" }}
+GOOGLE_REGION: {{ requiredEnv "GOOGLE_REGION" }}{{ end }}  
 {{- end }}
 {{- with . | get "vault" nil }}
-VAULT_TOKEN: {{ .token }}
+VAULT_TOKEN: {{ requiredEnv "VAULT_TOKEN" }}{{ end }}
 {{- end }}

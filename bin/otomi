@@ -94,8 +94,6 @@ function show_usage() {
 function check_env_dir() {
   # when devving in otomi-core we require ENV_DIR to be set
   [ -z "$CI" ] && [ "$cwd" = "otomi-core" ] && [ "$env_unset" = 'true' ] && err "The ENV_DIR environment variable is not set" && exit 1
-  # now we can retrieve customer name from settings
-  customer=$(customer_name)
   return 0
 }
 
@@ -133,8 +131,11 @@ function evaluate_secrets() {
   [ ! -f "$ENV_DIR/.sops.yaml" ] && [ -n "$VERBOSE" ] && echo "Info: The 'secrets.*.yaml files' are not decrypted, because $ENV_DIR/.sops.yaml file is not present"
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
-    [ ! -r "$secrets_path" ] && err "Unable to find the '$secrets_path' file.\nPlease follow to documentation: $readme_url" && exit 1
-    . $secrets_path
+    if [ ! -r "$secrets_path" ]; then
+      echo "Unable to find '$secrets_path'.\nContinuing without local secrets."
+    else
+      . $secrets_path
+    fi
   fi
   return 0
 }
@@ -198,7 +199,6 @@ function drun() {
       -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
       -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
       -e VAULT_TOKEN=$VAULT_TOKEN \
-      -e CUSTOMER="$customer" \
       -e VERBOSE="$VERBOSE" \
       -e IN_DOCKER='1' \
       -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
@@ -219,6 +219,7 @@ function drun() {
 function execute() {
   shift
   shift
+  local exec="[ -z '$IN_DOCKER' ] && . bin/common.sh $original_params &&"
   case $command in
     apply)
       evaluate_secrets
@@ -227,7 +228,7 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       else
-        drun ". bin/common.sh $original_params && run_crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+        drun "$exec run_crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       fi
       ;;
     argstest)
@@ -241,6 +242,7 @@ function execute() {
       drun "bats -T bin/tests"
       ;;
     bootstrap)
+      check_env_dir
       drun "bin/bootstrap.sh $original_params"
       ;;
     check-policies)
@@ -263,13 +265,13 @@ function execute() {
     decrypt)
       check_sops_file
       evaluate_secrets
-      drun ". bin/common.sh $original_params && run_crypt decrypt" "$@"
+      drun "$exec run_crypt dec" "$@"
       ;;
     diff)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
@@ -277,28 +279,32 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
       else
-        drun ". bin/common.sh $original_params && run_crypt && hf destroy" | grep -Ev $helmfile_output_hide
+        drun "$exec hf destroy" | grep -Ev $helmfile_output_hide
       fi
       ;;
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun ". bin/common.sh $original_params && run_crypt encrypt" "$@"
+      drun ". bin/common.sh $original_params && run_crypt enc" "$@"
       ;;
     gen-drone)
       evaluate_secrets
       drun 'bin/gen-drone.sh'
       ;;
+    gen-sops)
+      check_env_dir
+      drun 'bin/gen-sops.sh'
+      ;;
     hf)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf $*" | grep -Ev $helmfile_output_hide
+      drun "$exec hf $*" | grep -Ev $helmfile_output_hide
       ;;
     lint)
       evaluate_secrets
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf lint --skip-deps"
+      drun "$exec hf lint --skip-deps"
       ;;
     pull)
       is_repo
@@ -316,13 +322,13 @@ function execute() {
     score-templates)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && run_crypt && hf_template | kube-score score --ignore-test -"
+      drun "$exec hf_template | kube-score score --ignore-test -"
       ;;
     sync)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
@@ -347,7 +353,7 @@ function execute() {
       evaluate_secrets
       check_env_dir
       set -o pipefail
-      drun ". bin/common.sh $original_params && run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun "$exec hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       drun "$@"

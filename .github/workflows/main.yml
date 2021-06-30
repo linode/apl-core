@@ -24,62 +24,91 @@ jobs:
           tag=$(echo $(basename $GITHUB_REF))
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
+          pwd
       - name: Checkout
         uses: actions/checkout@v2
         with:
           token: ${{ env.GIT_PASSWORD }}
-      - name: CI tests, image build and push tag for master or branch
-        uses: whoan/docker-build-with-cache-action@v5
+          fetch-depth: 2
+      # - name: CI tests, image build and push tag for master or branch
+      #   uses: whoan/docker-build-with-cache-action@v5
+      #   with:
+      #     username: redkubesbot
+      #     password: '${{ secrets.NPM_TOKEN }}'
+      #     registry: ${{ env.CACHE_REGISTRY }}
+      #     image_name: ${{ env.CACHE_REPO }}
+      #     image_tag: ${{ env.TAG }}
+      #     pull_image_and_stages: false
+      # - name: Retag from cache and push
+      #   run: |
+      #     docker login -u otomi -p $DOCKER_PASSWORD
+      #     docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
+      #     docker push $REPO:$TAG
+      # - if: "contains(github.event.head_commit.message, 'chore(release)')"
+      #   name: Create and push git tag
+      #   id: git_tag
+      #   run: |
+      #     docker login -u otomi -p $DOCKER_PASSWORD
+      #     docker tag $REPO:$TAG $REPO:latest
+      #     docker push $REPO:latest
+      #     release_tag=v${COMMIT_MSG#* }
+      #     echo ::set-output name=tag::$release_tag
+      #     echo "Releasing $REPO:$release_tag"
+      #     docker tag $REPO:$TAG $REPO:$release_tag
+      #     docker push $REPO:$release_tag
+      #     git config --global user.email $GIT_USER@users.noreply.github.com
+      #     git config --global user.name $GIT_USER
+      #     echo "machine github.com login $GIT_USER password $GIT_PASSWORD" > ~/.netrc
+      #     git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags origin master
+      #     changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
+      #     # now do some escaping because github does not help us here:
+      #     changelog="${changelog//'%'/'%25'}"
+      #     changelog="${changelog//$'\n'/'%0A'}"
+      #     changelog="${changelog//$'\r'/'%0D'}"
+      #     echo ::set-output name=changes::$changelog
+      # - if: "contains(github.event.head_commit.message, 'chore(release)')"
+      #   name: Create GitHub release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ steps.git_tag.outputs.tag }}
+      #     release_name: Release ${{ steps.git_tag.outputs.tag }}
+      #     body: ${{ steps.git_tag.outputs.changes }}
+      # - if: "contains(github.event.head_commit.message, 'chore(chart)')"
+      #   name: Prepare chart for publishing
+      #   id: chart_prepare
+      #   run: |
+      #     [[ "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} chart | wc -l)" == "0" ]] && echo "No chart changes detected. Skipping." && exit
+      #     echo ::set-output name=has_chart_changes::true
+      #     release_tag=v${COMMIT_MSG#* }
+      #     sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
+      # - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
+      - name: Create and publish chart
+        id: chart_release
+        uses: helm/chart-releaser-action@v1.2.1
         with:
-          username: redkubesbot
-          password: '${{ secrets.NPM_TOKEN }}'
-          registry: ${{ env.CACHE_REGISTRY }}
-          image_name: ${{ env.CACHE_REPO }}
-          image_tag: ${{ env.TAG }}
-          pull_image_and_stages: false
-      - name: Retag from cache and push
-        run: |
-          docker login -u otomi -p $DOCKER_PASSWORD
-          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
-          docker push $REPO:$TAG
-      - if: "contains(github.event.head_commit.message, 'chore(release)')"
-        name: Create and push git tag
-        id: git_tag
-        run: |
-          docker login -u otomi -p $DOCKER_PASSWORD
-          docker tag $REPO:$TAG $REPO:latest
-          docker push $REPO:latest
-          release_tag=v${COMMIT_MSG#* }
-          echo ::set-output name=tag::$release_tag
-          echo "Releasing $REPO:$release_tag"
-          docker tag $REPO:$TAG $REPO:$release_tag
-          docker push $REPO:$release_tag
-          git config --global user.email $GIT_USER@users.noreply.github.com
-          git config --global user.name $GIT_USER
-          echo "machine github.com login $GIT_USER password $GIT_PASSWORD" > ~/.netrc
-          git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags origin master
-          changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
-          # now do some escaping because github does not help us here:
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo ::set-output name=changes::$changelog
-      - if: "contains(github.event.head_commit.message, 'chore(release)')"
-        name: Create GitHub release
-        uses: actions/create-release@v1
+          charts_dir: chart
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.git_tag.outputs.tag }}
-          release_name: Release ${{ steps.git_tag.outputs.tag }}
-          body: ${{ steps.git_tag.outputs.changes }}
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: CI run ${{ job.status }}
-          SLACK_USERNAME: RedKubesBot
-        if: always() # failure
+          # See: https://github.com/helm/chart-releaser
+          CR_OWNER: redkubes
+          CR_GIT_REPO: charts
+          CR_CHARTS_REPO: https://github.com/redkubes/charts
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # run: |
+        #   [ $(git diff --name-only chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
+        #   release_tag=v${COMMIT_MSG#* }
+        #   sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
+        #   cr package
+        #   cr upload
+        #   cr index
+      # - name: Slack Notification
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_CHANNEL: github-ci
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_ICON: https://github.com/redkubes.png?size=48
+      #     SLACK_TITLE: CI run ${{ job.status }}
+      #     SLACK_USERNAME: RedKubesBot
+      #   if: always() # failure

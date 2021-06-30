@@ -101,10 +101,7 @@ function _rind() {
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
       -v ${ENV_DIR}:${ENV_DIR} \
-      -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
       -e IN_DOCKER='1' \
-      -e GCLOUD_SERVICE_KEY="$GCLOUD_SERVICE_KEY" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="$GOOGLE_APPLICATION_CREDENTIALS" \
       -w ${ENV_DIR} \
       $otomi_tools_image $cmd "$@"
     return $?
@@ -127,7 +124,12 @@ function yq() {
 
 all_values=
 function yqr() {
-  [ -z "$all_values" ] && all_values=$(hf_values)
+  if [ -n "$OTOMI_VALUES_INPUT" ]; then
+    # we are in the chart installer and will read from the given file
+    [ -z "$all_values" ] && all_values=$(cat $OTOMI_VALUES_INPUT)
+  else
+    [ -z "$all_values" ] && all_values=$(hf_values)
+  fi
   local ret=$(echo "$all_values" | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
@@ -144,7 +146,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file cluster.otomiVersion)
+  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file otomi.version)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }
@@ -175,18 +177,18 @@ function crypt() {
     return 0
   fi
   pushd $ENV_DIR/env
-  command=${1:-'decrypt'}
+  command=${1:-'dec'}
   shift
   files="$*"
   local out='/dev/stdout'
   [ -z "$VERBOSE" ] && out='/dev/null'
   if [ -n "$files" ]; then
     for f in $files; do
-      echo "${command}ing $f" >$out
-      drun "helm secrets enc ./env/$f" >$out
+      echo "${command}rypting $f" >$out
+      drun "helm secrets $command ./env/$f" >$out
     done
   else
-    if [ "$command" = 'encrypt' ]; then
+    if [ "$command" = 'enc' ]; then
       find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
     else
       find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out

@@ -3,3 +3,4 @@
 !^/charts/*.{yaml | md}
 !^/charts/team-ns/*.{yaml | md}
 /helmfile*/
+*.sh
