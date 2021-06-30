@@ -150,8 +150,8 @@ export const otomi = {
     debug.verbose('Checking environment')
     if (!options?.skipEnvDirCheck && checkENVdir(debug)) {
       if (!ENV.isCI && !options?.skipEvaluateSecrets) await evaluateSecrets(debug)
-      if (!options?.skipKubeContextCheck) await checkKubeContext(debug)
-      if (!options?.skipDecrypt) await decrypt(debug)
+      if (!ENV.isCI && !options?.skipKubeContextCheck) await checkKubeContext(debug)
+      if (!ENV.isCI && !options?.skipDecrypt) await decrypt(debug)
     }
   },
   /**

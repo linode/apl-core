@@ -24,8 +24,8 @@ export const ENV = {
   get DIR(): string {
     return process.env.ENV_DIR as string
   },
-  get PWD(): Promise<string> {
-    return (async () => (await $`pwd`).stdout.trim())()
+  get PWD(): string {
+    return process.cwd()
   },
   set PARSED_ARGS(args: { [x: string]: unknown; _: (string | number)[]; $0: string }) {
     parsedArgs = args
