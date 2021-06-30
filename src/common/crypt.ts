@@ -30,7 +30,7 @@ const postCrypt = (): void => {
 }
 
 const runOnSecretFiles = async (cmd: string[], filesArgs?: string[]): Promise<ProcessOutput[] | undefined> => {
-  const currDir = await ENV.PWD
+  const currDir = ENV.PWD
   let files: string[] = filesArgs ?? []
   cd(`${ENV.DIR}`)
 

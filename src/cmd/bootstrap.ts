@@ -1,5 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs'
-import { emptyDirSync } from 'fs-extra'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { copyFile } from 'fs/promises'
 import { load } from 'js-yaml'
 import { Argv } from 'yargs'
@@ -31,7 +30,8 @@ const setup = (argv: Arguments): void => {
 }
 
 const rollBack = (): void => {
-  emptyDirSync(ENV.DIR)
+  const dirContent = readdirSync(ENV.DIR)
+  dirContent.map((item) => rmSync(item, { recursive: true }))
 }
 
 const generateLooseSchema = (currDir: string) => {
@@ -112,7 +112,11 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   await $`git init ${ENV.DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
 
-  genSops({ ...argv, d: false, dryRun: false, 'dry-run': false }, { skipAll: true })
+  try {
+    await genSops({ ...argv, d: false, dryRun: false, 'dry-run': false }, { skipAll: true })
+  } catch (error) {
+    debug.error(error.message)
+  }
   if (process.env.GCLOUD_SERVICE_KEY?.length) {
     writeFileSync(`${ENV.DIR}/gcp-key.json`, JSON.stringify(JSON.parse(process.env.GCLOUD_SERVICE_KEY), null, 2))
   }

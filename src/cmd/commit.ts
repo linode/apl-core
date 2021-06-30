@@ -32,7 +32,7 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   await validateValues(argv)
 
   const gitDiff: string = (await $`git -C ${ENV.DIR} diff --name-only`).stdout.trim()
-  if (gitDiff.includes('cluster.yaml')) genDrone(argv)
+  if (gitDiff.includes('cluster.yaml')) await genDrone(argv)
   await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} -m 'Manual commit' --no-verify`
 }
 

@@ -40,7 +40,7 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   const currDir = ENV.PWD
   const hfVals = await hfValues()
   const provider = hfVals?.kms?.sops?.provider
-  if (!provider) debug.exit(0, 'No sops information given. Assuming no sops enc/decryption needed.')
+  if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
 
   const targetPath = `${ENV.DIR}/.sops.yaml`
   const templatePath = `${currDir}/tpl/.sops.yaml`
@@ -84,7 +84,11 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
-    await genSops(argv, {})
+    try {
+      await genSops(argv, {})
+    } catch (error) {
+      debug.exit(0, error.message)
+    }
   },
 }
 
