@@ -24,7 +24,8 @@ jobs:
           tag=$(echo $(basename $GITHUB_REF))
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
-          pwd
+          git config --global user.email $GIT_USER@users.noreply.github.com
+          git config --global user.name $GIT_USER
       - name: Checkout
         uses: actions/checkout@v2
         with:
