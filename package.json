@@ -13,12 +13,15 @@
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@hkdobrev/run-if-changed": "^0.3.1",
+    "ajv": "^8.6.0",
     "commitizen": "^4.2.2",
     "cspell": "^4.2.8",
     "cz-conventional-changelog": "^3.3.0",
     "git-cz": "^4.7.6",
     "github-release-from-changelog": "^2.1.1",
     "husky": "^6.0.0",
+    "json-schema-to-typescript": "^10.1.4",
+    "json2ts": "^0.0.7",
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.2",
@@ -79,10 +82,5 @@
       "tag": true
     }
   },
-  "version": "0.13.1",
-  "dependencies": {
-    "ajv": "^8.6.0",
-    "json-schema-to-typescript": "^10.1.4",
-    "json2ts": "^0.0.7"
-  }
+  "version": "0.13.6"
 }

@@ -481,7 +481,6 @@ definitions:
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
-    default: 80
     maximum: 32768
     minimum: 80
     type: number
@@ -711,6 +710,10 @@ definitions:
                           - glob
                         title: Glob pattern matching
                     title: Continuous delivery pipeline
+                  containerPort:
+                    $ref: '#/definitions/portNumber'
+                    description: Container port the knative pod will connect with. Leaving this empty will let knative infer the port from the container, which usually works, but might be problematic when the container does not specifically expose a port. (As is the case with nginx derived images!)
+                    title: Container port
                   scaleToZero:
                     default: false
                     description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
@@ -810,7 +813,8 @@ definitions:
         type: string
         x-secret: true
       resourceQuota:
-        description: Kubernetes resource quota. As is.
+        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+        type: object
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
