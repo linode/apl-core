@@ -39,6 +39,7 @@ secrets:
   
 env:
   # DEBUG: '*'
+  VERBOSE: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
@@ -68,7 +69,7 @@ tools:
   image:
     repository: otomi/core
     tag: {{ $o | get "tools.image.tag" $coreVersion }}
-    # pullPolicy: Always
+    pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}

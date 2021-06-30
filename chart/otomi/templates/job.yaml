@@ -36,7 +36,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:otomi-chart # FIXME: tag
+          image: otomi/tasks:otomi-chart
           imagePullPolicy: Always
           command: ['sh', '-c']
           args:
@@ -57,7 +57,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: encrypt-values
-          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
+          image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:
@@ -80,7 +80,7 @@ spec:
               mountPath: /env
       containers:
         - name: otomi-install
-          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
+          image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:

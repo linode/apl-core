@@ -11,14 +11,14 @@ AWS_ACCESS_KEY_ID: {{ requiredEnv "AWS_ACCESS_KEY_ID" }}
 AWS_SECRET_ACCESS_KEY: {{ requiredEnv "AWS_SECRET_ACCESS_KEY" }}
 {{- if env "AWS_REGION" }}
 AWS_REGION: {{ requiredEnv "AWS_REGION" }}{{ end }}  
-{{- end }}  
+{{- end }}
 {{- with . | get "google" nil }}
 GCLOUD_SERVICE_KEY: '{{ requiredEnv "GCLOUD_SERVICE_KEY" | replace "\n" "" }}'
 {{- if env "GOOGLE_PROJECT" }}
 GOOGLE_PROJECT: {{ requiredEnv "GOOGLE_PROJECT" }}{{ end }}
 {{- if env "GOOGLE_REGION" }}
-GOOGLE_REGION: {{ requiredEnv "GOOGLE_REGION" }}{{ end }}  
+GOOGLE_REGION: {{ requiredEnv "GOOGLE_REGION" }}{{ end }}
 {{- end }}
 {{- with . | get "vault" nil }}
-VAULT_TOKEN: {{ requiredEnv "VAULT_TOKEN" }}{{ end }}
+VAULT_TOKEN: {{ requiredEnv "VAULT_TOKEN" }}
 {{- end }}
