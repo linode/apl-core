@@ -21,4 +21,3 @@ GOOGLE_REGION: {{ requiredEnv "GOOGLE_REGION" }}{{ end }}
 {{- end }}
 {{- with . | get "vault" nil }}
 VAULT_TOKEN: {{ requiredEnv "VAULT_TOKEN" }}{{ end }}
-{{- end }}
