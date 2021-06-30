@@ -91,6 +91,7 @@ jobs:
           # See: https://github.com/helm/chart-releaser
           CR_OWNER: redkubes
           CR_GIT_REPO: charts
+          CR_CHARTS_REPO: https://github.com/redkubes/charts
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # run: |
         #   [ $(git diff --name-only chart | wc -l) -eq 0 ] && echo "No chart changes detected. Skipping." && exit
