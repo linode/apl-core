@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
