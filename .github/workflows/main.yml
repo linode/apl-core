@@ -74,6 +74,25 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: CI run ${{ job.status }}
+          SLACK_USERNAME: RedKubesBot
+        if: always() # failure
+  publish-chart:
+    if: "!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ env.GIT_PASSWORD }}
+          fetch-depth: 2
       - name: Prepare chart for publishing
         id: chart_prepare
         run: |
@@ -89,10 +108,6 @@ jobs:
         with:
           charts_dir: chart
           charts_repo_url: https://otomi.io/charts/
-        env:
-          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CR_OWNER: redkubes
-          CR_GIT_REPO: charts
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
