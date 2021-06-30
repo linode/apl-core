@@ -66,7 +66,6 @@ jobs:
       #     changelog="${changelog//$'\n'/'%0A'}"
       #     changelog="${changelog//$'\r'/'%0D'}"
       #     echo ::set-output name=changes::$changelog
-
       # - if: "contains(github.event.head_commit.message, 'chore(release)')"
       #   name: Create GitHub release
       #   uses: actions/create-release@v1
@@ -76,14 +75,14 @@ jobs:
       #     tag_name: ${{ steps.git_tag.outputs.tag }}
       #     release_name: Release ${{ steps.git_tag.outputs.tag }}
       #     body: ${{ steps.git_tag.outputs.changes }}
-      - if: "contains(github.event.head_commit.message, 'chore(chart)')"
-        name: Prepare chart for publishing
-        id: chart_prepare
-        run: |
-          [[ "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} chart | wc -l)" == "0" ]] && echo "No chart changes detected. Skipping." && exit
-          echo ::set-output name=has_chart_changes::true
-          release_tag=v${COMMIT_MSG#* }
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
+      # - if: "contains(github.event.head_commit.message, 'chore(chart)')"
+      #   name: Prepare chart for publishing
+      #   id: chart_prepare
+      #   run: |
+      #     [[ "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} chart | wc -l)" == "0" ]] && echo "No chart changes detected. Skipping." && exit
+      #     echo ::set-output name=has_chart_changes::true
+      #     release_tag=v${COMMIT_MSG#* }
+      #     sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/Chart.yaml
       # - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
       - name: Create and publish chart
         id: chart_release
