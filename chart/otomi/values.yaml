@@ -67,20 +67,21 @@ affinity: {}
 
 cluster:
   apiName: ''
-  apiServer: ''
-  domainSuffix: ''
+  apiServer: 'https://ab.com'
+  domainSuffix: 'a.b'
   k8sVersion: '1.19'
   name: 'dev'
-  provider: ''
+  provider: 'aws'
   region: ''
 kms:
   sops:
     # provider can be one of aws|azure|google|vault
     # provider: ''
-    # aws:
-    #   clientID: ''
-    #   clientSecret: ''
-    #   keys: ''
+    aws:
+      clientID: ''
+      clientSecret: ''
+      accessKey: ''
+      secretKey: ''
     # azure:
     #   tenantID: ''
     #   clientID: ''
@@ -96,11 +97,11 @@ oidc:
   clientID: ''
   clientSecret: ''
   adminGroupID: ''
-  authUrl: ''
-  issuer: ''
+  authUrl: 'https://ab.com'
+  issuer: 'https://ab.com'
   teamAdminGroupID: ''
   tenantID: ''
-  tokenUrl: ''
+  tokenUrl: 'https://ab.com'
 otomi:
   pullSecret: ''
   adminPassword: ''
@@ -111,8 +112,8 @@ customer:
 dns:
   provider:
     # provide one of the following below: aws|azure|google
-    # aws:
-    #   region: 'eu-central-1'
+    aws:
+      region: 'eu-central-1'
     # azure:
     #   aadClientId: ''
     #   aadClientSecret: ''
@@ -123,15 +124,17 @@ dns:
     #   project: ''
 charts:
   cert-manager:
-    email: ''
+    email: 'a@b.com'
     # stage defaults to 'staging'
-    # stage: production
+    stage: production
+
   external-dns:
     domainFilters:
       - ''
     # zoneIdFilters: []
   gitea:
     postgresqlPassword: ''
+    enabled: true
   keycloak:
     # keycloak is enabled by default
     # enabled: false
@@ -151,3 +154,6 @@ charts:
   oauth2-proxy:
     config:
       cookieSecret: '' # for now this needs to be set to avoid generating a new one each time 3
+teamConfig: {}
+alerts: {}
+services: []
