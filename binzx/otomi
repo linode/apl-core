@@ -30,8 +30,13 @@ fi
 this_is_bash=$(ps -o ppid= $$)
 executing_shell=$(ps -o comm= $this_is_bash | sed "s/[^[:alnum:]\/]//g")
 path_to_exec_shell=$(which $executing_shell)
-# TODO: change image tag to latest
+
 OTOMI_TAG=${OTOMI_TAG:-otomi-zx}
+# # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
+# otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
+# readonly otomi_version
+# OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
+
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
@@ -109,7 +114,7 @@ check_update() {
 [ -z $CI ] && check_update
 
 tmp_env=$(mktemp)
-env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= >$tmp_env
+env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= -e ^LC_ALL= >$tmp_env
 
 cat >>$tmp_env <<EOF
 SHELL=${path_to_exec_shell}
@@ -195,6 +200,6 @@ rm -f "$tmp_env"
 
 # Named volume stuff
 docker volume rm $NAMED_VOLUME >/dev/null 2>&1
-docker rmi hello-world >dev/null 2>&1
+docker rmi hello-world >/dev/null 2>&1
 
 exit $status

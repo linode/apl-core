@@ -125,7 +125,7 @@ export const otomi = {
    */
   imageTag: (): string => {
     if (otomiImageTag) return otomiImageTag
-    const file = `${ENV.DIR}/env/cluster.yaml`
+    const file = `${ENV.DIR}/env/settings.yaml`
     if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
     const clusterFile = load(file) as any
     otomiImageTag = clusterFile.otomi?.version ?? 'master'
