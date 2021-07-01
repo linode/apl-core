@@ -29,9 +29,6 @@ home:
     slack:
         channel: dev-mon-otomi
         channelCrit: dev-mon-otomi-crit
-kms:
-    sops:
-        provider: azure
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
