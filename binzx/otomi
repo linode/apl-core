@@ -124,6 +124,7 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
 stack_volume=""
+tmp_volume=""
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
@@ -131,7 +132,8 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
     stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
   fi
 
-  stack_volume="-v ${stack_dir}:${stack_dir} -v /tmp:/tmp"
+  stack_volume="${stack_dir} ${stack_dir}"
+  tmp_volume="/tmp /tmp"
 
   if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
@@ -152,27 +154,28 @@ if [ "$status" -ne 0 ]; then
   exit $status
 fi
 
+NAMED_VOLUME=otomi-volume
+
 function named_volume() {
   set -x
 
-  [ -z "$NAMED_VOLUME" ] && volume_name='otomi-volume'
+  [ -z "$NAMED_VOLUME" ] && NAMED_VOLUME='otomi-volume'
   helper_container_name="named-volume-tmp-helper-container"
-
-  docker volume rm $volume_name >/dev/null 2>&1
 
   source_files=$1
   destination_path=$2
 
   docker container inspect $helper_container_name >/dev/null 2>&1 && docker rm $helper_container_name >/dev/null 2>&1
-  docker container create --name $helper_container_name -v $volume_name:$destination_path hello-world >/dev/null 2>&1 &&
+  docker container create --name $helper_container_name -v $NAMED_VOLUME:$destination_path hello-world >/dev/null 2>&1 &&
     docker cp $source_files $helper_container_name:$destination_path >/dev/null 2>&1 &&
     docker rm $helper_container_name >/dev/null 2>&1
 
-  echo "$volume_name:$destination_path"
+  echo "$NAMED_VOLUME:$destination_path"
 }
 set -x
 docker run --network host --rm -it \
-  $stack_volume \
+  -v $(named_volume $stack_volume) \
+  -v $(named_volume $tmp_volume) \
   -v $(named_volume ${KUBECONFIG:-$HOME/.kube/config} /home/app/.kube/config) \
   -v $HOME/.ssh:/home/app/.ssh \
   -v $helm_config:/home/app/.config/helm \
@@ -190,4 +193,5 @@ docker run --network host --rm -it \
 status=$?
 rm -f "$tmp_env"
 set +x
-exit $status
+docker volume rm $NAMED_VOLUME >/dev/null 2>&1 &&
+  exit $status
