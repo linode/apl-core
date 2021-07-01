@@ -61,6 +61,11 @@ try {
         boolean: true,
         default: false,
       },
+      trace: {
+        boolean: true,
+        default: false,
+        hidden: true,
+      },
     })
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
     .fail((e) => {

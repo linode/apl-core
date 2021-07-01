@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments } from '../common/no-deps'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 /**
@@ -30,6 +30,7 @@ export const example = async (argv: BasicArguments, options?: PrepareEnvironment
 
   debug.log(fileName)
   debug.log(argv)
+  debug.log(ENV.DIR)
   throw new Error('Playground error')
 }
 

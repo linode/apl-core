@@ -58,7 +58,7 @@ export const ask = async (query: string, options?: AskType): Promise<string> => 
     [...new Set(matching.map((val) => val.toLowerCase()))].includes(answer.toLowerCase())
   const matchingFn = options?.matchingFn ?? defaultMatchingFn
 
-  if (process.env.CI) return defaultAnswer
+  if (ENV.isCI) return defaultAnswer
   let answer = ''
   let tries = 0
   let matches = false

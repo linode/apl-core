@@ -14,6 +14,7 @@ export interface BasicArguments extends YargsArguments {
   v: number
   skipCleanup: boolean
   c: boolean
+  trace: boolean
 }
 
 let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }
@@ -34,7 +35,7 @@ export const ENV = {
     return parsedArgs
   },
   get isCI(): boolean {
-    return 'CI' in process.env
+    return 'CI' in process.env || !!ENV.PARSED_ARGS?.ci
   },
   get isTESTING(): boolean {
     return 'TESTING' in process.env
@@ -69,8 +70,22 @@ export const LOG_LEVEL = (): number => {
   if (!ENV.PARSED_ARGS) return LOG_LEVELS.ERROR
   if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
 
-  const LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
+  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
   const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
+  let boolTrace = ENV.PARSED_ARGS.trace
+  if ('TRACE' in process.env) {
+    if (Number.isNaN(process.env.TRACE)) {
+      try {
+        boolTrace = Boolean(JSON.parse(process.env.TRACE ?? 'false'))
+      } catch (error) {
+        boolTrace = Boolean(process.env.TRACE)
+      }
+    } else {
+      boolTrace = Boolean(Number(process.env.TRACE))
+    }
+  }
+  LL = boolTrace ? LOG_LEVELS.TRACE : LL
+
   logLevel = LL < 0 && verbosity === 0 ? LL : Math.max(LL, verbosity)
   if (logLevel === LOG_LEVELS.TRACE) {
     $.verbose = true
