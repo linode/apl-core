@@ -154,29 +154,25 @@ if [ "$status" -ne 0 ]; then
   exit $status
 fi
 
-NAMED_VOLUME=otomi-volume
-
-function named_volume() {
-  set -x
-
-  [ -z "$NAMED_VOLUME" ] && NAMED_VOLUME='otomi-volume'
-  helper_container_name="named-volume-tmp-helper-container"
+function mount_with_named_volume() {
+  [ -z "$NAMED_VOLUME" ] && export NAMED_VOLUME='otomi-volume'
+  helper_container_name="otomi-volume-helper"
 
   source_files=$1
   destination_path=$2
 
   docker container inspect $helper_container_name >/dev/null 2>&1 && docker rm $helper_container_name >/dev/null 2>&1
   docker container create --name $helper_container_name -v $NAMED_VOLUME:$destination_path hello-world >/dev/null 2>&1 &&
-    docker cp $source_files $helper_container_name:$destination_path >/dev/null 2>&1 &&
+    cd $source_files >/dev/null 2>&1 && docker cp . $helper_container_name:$destination_path >/dev/null 2>&1 &&
     docker rm $helper_container_name >/dev/null 2>&1
 
   echo "$NAMED_VOLUME:$destination_path"
 }
-set -x
+
 docker run --network host --rm -it \
-  -v $(named_volume $stack_volume) \
-  -v $(named_volume $tmp_volume) \
-  -v $(named_volume ${KUBECONFIG:-$HOME/.kube/config} /home/app/.kube/config) \
+  -v $(mount_with_named_volume $stack_volume) \
+  -v $(mount_with_named_volume $tmp_volume) \
+  -v $(mount_with_named_volume ${KUBECONFIG:-$HOME/.kube} /home/app/.kube) \
   -v $HOME/.ssh:/home/app/.ssh \
   -v $helm_config:/home/app/.config/helm \
   -v $HOME/.config/gcloud:/home/app/.config/gcloud \
