@@ -136,7 +136,7 @@ function mount_with_named_volume() {
     docker container inspect $helper_container_name && docker rm $helper_container_name
     docker container create --name $helper_container_name -v "$NAMED_VOLUME:$dest" hello-world &&
       cd "$source" && docker cp . "$helper_container_name:$dest" &&
-      docker rm $helper_container_name
+      docker rm $helper_container_name && docker rmi hello-world
   } >/dev/null 2>&1
 
   echo "$NAMED_VOLUME:$dest"
