@@ -136,7 +136,7 @@ function mount_with_named_volume() {
     docker container inspect $helper_container_name && docker rm $helper_container_name
     docker container create --name $helper_container_name -v "$NAMED_VOLUME:$dest" hello-world &&
       cd "$source" && docker cp . "$helper_container_name:$dest" &&
-      docker rm $helper_container_name && docker rmi hello-world
+      docker rm $helper_container_name
   } >/dev/null 2>&1
 
   echo "$NAMED_VOLUME:$dest"
@@ -192,5 +192,9 @@ docker run --network host --rm -it \
 
 status=$?
 rm -f "$tmp_env"
-docker volume rm $NAMED_VOLUME >/dev/null 2>&1 &&
-  exit $status
+
+# Named volume stuff
+docker volume rm $NAMED_VOLUME >/dev/null 2>&1
+docker rmi hello-world >dev/null 2>&1
+
+exit $status
