@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 name: otomi
 description: A Helm chart for installing otomi in Kubernetes
 home: https://otomi.io/

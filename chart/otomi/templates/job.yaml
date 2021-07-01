@@ -20,8 +20,8 @@ spec:
       initContainers:
         - name: bootstrap-values
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
+          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
+          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
           command: ['/bin/bash', '-c']
           args: 
             - |
@@ -44,8 +44,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:master
-          imagePullPolicy: Always
+          image: "{{ .Values.taskImage.repository | default "otomi/task" }}:{{ .Values.taskImage.tag | default "master"}}"
+          imagePullPolicy: {{ .Values.taskImage.pullPolicy }}
           command: ['sh', '-c']
           args:
             - |
@@ -65,8 +65,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: encrypt-values
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
+          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
+          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
           command: [/bin/bash, -c]
           args:
             - |
@@ -88,8 +88,8 @@ spec:
               mountPath: /env
       containers:
         - name: otomi-install
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
+          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
+          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
           command: [/bin/bash, -c]
           args:
             - |
