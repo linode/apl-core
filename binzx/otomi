@@ -123,8 +123,6 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-stack_volume=""
-tmp_volume=""
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
