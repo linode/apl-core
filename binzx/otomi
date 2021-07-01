@@ -97,12 +97,12 @@ check_update() {
   if [ "$last_commit_date_sec" -ne "0" ] && [ "$last_commit_date_sec" -gt "$last_file_change_sec" ]; then
     read -r -p "Newer version is available, do you want to update (yes/No)? " answer
     case ${answer:0:1} in
-      y | Y)
-        run_self_update
-        ;;
-      *)
-        return 0
-        ;;
+    y | Y)
+      run_self_update
+      ;;
+    *)
+      return 0
+      ;;
     esac
   fi
 }
@@ -123,7 +123,27 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
+
+function mount_with_named_volume() {
+  source=$1
+  dest=$2
+  [ -z "$NAMED_VOLUME" ] && export NAMED_VOLUME='otomi-volume'
+  helper_container_name="otomi-volume-helper"
+
+  [ -z "$source" ] && echo "Error in function 'mount_with_named_volume': source path is empty" 1>&2
+
+  { # Create volume and copy over contents
+    docker container inspect $helper_container_name && docker rm $helper_container_name
+    docker container create --name $helper_container_name -v "$NAMED_VOLUME:$dest" hello-world &&
+      cd "$source" && docker cp . "$helper_container_name:$dest" &&
+      docker rm $helper_container_name
+  } >/dev/null 2>&1
+
+  echo "$NAMED_VOLUME:$dest"
+}
+
 stack_volume=""
+tmp_volume=""
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
@@ -131,7 +151,8 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
     stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
   fi
 
-  stack_volume="-v ${stack_dir}:${stack_dir} -v /tmp:/tmp"
+  stack_volume="-v$(mount_with_named_volume "$stack_dir" "$stack_dir")"
+  tmp_volume="-v$(mount_with_named_volume /tmp /tmp)"
 
   if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
@@ -153,20 +174,27 @@ if [ "$status" -ne 0 ]; then
 fi
 
 docker run --network host --rm -it \
-  $stack_volume \
-  -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
-  -v $HOME/.ssh:/home/app/.ssh \
-  -v $helm_config:/home/app/.config/helm \
-  -v $HOME/.config/gcloud:/home/app/.config/gcloud \
-  -v $HOME/.aws:/home/app/.aws \
-  -v $HOME/.azure:/home/app/.azure \
-  -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
-  -v $ENV_DIR:$stack_dir/env \
-  -v $ENV_DIR:$ENV_DIR \
-  --env-file $tmp_env \
-  -w $stack_dir \
-  $otomi_tools_image \
+  "$stack_volume" \
+  "$tmp_volume" \
+  -v $(mount_with_named_volume /tmp /tmp) \
+  -v $(mount_with_named_volume "${KUBECONFIG:-$HOME/.kube}" /home/app/.kube) \
+  -v $(mount_with_named_volume "$HOME/.ssh" /home/app/.ssh) \
+  -v $(mount_with_named_volume "$helm_config" /home/app/.config/helm) \
+  -v $(mount_with_named_volume "$HOME/.config/gcloud" /home/app/.config/gcloud) \
+  -v $(mount_with_named_volume "$HOME/.aws" /home/app/.aws) \
+  -v $(mount_with_named_volume "$HOME/.azure" /home/app/.azure) \
+  -v $(mount_with_named_volume "$ENV_DIR" "$stack_dir/env") \
+  -v $(mount_with_named_volume "$ENV_DIR" "$ENV_DIR") \
+  --env-file "$tmp_env" \
+  -w "$stack_dir" \
+  "$otomi_tools_image" \
   bash -c "$cmd"
+
 status=$?
 rm -f "$tmp_env"
+
+# Named volume stuff
+docker volume rm $NAMED_VOLUME >/dev/null 2>&1
+docker rmi hello-world >dev/null 2>&1
+
 exit $status
