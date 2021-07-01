@@ -179,8 +179,8 @@ if [ "$status" -ne 0 ]; then
 fi
 
 docker run --network host --rm -it \
-  "$stack_volume" \
-  "$tmp_volume" \
+  $stack_volume \
+  $tmp_volume \
   -v $(mount_with_named_volume /tmp /tmp) \
   -v $(mount_with_named_volume "${KUBECONFIG:-$HOME/.kube}" /home/app/.kube) \
   -v $(mount_with_named_volume "$HOME/.ssh" /home/app/.ssh) \
