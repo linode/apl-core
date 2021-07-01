@@ -4,7 +4,5 @@ set -o pipefail
 
 ENV_DIR=${ENV_DIR:-./env}
 
-match="cluster.yaml"
-if git -C $ENV_DIR diff --name-only | grep $match >/dev/null; then
-  bin/gen-drone.sh
-fi
+changes=$(git -C $ENV_DIR diff env/settings.yaml | grep '^+    version:.*$')
+[ "$changes" != "" ] && bin/gen-drone.sh

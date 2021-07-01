@@ -1,1 +1,1 @@
-npm run tasks:otomi-chart -- true
+npm run tasks:otomi-chart

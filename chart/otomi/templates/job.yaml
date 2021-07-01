@@ -1,17 +1,25 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: otomi-installer-job
+  name: {{ include "otomi.fullname" . }}
+  labels: {{- include "otomi.labels" . | nindent 4 }}
 spec:
   template:
     metadata:
-      name: otomi-install
+      {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      - name: regcred
-      serviceAccountName: {{ .Release.Name }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "otomi.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: bootstrap-values
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: ['/bin/bash', '-c']
@@ -29,14 +37,14 @@ spec:
               value: /secret/values.yaml
           envFrom:
             - secretRef:
-                name: {{ .Release.Name }}-sops-secrets
+                name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /env
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:otomi-chart # FIXME: tag
+          image: otomi/tasks:master
           imagePullPolicy: Always
           command: ['sh', '-c']
           args:
@@ -57,7 +65,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: encrypt-values
-          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
+          image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:
@@ -74,13 +82,13 @@ spec:
               value: /env
           envFrom:
             - secretRef:
-                name: {{ .Release.Name }}-sops-secrets
+                name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /env
       containers:
         - name: otomi-install
-          image: otomi/core:{{ .Values.otomi.version }} # FIXME: tag
+          image: otomi/core:{{ .Values.otomi.version }}
           imagePullPolicy: Always
           command: [/bin/bash, -c]
           args:
@@ -97,7 +105,7 @@ spec:
               value: /home/app/stack/env
           envFrom:
             - secretRef:
-                name: {{ .Release.Name }}-sops-secrets
+                name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env

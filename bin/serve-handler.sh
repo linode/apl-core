@@ -20,7 +20,6 @@ fi
 echo "request: $mode" >&2
 
 if bin/crypt.sh $mode >&2; then
-  echo "Successful crypt action. Sending http 200 response."
   printf "$ok"
 else
   echo "An unknown error occurred. Sending http 500 response." >&2
