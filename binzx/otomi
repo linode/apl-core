@@ -12,7 +12,6 @@
 ##
 #####################################################################################
 # shellcheck disable=SC2128
-set -x
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 if [ -n "$TESTING" ]; then
   CI=1
