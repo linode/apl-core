@@ -13,7 +13,6 @@ readonly otomi_settings="$ENV_DIR/env/settings.yaml"
 readonly otomi_tools_image="otomi/tools:latest"
 
 # Mutliple files vars
-readonly clusters_file="$ENV_DIR/env/cluster.yaml"
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
 readonly replace_paths_pattern="s@../env@${ENV_DIR}@g"
 
@@ -146,7 +145,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=''
-  [ -f $clusters_file ] && otomi_version=$(yq r $clusters_file otomi.version)
+  [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }

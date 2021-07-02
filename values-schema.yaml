@@ -1133,9 +1133,16 @@ properties:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: true
-        required:
-          - enabled
-          - postgresqlPassword
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - postgresqlPassword
       harbor:
         additionalProperties: false
         properties:
@@ -1280,6 +1287,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
           appgw:
             additionalProperties: false
             description: Application Gateway.
@@ -1320,9 +1329,17 @@ properties:
                 type: string
             required:
               - secretJSON
-        required:
-          - armAuth
-          - appgw
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - armAuth
+                  - appgw
       istio:
         additionalProperties: false
         properties:
@@ -1454,8 +1471,16 @@ properties:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: true
-        required:
-          - postgresqlPassword
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - postgresqlPassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
@@ -1534,6 +1559,8 @@ properties:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
             type: string
+        required:
+          - adminPassword
       nginx-ingress:
         additionalProperties: false
         properties:
