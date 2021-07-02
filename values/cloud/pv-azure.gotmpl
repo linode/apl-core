@@ -5,7 +5,7 @@
     name: std
   parameters:
     kind: Managed
-    storageaccounttype: {{ . | get "azure.storageType.standard" "StandardSSD_LRS" }}
+    storageaccounttype: {{ . | get "azure.storageType.standard" "StandardLRS" }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
@@ -18,7 +18,7 @@
     name: std-immediate
   parameters:
     kind: Managed
-    storageaccounttype: {{ . | get "azure.storageType.standard" "StandardSSD_LRS" }}
+    storageaccounttype: {{ . | get "azure.storageType.standard" "StandardLRS" }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
@@ -31,7 +31,7 @@
     name: fast
   parameters:
     kind: Managed
-    storageaccounttype: {{ . | get "azure.storageType.fast" "Premium_LRS" }}
+    storageaccounttype: {{ . | get "azure.storageType.fast" "StandardSSD_LRS" }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
@@ -44,7 +44,7 @@
     name: fast-immediate
   parameters:
     kind: Managed
-    storageaccounttype: {{ . | get "azure.storageType.fast" "Premium_LRS" }}
+    storageaccounttype: {{ . | get "azure.storageType.fast" "StandardSSD_LRS" }}
   provisioner: kubernetes.io/azure-disk
   allowVolumeExpansion: true
   reclaimPolicy: Delete
