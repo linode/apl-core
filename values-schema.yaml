@@ -5,6 +5,7 @@ definitions:
     description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
     type: object
   alerts:
+    additionalProperties: false
     properties:
       drone:
         default: slack
@@ -161,6 +162,7 @@ definitions:
           - AzureUSGovernment
           - AzureGermanCloud
       monitor:
+        additionalProperties: false
         properties:
           appInsightsApiKey:
             $ref: '#/definitions/azure/definitions/clientSecret'
@@ -211,6 +213,7 @@ definitions:
         description: An Azure subscription id.
         type: string
   cluster:
+    additionalProperties: false
     properties:
       apiName:
         description: Only used for API/UI to show in app.
@@ -249,6 +252,7 @@ definitions:
       - name
       - provider
   containerSpec:
+    additionalProperties: false
     properties:
       image:
         $ref: '#/definitions/image'
@@ -317,6 +321,7 @@ definitions:
       '^[/].*':
         type: string
   google:
+    additionalProperties: false
     definitions:
       accountJson:
         type: string
@@ -376,6 +381,7 @@ definitions:
           - $ref: '#/definitions/podSpec'
     type: array
   jobSpec:
+    additionalProperties: false
     properties:
       type:
         default: Job
@@ -437,8 +443,8 @@ definitions:
   labelsAnnotations:
     additionalProperties: false
     patternProperties:
-      ? '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$'
-      : pattern: '^((.){1,253}\/)?(.){1,63}$'
+      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$':
+        pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   logLevel:
     type: string
@@ -534,6 +540,7 @@ definitions:
         description: Requested resources (guaranteed).
     title: Pod resources
   scaling:
+    additionalProperties: false
     description: Min and max number of replicas.
     properties:
       maxReplicas:
@@ -900,6 +907,22 @@ properties:
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
+  cloud:
+    additionalProperties: true
+    properties:
+      skipStorageClasses:
+        description:
+          List of storage classes to exclude from deployment, to avoid k8s errors due to patching not allowed.
+          This is a rather hacky way to circumvent the patching problem, going against idempotency, but we need it.
+          Without it we can't add new storageclasses to a cluster upgrading otomi.
+        type: array
+        items:
+          type: string
+          enum:
+            - std
+            - std-immediate
+            - fast
+            - fast-immediate
   charts:
     additionalProperties: true
     properties:
