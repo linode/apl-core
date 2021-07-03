@@ -11,6 +11,7 @@ data:
   HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
   NO_PROXY: "{{ template "harbor.noProxy" . }}"
   {{- end }}
+  LOG_LEVEL: "{{ .Values.logLevel }}"
   HARBOR_EXPORTER_PORT: "{{ .Values.metrics.exporter.port }}"
   HARBOR_EXPORTER_METRICS_PATH: "{{ .Values.metrics.exporter.path }}"
   HARBOR_EXPORTER_METRICS_ENABLED: "{{ .Values.metrics.enabled }}"
@@ -18,6 +19,9 @@ data:
   HARBOR_EXPORTER_CACHE_CLEAN_INTERVAL: "{{ .Values.exporter.cacheCleanInterval }}"
   HARBOR_METRIC_NAMESPACE: harbor
   HARBOR_METRIC_SUBSYSTEM: exporter
+  HARBOR_REDIS_URL: "{{ template "harbor.redis.urlForJobservice" . }}"
+  HARBOR_REDIS_NAMESPACE: harbor_job_service_namespace
+  HARBOR_REDIS_TIMEOUT: "3600"
   HARBOR_SERVICE_SCHEME: "{{ template "harbor.component.scheme" . }}"
   HARBOR_SERVICE_HOST: "{{ template "harbor.core" . }}"
   HARBOR_SERVICE_PORT: "{{ template "harbor.core.servicePort" . }}"

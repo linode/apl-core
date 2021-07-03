@@ -6,8 +6,13 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
-    - port: {{ template "harbor.jobservice.servicePort" . }}
+    - name: {{ ternary "https-jobservice" "http-jobservice" .Values.internalTLS.enabled }}
+      port: {{ template "harbor.jobservice.servicePort" . }}
       targetPort: {{ template "harbor.jobservice.containerPort" . }}
+{{- if .Values.metrics.enabled }}
+    - name: {{ template "harbor.metricsPortName" . }}
+      port: {{ .Values.metrics.jobservice.port }}
+{{- end }}
   selector:
 {{ include "harbor.matchLabels" . | indent 4 }}
     component: jobservice

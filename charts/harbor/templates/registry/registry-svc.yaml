@@ -6,12 +6,13 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
-    - name: http-registry
+    - name: {{ ternary "https-registry" "http-registry" .Values.internalTLS.enabled }}
       port: {{ template "harbor.registry.servicePort" . }}
-    - name: http-controller
+
+    - name: {{ ternary "https-controller" "http-controller" .Values.internalTLS.enabled }}
       port: {{ template "harbor.registryctl.servicePort" . }}
 {{- if .Values.metrics.enabled}}
-    - name: metrics
+    - name: {{ template "harbor.metricsPortName" . }}
       port: {{ .Values.metrics.registry.port }}
 {{- end }}
   selector:

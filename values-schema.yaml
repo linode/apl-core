@@ -489,6 +489,38 @@ definitions:
     maximum: 32768
     minimum: 80
     type: number
+  redisChart:
+    additionalProperties: false
+    properties:
+      _rawValues:
+        $ref: '#/definitions/rawValues'
+      architecture:
+        type: string
+        enum:
+          - standalone
+          - replication
+        default: standalone
+      password:
+        type: string
+        x-secret: true
+      resources:
+        additionalProperties: false
+        properties:
+          master:
+            $ref: '#/definitions/resources'
+          sentinel:
+            $ref: '#/definitions/resources'
+          slave:
+            $ref: '#/definitions/resources'
+      sizes:
+        additionalProperties: false
+        properties:
+          master:
+            $ref: '#/definitions/size'
+          sentinel:
+            $ref: '#/definitions/size'
+          slave:
+            $ref: '#/definitions/size'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -546,6 +578,13 @@ definitions:
         type: integer
       minReplicas:
         type: integer
+  size:
+    description: Disk size. Valid units are E|P|T|G|Ti|Gi.
+    examples:
+      - 1Gi
+      - 0.5Ti
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
+    type: string
   subdomainType:
     type: string
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
@@ -1626,28 +1665,7 @@ properties:
                 type: string
                 x-secret: true
       oauth2-proxy-redis:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          architecture:
-            type: string
-            enum:
-              - standalone
-              - replication
-            default: standalone
-          password:
-            type: string
-            x-secret: true
-          resources:
-            additionalProperties: false
-            properties:
-              master:
-                $ref: '#/definitions/resources'
-              sentinel:
-                $ref: '#/definitions/resources'
-              slave:
-                $ref: '#/definitions/resources'
+        $ref: '#/definitions/redisChart'
       otomi-api:
         additionalProperties: false
         properties:
@@ -1747,21 +1765,8 @@ properties:
               grafana:
                 $ref: '#/definitions/resources'
       redis-shared:
+        $ref: '#/definitions/redisChart'
         additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-          resources:
-            additionalProperties: false
-            properties:
-              master:
-                $ref: '#/definitions/resources'
-              sentinel:
-                $ref: '#/definitions/resources'
-              slave:
-                $ref: '#/definitions/resources'
       sitespeed:
         additionalProperties: false
         properties:
@@ -2024,14 +2029,16 @@ properties:
     type: string
   oidc:
     additionalProperties: false
-    description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
+    description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
       adminGroupID:
         type: string
       apiUrl:
         $ref: '#/definitions/url'
+        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       authUrl:
         $ref: '#/definitions/url'
+        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       clientID:
         type: string
       clientSecret:
@@ -2041,6 +2048,8 @@ properties:
         $ref: '#/definitions/url'
       scope:
         type: string
+        default: openid email profile
+        description: Default values are used by keycloak. May be overridden in case keycloak is disabled.
       teamAdminGroupID:
         type: string
       tenantID:
@@ -2049,11 +2058,12 @@ properties:
         $ref: '#/definitions/url'
       usernameClaimMapper:
         type: string
-        description: 'Claim name used by Keycloak to identify incoming users from identity provider'
+        description: Claim name used by Keycloak to identify incoming users from identity provider
+        default: '${CLAIM.email}'
       subClaimMapper:
         type: string
-        description: 'Select OIDC claim to be used as a unique user identifier'
-        default: 'sub'
+        description: Select OIDC claim to be passed by Keycloak as a unique user identifier. Best to not change this from the default.
+        default: sub
   otomi:
     additionalProperties: false
     properties:

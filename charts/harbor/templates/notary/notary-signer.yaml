@@ -33,11 +33,25 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.notary.signer.automountServiceAccountToken | default false }}
       containers:
       - name: notary-signer
         image: {{ .Values.notary.signer.image.repository }}:{{ .Values.notary.signer.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /
+            scheme: "HTTPS"
+            port: 7899
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            scheme: "HTTPS"
+            port: 7899
+          initialDelaySeconds: 20
+          periodSeconds: 10
 {{- if .Values.notary.signer.resources }}
         resources:
 {{ toYaml .Values.notary.signer.resources | indent 10 }}
@@ -81,5 +95,8 @@ spec:
     {{- with .Values.notary.signer.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.notary.signer.priorityClassName }}
+      priorityClassName: {{ .Values.notary.signer.priorityClassName }}
     {{- end }}
 {{ end }}

@@ -133,7 +133,7 @@ data:
         region: {{ $storage.oss.region }}
         bucket: {{ $storage.oss.bucket }}
         {{- if $storage.oss.endpoint }}
-        endpoint: {{ $storage.oss.endpoint }}
+        endpoint: {{ $storage.oss.bucket }}.{{ $storage.oss.endpoint }}
         {{- end }}
         {{- if $storage.oss.internal }}
         internal: {{ $storage.oss.internal }}
@@ -172,6 +172,10 @@ data:
       readtimeout: 10s
       writetimeout: 10s
       dialtimeout: 10s
+      pool:
+        maxidle: 100
+        maxactive: 500
+        idletimeout: 60s
     http:
       addr: :{{ template "harbor.registry.containerPort" . }}
       relativeurls: {{ .Values.registry.relativeurls }}

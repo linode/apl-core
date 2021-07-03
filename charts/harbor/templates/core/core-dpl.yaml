@@ -39,7 +39,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.core.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
       containers:
       - name: core
         image: {{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}
@@ -188,4 +189,7 @@ spec:
     {{- with .Values.core.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.core.priorityClassName }}
+      priorityClassName: {{ .Values.core.priorityClassName }}
     {{- end }}

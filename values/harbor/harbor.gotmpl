@@ -23,9 +23,6 @@ expose:
 internalTLS:
   # we use istio with mTLS enabled for harbor namespace
   enabled: false
-nginx:
-  podAnnotations:
-    sidecar.istio.io/inject: "false"
 core:
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
@@ -173,7 +170,8 @@ database:
   type: internal
   password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
   podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+    # this exception allows the chmod fix to pass, which needs root access:
+    policy.otomi.io/ignore.data-migrator: psp-allowed-users
   internal:
     resources:
       {{- with $h | get "resources.database" nil }}

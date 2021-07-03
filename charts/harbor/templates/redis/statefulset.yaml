@@ -34,7 +34,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.redis.internal.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
       containers:
       - name: redis
         image: {{ .Values.redis.internal.image.repository }}:{{ .Values.redis.internal.image.tag }}
@@ -78,6 +79,9 @@ spec:
     {{- with .Values.redis.internal.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.redis.internal.priorityClassName }}
+      priorityClassName: {{ .Values.redis.internal.priorityClassName }}
     {{- end }}
   {{- if and .Values.persistence.enabled (not $redis.existingClaim) }}
   volumeClaimTemplates:

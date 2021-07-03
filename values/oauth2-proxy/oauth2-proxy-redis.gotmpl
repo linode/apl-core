@@ -1,16 +1,13 @@
 {{- $v := .Values }}
 {{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
 
-cluster:
-  enabled: {{ $r | get "cluster.enabled" false }}
-persistence:
-  size: 1Gi
-
 architecture: {{ $r | get "architecture" "standalone" }}
 auth:
   password: {{ $r | get "password" "str1cli4u" }}
 
 sentinel:
+  persistence:
+    size: {{ $r | get "sizes.sentinel" "1Gi" }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
   resources:
@@ -26,6 +23,8 @@ sentinel:
   {{- end }}
 
 master:
+  persistence:
+    size: {{ $r | get "sizes.master" "1Gi" }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
   priorityClassName: "otomi-critical"
@@ -41,12 +40,14 @@ master:
       memory: 256Mi
   {{- end }}
 
-slave:
+replica:
+  persistence:
+    size: {{ $r | get "sizes.replica" "1Gi" }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
   priorityClassName: "otomi-critical"
   resources:
-  {{- with $r | get "resources.slave" nil }}
+  {{- with $r | get "resources.replica" nil }}
     {{- toYaml . | nindent 4 }}
   {{- else }}
     requests:
