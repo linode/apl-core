@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.9](https://github.com/redkubes/otomi-core/compare/v0.13.8...v0.13.9) (2021-07-04)
+
+
+### Bug Fixes
+
+* regression [ci skip] ([20adace](https://github.com/redkubes/otomi-core/commit/20adace3f9ebae6d79b33315907dd4840c3bc679))
+
 ### [0.13.8](https://github.com/redkubes/otomi-core/compare/v0.13.7...v0.13.8) (2021-07-04)
 
 
