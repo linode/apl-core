@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-ENV_DIR=${ENV_DIR:-./env}
+ENV_DIR=${ENV_DIR:-$PWD/env}
 [ ! -d "$ENV_DIR/.git" ] && "$ENV_DIR is not an initialized git repository. Please follow the README and run 'git init' first." >&2 && exit 1
 . $ENV_DIR/.secrets
 . bin/common.sh
