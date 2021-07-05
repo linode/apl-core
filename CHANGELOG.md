@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.10](https://github.com/redkubes/otomi-core/compare/v0.13.9...v0.13.10) (2021-07-05)
+
+
+### Bug Fixes
+
+* core version not found in container ([8329a49](https://github.com/redkubes/otomi-core/commit/8329a4901f37c1185d5fcfc31752abf11bba69e9))
+* harbor db perms again...grrrrmbl ([d2f2cb4](https://github.com/redkubes/otomi-core/commit/d2f2cb489979444bd747152f9d140bf575b19b3a))
+
+
+### Others
+
+* **release:** 0.13.9 ([6b746bb](https://github.com/redkubes/otomi-core/commit/6b746bb7751f7df7b5187060ce407abcae236852))
+
 ### [0.13.9](https://github.com/redkubes/otomi-core/compare/v0.13.8...v0.13.9) (2021-07-04)
 
 
