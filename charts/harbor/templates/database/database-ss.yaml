@@ -63,7 +63,7 @@ spec:
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
-        args: ["-c", "chmod 700 /var/lib/postgresql/data/pgdata || true"]
+        args: ["-c", "chmod -R 700 /var/lib/postgresql/data/pgdata || true"]
 {{- if .Values.database.internal.initContainer.permissions.resources }}
         resources:
 {{ toYaml .Values.database.internal.initContainer.permissions.resources | indent 10 }}
