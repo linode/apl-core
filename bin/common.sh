@@ -10,8 +10,7 @@ LOG_LEVEL='--log-level warn'
 
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
-readonly otomi_core_version=$(cat ${APP_HOME:-'.'}/package.json | jq -r '.version')
-readonly otomi_tools_image="otomi/core:v$otomi_core_version"
+readonly otomi_tools_image="otomi/core:latest"
 
 # Mutliple files vars
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
