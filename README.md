@@ -23,7 +23,13 @@ Use Helm 3 to install Otomi Container Platform.
 ```
 helm repo add otomi https://otomi.io/otomi-core
 helm repo update
-helm install otomi otomi/otomi
+```
+
+Prepare `values.yaml` that describe kubernetes cluster and cloud provider resources like DNS or KMS.
+Next install the chart with the values file provided:
+
+```
+helm install -f values.yaml otomi otomi/otomi
 ```
 
 # License
