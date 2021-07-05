@@ -94,6 +94,7 @@ jobs:
         name: Save values.schema.json
         id: save_chart_schema
         run: |
+          ls -ahls /home/runner/work/_temp/
           cat /home/runner/work/_temp/*.sh
           echo '${{ steps.convert_values_schema.outputs.data }}' > chart/otomi/values.schema.json
       - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
