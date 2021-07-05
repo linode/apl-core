@@ -15,7 +15,7 @@
     "js-yaml": "^4.1.0",
     "tar": "^6.1.0",
     "yargs": "^17.0.1",
-    "zx": "^1.14.2"
+    "zx": "^2.0.0"
   },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
