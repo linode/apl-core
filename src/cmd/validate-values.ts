@@ -1,12 +1,10 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
-import { readFileSync } from 'fs'
-import { load } from 'js-yaml'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
-import { ENV } from '../common/no-deps'
+import { ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'validate-values'
@@ -39,7 +37,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
 
   try {
     debug.verbose('Loading values-schema.yaml')
-    const valuesSchema = load(readFileSync('./values-schema.yaml', 'utf-8')) as any
+    const valuesSchema = loadYaml('./values-schema.yaml')
     debug.verbose('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
     debug.verbose('Compiling Ajv validation')

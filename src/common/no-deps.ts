@@ -1,4 +1,5 @@
-import { readdirSync } from 'fs'
+import { existsSync, readdirSync, readFileSync } from 'fs'
+import { load } from 'js-yaml'
 import { resolve } from 'path'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $ } from 'zx'
@@ -53,6 +54,10 @@ export const readdirRecurse = async (dir: string): Promise<string[]> => {
     }),
   )
   return files.flat()
+}
+export const loadYaml = (path: string): any => {
+  if (!existsSync(path)) throw new Error(`${path} does not exists`)
+  return load(readFileSync(path, 'utf-8')) as any
 }
 
 export enum LOG_LEVELS {

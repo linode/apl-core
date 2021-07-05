@@ -1,10 +1,9 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { copyFile } from 'fs/promises'
-import { load } from 'js-yaml'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
 import { ask } from '../common/zx-enhance'
 import { genSops } from './gen-sops'
@@ -39,8 +38,8 @@ const generateLooseSchema = (currDir: string) => {
   const targetPath = `${ENV.DIR}/${schemaPath}`
   const sourcePath = `${currDir}/values-schema.yaml`
 
-  const valuesSchema = load(sourcePath) as any
-  const trimmedVS = JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v)))
+  const valuesSchema = loadYaml(sourcePath)
+  const trimmedVS = JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)
   writeFileSync(targetPath, trimmedVS)
   if (currDir !== '/home/app/stack' && !existsSync(`${currDir}/${schemaPath}`))
     writeFileSync(`${currDir}/.values/values-schema.yaml`, trimmedVS)
@@ -80,6 +79,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   debug.verbose('Copied bin files')
   debug.verbose(currDir)
   try {
+    mkdirSync(`${ENV.DIR}/.vscode`, { recursive: true })
     await $`cp -r ${currDir}/.values/.vscode ${ENV.DIR}/`
     debug.verbose('Copied vscode folder')
     generateLooseSchema(currDir)
@@ -123,7 +123,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
 
   const secretsFileEnv = `${ENV.DIR}/env/secrets.settings.yaml`
   if (existsSync(secretsFile)) {
-    const secretsContent = load(secretsFileEnv) as any
+    const secretsContent = loadYaml(secretsFileEnv)
     if (secretsContent?.otomi?.pullSecret?.length) {
       debug.log('Copying Otomi Console Setup')
       await $`cp -rf ${currDir}/docker-compose ${ENV.DIR}/`
