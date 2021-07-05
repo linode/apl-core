@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -e
-set -o pipefail
-
 ENV_DIR=${ENV_DIR:-$PWD/env}
 
-changes=$(git -C $ENV_DIR diff env/settings.yaml | grep '^+    version:.*$')
-[ "$changes" != "" ] && bin/gen-drone.sh
+version_changes=$(git -C $ENV_DIR diff env/settings.yaml | grep '^+    version:.*$')
+secret_changes=$(git -C $ENV_DIR diff env/secrets.settings.yaml | grep '^+        url: https://hooks.slack.com/.*$')
+{ [ "$version_changes" != "" ] || [ "$secret_changes" != "" ]; } && bin/gen-drone.sh
+
+exit 0
