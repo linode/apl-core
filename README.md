@@ -1,3 +1,7 @@
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
+![Crates.io](https://img.shields.io/crates/l/ap)
+![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core)
+
 <p align="center">
 	<img src="https://otomi.io/img/otomi-logo.svg" width="40%" align="center" alt="ExternalDNS">
 </p>
