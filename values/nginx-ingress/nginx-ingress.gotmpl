@@ -64,7 +64,7 @@ controller:
       {{ if $n | get "modsecurity.block" "true" }}SecRuleEngine On{{- end }}
       SecRequestBodyLimit {{ $n | get "maxBodySizeBytes" "1073741824" }}
       # SecAuditLogFormat JSON
-      SecRuleRemoveById 920350 # discard internal requests
+      SecRuleRemoveById 920350
       {{/* so we include the owasp ruleset here if required */}}
       {{ if ($n | get "modsecurity.owasp" "false") }}Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf{{- end }}
     {{- end }}
