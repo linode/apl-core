@@ -83,6 +83,19 @@ jobs:
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
       - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
+        name: Convert values-schema.yaml to JSON
+        uses: fabasoad/yaml-json-xml-converter-action@main
+        id: convert_values_schema
+        with:
+          path: 'values-schema.yaml'
+          from: 'yaml'
+          to: 'json'
+      - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
+        name: Save values.schema.json
+        id: save_chart_schema
+        run: |
+          echo "${{ steps.convert_values_schema.outputs.data }}" > chart/otomi/values.schema.json
+      - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
         name: Create and publish otomi chart release
         id: chart_release
         uses: helm/chart-releaser-action@v1.2.1
