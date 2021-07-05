@@ -68,7 +68,7 @@ export const values = async (replacePath = false, asString = false): Promise<any
 }
 
 export const hfValues = async (): Promise<any> => {
-  return (await values(true)).renederedValues
+  return (await values(true)).renderedValues
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string): Promise<string> => {
