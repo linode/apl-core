@@ -41,3 +41,27 @@ resources:
     spec:
       mtls:
         mode: PERMISSIVE
+  # - apiVersion: policy/v1beta1
+  #   kind: PodDisruptionBudget
+  #   metadata:
+  #     labels:
+  #       serving.knative.dev/release: v0.23.0
+  #     name: activator-pdb
+  #     namespace: knative-serving
+  #   spec:
+  #     minAvailable: 1
+  #     selector:
+  #       matchLabels:
+  #         app: activator
+  # - apiVersion: policy/v1beta1
+  #   kind: PodDisruptionBudget
+  #   metadata:
+  #     labels:
+  #       serving.knative.dev/release: v0.23.0
+  #     name: webhook-pdb
+  #     namespace: knative-serving
+  #   spec:
+  #     minAvailable: 1
+  #     selector:
+  #       matchLabels:
+  #         app: webhook

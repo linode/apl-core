@@ -1304,6 +1304,12 @@ properties:
                 $ref: '#/definitions/resources'
               portal:
                 $ref: '#/definitions/resources'
+              redis:
+                $ref: '#/definitions/resources'
+              registry:
+                $ref: '#/definitions/resources'
+              registry-controller:
+                $ref: '#/definitions/resources'
           secretKey:
             type: string
             x-secret: true
