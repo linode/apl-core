@@ -8,12 +8,8 @@
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
-{{- $hasHarbor := $h | get "enabled" false -}}
+{{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $teams := keys $v.teamConfig.teams }}
-{{- $teamNames := list -}}
-{{- range $teams -}}
-{{- $teamNames = print "team-" . | append $teamNames -}}
-{{- end -}}
 
 type: Job
 enabled: true
@@ -22,7 +18,7 @@ description: Configure OIDC as a primary auhentication method and populate teams
 name: harbor
 image:
   repository: otomi/tasks
-  tag: v0.2.6
+  tag: v0.2.7
   pullPolicy: IfNotPresent
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
@@ -30,12 +26,14 @@ nativeSecrets:
   OIDC_CLIENT_ID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
   OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
 env:
-  HARBOR_BASE_URL: "http://harbor-core.harbor/api/v2.0"
-  TEAM_NAMES: '{{ $teamNames | sortAlpha | toJson }}'
+  DEBUG: '*'
+  HARBOR_BASE_URL: http://harbor-core.harbor/api/v2.0
+  HARBOR_BASE_REPO_URL: {{ $harborRepo }}
+  TEAM_IDS: '{{ $teams | sortAlpha | toJson }}'
   OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
-  OIDC_GROUPS_CLAIM: 'groups'
-  OIDC_NAME: 'keycloak'
-  OIDC_SCOPE: 'openid'
+  OIDC_GROUPS_CLAIM: groups
+  OIDC_NAME: keycloak
+  OIDC_SCOPE: openid
   OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:harbor
 runPolicy: OnSpecChange

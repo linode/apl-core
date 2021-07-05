@@ -122,6 +122,8 @@ internalTLS:
   enabled: false
 
 jobservice:
+  jobLoggers:
+    - stdout
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   resources:
