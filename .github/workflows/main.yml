@@ -86,6 +86,7 @@ jobs:
         name: Convert values-schema.yaml to JSON
         id: convert_values_schema
         run: |
+          sudo chown -R $USER /usr/local/lib/node_modules
           npm install -g js-yaml 
           js-yaml values-schema.yaml > chart/otomi/values.schema.json
       - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
