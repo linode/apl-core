@@ -18,10 +18,10 @@ logLevel: {{ $gk | get "logLevel" "INFO" }}
 audit:
   resources:
     limits:
-      cpu: 1000m
+      cpu: 1500m
       memory: 512Mi
     requests:
-      cpu: 400m
+      cpu: 750m
       memory: 150Mi
 controllerManager:
   resources:

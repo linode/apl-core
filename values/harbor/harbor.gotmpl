@@ -7,57 +7,146 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 
- # logLevel - debug, info, warning, error or fatal
-logLevel: info
-nameOverride: harbor
+externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
-notary:
-  enabled: false
-  secretName: {{ $notarySecretName }}
-trivy:
-  automountServiceAccountToken: true
-expose:
-  type: clusterIP
-  tls:
-    enabled: false
-internalTLS:
-  # we use istio with mTLS enabled for harbor namespace
-  enabled: false
-core:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
-  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
-  secret: {{ $h | get "core.secret" nil }}
-  # secretName: {{ $harborSecretName }}
-  resources:
-    {{- with $h | get "resources.core" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      memory: 256Mi
-      cpu: 50m
-    limits:
-      memory: 512Mi
-      cpu: 100m
-    {{- end }}
-jobservice:
-  secret: {{ $h | get "jobservice.secret" nil }}
-  resources:
-    {{- with $h | get "resources.jobservice" nil }}
-      {{- toYaml . | nindent 2 }}
-    {{- else }}
-    requests:
-      memory: 256Mi
-      cpu: 50m
-    limits:
-      memory: 512Mi
-      cpu: 100m
-    {{- end }}
+# logLevel - debug, info, warning, error or fatal
+logLevel: warning
+harborAdminPassword: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
+nameOverride: harbor
+secretKey: {{ $h | get "secretKey" nil }}
+
+clair:
+  adapter:
+    resources:
+      {{- with $h | get "resources.adapter" nil }}
+      {{- toYaml . | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 256Mi
+      {{- end }}
+  clair:
+    resources:
+      {{- with $h | get "resources.clair" nil }}
+      {{- toYaml . | nindent 6 }}
+      {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 1Gi
+      limits:
+        cpu: 400m
+        memory: 2Gi
+      {{- end }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
-# If Harbor is deployed behind the proxy, set it as the URL of proxy
-externalURL: {{ $externalUrl }}
+chartmuseum:
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
+  resources:
+    {{- with $h | get "resources.chartmuseum" nil }}
+    {{- toYaml . | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 100m 
+      memory: 128Mi
+    limits:
+      cpu: 400m
+      memory: 256Mi
+    {{- end }}
+
+core:
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
+  resources:
+    {{- with $h | get "resources.core" nil }}
+    {{- toYaml . | nindent 4 }}
+    {{- else }}
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
+    {{- end }}
+  secret: {{ $h | get "core.secret" nil }}
+  # secretName: {{ $harborSecretName }}
+  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+
+database:
+  internal:
+    initContainer:
+      migrator:
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 50m
+          limits:
+            memory: 512Mi
+            cpu: 100m
+      permissions:
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 50m
+          limits:
+            memory: 512Mi
+            cpu: 100m
+    resources:
+      {{- with $h | get "resources.database" nil }}
+      {{- toYaml . | nindent 6 }}
+      {{- else }}
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m
+      {{- end }}
+  password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
+  podAnnotations:
+    # this exception allows the chmod fix to pass, which needs root access:
+    policy.otomi.io/ignore.data-migrator: psp-allowed-users
+  type: internal
+
+expose:
+  tls:
+    enabled: false
+  type: clusterIP
+
+internalTLS:
+  # we use istio with mTLS enabled for harbor namespace
+  enabled: false
+
+jobservice:
+  jobLoggers:
+    - stdout
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
+  resources:
+    {{- with $h | get "resources.jobservice" nil }}
+    {{- toYaml . | nindent 4 }}
+    {{- else }}
+    requests:
+      memory: 256Mi
+      cpu: 50m
+    limits:
+      memory: 512Mi
+      cpu: 100m
+    {{- end }}
+  secret: {{ $h | get "jobservice.secret" nil }}
+
+metrics:
+  serviceMonitor:
+    enabled: true
+
+notary:
+  enabled: false
+  secretName: {{ $notarySecretName }}
+  
 persistence:
   enabled: true
   # resourcePolicy: 'keep'
@@ -119,114 +208,9 @@ persistence:
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType) | nindent 6 }}
     {{- end }}
 
-# The initial password of Harbor admin. Change it from portal after launching Harbor
-harborAdminPassword: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
-# The secret key used for encryption. Must be a string of 16 chars.
-secretKey: {{ $h | get "secretKey" nil }}
-
-# The proxy settings for updating clair vulnerabilities from the Internet and replicating
-# artifacts from/to the registries that cannot be reached directly
-proxy:
-  httpProxy:
-  httpsProxy:
-  noProxy: 127.0.0.1,localhost,.local,.internal
-  components:
-    - core
-    - jobservice
-    - clair
-
-registry:
-  secret: {{ $h | get "registry.secret" nil }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
-
-  registry:
-    resources:
-      requests:
-        memory: 64Mi
-        cpu: 50m
-      limits:
-        memory: 128Mi
-        cpu: 100m
-  controller:
-    resources:
-      {{- with $h | get "resources.controller" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        memory: 256Mi
-        cpu: 50m
-      limits:
-        memory: 512Mi
-        cpu: 100m
-      {{- end }}
-  relativeurls: false
-  credentials:
-    username: {{ $h | get "registry.credentials.username" "admin" }}
-    password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
-    htpasswd: {{ $h | get "registry.credentials.htpasswd" (htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" $v.otomi.adminPassword)) }}
-
-database:
-  type: internal
-  password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
-  podAnnotations:
-    # this exception allows the chmod fix to pass, which needs root access:
-    policy.otomi.io/ignore.data-migrator: psp-allowed-users
-  internal:
-    resources:
-      {{- with $h | get "resources.database" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        memory: 256Mi
-        cpu: 50m
-      limits:
-        memory: 512Mi
-        cpu: 500m
-      {{- end }}
-
-clair:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
-  clair:
-    resources:
-      {{- with $h | get "resources.clair" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-      {{- end }}
-  adapter:
-    resources:
-      {{- with $h | get "resources.adapter" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 256Mi
-      limits:
-        cpu: 400m
-        memory: 256Mi
-      {{- end }}
-
-chartmuseum:
-  resources:
-    {{- with $h | get "resources.chartmuseum" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 100m 
-      memory: 128Mi
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    {{- end }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
+postgresql:
+  volumePermissions:
+    enabled: true
 
 portal:
   resources:
@@ -248,14 +232,52 @@ redis:
     policy.otomi.io/ignore: psp-allowed-users
   internal:
     resources:
+      {{- with $h | get "resources.redis" nil }}
+        {{- toYaml . | nindent 6 }}
+      {{- else }}
       requests:
         cpu: 100m 
         memory: 128Mi
       limits:
         cpu: 400m
         memory: 128Mi
+      {{- end }}
 
-postgresql:
-  volumePermissions:
-    enabled: true
+registry:
+  secret: {{ $h | get "registry.secret" nil }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-allowed-users
+
+  registry:
+    resources:
+      {{- with $h | get "resources.registry" nil }}
+        {{- toYaml . | nindent 6 }}
+      {{- else }}
+      requests:
+        memory: 64Mi
+        cpu: 50m
+      limits:
+        memory: 128Mi
+        cpu: 100m
+      {{- end }}
+  controller:
+    resources:
+      {{- with $h | get "resources.registry-controller" nil }}
+        {{- toYaml . | nindent 6 }}
+      {{- else }}
+      requests:
+        memory: 256Mi
+        cpu: 50m
+      limits:
+        memory: 512Mi
+        cpu: 100m
+      {{- end }}
+  relativeurls: false
+  credentials:
+    username: {{ $h | get "registry.credentials.username" "admin" }}
+    password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
+    htpasswd: {{ $h | get "registry.credentials.htpasswd" (htpasswd ($h | get "registry.credentials.username" "admin") ($h | get "registry.credentials.password" $v.otomi.adminPassword)) }}
+
+trivy:
+  automountServiceAccountToken: true
     

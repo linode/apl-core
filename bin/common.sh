@@ -230,3 +230,15 @@ function hf_template() {
     hf template --skip-deps $SKIP_CLEANUP
   fi
 }
+
+function helm_adopt() {
+  release=$1
+  kind=$2
+  name=$3
+  namespace=$4
+  [ "$namespace" != '' ] && use_ns='-n $namespace'
+  kubectl $use_ns annotate --overwrite $kind $name meta.helm.sh/release-name=$release
+  kubectl $use_ns annotate --overwrite $kind $name meta.helm.sh/release-namespace=$namespace
+  kubectl $use_ns label --overwrite $kind $name app.kubernetes.io/managed-by=Helm
+
+}

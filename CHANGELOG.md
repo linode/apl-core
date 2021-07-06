@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.11](https://github.com/redkubes/otomi-core/compare/v0.13.10...v0.13.11) (2021-07-05)
+
+
+### Bug Fixes
+
+* drone gen ([94ad6f7](https://github.com/redkubes/otomi-core/commit/94ad6f74a0d206bff72eb9a5a4cef7e6f3bc0afc))
+* harbor regression due to new chart ([fe03f90](https://github.com/redkubes/otomi-core/commit/fe03f904f162e73d61e50729ab9e1adf9ed673f0))
+* harbor tasks updated to new version ([4becbeb](https://github.com/redkubes/otomi-core/commit/4becbeb1ecde85816dc0a97add6c3d59acc5162e))
+* kured resources ([9f6720b](https://github.com/redkubes/otomi-core/commit/9f6720b685f08b4ad64358d141e0f69a07550261))
+* seemingly harmless comment not allowed ([055c580](https://github.com/redkubes/otomi-core/commit/055c580ba97654d4aea8a468600bbdacbbc2bc0d))
+
 ### [0.13.10](https://github.com/redkubes/otomi-core/compare/v0.13.9...v0.13.10) (2021-07-05)
 
 

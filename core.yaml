@@ -77,14 +77,14 @@ services:
     type: public
     auth: true
   - name: harbor
-    svc: harbor-harbor-portal
+    svc: harbor-portal
     namespace: harbor
     ownHost: true
     isShared: true
     type: public
     auth: true
   - name: harbor
-    svc: harbor-harbor-core
+    svc: harbor-core
     namespace: harbor
     ownHost: true
     paths: [/api/, /c/, /chartrepo/]
@@ -94,7 +94,7 @@ services:
     type: public
     auth: true
   - name: harbor
-    svc: harbor-harbor-core
+    svc: harbor-core
     namespace: harbor
     ownHost: true
     paths: [/service/, /v1/, /v2/]
@@ -117,7 +117,7 @@ services:
     type: public
     auth: true
   - name: notary
-    svc: harbor-harbor-notary-server
+    svc: harbor-notary-server
     port: 4443
     namespace: harbor
     ownHost: true
@@ -228,7 +228,7 @@ services:
 teamConfig:
   services:
     - name: harbor
-      svc: harbor-harbor-portal
+      svc: harbor-portal
       namespace: harbor
       isShared: true
       host: harbor
