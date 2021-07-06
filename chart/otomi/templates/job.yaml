@@ -44,7 +44,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: "{{ .Values.taskImage.repository | default "otomi/task" }}:{{ .Values.taskImage.tag | default "master"}}"
+-          image: "{{ .Values.taskImage.repository | default "otomi/tasks" }}:{{ .Values.taskImage.tag | default "master"}}"
           imagePullPolicy: {{ .Values.taskImage.pullPolicy }}
           command: ['sh', '-c']
           args:

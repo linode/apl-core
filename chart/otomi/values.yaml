@@ -47,11 +47,11 @@ kms:
   sops:
     # provider can be one of aws|azure|google|vault
     # provider: ''
-    aws:
-      clientID: ''
-      clientSecret: ''
-      accessKey: ''
-      secretKey: ''
+    # aws:
+    #   clientID: ''
+    #   clientSecret: ''
+    #   accessKey: ''
+    #   secretKey: ''
     # azure:
     #   tenantID: ''
     #   clientID: ''
