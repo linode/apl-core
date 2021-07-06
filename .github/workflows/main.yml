@@ -95,6 +95,8 @@ jobs:
         with:
           charts_dir: chart
           charts_repo_url: https://otomi.io/charts/
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
