@@ -15,6 +15,9 @@
       cat $rootCA > $rootCAnew
       cat $extraRootCA >> $rootCAnew
       ls -als $rootCAnew
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
   volumeMounts:
   - name: extra-root-ca-secret
     mountPath: "/etc/ssl/certs/extra-root-ca.pem"
@@ -32,6 +35,9 @@
       rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
       cat $rootCAnew > $rootCA
       ls -als $rootCA
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
   volumeMounts:
   - name: extra-root-ca-new
     mountPath: "/etc/ssl/certs-new"
