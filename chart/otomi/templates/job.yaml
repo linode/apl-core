@@ -31,6 +31,8 @@ spec:
               value: '1'
             - name: VERBOSE
               value: '1'
+            - name: CI
+              value: 'true'
             - name: ENV_DIR
               value: /env
             - name: OTOMI_VALUES_INPUT
@@ -44,7 +46,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
--          image: "{{ .Values.taskImage.repository | default "otomi/tasks" }}:{{ .Values.taskImage.tag | default "master"}}"
+          image: "{{ .Values.taskImage.repository | default "otomi/tasks" }}:{{ .Values.taskImage.tag | default "master"}}"
           imagePullPolicy: {{ .Values.taskImage.pullPolicy }}
           command: ['sh', '-c']
           args:
