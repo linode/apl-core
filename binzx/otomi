@@ -162,7 +162,8 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
+  # Use development distribution if exists
+  if [ -f "${stack_dir}/dist/otomi.js" ]; then
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
   fi
   echo "OTOMI_DEV=true" >>$tmp_env
@@ -177,7 +178,8 @@ check_volume_path() {
 }
 
 cmd="${executable} $*"
-if [ "$1" = "bash" ] && [ "$#" = "1" ]; then # If command is "otomi bash"
+# If command is "otomi bash"
+if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
