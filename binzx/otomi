@@ -47,7 +47,8 @@ path_to_exec_shell=$(which $executing_shell)
 # TODO: Remove this line
 OTOMI_TAG=${OTOMI_TAG:-otomi-zx}
 # # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
-otomi_core_version=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+otomi_core_version="master"
+[ -f "package.json" ] && otomi_core_version=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
 otomi_version=$([ -f $ENV_DIR/env/settings.yaml ] && awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
 otomi_version=${otomi_version:-$otomi_core_version}
 readonly otomi_version
@@ -167,6 +168,14 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   echo "OTOMI_DEV=true" >>$tmp_env
 fi
 
+check_volume_path() {
+  source=$1
+  dest=$2
+  [ -z $source ] && [ -z $dest ] && echo "" && return 0
+  echo "-v $source:$dest"
+  return 0
+}
+
 cmd="${executable} $*"
 if [ "$1" = "bash" ] && [ "$#" = "1" ]; then # If command is "otomi bash"
   cmd="bash"
@@ -184,16 +193,16 @@ fi
 docker run --network host --rm -it \
   $stack_volume \
   $tmp_volume \
-  -v ${KUBECONFIG:-$HOME/.kube}:/home/app/.kube \
-  -v $HOME/.ssh:/home/app/.ssh \
-  -v $helm_config:/home/app/.config/helm \
-  -v $HOME/.config/gcloud:/home/app/.config/gcloud \
-  -v $HOME/.aws:/home/app/.aws \
-  -v $HOME/.azure:/home/app/.azure \
-  -v $ENV_DIR:$stack_dir/env \
-  -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
-  -v $ENV_DIR:$ENV_DIR \
-  -v /var/run/docker.sock:/var/run/docker.sock \
+  $(check_volume_path ${KUBECONFIG:-$HOME/.kube} "/home/app/.kube") \
+  $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
+  $(check_volume_path $helm_config "/home/app/.config/helm") \
+  $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
+  $(check_volume_path $HOME/.aws "/home/app/.aws") \
+  $(check_volume_path $HOME/.azure "/home/app/.azure") \
+  $(check_volume_path $ENV_DIR "$stack_dir/env") \
+  $(check_volume_path $ENV_DIR "$ENV_DIR") \
+  $(check_volume_path $GOOGLE_APPLICATION_CREDENTIALS "$GOOGLE_APPLICATION_CREDENTIALS") \
+  $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
   --env-file "$tmp_env" \
   -w "$stack_dir" \
   "$otomi_tools_image" \
