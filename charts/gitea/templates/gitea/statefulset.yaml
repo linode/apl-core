@@ -63,9 +63,7 @@ spec:
             - name: data
               mountPath: /data
             {{- if ne .Values.extraRootCA "" }}
-            - name: ca
-              mountPath: "/etc/ssl/certs/"
-              subPath: "ca-certificates.crt"
+            {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 12 }}
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
