@@ -27,15 +27,31 @@ elif [ -z "$ENV_DIR" ]; then
 else
   mkdir -p $ENV_DIR
 fi
+
+# Use tput for a clear screen when starting, that way it doesn't need to "hang" on empty while prepping
+# https://linuxcommand.org/lc3_adv_tput.php
+tput_exists=$(which tput)
+[ -n "$tput_exists" ] && tput smcup
+silent() {
+  if [ -n "$tput_exists" ] ; then
+    "$@"
+  else
+    "$@" &>/dev/null
+  fi
+}
+
 this_is_bash=$(ps -o ppid= $$)
 executing_shell=$(ps -o comm= $this_is_bash | sed "s/[^[:alnum:]\/]//g")
 path_to_exec_shell=$(which $executing_shell)
 
+# TODO: Remove this line
 OTOMI_TAG=${OTOMI_TAG:-otomi-zx}
 # # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
-# otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
-# readonly otomi_version
-# OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
+otomi_core_version=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+otomi_version=$([ -f $ENV_DIR/env/settings.yaml ] && awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
+otomi_version=${otomi_version:-$otomi_core_version}
+readonly otomi_version
+OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
 # shellcheck disable=SC2155
@@ -111,8 +127,10 @@ check_update() {
     esac
   fi
 }
+silent echo "Checking for updates"
 [ -z $CI ] && check_update
 
+silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= -e ^LC_ALL= >$tmp_env
 
@@ -129,41 +147,19 @@ uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/h
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
 
-function mount_with_named_volume() {
-  source=$1
-  dest=$2
-
-  if [[ $(uname -s) == Darwin*  ]]; then
-    echo "$source:$dest"
-    return 0
-  fi
-
-  [ -z "$NAMED_VOLUME" ] && export NAMED_VOLUME='otomi-volume'
-  helper_container_name="otomi-volume-helper"
-
-  [ -z "$source" ] && echo "Error in function 'mount_with_named_volume': source path is empty" 1>&2
-
-  { # Create volume and copy over contents
-    docker container inspect $helper_container_name && docker rm $helper_container_name
-    docker container create --name $helper_container_name -v "$NAMED_VOLUME:$dest" hello-world &&
-      cd "$source" && docker cp . "$helper_container_name:$dest" &&
-      docker rm $helper_container_name
-  } >/dev/null 2>&1
-
-  echo "$NAMED_VOLUME:$dest"
-}
-
 stack_volume=""
-tmp_volume=""
+tmp_volume_dir=$(mktemp -d)
+tmp_volume=" -v $tmp_volume_dir:/tmp"
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+  silent echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
   elif [[ $(pwd) == *"otomi-core"* ]]; then
     stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
   fi
 
-  stack_volume="-v $(mount_with_named_volume "$stack_dir" "$stack_dir")"
-  tmp_volume="-v $(mount_with_named_volume /tmp /tmp)"
+  stack_volume="-v $stack_dir:$stack_dir"
+  tmp_volume="-v /tmp:/tmp"
 
   if [ -f "${stack_dir}/dist/otomi.js" ]; then # Use development distribution if exists
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
@@ -176,25 +172,28 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then # If command is "otomi bash"
   cmd="bash"
 fi
 
-pull_output=$(docker pull $otomi_tools_image 2>&1 >/dev/null)
+silent echo "Pulling latest version of the docker image"
+[ -z $NOPULL ] && silent docker pull $otomi_tools_image
 status=$?
 if [ "$status" -ne 0 ]; then
-  echo "$pull_output"
   echo "Could not find an image for the supplied OTOMI_TAG: '${OTOMI_TAG}'"
   exit $status
 fi
 
+[ -n "$tput_exists" ] && tput clear
 docker run --network host --rm -it \
   $stack_volume \
   $tmp_volume \
-  -v $(mount_with_named_volume "${KUBECONFIG:-$HOME/.kube}" /home/app/.kube) \
-  -v $(mount_with_named_volume "$HOME/.ssh" /home/app/.ssh) \
-  -v $(mount_with_named_volume "$helm_config" /home/app/.config/helm) \
-  -v $(mount_with_named_volume "$HOME/.config/gcloud" /home/app/.config/gcloud) \
-  -v $(mount_with_named_volume "$HOME/.aws" /home/app/.aws) \
-  -v $(mount_with_named_volume "$HOME/.azure" /home/app/.azure) \
-  -v $(mount_with_named_volume "$ENV_DIR" "$stack_dir/env") \
-  -v $(mount_with_named_volume "$ENV_DIR" "$ENV_DIR") \
+  -v ${KUBECONFIG:-$HOME/.kube}:/home/app/.kube \
+  -v $HOME/.ssh:/home/app/.ssh \
+  -v $helm_config:/home/app/.config/helm \
+  -v $HOME/.config/gcloud:/home/app/.config/gcloud \
+  -v $HOME/.aws:/home/app/.aws \
+  -v $HOME/.azure:/home/app/.azure \
+  -v $ENV_DIR:$stack_dir/env \
+  -v ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS} \
+  -v $ENV_DIR:$ENV_DIR \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   --env-file "$tmp_env" \
   -w "$stack_dir" \
   "$otomi_tools_image" \
@@ -202,6 +201,7 @@ docker run --network host --rm -it \
 
 status=$?
 rm -f "$tmp_env"
+rm -rf "$tmp_volume_dir"
 
 # Named volume stuff
 docker volume rm $NAMED_VOLUME >/dev/null 2>&1
