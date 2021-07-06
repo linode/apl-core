@@ -32,6 +32,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      automountServiceAccountToken: {{ .Values.exporter.automountServiceAccountToken | default false }}
       containers:
       - name: exporter
         image: {{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag }}
@@ -64,14 +65,20 @@ spec:
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
+        {{- if .Values.internalTLS.enabled }}
+        - name: core-internal-certs
+          mountPath: /etc/harbor/ssl/core
+          # There are some metric data are collectd from harbor core.
+          # When internal TLS is enabled, the Exporter need the CA file to collect these data.
+        {{- end }}
       volumes:
       - name: config
         secret:
           secretName: "{{ template "harbor.exporter" . }}"
       {{- if .Values.internalTLS.enabled }}
-      - name: exporter-internal-certs
+      - name: core-internal-certs
         secret:
-          secretName: {{ template "harbor.internalTLS.exporter.secretName" . }}
+          secretName: {{ template "harbor.internalTLS.core.secretName" . }}
       {{- end }}
       {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolume" . | indent 6 }}
@@ -87,5 +94,8 @@ spec:
     {{- with .Values.exporter.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.exporter.priorityClassName }}
+      priorityClassName: {{ .Values.exporter.priorityClassName }}
     {{- end }}
 {{ end }}

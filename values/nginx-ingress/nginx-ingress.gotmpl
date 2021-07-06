@@ -43,15 +43,15 @@ controller:
   priorityClassName: "otomi-critical"
   extraArgs:
     v: 3
-  config:
     enable-ssl-passthrough: true
+  config:
     ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
     hsts: "true"
     disable-ipv6: "true"
     client-body-timeout: "5"
     client-header-timeout: "5"
     enable-modsecurity: {{ $n | get "modsecurity.enabled" "false" }}
-    enable-owasp-modsecurity-crs: {{ and ($n | get "modsecurity.enabled" "false") ($n | get "modsecurity.owasp" "false") }}
+    enable-owasp-modsecurity-crs: false # modsecurity-snippet only works when this is turned off
     http2-max-field-size: 64k
     http2-max-header-size: 128k
     proxy-buffers-number: "8"
@@ -59,6 +59,15 @@ controller:
     large-client-header-buffers: 8 16k
     proxy-body-size: {{ $n | get "maxBodySize" "1024m" }}
     log-format-upstream: '$remote_addr - $remote_user [$time_local] $host "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status'
+    {{- if $n | get "modsecurity.enabled" "true" }}
+    modsecurity-snippet: |
+      {{ if $n | get "modsecurity.block" "true" }}SecRuleEngine On{{- end }}
+      SecRequestBodyLimit {{ $n | get "maxBodySizeBytes" "1073741824" }}
+      # SecAuditLogFormat JSON
+      SecRuleRemoveById 920350
+      {{/* so we include the owasp ruleset here if required */}}
+      {{ if ($n | get "modsecurity.owasp" "false") }}Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf{{- end }}
+    {{- end }}
   stats:
     enabled: true
   metrics:

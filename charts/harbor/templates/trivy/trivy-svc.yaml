@@ -7,7 +7,7 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
-    - name: api-server
+    - name: {{ ternary "https-trivy" "http-trivy" .Values.internalTLS.enabled }}
       protocol: TCP
       port: {{ template "harbor.trivy.servicePort" . }}
   selector:

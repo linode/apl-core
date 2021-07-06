@@ -10,11 +10,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
 */}}
 {{- define "harbor.fullname" -}}
-{{- $name := default "harbor" .Values.nameOverride -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default "harbor" .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
 
 {{/* Helm required labels */}}
 {{- define "harbor.labels" -}}
@@ -528,5 +537,13 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
     {{- .Values.expose.tls.secret.secretName -}}
   {{- else -}}
     {{- include "harbor.nginx" . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.metricsPortName" -}}
+  {{- if .Values.internalTLS.enabled }}
+    {{- printf "https-metrics" -}}
+  {{- else -}}
+    {{- printf "http-metrics" -}}
   {{- end -}}
 {{- end -}}

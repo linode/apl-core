@@ -10,7 +10,7 @@ LOG_LEVEL='--log-level warn'
 
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
-readonly otomi_tools_image="otomi/tools:latest"
+readonly otomi_tools_image="otomi/core:latest"
 
 # Mutliple files vars
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
@@ -99,9 +99,9 @@ function _rind() {
   shift
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
-      -v ${ENV_DIR}:${ENV_DIR} \
+      -v $ENV_DIR:$ENV_DIR \
       -e IN_DOCKER='1' \
-      -w ${ENV_DIR} \
+      -e ENV_DIR=$ENV_DIR \
       $otomi_tools_image $cmd "$@"
     return $?
   elif command -v $cmd &>/dev/null; then
@@ -229,4 +229,16 @@ function hf_template() {
     [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $SKIP_CLEANUP
     hf template --skip-deps $SKIP_CLEANUP
   fi
+}
+
+function helm_adopt() {
+  release=$1
+  kind=$2
+  name=$3
+  namespace=$4
+  [ "$namespace" != '' ] && use_ns='-n $namespace'
+  kubectl $use_ns annotate --overwrite $kind $name meta.helm.sh/release-name=$release
+  kubectl $use_ns annotate --overwrite $kind $name meta.helm.sh/release-namespace=$namespace
+  kubectl $use_ns label --overwrite $kind $name app.kubernetes.io/managed-by=Helm
+
 }

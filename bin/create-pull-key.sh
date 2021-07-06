@@ -26,6 +26,6 @@ secret=$(kubectl -n drone-pipelines create secret docker-registry gcr-json-key -
   --docker-password="$(cat ./$FILE)" \
   --docker-email=not@val.id \
   -ojsonpath='{.data.\.dockerconfigjson}')
-echo "Now set the following string in the stack's env/cluster.yaml pullSecret:"
+echo "Now set the following string in the stack's env/settings.yaml pullSecret:"
 echo ""
 echo $secret

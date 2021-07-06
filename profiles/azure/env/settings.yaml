@@ -11,8 +11,8 @@ azure:
     subscriptionId: somevalue
     tenantId: somevalue
     storageType:
-        fast: Premium_LRS
-        standard: StandardSSD_LRS
+        fast: StandardSSD_LRS
+        standard: StandardLRS
 customer:
     name: demo
 dns:

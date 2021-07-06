@@ -36,7 +36,7 @@ spec:
 {{- if .Values.portal.serviceAccountName }}
       serviceAccountName: {{ .Values.portal.serviceAccountName }}
 {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.portal.automountServiceAccountToken | default false }}
       containers:
       - name: portal
         image: {{ .Values.portal.image.repository }}:{{ .Values.portal.image.tag }}
@@ -89,4 +89,7 @@ spec:
     {{- with .Values.portal.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.portal.priorityClassName }}
+      priorityClassName: {{ .Values.portal.priorityClassName }}
     {{- end }}

@@ -45,7 +45,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.jobservice.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
       containers:
       - name: jobservice
         image: {{ .Values.jobservice.image.repository }}:{{ .Values.jobservice.image.tag }}
@@ -110,7 +111,7 @@ spec:
         configMap:
           name: "{{ template "harbor.jobservice" . }}"
       - name: job-logs
-        {{- if and .Values.persistence.enabled (has "file" .Values.jobservice.jobLogger) }}
+        {{- if and .Values.persistence.enabled (has "file" .Values.jobservice.jobLoggers) }}
         persistentVolumeClaim:
           claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.existingClaim | default (include "harbor.jobservice" .) }}
         {{- else }}
@@ -135,4 +136,7 @@ spec:
     {{- with .Values.jobservice.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.jobservice.priorityClassName }}
+      priorityClassName: {{ .Values.jobservice.priorityClassName }}
     {{- end }}

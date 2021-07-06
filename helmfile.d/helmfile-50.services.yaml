@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: demo-tlspass
-    installed: {{ $c | get "demo-tlspass.enabled" false }}
+    installed: false #{{ $c | get "demo-tlspass.enabled" false }}
     namespace: team-otomi
     <<: *default
   - name: hello

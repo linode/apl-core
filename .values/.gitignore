@@ -8,4 +8,4 @@
 /docker-compose*
 /bin/
 core.yaml
-.sops-creds.env
+.secrets

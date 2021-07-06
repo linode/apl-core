@@ -22,7 +22,7 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-api
-  tag: {{ $o | get "image.tag" "v0.4.49" }}
+  tag: {{ $o | get "image.tag" "v0.4.65" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 secrets:

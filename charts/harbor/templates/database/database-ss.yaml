@@ -35,7 +35,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.database.internal.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
       initContainers:
       # as we change the data directory to a sub folder to support psp, the init container here
       # is used to migrate the existing data. See https://github.com/goharbor/harbor-helm/issues/756
@@ -46,9 +47,26 @@ spec:
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
         args: ["-c", "[ -e /var/lib/postgresql/data/postgresql.conf ] && [ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || true"]
-{{- if .Values.database.internal.resources }}
+{{- if .Values.database.internal.initContainer.migrator.resources }}
         resources:
-{{ toYaml .Values.database.internal.resources | indent 10 }}
+{{ toYaml .Values.database.internal.initContainer.migrator.resources | indent 10 }}
+{{- end }}
+        volumeMounts:
+          - name: database-data
+            mountPath: /var/lib/postgresql/data
+            subPath: {{ $database.subPath }}
+      # with "fsGroup" set, each time a volume is mounted, Kubernetes must recursively chown() and chmod() all the files and directories inside the volume
+      # this causes the postgresql reports the "data directory /var/lib/postgresql/data/pgdata has group or world access" issue when using some CSIs e.g. Ceph
+      # use this init container to correct the permission
+      # as "fsGroup" applied before the init container running, the container has enough permission to execute the command
+      - name: "data-permissions-ensurer"
+        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["/bin/sh"]
+        args: ["-c", "chmod -R 700 /var/lib/postgresql/data/pgdata || true"]
+{{- if .Values.database.internal.initContainer.permissions.resources }}
+        resources:
+{{ toYaml .Values.database.internal.initContainer.permissions.resources | indent 10 }}
 {{- end }}
         volumeMounts:
           - name: database-data
@@ -86,12 +104,17 @@ spec:
         - name: database-data
           mountPath: /var/lib/postgresql/data
           subPath: {{ $database.subPath }}
-      {{- if not .Values.persistence.enabled }}
+        - name: shm-volume
+          mountPath: /dev/shm
       volumes:
+      - name: shm-volume
+        emptyDir:
+          medium: Memory
+          sizeLimit: {{ .Values.database.internal.shmSizeLimit }}
+      {{- if not .Values.persistence.enabled }}
       - name: "database-data"
         emptyDir: {}
       {{- else if $database.existingClaim }}
-      volumes:
       - name: "database-data"
         persistentVolumeClaim:
           claimName: {{ $database.existingClaim }}
@@ -107,6 +130,9 @@ spec:
     {{- with .Values.database.internal.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.database.internal.priorityClassName }}
+      priorityClassName: {{ .Values.database.internal.priorityClassName }}
     {{- end }}
   {{- if and .Values.persistence.enabled (not $database.existingClaim) }}
   volumeClaimTemplates:

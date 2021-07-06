@@ -40,7 +40,7 @@ spec:
       securityContext:
         runAsUser: 10000
         fsGroup: 10000
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.trivy.automountServiceAccountToken | default false }}
       containers:
         - name: trivy
           image: {{ .Values.trivy.image.repository }}:{{ .Values.trivy.image.tag }}
@@ -170,6 +170,9 @@ spec:
     {{- with .Values.trivy.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.trivy.priorityClassName }}
+      priorityClassName: {{ .Values.trivy.priorityClassName }}
     {{- end }}
 {{- if and .Values.persistence.enabled (not $trivy.existingClaim) }}
   volumeClaimTemplates:

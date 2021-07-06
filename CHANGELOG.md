@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.11](https://github.com/redkubes/otomi-core/compare/v0.13.10...v0.13.11) (2021-07-05)
+
+
+### Bug Fixes
+
+* drone gen ([94ad6f7](https://github.com/redkubes/otomi-core/commit/94ad6f74a0d206bff72eb9a5a4cef7e6f3bc0afc))
+* harbor regression due to new chart ([fe03f90](https://github.com/redkubes/otomi-core/commit/fe03f904f162e73d61e50729ab9e1adf9ed673f0))
+* harbor tasks updated to new version ([4becbeb](https://github.com/redkubes/otomi-core/commit/4becbeb1ecde85816dc0a97add6c3d59acc5162e))
+* kured resources ([9f6720b](https://github.com/redkubes/otomi-core/commit/9f6720b685f08b4ad64358d141e0f69a07550261))
+* seemingly harmless comment not allowed ([055c580](https://github.com/redkubes/otomi-core/commit/055c580ba97654d4aea8a468600bbdacbbc2bc0d))
+
+### [0.13.10](https://github.com/redkubes/otomi-core/compare/v0.13.9...v0.13.10) (2021-07-05)
+
+
+### Bug Fixes
+
+* core version not found in container ([8329a49](https://github.com/redkubes/otomi-core/commit/8329a4901f37c1185d5fcfc31752abf11bba69e9))
+* harbor db perms again...grrrrmbl ([d2f2cb4](https://github.com/redkubes/otomi-core/commit/d2f2cb489979444bd747152f9d140bf575b19b3a))
+
+
+### Others
+
+* **release:** 0.13.9 ([6b746bb](https://github.com/redkubes/otomi-core/commit/6b746bb7751f7df7b5187060ce407abcae236852))
+
+### [0.13.9](https://github.com/redkubes/otomi-core/compare/v0.13.8...v0.13.9) (2021-07-04)
+
+
+### Bug Fixes
+
+* regression [ci skip] ([20adace](https://github.com/redkubes/otomi-core/commit/20adace3f9ebae6d79b33315907dd4840c3bc679))
+
+### [0.13.8](https://github.com/redkubes/otomi-core/compare/v0.13.7...v0.13.8) (2021-07-04)
+
+
+### Features
+
+* skip storage classes to circumvent patching errors ([7cd2973](https://github.com/redkubes/otomi-core/commit/7cd297342bc16e843133ea8e705db0896a70fbcf))
+
+
+### Bug Fixes
+
+* decrypt before values command ([da97ebb](https://github.com/redkubes/otomi-core/commit/da97ebb42b1aae76c3e28a17d0e97b49bfc6f96c))
+* gitea push robustness ([13b648b](https://github.com/redkubes/otomi-core/commit/13b648b6b7d1f473b4187baa75e98604a0eab5f3))
+* harbor chart, redis config, disk sizes ([a6df5a2](https://github.com/redkubes/otomi-core/commit/a6df5a29b84d20933f42d5c7dce488b273e01ef8))
+* pre-commit ([3c2a85b](https://github.com/redkubes/otomi-core/commit/3c2a85bbfda5044605cd8975fae2e8dace3346b9))
+* remove -x ([34263dd](https://github.com/redkubes/otomi-core/commit/34263dddcf56fe08680cc8f8c5e7af396803dbca))
+* reverting back the readme file. ([#460](https://github.com/redkubes/otomi-core/issues/460)) ([72fadfd](https://github.com/redkubes/otomi-core/commit/72fadfdfac9e528b753373f77768d9323f6cc017))
+* schema for redis [ci skip] ([76c15bd](https://github.com/redkubes/otomi-core/commit/76c15bd9cce54e24634ab64c818f0ec5fbc18116))
+* schema required fields and decrypted file extension toggle ([eb5cf18](https://github.com/redkubes/otomi-core/commit/eb5cf1833a4bc313369defd0fd8ea9a2f9442420))
+* set maxlength of dns ([#456](https://github.com/redkubes/otomi-core/issues/456)) ([9f1ecb1](https://github.com/redkubes/otomi-core/commit/9f1ecb18855e5db021c58ad8b45a693ac93eacd3))
+* storageclass default not premium ([02edec9](https://github.com/redkubes/otomi-core/commit/02edec99a0c9e63179b82cfb4382049a9f8cd7a0))
+* storageclass schema, k8s versions ([8390a24](https://github.com/redkubes/otomi-core/commit/8390a24ff195e7fc50c1efca25f48149beaa9b85))
+
 ### [0.13.7](https://github.com/redkubes/otomi-core/compare/v0.13.6...v0.13.7) (2021-06-30)
 
 

@@ -34,11 +34,25 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.notary.server.automountServiceAccountToken | default false }}
       containers:
       - name: notary-server
         image: {{ .Values.notary.server.image.repository }}:{{ .Values.notary.server.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /_notary_server/health
+            scheme: "HTTP"
+            port: 4443
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /_notary_server/health
+            scheme: "HTTP"
+            port: 4443
+          initialDelaySeconds: 20
+          periodSeconds: 10
 {{- if .Values.notary.server.resources }}
         resources:
 {{ toYaml .Values.notary.server.resources | indent 10 }}
@@ -87,5 +101,8 @@ spec:
     {{- with .Values.notary.server.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.notary.server.priorityClassName }}
+      priorityClassName: {{ .Values.notary.server.priorityClassName }}
     {{- end }}
 {{ end }}

@@ -1,13 +1,21 @@
 {
   "recommendations": [
+    "christian-kohler.path-intellisense",
     "codezombiech.gitignore",
     "dbaeumer.vscode-eslint",
     "donjayamanne.githistory",
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
+    "foxundermoon.shell-format",
+    "jetmartin.bats",
+    "mads-hartmann.bash-ide-vscode",
+    "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "pascalreitermann93.vscode-yaml-sort",
     "redhat.vscode-yaml",
-    "signageos.signageos-vscode-sops",
-    "xyz.local-history"
+    "streetsidesoftware.code-spell-checker",
+    "timonwong.shellcheck",
+    "xyz.local-history",
+    "tsandall.opa"
   ]
 }

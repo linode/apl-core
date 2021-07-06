@@ -9,11 +9,11 @@ spec:
   type: NodePort
 {{- end }}
   ports:
-    - name: web
+    - name: {{ ternary "https-web" "http-web" .Values.internalTLS.enabled }}
       port: {{ template "harbor.core.servicePort" . }}
       targetPort: {{ template "harbor.core.containerPort" . }}
 {{- if .Values.metrics.enabled}}
-    - name: metrics
+    - name: {{ template "harbor.metricsPortName" . }}
       port: {{ .Values.metrics.core.port }}
 {{- end }}
   selector:

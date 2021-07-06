@@ -45,7 +45,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.chartmuseum.automountServiceAccountToken | default false }}
       containers:
       - name: chartmuseum
         image: {{ .Values.chartmuseum.image.repository }}:{{ .Values.chartmuseum.image.tag }}
@@ -163,5 +163,8 @@ spec:
       {{- with .Values.chartmuseum.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- if .Values.chartmuseum.priorityClassName }}
+      priorityClassName: {{ .Values.chartmuseum.priorityClassName }}
       {{- end }}
 {{- end }}

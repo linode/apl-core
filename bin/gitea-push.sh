@@ -24,7 +24,6 @@ git_found=true
 if [ ! -d .git ]; then
   git init
   git checkout -b main
-  git_found=false
 fi
 
 git config user.name "Otomi Admin"
@@ -39,11 +38,12 @@ fi
 # Try to fetch to see if repo exists
 if ! git fetch origin main >/dev/null; then
   # no, commit new values
+  set +e
   git add -A
   git commit --no-verify -m "automated commit of otomi-values"
   git push -u origin main -f
   git branch --set-upstream-to=origin/main main
-
+  set -e
   echo "Otomi-values has been pushed to gitea"
 else
   echo "There is already data in gitea."

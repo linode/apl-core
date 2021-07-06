@@ -5,6 +5,7 @@ definitions:
     description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
     type: object
   alerts:
+    additionalProperties: false
     properties:
       drone:
         default: slack
@@ -161,6 +162,7 @@ definitions:
           - AzureUSGovernment
           - AzureGermanCloud
       monitor:
+        additionalProperties: false
         properties:
           appInsightsApiKey:
             $ref: '#/definitions/azure/definitions/clientSecret'
@@ -211,6 +213,7 @@ definitions:
         description: An Azure subscription id.
         type: string
   cluster:
+    additionalProperties: false
     properties:
       apiName:
         description: Only used for API/UI to show in app.
@@ -249,6 +252,7 @@ definitions:
       - name
       - provider
   containerSpec:
+    additionalProperties: false
     properties:
       image:
         $ref: '#/definitions/image'
@@ -318,6 +322,7 @@ definitions:
       '^[/].*':
         type: string
   google:
+    additionalProperties: false
     definitions:
       accountJson:
         type: string
@@ -377,6 +382,7 @@ definitions:
           - $ref: '#/definitions/podSpec'
     type: array
   jobSpec:
+    additionalProperties: false
     properties:
       type:
         default: Job
@@ -424,12 +430,11 @@ definitions:
       - type
     type: object
   k8sVersion:
-    default: '1.19'
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
-      - '1.17'
       - '1.18'
       - '1.19'
+      - '1.20'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -485,6 +490,38 @@ definitions:
     maximum: 32768
     minimum: 80
     type: number
+  redisChart:
+    properties:
+      _rawValues:
+        $ref: '#/definitions/rawValues'
+      architecture:
+        type: string
+        enum:
+          - standalone
+          - replication
+        default: standalone
+      password:
+        type: string
+        x-secret: true
+      resources:
+        additionalProperties: false
+        properties:
+          master:
+            $ref: '#/definitions/resources'
+          sentinel:
+            $ref: '#/definitions/resources'
+          slave:
+            $ref: '#/definitions/resources'
+      sizes:
+        additionalProperties: false
+        properties:
+          master:
+            $ref: '#/definitions/size'
+          sentinel:
+            $ref: '#/definitions/size'
+          slave:
+            $ref: '#/definitions/size'
+    type: object
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -535,12 +572,20 @@ definitions:
         description: Requested resources (guaranteed).
     title: Pod resources
   scaling:
+    additionalProperties: false
     description: Min and max number of replicas.
     properties:
       maxReplicas:
         type: integer
       minReplicas:
         type: integer
+  size:
+    description: Disk size. Valid units are E|P|T|G|Ti|Gi.
+    examples:
+      - 1Gi
+      - 0.5Ti
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
+    type: string
   subdomainType:
     type: string
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
@@ -903,6 +948,22 @@ properties:
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
+  cloud:
+    additionalProperties: true
+    properties:
+      skipStorageClasses:
+        description:
+          List of storage classes to exclude from deployment, to avoid k8s errors due to patching not allowed.
+          This is a rather hacky way to circumvent the patching problem, going against idempotency, but we need it.
+          Without it we can't add new storageclasses to a cluster upgrading otomi.
+        type: array
+        items:
+          type: string
+          enum:
+            - std
+            - std-immediate
+            - fast
+            - fast-immediate
   charts:
     additionalProperties: true
     properties:
@@ -1246,6 +1307,12 @@ properties:
                 $ref: '#/definitions/resources'
               portal:
                 $ref: '#/definitions/resources'
+              redis:
+                $ref: '#/definitions/resources'
+              registry:
+                $ref: '#/definitions/resources'
+              registry-controller:
+                $ref: '#/definitions/resources'
           secretKey:
             type: string
             x-secret: true
@@ -1555,16 +1622,25 @@ properties:
           maxBodySize:
             type: string
             default: 1024m
+          maxBodySizeBytes:
+            type: number
+            default: 1073741824
+            description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
           modsecurity:
             title: MOD Security
             description: Enables MOD Security functionality.
             properties:
+              block:
+                description: Makes nginx block requests that are marked as violating the modsec rules.
+                type: boolean
+                default: true
               enabled:
                 type: boolean
                 default: false
               owasp:
+                description: Turns on the default OWASP rule set for modsec. See
                 type: boolean
-                default: false
+                default: true
             type: object
           resources:
             $ref: '#/definitions/resources'
@@ -1607,28 +1683,7 @@ properties:
                 type: string
                 x-secret: true
       oauth2-proxy-redis:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          architecture:
-            type: string
-            enum:
-              - standalone
-              - replication
-            default: standalone
-          password:
-            type: string
-            x-secret: true
-          resources:
-            additionalProperties: false
-            properties:
-              master:
-                $ref: '#/definitions/resources'
-              sentinel:
-                $ref: '#/definitions/resources'
-              slave:
-                $ref: '#/definitions/resources'
+        $ref: '#/definitions/redisChart'
       otomi-api:
         additionalProperties: false
         properties:
@@ -1728,21 +1783,12 @@ properties:
               grafana:
                 $ref: '#/definitions/resources'
       redis-shared:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-          resources:
-            additionalProperties: false
-            properties:
-              master:
-                $ref: '#/definitions/resources'
-              sentinel:
-                $ref: '#/definitions/resources'
-              slave:
-                $ref: '#/definitions/resources'
+        allOf:
+          - $ref: '#/definitions/redisChart'
+          - properties:
+              enabled:
+                type: boolean
+                default: false
       sitespeed:
         additionalProperties: false
         properties:
@@ -2006,14 +2052,16 @@ properties:
     type: string
   oidc:
     additionalProperties: false
-    description: 'Holds many parts used in different locations. Please see keycloak, istio and oauth-proxy all consuming parts.'
+    description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
       adminGroupID:
         type: string
       apiUrl:
         $ref: '#/definitions/url'
+        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       authUrl:
         $ref: '#/definitions/url'
+        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       clientID:
         type: string
       clientSecret:
@@ -2023,6 +2071,8 @@ properties:
         $ref: '#/definitions/url'
       scope:
         type: string
+        default: openid email profile
+        description: Default values are used by keycloak. May be overridden in case keycloak is disabled.
       teamAdminGroupID:
         type: string
       tenantID:
@@ -2031,11 +2081,12 @@ properties:
         $ref: '#/definitions/url'
       usernameClaimMapper:
         type: string
-        description: 'Claim name used by Keycloak to identify incoming users from identity provider'
+        description: Claim name used by Keycloak to identify incoming users from identity provider
+        default: '${CLAIM.email}'
       subClaimMapper:
         type: string
-        description: 'Select OIDC claim to be used as a unique user identifier'
-        default: 'sub'
+        description: Select OIDC claim to be passed by Keycloak as a unique user identifier. Best to not change this from the default.
+        default: sub
   otomi:
     additionalProperties: false
     properties:
