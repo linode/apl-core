@@ -15,6 +15,7 @@ import lintModule from './lint'
 import playgroundModule from './playground'
 import pullModule from './pull'
 import regCredModule from './regcred'
+import releasesModule from './releases'
 import rotateKeysModule from './rotate-keys'
 import scoreTemplatesModule from './score-templates'
 import syncModule from './sync'
@@ -40,6 +41,7 @@ export { default as hf } from './hf'
 export { default as lint } from './lint'
 export { default as pull } from './pull'
 export { default as regCred } from './regcred'
+export { default as releases } from './releases'
 export { default as rotateKeys } from './rotate-keys'
 export { default as scoreTemplates } from './score-templates'
 export { default as sync } from './sync'
@@ -75,6 +77,7 @@ export const commands: CommandModule[] = [
   validateTemplatesModule,
   validateValuesModule,
   valuesModule,
+  releasesModule,
   xModule,
 ]
 export const defaultCommand: CommandModule | null = null // bootstrapModule
