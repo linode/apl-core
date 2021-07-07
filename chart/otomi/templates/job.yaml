@@ -11,17 +11,20 @@ spec:
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- else }}
+      imagePullSecrets: 
+        - name: regcred
       {{- end }}
-      serviceAccountName: {{ include "otomi.serviceAccountName" . }}
-      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "otomi.fullname" . }}
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
-          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
+          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always" }}
           command: ['/bin/bash', '-c']
           args: 
             - |
@@ -46,8 +49,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: "{{ .Values.taskImage.repository | default "otomi/tasks" }}:{{ .Values.taskImage.tag | default "master"}}"
-          imagePullPolicy: {{ .Values.taskImage.pullPolicy }}
+          image: {{ .Values.tasksImageRepository | default "otomi/tasks" }}:{{ .Values.tasksImageTag | default "master"}}
+          imagePullPolicy: {{ .Values.taskImagePullPolicy | default "Always" }}
           command: ['sh', '-c']
           args:
             - |
@@ -67,8 +70,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: encrypt-values
-          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
-          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
+          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always"}}
           command: [/bin/bash, -c]
           args:
             - |
@@ -90,8 +93,9 @@ spec:
               mountPath: /env
       containers:
         - name: otomi-install
-          image: "{{ .Values.coreImage.repository | default "otomi/core" }}:{{ .Values.coreImage.tag | default .Values.otomi.version }}"
-          imagePullPolicy: {{ .Values.coreImage.pullPolicy }}
+          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always"}}
+{{ include "otomi.resources" . | indent 10 }}
           command: [/bin/bash, -c]
           args:
             - |

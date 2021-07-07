@@ -1,4 +1,3 @@
-{{- if .Values.serviceAccount.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -10,6 +9,5 @@ roleRef:
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: {{ include "otomi.serviceAccountName" . }}
+    name: {{ include "otomi.fullname" . }}
     namespace: {{ .Release.Namespace }}
-{{- end }}

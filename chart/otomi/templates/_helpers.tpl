@@ -50,13 +50,9 @@ app.kubernetes.io/name: {{ include "otomi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "otomi.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "otomi.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+{{- define "otomi.resources" -}}
+resources:
+  limits:
+    memory: "1Gi"
+    cpu: "1"
 {{- end }}
