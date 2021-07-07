@@ -26,13 +26,16 @@ export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   await setup(argv, options)
   await decrypt(argv)
   debug.verbose('Start Diff')
-  const output = await hfTrimmed({
-    fileOpts: argv.file,
-    labelOpts: argv.label,
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['diff', '--skip-deps'],
-  })
-  debug.verbose(output)
+  const output = await hfTrimmed(
+    {
+      fileOpts: argv.file,
+      labelOpts: argv.label,
+      logLevel: LOG_LEVEL_STRING(),
+      args: ['diff', '--skip-deps'],
+    },
+    debug.stream.verbose,
+  )
+  // debug.verbose(output)
   return output
 }
 

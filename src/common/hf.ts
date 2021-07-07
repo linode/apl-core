@@ -1,5 +1,7 @@
 import { load } from 'js-yaml'
-import { $ } from 'zx'
+import { Transform } from 'stream'
+import { $, ProcessOutput, ProcessPromise } from 'zx'
+import { DebugStream } from './debug'
 import { Arguments } from './helm-opts'
 import { asArray, ENV, LOG_LEVELS } from './no-deps'
 
@@ -13,8 +15,7 @@ export type HFParams = {
   logLevel?: string | null
   args: string | string[]
 }
-
-export const hf = async (args: HFParams): Promise<string> => {
+const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   const paramsCopy: HFParams = { ...args }
   paramsCopy.fileOpts = asArray(paramsCopy.fileOpts ?? [])
   paramsCopy.labelOpts = asArray(paramsCopy.labelOpts ?? [])
@@ -50,12 +51,32 @@ export const hf = async (args: HFParams): Promise<string> => {
   const stringArray = [...(labels ?? []), ...(files ?? [])]
 
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
-  const res = await $`helmfile ${stringArray} ${paramsCopy.args}`
+  const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
+  return proc
+}
+
+export const hf = async (args: HFParams, stream?: DebugStream): Promise<string> => {
+  const proc: ProcessPromise<ProcessOutput> = hfCore(args)
+  if (stream) proc.stdout.pipe(stream)
+  const res = await proc
   return `${res.stderr.trim()}\n${res.stdout.trim()}\n`
 }
 
-export const hfTrimmed = async (args: HFParams): Promise<string> => {
-  return trimHFOutput(await hf(args))
+export const hfTrimmed = async (args: HFParams, stream?: DebugStream): Promise<string> => {
+  const transform = new Transform({
+    transform(chunk, encoding, next) {
+      this.push(trimHFOutput(chunk.toString()))
+      next()
+    },
+  })
+  const proc: ProcessPromise<ProcessOutput> = hfCore(args)
+  if (stream) {
+    proc.stdout.pipe(transform).pipe(stream)
+  } else {
+    proc.stdout.pipe(transform)
+  }
+  const res = await proc
+  return `${res.stderr.trim()}\n${res.stdout.trim()}\n`
 }
 
 export const values = async (replacePath = false, asString = false): Promise<any | string> => {

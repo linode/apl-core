@@ -6,7 +6,7 @@ const SET_STATIC_COLORS = process.env.STATIC_COLORS ?? false
 
 const commonDebug: Debug.Debugger = Debug('otomi')
 commonDebug.enabled = true
-class DebugStream extends Writable {
+export class DebugStream extends Writable {
   output: Debug.Debugger
 
   constructor(output: Debug.Debugger, opts?: WritableOptions) {
@@ -14,11 +14,20 @@ class DebugStream extends Writable {
     this.output = output
   }
 
-  // eslint-disable-next-line no-underscore-dangle,class-methods-use-this
-  _write(chunk: any, encoding: any, next: any): void {
-    this.output(chunk.toString().trim())
-    next()
+  // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/explicit-module-boundary-types
+  _write(chunk: any, encoding: any, callback: (error?: Error | null) => void): void {
+    const data = chunk.toString().trim()
+    if (data.length > 0) this.output(data)
+    callback()
   }
+}
+export type OtomiStreamDebugger = {
+  log: DebugStream
+  trace: DebugStream
+  debug: DebugStream
+  verbose: DebugStream
+  warn: DebugStream
+  error: DebugStream
 }
 export type OtomiDebugger = {
   enabled: boolean
@@ -29,14 +38,7 @@ export type OtomiDebugger = {
   verbose: Debug.Debugger
   warn: Debug.Debugger
   error: Debug.Debugger
-  stream: {
-    log: DebugStream
-    trace: DebugStream
-    debug: DebugStream
-    verbose: DebugStream
-    warn: DebugStream
-    error: DebugStream
-  }
+  stream: OtomiStreamDebugger
   exit: (exitCode: number, ...args: any[]) => void
   extend: (namespace: string) => OtomiDebugger
 }
