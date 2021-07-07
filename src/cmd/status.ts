@@ -6,7 +6,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 
 type Arguments = BasicArguments
 
-const fileName = 'releases'
+const fileName = 'status'
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -23,7 +23,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 }
 
 // TODO: Rename function name to filename
-export const releases = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   // do {
@@ -43,7 +43,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
-    await releases(argv, {})
+    await status(argv, {})
   },
 }
 
