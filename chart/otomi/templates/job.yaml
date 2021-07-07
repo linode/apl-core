@@ -17,7 +17,7 @@ spec:
         runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.appVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
           resources:
             requests:
@@ -78,7 +78,7 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: push-values
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.appVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
           resources:
             requests:
@@ -108,7 +108,7 @@ spec:
               mountPath: /env
       containers:
         - name: otomi-install
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.appVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
           resources:
             limits:

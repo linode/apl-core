@@ -6,7 +6,7 @@ cluster:
   domainSuffix: ''
   k8sVersion: '1.20'
   name: 'dev'
-  provider: 'aws'
+  provider: ''
   region: ''
 kms:
   sops:
@@ -41,7 +41,7 @@ otomi:
   pullSecret: ''
   adminPassword: ''
   isMultitenant: true
-  version: master
+  version: APP_VERSION_PLACEHOLDER
 customer:
   name: ''
 dns:

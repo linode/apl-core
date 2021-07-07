@@ -82,6 +82,7 @@ jobs:
           echo ::set-output name=has_chart_changes::true
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
       - if: '${{ steps.chart_prepare.outputs.has_chart_changes }}'
         name: Convert values-schema.yaml to JSON
         id: convert_values_schema
