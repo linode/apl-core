@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
+import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -25,13 +25,19 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (options) await otomi.prepareEnvironment(debug, options)
 }
 
+// usage:
 export const example = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   debug.log(fileName)
   debug.log(argv)
-  debug.log(ENV.DIR)
-  throw new Error('Playground error')
+  const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
+  script.stdout.pipe(debug.stream.log)
+  const out = await script
+  debug.log('Break')
+  debug.log(out.stdout.trim())
+
+  // throw new Error('Playground error')
 }
 
 export const module = {

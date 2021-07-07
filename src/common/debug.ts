@@ -1,11 +1,25 @@
 import Debug from 'debug'
+import { Writable, WritableOptions } from 'stream'
 import { LOG_LEVEL, LOG_LEVELS } from './no-deps'
 
 const SET_STATIC_COLORS = process.env.STATIC_COLORS ?? false
 
 const commonDebug: Debug.Debugger = Debug('otomi')
 commonDebug.enabled = true
+class DebugStream extends Writable {
+  output: Debug.Debugger
 
+  constructor(output: Debug.Debugger, opts?: WritableOptions) {
+    super(opts)
+    this.output = output
+  }
+
+  // eslint-disable-next-line no-underscore-dangle,class-methods-use-this
+  _write(chunk: any, encoding: any, next: any): void {
+    this.output(chunk.toString().trim())
+    next()
+  }
+}
 export type OtomiDebugger = {
   enabled: boolean
   base: Debug.Debugger
@@ -15,6 +29,14 @@ export type OtomiDebugger = {
   verbose: Debug.Debugger
   warn: Debug.Debugger
   error: Debug.Debugger
+  stream: {
+    log: DebugStream
+    trace: DebugStream
+    debug: DebugStream
+    verbose: DebugStream
+    warn: DebugStream
+    error: DebugStream
+  }
   exit: (exitCode: number, ...args: any[]) => void
   extend: (namespace: string) => OtomiDebugger
 }
@@ -77,6 +99,14 @@ export function terminal(namespace: string, enabledOrDebugger?: boolean | OtomiD
     warn,
     error,
     exit,
+    stream: {
+      log: new DebugStream(log),
+      trace: new DebugStream(trace),
+      debug: new DebugStream(debug),
+      verbose: new DebugStream(verbose),
+      warn: new DebugStream(warn),
+      error: new DebugStream(error),
+    },
     extend: (newNS: string) => {
       return terminal(newNS)
     },
