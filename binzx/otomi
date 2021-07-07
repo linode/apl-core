@@ -17,13 +17,7 @@ if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
 elif [ -z "$ENV_DIR" ]; then
-  if [ ! "$(ls -A $PWD)" ]; then
-    export ENV_DIR=$PWD
-  elif [ -f "$PWD/env/cluster.yaml" ] && [ -f "$PWD/env/settings.yaml" ] && [ -d "$PWD/env/charts" ]; then
-    export ENV_DIR=$PWD
-  else
-    echo -e "ENV_DIR is not set, otomi needs ENV_DIR to function. \nENV_DIR can be a (yet) non-existing path, but needs to be an absolute path." && exit 1
-  fi
+  ENV_DIR=$PWD
 else
   mkdir -p $ENV_DIR
 fi
@@ -133,9 +127,18 @@ silent echo "Checking for updates"
 
 silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
-env | grep -v -e ^PATH= -e ^HOME= -e ^USER= -e ^TMPDIR= -e ^LC_ALL= >$tmp_env
 
 cat >>$tmp_env <<EOF
+ENV_DIR=${ENV_DIR}
+AZURE_TENANT_ID=${AZURE_TENANT_ID}
+AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+AWS_REGION=${AWS_REGION}
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+VAULT_TOKEN=${VAULT_TOKEN}
+GCLOUD_SERVICE_KEY=${GCLOUD_SERVICE_KEY}
+K8S_CONTEXT=${K8S_CONTEXT}
 SHELL=${path_to_exec_shell}
 OTOMI_TAG=${OTOMI_TAG}
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
@@ -203,7 +206,6 @@ docker run --network host --rm -it \
   $(check_volume_path $HOME/.azure "/home/app/.azure") \
   $(check_volume_path $ENV_DIR "$stack_dir/env") \
   $(check_volume_path $ENV_DIR "$ENV_DIR") \
-  $(check_volume_path $GOOGLE_APPLICATION_CREDENTIALS "$GOOGLE_APPLICATION_CREDENTIALS") \
   $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
   --env-file "$tmp_env" \
   -w "$stack_dir" \
