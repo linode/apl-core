@@ -19,7 +19,7 @@ pushd $ENV_DIR
 git init
 byor=false
 yqr charts.otomi-api.git && byor=true
-git checkout -b main
+
 if [ "$gitea_enabled" != "true" ] && ! $byor; then
   echo "Gitea was disabled but no charts.otomi-api.git config was given."
   exit 1
@@ -30,10 +30,12 @@ if [ "$gitea_enabled" != "true" ]; then
   readonly password=$(yqr charts.otomi-api.git.password)
   readonly email=$(yqr charts.otomi-api.git.email || echo "otomi-admin@$cluster_domain")
   readonly repo_url=$(yqr charts.otomi-api.git.repoUrl)
+  readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
   git config user.name "$username"
   git config user.password "$password"
   git config user.email "$email"
   git remote add origin $repo_url
+  git checkout -b $branch &>/dev/null
 else
   echo "Gitea is enabled."
   readonly gitea_url="gitea.$cluster_domain"
@@ -46,6 +48,7 @@ else
   echo "remote url:"
   git remote add origin "https://$gitea_user:$gitea_password@$gitea_url/$gitea_org/$gitea_repo.git"
   echo 'Added gitea as a remote origin'
+  git checkout -b main &>/dev/null
 fi
 
 echo 'Trying to do a git pull...'

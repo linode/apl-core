@@ -41,6 +41,7 @@ otomi:
   pullSecret: ''
   adminPassword: ''
   isMultitenant: true
+  # The version should not be changed! (Consider it read only) 
   version: APP_VERSION_PLACEHOLDER
 customer:
   name: ''
@@ -60,8 +61,8 @@ dns:
 charts:
   cert-manager:
     email: ''
-    # stage defaults to 'staging'
-    stage: production
+    # stage defaults to 'production'
+    # stage: staging
 
   external-dns:
     domainFilters:
