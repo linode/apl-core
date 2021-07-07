@@ -1,3 +1,5 @@
+image: {}
+tasksImage: {} 
 cluster:
   apiName: ''
   apiServer: 'https://ab.com'

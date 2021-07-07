@@ -50,9 +50,3 @@ app.kubernetes.io/name: {{ include "otomi.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{- define "otomi.resources" -}}
-resources:
-  limits:
-    memory: "1Gi"
-    cpu: "1"
-{{- end }}

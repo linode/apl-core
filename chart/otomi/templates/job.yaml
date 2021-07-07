@@ -11,20 +11,21 @@ spec:
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.imagePullSecrets }}
-      imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
-      {{- else }}
-      imagePullSecrets: 
-        - name: regcred
-      {{- end }}
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:
         runAsUser: 999
         runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
-          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always" }}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 1
           command: ['/bin/bash', '-c']
           args: 
             - |
@@ -49,8 +50,15 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: {{ .Values.tasksImageRepository | default "otomi/tasks" }}:{{ .Values.tasksImageTag | default "master"}}
-          imagePullPolicy: {{ .Values.taskImagePullPolicy | default "Always" }}
+          image: {{ .Values.tasksImage.repository | default "otomi/tasks" }}:{{ .Values.tasksImage.tag | default "master"}}
+          imagePullPolicy: {{ .Values.tasksImage.pullPolicy | default "Always" }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: '1'
           command: ['sh', '-c']
           args:
             - |
@@ -70,8 +78,15 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: push-values
-          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
-          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always"}}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: '1'
           command: [/bin/bash, -c]
           args:
             - |
@@ -93,9 +108,15 @@ spec:
               mountPath: /env
       containers:
         - name: otomi-install
-          image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
-          imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always"}}
-{{ include "otomi.resources" . | indent 10 }}
+          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Values.otomi.version }}
+          imagePullPolicy: {{ .Values.image.pullPolicy  | default "Always" }}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: '2'
+            requests:
+              memory: 1Gi
+              cpu: '1'
           command: [/bin/bash, -c]
           args:
             - |
