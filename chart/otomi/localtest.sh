@@ -20,7 +20,7 @@ echo ------ mapping values ------
 run_task sh -c "$(cat chart/otomi/scripts/map-values.sh)"
 
 echo ------ encrypting values ------
-run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/encrypt-values.sh)"
+run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/push-values.sh)"
 
 echo ------ deploying ------
 run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/deploy.sh)"

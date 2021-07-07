@@ -69,13 +69,13 @@ spec:
               mountPath: /env
             - name: values-secret
               mountPath: /secret
-        - name: encrypt-values
+        - name: push-values
           image: {{ .Values.coreImageRepository | default "otomi/core" }}:{{ .Values.coreImageTag | default .Values.otomi.version }}
           imagePullPolicy: {{ .Values.coreImagePullPolicy  | default "Always"}}
           command: [/bin/bash, -c]
           args:
             - |
-              {{ .Files.Get "scripts/encrypt-values.sh" | nindent 14 }}
+              {{ .Files.Get "scripts/push-values.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'
