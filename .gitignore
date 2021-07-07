@@ -8,6 +8,7 @@ node_modules/
 /*.json
 !.cspell.json
 !package*.json
-!.cspell.json
 *.DS_Store
 .values/values-schema.yaml
+.env
+.secrets

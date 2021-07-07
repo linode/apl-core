@@ -2,7 +2,7 @@
 . bin/common.sh
 
 readonly gitea_enabled=$(yqr charts.gitea.enabled || echo 'true')
-readonly stage=$(yqr charts.cert-manager.stage)
+readonly stage=$(yqr charts.cert-manager.stage || echo 'production')
 readonly cluster_domain=$(yqr cluster.domainSuffix)
 
 if [ "$stage" = "staging" ]; then

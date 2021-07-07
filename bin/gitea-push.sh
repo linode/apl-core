@@ -4,7 +4,7 @@
 run_crypt
 
 readonly gitea_enabled=$(yqr charts.gitea.enabled)
-readonly stage=$(yqr charts.cert-manager.stage)
+readonly stage=$(yqr charts.cert-manager.stage || echo 'production')
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 if [ "$stage" = "staging" ]; then
   function git() {

@@ -2,9 +2,9 @@ image: {}
 tasksImage: {} 
 cluster:
   apiName: ''
-  apiServer: 'https://ab.com'
-  domainSuffix: 'a.b'
-  k8sVersion: '1.19'
+  apiServer: ''
+  domainSuffix: ''
+  k8sVersion: '1.20'
   name: 'dev'
   provider: 'aws'
   region: ''
@@ -32,11 +32,11 @@ oidc:
   clientID: ''
   clientSecret: ''
   adminGroupID: ''
-  authUrl: 'https://ab.com'
-  issuer: 'https://ab.com'
+  authUrl: ''
+  issuer: ''
   teamAdminGroupID: ''
   tenantID: ''
-  tokenUrl: 'https://ab.com'
+  tokenUrl: ''
 otomi:
   pullSecret: ''
   adminPassword: ''
@@ -47,8 +47,8 @@ customer:
 dns:
   provider:
     # provide one of the following below: aws|azure|google
-    aws:
-      region: 'eu-central-1'
+    # aws:
+    #   region: eu-central-1
     # azure:
     #   aadClientId: ''
     #   aadClientSecret: ''
@@ -59,7 +59,7 @@ dns:
     #   project: ''
 charts:
   cert-manager:
-    email: 'a@b.com'
+    email: ''
     # stage defaults to 'staging'
     stage: production
 
