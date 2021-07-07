@@ -25,7 +25,7 @@ spec:
               cpu: 250m
             limits:
               memory: 1Gi
-              cpu: 1
+              cpu: '1'
           command: ['/bin/bash', '-c']
           args: 
             - |
