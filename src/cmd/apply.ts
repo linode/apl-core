@@ -4,7 +4,7 @@ import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { giteaPush } from '../common/gitea-push'
 import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
-import { hf, hfTrimmed, hfValues } from '../common/hf'
+import { hf, hfStream, hfValues } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { decrypt } from './decrypt'
@@ -60,26 +60,35 @@ const deployAll = async (argv: Arguments) => {
   if (!ENV.isCI) {
     await genDemoMtlsCertSecret()
   }
-  const templateOutput: string = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
+  const templateOutput: string = await hf(
+    { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
+    { streams: { stdout: debug.stream.debug } },
+  )
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-  hf({
-    fileOpts: argv.file,
-    labelOpts: [...(argv.label ?? []), 'stage!=post'],
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['apply', '--skip-deps'],
-  })
+  hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: [...(argv.label ?? []), 'stage!=post'],
+      logLevel: LOG_LEVEL_STRING(),
+      args: ['apply', '--skip-deps'],
+    },
+    { streams: { stdout: debug.stream.debug } },
+  )
   if (!ENV.isCI) {
     await genDrone(argv)
     await giteaPush(debug)
   }
-  hf({
-    fileOpts: argv.file,
-    labelOpts: [...(argv.label ?? []), 'stage=post'],
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['apply', '--skip-deps'],
-  })
+  hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: [...(argv.label ?? []), 'stage=post'],
+      logLevel: LOG_LEVEL_STRING(),
+      args: ['apply', '--skip-deps'],
+    },
+    { streams: { stdout: debug.stream.debug } },
+  )
 }
 
 export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
@@ -91,13 +100,15 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
   } else {
     debug.verbose('Start apply')
     const skipCleanup = argv['skip-cleanup'] ? '--skip-cleanup' : ''
-    const output = await hfTrimmed({
-      fileOpts: argv.file,
-      labelOpts: argv.label,
-      logLevel: LOG_LEVEL_STRING(),
-      args: ['apply', '--skip-deps', skipCleanup],
-    })
-    debug.verbose(output)
+    await hfStream(
+      {
+        fileOpts: argv.file,
+        labelOpts: argv.label,
+        logLevel: LOG_LEVEL_STRING(),
+        args: ['apply', '--skip-deps', skipCleanup],
+      },
+      { trim: true, streams: { stdout: debug.stream.verbose } },
+    )
   }
 }
 

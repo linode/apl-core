@@ -33,7 +33,10 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   debug.log(await validateTemplates(argv))
   // await checkPolicies(argv)
 
-  const hfOutput = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: ['template', '--skip-deps'] })
+  const hfOutput: string = (await hf({
+    fileOpts: 'helmfile.tpl/helmfile-init.yaml',
+    args: ['template', '--skip-deps'],
+  })) as string
   writeFileSync(tmpFile, hfOutput.replace(/^.*basePath=.*$/gm, ''))
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 

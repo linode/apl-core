@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv'
 import { existsSync } from 'fs'
-import { $, chalk, question } from 'zx'
+import { $, chalk, ProcessOutput, ProcessPromise, question } from 'zx'
+import { DebugStream } from './debug'
 import { ENV } from './no-deps'
 
 const MAX_RETRIES_QUESTION = 3
@@ -86,4 +87,14 @@ export const askYesNo = async (query: string, option?: { defaultYes?: boolean })
   })
 
   return yes.includes(answer.length > 0 ? answer : defaultAnswer)
+}
+
+export type Streams = {
+  stdout?: DebugStream
+  stderr?: DebugStream
+}
+export const stream = (cmd: ProcessPromise<ProcessOutput>, streams?: Streams): ProcessPromise<ProcessOutput> => {
+  if (streams?.stdout) cmd.stdout.pipe(streams.stdout)
+  if (streams?.stderr) cmd.stderr.pipe(streams.stderr)
+  return cmd
 }

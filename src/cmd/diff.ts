@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
-import { hfTrimmed } from '../common/hf'
+import { hfStream } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { decrypt } from './decrypt'
@@ -26,17 +26,16 @@ export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   await setup(argv, options)
   await decrypt(argv)
   debug.verbose('Start Diff')
-  const output = await hfTrimmed(
+  const res = await hfStream(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: LOG_LEVEL_STRING(),
       args: ['diff', '--skip-deps'],
     },
-    debug.stream.verbose,
+    { trim: true, streams: { stdout: debug.stream.verbose } },
   )
-  // debug.verbose(output)
-  return output
+  return `${res.stderr.trim()}\n${res.stdout.trim()}\n`
 }
 
 export const module = {

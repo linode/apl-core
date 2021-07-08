@@ -24,7 +24,7 @@ export const giteaPush = async (debugPar: OtomiDebugger): Promise<void> => {
   const giteaOrg = 'otomi'
   const giteaRepo = 'values'
 
-  const currDir = await ENV.PWD
+  const currDir = ENV.PWD
 
   cd(`${ENV.DIR}`)
   try {

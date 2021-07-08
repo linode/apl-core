@@ -3,6 +3,7 @@ import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { BasicArguments } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { stream } from '../common/zx-enhance'
 
 const fileName = 'x'
 let debug: OtomiDebugger
@@ -23,17 +24,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   const commands = argv._.slice(1).join(' ')
-  const output = await nothrow($`${commands}`)
-  output.stdout
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => debug.log(line))
-  output.stderr
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => debug.error(line))
+  const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
   process.exit(output.exitCode)
 }
 

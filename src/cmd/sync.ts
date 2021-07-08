@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
-import { hfTrimmed } from '../common/hf'
+import { hfStream } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { decrypt } from './decrypt'
@@ -27,13 +27,16 @@ export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   await decrypt(argv)
   debug.verbose('Start sync')
   const skipCleanup = argv['skip-cleanup'] ? '--skip-cleanup' : ''
-  const output = await hfTrimmed({
-    fileOpts: argv.file,
-    labelOpts: argv.label,
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['sync', '--skip-deps', skipCleanup],
-  })
-  debug.verbose(output)
+  await hfStream(
+    {
+      fileOpts: argv.file,
+      labelOpts: argv.label,
+      logLevel: LOG_LEVEL_STRING(),
+      args: ['sync', '--skip-deps', skipCleanup],
+    },
+    { trim: true, streams: { stdout: debug.stream.verbose } },
+  )
+  // debug.verbose(output)
 }
 
 export const module = {

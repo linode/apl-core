@@ -3,7 +3,7 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments, helmOptions } from '../common/helm-opts'
-import { hf, hfTrimmed } from '../common/hf'
+import { hf, hfStream } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { decrypt } from './decrypt'
@@ -63,13 +63,15 @@ export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptio
   if (!argv.label && !argv.file) {
     destroyAll()
   } else {
-    const output = await hfTrimmed({
-      fileOpts: argv.file,
-      labelOpts: argv.label,
-      logLevel: LOG_LEVEL_STRING(),
-      args: 'destroy',
-    })
-    debug.verbose(output)
+    await hfStream(
+      {
+        fileOpts: argv.file,
+        labelOpts: argv.label,
+        logLevel: LOG_LEVEL_STRING(),
+        args: 'destroy',
+      },
+      { trim: true, streams: { stdout: debug.stream.verbose } },
+    )
   }
 }
 
