@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export ENV_DIR=/home/app/stack/env
 . bin/common.sh
 
 function yqr_chart() {
@@ -51,7 +52,6 @@ else
   readonly branch='main'
   git config user.name 'Otomi Admin'
   git config user.email "otomi-admin@$cluster_domain"
-  echo "remote url:"
   git remote add origin "https://$gitea_user:$gitea_password@$gitea_url/$gitea_org/$gitea_repo.git"
   echo 'Added gitea as a remote origin'
 fi
@@ -65,15 +65,7 @@ popd
 
 bin/bootstrap.sh
 
-run_crypt dec
-
-found=$(find $ENV_DIR -type f -name 'secrets.*.yaml.dec')
-
-if [ "$found" == "" ]; then
-  # no decryptable files found, so encrypt and decrypt
-  run_crypt enc
-  run_crypt dec
-fi
+crypt dec
 
 # lastly copy the schema file
 cp values-schema.yaml $ENV_DIR/

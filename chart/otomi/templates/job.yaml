@@ -17,8 +17,10 @@ spec:
         runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: {{ merge dict .Values | dig "image" "pullPolicy" nil }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
           resources:
             requests:
               memory: 200Mi
@@ -26,7 +28,7 @@ spec:
             limits:
               memory: 1Gi
               cpu: '1'
-          command: ['/bin/bash', '-c']
+          command: [bash, -c]
           args: 
             - |
               {{ .Files.Get "scripts/bootstrap-values.sh" | nindent 14 }}
@@ -36,7 +38,9 @@ spec:
             - name: VERBOSE
               value: '1'
             - name: CI
-              value: 'true'
+              value: '1'
+            - name: OTOMI_VERSION
+              value: {{ .Values.image.tag | default .Chart.AppVersion }}
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -48,8 +52,10 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: {{ .Values.tasksImage.repository | default "otomi/tasks" }}:{{ .Values.tasksImage.tag | default "master"}}
-          imagePullPolicy: {{ merge dict .Values | dig "tasksImage" "pullPolicy" nil }}
+          image: {{ .Values.tasksImage.repository }}:{{ .Values.tasksImage.tag | default "latest" }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
           resources:
             requests:
               memory: 200Mi
@@ -57,10 +63,10 @@ spec:
             limits:
               memory: 1Gi
               cpu: '1'
-          command: ['sh', '-c']
+          command: [sh, -c]
           args:
             - |
-              {{ .Files.Get "scripts/map-values.sh" | nindent 14 }}
+              npm run tasks:otomi-chart
           env:
             - name: IN_DOCKER
               value: '1'
@@ -76,8 +82,10 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: push-values
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: {{ merge dict .Values | dig "image" "pullPolicy" nil }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
           resources:
             requests:
               memory: 200Mi
@@ -85,7 +93,7 @@ spec:
             limits:
               memory: 1Gi
               cpu: '1'
-          command: [/bin/bash, -c]
+          command: [bash, -c]
           args:
             - |
               {{ .Files.Get "scripts/push-values.sh" | nindent 14 }}
@@ -108,8 +116,10 @@ spec:
               mountPath: /secret
       containers:
         - name: otomi-install
-          image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: {{ merge dict .Values | dig "image" "pullPolicy" nil }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
           resources:
             limits:
               memory: 2Gi
@@ -117,12 +127,10 @@ spec:
             requests:
               memory: 1Gi
               cpu: '1'
-          command:
-            - bash
-            - -c 
-          args:
+          command: [bash, -c]
+          args: 
             - |
-              bin/otomi apply -t
+              bin/otomi apply
           env:
             - name: IN_DOCKER
               value: '1'

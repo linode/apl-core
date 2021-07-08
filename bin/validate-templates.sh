@@ -2,7 +2,7 @@
 . bin/common.sh
 . bin/common-modules.sh
 
-run_crypt
+crypt
 
 readonly schema_output_path="/tmp/otomi/kubernetes-json-schema"
 readonly output_path="/tmp/otomi/generated-crd-schemas"

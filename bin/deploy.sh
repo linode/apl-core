@@ -2,7 +2,7 @@
 set -x
 . bin/common.sh
 
-run_crypt
+crypt
 
 # install some stuff that we never want to end up as charts
 hf -f helmfile.tpl/helmfile-init.yaml template | kubectl apply -f -

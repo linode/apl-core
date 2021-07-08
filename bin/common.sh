@@ -139,8 +139,9 @@ function get_k8s_version() {
 }
 
 function otomi_image_tag() {
-  local otomi_version=''
-  [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
+  local otomi_version=$OTOMI_VERSION
+  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
+  [ -z "$otomi_version" ] && otomi_version=$(cat $PWD/package.json | jq -r .version)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }
@@ -167,14 +168,19 @@ function popd() {
 
 function crypt() {
   if [ ! -f "$ENV_DIR/.sops.yaml" ]; then
-    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping decryption"
+    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping crypt action"
     return 0
   fi
-  pushd $ENV_DIR
+  if [ -n "$GCLOUD_SERVICE_KEY" ]; then
+    GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
+    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
+    export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+  fi
   command=${1:-'dec'}
-  shift
+  [ "$*" != "" ] && shift
   files="$*"
   local out='/dev/stdout'
+  pushd $ENV_DIR
   [ -z "$VERBOSE" ] && out='/dev/null'
   [ -z "$files" ] && files=$(find . -type f -name 'secrets.*.yaml')
   for file in $files; do
@@ -209,17 +215,6 @@ function crypt() {
     fi
   done
   popd
-}
-
-function run_crypt() {
-  if [ -n "$GCLOUD_SERVICE_KEY" ]; then
-    GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
-    echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
-    export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
-  fi
-  action=${1:-decrypt}
-  [ "$*" != "" ] && shift
-  crypt $action "$@"
   unset GOOGLE_APPLICATION_CREDENTIALS
 }
 

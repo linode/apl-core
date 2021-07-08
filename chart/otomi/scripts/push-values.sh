@@ -1,11 +1,10 @@
 . bin/common.sh
-run_crypt enc
 
-function yqr() {
-  local ret=$(cat $OTOMI_VALUES_INPUT | yq r - "$@")
-  [ -z "$ret" ] && return 1
-  echo $ret
-}
+# Now that we have our file structure setup we can get the values and construct sops file
+bin/gen-sops.sh
+
+# And encrypt in case we have the config
+[ -f $ENV_DIR/.sops.yaml ] && crypt enc
 
 readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
 echo $branch

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-run_crypt
+crypt
 
 readonly gitea_enabled=$(yqr charts.gitea.enabled)
 readonly stage=$(yqr charts.cert-manager.stage || echo 'production')

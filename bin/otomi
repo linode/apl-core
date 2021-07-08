@@ -23,8 +23,6 @@ ENV_DIR=${ENV_DIR:-$PWD}
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
-else
-  ENV_DIR=${ENV_DIR:-$PWD}
 fi
 
 [ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
@@ -228,7 +226,7 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       else
-        drun "$exec run_crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+        drun "$exec crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       fi
       ;;
     argstest)
@@ -265,7 +263,7 @@ function execute() {
     decrypt)
       check_sops_file
       evaluate_secrets
-      drun "$exec run_crypt dec" "$@"
+      drun "$exec crypt dec" "$@"
       ;;
     diff)
       evaluate_secrets
@@ -285,7 +283,7 @@ function execute() {
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun ". bin/common.sh $original_params && run_crypt enc" "$@"
+      drun ". bin/common.sh $original_params && crypt enc" "$@"
       ;;
     gen-drone)
       evaluate_secrets
@@ -333,7 +331,7 @@ function execute() {
     template)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && QUIET=1 run_crypt && hf_template"
+      drun ". bin/common.sh $original_params && QUIET=1 crypt && hf_template"
       ;;
     test)
       evaluate_secrets
@@ -353,7 +351,7 @@ function execute() {
       evaluate_secrets
       check_env_dir
       set -o pipefail
-      drun "$exec run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun "$exec crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       drun "$@"
