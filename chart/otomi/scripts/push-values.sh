@@ -1,7 +1,11 @@
 . bin/common.sh
 run_crypt enc
 
+pwd
+ls -ahls
+
 readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
+echo $branch
 
 echo 'Pushing the values...'
 

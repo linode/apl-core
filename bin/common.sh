@@ -179,11 +179,17 @@ function crypt() {
   if [ -n "$files" ]; then
     for f in $files; do
       echo "${command}rypting $f" >$out
-      drun "helm secrets $command ./env/$f" >$out
+      [ $(stat -c %Y $secret.dec) -gt $(stat -c %Y $secret) ] && helm secrets $command $secret
     done
   else
     if [ "$command" = 'enc' ]; then
-      find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
+      for secret in $(find . -type f -name 'secrets.*.yaml'); do
+        if [ $(stat -c %Y $secret.dec) -gt $(stat -c %Y $secret) ]; then
+          helm secrets enc $secret >$out
+        else
+          [ -n "$VERBOSE" ] && echo "Skipping encryption for $secret as it is not changed."
+        fi
+      done
     else
       find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
     fi
