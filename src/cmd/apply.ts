@@ -67,7 +67,7 @@ const deployAll = async (argv: Arguments) => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-  hf(
+  await hf(
     {
       fileOpts: argv.file,
       labelOpts: [...(argv.label ?? []), 'stage!=post'],
@@ -80,7 +80,7 @@ const deployAll = async (argv: Arguments) => {
     await genDrone(argv)
     await giteaPush(debug)
   }
-  hf(
+  await hf(
     {
       fileOpts: argv.file,
       labelOpts: [...(argv.label ?? []), 'stage=post'],
