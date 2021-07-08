@@ -9,18 +9,18 @@ function run_core() {
 }
 
 function run_task() {
-  docker run --rm -it -e OTOMI_ENV_DIR=/env -e IN_DOCKER=1 -e CI=1 -e OTOMI_VALUES_INPUT=/secret/values.yaml -e OTOMI_SCHEMA_PATH=/env/values-schema.yaml -v $ENV_OUT:/env -v $VALUES_DIR:/secret -v /tmp:/tmp otomi/tasks:otomi-chart "$@"
+  docker run --rm -it -e OTOMI_ENV_DIR=/env -e IN_DOCKER=1 -e CI=1 -e OTOMI_VALUES_INPUT=/secret/values.yaml -e OTOMI_SCHEMA_PATH=/env/values-schema.yaml -v $ENV_OUT:/env -v $VALUES_DIR:/secret -v /tmp:/tmp otomi/tasks:master "$@"
 }
 
 coreTag=chart-schema
 
-run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/bootstrap-values.sh)"
+# run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/bootstrap-values.sh)"
 
-echo ------ mapping values ------
-run_task sh -c "npm run tasks:otomi-chart"
+# echo ------ mapping values ------
+# run_task sh -c "npm run tasks:otomi-chart"
 
 echo ------ push values ------
 run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/push-values.sh)"
 
 echo ------ deploying ------
-run_core otomi/core:$coreTag bin/otomi apply -v
+run_core otomi/core:$coreTag bash -c 'bin/deploy.sh'

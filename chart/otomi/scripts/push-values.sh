@@ -3,7 +3,7 @@
 # Now that we have our file structure setup we can get the values and construct sops file
 bin/gen-sops.sh
 
-# And encrypt in case we have the config
+# And encrypt in case we have the sops config
 [ -f $ENV_DIR/.sops.yaml ] && crypt enc
 
 readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')

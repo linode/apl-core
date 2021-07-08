@@ -5,7 +5,18 @@ set -e
 shopt -s expand_aliases
 
 # Environment vars
-ENV_DIR=${ENV_DIR:-./env}
+if [ -n "$IN_DOCKER" ]; then
+  ENV_DIR=/home/app/stack/env
+else
+  ENV_DIR=${ENV_DIR:-$PWD/env}
+fi
+[ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR='/home/app/stack/env'
+if [ -n "$TESTING" ]; then
+  CI=1
+  ENV_DIR="$PWD/tests/fixtures"
+fi
+[ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
+
 LOG_LEVEL='--log-level warn'
 
 # Common vars
@@ -121,9 +132,8 @@ function yq() {
   return $?
 }
 
-all_values=
 function yqr() {
-  [ -z "$all_values" ] && all_values=$(hf_values)
+  local all_values=$(hf_values)
   local ret=$(echo "$all_values" | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
@@ -180,9 +190,9 @@ function crypt() {
   [ "$*" != "" ] && shift
   files="$*"
   local out='/dev/stdout'
-  pushd $ENV_DIR
   [ -z "$VERBOSE" ] && out='/dev/null'
-  [ -z "$files" ] && files=$(find . -type f -name 'secrets.*.yaml')
+  [ -z "$files" ] && files=$(find $ENV_DIR/env -type f -name 'secrets.*.yaml')
+  pushd $ENV_DIR
   for file in $files; do
     if [ "$command" = 'enc' ]; then
       # somehow sops does not treat encryption with the same grace as decryption, and disregards timestamps

@@ -127,10 +127,7 @@ spec:
             requests:
               memory: 1Gi
               cpu: '1'
-          command: [bash, -c]
-          args: 
-            - |
-              bin/otomi apply
+          command: [bin/deploy.sh]
           env:
             - name: IN_DOCKER
               value: '1'

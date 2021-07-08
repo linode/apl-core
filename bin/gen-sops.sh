@@ -6,12 +6,13 @@ readonly target_path="$ENV_DIR/.sops.yaml"
 
 declare -A map=(["aws"]="kms" ["azure"]="azure_keyvault" ["google"]="gcp_kms" ["vault"]="hc_vault_transit_uri")
 
-readonly provider=$(yqr kms.sops.provider)
+settings_file=$ENV_DIR/env/settings.yaml
+[ -f $settings_file ] && provider=$(cat $settings_file | yq r - kms.sops.provider)
 [ "$provider" = '' ] && echo "No sops information given. Assuming no sops enc/decryption needed." && exit
 
 readonly template_path="$PWD/tpl/.sops.yaml"
 readonly kmsProvider="${map[$provider]}"
-readonly kmsKeys=$(yqr kms.sops.$provider.keys)
+readonly kmsKeys=$(cat $settings_file | yq r - kms.sops.$provider.keys)
 
 echo "Creating sops file for provider $provider"
 function create_from_template() {
