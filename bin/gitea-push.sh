@@ -42,7 +42,7 @@ if ! git fetch origin main >/dev/null; then
   git add -A
   git commit --no-verify -m "automated commit of otomi-values"
   git push -u origin main -f
-  git branch --set-upstream-to=origin/main main
+  git branch
   set -e
   echo "Otomi-values has been pushed to gitea"
 else

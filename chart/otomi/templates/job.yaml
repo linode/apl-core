@@ -100,12 +100,16 @@ spec:
               value: 'true'
             - name: ENV_DIR
               value: /env
+            - name: OTOMI_VALUES_INPUT
+              value: /secret/values.yaml
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /env
+            - name: values-secret
+              mountPath: /secret
       containers:
         - name: otomi-install
           image: {{ .Values.image.repository | default "otomi/core" }}:{{ .Values.image.tag | default .Chart.AppVersion }}
@@ -117,10 +121,7 @@ spec:
             requests:
               memory: 1Gi
               cpu: '1'
-          command: [/bin/bash, -c]
-          args:
-            - |
-              {{ .Files.Get "scripts/deploy.sh" | nindent 14 }}
+          command: [ bin/deploy.sh ]
           env:
             - name: IN_DOCKER
               value: '1'

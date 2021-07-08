@@ -123,12 +123,7 @@ function yq() {
 
 all_values=
 function yqr() {
-  if [ -n "$OTOMI_VALUES_INPUT" ]; then
-    # we are in the chart installer and will read from the given file
-    [ -z "$all_values" ] && all_values=$(cat $OTOMI_VALUES_INPUT)
-  else
-    [ -z "$all_values" ] && all_values=$(hf_values)
-  fi
+  [ -z "$all_values" ] && all_values=$(hf_values)
   local ret=$(echo "$all_values" | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
