@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-function yqr() {
+function yqr_chart() {
   local ret=$(cat $OTOMI_VALUES_INPUT | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
 }
 
-readonly gitea_enabled=$(yqr charts.gitea.enabled || echo 'true')
-readonly stage=$(yqr charts.cert-manager.stage || echo 'production')
-readonly cluster_domain=$(yqr cluster.domainSuffix)
+readonly gitea_enabled=$(yqr_chart charts.gitea.enabled || echo 'true')
+readonly stage=$(yqr_chart charts.cert-manager.stage || echo 'production')
+readonly cluster_domain=$(yqr_chart cluster.domainSuffix)
 
 if [ "$stage" = "staging" ]; then
   export GIT_SSL_NO_VERIFY=true
@@ -24,7 +24,7 @@ rm -rf $ENV_DIR/*
 pushd $ENV_DIR
 git init
 byor=false
-yqr charts.otomi-api.git && byor=true
+yqr_chart charts.otomi-api.git && byor=true
 
 if [ "$gitea_enabled" != "true" ] && ! $byor; then
   echo "Gitea was disabled but no charts.otomi-api.git config was given."
@@ -32,11 +32,11 @@ if [ "$gitea_enabled" != "true" ] && ! $byor; then
 fi
 if [ "$gitea_enabled" != "true" ]; then
   echo "Gitea is disabled. Using external git provider from config."
-  readonly username=$(yqr charts.otomi-api.git.user)
-  readonly password=$(yqr charts.otomi-api.git.password)
-  readonly email=$(yqr charts.otomi-api.git.email || echo "otomi-admin@$cluster_domain")
-  readonly repo_url=$(yqr charts.otomi-api.git.repoUrl)
-  readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
+  readonly username=$(yqr_chart charts.otomi-api.git.user)
+  readonly password=$(yqr_chart charts.otomi-api.git.password)
+  readonly email=$(yqr_chart charts.otomi-api.git.email || echo "otomi-admin@$cluster_domain")
+  readonly repo_url=$(yqr_chart charts.otomi-api.git.repoUrl)
+  readonly branch=$(yqr_chart charts.otomi-api.git.branch || echo 'main')
   git config user.name "$username"
   git config user.password "$password"
   git config user.email "$email"
@@ -44,7 +44,7 @@ if [ "$gitea_enabled" != "true" ]; then
 else
   echo "Gitea is enabled."
   readonly gitea_url="gitea.$cluster_domain"
-  readonly gitea_password=$(yqr charts.gitea.adminPassword || yqr otomi.adminPassword)
+  readonly gitea_password=$(yqr_chart charts.gitea.adminPassword || yqr_chart otomi.adminPassword)
   readonly gitea_user='otomi-admin'
   readonly gitea_org='otomi'
   readonly gitea_repo='values'

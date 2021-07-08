@@ -37,8 +37,6 @@ spec:
               value: '1'
             - name: CI
               value: 'true'
-            - name: ENV_DIR
-              value: /env
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -46,7 +44,7 @@ spec:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
-              mountPath: /env
+              mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
         - name: map-values
@@ -98,8 +96,6 @@ spec:
               value: '1'
             - name: CI
               value: 'true'
-            - name: ENV_DIR
-              value: /env
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -107,7 +103,7 @@ spec:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
-              mountPath: /env
+              mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
       containers:
@@ -129,8 +125,6 @@ spec:
               value: '1'
             - name: CI
               value: 'true'
-            - name: ENV_DIR
-              value: /home/app/stack/env
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
