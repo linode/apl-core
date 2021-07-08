@@ -78,18 +78,21 @@ export const hfTrimmed = async (args: HFParams, stream?: DebugStream): Promise<s
   const res = await proc
   return `${res.stderr.trim()}\n${res.stdout.trim()}\n`
 }
-
-export const values = async (replacePath = false, asString = false): Promise<any | string> => {
+export type ValuesOptions = {
+  replacePath?: boolean
+  asString?: boolean
+}
+export const values = async (opts?: ValuesOptions): Promise<any | string> => {
   if (value) return value
   let result = await hfTrimmed({ fileOpts: './helmfile.tpl/helmfile-dump.yaml', args: 'build' })
-  if (replacePath) result = replaceHFPaths(result)
-  if (asString) return result
+  if (opts?.replacePath) result = replaceHFPaths(result)
+  if (opts?.asString) return result
   value = load(result) as any
   return value
 }
 
 export const hfValues = async (): Promise<any> => {
-  return (await values(true)).renderedValues
+  return (await values({ replacePath: true })).renderedValues
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string): Promise<string> => {
