@@ -180,7 +180,8 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
 fi
 
 silent echo "Pulling latest version of the docker image"
-[ -z $NOPULL ] && silent docker pull $otomi_tools_image
+# TODO: Remove otomi-zx check
+[ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] || [ "$OTOMI_TAG" = 'otomi-zx' ] && [ -z $NOPULL ] && silent docker pull $otomi_tools_image
 status=$?
 if [ "$status" -ne 0 ]; then
   echo "Could not find an image for the supplied OTOMI_TAG: '${OTOMI_TAG}'"

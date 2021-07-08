@@ -14,7 +14,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 // TODO: extend this interface with the HelmArguments from '../helm.opts.ts' or add the options that you define in the `builder` at the bottom
 interface Arguments extends BasicArguments {
   // TODO: Define custom options, if necessary
-  TODO: string
+  TODO?: string
 }
 
 // TODO: Rename fileName var to name of file / otomi command

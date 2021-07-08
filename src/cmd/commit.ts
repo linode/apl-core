@@ -38,7 +38,8 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
 
 export const module = {
   command: fileName,
-  describe: 'Execute wrapper for generate pipelines -> git commit changed files', // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
+  // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
+  describe: 'Execute wrapper for generate pipelines -> git commit changed files',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
