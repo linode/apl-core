@@ -22,16 +22,9 @@ else
   mkdir -p $ENV_DIR
 fi
 
-# Use tput for a clear screen when starting, that way it doesn't need to "hang" on empty while prepping
-# https://linuxcommand.org/lc3_adv_tput.php
-tput_exists=$(which tput)
-[ -n "$tput_exists" ] && tput smcup
+# TODO: Make conditional?
 silent() {
-  if [ -n "$tput_exists" ] ; then
-    "$@"
-  else
-    "$@" &>/dev/null
-  fi
+  "$@" &>/dev/null
 }
 
 this_is_bash=$(ps -o ppid= $$)
@@ -194,7 +187,6 @@ if [ "$status" -ne 0 ]; then
   exit $status
 fi
 
-[ -n "$tput_exists" ] && tput clear
 docker run --network host --rm -it \
   $stack_volume \
   $tmp_volume \
@@ -215,9 +207,5 @@ docker run --network host --rm -it \
 status=$?
 rm -f "$tmp_env"
 rm -rf "$tmp_volume_dir"
-
-# Named volume stuff
-docker volume rm $NAMED_VOLUME >/dev/null 2>&1
-docker rmi hello-world >/dev/null 2>&1
 
 exit $status
