@@ -170,24 +170,44 @@ function crypt() {
     [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping decryption"
     return 0
   fi
-  pushd $ENV_DIR/env
+  pushd $ENV_DIR
   command=${1:-'dec'}
   shift
   files="$*"
   local out='/dev/stdout'
   [ -z "$VERBOSE" ] && out='/dev/null'
-  if [ -n "$files" ]; then
-    for f in $files; do
-      echo "${command}rypting $f" >$out
-      drun "helm secrets $command ./env/$f" >$out
-    done
-  else
+  [ -z "$files" ] && files=$(find . -type f -name 'secrets.*.yaml')
+  for file in $files; do
     if [ "$command" = 'enc' ]; then
-      find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
+      # somehow sops does not treat encryption with the same grace as decryption, and disregards timestamps
+      # so we check those and only encrypt when there is a change found in the .dec file
+      sec_diff=0
+      if [ -f $file.dec ]; then
+        [ -n "$VERBOSE" ] && echo "Found decrypted $file.dec. Calculating diff..."
+        sec_diff=$(expr $(stat -c %Y $file.dec) - $(stat -c %Y $file))
+        [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
+      fi
+      if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
+        helm secrets enc $file >$out
+        ts=$(stat -c %Y $file)
+        chek_ts=$(expr $ts + 1)
+        touch -d @$chek_ts $file.dec
+        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
+      else
+        [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
+      fi
     else
-      find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
+      if helm secrets dec $file >$out; then
+        # we correct timestamp of decrypted file to match source file,
+        # in order to detect changes for conditional encryption
+        [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."
+        ts=$(stat -c %Y $file)
+        chek_ts=$(expr $ts + 1)
+        touch -d @$chek_ts $file.dec
+        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
+      fi
     fi
-  fi
+  done
   popd
 }
 
@@ -198,7 +218,8 @@ function run_crypt() {
     export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
   fi
   action=${1:-decrypt}
-  crypt $action
+  [ "$*" != "" ] && shift
+  crypt $action "$@"
   unset GOOGLE_APPLICATION_CREDENTIALS
 }
 

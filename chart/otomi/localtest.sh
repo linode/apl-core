@@ -5,7 +5,7 @@
 function run_core() {
   image=$1
   shift
-  docker run --rm -it --env-file=chart/otomi/.env -e VERBOSE=1 -e ENV_DIR=/env -e IN_DOCKER=1 -e CI=1 -e OTOMI_VALUES_INPUT=/secret/values.yaml -w $PWD -v $ENV_OUT:/env -v $PWD:$PWD -v $VALUES_DIR:/secret -v /tmp:/tmp $image "$@"
+  docker run --rm -it --env-file=chart/otomi/.env -e VERBOSE=1 -e IN_DOCKER=1 -e CI=1 -e OTOMI_VALUES_INPUT=/secret/values.yaml -w $PWD -v $ENV_OUT:/env -v $PWD:$PWD -v $VALUES_DIR:/secret -v /tmp:/tmp $image "$@"
 }
 
 function run_task() {
@@ -23,4 +23,4 @@ echo ------ encrypting values ------
 run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/push-values.sh)"
 
 echo ------ deploying ------
-run_core otomi/core:$coreTag bash -c "$(cat chart/otomi/scripts/deploy.sh)"
+run_core otomi/core:$coreTag bin/otomi apply -v

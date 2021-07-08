@@ -8,6 +8,7 @@ function yqr() {
 }
 
 readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
+echo $branch
 
 echo 'Pushing the values...'
 
