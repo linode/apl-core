@@ -11,7 +11,7 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
-{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 
 type: Job
 enabled: true

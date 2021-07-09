@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
-{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 
 type: Job
 name: gitea

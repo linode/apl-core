@@ -2,7 +2,7 @@
 . bin/common.sh
 
 set +e
-run_crypt
+crypt
 
 readonly root=$(yqr cluster.domainSuffix)
 readonly dom="tlspass.$root"

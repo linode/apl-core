@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 . bin/common.sh
 
-run_crypt
+crypt
 
 readonly gitea_enabled=$(yqr charts.gitea.enabled)
-readonly stage=$(yqr charts.cert-manager.stage)
+readonly stage=$(yqr charts.cert-manager.stage || echo 'production')
 [ "$gitea_enabled" != "true" ] && echo "Gitea is disabled" && exit 0
 if [ "$stage" = "staging" ]; then
   function git() {
@@ -42,7 +42,7 @@ if ! git fetch origin main >/dev/null; then
   git add -A
   git commit --no-verify -m "automated commit of otomi-values"
   git push -u origin main -f
-  git branch --set-upstream-to=origin/main main
+  git branch
   set -e
   echo "Otomi-values has been pushed to gitea"
 else

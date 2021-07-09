@@ -5,7 +5,15 @@ set -e
 shopt -s expand_aliases
 
 # Environment vars
-ENV_DIR=${ENV_DIR:-./env}
+ENV_DIR=${ENV_DIR:-$PWD}
+[ "$ENV_DIR" = '/home/app/stack' ] && ENV_DIR='/home/app/stack/env'
+[ -d $ENV_DIR/env/env ] && ENV_DIR=$ENV_DIR/env
+if [ -n "$TESTING" ]; then
+  CI=1
+  ENV_DIR="$PWD/tests/fixtures"
+fi
+[ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
+
 LOG_LEVEL='--log-level warn'
 
 # Common vars
@@ -121,14 +129,8 @@ function yq() {
   return $?
 }
 
-all_values=
 function yqr() {
-  if [ -n "$OTOMI_VALUES_INPUT" ]; then
-    # we are in the chart installer and will read from the given file
-    [ -z "$all_values" ] && all_values=$(cat $OTOMI_VALUES_INPUT)
-  else
-    [ -z "$all_values" ] && all_values=$(hf_values)
-  fi
+  local all_values=$(hf_values)
   local ret=$(echo "$all_values" | yq r - "$@")
   [ -z "$ret" ] && return 1
   echo $ret
@@ -144,8 +146,9 @@ function get_k8s_version() {
 }
 
 function otomi_image_tag() {
-  local otomi_version=''
-  [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
+  local otomi_version=$OTOMI_VERSION
+  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
+  [ -z "$otomi_version" ] && otomi_version=$(cat $PWD/package.json | jq -r .version)
   [ -z "$otomi_version" ] && otomi_version='master'
   echo $otomi_version
 }
@@ -172,38 +175,53 @@ function popd() {
 
 function crypt() {
   if [ ! -f "$ENV_DIR/.sops.yaml" ]; then
-    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping decryption"
+    [ -n "$VERBOSE" ] && echo "No .sops.yaml found so skipping crypt action"
     return 0
   fi
-  pushd $ENV_DIR/env
-  command=${1:-'dec'}
-  shift
-  files="$*"
-  local out='/dev/stdout'
-  [ -z "$VERBOSE" ] && out='/dev/null'
-  if [ -n "$files" ]; then
-    for f in $files; do
-      echo "${command}rypting $f" >$out
-      drun "helm secrets $command ./env/$f" >$out
-    done
-  else
-    if [ "$command" = 'enc' ]; then
-      find . -type f -name 'secrets.*.yaml' -exec helm secrets enc {} \; >$out
-    else
-      find . -type f -name 'secrets.*.yaml' -exec helm secrets dec {} \; >$out
-    fi
-  fi
-  popd
-}
-
-function run_crypt() {
   if [ -n "$GCLOUD_SERVICE_KEY" ]; then
     GOOGLE_APPLICATION_CREDENTIALS="/tmp/key.json"
     echo $GCLOUD_SERVICE_KEY >$GOOGLE_APPLICATION_CREDENTIALS
     export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
   fi
-  action=${1:-decrypt}
-  crypt $action
+  command=${1:-'dec'}
+  [ "$*" != "" ] && shift
+  files="$*"
+  local out='/dev/stdout'
+  [ -z "$VERBOSE" ] && out='/dev/null'
+  [ -z "$files" ] && files=$(find $ENV_DIR/env -type f -name 'secrets.*.yaml')
+  pushd $ENV_DIR
+  for file in $files; do
+    if [ "$command" = 'enc' ]; then
+      # somehow sops does not treat encryption with the same grace as decryption, and disregards timestamps
+      # so we check those and only encrypt when there is a change found in the .dec file
+      sec_diff=0
+      if [ -f $file.dec ]; then
+        [ -n "$VERBOSE" ] && echo "Found decrypted $file.dec. Calculating diff..."
+        sec_diff=$(expr $(stat -c %Y $file.dec) - $(stat -c %Y $file))
+        [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
+      fi
+      if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
+        helm secrets enc $file >$out
+        ts=$(stat -c %Y $file)
+        chek_ts=$(expr $ts + 1)
+        touch -d @$chek_ts $file.dec
+        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
+      else
+        [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
+      fi
+    else
+      if helm secrets dec $file >$out; then
+        # we correct timestamp of decrypted file to match source file,
+        # in order to detect changes for conditional encryption
+        [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."
+        ts=$(stat -c %Y $file)
+        chek_ts=$(expr $ts + 1)
+        touch -d @$chek_ts $file.dec
+        [ -n "$VERBOSE" ] && echo "Set timestamp of decrypted file to that of source file: $chek_ts"
+      fi
+    fi
+  done
+  popd
   unset GOOGLE_APPLICATION_CREDENTIALS
 }
 

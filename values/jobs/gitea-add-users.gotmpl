@@ -2,7 +2,7 @@
 {{- $c := $v.charts }}
 {{- $g := $c | get "gitea" dict }}
 {{- $cm := $c | get "cert-manager" }}
-{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 
 type: CronJob
 name: gitea-add-users

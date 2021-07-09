@@ -1,4 +1,4 @@
-{{- $skipVerify := .Values.certStage | default "staging" }}
+{{- $skipVerify := .Values.certStage | default "production" }}
 {{- $hookUrl := print "https://gatekeeper-webhook-service.gatekeeper-system:443" }}
 apiVersion: batch/v1
 kind: Job
