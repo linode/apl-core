@@ -41,6 +41,8 @@ spec:
               value: '1'
             - name: OTOMI_VERSION
               value: {{ .Values.image.tag | default .Chart.AppVersion }}
+            - name: ENV_DIR
+              value: /home/app/stack/env
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -104,6 +106,8 @@ spec:
               value: '1'
             - name: CI
               value: 'true'
+            - name: ENV_DIR
+              value: /home/app/stack/env
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -128,6 +132,10 @@ spec:
               memory: 1Gi
               cpu: '1'
           command: [bin/deploy.sh]
+          # command: [bash, -c]
+          # args:
+          # - |
+          #   while true; do sleep 5; done
           env:
             - name: IN_DOCKER
               value: '1'
@@ -135,6 +143,8 @@ spec:
               value: '1'
             - name: CI
               value: 'true'
+            - name: ENV_DIR
+              value: /home/app/stack/env
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets

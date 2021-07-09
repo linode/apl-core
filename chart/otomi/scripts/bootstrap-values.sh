@@ -15,10 +15,12 @@ if [ "$stage" = "staging" ]; then
   export GIT_SSL_NO_VERIFY=true
 fi
 
-# only for devving, since this chart starts with an empty ENV_DIR anyway:
-rm -rf $ENV_DIR/.git
-rm -rf $ENV_DIR/.vscode
-rm -rf $ENV_DIR/*
+if [ "$PWD" != '/home/app/stack' ]; then
+  # only for devving, since this chart starts with an empty ENV_DIR anyway:
+  rm -rf $ENV_DIR/.git
+  rm -rf $ENV_DIR/.vscode
+  rm -rf $ENV_DIR/*
+fi
 
 # init git setup pointing to repo
 pushd $ENV_DIR

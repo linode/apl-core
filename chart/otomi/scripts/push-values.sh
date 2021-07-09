@@ -6,7 +6,9 @@ bin/gen-sops.sh
 # And encrypt in case we have the sops config
 [ -f $ENV_DIR/.sops.yaml ] && crypt enc
 
-readonly branch=$(yqr charts.otomi-api.git.branch || echo 'main')
+api_file=$ENV_DIR/env/charts/otomi-api.yaml
+branch=$(cat $api_file | yq r - charts.otomi-api.git.branch)
+[ -z "$branch" ] && branch='main'
 echo $branch
 
 echo 'Pushing the values...'
@@ -19,3 +21,5 @@ git commit --no-verify -m "automated commit of otomi-values"
 set +e
 git push --set-upstream origin $branch # &>/dev/null
 echo 'Done.'
+
+find $ENV_DIR/env -name 'secrets.*.yaml.dec' -exec rm {} \;

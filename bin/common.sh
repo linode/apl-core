@@ -6,6 +6,7 @@ shopt -s expand_aliases
 
 # Environment vars
 ENV_DIR=${ENV_DIR:-$PWD}
+[ "$ENV_DIR" = '/home/app/stack' ] && ENV_DIR='/home/app/stack/env'
 [ -d $ENV_DIR/env/env ] && ENV_DIR=$ENV_DIR/env
 if [ -n "$TESTING" ]; then
   CI=1

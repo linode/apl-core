@@ -5,7 +5,7 @@
 function run_core() {
   image=$1
   shift
-  docker run --rm -it --env-file=chart/otomi/.env -e VERBOSE=1 -e IN_DOCKER=1 -e CI=1 -e OTOMI_VERSION=$OTOMI_VERSION -e OTOMI_VALUES_INPUT=/secret/values.yaml -w ${WORKDIR:-$PWD} -e ENV_DIR=/home/app/stack/env -v $ENV_OUT:/home/app/stack/env -v $PWD:$PWD -v $VALUES_DIR:/secret -v /tmp:/tmp $image "$@"
+  docker run --rm -it --env-file=../.env -e VERBOSE=1 -e IN_DOCKER=1 -e CI=1 -e OTOMI_VERSION=$OTOMI_VERSION -e OTOMI_VALUES_INPUT=/secret/values.yaml -w ${WORKDIR:-$PWD} -e ENV_DIR=/home/app/stack/env -v $ENV_OUT:/home/app/stack/env -v $PWD:$PWD -v $VALUES_DIR:/secret -v /tmp:/tmp $image "$@"
 }
 
 function run_task() {

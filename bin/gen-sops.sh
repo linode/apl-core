@@ -31,10 +31,10 @@ if [ -z "$CI" ]; then
   # provide those to this context: $ENV_DIR/.secrets (gitignored)
   [ ! -f $ENV_DIR/.secrets ] && err "Expecting $ENV_DIR/.secrets to exist and hold credentials for SOPS." && exit 1
   . $ENV_DIR/.secrets
-  if [ "$provider" = "google" ]; then
-    # we create gcp-key.json with the google creds for the vscode SOPS plugin,
-    # which has been configured to also read credentials from that file
-    echo "Creating gcp-key.json for vscode."
-    echo $GCLOUD_SERVICE_KEY >$ENV_DIR/gcp-key.json
-  fi
+fi
+if [ "$provider" = "google" ]; then
+  # we create gcp-key.json with the google creds for the vscode SOPS plugin,
+  # which has been configured to also read credentials from that file
+  echo "Creating gcp-key.json for vscode."
+  echo $GCLOUD_SERVICE_KEY >$ENV_DIR/gcp-key.json
 fi
