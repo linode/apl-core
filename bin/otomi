@@ -121,7 +121,7 @@ function evaluate_secrets() {
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     if [ ! -r "$secrets_path" ]; then
-      echo "Unable to find '$secrets_path'.\nContinuing without local secrets."
+      echo "Unable to find '$secrets_path'. Continuing without local secrets."
     else
       . $secrets_path
     fi

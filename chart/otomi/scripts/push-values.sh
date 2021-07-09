@@ -11,6 +11,7 @@ echo $branch
 
 echo 'Pushing the values...'
 
+echo 'ENV_DIR: ' $ENV_DIR
 cd $ENV_DIR
 git add -A
 git commit --no-verify -m "automated commit of otomi-values"

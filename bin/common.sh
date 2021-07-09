@@ -5,12 +5,8 @@ set -e
 shopt -s expand_aliases
 
 # Environment vars
-if [ -n "$IN_DOCKER" ]; then
-  ENV_DIR=/home/app/stack/env
-else
-  ENV_DIR=${ENV_DIR:-$PWD/env}
-fi
-[ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR='/home/app/stack/env'
+ENV_DIR=${ENV_DIR:-$PWD}
+[ -d $ENV_DIR/env/env ] && ENV_DIR=$ENV_DIR/env
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"

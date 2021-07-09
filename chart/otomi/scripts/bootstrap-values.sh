@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-export ENV_DIR=/home/app/stack/env
 . bin/common.sh
 
 function yqr_chart() {
