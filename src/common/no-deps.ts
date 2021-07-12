@@ -55,6 +55,7 @@ export const readdirRecurse = async (dir: string): Promise<string[]> => {
   )
   return files.flat()
 }
+
 export const loadYaml = (path: string): any => {
   if (!existsSync(path)) throw new Error(`${path} does not exists`)
   return load(readFileSync(path, 'utf-8')) as any

@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
-import { copyFile } from 'fs/promises'
+import { copy, copyFile } from 'fs-extra'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
@@ -80,7 +80,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   debug.verbose(currDir)
   try {
     mkdirSync(`${ENV.DIR}/.vscode`, { recursive: true })
-    await $`cp -r ${currDir}/.values/.vscode ${ENV.DIR}/`
+    await copy(`${currDir}/.values/.vscode`, `${ENV.DIR}/.vscode`, { overwrite: false, recursive: true })
     debug.verbose('Copied vscode folder')
     generateLooseSchema(currDir)
     debug.verbose('Generated loose schema')
@@ -100,14 +100,15 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
       copyFile(`${currDir}/.values/${val}`, `${ENV.DIR}/${val}`),
     ),
   )
-
-  if (args.profile.length === 0) {
-    debug.log(`PROFILE was empty, copying basic values`)
-    await $`cp -r ${currDir}/.values/env ${ENV.DIR}`
-  } else {
-    debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
-    await $`cp -r ${currDir}/profiles/common/env ${ENV.DIR}`
-    await $`cp -r ${currDir}/profiles/${args.profile}/env ${ENV.DIR}`
+  if (!existsSync(`${ENV.DIR}/env`)) {
+    if (args.profile.length === 0) {
+      debug.log(`PROFILE was empty, copying basic values`)
+      await copy(`${currDir}/.values/env`, ENV.DIR, { overwrite: false, recursive: true })
+    } else {
+      debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
+      await copy(`${currDir}/profiles/common/env`, ENV.DIR, { overwrite: false, recursive: true })
+      await copy(`${currDir}/profiles/${args.profile}/env`, ENV.DIR, { overwrite: false, recursive: true })
+    }
   }
   await $`git init ${ENV.DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
@@ -126,7 +127,8 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     const secretsContent = loadYaml(secretsFileEnv)
     if (secretsContent?.otomi?.pullSecret?.length) {
       debug.log('Copying Otomi Console Setup')
-      await $`cp -rf ${currDir}/docker-compose ${ENV.DIR}/`
+      mkdirSync(`${ENV.DIR}/docker-compose`, { recursive: true })
+      await copy(`${currDir}/docker-compose`, `${ENV.DIR}/docker-compose`, { overwrite: true, recursive: true })
       await Promise.allSettled(
         ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${currDir}/${val}`, `${ENV.DIR}/${val}`)),
       )
