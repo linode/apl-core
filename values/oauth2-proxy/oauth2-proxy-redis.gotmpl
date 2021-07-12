@@ -69,4 +69,8 @@ metrics:
     limits:
       cpu: 100m
       memory: 256Mi
-# password: bla
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

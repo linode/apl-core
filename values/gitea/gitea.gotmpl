@@ -33,6 +33,10 @@ securityContext:
   runAsUser: 1000
 
 image:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
   tag: 1.14.2
   pullPolicy: IfNotPresent
   rootless: true
@@ -130,3 +134,9 @@ initPreScript: |
     sleep 5
   done
   echo READY!
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

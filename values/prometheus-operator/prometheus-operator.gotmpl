@@ -15,6 +15,10 @@ fullnameOverride: po
 coreDns:
   enabled: false
 global:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
   rbac:
     pspEnabled: false
 {{- if $v.otomi.isManaged }}

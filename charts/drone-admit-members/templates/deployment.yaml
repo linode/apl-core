@@ -18,6 +18,12 @@ spec:
       labels:
         {{- include "drone-admit-members.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "drone-admit-members.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}

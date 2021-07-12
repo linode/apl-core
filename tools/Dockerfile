@@ -12,6 +12,8 @@ ARG HELM_DIFF_VERSION=3.1.3
 ARG HELM_SECRETS_VERSION=2.0.3
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.1
+# https://github.com/noqcks/gucci/releases
+ARG GUCCI_VERSION=1.4.0
 # https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.138.7
 # https://github.com/open-policy-agent/opa/releases
@@ -94,6 +96,10 @@ RUN helm plugin install https://github.com/futuresimple/helm-secrets --version $
 # helmfile
 ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
 RUN chmod +x helmfile
+
+# gucci
+ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 gucci
+RUN chmod +x gucci
 
 # aws
 RUN pip3 install --upgrade --no-cache-dir awscli

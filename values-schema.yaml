@@ -1721,27 +1721,6 @@ properties:
             $ref: '#/definitions/rawValues'
           image:
             $ref: '#/definitions/imageSimple'
-      pullsecret-patcher:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          env:
-            $ref: '#/definitions/env'
-          registry:
-            properties:
-              username:
-                type: string
-              password:
-                type: string
-                x-secret: true
-              email:
-                type: string
-                default: not@us.ed
-              server:
-                type: string
-                default: docker.io
         allOf:
           - anyOf:
               - not:
@@ -2092,6 +2071,27 @@ properties:
         type: string
         default: bladibla
         x-secret: true
+      globalPullSecret:
+        title: Global pullsecret
+        description: Will be connected to each "default" service account in all otomi app namespaces.
+          Handy for authenticating with DockerHub to avoid rate limiting.
+          Also useful when pulling all otomi images from a private repo. (One would need to override all the images in the config first.)
+        additionalProperties: false
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+            x-secret: true
+          email:
+            type: string
+            default: not@us.ed
+          server:
+            type: string
+            default: docker.io
+        required:
+          - username
+          - password
       hasCloudLB:
         default: false
         description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'

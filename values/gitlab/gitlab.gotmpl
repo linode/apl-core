@@ -9,4 +9,9 @@ global:
 nodeSelector:
   cloud.google.com/gke-nodepool: nodes
 {{- end }}
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
   

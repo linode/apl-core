@@ -57,3 +57,7 @@ podAnnotations:
   policy.otomi.io/ignore: "banned-image-tags,psp-allowed-users"
   policy.otomi.io/ignore.wget: "container-limits"
 
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

@@ -11,7 +11,6 @@
 {{- $repository := .Values.image.repository }}
 {{- $imageTag := .Values.image.tag }}
 {{- $pullPolicy := .Values.image.pullPolicy }}
-{{- $imagePullSecrets := .Values.image.pullSecrets }}
 
 {{ range .Values.deployments }}
 apiVersion: apps/v1
@@ -51,9 +50,9 @@ spec:
           imagePullPolicy: {{ $pullPolicy }}
           resources:
             {{- toYaml .resources | nindent 12 }}
-    {{- if $imagePullSecrets }}
+    {{- with $.Values.image.pullSecrets }}
       imagePullSecrets:
-      {{- range $imagePullSecrets }}
+      {{- range . }}
         - name: {{ . }}
       {{- end }}
     {{- end }}

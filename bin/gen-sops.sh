@@ -2,32 +2,28 @@
 . bin/common.sh
 . bin/colors.sh
 
-readonly target_path="$ENV_DIR/.sops.yaml"
-
 declare -A map=(["aws"]="kms" ["azure"]="azure_keyvault" ["google"]="gcp_kms" ["vault"]="hc_vault_transit_uri")
 
 settings_file=$ENV_DIR/env/settings.yaml
 [ -f $settings_file ] && provider=$(cat $settings_file | yq r - kms.sops.provider)
 [ "$provider" = '' ] && echo "No sops information given. Assuming no sops enc/decryption needed." && exit
 
-readonly template_path="$PWD/tpl/.sops.yaml"
-readonly kmsProvider="${map[$provider]}"
-readonly kmsKeys=$(cat $settings_file | yq r - kms.sops.$provider.keys)
+readonly template_path="$PWD/tpl/.sops.yaml.gotmpl"
+readonly target_path="$ENV_DIR/.sops.yaml"
+readonly sops_provider="${map[$provider]}"
+readonly keys=$(cat $settings_file | yq r - kms.sops.$provider.keys)
 
-echo "Creating sops file for provider $provider"
-function create_from_template() {
-  printf "${COLOR_LIGHT_PURPLE}Creating $target_path ${COLOR_NC}\n"
-  local target=$target_path
-  [ "${DRY_RUN-'false'}" = 'false' ] && target="/dev/stdout"
-  cat "$template_path" | sed \
-    -e "s@__PROVIDER@${kmsProvider}@g" \
-    -e "s@__KEYS@${kmsKeys}@g" \
-    >$target
-}
-create_from_template
+target=$target_path
+[ -n "$DRY_RUN" ] && target="/dev/stdout"
+
+printf "${COLOR_LIGHT_PURPLE}Creating sops file for provider $provider${COLOR_NC}\n"
+cat "$template_path" | gucci \
+  -s provider="$sops_provider" \
+  -s keys="$keys" \
+  >$target
 
 if [ -z "$CI" ]; then
-  # we know we are in dev/ops mode and need to read the credentials for SOPS. We provide a location to
+  # we know we are in dev/ops mode and need to read the credentials for SOPS. We know the location to
   # provide those to this context: $ENV_DIR/.secrets (gitignored)
   [ ! -f $ENV_DIR/.secrets ] && err "Expecting $ENV_DIR/.secrets to exist and hold credentials for SOPS." && exit 1
   . $ENV_DIR/.secrets

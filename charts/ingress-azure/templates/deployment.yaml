@@ -31,6 +31,10 @@ spec:
         {{ $key }}: {{ $value | quote }}
         {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.kubernetes.securityContext }}
       securityContext: 
         {{- toYaml . | nindent 8 }}

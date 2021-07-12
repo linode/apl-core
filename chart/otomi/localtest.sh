@@ -1,6 +1,7 @@
 # Usage:
 # ENV_OUT=$PWD/../ENV_OUT VALUES_DIR=$PWD/../ chart/otomi/localtest.sh
 # With VALUES_DIR holding a file named values.yaml holding the initial chart values
+set -e
 
 function run_core() {
   image=$1

@@ -118,3 +118,8 @@ defaultBackend:
 
 rbac:
   create: true
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
