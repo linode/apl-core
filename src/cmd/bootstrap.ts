@@ -1,5 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
-import { copy, copyFile } from 'fs-extra'
+import { copy } from 'fs-extra'
+import { copyFile } from 'fs/promises'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
