@@ -53,6 +53,28 @@ readonly script_full_path
 
 update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${OTOMI_TAG}/binzx/otomi"
 
+date_to_sec() {
+  date=$1
+  which_date=$(which date)
+  if [[ "$OSTYPE" == "darwin"* ]] && [[ "$which_date" == "/bin/date" ]]; then
+    date -j -f "%Y-%m-%dT%H:%M:%SZ" $date +%s
+    return $?
+  fi
+  date --date="$date" +%s
+  return $?
+}
+
+universal_stat() {
+  file=$1
+  which_stat=$(which stat)
+  if [[ "$OSTYPE" == "darwin"* ]] && [[ "$which_stat" == "/usr/bin/stat" ]]; then
+    stat -f %A $file
+    return $?
+  fi
+  stat -c '%a' $file
+  return $?
+}
+
 run_self_update() {
   echo "Performing self-update..."
 
@@ -66,7 +88,7 @@ run_self_update() {
   echo "Done."
 
   # Copy over modes from old version
-  OCTAL_MODE=$(stat -c '%a' $script_full_path)
+  OCTAL_MODE=$(universal_stat $script_full_path)
   if ! chmod $OCTAL_MODE "$0.tmp"; then
     echo "Failed: Error while trying to set mode on $0.tmp."
     exit 1
@@ -87,23 +109,6 @@ EOF
 
   echo -n "Inserting update process..."
   exec /bin/bash update-otomi.sh
-}
-
-date_to_sec() {
-  date=$1
-  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    date --date="$date" +%s
-    return $?
-  elif [[ "$OSTYPE" == "darwin"* ]]; then
-    which_date=$(which date)
-    if [[ "$which_date" == "/bin/date" ]]; then
-      date -j -f "%Y-%m-%dT%H:%M:%SZ" $date +%s
-      return $?
-    else
-      date --date="$date" +%s
-      return $?
-    fi
-  fi
 }
 
 check_update() {
