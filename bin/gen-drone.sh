@@ -6,7 +6,7 @@
 readonly enabled=$(yqr charts.drone.enabled || echo false)
 [ "$enabled" != 'true' ] && exit
 
-run_crypt
+crypt
 
 readonly raw_receiver=$(yqr alerts.drone)
 readonly receiver=${raw_receiver:-'slack'}

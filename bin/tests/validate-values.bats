@@ -8,7 +8,7 @@ function setup () {
     export ENV_DIR="$test_temp_dir"
     env_path="$ENV_DIR/env"
     git init "$ENV_DIR"
-    bin/bootstrap.sh -p aws
+    bin/bootstrap.sh
 }
 
 function teardown () {

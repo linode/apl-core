@@ -19,7 +19,9 @@ function generate_loose_schema() {
 
 # install CLI
 bin_path="$ENV_DIR/bin"
+set +e
 mkdir -p $bin_path &>/dev/null
+set -e
 
 img="otomi/core:$(otomi_image_tag)"
 echo "Installing artifacts from $img"

@@ -11,18 +11,24 @@ spec:
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "otomi.serviceAccountName" . }}
-      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "otomi.fullname" . }}
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
-          command: ['/bin/bash', '-c']
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: '1'
+          command: [bash, -c]
           args: 
             - |
               {{ .Files.Get "scripts/bootstrap-values.sh" | nindent 14 }}
@@ -31,8 +37,12 @@ spec:
               value: '1'
             - name: VERBOSE
               value: '1'
+            - name: CI
+              value: '1'
+            - name: OTOMI_VERSION
+              value: {{ .Values.image.tag | default .Chart.AppVersion }}
             - name: ENV_DIR
-              value: /env
+              value: /home/app/stack/env
             - name: OTOMI_VALUES_INPUT
               value: /secret/values.yaml
           envFrom:
@@ -40,16 +50,25 @@ spec:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
-              mountPath: /env
+              mountPath: /home/app/stack/env
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: otomi/tasks:master
-          imagePullPolicy: Always
-          command: ['sh', '-c']
+          image: {{ .Values.tasksImage.repository }}:{{ .Values.tasksImage.tag | default "latest" }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: '1'
+          command: [sh, -c]
           args:
             - |
-              {{ .Files.Get "scripts/map-values.sh" | nindent 14 }}
+              npm run tasks:otomi-chart
           env:
             - name: IN_DOCKER
               value: '1'
@@ -64,13 +83,22 @@ spec:
               mountPath: /env
             - name: values-secret
               mountPath: /secret
-        - name: encrypt-values
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
-          command: [/bin/bash, -c]
+        - name: push-values
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: '1'
+          command: [bash, -c]
           args:
             - |
-              {{ .Files.Get "scripts/encrypt-values.sh" | nindent 14 }}
+              {{ .Files.Get "scripts/push-values.sh" | nindent 14 }}
           env:
             - name: IN_DOCKER
               value: '1'
@@ -79,21 +107,35 @@ spec:
             - name: CI
               value: 'true'
             - name: ENV_DIR
-              value: /env
+              value: /home/app/stack/env
+            - name: OTOMI_VALUES_INPUT
+              value: /secret/values.yaml
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
-              mountPath: /env
+              mountPath: /home/app/stack/env
+            - name: values-secret
+              mountPath: /secret
       containers:
         - name: otomi-install
-          image: otomi/core:{{ .Values.otomi.version }}
-          imagePullPolicy: Always
-          command: [/bin/bash, -c]
-          args:
-            - |
-              {{ .Files.Get "scripts/deploy.sh" | nindent 14 }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: '2'
+            requests:
+              memory: 1Gi
+              cpu: '1'
+          command: [bin/deploy.sh]
+          # command: [bash, -c]
+          # args:
+          # - |
+          #   while true; do sleep 5; done
           env:
             - name: IN_DOCKER
               value: '1'

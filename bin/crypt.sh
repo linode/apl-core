@@ -5,7 +5,7 @@ command=$1
 
 case $command in
   encrypt | decrypt)
-    run_crypt $command
+    crypt $command
     ;;
   rotate)
     rotate

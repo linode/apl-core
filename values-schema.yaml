@@ -1,5 +1,5 @@
 $schema: 'http://json-schema.org/draft-07/schema'
-additionalProperties: false
+additionalProperties: true
 definitions:
   rawValues:
     description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
@@ -129,7 +129,6 @@ definitions:
         title: AWS access key
         description: An AWS access key ID.
         type: string
-        pattern: (?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])
         x-secret: true
       region:
         type: string
@@ -137,7 +136,6 @@ definitions:
         title: AWS secret key
         description: An AWS secret key.
         type: string
-        pattern: (?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])
         x-secret: true
   azure:
     definitions:

@@ -2,7 +2,7 @@
 set -e
 
 . bin/common.sh
-run_crypt
+crypt
 
 export QUIET=1
 hf lint

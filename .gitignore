@@ -9,8 +9,7 @@ node_modules/
 /*.json
 !.cspell.json
 !package*.json
-!.cspell.json
-!tsconfig.json
 *.DS_Store
 .values/values-schema.yaml
-src/cmd/playground.ts
+.env
+.secrets

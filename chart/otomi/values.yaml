@@ -1,8 +1,14 @@
+image:
+  repository: otomi/core
+  # tag: master # defaults to .Chart.AppVersion
+tasksImage:
+  repository: otomi/tasks
+  # tag: master # defaults to "latest"
 cluster:
   apiName: ''
   apiServer: ''
   domainSuffix: ''
-  k8sVersion: '1.19'
+  k8sVersion: '1.20'
   name: 'dev'
   provider: ''
   region: ''
@@ -13,7 +19,8 @@ kms:
     # aws:
     #   clientID: ''
     #   clientSecret: ''
-    #   keys: ''
+    #   accessKey: ''
+    #   secretKey: ''
     # azure:
     #   tenantID: ''
     #   clientID: ''
@@ -38,14 +45,15 @@ otomi:
   pullSecret: ''
   adminPassword: ''
   isMultitenant: true
-  version: master
+  # The version should not be changed! (Consider it read only) 
+  version: APP_VERSION_PLACEHOLDER
 customer:
   name: ''
 dns:
   provider:
     # provide one of the following below: aws|azure|google
     # aws:
-    #   region: 'eu-central-1'
+    #   region: eu-central-1
     # azure:
     #   aadClientId: ''
     #   aadClientSecret: ''
@@ -57,14 +65,16 @@ dns:
 charts:
   cert-manager:
     email: ''
-    # stage defaults to 'staging'
-    # stage: production
+    # stage defaults to 'production'
+    # stage: staging
+
   external-dns:
     domainFilters:
       - ''
     # zoneIdFilters: []
   gitea:
     postgresqlPassword: ''
+    enabled: true
   keycloak:
     # keycloak is enabled by default
     # enabled: false
@@ -73,14 +83,17 @@ charts:
       # credentials that will be used by the apps' clients to access keycloak in the cluster:
       clientID: ''
       clientSecret: ''
-    postgresqlPassword: '' # for now this needs to be set to avoid generating a new one each time
+    postgresqlPassword: '' # this needs to be set to avoid generating a new one each time
   loki:
     adminPassword: '' # used for log splitting by team
   nginx-ingress:
     private:
       enabled: false # enable to start a LB on the private network
   kubeapps:
-    postgresqlPassword: '' # for now this needs to be set to avoid generating a new one each time
+    postgresqlPassword: '' # this needs to be set to avoid generating a new one each time
   oauth2-proxy:
     config:
-      cookieSecret: '' # for now this needs to be set to avoid generating a new one each time 3
+      cookieSecret: '' # this needs to be set to avoid generating a new one each time 3
+teamConfig: {}
+alerts: {}
+services: []
