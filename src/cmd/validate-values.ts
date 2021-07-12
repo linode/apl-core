@@ -52,7 +52,6 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
     const val = validate(hfVal)
     if (val) {
       debug.verbose('Values validation SUCCESSFUL')
-      process.exit(0)
     } else {
       validate.errors?.map((error: DefinedError) =>
         debug.error('%O', {
