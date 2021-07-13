@@ -48,8 +48,9 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   writeFileSync(tmpFile, hfOutput.replace(/^.*basePath=.*$/gm, ''))
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
-  const diffOutput = (await diff(argv)).replaceAll('../env', ENV.DIR)
-  debug.log(diffOutput)
+  const diffOutput = await diff(argv)
+  debug.log(diffOutput.stdout.replaceAll('../env', ENV.DIR))
+  debug.error(diffOutput.stderr.replaceAll('../env', ENV.DIR))
 }
 
 export const module = {

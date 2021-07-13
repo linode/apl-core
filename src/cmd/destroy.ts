@@ -76,7 +76,7 @@ export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptio
         logLevel: LOG_LEVEL_STRING(),
         args: 'destroy',
       },
-      { trim: true, streams: { stdout: debug.stream.verbose } },
+      { trim: true, streams: { stdout: debug.stream.log } },
     )
   }
 }

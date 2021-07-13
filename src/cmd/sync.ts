@@ -34,7 +34,7 @@ export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions)
       logLevel: LOG_LEVEL_STRING(),
       args: ['sync', '--skip-deps', skipCleanup],
     },
-    { trim: true, streams: { stdout: debug.stream.verbose } },
+    { trim: true, streams: { stdout: debug.stream.log } },
   )
   // debug.verbose(output)
 }
