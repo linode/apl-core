@@ -229,8 +229,9 @@ docker run --network host --rm -it \
 
 status=$?
 
-if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *' -s '* ]]; then
-  running_date=$(date_to_format $(date) +%y%m%d-%H%M)
+if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
+  curr_date=$(date -u)
+  running_date=$(date_to_format "$curr_date" '+%y%m%d-%H%M')
   mv "$tmp_volume_dir/otomi" "/tmp/otomi-debug/otomi-$running_date"
   mv "$tmp_env" "/tmp/otomi-debug/otomi$running_date/running_env"
 else
