@@ -4,6 +4,7 @@ import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
 import { hf as hfFunc } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
 interface Arguments extends HelmArgs {
   args?: string[]
@@ -28,13 +29,13 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   try {
-    const output = await hfFunc({
+    const output: ProcessOutputTrimmed = await hfFunc({
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: LOG_LEVEL_STRING(),
       args: argv.args ?? [],
     })
-    debug.log(output)
+    debug.log(output.stdout)
   } catch (error) {
     debug.exit(1, error)
   }

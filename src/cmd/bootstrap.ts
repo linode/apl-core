@@ -115,7 +115,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
 
   try {
-    await genSops({ ...argv, d: false, dryRun: false, 'dry-run': false }, { skipAll: true })
+    await genSops({ ...argv, dryRun: false }, { skipAll: true })
   } catch (error) {
     debug.error(error.message)
   }

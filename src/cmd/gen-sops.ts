@@ -8,8 +8,6 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
-  d: boolean
-  'dry-run': boolean
 }
 
 const fileName = 'gen-sops'
