@@ -12,8 +12,8 @@ import { Arguments as DroneArgs, genDrone } from './gen-drone'
 
 const fileName = 'apply'
 const dir = '/tmp/otomi/'
-const templateFile = `${dir}/deploy-template.yaml`
-const ssl = `${dir}/ssl`
+const templateFile = `${dir}deploy-template.yaml`
+const ssl = `${dir}ssl`
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
