@@ -213,7 +213,7 @@ mkdir -p /tmp/otomi
 docker run --network host --rm -it \
   $stack_volume \
   $tmp_volume \
-  "-v /tmp/otomi:/tmp/otomi" \
+  -v /tmp/otomi:/tmp/otomi \
   $(check_volume_path ${KUBECONFIG:-$HOME/.kube/config} "/home/app/.kube/config") \
   $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
   $(check_volume_path $helm_config "/home/app/.config/helm") \
