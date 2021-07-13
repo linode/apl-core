@@ -1,0 +1,5 @@
+charts:
+    demo-tlspass:
+        enabled: false
+        tlsKey: ''
+        tlsCert: ''

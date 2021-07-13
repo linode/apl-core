@@ -3,6 +3,10 @@
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 image:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
   repository: eu.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
   tag: v1.18.2
 {{ $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}

@@ -37,3 +37,15 @@ postgresql:
 
 securityContext:
   enabled: true
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+image:
+  pullSecrets:
+    - name: otomi-pullsecret-global
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+  

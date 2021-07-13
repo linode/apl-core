@@ -45,3 +45,8 @@ deschedulerPolicy:
 
 securityContext:
   runAsUser: 1001
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

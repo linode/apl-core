@@ -5,6 +5,10 @@ nameOverride: tlspass
 fullnameOverride: tlspass
 
 image:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
   repository: nginxinc/nginx-unprivileged
   tag: latest
 

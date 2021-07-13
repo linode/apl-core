@@ -19,17 +19,6 @@ original_params="$@"
 env_unset='false'
 [ "$ENV_DIR" = "" ] && env_unset='true'
 
-ENV_DIR=${ENV_DIR:-$PWD}
-if [ -n "$TESTING" ]; then
-  CI=1
-  ENV_DIR="$PWD/tests/fixtures"
-else
-  ENV_DIR=${ENV_DIR:-$PWD}
-fi
-
-[ "$ENV_DIR" = "/home/app/stack" ] && ENV_DIR=$ENV_DIR/env
-[ -n "$VERBOSE" ] && echo "ENV_DIR: $ENV_DIR"
-
 . bin/common.sh
 [ $has_docker = 'false' ] && [ -z "$IN_DOCKER" ] && [ -z "$CI" ] && err "Otomi CLI expects a running docker daemon!" && exit 1
 
@@ -132,7 +121,7 @@ function evaluate_secrets() {
   if [ -z "$CI" ]; then
     local secrets_path="$ENV_DIR/.secrets"
     if [ ! -r "$secrets_path" ]; then
-      echo "Unable to find '$secrets_path'.\nContinuing without local secrets."
+      echo "Unable to find '$secrets_path'. Continuing without local secrets."
     else
       . $secrets_path
     fi
@@ -206,6 +195,7 @@ function drun() {
       -e DEBUG="$DEBUG" \
       -e KEEP_DEBUGGING="$KEEP_DEBUGGING" \
       -e TRACE="$TRACE" \
+      -e DRY_RUN="$DRY_RUN" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \
@@ -219,7 +209,7 @@ function drun() {
 function execute() {
   shift
   shift
-  local exec="[ -z '$IN_DOCKER' ] && . bin/common.sh $original_params &&"
+  [ -z "$IN_DOCKER" ] && exec=". bin/common.sh $original_params &&"
   case $command in
     apply)
       evaluate_secrets
@@ -228,7 +218,7 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
       else
-        drun "$exec run_crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+        drun "$exec crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       fi
       ;;
     argstest)
@@ -265,13 +255,13 @@ function execute() {
     decrypt)
       check_sops_file
       evaluate_secrets
-      drun "$exec run_crypt dec" "$@"
+      drun "$exec crypt dec" "$@"
       ;;
     diff)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
@@ -279,13 +269,13 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
       else
-        drun "$exec hf destroy" | grep -Ev $helmfile_output_hide
+        drun "$exec crypt && hf destroy" | grep -Ev $helmfile_output_hide
       fi
       ;;
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun ". bin/common.sh $original_params && run_crypt enc" "$@"
+      drun "$exec crypt enc" "$@"
       ;;
     gen-drone)
       evaluate_secrets
@@ -299,12 +289,12 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf $*" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf $*" | grep -Ev $helmfile_output_hide
       ;;
     lint)
       evaluate_secrets
       set -o pipefail
-      drun "$exec hf lint --skip-deps"
+      drun "$exec crypt && hf lint --skip-deps"
       ;;
     pull)
       is_repo
@@ -322,18 +312,18 @@ function execute() {
     score-templates)
       evaluate_secrets
       check_env_dir
-      drun "$exec hf_template | kube-score score --ignore-test -"
+      drun "$exec crypt && hf_template | kube-score score --ignore-test -"
       ;;
     sync)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && QUIET=1 run_crypt && hf_template"
+      drun "$exec QUIET=1 crypt && hf_template"
       ;;
     test)
       evaluate_secrets
@@ -353,7 +343,7 @@ function execute() {
       evaluate_secrets
       check_env_dir
       set -o pipefail
-      drun "$exec run_crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+      drun "$exec crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
       ;;
     x)
       drun "$@"

@@ -1,1 +1,7 @@
 watchNamespace: "vault"
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

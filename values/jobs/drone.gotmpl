@@ -3,7 +3,7 @@
 {{- $d := $c | get "drone" dict }}
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $hasGitea := $g | get "enabled" true }}
-{{- $skipVerify := eq ($v.charts | get "cert-manager.stage") "staging" }}
+{{- $skipVerify := eq ($v.charts | get "cert-manager.stage" "production") "staging" }}
 {{- $teams := keys $v.teamConfig.teams }}
 {{- $teamNames := list -}}
 {{- range $teams -}}

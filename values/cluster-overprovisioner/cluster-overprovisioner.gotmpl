@@ -11,3 +11,9 @@ deployments:
       {{- end }}
     annotations:
       policy.otomi.io/ignore: psp-allowed-users
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+image:
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

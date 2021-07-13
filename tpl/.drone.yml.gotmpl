@@ -1,0 +1,117 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+workspace:
+  path: /home/app/stack/env
+
+concurrency:
+  limit: 1
+
+trigger:
+  branch:
+    - {{ .branch }}
+  event:
+    - push
+
+environment:
+  IN_DOCKER: '1'
+
+steps:
+{{- if eq .provider "slack" }}
+  - name: slack-start
+    image: plugins/slack
+    settings:
+      webhook: {{ .webhook }}
+      channel: {{ .channel }}
+      username: Drone
+      template: >
+        Started syncing cluster '{{ .cluster }}' for customer '{{ .customer }}'...
+        Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+{{- else if eq .provider "msteams" }}
+  - name: notify-start
+    image: diyfr/drone_plugin_teams
+    settings:
+      webhook: {{ .webhook }}
+      content:
+        title: Started syncing cluster
+        text: Started syncing cluster '{{ .cluster }}' for customer '{{ .customer }}'...
+        themeColor: 009EEA
+{{- end }}
+  - name: prepare-env
+    image: alpine:latest
+    commands:
+      - chmod -R a+w env
+
+  - name: test
+    image: otomi/core:{{ .imageTag }}
+    pull: {{ .pullPolicy }}
+    depends_on:
+      - prepare-env
+    commands:
+      - cd .. && bin/otomi test
+
+  - name: apply
+    image: otomi/core:{{ .imageTag }}
+    pull: {{ .pullPolicy }}
+    commands:
+      - cd .. && bin/otomi apply
+    depends_on:
+      - test
+
+{{- if eq .provider "slack" }}
+  - name: slack-result
+    image: plugins/slack
+    depends_on:
+      - apply
+    settings:
+      webhook: {{ .webhook }}
+      channel: {{ .channel }}
+      username: Drone
+      template: >
+        {{ print "{" "{" }}#success build.status{{ print "}" "}" }}
+        Completed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' :)
+        {{ print "{" "{" }}else{{ print "}" "}" }}
+        Failed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' ;( Please take a look.
+        {{ print "{" "{" }}/success{{ print "}" "}" }}
+
+        Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+    when:
+      status:
+        - success
+        - failure
+
+{{- else if eq .provider "msteams" }}
+  - name: notify-success
+    image: diyfr/drone_plugin_teams
+    depends_on:
+      - apply
+    settings:
+      webhook: {{ .webhook }}
+      content:
+        title: Completed syncing cluster
+        text: Completed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' :)
+        themeColor: 228B22
+    when:
+      status:
+        - success
+
+  - name: notify-error
+    image: diyfr/drone_plugin_teams
+    depends_on:
+      - apply
+    settings:
+      webhook: {{ .webhook }}
+      content:
+        title: Failed syncing cluster
+        text: Failed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' ;( Please take a look.
+        themeColor: EA4300
+    when:
+      status:
+        - failure
+{{- end }}
+
+{{- if .globalPullSecret }}
+image_pull_secrets:
+- otomi-pullsecret-global
+{{- end }}

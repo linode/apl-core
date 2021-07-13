@@ -11,10 +11,8 @@
       extraRootCA="/etc/ssl/certs/extra-root-ca.pem"
       rootCA="/etc/ssl/certs/ca-certificates.crt"
       rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
-      ls -als $rootCA
       cat $rootCA > $rootCAnew
       cat $extraRootCA >> $rootCAnew
-      ls -als $rootCAnew
   securityContext:
     runAsUser: 1000
     runAsGroup: 1000
@@ -34,7 +32,6 @@
       rootCA="/etc/ssl/certs/ca-certificates.crt"
       rootCAnew="/etc/ssl/certs-new/ca-certificates.crt"
       cat $rootCAnew > $rootCA
-      ls -als $rootCA
   securityContext:
     runAsUser: 1000
     runAsGroup: 1000

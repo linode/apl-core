@@ -404,3 +404,4 @@ serviceAccount:
   ## - dockerconfig
 
 extraRootCA: ''
+imagePullSecrets: []

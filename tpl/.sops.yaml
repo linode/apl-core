@@ -1,3 +1,0 @@
-creation_rules:
-  - path_regex: secrets.*.yaml
-    __PROVIDER: __KEYS

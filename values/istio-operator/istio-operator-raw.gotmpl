@@ -179,6 +179,10 @@ resources:
           excludeNamespaces: {{- $excludedNamespaces | toYaml | nindent 12 }}
         global:
           imagePullPolicy: IfNotPresent
+          {{- if $v.otomi | get "globalPullSecret" nil }}
+          imagePullSecrets:
+            - otomi-pullsecret-global
+          {{- end }}
           logging:
             level: {{ $ig | get "logging.level" "default:info" }}
           proxy:

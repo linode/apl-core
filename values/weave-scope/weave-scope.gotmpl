@@ -48,3 +48,13 @@ weave-scope-cluster-agent:
     limits:
       cpu: 1
       memory: 256Mi
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
