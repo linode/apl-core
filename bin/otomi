@@ -261,7 +261,7 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     destroy)
       evaluate_secrets
@@ -269,13 +269,13 @@ function execute() {
       if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
         drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
       else
-        drun "$exec hf destroy" | grep -Ev $helmfile_output_hide
+        drun "$exec crypt && hf destroy" | grep -Ev $helmfile_output_hide
       fi
       ;;
     encrypt)
       check_sops_file
       evaluate_secrets
-      drun ". bin/common.sh $original_params && crypt enc" "$@"
+      drun "$exec crypt enc" "$@"
       ;;
     gen-drone)
       evaluate_secrets
@@ -289,12 +289,12 @@ function execute() {
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf $*" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf $*" | grep -Ev $helmfile_output_hide
       ;;
     lint)
       evaluate_secrets
       set -o pipefail
-      drun "$exec hf lint --skip-deps"
+      drun "$exec crypt && hf lint --skip-deps"
       ;;
     pull)
       is_repo
@@ -312,18 +312,18 @@ function execute() {
     score-templates)
       evaluate_secrets
       check_env_dir
-      drun "$exec hf_template | kube-score score -"
+      drun "$exec crypt && hf_template | kube-score score --ignore-test -"
       ;;
     sync)
       evaluate_secrets
       check_kube_context=1
       set -o pipefail
-      drun "$exec hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+      drun "$exec crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
       ;;
     template)
       evaluate_secrets
       check_env_dir
-      drun ". bin/common.sh $original_params && QUIET=1 crypt && hf_template"
+      drun "$exec QUIET=1 crypt && hf_template"
       ;;
     test)
       evaluate_secrets
