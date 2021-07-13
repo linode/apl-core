@@ -55,3 +55,9 @@ priorityClassName: "otomi-critical"
 config:
   server:
     log_level: error
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+image:
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

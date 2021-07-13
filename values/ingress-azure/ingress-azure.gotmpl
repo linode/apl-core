@@ -32,3 +32,8 @@ verbosityLevel: 5
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

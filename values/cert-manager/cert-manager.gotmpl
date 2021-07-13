@@ -2,6 +2,10 @@
 {{- $cm := $v.charts | get "cert-manager" dict }}
 
 global:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
   priorityClassName: "otomi-critical"
 
 prometheus:
@@ -44,3 +48,4 @@ webhook:
     limits:
       cpu: 100m
       memory: 256Mi
+

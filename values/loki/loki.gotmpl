@@ -132,3 +132,9 @@ podAnnotations:
   {{- if $v.otomi.isMultitenant }}
   checksum/teams: {{ $teamNames | sha256sum }}
   {{- end }}  
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+image:
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

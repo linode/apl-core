@@ -24,3 +24,9 @@ env:
 
 podAnnotations:
   policy.otomi.io/ignore: banned-image-tags
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+image:  
+  pullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}

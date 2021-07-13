@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $t := $v.teamConfig }}
+{{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
   - apiVersion: v1
@@ -9,7 +10,31 @@ resources:
       labels:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
-        {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }} 
+        {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
+  {{- with $v.otomi | get "globalPullSecret" nil }}
+  - apiVersion: v1
+    kind: Secret
+    type: kubernetes.io/dockerconfigjson
+    metadata:
+      name: otomi-pullsecret-global
+      namespace: {{ $ns.name }}
+    data:
+      .dockerconfigjson: {{ tpl $dockerConfigTpl . | b64enc }}
+  {{- end }}
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: default
+      namespace: {{ $ns.name }}
+    {{- if or ($v.otomi | get "globalPullSecret" nil) (has $ns (list "drone-pipelines" "otomi" "maintenance")) }}
+    imagePullSecrets:
+      {{- if $v.otomi | get "globalPullSecret" nil }}
+      - name: otomi-pullsecret-global
+      {{- end }}
+      {{- if has $ns (list "drone-pipelines" "otomi" "maintenance") }}
+      - name: gcr-json-key
+      {{- end }}
+    {{- end }}
   {{- end }}
   {{- range $id, $team := $t.teams }}
     {{- $ns := printf "team-%s" $id }}
@@ -20,24 +45,16 @@ resources:
       labels:
         name: {{ $ns }}
         istio-injection: enabled
-      {{- $pullSecrets := list }}
-      {{- range $s := ($team | get "secrets" list) | concat ($team | get "secrets" list) }}
-        {{- if eq $s.type "docker-registry" }}
-          {{- $pullSecrets = (append $pullSecrets $s) }}
-        {{- end }}
-      {{- end }}
   # patching service account here as helm does not recognize it as it's own
   - apiVersion: v1
     kind: ServiceAccount
     metadata:
       name: default
       namespace: {{ $ns }}
-      {{- if gt (len $pullSecrets) 0 }}
+    {{- if $v.otomi | get "globalPullSecret" nil }}
     imagePullSecrets:
-        {{- range $s := $pullSecrets }}
-        - name: {{ $s.name }}
-        {{- end }}
-      {{- end }}
+      - name: otomi-pullsecret-global
+    {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
@@ -85,13 +102,6 @@ resources:
     type: kubernetes.io/dockerconfigjson
     data:
       .dockerconfigjson: {{ $v.otomi.pullSecret }}
-  - apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: default
-      namespace: {{ $ns }}
-    imagePullSecrets:
-    - name: gcr-json-key
   {{- end }}
   {{- end }}
   - apiVersion: scheduling.k8s.io/v1

@@ -20,3 +20,8 @@ podAnnotations:
 
 podSecurityContext:
   runAsUser: 1000
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

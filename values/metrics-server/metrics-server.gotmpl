@@ -20,6 +20,11 @@ resources:
     memory: 64Mi
   {{- end }}
 
-
 securityContext:
   runAsUser: 1001
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

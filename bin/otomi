@@ -195,6 +195,7 @@ function drun() {
       -e DEBUG="$DEBUG" \
       -e KEEP_DEBUGGING="$KEEP_DEBUGGING" \
       -e TRACE="$TRACE" \
+      -e DRY_RUN="$DRY_RUN" \
       -e CI="$CI" \
       -w $stack_dir \
       $cmd_image \

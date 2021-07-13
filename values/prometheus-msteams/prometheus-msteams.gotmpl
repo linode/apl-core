@@ -28,3 +28,9 @@ resources:
   requests:
     cpu: 1m
     memory: 8Mi
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+image:
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

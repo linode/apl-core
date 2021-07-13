@@ -6,6 +6,10 @@ image:
   repository: openpolicyagent/gatekeeper
   release: v3.4.0
   pullPolicy: IfNotPresent
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
 
 replicas: {{ $gk | get "replicas" 1 }} 
 

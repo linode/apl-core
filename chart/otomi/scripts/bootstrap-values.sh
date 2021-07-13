@@ -66,7 +66,8 @@ popd
 
 bin/bootstrap.sh
 
-crypt dec
+# decrypt before merging if we can
+[ -f $ENV_DIR/.sops.yaml ] && crypt dec
 
 # lastly copy the schema file
 cp values-schema.yaml $ENV_DIR/
