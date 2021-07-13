@@ -2,7 +2,8 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
-import { ENV } from '../common/no-deps'
+import { hfValues } from '../common/hf'
+import { capitalize, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -30,6 +31,14 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   await setup(argv, options)
   await $`git -C ${ENV.DIR} pull`
   await validateValues(argv)
+
+  const vals = await hfValues()
+  const customerName = vals.customer?.name ?? 'otomi'
+  const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
+  await $`git -C ${ENV.DIR} config --local user.name || git -C ${ENV.DIR} config --local user.name ${capitalize(
+    customerName,
+  )}`
+  await $`git -C ${ENV.DIR} config --local user.email || git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
 
   const gitDiff: string = (await $`git -C ${ENV.DIR} diff --name-only`).stdout.trim()
   if (gitDiff.includes('cluster.yaml')) await genDrone(argv)
