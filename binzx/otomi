@@ -183,6 +183,8 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   # Use development distribution if exists
   if [ -f "${stack_dir}/dist/otomi.js" ]; then
     executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
+  else
+    executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
   fi
   echo "OTOMI_DEV=true" >>$tmp_env
 fi
