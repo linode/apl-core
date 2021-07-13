@@ -37,7 +37,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 const deployAll = async (argv: Arguments) => {
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: debug.stream.debug } },
+    { streams: { stdout: debug.stream.log } },
   )
   if (output.exitCode > 0) {
     debug.exit(output.exitCode, output.stderr)
@@ -55,7 +55,7 @@ const deployAll = async (argv: Arguments) => {
       logLevel: LOG_LEVEL_STRING(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.debug } },
+    { streams: { stdout: debug.stream.log } },
   )
   if (!ENV.isCI) {
     await genDrone(argv)
@@ -68,7 +68,7 @@ const deployAll = async (argv: Arguments) => {
       logLevel: LOG_LEVEL_STRING(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.debug } },
+    { streams: { stdout: debug.stream.log } },
   )
 }
 
