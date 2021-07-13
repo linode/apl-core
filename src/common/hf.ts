@@ -3,7 +3,7 @@ import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { Arguments } from './helm-opts'
 import { asArray, ENV, LOG_LEVELS } from './no-deps'
-import { Streams } from './zx-enhance'
+import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 let value: any
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
@@ -79,9 +79,8 @@ export const hfStream = (args: HFParams, opts?: HFOptions): ProcessPromise<Proce
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr)
   return proc
 }
-export const hf = async (args: HFParams, opts?: HFOptions): Promise<string> => {
-  const res = await hfStream(args, opts)
-  return `${res.stderr.trim()}\n${res.stdout.trim()}\n`
+export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
+  return new ProcessOutputTrimmed(await hfStream(args, opts))
 }
 
 export type ValuesOptions = {
@@ -90,7 +89,8 @@ export type ValuesOptions = {
 }
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
   if (value) return value
-  let result = await hf({ fileOpts: './helmfile.tpl/helmfile-dump.yaml', args: 'build' }, { trim: true })
+  const output = await hf({ fileOpts: './helmfile.tpl/helmfile-dump.yaml', args: 'build' }, { trim: true })
+  let result = output.stdout
   if (opts?.replacePath) result = replaceHFPaths(result)
   if (opts?.asString) return result
   value = load(result) as any

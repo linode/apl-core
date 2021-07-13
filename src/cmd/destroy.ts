@@ -6,6 +6,7 @@ import { Arguments, helmOptions } from '../common/helm-opts'
 import { hf, hfStream } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
 
 const fileName = 'destroy'
@@ -29,7 +30,13 @@ const destroyAll = async () => {
   await $`kubectl -n olm delete deploy --all`
   await hf({ args: 'destroy' })
 
-  const templateOutput: string = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
+  const output: ProcessOutputTrimmed = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
+  if (output.exitCode > 0) {
+    debug.exit(output.exitCode, output.stderr)
+  } else if (output.stderr.length > 0) {
+    debug.error(output.stderr)
+  }
+  const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl delete -f ${templateFile}`
 

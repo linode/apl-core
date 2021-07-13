@@ -98,3 +98,27 @@ export const stream = (cmd: ProcessPromise<ProcessOutput>, streams?: Streams): P
   if (streams?.stderr) cmd.stderr.pipe(streams.stderr)
   return cmd
 }
+
+export class ProcessOutputTrimmed {
+  #po: ProcessOutput
+
+  constructor(processOutput: ProcessOutput) {
+    this.#po = processOutput
+  }
+
+  get exitCode(): number {
+    return this.#po.exitCode
+  }
+
+  get stdout(): string {
+    return this.#po.stdout.trim()
+  }
+
+  get stderr(): string {
+    return this.#po.stderr.trim()
+  }
+
+  toString(): string {
+    return this.#po.toString()
+  }
+}

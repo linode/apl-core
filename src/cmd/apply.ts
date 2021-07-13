@@ -7,6 +7,7 @@ import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
 import { hf, hfStream, hfValues } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 
@@ -60,10 +61,16 @@ const deployAll = async (argv: Arguments) => {
   if (!ENV.isCI) {
     await genDemoMtlsCertSecret()
   }
-  const templateOutput: string = await hf(
+  const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
     { streams: { stdout: debug.stream.debug } },
   )
+  if (output.exitCode > 0) {
+    debug.exit(output.exitCode, output.stderr)
+  } else if (output.stderr.length > 0) {
+    debug.error(output.stderr)
+  }
+  const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`

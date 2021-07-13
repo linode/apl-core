@@ -6,6 +6,7 @@ import { Arguments, helmOptions } from '../common/helm-opts'
 import { hf } from '../common/hf'
 import { ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
@@ -33,10 +34,17 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   debug.log(await validateTemplates(argv))
   // await checkPolicies(argv)
 
-  const hfOutput: string = (await hf({
+  const output: ProcessOutputTrimmed = await hf({
     fileOpts: 'helmfile.tpl/helmfile-init.yaml',
     args: ['template', '--skip-deps'],
-  })) as string
+  })
+
+  if (output.exitCode > 0) {
+    debug.exit(output.exitCode, output.stderr)
+  } else if (output.stderr.length > 0) {
+    debug.error(output.stderr)
+  }
+  const hfOutput: string = output.stdout
   writeFileSync(tmpFile, hfOutput.replace(/^.*basePath=.*$/gm, ''))
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
