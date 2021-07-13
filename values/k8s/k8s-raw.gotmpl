@@ -11,7 +11,7 @@ resources:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
     type: kubernetes.io/dockerconfigjson
@@ -26,9 +26,14 @@ resources:
     metadata:
       name: default
       namespace: {{ $ns.name }}
-    {{- if $v.otomi | get "globalPullSecret" nil }}
+    {{- if or ($v.otomi | get "globalPullSecret" nil) (has $ns (list "drone-pipelines" "otomi" "maintenance")) }}
     imagePullSecrets:
+      {{- if $v.otomi | get "globalPullSecret" nil }}
       - name: otomi-pullsecret-global
+      {{- end }}
+      {{- if has $ns (list "drone-pipelines" "otomi" "maintenance") }}
+      - name: gcr-json-key
+      {{- end }}
     {{- end }}
   {{- end }}
   {{- range $id, $team := $t.teams }}
@@ -97,16 +102,6 @@ resources:
     type: kubernetes.io/dockerconfigjson
     data:
       .dockerconfigjson: {{ $v.otomi.pullSecret }}
-  - apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: default
-      namespace: {{ $ns }}
-    imagePullSecrets:
-    - name: gcr-json-key
-    {{- if $v.otomi | get "globalPullSecret" nil }}
-    - name: otomi-pullsecret-global
-    {{- end }}
   {{- end }}
   {{- end }}
   - apiVersion: scheduling.k8s.io/v1
