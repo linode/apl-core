@@ -65,7 +65,6 @@ const destroyAll = async () => {
 
 export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  await decrypt(argv)
   debug.verbose('Start destroy')
   if (!argv.label && !argv.file) {
     destroyAll()
