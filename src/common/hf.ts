@@ -103,7 +103,7 @@ export const hfValues = async (): Promise<any> => {
     await values() //no replacePath
     await values({ replacePath: true}) // still no replacePath
   */
-  return (await values({ replacePath: true })).renderedValues
+  return (await values({ replacePath: true })).renderedvalues
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {
