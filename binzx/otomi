@@ -13,6 +13,12 @@
 #####################################################################################
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
+calling_args="$*"
+if [ -n "$CI" ] || [ -n "$TESTING" ]; then
+  calling_args="$calling_args --no-interactive"
+
+fi
+readonly calling_args
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
@@ -44,7 +50,6 @@ OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly calling_args="$*"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
@@ -228,8 +233,15 @@ if [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] || [ "$OTOMI_TAG" 
     exit $status
   fi
 fi
+
+it='-it'
+if [[ $calling_args == *'-no-interactive'* ]] ||
+    [[ $calling_args == *'-ni'* ]]; then
+  it=''
+fi
+
 mkdir -p /tmp/otomi
-docker run --network host --rm -it \
+docker run --network host --rm $it \
   $stack_volume \
   $tmp_volume \
   -v /tmp/otomi:/tmp/otomi \
