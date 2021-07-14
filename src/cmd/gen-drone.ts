@@ -1,5 +1,6 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
+import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { BasicArguments, ENV } from '../common/no-deps'
@@ -43,16 +44,24 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
   if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
 
   const cluster = hfVals.cluster?.name
+  const globalPullSecret = hfVals.otomi?.globalPullSecret
+  const provider = hfVals.alerts.drone
+  const pullPolicy = otomi.imageTag().startsWith('v') ? 'if-not-exists' : 'always'
 
-  const template: string = readFileSync(`${process.env.PWD}/tpl/.drone.tpl.${receiver}.yml`, 'utf-8')
-  const output = template
-    .replaceAll('__CLUSTER', cluster)
-    .replaceAll('__IMAGE_TAG', otomi.imageTag())
-    .replaceAll('__WEBHOOK', webhook)
-    .replaceAll('__CUSTOMER', otomi.customerName())
-    .replaceAll('__BRANCH', branch)
-    .replaceAll('__CHANNEL', channel)
-
+  const obj = {
+    imageTag: otomi.imageTag(),
+    branch,
+    cluster,
+    channel,
+    customer: otomi.customerName(),
+    globalPullSecret,
+    provider,
+    webhook,
+    pullPolicy,
+  }
+  const args = Object.entries(obj).map((k, v) => `-s ${k}=${v}`)
+  const processOutput = await $`gucci ${args} ${ENV.PWD}/tpl/.drone.yml.gotmpl`
+  const output = processOutput.stdout
   if (process.env.DRY_RUN || argv.dryRun) {
     debug.log(output)
   } else {

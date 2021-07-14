@@ -49,7 +49,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
-    await hf(argv, {})
+    await hf(argv, { skipKubeContextCheck: ENV.isTESTING })
   },
 }
 

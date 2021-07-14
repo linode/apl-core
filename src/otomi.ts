@@ -10,18 +10,17 @@ import { lstatSync, readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
 import { terminal } from './common/debug'
-import { ENV, LOG_LEVELS, parser } from './common/no-deps'
+import { asBool, ENV, LOG_LEVELS, parser } from './common/no-deps'
 import { otomi } from './common/setup'
 
 const debug = terminal('global')
 const terminalScale = 0.75
-if (!('OTOMI_IN_DOCKER' in process.env)) debug.exit(1, 'Please run this script using the `otomi` entry script')
+if (!asBool(process.env.OTOMI_IN_DOCKER)) debug.exit(1, 'Please run this script using the `otomi` entry script')
 
 const envDirContent = readdirSync(ENV.DIR)
 if (envDirContent.length > 0) {
   try {
     let errorMessage = ''
-    if (!lstatSync(`${ENV.DIR}/.git`).isDirectory()) errorMessage += `\n${ENV.DIR}/.git is not a directory`
     if (!lstatSync(`${ENV.DIR}/env`).isDirectory()) errorMessage += `\n${ENV.DIR}/env is not a directory`
     if (!lstatSync(`${ENV.DIR}/env/charts`).isDirectory()) errorMessage += `\n${ENV.DIR}/env/charts is not a directory`
     if (!lstatSync(`${ENV.DIR}/env/cluster.yaml`).isFile())
@@ -98,7 +97,7 @@ try {
 } catch (error) {
   parser.showHelp()
   let errData = error.message
-  if ('OTOMI_DEV' in process.env && Boolean(process.env.OTOMI_DEV)) {
+  if (asBool(process.env.OTOMI_DEV)) {
     errData = error
   }
   debug.exit(1, errData)

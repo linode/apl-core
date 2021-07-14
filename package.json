@@ -92,7 +92,7 @@
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
     "husky:pre-push": "run-p husky:lint-staged lint spellcheck",
-    "lint": "TESTING=1 bin/otomi hf lint",
+    "lint": "TESTING=1 binzx/otomi hf lint",
     "lint:all": "npx run-p spellcheck lint",
     "lint:fix": "prettier --write profiles/**/*",
     "ncc": "ncc build",

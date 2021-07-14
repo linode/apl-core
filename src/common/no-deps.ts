@@ -18,6 +18,19 @@ export interface BasicArguments extends YargsArguments {
   trace: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const asBool = (input: any): boolean => {
+  if (Number.isNaN(parseFloat(input)) || Number.isNaN(input - 0)) {
+    try {
+      return !!JSON.parse(input ?? 'false')
+    } catch (error) {
+      return !!input
+    }
+  } else {
+    return !!Number(input)
+  }
+}
+
 let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }
 export const ENV = {
   set DIR(envDir: string) {
@@ -36,10 +49,10 @@ export const ENV = {
     return parsedArgs
   },
   get isCI(): boolean {
-    return 'CI' in process.env || !!ENV.PARSED_ARGS?.ci
+    return asBool(process.env.CI) || !!ENV.PARSED_ARGS?.ci
   },
   get isTESTING(): boolean {
-    return 'TESTING' in process.env
+    return asBool(process.env.TESTING)
   },
 }
 export const asArray = (args: string | string[]): string[] => {
@@ -80,18 +93,7 @@ export const LOG_LEVEL = (): number => {
 
   let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
   const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
-  let boolTrace = ENV.PARSED_ARGS.trace
-  if ('TRACE' in process.env) {
-    if (Number.isNaN(process.env.TRACE)) {
-      try {
-        boolTrace = Boolean(JSON.parse(process.env.TRACE ?? 'false'))
-      } catch (error) {
-        boolTrace = Boolean(process.env.TRACE)
-      }
-    } else {
-      boolTrace = Boolean(Number(process.env.TRACE))
-    }
-  }
+  const boolTrace = asBool(process.env.TRACE) || ENV.PARSED_ARGS.trace
   LL = boolTrace ? LOG_LEVELS.TRACE : LL
 
   logLevel = LL < 0 && verbosity === 0 ? LL : Math.max(LL, verbosity)
