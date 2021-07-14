@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { BasicArguments, ENV } from '../common/no-deps'
@@ -59,13 +59,18 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
     webhook,
     pullPolicy,
   }
-  const args = Object.entries(obj).map((k, v) => `-s ${k}=${v}`)
-  const processOutput = await $`gucci ${args} ${ENV.PWD}/tpl/.drone.yml.gotmpl`
+
+  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
+  const quoteBackup = $.quote
+  $.quote = (v) => v
+  const processOutput = await nothrow($`gucci ${gucciArgs} ${ENV.PWD}/tpl/.drone.yml.gotmpl`)
+  $.quote = quoteBackup
   const output = processOutput.stdout
   if (process.env.DRY_RUN || argv.dryRun) {
     debug.log(output)
   } else {
-    writeFileSync(`${ENV.DIR}/.drone.yaml`, output)
+    writeFileSync(`${ENV.DIR}/.drone.yml`, output)
+    debug.log(`gen-drone is done and the configuration is written to: ${ENV.DIR}/.drone.yml`)
   }
 }
 
