@@ -150,7 +150,8 @@ tmp_env=$(mktemp)
 
 function dump_vars() {
   for var in "$@"; do
-    echo "$var=${!var}" >> $tmp_env
+    val="${!var}"
+    [ -n "$val" ] && echo "$var=$val" >> $tmp_env
   done
 }
 # shellcheck disable=SC2034
@@ -188,14 +189,15 @@ vars=(
   OTOMI_PORT 
   OTOMI_TAG 
 )
-dump_vars $vars
+dump_vars "${vars[@]}"
 
 cat >>$tmp_env <<EOF
 SHELL=${path_to_exec_shell}
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
 OTOMI_IN_DOCKER=true
 EOF
-
+cat $tmp_env
+exit 0
 helm_config="$HOME/.config/helm"
 uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
 
