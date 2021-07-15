@@ -42,7 +42,7 @@ spec:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             port:
-              number: 443      
+              number: {{ $s.port | default 443 }}
         {{- else }}
   http:
     - match:

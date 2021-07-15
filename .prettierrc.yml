@@ -7,7 +7,6 @@ overrides:
   - files:
       - 'env/**/*.yaml'
       - 'env/**/*.dec'
-      - 'profiles/**/*.yaml'
       - 'tests/fixtures/**/*.yaml'
     options:
       tabWidth: 4

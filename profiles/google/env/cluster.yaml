@@ -1,8 +1,0 @@
-cluster:
-    apiName: FILL
-    apiServer: https://mycluster.otomi.io
-    domainSuffix: demo.gke.otomi.cloud
-    k8sVersion: '1.19'
-    name: demo
-    provider: google
-    region: eu-central-1
