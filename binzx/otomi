@@ -148,31 +148,47 @@ silent echo "Checking for updates"
 silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 
-function dump_variable() {
-  var=$1
-  echo "$var=${!var}" >> $tmp_env
+function dump_vars() {
+  for var in "$@"; do
+    echo "$var=${!var}" >> $tmp_env
+  done
 }
-dump_variable ENV_DIR
-dump_variable AZURE_TENANT_ID
-dump_variable AZURE_CLIENT_ID
-dump_variable AZURE_CLIENT_SECRET
-dump_variable AWS_REGION
-dump_variable AWS_ACCESS_KEY_ID
-dump_variable AWS_SECRET_ACCESS_KEY
-dump_variable VAULT_TOKEN
-dump_variable GCLOUD_SERVICE_KEY
-dump_variable K8S_CONTEXT
-dump_variable KUBE_VERSION_OVERRIDE
-dump_variable CI
-dump_variable TESTING
-dump_variable TRACE
-dump_variable PROFILE
-dump_variable DRY_RUN
-dump_variable DOCKER_SERVER
-dump_variable DOCKER_USERNAME
-dump_variable DOCKER_PASSWORD
-dump_variable OTOMI_TAG
-dump_variable STATIC_COLORS
+# shellcheck disable=SC2034
+OTOMI_DOCKER__SERVER=$DOCKER_SERVER
+# shellcheck disable=SC2034
+OTOMI_DOCKER__USERNAME=$DOCKER_USERNAME
+# shellcheck disable=SC2034
+OTOMI_DOCKER__PASSWORD=$DOCKER_PASSWORD
+OTOMI_PORT=${OTOMI_PORT:-192019}
+
+vars=( 
+  ENV_DIR
+  AZURE_TENANT_ID 
+  AZURE_CLIENT_ID 
+  AZURE_CLIENT_SECRET 
+  AWS_REGION 
+  AWS_ACCESS_KEY_ID 
+  AWS_SECRET_ACCESS_KEY 
+  VAULT_TOKEN 
+  GCLOUD_SERVICE_KEY 
+  K8S_CONTEXT 
+  KUBE_VERSION_OVERRIDE 
+  CI 
+  TESTING 
+  TRACE 
+  PROFILE 
+  DRY_RUN 
+  STATIC_COLORS 
+  DOCKER_SERVER 
+  DOCKER_USERNAME 
+  DOCKER_PASSWORD 
+  OTOMI_DOCKER__SERVER 
+  OTOMI_DOCKER__USERNAME 
+  OTOMI_DOCKER__PASSWORD 
+  OTOMI_PORT 
+  OTOMI_TAG 
+)
+dump_vars $vars
 
 cat >>$tmp_env <<EOF
 SHELL=${path_to_exec_shell}
@@ -240,8 +256,14 @@ if [[ $calling_args == *'-no-interactive'* ]] ||
   it=''
 fi
 
+network='--network host'
+if [[ $calling_args == 'server'* ]]; then
+  network="--init -p $OTOMI_PORT:192019"
+fi
+
 mkdir -p /tmp/otomi
-docker run --network host --rm $it \
+docker run --rm $it \
+  $network \
   $stack_volume \
   $tmp_volume \
   -v /tmp/otomi:/tmp/otomi \

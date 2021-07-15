@@ -27,6 +27,17 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   otomi.closeIfInCore(fileName)
 }
 
+export const preCommit = async (argv: DroneArgs): Promise<void> => {
+  const pcDebug = terminal('Pre Commit')
+  pcDebug.verbose('Check for cluster diffs')
+  const settingsDiff = (await $`git -C ${ENV.DIR} diff env/settings.yaml`).stdout.trim()
+  const secretDiff = (await $`git -C ${ENV.DIR} diff env/secrets.settings.yaml`).stdout.trim()
+
+  const versionChanges = settingsDiff.includes('+    version:')
+  const secretChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
+  if (versionChanges || secretChanges) await genDrone(argv)
+}
+
 export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.verbose('Pulling latest values')
@@ -42,9 +53,7 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   )}`
   await $`git -C ${ENV.DIR} config --local user.email || git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
 
-  debug.verbose('Check for cluster diffs')
-  const gitDiff: string = (await $`git -C ${ENV.DIR} diff --name-only`).stdout.trim()
-  if (gitDiff.includes('cluster.yaml')) await genDrone(argv)
+  preCommit(argv)
   debug.verbose('Do commit')
   await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
 }

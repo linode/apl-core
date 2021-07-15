@@ -8,9 +8,12 @@ import { ask } from '../common/zx-enhance'
 interface Arguments extends BasicArguments {
   server: string
   username: string
-  u: string
   password: string
-  p: string
+  docker: {
+    server: string
+    username: string
+    password: string
+  }
 }
 
 const fileName = 'regcred'
@@ -33,16 +36,16 @@ export const regCred = async (argv: Arguments, options?: PrepareEnvironmentOptio
   await setup(argv, options)
 
   const server =
-    argv?.server ??
-    process.env.DOCKER_SERVER ??
+    argv?.server ||
+    argv?.docker?.server ||
     (await ask('Please provide the docker server as it was not passed as an argument or environment variable'))
   const username =
-    argv?.username ??
-    process.env.DOCKER_USERNAME ??
+    argv?.username ||
+    argv?.docker?.username ||
     (await ask('Please provide the docker username as it was not passed as an argument or environment variable'))
   const password =
-    argv?.password ??
-    process.env.DOCKER_PASSWORD ??
+    argv?.password ||
+    argv?.docker?.password ||
     (await ask('Please provide the docker password as it was not passed as an argument or environment variable'))
 
   const outputEnc = (

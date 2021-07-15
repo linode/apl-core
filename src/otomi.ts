@@ -84,11 +84,22 @@ try {
         default: false,
         hidden: true,
       },
+      dev: {
+        boolean: true,
+        default: false,
+        hidden: true,
+      },
+      inDocker: {
+        boolean: true,
+        default: false,
+        hidden: true,
+      },
     })
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
     .fail((e) => {
       throw e
     })
+    .env('OTOMI')
     .help('help')
     .alias('h', 'help')
     .demandCommand()

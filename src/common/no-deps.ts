@@ -12,10 +12,17 @@ export const parser = yargs(process.argv.slice(3))
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   verbose: number
-  v: number
   skipCleanup: boolean
-  c: boolean
   trace: boolean
+}
+
+export const defaultBasicArguments: BasicArguments = {
+  _: [],
+  $0: 'defaultBasicArgs',
+  logLevel: 'WARN',
+  verbose: 0,
+  skipCleanup: false,
+  trace: false,
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
