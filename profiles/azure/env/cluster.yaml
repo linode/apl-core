@@ -1,8 +1,0 @@
-cluster:
-    apiName: FILL
-    apiServer: https://mycluster.otomi.io
-    domainSuffix: demo.aks.otomi.cloud
-    k8sVersion: '1.19'
-    name: demo
-    provider: azure
-    region: eu-central-1
