@@ -17,7 +17,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
 }
 
 export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {

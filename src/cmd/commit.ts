@@ -23,15 +23,17 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
-  otomi.closeIfInCore(fileName, debug)
+  if (options) await otomi.prepareEnvironment(options)
+  otomi.closeIfInCore(fileName)
 }
 
 export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
+  debug.verbose('Pulling latest values')
   await $`git -C ${ENV.DIR} pull`
   await validateValues(argv)
 
+  debug.verbose('Preparing values')
   const vals = await hfValues()
   const customerName = vals.customer?.name ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
@@ -40,8 +42,10 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   )}`
   await $`git -C ${ENV.DIR} config --local user.email || git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
 
+  debug.verbose('Check for cluster diffs')
   const gitDiff: string = (await $`git -C ${ENV.DIR} diff --name-only`).stdout.trim()
   if (gitDiff.includes('cluster.yaml')) await genDrone(argv)
+  debug.verbose('Do commit')
   await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
 }
 

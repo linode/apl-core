@@ -16,7 +16,7 @@ enum CRYPT_TYPE {
 
 const preCrypt = async (): Promise<void> => {
   term.verbose('Pre Crypt')
-  await evaluateSecrets(term)
+  await evaluateSecrets()
   if (process.env.GCLOUD_SERVICE_KEY) {
     term.verbose('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
@@ -65,20 +65,20 @@ const crypt = async (type: CRYPT_TYPE, ...files: string[]): Promise<ProcessOutpu
   res?.map((result) => term.debug(result))
 }
 
-export const decrypt = async (baseDebug?: OtomiDebugger, ...files: string[]): Promise<void> => {
-  const namespace = 'crypt'
-  term = baseDebug?.extend(namespace) ?? terminal(namespace)
+export const decrypt = async (...files: string[]): Promise<void> => {
+  const namespace = 'decrypt'
+  term = terminal(namespace)
   await crypt(CRYPT_TYPE.DECRYPT, ...files)
 }
-export const encrypt = async (baseDebug?: OtomiDebugger, ...files: string[]): Promise<void> => {
-  const namespace = 'crypt'
-  term = baseDebug?.extend(namespace) ?? terminal(namespace)
+export const encrypt = async (...files: string[]): Promise<void> => {
+  const namespace = 'encrypt'
+  term = terminal(namespace)
   await crypt(CRYPT_TYPE.ENCRYPT, ...files)
 }
 
-export const rotate = async (baseDebug?: OtomiDebugger): Promise<void> => {
+export const rotate = async (): Promise<void> => {
   const namespace = 'rotate'
-  term = baseDebug?.extend(namespace) ?? terminal(namespace)
+  term = terminal(namespace)
   const verboseArg = (parser.argv as BasicArguments).verbose >= 1 ? ['--verbose'] : []
   const sopsArgs = ['sops', ...verboseArg, '--input-type=yaml', '--output-type=yaml', '-i', '-r']
 

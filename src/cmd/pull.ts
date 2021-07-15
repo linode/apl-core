@@ -21,12 +21,13 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
 }
 
 export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  otomi.closeIfInCore(fileName, debug)
+  otomi.closeIfInCore(fileName)
+  debug.verbose('Pull latest values')
   await $`git -C ${ENV.DIR} pull`
   await bootstrap(argv)
 }

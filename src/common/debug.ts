@@ -40,7 +40,6 @@ export type OtomiDebugger = {
   error: Debug.Debugger
   stream: OtomiStreamDebugger
   exit: (exitCode: number, ...args: any[]) => void
-  extend: (namespace: string) => OtomiDebugger
 }
 
 const xtermColors = {
@@ -57,32 +56,21 @@ const getColor = (namespace: string, color: number[]): string => {
  */
 /* eslint-disable no-redeclare */
 export function terminal(namespace: string): OtomiDebugger
-export function terminal(namespace: string, enabled: boolean): OtomiDebugger
-export function terminal(namespace: string, debug: OtomiDebugger): OtomiDebugger
-export function terminal(namespace: string, enabledOrDebugger?: boolean | OtomiDebugger): OtomiDebugger {
-  let terminalEnabled = true
-  let debugObj: OtomiDebugger | undefined
-  if (typeof enabledOrDebugger === 'boolean') {
-    terminalEnabled = enabledOrDebugger
-  } else {
-    terminalEnabled = enabledOrDebugger?.enabled ?? terminalEnabled
-    debugObj = enabledOrDebugger
-  }
-  const newDebug = (baseNamespace: string, enabled = true, debugExtend?: Debug.Debugger): Debug.Debugger => {
-    const baseDebug = debugExtend ?? commonDebug
-    const newDebugObj: Debug.Debugger = baseDebug.extend(baseNamespace)
+export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
+  const newDebug = (baseNamespace: string, enabled = true): Debug.Debugger => {
+    const newDebugObj: Debug.Debugger = commonDebug.extend(baseNamespace)
     newDebugObj.enabled = enabled
     return newDebugObj
   }
-  const base = newDebug(`${namespace}`, terminalEnabled, debugObj?.base)
-  const log = newDebug(`${namespace}:log`, terminalEnabled, debugObj?.base)
-  const trace = newDebug(`${namespace}:trace`, LOG_LEVEL() >= LOG_LEVELS.TRACE && terminalEnabled, debugObj?.base)
-  const debug = newDebug(`${namespace}:debug`, LOG_LEVEL() >= LOG_LEVELS.DEBUG && terminalEnabled, debugObj?.base)
-  const verbose = newDebug(`${namespace}:verbose`, LOG_LEVEL() >= LOG_LEVELS.VERBOSE && terminalEnabled, debugObj?.base)
-  const warn = newDebug(`${namespace}:warn`, LOG_LEVEL() >= LOG_LEVELS.WARN && terminalEnabled, debugObj?.base)
-  const error = newDebug(`${namespace}:error`, LOG_LEVEL() >= LOG_LEVELS.ERROR && terminalEnabled, debugObj?.base)
+  const base = newDebug(`${namespace}`, terminalEnabled)
+  const log = newDebug(`${namespace}:log`, terminalEnabled)
+  const trace = newDebug(`${namespace}:trace`, LOG_LEVEL() >= LOG_LEVELS.TRACE && terminalEnabled)
+  const debug = newDebug(`${namespace}:debug`, LOG_LEVEL() >= LOG_LEVELS.DEBUG && terminalEnabled)
+  const verbose = newDebug(`${namespace}:verbose`, LOG_LEVEL() >= LOG_LEVELS.VERBOSE && terminalEnabled)
+  const warn = newDebug(`${namespace}:warn`, LOG_LEVEL() >= LOG_LEVELS.WARN && terminalEnabled)
+  const error = newDebug(`${namespace}:error`, LOG_LEVEL() >= LOG_LEVELS.ERROR && terminalEnabled)
   const exit = (exitCode: number, ...args: any[]) => {
-    const exitDebug = newDebug(`${namespace}:crit`, terminalEnabled, debugObj?.base)
+    const exitDebug = newDebug(`${namespace}:crit`, terminalEnabled)
     if (SET_STATIC_COLORS) exitDebug.color = getColor(base.namespace, xtermColors.red)
     args.map((arg) => exitDebug('', arg))
     process.exit(exitCode)
@@ -92,7 +80,7 @@ export function terminal(namespace: string, enabledOrDebugger?: boolean | OtomiD
   if (SET_STATIC_COLORS) verbose.color = getColor(base.namespace, xtermColors.green)
 
   const newDebugger: OtomiDebugger = {
-    enabled: terminalEnabled,
+    enabled: terminalEnabled ?? true,
     base,
     log,
     trace,
@@ -109,12 +97,6 @@ export function terminal(namespace: string, enabledOrDebugger?: boolean | OtomiD
       warn: new DebugStream(warn),
       error: new DebugStream(error),
     },
-    extend: (newNS: string) => {
-      return terminal(newNS)
-    },
-  }
-  newDebugger.extend = (newNS: string) => {
-    return terminal(newNS, newDebugger)
   }
   return newDebugger
 }

@@ -32,7 +32,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
   k8sVersion = await otomi.getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 

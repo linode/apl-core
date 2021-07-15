@@ -1,11 +1,11 @@
 import { existsSync } from 'fs'
 import { $, cd, nothrow } from 'zx'
-import { OtomiDebugger } from './debug'
+import { terminal } from './debug'
 import { hfValues } from './hf'
 import { ENV } from './no-deps'
 
-export const giteaPush = async (debugPar: OtomiDebugger): Promise<void> => {
-  const debug = debugPar.extend('Gitea Push')
+export const giteaPush = async (): Promise<void> => {
+  const debug = terminal('Gitea Push')
   debug.verbose('Gitea push')
   const hfVals = await hfValues()
   if (!hfVals.charts?.gitea?.enabled) {

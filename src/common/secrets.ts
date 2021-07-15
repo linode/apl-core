@@ -5,9 +5,9 @@ import { source } from './zx-enhance'
 
 /**
  * Evaluate secrets, first check if .sops.yaml exists, then source the secrets path - which should exist
- * @param debug
  */
-export const evaluateSecrets = async (debug = terminal('evaluateSecrets')): Promise<void> => {
+export const evaluateSecrets = async (): Promise<void> => {
+  const debug = terminal('evaluateSecrets')
   if (!existsSync(`${ENV.DIR}/.sops.yaml`)) {
     debug.log(`Info: The 'secrets.*.yaml files' are not decrypted, because ${ENV.DIR}/.sops.yaml file is not present`)
   }

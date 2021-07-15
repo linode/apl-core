@@ -21,7 +21,7 @@ const cleanup = (argv: Arguments): void => {
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
 }
 
 export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {

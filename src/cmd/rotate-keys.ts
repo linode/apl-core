@@ -17,13 +17,13 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
 }
 
 export const rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.verbose('Starting key rotation')
-  await rotate(debug)
+  await rotate()
   debug.verbose('Key rotation is done')
 }
 

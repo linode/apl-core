@@ -15,7 +15,6 @@ const profileOptions = readdirSync('profiles').filter((val) => val !== 'common')
 
 export interface Arguments extends BasicArguments {
   profile: string
-  p: string
 }
 
 /* eslint-disable no-useless-return */

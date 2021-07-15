@@ -29,7 +29,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
   debug = terminal(fileName)
 
-  if (options) await otomi.prepareEnvironment(debug, options)
+  if (options) await otomi.prepareEnvironment(options)
   await decrypt(argv)
   mkdirSync(dir, { recursive: true })
 }
@@ -59,7 +59,7 @@ const deployAll = async (argv: Arguments) => {
   )
   if (!ENV.isCI) {
     await genDrone(argv)
-    await giteaPush(debug)
+    await giteaPush()
   }
   await hf(
     {
@@ -94,7 +94,6 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
 
 export const module: CommandModule = {
   command: fileName,
-  aliases: ['deploy'],
   describe: 'Apply K8S resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
