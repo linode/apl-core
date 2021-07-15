@@ -6,16 +6,12 @@ import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
-import { ask } from '../common/zx-enhance'
 import { genSops } from './gen-sops'
 
 const fileName = 'bootstrap'
 let debug: OtomiDebugger
-const profileOptions = readdirSync('profiles').filter((val) => val !== 'common')
 
-export interface Arguments extends BasicArguments {
-  profile: string
-}
+export type Arguments = BasicArguments
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
@@ -49,18 +45,6 @@ const generateLooseSchema = (currDir: string) => {
 export const bootstrap = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
-
-  process.env.PROFILE =
-    args.profile ??
-    process.env.PROFILE ??
-    (await ask(
-      `-p|--profile argument was not supplied and PROFILE environment variable was not set, what profile do you want to bootstrap? [${profileOptions.join(
-        ', ',
-      )}]`,
-      { choices: profileOptions, matching: profileOptions },
-    ))
-  args.p = process.env.PROFILE
-  args.profile = process.env.PROFILE
 
   const currDir = ENV.PWD
 
@@ -101,14 +85,8 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     ),
   )
   if (!existsSync(`${ENV.DIR}/env`)) {
-    if (args.profile.length === 0) {
-      debug.log(`PROFILE was empty, copying basic values`)
-      await copy(`${currDir}/.values/env`, ENV.DIR, { overwrite: false, recursive: true })
-    } else {
-      debug.log(`No files found in "${ENV.DIR}/env". Installing example files from profile ${args.profile}`)
-      await copy(`${currDir}/profiles/common/env`, ENV.DIR, { overwrite: false, recursive: true })
-      await copy(`${currDir}/profiles/${args.profile}/env`, ENV.DIR, { overwrite: false, recursive: true })
-    }
+    debug.log(`Copying basic values`)
+    await copy(`${currDir}/.values/env`, ENV.DIR, { overwrite: false, recursive: true })
   }
   await $`git init ${ENV.DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
@@ -139,23 +117,13 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     debug.log('Start by sourcing aliases:')
     debug.log('. bin/aliases')
   }
-  debug.log(`Done Bootstrapping ${args.profile}`)
+  debug.log(`Done Bootstrapping`)
 }
 
 export const module = {
   command: fileName,
   describe: "Bootstrap values repo with artifacts corresponding to the cluster's stack version",
-  builder: (parser: Argv): Argv =>
-    parser.options({
-      profile: {
-        alias: ['p'],
-        describe: 'Bootstrap selected profile',
-        group: 'otomi bootstrap options',
-        choices: profileOptions,
-        string: true,
-      },
-    }),
-
+  builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
     try {
