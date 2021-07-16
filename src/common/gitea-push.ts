@@ -43,14 +43,14 @@ export const giteaPush = async (): Promise<void> => {
     await $`git config user.name "Otomi Admin"`
     await $`git config user.email "otomi-admin@${clusterDomain}"`
     try {
-      const fetchResult = await nothrow($`git${stage} fetch ${remoteOrigin} main >/dev/null`)
-      if (fetchResult.exitCode === 0) debug.error('There is already data in gitea.')
-      else {
-        await $`git add -A`
-        await $`git commit --no-verify -m "Automated commit of otomi-values"`
-        await $`git${stage} push -u ${remoteOrigin} main -f`
-        debug.log('Otomi-values has been pushed to gitea')
-      }
+      // const fetchResult = await nothrow($`git${stage} fetch ${remoteOrigin} main >/dev/null`)
+      // if (fetchResult.exitCode === 0) debug.error('There is already data in gitea.')
+      // else {
+      await $`git add -A`
+      await $`git commit --no-verify -m "Automated commit of otomi-values"`
+      await $`git${stage} push -u ${remoteOrigin} main -f`
+      debug.log('Otomi-values has been pushed to gitea')
+      // }
     } catch (error) {
       debug.error(error.message)
     }
