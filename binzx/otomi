@@ -263,6 +263,10 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
+if [ -n "$OTOMI_IN_DOCKER" ]; then
+  $cmd
+  status=$?
+else
 docker run --rm $it \
   $network \
   $stack_volume \
@@ -281,8 +285,8 @@ docker run --rm $it \
   -w "$stack_dir" \
   "$otomi_tools_image" \
   bash -c "$cmd"
-
 status=$?
+fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
   running_date=$(date -u '+%y%m%d-%H%M')
