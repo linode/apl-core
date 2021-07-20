@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+readonly script=otomi
+readonly branch=otomi-zx
+readonly remote=https://raw.githubusercontent.com/redkubes/otomi-core/$branch/binzx/$script
+readonly paths=(
+    /usr/local/bin
+    /usr/bin
+    )
+path=/bin
+for var in "${paths[@]}"; do
+    if [[ $PATH == *$var* ]]; then
+        path=$var
+        break
+    fi
+done
+path=$path/$script
+
+if command -v wget &> /dev/null; then
+    wget $remote -O $path
+elif command -v curl &> /dev/null; then
+    curl $remote -o $path
+fi
+chmod +x $path
+
+echo "Otomi has been installed in $path"
+echo 'You can not run it by calling `otomi`'
