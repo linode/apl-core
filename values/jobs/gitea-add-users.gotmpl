@@ -15,7 +15,7 @@ nativeSecrets:
 schedule: "0/3 * * * *" # every 5 minutes
 image:
   repository: otomi/tasks
-  tag: v0.2.6
+  tag: v0.2.8
   # pullPolicy: Always
 script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea-add-users
 runPolicy: Always
