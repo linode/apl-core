@@ -112,5 +112,4 @@ extraRootCA: |
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
-  - name: gcr-json-key 
 {{- end }}
