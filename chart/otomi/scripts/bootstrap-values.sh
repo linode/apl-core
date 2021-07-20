@@ -1,19 +1,9 @@
 #!/usr/bin/env bash
 . bin/common.sh
-
-function yqr_chart() {
-  local ret=$(cat $OTOMI_VALUES_INPUT | yq r - "$@")
-  [ -z "$ret" ] && return 1
-  echo $ret
-}
+. bin/chart-common.sh
 
 readonly gitea_enabled=$(yqr_chart charts.gitea.enabled || echo 'true')
-readonly stage=$(yqr_chart charts.cert-manager.stage || echo 'production')
 readonly cluster_domain=$(yqr_chart cluster.domainSuffix)
-
-if [ "$stage" = "staging" ]; then
-  export GIT_SSL_NO_VERIFY=true
-fi
 
 if [ "$PWD" != '/home/app/stack' ]; then
   # only for devving, since this chart starts with an empty ENV_DIR anyway:
