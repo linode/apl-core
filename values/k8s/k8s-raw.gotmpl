@@ -26,14 +26,9 @@ resources:
     metadata:
       name: default
       namespace: {{ $ns.name }}
-    {{- if or ($v.otomi | get "globalPullSecret" nil) (has $ns.name (list "drone-pipelines" "otomi" "maintenance")) }}
+    {{- if or ($v.otomi | get "globalPullSecret" nil) }}
     imagePullSecrets:
-      {{- if $v.otomi | get "globalPullSecret" nil }}
       - name: otomi-pullsecret-global
-      {{- end }}
-      {{- if has $ns.name (list "drone-pipelines" "otomi" "maintenance") }}
-      - name: gcr-json-key
-      {{- end }}
     {{- end }}
   {{- end }}
   {{- range $id, $team := $t.teams }}
