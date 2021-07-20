@@ -24,9 +24,9 @@ The following predefined strategies will enforce most common security use-cases 
 Restricted ->> Hostnetwork ->> Hostaccess ->> Non-root ->> Hostmount-anyuid ->> Anyuid ->> Privileged
 ```
 
-The whole OPA policies setup can be found in `policies/`. The Constraint definitions are automatically built and injected at deploytime by combining the OPA policies with the `$ENV_DIR/policies.yaml` input parameters (examples can be found in `profiles/common/policies.yaml` file), and will be inserted in `charts/gatekeeper-artifacts/crds/*.yaml` files.
+The whole OPA policies setup can be found in `policies/`. The Constraint definitions are automatically built and injected at deploytime by combining the OPA policies with the `$ENV_DIR/policies.yaml` input parameters (examples can be found in `.values/env/policies.yaml` file), and will be inserted in `charts/gatekeeper-artifacts/crds/*.yaml` files.
 
-To start policy evaluation statically from a development workstation, run the following:
+To start policy evaluation statically from a development workstation, using the ENV_DIR values as input, run the following:
 
 ```sh
 export ENV_DIR=<path to your initialized values repo>
@@ -34,19 +34,29 @@ export ENV_DIR=<path to your initialized values repo>
 otomi check-policies
 ```
 
-This check is also ran at build time against the test and `profiles/*` policies.
+To run it with the `tests/fixtures/env/*` values as input, you can run
+
+```sh
+npm run check-policies
+```
+
+This check is also ran at build time.
 
 ### Policy exclusions and parameter overrides
 
-The policy engine is aware of the following annotations for a workload:
+In order to bypass the policy checks that are enforced by OPA gatekeeper, otomi provides an override mechanism to disable or parameterize policy checks by means of annotations. This is based on a gentlemen's approach, and will be RBAC enforced in a future version of otomi.
+The policy engine is aware of the following annotations for a pod spec:
 
 ```
 annotations:
-  policy.otomi.io/ignore: ${policy}
-  policy.otomi.io/parameters.${policy}: '{"extra":"parameters"}'
+  policy.otomi.io/ignore: $policy[,$policy2] # pod level ignore for all containers
+  policy.otomi.io/ignore-sidecar: $policy[,$policy2] # pod level ignore for sidecars, such as istio-proxy
+  policy.otomi.io/ignore.$container: $policy[,$policy2] # ignore for just the mentioned container
+  policy.otomi.io/parameters.$policy: '{"extra":"parameters"}'
 ```
 
 Parameters will be merged with the default parameters passed to the rule (as defined in the `policies.yaml` file in the values repo).
+(No override exists for a specific container to provide parameters for.)
 
 ## OPA unit tests
 

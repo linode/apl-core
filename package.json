@@ -62,7 +62,7 @@
     "husky:lint-staged": "lint-staged",
     "husky:pre-push": "run-p husky:lint-staged lint spellcheck",
     "lint": "TESTING=1 bin/otomi hf lint",
-    "lint:fix": "prettier --write profiles/**/*",
+    "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml'",
     "lint:all": "npx run-p spellcheck lint",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
