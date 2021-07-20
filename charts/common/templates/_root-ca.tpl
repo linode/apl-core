@@ -46,7 +46,7 @@
 
 {{- define "extraRootCA.volumeMounts" }}
 {{- if .rootCA }}
-- name: extra-root-ca-secret
+- name: extra-root-ca
   mountPath: "/etc/ssl/certs/"
   subPath: "ca-certificates.crt"
 {{- end }}
