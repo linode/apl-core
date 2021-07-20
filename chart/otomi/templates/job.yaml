@@ -132,17 +132,11 @@ spec:
               memory: 1Gi
               cpu: '1'
           command: [bin/deploy.sh]
-          # command: [bash, -c]
-          # args:
-          # - |
-          #   while true; do sleep 5; done
           env:
             - name: IN_DOCKER
               value: '1'
             - name: VERBOSE
               value: '1'
-            # - name: CI
-            #   value: 'true'
             - name: ENV_DIR
               value: /home/app/stack/env
           envFrom:
