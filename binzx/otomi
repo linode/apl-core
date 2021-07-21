@@ -29,10 +29,29 @@ else
 fi
 
 silent() {
-  if [[ $calling_args == *'-v'* ]]; then
-  "$@"
+  if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
+    "$@"
   else
-  "$@" &>/dev/null
+    "$@" &>/dev/null
+  fi
+}
+
+terminal_print_count=0
+terminal_echo() {
+  # Only echo if not redirecting to file
+  # https://stackoverflow.com/a/26761733/14982291
+  if [ -t 1 ] ; then
+    echo "$@"
+    terminal_print_count=$((terminal_print_count+1))
+  fi
+}
+terminal_clear() {
+  if [ -t 1 ] ; then
+    for ((i=0; i<terminal_print_count; i++));do
+      # Escape chars: Move up 1 line (1A), clear line (2K)
+      # https://shiroyasha.svbtle.com/escape-sequences-a-quick-guide-1
+      echo -ne "\033[1A\033[2K"
+    done
   fi
 }
 
@@ -40,7 +59,7 @@ this_is_bash=$(ps -o ppid= $$)
 executing_shell=$(ps -o comm= $this_is_bash | sed "s/[^[:alnum:]\/]//g")
 path_to_exec_shell=$(which $executing_shell)
 
-# # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
+# Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ -f "package.json" ]; then
   otomi_version="master"
@@ -64,7 +83,7 @@ date_to_format() {
   date=$1
   format=${2:-+%s}
   which_date=$(which date)
-  if [[ "$OSTYPE" == "darwin"* ]] && [[ "$which_date" == "/bin/date" ]]; then
+  if [[ $(uname -s) == "Darwin" ]] && [[ "$which_date" == "/bin/date" ]]; then
     date -j -f "%Y-%m-%dT%H:%M:%SZ" $date $format
     return $?
   fi
@@ -75,7 +94,7 @@ date_to_format() {
 universal_stat() {
   file=$1
   which_stat=$(which stat)
-  if [[ "$OSTYPE" == "darwin"* ]] && [[ "$which_stat" == "/usr/bin/stat" ]]; then
+  if [[ $(uname -s) == "Darwin" ]] && [[ "$which_stat" == "/usr/bin/stat" ]]; then
     stat -f %A $file
     return $?
   fi
@@ -144,10 +163,10 @@ check_update() {
     esac
   fi
 }
-silent echo "Checking for updates"
+terminal_echo "Checking for updates"
 [ -z $CI ] && check_update
 
-silent echo "Preparing docker environment variables"
+terminal_echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 
 function dump_vars() {
@@ -191,7 +210,11 @@ OTOMI_IN_DOCKER=true
 EOF
 
 helm_config="$HOME/.config/helm"
-uname -a | grep -i darwin >/dev/null && helm_config="$HOME/Library/Preferences/helm"
+if [[ $(uname -s) == "Darwin" ]]; then 
+  helm_config="$HOME/Library/Preferences/helm"
+else
+  readonly linux_workaround='--user=root:root'
+fi
 
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
@@ -200,7 +223,7 @@ stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
-  silent echo "Checking if in dev environment"
+  terminal_echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
   elif [[ $(pwd) == *"otomi-core"* ]]; then
@@ -233,13 +256,12 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-silent echo "Pulling latest version of the docker image"
-# TODO: Remove otomi-zx check
-if [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] || [ "$OTOMI_TAG" = 'otomi-zx' ] && [ -z $NOPULL ]; then 
+if [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] && [ -z $NOPULL ]; then 
+  terminal_echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
   if [ "$status" -ne 0 ]; then
-    echo "Could not find an image for the supplied OTOMI_TAG: '${OTOMI_TAG}'"
+    echo "Something went wrong when trying to pull '${otomi_tools_image}'"
     exit $status
   fi
 fi
@@ -256,29 +278,31 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
+terminal_clear
 if [ -n "$OTOMI_IN_DOCKER" ]; then
   $cmd
   status=$?
 else
-docker run --rm $it \
-  $network \
-  $stack_volume \
-  $tmp_volume \
-  -v /tmp/otomi:/tmp/otomi \
-  $(check_volume_path ${KUBECONFIG:-$HOME/.kube/config} "/home/app/.kube/config") \
-  $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
-  $(check_volume_path $helm_config "/home/app/.config/helm") \
-  $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
-  $(check_volume_path $HOME/.aws "/home/app/.aws") \
-  $(check_volume_path $HOME/.azure "/home/app/.azure") \
-  $(check_volume_path $ENV_DIR "$stack_dir/env") \
-  $(check_volume_path $ENV_DIR "$ENV_DIR") \
-  $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
-  --env-file "$tmp_env" \
-  -w "$stack_dir" \
-  "$otomi_tools_image" \
-  bash -c "$cmd"
-status=$?
+  docker run --rm $it \
+    $linux_workaround \
+    $network \
+    $stack_volume \
+    $tmp_volume \
+    -v /tmp/otomi:/tmp/otomi \
+    $(check_volume_path ${KUBECONFIG:-$HOME/.kube/config} "/home/app/.kube/config") \
+    $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
+    $(check_volume_path $helm_config "/home/app/.config/helm") \
+    $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
+    $(check_volume_path $HOME/.aws "/home/app/.aws") \
+    $(check_volume_path $HOME/.azure "/home/app/.azure") \
+    $(check_volume_path $ENV_DIR "$stack_dir/env") \
+    $(check_volume_path $ENV_DIR "$ENV_DIR") \
+    $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
+    --env-file "$tmp_env" \
+    -w "$stack_dir" \
+    "$otomi_tools_image" \
+    bash -c "$cmd"
+  status=$?
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
