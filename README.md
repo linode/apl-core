@@ -1,19 +1,17 @@
+<p align="center"><img src="https://otomi.io/img/otomi-logo.svg" width="40%" align="center" alt="ExternalDNS"></p>
+
+# About Otomi
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
 ![Crates.io](https://img.shields.io/crates/l/ap)
 ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core)
-
-<p align="center">
-	<img src="https://otomi.io/img/otomi-logo.svg" width="40%" align="center" alt="ExternalDNS">
-</p>
-
-# About Otomi
+![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 
 Otomi extends Kubernetes with an advanced ingress architecture, a complete suite of integrated pre-configured applications, multi-tenancy, and implemented policies for better governance and security. Other features are:
 
-- Single Sign On: Bring your own IDP or use Keycloak
+- Single Sign On: Bring your own IDP
 - Automatic ingress configuration: Easily configure ingress for team services or core apps, allowing access within minutes
 - Input/output validation: Configuration and output manifests are checked statically for validity and best practices
-- Policy enforcement: Manifests are checked both statically and on the cluster at runtime for obedience to policies.
+- Policy enforcement: Manifests are checked both statically and on the cluster at runtime for obedience to policies
 - Automatic vulnerability scanning: All configured team service containers get scanned in Harbor
 - Observability: A complete pre-configured observability stack using Prometheus, Alertmanager and Grafana Loki, 
 - Service mesh: Istio gateways are automatically configured for teams and Istio virtual services are automatically generated for team services, tying a generic ingress architecture to service endpoints in a predictable way
@@ -32,7 +30,7 @@ Learn more about Otomi at [otomi.io](https://otomi.io).
 
 # Get started
 
-Use Helm 3 to install Otomi Container Platform.
+Use Helm to install Otomi Container Platform.
 
 ```
 helm repo add otomi https://otomi.io/otomi-core

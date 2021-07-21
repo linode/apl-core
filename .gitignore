@@ -13,3 +13,4 @@ node_modules/
 .values/values-schema.yaml
 .env
 .secrets
+chart/otomi/values.schema.json

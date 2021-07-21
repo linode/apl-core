@@ -1,4 +1,5 @@
 . bin/common.sh
+. bin/chart-common.sh
 
 # Now that we have our file structure setup we can get the values and construct sops file
 bin/gen-sops.sh
