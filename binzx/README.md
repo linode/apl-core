@@ -79,8 +79,8 @@ npm run compile:watch &
 |  ✅   | bin/otomi                          |
 |  ✅   | bin/pre-commit.sh                  |
 |  ✅   | bin/regcred.sh                     |
-|  ⬜   | bin/serve-handler.sh               |
-|  ⬜   | bin/server.sh                      |
+|  ✅   | bin/serve-handler.sh               |
+|  ✅   | bin/server.sh                      |
 |  ⬜   | bin/skeleton-chart.sh              |
 |  ⬜   | bin/test.sh                        |
 |  ✅   | bin/validate-templates.sh          |
