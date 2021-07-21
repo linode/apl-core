@@ -28,7 +28,6 @@ else
   mkdir -p $ENV_DIR
 fi
 
-# TODO: Make conditional?
 silent() {
   if [[ $calling_args == *'-v'* ]]; then
   "$@"
@@ -41,14 +40,13 @@ this_is_bash=$(ps -o ppid= $$)
 executing_shell=$(ps -o comm= $this_is_bash | sed "s/[^[:alnum:]\/]//g")
 path_to_exec_shell=$(which $executing_shell)
 
-# TODO: Remove this line
-OTOMI_TAG=${OTOMI_TAG:-otomi-zx}
 # # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
-otomi_core_version="master"
-[ -f "package.json" ] && otomi_core_version=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-otomi_version=$([ -f $ENV_DIR/env/settings.yaml ] && awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
-otomi_version=${otomi_version:-$otomi_core_version}
-readonly otomi_version
+otomi_version="latest"
+if [ -f "package.json" ]; then
+  otomi_version="master"
+elif [ -f $ENV_DIR/env/settings.yaml ]; then
+  otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
+fi
 OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
