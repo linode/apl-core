@@ -3,25 +3,30 @@
 readonly script=otomi
 readonly branch=otomi-zx
 readonly remote=https://raw.githubusercontent.com/redkubes/otomi-core/$branch/binzx/$script
-readonly paths=(
-    /usr/local/bin
-    /usr/bin
-    )
-path=/bin
-for var in "${paths[@]}"; do
-    if [[ $PATH == *$var* ]]; then
-        path=$var
-        break
-    fi
-done
-path=$path/$script
+readonly path=/usr/local/bin
 
-if command -v wget &> /dev/null; then
-    wget $remote -O $path
-elif command -v curl &> /dev/null; then
-    curl $remote -o $path
+readonly msg="Please choose the default install location [$path]: "
+
+read -r -p "$msg" answer
+answer=${answer:-$path}
+
+if [ ! -d $answer ]; then
+    echo "$answer does not exists, please provide an existsing path"
+    exit 1
 fi
-chmod +x $path
 
-echo "Otomi has been installed in $path"
-echo 'You can not run it by calling `otomi`'
+if [[ $PATH != *$answer* ]]; then
+    echo "$answer is not in your PATH please add it to run $script from anywhere"
+    echo "export PATH=$answer:\$PATH"
+fi
+
+file="$answer/$script"
+if command -v wget &> /dev/null; then
+    wget $remote -O $file
+elif command -v curl &> /dev/null; then
+    curl $remote -o $file
+fi
+chmod +x $file
+
+echo "Otomi has been installed in $file"
+echo 'You can now run it by calling `otomi`'
