@@ -15,8 +15,8 @@ import { ENV, LOG_LEVELS, parser } from './common/no-deps'
 import { otomi } from './common/setup'
 
 const env = cleanEnv(process.env, {
-  OTOMI_IN_DOCKER: bool(),
-  OTOMI_DEV: bool(),
+  OTOMI_IN_DOCKER: bool({ default: false }),
+  OTOMI_DEV: bool({ default: false }),
 })
 const debug = terminal('global')
 const terminalScale = 0.75
