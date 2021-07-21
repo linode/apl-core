@@ -2,7 +2,7 @@ import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { values as valuesFunc } from '../common/hf'
-import { BasicArguments } from '../common/no-deps'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'values'
@@ -36,6 +36,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await values(argv, { skipKubeContextCheck: true })
   },
 }

@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { rotate } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments } from '../common/no-deps'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'rotate-keys'
@@ -33,6 +33,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await rotateKeys(argv, { skipDecrypt: true, skipKubeContextCheck: true })
   },
 }
