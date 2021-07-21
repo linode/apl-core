@@ -30,7 +30,11 @@ fi
 
 # TODO: Make conditional?
 silent() {
+  if [[ $calling_args == *'-v'* ]]; then
+  "$@"
+  else
   "$@" &>/dev/null
+  fi
 }
 
 this_is_bash=$(ps -o ppid= $$)
