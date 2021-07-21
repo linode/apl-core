@@ -7,11 +7,11 @@ readonly path=/usr/local/bin
 
 readonly msg="Please choose the default install location [$path]: "
 
-read -r -p "$msg" answer
+read -p "$msg" answer
 answer=${answer:-$path}
 
 if [ ! -d $answer ]; then
-    echo "$answer does not exists, please provide an existing path"
+    echo "$answer does not exist, please provide an existing path"
     exit 1
 fi
 
