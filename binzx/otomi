@@ -154,14 +154,8 @@ function dump_vars() {
     [ -n "$val" ] && echo "$var=$val" >> $tmp_env
   done
 }
-# shellcheck disable=SC2034
-OTOMI_SERVER=${DOCKER_SERVER:-$OTOMI_SERVER}
-# shellcheck disable=SC2034
-OTOMI_USERNAME=${DOCKER_USERNAME:-$OTOMI_USERNAME}
-# shellcheck disable=SC2034
-OTOMI_PASSWORD=${DOCKER_PASSWORD:-$OTOMI_PASSWORD}
-OTOMI_PORT=${OTOMI_PORT:-192019}
 
+OTOMI_PORT=${OTOMI_PORT:-192019}
 vars=( 
   ENV_DIR
   AZURE_TENANT_ID 
@@ -178,8 +172,8 @@ vars=(
   TESTING 
   TRACE 
   PROFILE 
-  DRY_RUN 
   STATIC_COLORS 
+  OTOMI_DRY_RUN 
   OTOMI_SERVER 
   OTOMI_USERNAME 
   OTOMI_PASSWORD 

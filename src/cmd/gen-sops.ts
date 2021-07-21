@@ -50,7 +50,7 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   let templateContent: string = readFileSync(templatePath, 'utf-8')
   templateContent = templateContent.replaceAll('__PROVIDER', kmsProvider).replaceAll('__KEYS', kmsKeys)
 
-  if (process.env.DRY_RUN || argv.dryRun) {
+  if (argv.dryRun) {
     debug.log(templateContent)
   } else {
     writeFileSync(targetPath, templateContent)
@@ -73,10 +73,9 @@ export const module = {
     parser.options({
       'dry-run': {
         alias: ['d'],
-        describe: "Dry Run, don't write to file, but to STDOUT",
-        group: 'otomi gen-sops options',
         boolean: true,
         default: false,
+        hidden: true,
       },
     }),
 

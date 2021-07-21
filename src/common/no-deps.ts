@@ -1,3 +1,4 @@
+import { bool, cleanEnv } from 'envalid'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import { load } from 'js-yaml'
 import { resolve } from 'path'
@@ -25,20 +26,12 @@ export const defaultBasicArguments: BasicArguments = {
   trace: false,
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const asBool = (input: any): boolean => {
-  if (Number.isNaN(parseFloat(input)) || Number.isNaN(input - 0)) {
-    try {
-      return !!JSON.parse(input ?? 'false')
-    } catch (error) {
-      return !!input
-    }
-  } else {
-    return !!Number(input)
-  }
-}
-
 let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }
+const cleanedEnv = cleanEnv(process.env, {
+  CI: bool({ default: false }),
+  TESTING: bool({ default: false }),
+  TRACE: bool({ default: false }),
+})
 export const ENV = {
   set DIR(envDir: string) {
     process.env.ENV_DIR = envDir
@@ -56,10 +49,10 @@ export const ENV = {
     return parsedArgs
   },
   get isCI(): boolean {
-    return asBool(process.env.CI) || !!ENV.PARSED_ARGS?.ci
+    return cleanedEnv.CI || !!ENV.PARSED_ARGS?.ci
   },
   get isTESTING(): boolean {
-    return asBool(process.env.TESTING)
+    return cleanedEnv.TESTING
   },
 }
 export const asArray = (args: string | string[]): string[] => {
@@ -100,7 +93,7 @@ export const LOG_LEVEL = (): number => {
 
   let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
   const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
-  const boolTrace = asBool(process.env.TRACE) || ENV.PARSED_ARGS.trace
+  const boolTrace = cleanedEnv.TRACE || ENV.PARSED_ARGS.trace
   LL = boolTrace ? LOG_LEVELS.TRACE : LL
 
   logLevel = LL < 0 && verbosity === 0 ? LL : Math.max(LL, verbosity)

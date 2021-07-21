@@ -3,7 +3,7 @@ import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { asBool, BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
@@ -64,7 +64,7 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
   const processOutput = await nothrow($`gucci ${gucciArgs} ${ENV.PWD}/tpl/.drone.yml.gotmpl`)
   $.quote = quoteBackup
   const output = processOutput.stdout
-  if (asBool(process.env.DRY_RUN) || argv.dryRun) {
+  if (argv.dryRun) {
     debug.log(output)
   } else {
     writeFileSync(`${ENV.DIR}/.drone.yml`, output)
@@ -79,10 +79,9 @@ export const module = {
     parser.options({
       'dry-run': {
         alias: ['d'],
-        describe: "Dry Run, don't write to file, but to STDOUT",
-        group: 'otomi gen-drone options',
         boolean: true,
         default: false,
+        hidden: true,
       },
     }),
 

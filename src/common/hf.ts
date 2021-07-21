@@ -2,7 +2,7 @@ import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { Arguments } from './helm-opts'
-import { asArray, asBool, ENV, LOG_LEVELS } from './no-deps'
+import { asArray, ENV, LOG_LEVELS } from './no-deps'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 let value: any
@@ -41,7 +41,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     throw new Error('No arguments were passed')
   }
 
-  if (asBool(process.env.KUBE_VERSION_OVERRIDE)) {
+  if (process.env.KUBE_VERSION_OVERRIDE) {
     paramsCopy.args.push(`--set kubeVersionOverride=${process.env.KUBE_VERSION_OVERRIDE}`)
   }
 

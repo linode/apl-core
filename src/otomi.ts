@@ -6,16 +6,21 @@
  *  node --experimental-specifier-resolution=node ./dist/otomi.js -- <args>
  */
 
+import { bool, cleanEnv } from 'envalid'
 import { lstatSync, readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
 import { terminal } from './common/debug'
-import { asBool, ENV, LOG_LEVELS, parser } from './common/no-deps'
+import { ENV, LOG_LEVELS, parser } from './common/no-deps'
 import { otomi } from './common/setup'
 
+const env = cleanEnv(process.env, {
+  OTOMI_IN_DOCKER: bool(),
+  OTOMI_DEV: bool(),
+})
 const debug = terminal('global')
 const terminalScale = 0.75
-if (!asBool(process.env.OTOMI_IN_DOCKER)) debug.exit(1, 'Please run this script using the `otomi` entry script')
+if (!env.OTOMI_IN_DOCKER) debug.exit(1, 'Please run this script using the `otomi` entry script')
 
 const envDirContent = readdirSync(ENV.DIR)
 if (envDirContent.length > 0) {
@@ -108,7 +113,7 @@ try {
 } catch (error) {
   parser.showHelp()
   let errData = error.message
-  if (asBool(process.env.OTOMI_DEV)) {
+  if (env.OTOMI_DEV) {
     errData = error
   }
   debug.exit(1, errData)

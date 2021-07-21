@@ -5,7 +5,7 @@ import { $, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
 import { values } from './hf'
-import { asBool, BasicArguments, ENV, parser } from './no-deps'
+import { BasicArguments, ENV, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
 import { askYesNo, source } from './zx-enhance'
 
@@ -58,7 +58,7 @@ const checkKubeContext = async (): Promise<void> => {
  * @returns
  */
 const checkENVdir = (): boolean => {
-  if (dirname.includes('otomi-core') && !asBool(ENV.DIR)) {
+  if (dirname.includes('otomi-core') && !ENV.DIR) {
     debug.checkENVdir.exit(1, 'The ENV_DIR environment variable is not set')
   }
   debug.checkENVdir.debug(ENV.DIR)
