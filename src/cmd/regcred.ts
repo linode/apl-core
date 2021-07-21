@@ -37,15 +37,12 @@ export const regCred = async (argv: Arguments, options?: PrepareEnvironmentOptio
 
   const server =
     argv?.server ||
-    argv?.docker?.server ||
     (await ask('Please provide the docker server as it was not passed as an argument or environment variable'))
   const username =
     argv?.username ||
-    argv?.docker?.username ||
     (await ask('Please provide the docker username as it was not passed as an argument or environment variable'))
   const password =
     argv?.password ||
-    argv?.docker?.password ||
     (await ask('Please provide the docker password as it was not passed as an argument or environment variable'))
 
   const outputEnc = (
