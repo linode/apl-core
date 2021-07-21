@@ -11,7 +11,7 @@ read -r -p "$msg" answer
 answer=${answer:-$path}
 
 if [ ! -d $answer ]; then
-    echo "$answer does not exists, please provide an existsing path"
+    echo "$answer does not exists, please provide an existing path"
     exit 1
 fi
 
