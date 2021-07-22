@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": false,
+    "allowJs": true,
+    "module": "esnext",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "target": "es2021",
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "lib": ["es2021"]
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  }
+}

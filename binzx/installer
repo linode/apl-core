@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+readonly script=otomi
+readonly branch=otomi-zx
+readonly remote=https://raw.githubusercontent.com/redkubes/otomi-core/$branch/binzx/$script
+readonly path=/usr/local/bin
+
+readonly msg="Please choose the default install location [$path]: "
+
+# https://unix.stackexchange.com/questions/121231/how-to-read-user-input-from-a-pipe
+read -p "$msg" answer <&2
+answer=${answer:-$path}
+
+if [ ! -d $answer ]; then
+    echo "$answer does not exist, please provide an existing path"
+    exit 1
+fi
+
+if [[ $PATH != *$answer* ]]; then
+    echo "$answer is not in your PATH please add it to run $script from anywhere"
+    echo "export PATH=$answer:\$PATH"
+fi
+
+file="$answer/$script"
+if command -v wget &> /dev/null; then
+    wget $remote -O $file
+elif command -v curl &> /dev/null; then
+    curl $remote -o $file
+fi
+chmod +x $file
+
+echo "Otomi has been installed in $file"
+echo 'You can now run it by calling `otomi`'
