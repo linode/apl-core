@@ -25,16 +25,6 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: gatekeeper-operator
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
-    namespace: default
-    chart: ../charts/gatekeeper-operator
-    disableValidationOnInstall: true
-    labels:
-      pkg: gatekeeper
-    values:
-      - ../values/gatekeeper/gatekeeper-operator.gotmpl
-      - snippets/common.gotmpl
   - name: vault-operator
     installed: {{ $c | get "vault.enabled" true }}
     disableValidationOnInstall: true
