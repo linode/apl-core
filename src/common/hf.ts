@@ -1,3 +1,4 @@
+import { cleanEnv, str } from 'envalid'
 import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
@@ -6,12 +7,14 @@ import { asArray, ENV, LOG_LEVELS } from './no-deps'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const value = {
-  clean: {},
-  rp: {},
+  clean: null,
+  rp: null,
 }
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', ENV.DIR)
-
+const cleanedEnv = cleanEnv(process.env, {
+  KUBE_VERSION_OVERRIDE: str({ default: undefined }),
+})
 export type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
@@ -44,8 +47,8 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     throw new Error('No arguments were passed')
   }
 
-  if (process.env.KUBE_VERSION_OVERRIDE) {
-    paramsCopy.args.push(`--set kubeVersionOverride=${process.env.KUBE_VERSION_OVERRIDE}`)
+  if (cleanedEnv.KUBE_VERSION_OVERRIDE && cleanedEnv.KUBE_VERSION_OVERRIDE.length > 0) {
+    paramsCopy.args.push(`--set kubeVersionOverride=${cleanedEnv.KUBE_VERSION_OVERRIDE}`)
   }
 
   const labels = paramsCopy.labelOpts?.map((item: string) => `-l=${item}`)
