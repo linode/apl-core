@@ -7,7 +7,8 @@ readonly path=/usr/local/bin
 
 readonly msg="Please choose the default install location [$path]: "
 
-read -p "$msg" answer
+# https://unix.stackexchange.com/questions/121231/how-to-read-user-input-from-a-pipe
+read -p "$msg" answer <&2
 answer=${answer:-$path}
 
 if [ ! -d $answer ]; then

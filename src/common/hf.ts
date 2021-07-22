@@ -1,11 +1,14 @@
-import { load } from 'js-yaml'
+import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { Arguments } from './helm-opts'
 import { asArray, ENV, LOG_LEVELS } from './no-deps'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-let value: any
+const value = {
+  clean: {},
+  rp: {},
+}
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', ENV.DIR)
 
@@ -88,21 +91,22 @@ export type ValuesOptions = {
   asString?: boolean
 }
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
-  if (value) return value
+  if (opts?.replacePath && value.rp) {
+    if (opts?.asString) return dump(value.rp)
+    return value.rp
+  }
+  if (value.clean) {
+    if (opts?.asString) return dump(value.clean)
+    return value.clean
+  }
   const output = await hf({ fileOpts: './helmfile.tpl/helmfile-dump.yaml', args: 'build' }, { trim: true })
-  let result = output.stdout
-  if (opts?.replacePath) result = replaceHFPaths(result)
-  if (opts?.asString) return result
-  value = load(result) as any
-  return value
+  value.clean = load(output.stdout) as any
+  value.rp = load(replaceHFPaths(output.stdout)) as any
+  if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
+  return opts && opts.replacePath ? value.rp : value.clean
 }
 
 export const hfValues = async (): Promise<any> => {
-  // TODO: replacePath not executed when values is already cached
-  /*
-    await values() //no replacePath
-    await values({ replacePath: true}) // still no replacePath
-  */
   return (await values({ replacePath: true })).renderedvalues
 }
 

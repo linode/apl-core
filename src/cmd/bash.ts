@@ -1,7 +1,7 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, parser } from '../common/no-deps'
+import { BasicArguments, ENV, parser } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 const fileName = 'bash'
@@ -46,6 +46,7 @@ export const module: CommandModule = {
   builder: (args: Argv): Argv => args,
 
   handler: async (argv: BasicArguments): Promise<void> => {
+    ENV.PARSED_ARGS = argv
     await bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
   },
 }

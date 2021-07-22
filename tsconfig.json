@@ -11,10 +11,10 @@
     "module": "esnext",
     "outDir": "dist",
     "moduleResolution": "node",
-    "target": "esnext",
+    "target": "es2021",
     "esModuleInterop": true,
     "strictNullChecks": true,
-    "lib": ["ESNext"]
+    "lib": ["es2021"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src"],

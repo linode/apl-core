@@ -98,7 +98,6 @@
     "lint": "TESTING=1 binzx/otomi hf lint",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml'",
     "lint:all": "npx run-p spellcheck lint",
-    "ncc": "ncc build",
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
