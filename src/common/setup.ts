@@ -1,11 +1,10 @@
 import { existsSync, readdirSync } from 'fs'
-import { load } from 'js-yaml'
 import { fileURLToPath } from 'url'
 import { $, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
 import { values } from './hf'
-import { BasicArguments, ENV, parser } from './no-deps'
+import { BasicArguments, ENV, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
 import { askYesNo, source } from './zx-enhance'
 
@@ -130,7 +129,7 @@ export const otomi = {
     if (otomiImageTag) return otomiImageTag
     const file = `${ENV.DIR}/env/settings.yaml`
     if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
-    const clusterFile = load(file) as any
+    const clusterFile = loadYaml(file)
     otomiImageTag = clusterFile.otomi?.version ?? 'master'
     return otomiImageTag
   },
@@ -141,7 +140,7 @@ export const otomi = {
   customerName: (): string => {
     if (otomiCustomerName) return otomiCustomerName
     const file = `${ENV.DIR}/env/settings.yaml`
-    const customerFile = load(file) as any
+    const customerFile = loadYaml(file)
     otomiCustomerName = customerFile.customer?.name
     return otomiCustomerName
   },

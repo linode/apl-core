@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { preCommit } from '../cmd/commit'
@@ -14,7 +14,7 @@ export const stopServer = (): void => {
   server?.close()
 }
 
-app.get('/', async (req: Request, res: Response) => {
+app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
 })
 
