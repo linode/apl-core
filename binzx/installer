@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly script=otomi
-readonly branch=otomi-zx
+readonly branch=${OTOMI_TAG:-master}
 readonly remote=https://raw.githubusercontent.com/redkubes/otomi-core/$branch/binzx/$script
 readonly path=/usr/local/bin
 
