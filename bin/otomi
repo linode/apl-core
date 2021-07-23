@@ -173,6 +173,7 @@ function drun() {
     [ -n "$VERBOSE" ] && echo "Running dockerized version of command: $command"
     [ "$image_tag" = 'latest' ] || [ "$image_tag" = 'master' ] && [ -z "$NOPULL" ] && docker pull "otomi/core:$image_tag" >/dev/null
     docker run $docker_terminal_params --network host --rm \
+      $LINUX_WORKAROUND \
       $stack_volume $socket_volume -v /tmp:/tmp \
       -v ${KUBECONFIG:-$HOME/.kube/config}:/home/app/.kube/config \
       -v $HOME/.ssh:/home/app/.ssh \
@@ -211,147 +212,147 @@ function execute() {
   shift
   [ -z "$IN_DOCKER" ] && exec=". bin/common.sh $original_params &&"
   case $command in
-    apply)
-      evaluate_secrets
-      check_kube_context=1
-      set -o pipefail
-      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
-        drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
-      else
-        drun "$exec crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
-      fi
-      ;;
-    argstest)
-      echo "$@"
-      ;;
-    bash)
-      docker_terminal_params='-it'
-      drun 'bash'
-      ;;
-    bats)
-      drun "bats -T bin/tests"
-      ;;
-    bootstrap)
-      check_env_dir
-      drun "bin/bootstrap.sh $original_params"
-      ;;
-    check-policies)
-      check_env_dir
-      evaluate_secrets
-      drun "bin/check-policies.sh $original_params"
-      ;;
-    commit)
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun 'bin/validate-values.sh'
-      drun 'bin/pre-commit.sh'
-      git add . && git commit -m 'Manual commit' --no-verify
-      ;;
-    console)
-      evaluate_secrets
-      run_console "$@"
-      ;;
-    decrypt)
-      check_sops_file
-      evaluate_secrets
-      drun "$exec crypt dec" "$@"
-      ;;
-    diff)
-      evaluate_secrets
-      check_kube_context=1
-      set -o pipefail
-      drun "$exec crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
-      ;;
-    destroy)
-      evaluate_secrets
-      check_kube_context=1
-      if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
-        drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
-      else
-        drun "$exec crypt && hf destroy" | grep -Ev $helmfile_output_hide
-      fi
-      ;;
-    encrypt)
-      check_sops_file
-      evaluate_secrets
-      drun "$exec crypt enc" "$@"
-      ;;
-    gen-drone)
-      evaluate_secrets
-      drun 'bin/gen-drone.sh'
-      ;;
-    gen-sops)
-      check_env_dir
-      drun 'bin/gen-sops.sh'
-      ;;
-    hf)
-      evaluate_secrets
-      check_kube_context=1
-      set -o pipefail
-      drun "$exec crypt && hf $*" | grep -Ev $helmfile_output_hide
-      ;;
-    lint)
-      evaluate_secrets
-      set -o pipefail
-      drun "$exec crypt && hf lint --skip-deps"
-      ;;
-    pull)
-      is_repo
-      evaluate_secrets
-      git -C $ENV_DIR pull
-      drun 'bin/bootstrap.sh'
-      ;;
-    regcred)
-      drun "bin/regcred.sh $original_params"
-      ;;
-    rotate-keys)
-      evaluate_secrets
-      drun "bin/crypt.sh rotate"
-      ;;
-    score-templates)
-      evaluate_secrets
-      check_env_dir
-      drun "$exec crypt && hf_template | kube-score score --ignore-test -"
-      ;;
-    sync)
-      evaluate_secrets
-      check_kube_context=1
-      set -o pipefail
-      drun "$exec crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
-      ;;
-    template)
-      evaluate_secrets
-      check_env_dir
-      drun "$exec QUIET=1 crypt && hf_template"
-      ;;
-    test)
-      evaluate_secrets
-      drun bin/test.sh
-      ;;
-    validate-templates)
-      evaluate_secrets
-      check_env_dir
-      drun "bin/validate-templates.sh $original_params"
-      ;;
-    validate-values)
-      evaluate_secrets
-      check_env_dir
-      drun "bin/validate-values.sh $original_params"
-      ;;
-    values)
-      evaluate_secrets
-      check_env_dir
-      set -o pipefail
-      drun "$exec crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
-      ;;
-    x)
-      drun "$@"
-      ;;
-    *)
-      show_usage
-      [ -z "$1" ] && err "Unknown command: $command" && exit 1
-      ;;
+  apply)
+    evaluate_secrets
+    check_kube_context=1
+    set -o pipefail
+    if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+      drun "bin/deploy.sh" | grep -Ev $helmfile_output_hide
+    else
+      drun "$exec crypt && hf apply --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+    fi
+    ;;
+  argstest)
+    echo "$@"
+    ;;
+  bash)
+    docker_terminal_params='-it'
+    drun 'bash'
+    ;;
+  bats)
+    drun "bats -T bin/tests"
+    ;;
+  bootstrap)
+    check_env_dir
+    drun "bin/bootstrap.sh $original_params"
+    ;;
+  check-policies)
+    check_env_dir
+    evaluate_secrets
+    drun "bin/check-policies.sh $original_params"
+    ;;
+  commit)
+    is_repo
+    evaluate_secrets
+    git -C $ENV_DIR pull
+    drun 'bin/validate-values.sh'
+    drun 'bin/pre-commit.sh'
+    git add . && git commit -m 'Manual commit' --no-verify
+    ;;
+  console)
+    evaluate_secrets
+    run_console "$@"
+    ;;
+  decrypt)
+    check_sops_file
+    evaluate_secrets
+    drun "$exec crypt dec" "$@"
+    ;;
+  diff)
+    evaluate_secrets
+    check_kube_context=1
+    set -o pipefail
+    drun "$exec crypt && hf diff --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+    ;;
+  destroy)
+    evaluate_secrets
+    check_kube_context=1
+    if [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ]; then
+      drun "bin/destroy.sh $original_params" | grep -Ev $helmfile_output_hide
+    else
+      drun "$exec crypt && hf destroy" | grep -Ev $helmfile_output_hide
+    fi
+    ;;
+  encrypt)
+    check_sops_file
+    evaluate_secrets
+    drun "$exec crypt enc" "$@"
+    ;;
+  gen-drone)
+    evaluate_secrets
+    drun 'bin/gen-drone.sh'
+    ;;
+  gen-sops)
+    check_env_dir
+    drun 'bin/gen-sops.sh'
+    ;;
+  hf)
+    evaluate_secrets
+    check_kube_context=1
+    set -o pipefail
+    drun "$exec crypt && hf $*" | grep -Ev $helmfile_output_hide
+    ;;
+  lint)
+    evaluate_secrets
+    set -o pipefail
+    drun "$exec crypt && hf lint --skip-deps"
+    ;;
+  pull)
+    is_repo
+    evaluate_secrets
+    git -C $ENV_DIR pull
+    drun 'bin/bootstrap.sh'
+    ;;
+  regcred)
+    drun "bin/regcred.sh $original_params"
+    ;;
+  rotate-keys)
+    evaluate_secrets
+    drun "bin/crypt.sh rotate"
+    ;;
+  score-templates)
+    evaluate_secrets
+    check_env_dir
+    drun "$exec crypt && hf_template | kube-score score --ignore-test -"
+    ;;
+  sync)
+    evaluate_secrets
+    check_kube_context=1
+    set -o pipefail
+    drun "$exec crypt && hf sync --skip-deps $SKIP_CLEANUP" | grep -Ev $helmfile_output_hide
+    ;;
+  template)
+    evaluate_secrets
+    check_env_dir
+    drun "$exec QUIET=1 crypt && hf_template"
+    ;;
+  test)
+    evaluate_secrets
+    drun bin/test.sh
+    ;;
+  validate-templates)
+    evaluate_secrets
+    check_env_dir
+    drun "bin/validate-templates.sh $original_params"
+    ;;
+  validate-values)
+    evaluate_secrets
+    check_env_dir
+    drun "bin/validate-values.sh $original_params"
+    ;;
+  values)
+    evaluate_secrets
+    check_env_dir
+    set -o pipefail
+    drun "$exec crypt && hf -f helmfile.tpl/helmfile-dump.yaml build" | grep -Ev $helmfile_output_hide | sed -e $replace_paths_pattern
+    ;;
+  x)
+    drun "$@"
+    ;;
+  *)
+    show_usage
+    [ -z "$1" ] && err "Unknown command: $command" && exit 1
+    ;;
   esac
   exit
 }
