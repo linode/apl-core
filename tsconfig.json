@@ -8,13 +8,13 @@
     "sourceMap": true,
     "strict": false,
     "allowJs": true,
-    "module": "esnext",
+    "module": "ESNext",
     "outDir": "dist",
     "moduleResolution": "node",
-    "target": "es2021",
+    "target": "ES2021",
     "esModuleInterop": true,
     "strictNullChecks": true,
-    "lib": ["es2021"]
+    "lib": ["ES2021", "ESNext"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src", "chart/otomi/scripts"],

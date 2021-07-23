@@ -55,8 +55,9 @@ try {
       'log-level': {
         choices: Object.entries(LOG_LEVELS)
           .filter((val) => Number.isNaN(Number(val[0])))
-          .map((val) => val[0]),
-        default: LOG_LEVELS[LOG_LEVELS.WARN],
+          .map((val) => val[0].toLowerCase()),
+        default: LOG_LEVELS[LOG_LEVELS.WARN].toLowerCase(),
+        coerce: (val) => val.toLowerCase(),
       },
       'skip-cleanup': {
         alias: 's',

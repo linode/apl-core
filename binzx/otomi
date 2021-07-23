@@ -289,7 +289,8 @@ else
     $stack_volume \
     $tmp_volume \
     -v /tmp/otomi:/tmp/otomi \
-    $(check_volume_path ${KUBECONFIG:-$HOME/.kube/config} "/home/app/.kube/config") \
+    $(check_volume_path $HOME/.kube "/home/app/.kube") \
+    $([ -n "$KUBECONFIG" ] && check_volume_path $KUBECONFIG "/home/app/.kube/config") \
     $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
     $(check_volume_path $helm_config "/home/app/.config/helm") \
     $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \

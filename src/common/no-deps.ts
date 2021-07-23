@@ -91,7 +91,7 @@ export const LOG_LEVEL = (): number => {
   if (!ENV.PARSED_ARGS) return LOG_LEVELS.ERROR
   if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
 
-  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel])
+  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel.toUpperCase()])
   const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
   const boolTrace = cleanedEnv.TRACE || ENV.PARSED_ARGS.trace
   LL = boolTrace ? LOG_LEVELS.TRACE : LL

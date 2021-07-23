@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { chalk } from 'zx'
+import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { hfValues } from '../common/hf'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { askYesNo } from '../common/zx-enhance'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
@@ -34,28 +34,47 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 }
 
 export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
-  const currDir = ENV.PWD
-  const hfVals = await hfValues()
-  const provider = hfVals?.kms?.sops?.provider
+  await setup(argv, { ...options, skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
+
+  const settingsFile = `${ENV.DIR}/env/settings.yaml`
+  const settingsVals = loadYaml(settingsFile)
+  const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
 
   const targetPath = `${ENV.DIR}/.sops.yaml`
-  const templatePath = `${currDir}/tpl/.sops.yaml`
+  if (existsSync(targetPath)) {
+    const overwrite = await askYesNo(`${targetPath} already exists, do you want to overwrite?`, { defaultYes: false })
+    if (!overwrite) return
+  }
+  const templatePath = `${ENV.PWD}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = providerMap[provider]
-  const kmsKeys = hfVals.kms.sops[provider].key
+  const kmsKeys = settingsVals.kms.sops[provider].keys
 
-  debug.log(`Creating ${chalk.italic(targetPath)}`)
-
-  let templateContent: string = readFileSync(templatePath, 'utf-8')
-  templateContent = templateContent.replaceAll('__PROVIDER', kmsProvider).replaceAll('__KEYS', kmsKeys)
-
-  if (argv.dryRun) {
-    debug.log(templateContent)
-  } else {
-    writeFileSync(targetPath, templateContent)
+  const obj = {
+    provider: kmsProvider,
+    keys: kmsKeys,
   }
 
+  debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
+  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
+  const quoteBackup = $.quote
+  $.quote = (v) => v
+  const processOutput = await nothrow($`gucci ${gucciArgs} ${templatePath}`)
+  $.quote = quoteBackup
+  const output = processOutput.stdout
+  if (argv.dryRun) {
+    debug.log(output)
+  } else {
+    writeFileSync(`${targetPath}`, output)
+    debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
+  }
+
+  if (!ENV.isCI) {
+    if (!existsSync(`${ENV.DIR}/.secrets`)) {
+      debug.error(`Expecting ${ENV.DIR}/.secrets to exist and hold credentials for SOPS`)
+      return
+    }
+  }
   if (provider === 'google') {
     if (process.env.GCLOUD_SERVICE_KEY) {
       debug.log('Creating gcp-key.json for vscode.')

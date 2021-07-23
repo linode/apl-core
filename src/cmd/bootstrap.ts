@@ -26,7 +26,7 @@ const setup = (argv: Arguments): void => {
 
 const rollBack = (): void => {
   const dirContent = readdirSync(ENV.DIR)
-  dirContent.map((item) => rmSync(item, { recursive: true }))
+  dirContent.map((item) => rmSync(item, { recursive: true, force: true }))
 }
 
 const generateLooseSchema = (currDir: string) => {
@@ -126,11 +126,12 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
+    const envDirHasVals = existsSync(ENV.DIR) && readdirSync(ENV.DIR).length > 0
     try {
       await bootstrap(argv)
     } catch (error) {
       debug.error('Error occurred, rolling back')
-      rollBack()
+      if (!envDirHasVals) rollBack()
       debug.exit(1, error)
     }
   },

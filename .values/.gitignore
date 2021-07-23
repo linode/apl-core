@@ -9,3 +9,4 @@
 /bin/
 core.yaml
 .secrets
+.env

@@ -1,13 +1,15 @@
-import { existsSync, readdirSync } from 'fs'
+import cliSelect from 'cli-select'
+import { existsSync, readdirSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { $, nothrow } from 'zx'
+import { $, chalk, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
 import { values } from './hf'
 import { BasicArguments, ENV, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
-import { askYesNo, source } from './zx-enhance'
+import { ask, askYesNo, source } from './zx-enhance'
 
+chalk.level = 2
 const dirname = fileURLToPath(import.meta.url)
 
 let otomiImageTag: string
@@ -28,10 +30,43 @@ const checkKubeContext = async (): Promise<void> => {
   debug.kubeContext.verbose('Validating kube context')
 
   const envPath = `${ENV.DIR}/env/.env`
-  try {
-    await source(envPath)
-  } catch (error) {
-    debug.kubeContext.exit(1, error)
+  if (!existsSync(envPath)) {
+    const currentContext = (await $`kubectl config current-context`).stdout.trim()
+    const output = await $`kubectl config get-contexts -o=name`
+    const other = 'Other'
+    const out = output.stdout
+      .split('\n')
+      .map((val) => val.trim())
+      .filter(Boolean)
+    debug.kubeContext.log('No k8s context was defined in your values, please select one.')
+    const res = await cliSelect({
+      values: [...out, other],
+      defaultValue: out.indexOf(currentContext),
+      valueRenderer: (value, selected) => {
+        if (selected) {
+          return chalk.underline(value)
+        }
+
+        return value
+      },
+    })
+    let val = res.value
+    if (val === other) {
+      debug.kubeContext.log(
+        chalk.hex('#FFA500')(
+          'You are going to input a context that is not yet defined, not all commands might work as expected',
+        ),
+      )
+      val = await ask('What context should be selected?', { defaultAnswer: currentContext })
+    }
+    writeFileSync(envPath, `export K8S_CONTEXT="${val}"\n`)
+    process.env.K8S_CONTEXT = val
+  } else {
+    try {
+      await source(envPath)
+    } catch (error) {
+      debug.kubeContext.exit(1, error)
+    }
   }
 
   if (!('K8S_CONTEXT' in process.env)) debug.kubeContext.exit(1, `K8S_CONTEXT is not defined in '${envPath}'`)
@@ -43,7 +78,7 @@ const checkKubeContext = async (): Promise<void> => {
     let fixContext = false
     if (!(parser.argv as BasicArguments).setContext) {
       fixContext = await askYesNo(
-        `Warning: Your current kubernetes context does not match cluster context: ${process.env.K8S_CONTEXT}. Would you like to switch kube context to cluster first?`,
+        `Warning: Your current kubernetes context (${runningContext}) does not match cluster context: ${process.env.K8S_CONTEXT}. Would you like to switch kube context to cluster first?`,
         { defaultYes: true },
       )
     }
