@@ -15,6 +15,8 @@ export interface BasicArguments extends YargsArguments {
   verbose: number
   skipCleanup: boolean
   trace: boolean
+  inTerminal: boolean
+  inDocker: boolean
 }
 
 export const defaultBasicArguments: BasicArguments = {
@@ -24,6 +26,8 @@ export const defaultBasicArguments: BasicArguments = {
   verbose: 0,
   skipCleanup: false,
   trace: false,
+  inTerminal: true,
+  inDocker: true,
 }
 
 let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }

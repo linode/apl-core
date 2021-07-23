@@ -1,8 +1,14 @@
 import Debug from 'debug'
+import { bool, cleanEnv } from 'envalid'
 import { Writable, WritableOptions } from 'stream'
 import { LOG_LEVEL, LOG_LEVELS } from './no-deps'
 
-const SET_STATIC_COLORS = process.env.STATIC_COLORS ?? false
+const cleanedEnv = cleanEnv(process.env, {
+  STATIC_COLORS: bool({ default: false }),
+  // TODO: Use this to use console.log instead of debug.log by default (when piping)
+  OTOMI_IN_TERMINAL: bool({ default: true }),
+})
+const SET_STATIC_COLORS = cleanedEnv.STATIC_COLORS
 
 const commonDebug: Debug.Debugger = Debug('otomi')
 commonDebug.enabled = true

@@ -158,6 +158,11 @@ function dump_vars() {
 }
 
 OTOMI_PORT=${OTOMI_PORT:-192019}
+OTOMI_IN_TERMINAL="false"
+if [ -t 1 ]; then
+  OTOMI_IN_TERMINAL="true"
+fi
+
 vars=( 
   ENV_DIR
   AZURE_TENANT_ID 
@@ -174,8 +179,10 @@ vars=(
   TESTING 
   TRACE 
   PROFILE 
+  DEBUG
   STATIC_COLORS 
   OTOMI_DRY_RUN 
+  OTOMI_IN_TERMINAL
   OTOMI_SERVER 
   OTOMI_USERNAME 
   OTOMI_PASSWORD 
