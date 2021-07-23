@@ -21,17 +21,18 @@
 {{- end }}
 {{- $teamServices := list -}}
   {{- if hasKey $v.teamConfig "teams" -}}
-  {{- range $teamId, $team := $v.teamConfig.teams }}
-    {{- if hasKey $team "services" -}}
-      {{- range $s := $team.services -}}
-        {{- $sd := dict -}}
-          {{- with $s.name -}}{{ $teamServices = append $teamServices (set $sd "name" .) }}{{- end}}
-          {{- with $s.type -}}{{ $teamServices = append $teamServices (set $sd "type" .) }}{{- end}}
-          {{- if hasKey $s "ksvc" -}}{{ $teamServices = append $teamServices (set $sd "ksvc" true ) }}{{- end}}
-          {{- with $s.port -}}{{ $teamServices = append $teamServices (set $sd "port" .) }}{{- end}}
+    {{- range $teamId, $team := $v.teamConfig.teams }}
+      {{- if hasKey $team "services" -}}
+        {{- range $s := $team.services -}}
+          {{- $sd := dict -}}
+            {{- with $s.name -}}{{ $sd = set $sd "name" . }}{{- end }}
+            {{- with $s.type -}}{{ $sd = set $sd "type" . }}{{- end }}
+            {{- if hasKey $s "ksvc" -}}{{ $sd = set $sd "ksvc" true  }}{{- end }}
+            {{- with $s.port -}}{{ $sd = set $sd "port" . }}{{- end }}
+            {{ $teamServices = append $teamServices $sd }}
+        {{- end }}              
       {{- end }}
     {{- end }}
-  {{- end }}
   {{- end }}
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
