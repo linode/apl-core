@@ -56,7 +56,7 @@ try {
           .filter((val) => Number.isNaN(Number(val[0])))
           .map((val) => val[0].toLowerCase()),
         default: LOG_LEVELS[LOG_LEVELS.WARN].toLowerCase(),
-        coerce: (val) => val.toUpperCase(),
+        coerce: (val) => val.toLowerCase(),
       },
       'skip-cleanup': {
         alias: 's',
