@@ -28,9 +28,8 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const template = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.verbose('Templating STARTED')
-  const result = await hfTemplate(argv, argv.outDir)
+  await hfTemplate(argv, argv.outDir, { stdout: debug.stream.log, stderr: debug.stream.error })
   debug.verbose('Templating DONE')
-  console.log(result)
 }
 
 export const module = {
