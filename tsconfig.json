@@ -17,7 +17,7 @@
     "lib": ["es2021"]
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src"],
+  "include": ["src", "chart/otomi/scripts"],
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module"

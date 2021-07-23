@@ -30,8 +30,7 @@ spec:
               cpu: '1'
           command: [bash, -c]
           args: 
-            - |
-              {{ .Files.Get "scripts/bootstrap-values.sh" | nindent 14 }}
+            - /home/app/stack/dist/chart/bootstrap.js
           env:
             - name: IN_DOCKER
               value: '1'
@@ -97,8 +96,7 @@ spec:
               cpu: '1'
           command: [bash, -c]
           args:
-            - |
-              {{ .Files.Get "scripts/push-values.sh" | nindent 14 }}
+            - /home/app/stack/dist/chart/push.js
           env:
             - name: IN_DOCKER
               value: '1'
@@ -131,7 +129,10 @@ spec:
             requests:
               memory: 1Gi
               cpu: '1'
-          command: [bin/deploy.sh]
+          command: [bash, -c]
+          args:
+          - |
+            binzx/otomi apply
           env:
             - name: IN_DOCKER
               value: '1'

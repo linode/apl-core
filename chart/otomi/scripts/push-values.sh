@@ -13,7 +13,7 @@ branch=$(cat $api_file | yq r - charts.otomi-api.git.branch)
 echo $branch
 
 echo 'Pushing the values...'
-
+# TODO: Wait for URL to come up!
 echo 'ENV_DIR: ' $ENV_DIR
 cd $ENV_DIR
 git add -A

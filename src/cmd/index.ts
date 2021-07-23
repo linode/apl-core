@@ -1,4 +1,5 @@
 import { CommandModule } from 'yargs'
+import chartModule from '../chart/index'
 import applyModule from './apply'
 import bashModule from './bash'
 import bootstrapModule from './bootstrap'
@@ -27,6 +28,7 @@ import validateValuesModule from './validate-values'
 import valuesModule from './values'
 import xModule from './x'
 
+export { default as chart } from '../chart/index'
 export { default as apply } from './apply'
 export { default as bash } from './bash'
 export { default as bootstrap } from './bootstrap'
@@ -82,5 +84,6 @@ export const commands: CommandModule[] = [
   validateValuesModule,
   valuesModule,
   xModule,
+  chartModule,
 ]
 export const defaultCommand: CommandModule | null = null // bootstrapModule

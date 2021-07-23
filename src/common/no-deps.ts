@@ -72,7 +72,7 @@ export const readdirRecurse = async (dir: string): Promise<string[]> => {
 export const capitalize = (s: string): string => (s && s[0].toUpperCase() + s.slice(1)) || ''
 
 export const loadYaml = (path: string): any => {
-  if (!existsSync(path)) throw new Error(`${path} does not exists`)
+  if (!existsSync(path)) throw new Error(`Path "${path}" does not exists`)
   return load(readFileSync(path, 'utf-8')) as any
 }
 
