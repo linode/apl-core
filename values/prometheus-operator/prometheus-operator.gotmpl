@@ -96,6 +96,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
+  enabled: {{ or ($v | get "alerts" false) ($v | get "home" false) }}
   alertmanagerSpec:
     image:
       tag: v0.22.2
