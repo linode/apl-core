@@ -6,7 +6,13 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: pullsecret-patcher
-    installed: {{ $c | get "pullsecret-patcher.enabled" false }}
-    namespace: pullsecret-patcher
-    <<: *default
+  - name: gatekeeper-operator
+    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
+    namespace: default
+    chart: ../charts/gatekeeper-operator
+    disableValidationOnInstall: true
+    labels:
+      pkg: gatekeeper
+    values:
+      - ../values/gatekeeper/gatekeeper-operator.gotmpl
+      - snippets/common.gotmpl

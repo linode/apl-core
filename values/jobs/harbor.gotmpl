@@ -18,7 +18,7 @@ description: Configure OIDC as a primary auhentication method and populate teams
 name: harbor
 image:
   repository: otomi/tasks
-  tag: v0.2.7
+  tag: v0.2.8
   pullPolicy: IfNotPresent
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
@@ -27,7 +27,7 @@ nativeSecrets:
   OIDC_CLIENT_SECRET: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
 env:
   DEBUG: '*'
-  HARBOR_BASE_URL: http://harbor-core.harbor/api/v2.0
+  HARBOR_BASE_URL: http://harbor-core.harbor
   HARBOR_BASE_REPO_URL: {{ $harborRepo }}
   TEAM_IDS: '{{ $teams | sortAlpha | toJson }}'
   OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
