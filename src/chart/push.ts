@@ -73,8 +73,10 @@ export const push = async (argv: Arguments): Promise<void> => {
   }
   const currDir = ENV.PWD
   cd(ENV.DIR)
+  debug.log('Committing values')
   await $`git add -A`
   await $`git commit --no-verify -m 'automated commit of otomi-values'`
+  debug.log('Pushing values')
   const pushResult = await $`git push --set-upstream origin ${branch}`
   cd(currDir)
   if (pushResult.exitCode !== 0) {

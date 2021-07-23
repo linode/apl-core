@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
 /**
  * Note that running this script requires "--experimental-specifier-resolution=node" due to this being an ESM module
  * https://nodejs.org/api/esm.html#esm_mandatory_file_extensions
