@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { existsSync, writeFileSync } from 'fs'
-import { $, cd, ProcessOutput } from 'zx'
+import { $, cd, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
 import { BasicArguments, ENV, parser, readdirRecurse } from './no-deps'
 import { evaluateSecrets } from './secrets'
@@ -46,8 +46,10 @@ const runOnSecretFiles = async (cmd: string[], filesArgs?: string[]): Promise<Pr
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   EventEmitter.defaultMaxListeners = files.length + 5
   try {
-    const commands = files.map(async (file) => $`${cmd} ${file}`)
-    return await Promise.all(commands)
+    const commands = files.map(async (file) => nothrow($`${cmd} ${file}`))
+    const results = await Promise.all(commands)
+    results.filter((res) => res.exitCode !== 0).map((val) => term.warn(val))
+    return results
   } catch (error) {
     term.error(error)
     return undefined
