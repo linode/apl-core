@@ -2,17 +2,15 @@
 
 # Otomi
 ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker)
-![Downloads]https://img.shields.io/github/downloads/redkubes/otomi-core/total
+![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total)
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
 ![Crates.io](https://img.shields.io/crates/l/ap)
 ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 
-The easiest way to turn Kubernetes into an enterprise-grade container platform
+The easiest way to turn Kubernetes into a full blown container platform.
 
 ## What is Otomi
-
-Otomi is:
 
 Otomi extends Kubernetes with:
 
