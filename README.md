@@ -1,7 +1,8 @@
 <p align="center"><img src="https://otomi.io/img/otomi-logo.svg" width="40%" align="center" alt="Otomi"></p>
 
 # Otomi
-![Build Status](https://github.com/redkubes/otomi-core/actions/workflows/main.yml)
+![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker)
+![Downloads]https://img.shields.io/github/downloads/redkubes/otomi-core/total
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
 ![Crates.io](https://img.shields.io/crates/l/ap)
 ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core)
@@ -38,7 +39,7 @@ Otomi consists out of multiple projects:
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 ## Get started
-<p align="center"><img src="https://otomi.io/img/get-started" width="100%" align="center" alt="Get started"></p>
+<p align="center"><img src="https://otomi.io/img/get-started.png" width="100%" align="center" alt="Get started"></p>
 
 
 For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io/).
