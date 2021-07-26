@@ -21,12 +21,12 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<number> => {
   await setup(argv, options)
   const commands = argv._.slice(1)
   if (LOG_LEVEL() >= LOG_LEVELS.VERBOSE) commands.push('-v')
   const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
-  process.exit(output.exitCode)
+  return output.exitCode
 }
 
 export const module = {
@@ -36,7 +36,8 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     ENV.PARSED_ARGS = argv
-    await x(argv, { skipKubeContextCheck: true })
+    const exitCode = await x(argv, { skipKubeContextCheck: true })
+    process.exit(exitCode)
   },
 }
 
