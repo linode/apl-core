@@ -2,13 +2,15 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
-import { ENV, loadYaml } from '../common/no-deps'
+import { deletePropertyPath, ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const fileName = 'validate-values'
 let debug: OtomiDebugger
+
+const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
@@ -34,6 +36,11 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
 
   debug.verbose('Getting values')
   const hfVal = await hfValues()
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const internalPath of internalPaths) {
+    deletePropertyPath(hfVal, internalPath)
+  }
 
   try {
     debug.verbose('Loading values-schema.yaml')
