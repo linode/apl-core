@@ -119,7 +119,7 @@ export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Str
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv['skip-cleanup']) args.push('--skip-cleanup')
   let template = ''
-  const params: HFParams = { args }
+  const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
     template += await hf({ ...params, fileOpts: 'helmfile.tpl/helmfile-init.yaml' }, { streams })
     template += '\n'

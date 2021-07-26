@@ -15,6 +15,8 @@ export interface BasicArguments extends YargsArguments {
   verbose: number
   skipCleanup: boolean
   trace: boolean
+  inTerminal: boolean
+  inDocker: boolean
 }
 
 export const defaultBasicArguments: BasicArguments = {
@@ -24,6 +26,8 @@ export const defaultBasicArguments: BasicArguments = {
   verbose: 0,
   skipCleanup: false,
   trace: false,
+  inTerminal: true,
+  inDocker: true,
 }
 
 let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }
@@ -31,6 +35,7 @@ const cleanedEnv = cleanEnv(process.env, {
   CI: bool({ default: false }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
+  OTOMI_IN_TERMINAL: bool({ default: true }),
 })
 export const ENV = {
   set DIR(envDir: string) {
@@ -53,6 +58,9 @@ export const ENV = {
   },
   get isTESTING(): boolean {
     return cleanedEnv.TESTING
+  },
+  get inTerminal(): boolean {
+    return cleanedEnv.OTOMI_IN_TERMINAL
   },
 }
 export const asArray = (args: string | string[]): string[] => {

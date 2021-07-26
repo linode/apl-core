@@ -101,6 +101,10 @@ try {
         default: false,
         hidden: true,
       },
+      inTerminal: {
+        boolean: true,
+        hidden: true,
+      },
     })
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
     .fail((e) => {
