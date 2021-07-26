@@ -2,6 +2,7 @@ import { bool, cleanEnv } from 'envalid'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import { load } from 'js-yaml'
 import { resolve } from 'path'
+import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $ } from 'zx'
 
@@ -10,6 +11,8 @@ $.verbose = false // https://github.com/google/zx#verbose - don't need to print 
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L88
 
 export const parser = yargs(process.argv.slice(3))
+export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
+
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   verbose: number
@@ -99,8 +102,8 @@ export const LOG_LEVEL = (): number => {
   if (!ENV.PARSED_ARGS) return LOG_LEVELS.ERROR
   if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
 
-  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel.toUpperCase()])
-  const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose)
+  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel?.toUpperCase() ?? 'WARN'])
+  const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose ?? 0)
   const boolTrace = cleanedEnv.TRACE || ENV.PARSED_ARGS.trace
   LL = boolTrace ? LOG_LEVELS.TRACE : LL
 
@@ -114,6 +117,24 @@ export const LOG_LEVEL = (): number => {
 
 export const LOG_LEVEL_STRING = (): string => {
   return LOG_LEVELS[LOG_LEVEL()].toString()
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const deletePropertyPath = (object: any, path: string): void => {
+  if (!object || !path) {
+    return
+  }
+  const pathList = path.split('.')
+  let obj = object
+  for (let i = 0; i < pathList.length - 1; i++) {
+    obj = obj[pathList[i]]
+
+    if (!obj) {
+      return
+    }
+  }
+
+  delete obj[pathList.pop() as string]
 }
 
 export default { parser, ENV, asArray }
