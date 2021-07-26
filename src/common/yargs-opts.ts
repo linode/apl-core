@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { Argv, Options } from 'yargs'
 import { chalk } from 'zx'
-import { BasicArguments } from './no-deps'
+import { BasicArguments, LOG_LEVELS } from './no-deps'
 
 export interface Arguments extends BasicArguments {
   label?: string[]
@@ -11,7 +11,7 @@ export interface Arguments extends BasicArguments {
   f?: string[]
 }
 
-const options: { [key: string]: Options } = {
+const helmOpts: { [key: string]: Options } = {
   label: {
     alias: ['l', 'selector'],
     array: true,
@@ -87,9 +87,65 @@ const options: { [key: string]: Options } = {
   //   default: process.env.K8S_CONTEXT, // Possibly empty if assuming the sourcing of env files from $ENV.DIR
   // },
 }
-Object.keys(options).map((k) => {
-  options[k].group = 'Helmfile Options'
+Object.keys(helmOpts).map((k) => {
+  helmOpts[k].group = 'Helmfile Options'
   return k
 })
 
-export const helmOptions = (parser: Argv): Argv => parser.options(options)
+export const basicOptions: { [key: string]: Options } = {
+  'log-level': {
+    choices: Object.entries(LOG_LEVELS)
+      .filter((val) => Number.isNaN(Number(val[0])))
+      .map((val) => val[0].toLowerCase()),
+    default: LOG_LEVELS[LOG_LEVELS.WARN].toLowerCase(),
+    coerce: (val) => val.toLowerCase(),
+  },
+  'skip-cleanup': {
+    alias: 's',
+    boolean: true,
+    default: false,
+  },
+  'set-context': {
+    alias: 'c',
+    boolean: true,
+    default: false,
+  },
+  verbose: {
+    alias: 'v',
+    count: true,
+    coerce: (val: number) =>
+      Math.min(
+        val,
+        Object.keys(LOG_LEVELS)
+          .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
+          .map(Number)
+          .reduce((prev, curr) => Math.max(prev, curr)),
+      ),
+  },
+  'no-interactive': {
+    alias: 'ni',
+    boolean: true,
+    default: false,
+  },
+  trace: {
+    boolean: true,
+    default: false,
+    hidden: true,
+  },
+  dev: {
+    boolean: true,
+    default: false,
+    hidden: true,
+  },
+  inDocker: {
+    boolean: true,
+    default: false,
+    hidden: true,
+  },
+  inTerminal: {
+    boolean: true,
+    hidden: true,
+  },
+}
+
+export const helmOptions = (parser: Argv): Argv => parser.options(helmOpts)

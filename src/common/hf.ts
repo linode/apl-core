@@ -2,8 +2,8 @@ import { cleanEnv, str } from 'envalid'
 import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { Arguments } from './helm-opts'
 import { asArray, ENV, LOG_LEVELS } from './no-deps'
+import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const value = {

@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
 import { hfStream } from '../common/hf'
 import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
 interface Arguments extends HelmArgs {
   args?: string[]
@@ -38,7 +38,7 @@ export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): 
       { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   } catch (error) {
-    debug.exit(1, error)
+    debug.exit(1, error.stderr)
   }
 }
 

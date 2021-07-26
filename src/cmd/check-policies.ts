@@ -2,10 +2,10 @@ import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfTemplate } from '../common/hf'
 import { ENV, loadYaml, LOG_LEVEL, LOG_LEVELS } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const fileName = 'check-policies'
 const policiesFile = `${ENV.DIR}/env/policies.yaml`

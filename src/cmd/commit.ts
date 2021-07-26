@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
 import { capitalize, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 

@@ -11,8 +11,9 @@ import { lstatSync, readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
 import { terminal } from './common/debug'
-import { ENV, LOG_LEVELS, parser } from './common/no-deps'
+import { ENV, parser } from './common/no-deps'
 import { otomi } from './common/setup'
+import { basicOptions } from './common/yargs-opts'
 
 const env = cleanEnv(process.env, {
   OTOMI_IN_DOCKER: bool({ default: false }),
@@ -50,61 +51,7 @@ try {
     )
   }
   parser
-    .option({
-      'log-level': {
-        choices: Object.entries(LOG_LEVELS)
-          .filter((val) => Number.isNaN(Number(val[0])))
-          .map((val) => val[0].toLowerCase()),
-        default: LOG_LEVELS[LOG_LEVELS.WARN].toLowerCase(),
-        coerce: (val) => val.toLowerCase(),
-      },
-      'skip-cleanup': {
-        alias: 's',
-        boolean: true,
-        default: false,
-      },
-      'set-context': {
-        alias: 'c',
-        boolean: true,
-        default: false,
-      },
-      verbose: {
-        alias: 'v',
-        count: true,
-        coerce: (val: number) =>
-          Math.min(
-            val,
-            Object.keys(LOG_LEVELS)
-              .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
-              .map(Number)
-              .reduce((prev, curr) => Math.max(prev, curr)),
-          ),
-      },
-      'no-interactive': {
-        alias: 'ni',
-        boolean: true,
-        default: false,
-      },
-      trace: {
-        boolean: true,
-        default: false,
-        hidden: true,
-      },
-      dev: {
-        boolean: true,
-        default: false,
-        hidden: true,
-      },
-      inDocker: {
-        boolean: true,
-        default: false,
-        hidden: true,
-      },
-      inTerminal: {
-        boolean: true,
-        hidden: true,
-      },
-    })
+    .option(basicOptions)
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
     .fail((e) => {
       throw e
