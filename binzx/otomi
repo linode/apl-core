@@ -160,6 +160,7 @@ function dump_vars() {
 OTOMI_PORT=${OTOMI_PORT:-192019}
 OTOMI_IN_TERMINAL="false"
 if [ -t 1 ]; then
+  # shellcheck disable=SC2034
   OTOMI_IN_TERMINAL="true"
 fi
 
