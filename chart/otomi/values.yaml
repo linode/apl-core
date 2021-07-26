@@ -12,6 +12,26 @@ cluster:
   name: 'dev'
   provider: ''
   region: ''
+# kms:
+#   sops:
+    # provider can be one of aws|azure|google|vault
+    # provider: ''
+    # aws:
+    #   clientID: ''
+    #   clientSecret: ''
+    #   accessKey: ''
+    #   secretKey: ''
+    # azure:
+    #   tenantID: ''
+    #   clientID: ''
+    #   clientSecret: ''
+    #   keys: ''
+    # google:
+    #   accountJson: ''
+    #   project: ''
+    #   keys: ''
+    # vault:
+    #   token: ''
 oidc:
   clientID: ''
   clientSecret: ''
