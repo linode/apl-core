@@ -35,7 +35,7 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   setup(args)
 
   ENV.DIR = `${ENV.PWD}/env`
-  symlinkSync(ENV.DIR, `${ENV.PWD}/tests/fixtures`)
+  symlinkSync(`${ENV.PWD}/tests/fixtures`, ENV.DIR)
   debug.log(`Validating ${ENV.DIR} values`)
 
   const xCommand = 'opa test policies -v'
