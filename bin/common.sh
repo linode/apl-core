@@ -19,6 +19,7 @@ LOG_LEVEL='--log-level warn'
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
 readonly otomi_tools_image="otomi/core:latest"
+[ $(uname -s) == 'Linux' ] && readonly LINUX_WORKAROUND='--user=root:root'
 
 # Mutliple files vars
 readonly helmfile_output_hide="(^\W+$|skipping|basePath=)"
@@ -59,45 +60,45 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
   eval set -- "$PARSED"
   while true; do
     case "$1" in
-      -d | --debug)
-        DEBUG=1
-        LOG_LEVEL='--log-level debug'
-        shift 1
-        ;;
-      -t | --trace)
-        TRACE=1
-        PS4='[\D{%F %T}] $BASH_SOURCE:$LINENO:'
-        set -x
-        shift 1
-        ;;
-      -v | --verbose)
-        VERBOSE=1
-        shift 1
-        ;;
-      -s | --skip-cleanup)
-        SKIP_CLEANUP='--skip-cleanup'
-        shift 1
-        ;;
-      -p | --profile)
-        PROFILE=$2
-        shift 2
-        ;;
-      -f | --file)
-        FILE_OPT="$FILE_OPT -f $2"
-        shift 2
-        ;;
-      -l | --label)
-        LABEL_OPT="$LABEL_OPT -l $2"
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-      *)
-        err "Programming error: expected '--' but got $1"
-        exit 1
-        ;;
+    -d | --debug)
+      DEBUG=1
+      LOG_LEVEL='--log-level debug'
+      shift 1
+      ;;
+    -t | --trace)
+      TRACE=1
+      PS4='[\D{%F %T}] $BASH_SOURCE:$LINENO:'
+      set -x
+      shift 1
+      ;;
+    -v | --verbose)
+      VERBOSE=1
+      shift 1
+      ;;
+    -s | --skip-cleanup)
+      SKIP_CLEANUP='--skip-cleanup'
+      shift 1
+      ;;
+    -p | --profile)
+      PROFILE=$2
+      shift 2
+      ;;
+    -f | --file)
+      FILE_OPT="$FILE_OPT -f $2"
+      shift 2
+      ;;
+    -l | --label)
+      LABEL_OPT="$LABEL_OPT -l $2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      err "Programming error: expected '--' but got $1"
+      exit 1
+      ;;
     esac
   done
 fi
@@ -107,6 +108,7 @@ function _rind() {
   shift
   if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
     docker run --rm \
+      $LINUX_WORKAROUND \
       -v $ENV_DIR:$ENV_DIR \
       -e IN_DOCKER='1' \
       -e ENV_DIR=$ENV_DIR \

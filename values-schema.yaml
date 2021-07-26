@@ -904,24 +904,6 @@ definitions:
             name:
               type: string
     type: array
-  vaultCreds:
-    properties:
-      provider:
-        type: string
-        const: vault
-      vault:
-        properties:
-          keys:
-            description: Comma separated list of one or two paths to keys as defined in Vault. One if used for both enc+dec. Two if one for enc, other for dec.
-            title: Vault keys
-            type: string
-          token:
-            type: string
-            x-secret: true
-        required:
-          - token
-    required:
-      - vault
 properties:
   alerts:
     $ref: '#/definitions/alerts'
@@ -1989,6 +1971,9 @@ properties:
                     type: string
                   region:
                     $ref: '#/definitions/aws/definitions/region'
+                required:
+                  - keys
+                  - region
             required:
               - aws
           - properties:
@@ -2003,6 +1988,9 @@ properties:
                     type: string
                   tenantId:
                     $ref: '#/definitions/azure/definitions/tenantId'
+                required:
+                  - keys
+                  - tenantId
             required:
               - azure
           - properties:
@@ -2019,10 +2007,30 @@ properties:
                     $ref: '#/definitions/google/definitions/accountJson'
                   project:
                     $ref: '#/definitions/google/definitions/projectId'
+                required:
+                  - keys
+                  - accountJson
+                  - project
             required:
               - google
-
-          - $ref: '#/definitions/vaultCreds'
+          - properties:
+              provider:
+                type: string
+                const: vault
+              vault:
+                properties:
+                  keys:
+                    description: Comma separated list of one or two paths to keys as defined in Vault. One if used for both enc+dec. Two if one for enc, other for dec.
+                    title: Vault keys
+                    type: string
+                  token:
+                    type: string
+                    x-secret: true
+                required:
+                  - keys
+                  - token
+            required:
+              - vault
   letsencryptCA:
     type: string
   letsencryptRootCA:
