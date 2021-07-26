@@ -40,7 +40,7 @@ spec:
             - name: CI
               value: '1'
             - name: OTOMI_VERSION
-              value: {{ .Values.image.tag | default .Chart.AppVersion }}
+              value: {{ .Values.otomi.version  | default .Chart.AppVersion }}
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: OTOMI_VALUES_INPUT
