@@ -18,7 +18,7 @@ description: Configure OIDC as a primary auhentication method and populate teams
 name: harbor
 image:
   repository: otomi/tasks
-  tag: v0.2.8
+  tag: v0.2.9
   pullPolicy: IfNotPresent
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
