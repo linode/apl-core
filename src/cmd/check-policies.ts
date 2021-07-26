@@ -8,8 +8,6 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const fileName = 'check-policies'
-const policiesFile = `${ENV.DIR}/env/policies.yaml`
-const settingsFile = `${ENV.DIR}/env/settings.yaml`
 const outDir = '/tmp/otomi/conftest'
 let debug: OtomiDebugger
 
@@ -28,6 +26,8 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
   await setup(argv, options)
   debug.verbose('Policy checking STARTED')
 
+  const policiesFile = `${ENV.DIR}/env/policies.yaml`
+  const settingsFile = `${ENV.DIR}/env/settings.yaml`
   const settings = loadYaml(settingsFile)
   if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
     debug.log('Skipping')
