@@ -1,5 +1,5 @@
 #!/usr/bin/env -S node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
-import { renameSync, symlinkSync } from 'fs'
+import { symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
 import { checkPolicies } from './cmd/check-policies'
@@ -35,7 +35,6 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   setup(args)
 
   ENV.DIR = `${ENV.PWD}/tests/fixtures`
-  renameSync(`${ENV.PWD}/env`, `${ENV.PWD}/env2`)
   symlinkSync(`${ENV.PWD}/env`, ENV.DIR)
   debug.log(`Validating ${ENV.DIR} values`)
 
@@ -57,8 +56,6 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   await validateTemplates(argv, { skipAll: true })
   debug.verbose('Check policies')
   await checkPolicies(argv, { skipAll: true })
-
-  renameSync(`${ENV.PWD}/env2`, `${ENV.PWD}/env`)
 }
 
 export const module = {
