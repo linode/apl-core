@@ -35,6 +35,7 @@ const cleanedEnv = cleanEnv(process.env, {
   CI: bool({ default: false }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
+  OTOMI_IN_TERMINAL: bool({ default: true }),
 })
 export const ENV = {
   set DIR(envDir: string) {
@@ -57,6 +58,9 @@ export const ENV = {
   },
   get isTESTING(): boolean {
     return cleanedEnv.TESTING
+  },
+  get inTerminal(): boolean {
+    return cleanedEnv.OTOMI_IN_TERMINAL
   },
 }
 export const asArray = (args: string | string[]): string[] => {
