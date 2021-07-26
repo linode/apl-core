@@ -4,5 +4,6 @@ cluster:
     domainSuffix: demo.eks.otomi.cloud
     k8sVersion: '1.19'
     name: demo
+    owner: redkubes
     provider: aws
     region: eu-central-1
