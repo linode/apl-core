@@ -25,7 +25,7 @@ ENV CI=true
 
 COPY --chown=app . .
 
-RUN if [ "$SKIP_TESTS" = 'false' ]; then src/ci-tests.ts; fi
+RUN if [ "$SKIP_TESTS" = 'false' ]; then npm ci; src/ci-tests.ts; fi
 
 #-----------------------------
 FROM otomi/tools:v1.4.19 as prod
