@@ -60,10 +60,12 @@ releases:
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
+        {{- if $c | get "prometheus-operator.alertmanager.enabled" false }}
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl) | nindent 12 }}
+        {{- end }}
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
