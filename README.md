@@ -16,14 +16,14 @@ Otomi extends Kubernetes with:
 
 - A complete suite of integrated and pre-configured applications
 - Application configuration management for all integrated applications, providing a (multiple layer) base overlay configuration
-- Multi-tenancy; Create teams and provide SSO access to team and shared applications
+- Multi-tenancy: Create teams and provide SSO access to team and shared applications
 - Implemented policies for better governance and security. Manifests are checked both statically and on the cluster at runtime for obedience to policies
-- Single Sign On; Bring your own IDP
+- Single Sign On: Bring your own IDP
 - Automatic ingress configuration: Easily configure ingress for team services or core apps, allowing access within minutes. Istio gateways and virtual services are automatically generated and configured for team services, tying a generic ingress architecture to service endpoints in a predictable way
 - Input/output validation; Configuration and output manifests are checked statically for validity and best practices
 - Automatic vulnerability scanning: Scan all configured team service containers in Harbor
-- Observability; A complete pre-configured observability stack using Prometheus, Alertmanager and Grafana Loki
-- Secrets management; Use Hashicorp Vault to store and manage secrets
+- Observability: A complete pre-configured observability stack using Prometheus, Alertmanager and Grafana Loki
+- Secrets management: Use Hashicorp Vault to store and manage secrets
 - Visual Studio integration
 - Developer self-service (use Otomi as an Internal Developer Platform). EE only!
 
@@ -37,7 +37,32 @@ Otomi consists out of multiple projects:
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 ## Get started
-<p align="center"><img src="https://otomi.io/img/get-started.png" width="100%" align="center" alt="Get started"></p>
+
+Add the Otomi Helm repository:
+
+```bash
+helm repo add otomi https://otomi.io/otomi-core
+helm repo update
+```
+
+Install the chart with the prepared `values.yaml` file.
+
+```bash
+helm install -f /path/to/values.yaml my-otomi-release otomi/otomi
+```
+
+Pull the `otomi-vales` repo from Gitea to your local machine:
+
+```bash
+git clone https://gitea.<your.domain>/otomi/values.git
+```
+
+Open the Console:
+
+```bash
+open -a "Google Chrome" https://otomi.<your.domain>
+```
+
 <p align="center"><img src="https://otomi.io/assets/images/ce-platform-apps-2f2ca904b17f827e002e8c0d6eaf2470.png" width="100%" align="center" alt="Otomi console CE"></p>
 
 For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io/).
