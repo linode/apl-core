@@ -8,7 +8,7 @@ import { $ } from 'zx'
 
 process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
-$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L88
+$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
 
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
@@ -45,7 +45,7 @@ export const ENV = {
     process.env.ENV_DIR = envDir
   },
   get DIR(): string {
-    return process.env.ENV_DIR as string
+    return (process.env.ENV_DIR as string) ?? ENV.PWD
   },
   get PWD(): string {
     return process.cwd()
