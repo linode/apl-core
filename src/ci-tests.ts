@@ -2,7 +2,6 @@
 import { symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
-import { checkPolicies } from './cmd/check-policies'
 import { hf } from './cmd/hf'
 import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
@@ -54,8 +53,10 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
 
   debug.verbose('Validate templates')
   await validateTemplates(argv, { skipAll: true })
-  debug.verbose('Check policies')
-  await checkPolicies(argv, { skipAll: true })
+
+  // TODO: checkPolicies is disabled on old CLI bin/ci-tests.sh
+  // debug.verbose('Check policies')
+  // await checkPolicies(argv, { skipAll: true })
 }
 
 export const module = {
