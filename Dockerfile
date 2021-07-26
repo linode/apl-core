@@ -1,4 +1,4 @@
-FROM node:14-slim as npm
+FROM node:16-slim as npm
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
@@ -14,7 +14,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   npm install cspell && npm run spellcheck; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.18 as test
+FROM otomi/tools:v1.4.19 as test
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
@@ -28,7 +28,7 @@ COPY --chown=app . .
 RUN if [ "$SKIP_TESTS" = 'false' ]; then src/ci-tests.ts; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.18 as prod
+FROM otomi/tools:v1.4.19 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
