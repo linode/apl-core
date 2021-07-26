@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 import { $, chalk, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
-import { values } from './hf'
 import { BasicArguments, ENV, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
 import { ask, askYesNo, source } from './zx-enhance'
@@ -98,44 +97,6 @@ const checkENVdir = (): boolean => {
   debug.checkENVdir.debug(ENV.DIR)
   return readdirSync(ENV.DIR).length > 0
 }
-/**
- * Find (recursively) the object mapped under the `id` within the `obj`
- * @param obj
- * @param id
- * @returns
- */
-const getNestedObjectValue = (obj: any, id: string): any | undefined => {
-  const getObject = (theObject: any, objectId: string): any => {
-    let result = null
-    if (Array.isArray(theObject)) {
-      for (let i = 0; i < theObject.length; i++) {
-        result = getObject(theObject[i], objectId)
-        if (result) {
-          break
-        }
-      }
-    } else {
-      /* eslint-disable no-restricted-syntax */
-      for (const [key, value] of Object.entries(theObject)) {
-        if (key === objectId) {
-          return theObject
-        }
-        if (value instanceof Object || Array.isArray(value)) {
-          result = getObject(value, objectId)
-          if (result) {
-            break
-          }
-        }
-      }
-    }
-    /* eslint-enable no-restricted-syntax */
-
-    return result
-  }
-  const myobj: any = getObject(obj, id)
-  if (!myobj) return undefined
-  return myobj[id]
-}
 
 export type PrepareEnvironmentOptions = {
   skipEnvDirCheck?: boolean
@@ -145,15 +106,19 @@ export type PrepareEnvironmentOptions = {
   skipAll?: boolean
 }
 
+let clusterFile: any
 export const otomi = {
   scriptName: process.env.OTOMI_CALLER_COMMAND ?? 'otomi',
   /**
    * Find the cluster kubernetes version in the values
    * @returns String of the kubernetes version on the cluster
    */
-  getK8sVersion: async (): Promise<string> => {
+  getK8sVersion: (): string => {
     if (otomiK8sVersion) return otomiK8sVersion
-    otomiK8sVersion = getNestedObjectValue(await values(), 'cluster').k8sVersion
+    if (!clusterFile) {
+      clusterFile = loadYaml(`${ENV.DIR}/env/cluster.yaml`)
+    }
+    otomiK8sVersion = clusterFile.cluster?.k8sVersion
     return otomiK8sVersion
   },
   /**
@@ -164,8 +129,8 @@ export const otomi = {
     if (otomiImageTag) return otomiImageTag
     const file = `${ENV.DIR}/env/settings.yaml`
     if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
-    const clusterFile = loadYaml(file)
-    otomiImageTag = clusterFile.otomi?.version ?? 'master'
+    const settingsFile = loadYaml(file)
+    otomiImageTag = settingsFile.otomi?.version ?? 'master'
     return otomiImageTag
   },
   /**
@@ -174,9 +139,10 @@ export const otomi = {
    */
   customerName: (): string => {
     if (otomiCustomerName) return otomiCustomerName
-    const file = `${ENV.DIR}/env/settings.yaml`
-    const customerFile = loadYaml(file)
-    otomiCustomerName = customerFile.customer?.name
+    if (!clusterFile) {
+      clusterFile = loadYaml(`${ENV.DIR}/env/cluster.yaml`)
+    }
+    otomiCustomerName = clusterFile.cluster?.owner
     return otomiCustomerName
   },
   /**
