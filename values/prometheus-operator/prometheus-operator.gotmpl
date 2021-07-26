@@ -74,7 +74,7 @@ prometheus:
       {{- end }}
     priorityClassName: "otomi-critical"
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.customer.name $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     portName: http-web
     storageSpec:
       volumeClaimTemplate:
@@ -96,6 +96,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
+  enabled: {{ or ($v | get "alerts" false) ($v | get "home" false) }}
   alertmanagerSpec:
     image:
       tag: v0.22.2

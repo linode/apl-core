@@ -229,6 +229,9 @@ definitions:
         $ref: '#/definitions/k8sVersion'
       name:
         type: string
+      owner:
+        $ref: '#/definitions/idName'
+        description: The name of the organization owning the cluster.
       provider:
         type: string
         enum:
@@ -247,7 +250,9 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         type: string
     required:
+      - k8sVersion
       - name
+      - owner
       - provider
   containerSpec:
     additionalProperties: false
@@ -1845,11 +1850,6 @@ properties:
             default: false
   cluster:
     $ref: '#/definitions/cluster'
-  customer:
-    additionalProperties: false
-    properties:
-      name:
-        type: string
   dns:
     additionalProperties: false
     properties:
@@ -2403,7 +2403,6 @@ properties:
             $ref: '#/definitions/team'
 required:
   - cluster
-  - customer
   - oidc
   - otomi
   - teamConfig
