@@ -4,5 +4,6 @@ cluster:
     domainSuffix:
     k8sVersion:
     name:
+    owner:
     provider:
     region:
