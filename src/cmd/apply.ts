@@ -55,7 +55,7 @@ const deployAll = async (argv: Arguments) => {
       logLevel: LOG_LEVEL_STRING(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.log } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   if (!ENV.isCI) {
     await genDrone(argv)
@@ -68,7 +68,7 @@ const deployAll = async (argv: Arguments) => {
       logLevel: LOG_LEVEL_STRING(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.log } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 }
 

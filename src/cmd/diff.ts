@@ -34,7 +34,7 @@ export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions)
       logLevel: LOG_LEVEL_STRING(),
       args: ['diff', '--skip-deps'],
     },
-    { trim: true, streams: { stdout: debug.stream.log } },
+    { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   return new ProcessOutputTrimmed(res)
 }

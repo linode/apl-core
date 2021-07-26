@@ -24,13 +24,21 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.verbose('Start linting')
-  const output = await hf({
-    fileOpts: argv.file,
-    labelOpts: argv.label,
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['lint', '--skip-deps'],
-  })
-  debug.verbose(output)
+  await hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: argv.label,
+      logLevel: LOG_LEVEL_STRING(),
+      args: ['lint', '--skip-deps'],
+    },
+    {
+      trim: true,
+      streams: {
+        stdout: debug.stream.log,
+        stderr: debug.stream.error,
+      },
+    },
+  )
 }
 
 export const module = {
