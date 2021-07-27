@@ -1,4 +1,4 @@
-#!/usr/bin/env -S ENV_DIR=$(PWD)/tests/fixtures node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
+#!/usr/bin/env -S ENV_DIR=${PWD}/tests/fixtures node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
 import { symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
