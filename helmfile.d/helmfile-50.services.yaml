@@ -19,7 +19,7 @@ releases:
     namespace: shared
     <<: *default
   - name: kubeapps
-    installed: {{ $c | get "kubeapps.enabled" true }}
+    installed: {{ ternary ($c | get "kubeapps.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "kubeapps" dict) "enabled") }}
     namespace: kubeapps
     <<: *default
   - name: gitea
