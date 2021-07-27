@@ -9,7 +9,6 @@ import { x } from './cmd/x'
 import { OtomiDebugger, terminal } from './common/debug'
 import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/no-deps'
 import { cleanupHandler } from './common/setup'
-import { env } from './common/validators'
 import { basicOptions } from './common/yargs-opts'
 
 const fileName = getFilename(import.meta.url)
@@ -34,8 +33,8 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
   process.env.ENV_DIR = `${startingDir}/env`
-  symlinkSync(`${startingDir}/tests/fixtures`, env.ENV_DIR)
-  debug.log(`Validating ${env.ENV_DIR} values`)
+  symlinkSync(`${startingDir}/tests/fixtures`, process.env.ENV_DIR)
+  debug.log(`Validating ${process.env.ENV_DIR} values`)
 
   const xCommand = 'opa test policies -v'
   debug.verbose(xCommand)
