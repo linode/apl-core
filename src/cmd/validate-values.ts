@@ -34,7 +34,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
     debug.exit(1, `Cannot pass option '${labelOpts}'`)
   }
 
-  debug.verbose('Getting values')
+  debug.info('Getting values')
   const hfVal = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
@@ -43,7 +43,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
   }
 
   try {
-    debug.verbose('Loading values-schema.yaml')
+    debug.info('Loading values-schema.yaml')
     const valuesSchema = loadYaml('./values-schema.yaml')
     debug.debug('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
@@ -55,7 +55,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
       debug.exit(1, `Schema is invalid: ${chalk.italic(error.message)}`)
       return
     }
-    debug.verbose(`Validating values`)
+    debug.info(`Validating values`)
     const val = validate(hfVal)
     if (val) {
       debug.log('Values validation SUCCESSFUL')

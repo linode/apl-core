@@ -36,24 +36,24 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   debug.log(`Validating ${`${startingDir}/env`} values`)
 
   const xCommand = 'opa test policies -v'
-  debug.verbose(xCommand)
+  debug.info(xCommand)
   const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAll: true })
   if (opaExitCode !== 0) {
     debug.exit(1, 'Opa policies failed')
   }
 
-  debug.verbose('Validate values')
+  debug.info('Validate values')
 
   await validateValues(argv, { skipAll: true })
 
-  debug.verbose('hf lint')
+  debug.info('hf lint')
   await hf({ ...argv, args: ['lint'] }, { skipAll: true })
 
-  debug.verbose('Validate templates')
+  debug.info('Validate templates')
   await validateTemplates(argv, { skipAll: true })
 
   // TODO: checkPolicies is disabled on old CLI bin/ci-tests.sh
-  // debug.verbose('Check policies')
+  // debug.info('Check policies')
   // await checkPolicies(argv, { skipAll: true })
 }
 

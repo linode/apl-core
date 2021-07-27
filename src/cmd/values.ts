@@ -23,10 +23,10 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 
 export const values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Get values')
+  debug.info('Get values')
   const hfVal = await valuesFunc({ replacePath: true })
 
-  debug.verbose('Print values')
+  debug.info('Print values')
   console.log(dump(hfVal))
 }
 

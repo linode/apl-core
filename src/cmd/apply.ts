@@ -76,10 +76,10 @@ const deployAll = async (argv: Arguments) => {
 export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   if (argv._[0] === 'deploy' || (!argv.label && !argv.file)) {
-    debug.verbose('Start deploy')
+    debug.info('Start deploy')
     await deployAll(argv)
   } else {
-    debug.verbose('Start apply')
+    debug.info('Start apply')
     const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
     await hfStream(
       {

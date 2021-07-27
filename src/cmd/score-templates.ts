@@ -28,9 +28,9 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Scoring STARTED')
+  debug.info('Scoring STARTED')
   const result = await hfTemplate(argv)
-  debug.verbose('Scoring DONE')
+  debug.info('Scoring DONE')
 
   writeFileSync(templatePath, result)
 

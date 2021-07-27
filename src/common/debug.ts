@@ -26,7 +26,7 @@ export type OtomiStreamDebugger = {
   log: DebugStream
   trace: DebugStream
   debug: DebugStream
-  verbose: DebugStream
+  info: DebugStream
   warn: DebugStream
   error: DebugStream
 }
@@ -36,7 +36,7 @@ export type OtomiDebugger = {
   log: DebuggerType
   trace: DebuggerType
   debug: DebuggerType
-  verbose: DebuggerType
+  info: DebuggerType
   warn: DebuggerType
   error: DebuggerType
   stream: OtomiStreamDebugger
@@ -79,7 +79,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
   const error = newDebug(`${namespace}:error`, true, console.error)
   const trace = newDebug(`${namespace}:trace`, LOG_LEVEL() >= LOG_LEVELS.TRACE && terminalEnabled)
   const debug = newDebug(`${namespace}:debug`, LOG_LEVEL() >= LOG_LEVELS.DEBUG && terminalEnabled)
-  const verbose = newDebug(`${namespace}:info`, LOG_LEVEL() >= LOG_LEVELS.INFO && terminalEnabled)
+  const info = newDebug(`${namespace}:info`, LOG_LEVEL() >= LOG_LEVELS.INFO && terminalEnabled)
   const warn = newDebug(`${namespace}:warn`, LOG_LEVEL() >= LOG_LEVELS.WARN && terminalEnabled, console.warn)
   const exit = (exitCode: number, ...args: any[]) => {
     const exitDebug = newDebug(`${namespace}:crit`, true, console.error)
@@ -89,7 +89,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
   }
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
-  setColor(verbose, xtermColors.green)
+  setColor(info, xtermColors.green)
 
   const newDebugger: OtomiDebugger = {
     enabled: terminalEnabled ?? true,
@@ -97,7 +97,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
     log,
     trace,
     debug,
-    verbose,
+    info,
     warn,
     error,
     exit,
@@ -105,7 +105,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
       log: new DebugStream(log),
       trace: new DebugStream(trace),
       debug: new DebugStream(debug),
-      verbose: new DebugStream(verbose),
+      info: new DebugStream(info),
       warn: new DebugStream(warn),
       error: new DebugStream(error),
     },

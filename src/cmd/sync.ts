@@ -25,7 +25,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   await decrypt(argv)
-  debug.verbose('Start sync')
+  debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hfStream(
     {
@@ -36,7 +36,7 @@ export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions)
     },
     { trim: true, streams: { stdout: debug.stream.log } },
   )
-  // debug.verbose(output)
+  // debug.info(output)
 }
 
 export const module = {

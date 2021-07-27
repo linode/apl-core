@@ -26,7 +26,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Starting server')
+  debug.info('Starting server')
   startServer()
 }
 

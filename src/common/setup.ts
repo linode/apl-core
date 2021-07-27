@@ -27,7 +27,7 @@ const debug = {
  */
 const checkKubeContext = async (): Promise<void> => {
   if (env.CI) return
-  debug.kubeContext.verbose('Validating kube context')
+  debug.kubeContext.info('Validating kube context')
 
   const envPath = `${env.ENV_DIR}/env/.env`
   if (!existsSync(envPath)) {
@@ -64,7 +64,7 @@ const checkKubeContext = async (): Promise<void> => {
   }
 
   if (!('K8S_CONTEXT' in process.env)) debug.kubeContext.exit(1, `K8S_CONTEXT is not defined in '${envPath}'`)
-  debug.kubeContext.verbose(`Using kube context: ${process.env.K8S_CONTEXT}`)
+  debug.kubeContext.info(`Using kube context: ${process.env.K8S_CONTEXT}`)
 
   // TODO: Consider using the kubernetes-client: https://github.com/kubernetes-client/javascript
   const runningContext = (await nothrow($`kubectl config current-context`)).stdout.trim()
@@ -145,7 +145,7 @@ export const otomi = {
    */
   prepareEnvironment: async (options?: PrepareEnvironmentOptions): Promise<void> => {
     if (options && options.skipAll) return
-    debug.prepEnv.verbose('Checking environment')
+    debug.prepEnv.info('Checking environment')
     if (!options?.skipEnvDirCheck && checkEnvDir()) {
       if (!env.CI && !options?.skipEvaluateSecrets) await evaluateSecrets()
       if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()

@@ -156,12 +156,12 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
 
   debug.log('Validating resources')
   const quiet = argv.verbose ? '' : '--quiet'
-  debug.verbose(`Schema Output Path: ${schemaOutputPath}`)
-  debug.verbose(`Skip kinds: ${skipKinds.join(', ')}`)
-  debug.verbose(`Skip Filenames: ${skipFilenames.join(', ')}`)
-  debug.verbose(`K8S Resource Path: ${k8sResourcesPath}`)
-  debug.verbose(`Schema location: file://${schemaOutputPath}`)
-  debug.verbose(
+  debug.info(`Schema Output Path: ${schemaOutputPath}`)
+  debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
+  debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
+  debug.info(`K8S Resource Path: ${k8sResourcesPath}`)
+  debug.info(`Schema location: file://${schemaOutputPath}`)
+  debug.info(
     `Command: \`kubeval ${quiet} --skip-kinds ${skipKinds} --ignored-filename-patterns ${skipFilenames} --force-color -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}\``,
   )
   const kubevalOutput = await nothrow(
@@ -187,7 +187,7 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
       })
       return prevObj
     })
-  output.PASS?.map((_val: string) => debug.verbose(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
+  output.PASS?.map((_val: string) => debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0 || output.ERR) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))

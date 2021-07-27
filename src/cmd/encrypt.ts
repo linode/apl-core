@@ -26,9 +26,9 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const encrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Starting encryption')
+  debug.info('Starting encryption')
   await encryptFunc(...(argv.files ?? []))
-  debug.verbose('Encryption is done')
+  debug.info('Encryption is done')
 }
 
 export const module = {

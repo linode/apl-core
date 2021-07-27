@@ -28,7 +28,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   otomi.closeIfInCore(fileName)
-  debug.verbose('Pull latest values')
+  debug.info('Pull latest values')
   await $`git -C ${env.ENV_DIR} pull`
   await bootstrap(argv)
 }

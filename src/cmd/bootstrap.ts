@@ -40,7 +40,7 @@ const generateLooseSchema = (currDir: string) => {
   writeFileSync(targetPath, trimmedVS)
   if (currDir !== '/home/app/stack' && !existsSync(`${currDir}/${schemaPath}`))
     writeFileSync(`${currDir}/.values/values-schema.yaml`, trimmedVS)
-  debug.verbose(`Stored YAML schema at: ${targetPath}`)
+  debug.info(`Stored YAML schema at: ${targetPath}`)
 }
 
 export const bootstrap = async (argv: Arguments): Promise<void> => {
@@ -55,20 +55,20 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
   const otomiImage = `otomi/core:${otomi.imageTag()}`
-  debug.verbose(`Intalling artifacts from ${otomiImage}`)
+  debug.info(`Intalling artifacts from ${otomiImage}`)
 
   await Promise.allSettled([
     copyFile(`${currDir}/bin/aliases`, `${binPath}/aliases`),
     copyFile(`${currDir}/binzx/otomi`, `${binPath}/otomi`),
   ])
-  debug.verbose('Copied bin files')
-  debug.verbose(currDir)
+  debug.info('Copied bin files')
+  debug.info(currDir)
   try {
     mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
     await copy(`${currDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { overwrite: false, recursive: true })
-    debug.verbose('Copied vscode folder')
+    debug.info('Copied vscode folder')
     generateLooseSchema(currDir)
-    debug.verbose('Generated loose schema')
+    debug.info('Generated loose schema')
   } catch (error) {
     debug.error(error)
     debug.exit(1, `Could not copy from ${currDir}/.values/.vscode`)

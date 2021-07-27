@@ -22,9 +22,9 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 
 export const rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Starting key rotation')
+  debug.info('Starting key rotation')
   await rotate()
-  debug.verbose('Key rotation is done')
+  debug.info('Key rotation is done')
 }
 
 export const module = {

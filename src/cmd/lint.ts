@@ -23,7 +23,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Start linting')
+  debug.info('Start linting')
   await hf(
     {
       fileOpts: argv.file,

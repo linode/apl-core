@@ -30,7 +30,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
-  pcDebug.verbose('Check for cluster diffs')
+  pcDebug.info('Check for cluster diffs')
   const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
   const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
@@ -44,7 +44,7 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
 
   await validateValues(argv)
 
-  debug.verbose('Preparing values')
+  debug.info('Preparing values')
 
   const currDir = process.cwd()
   cd(env.ENV_DIR)
@@ -65,11 +65,11 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   }
 
   preCommit(argv)
-  debug.verbose('Do commit')
+  debug.info('Do commit')
   await $`git add .`
   await $`git commit -m 'Manual commit' --no-verify`
 
-  debug.verbose('Pulling latest values')
+  debug.info('Pulling latest values')
   try {
     await $`git pull`
   } catch (error) {

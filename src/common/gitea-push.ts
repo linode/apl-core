@@ -7,10 +7,10 @@ import { env } from './validators'
 
 export const giteaPush = async (): Promise<void> => {
   const debug = terminal('Gitea Push')
-  debug.verbose('Gitea push')
+  debug.info('Gitea push')
   const hfVals = await hfValues()
   if (!hfVals.charts?.gitea?.enabled) {
-    debug.verbose('Gitea is disabled')
+    debug.info('Gitea is disabled')
     return
   }
   const stage = hfVals.charts?.['cert-manager']?.stage === 'staging' ? ' -c http.sslVerify=false' : ' '

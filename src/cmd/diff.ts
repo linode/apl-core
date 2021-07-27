@@ -26,7 +26,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<ProcessOutputTrimmed> => {
   await setup(argv, options)
   await decrypt(argv)
-  debug.verbose('Start Diff')
+  debug.info('Start Diff')
   const res = await hfStream(
     {
       fileOpts: argv.file,
