@@ -40,22 +40,47 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
 
 export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Pulling latest values')
-  await $`git -C ${ENV.DIR} pull`
+
   await validateValues(argv)
 
   debug.verbose('Preparing values')
   const vals = await hfValues()
-  const customerName = vals.customer?.name ?? 'otomi'
+  const customerName = vals.cluster?.owner ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
-  await $`git -C ${ENV.DIR} config --local user.name || git -C ${ENV.DIR} config --local user.name ${capitalize(
-    customerName,
-  )}`
-  await $`git -C ${ENV.DIR} config --local user.email || git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
+
+  try {
+    await $`git -C ${ENV.DIR} config --local user.name`
+  } catch (error) {
+    await $`git -C ${ENV.DIR} config --local user.name ${capitalize(customerName)}`
+  }
+  try {
+    await $`git -C ${ENV.DIR} config --local user.email`
+  } catch (error) {
+    await $`git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
+  }
 
   preCommit(argv)
   debug.verbose('Do commit')
-  await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
+  await $`git -C ${ENV.DIR} add .`
+  await $`git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
+
+  debug.verbose('Pulling latest values')
+  try {
+    await $`git -C ${ENV.DIR} pull`
+  } catch (error) {
+    debug.exit(
+      1,
+      `When trying to pull from ${clusterDomain} merge conflicts occured\nPlease resolve these and run \`otomi commit\` again.`,
+    )
+  }
+  try {
+    await $`git -C ${ENV.DIR} remote show origin`
+    await $`git -C ${ENV.DIR} push origin main`
+    debug.log('Sucessfully pushed the updated values')
+  } catch (error) {
+    debug.error(error.stderr)
+    debug.exit(1, 'Pushing the values failed, please read the above error message and manually try again')
+  }
 }
 
 export const module = {
