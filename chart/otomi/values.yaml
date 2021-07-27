@@ -1,9 +1,3 @@
-image:
-  repository: otomi/core
-  # tag: master # defaults to .Chart.AppVersion
-tasksImage:
-  repository: otomi/tasks
-  # tag: master # defaults to "latest"
 cluster:
   apiName: ''
   apiServer: ''
