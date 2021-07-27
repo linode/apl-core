@@ -2,7 +2,7 @@ import { existsSync } from 'fs'
 import { $, cd, nothrow } from 'zx'
 import { terminal } from './debug'
 import { hfValues } from './hf'
-import { ENV } from './no-deps'
+import { ENV, waitToAvailable } from './no-deps'
 
 export const giteaPush = async (): Promise<void> => {
   const debug = terminal('Gitea Push')
@@ -16,6 +16,9 @@ export const giteaPush = async (): Promise<void> => {
   debug.log(hfVals.cluster)
   const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.exit(1, 'cluster.domainSuffix is not set')
   const giteaUrl = `gitea.${clusterDomain}`
+
+  await waitToAvailable(giteaUrl)
+
   const giteaPassword =
     hfVals.charts?.gitea?.adminPassword ??
     hfVals.otomi?.adminPassword ??

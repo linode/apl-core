@@ -1,6 +1,7 @@
 import { bool, cleanEnv } from 'envalid'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import { load } from 'js-yaml'
+import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
@@ -80,7 +81,13 @@ export const readdirRecurse = async (dir: string): Promise<string[]> => {
   return files.flat()
 }
 
-export const capitalize = (s: string): string => (s && s[0].toUpperCase() + s.slice(1)) || ''
+export const capitalize = (s: string): string =>
+  (s &&
+    s
+      .split(' ')
+      .map((s2) => s2[0].toUpperCase() + s2.slice(1))
+      .join(' ')) ||
+  ''
 
 export const loadYaml = (path: string): any => {
   if (!existsSync(path)) throw new Error(`${path} does not exists`)
@@ -135,6 +142,27 @@ export const deletePropertyPath = (object: any, path: string): void => {
   }
 
   delete obj[pathList.pop() as string]
+}
+export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
+
+export const waitToAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
+  let count = 0
+  // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
+  do {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await fetch(domain, { redirect: 'follow' })
+      if (res.ok) {
+        count += 1
+      } else {
+        count = 0
+      }
+    } catch (_) {
+      count = 0
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await delay(250)
+  } while (count < subsequentExists)
 }
 
 export default { parser, ENV, asArray }
