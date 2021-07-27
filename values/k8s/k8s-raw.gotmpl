@@ -40,6 +40,16 @@ resources:
       labels:
         name: {{ $ns }}
         istio-injection: enabled
+  {{- with $v.otomi | get "globalPullSecret" nil }}
+  - apiVersion: v1
+    kind: Secret
+    type: kubernetes.io/dockerconfigjson
+    metadata:
+      name: otomi-pullsecret-global
+      namespace: {{ $ns }}
+    data:
+      .dockerconfigjson: {{ tpl $dockerConfigTpl . | b64enc }}
+  {{- end }}
   # patching service account here as helm does not recognize it as it's own
   - apiVersion: v1
     kind: ServiceAccount

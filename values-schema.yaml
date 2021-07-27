@@ -238,7 +238,7 @@ definitions:
           - aws
           - azure
           - google
-          - oneprem
+          - onprem
       region:
         description: Dependent on provider.
         examples:
