@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
+#!/usr/bin/env -S ENV_DIR=$(PWD)/tests/fixtures node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
 import { symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
@@ -32,9 +32,8 @@ const setup = (argv: Arguments): void => {
 export const ciTests = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
-  process.env.ENV_DIR = `${startingDir}/env`
-  symlinkSync(`${startingDir}/tests/fixtures`, process.env.ENV_DIR)
-  debug.log(`Validating ${process.env.ENV_DIR} values`)
+  symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
+  debug.log(`Validating ${`${startingDir}/env`} values`)
 
   const xCommand = 'opa test policies -v'
   debug.verbose(xCommand)
