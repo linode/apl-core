@@ -87,7 +87,7 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
         logLevel: LOG_LEVEL_STRING(),
         args: ['apply', '--skip-deps', skipCleanup],
       },
-      { trim: true, streams: { stdout: debug.stream.log } },
+      { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   }
 }
