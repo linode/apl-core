@@ -2,9 +2,9 @@ import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { BasicArguments, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { env } from '../common/validators'
 import { askYesNo } from '../common/zx-enhance'
 
 export interface Arguments extends BasicArguments {

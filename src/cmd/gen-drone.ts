@@ -2,10 +2,10 @@ import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { BasicArguments, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { env } from '../common/validators'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean

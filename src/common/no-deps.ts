@@ -5,7 +5,7 @@ import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $ } from 'zx'
-import { env } from './validators'
+import { env } from './envalid'
 
 process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands

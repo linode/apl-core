@@ -1,7 +1,7 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { Writable, WritableOptions } from 'stream'
+import { env } from './envalid'
 import { LOG_LEVEL, LOG_LEVELS } from './no-deps'
-import { env } from './validators'
 
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true

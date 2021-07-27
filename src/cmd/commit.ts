@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { capitalize, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { env } from '../common/validators'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -50,18 +50,18 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   cd(env.ENV_DIR)
 
   const vals = await hfValues()
-  const customerName = vals.cluster?.owner ?? 'otomi'
+  const ownerName = vals.cluster?.owner ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
 
   try {
     await $`git config --local user.name`
   } catch (error) {
-    await $`git config --local user.name ${capitalize(customerName)}`
+    await $`git config --local user.name ${capitalize(ownerName)}`
   }
   try {
     await $`git config --local user.email`
   } catch (error) {
-    await $`git config --local user.email ${customerName}@${clusterDomain}`
+    await $`git config --local user.email ${ownerName}@${clusterDomain}`
   }
 
   preCommit(argv)

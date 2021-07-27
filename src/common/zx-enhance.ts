@@ -2,8 +2,8 @@ import * as dotenv from 'dotenv'
 import { existsSync } from 'fs'
 import { $, chalk, ProcessOutput, ProcessPromise, question } from 'zx'
 import { DebugStream } from './debug'
+import { env } from './envalid'
 import { getParsedArgs } from './no-deps'
-import { env } from './validators'
 
 const MAX_RETRIES_QUESTION = 3
 

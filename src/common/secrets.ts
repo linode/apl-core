@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { terminal } from './debug'
-import { env } from './validators'
+import { env } from './envalid'
 import { source } from './zx-enhance'
 
 /**

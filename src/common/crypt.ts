@@ -2,9 +2,9 @@ import { EventEmitter } from 'events'
 import { existsSync, writeFileSync } from 'fs'
 import { $, cd, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
+import { env } from './envalid'
 import { BasicArguments, parser, readdirRecurse } from './no-deps'
 import { evaluateSecrets } from './secrets'
-import { env } from './validators'
 
 EventEmitter.defaultMaxListeners = 20
 

@@ -10,9 +10,9 @@ import { lstatSync, readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
 import { terminal } from './common/debug'
+import { env } from './common/envalid'
 import { parser } from './common/no-deps'
 import { otomi } from './common/setup'
-import { env } from './common/validators'
 import { basicOptions } from './common/yargs-opts'
 
 const debug = terminal('global')

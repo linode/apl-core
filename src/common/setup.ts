@@ -4,9 +4,9 @@ import { fileURLToPath } from 'url'
 import { $, chalk, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
+import { env } from './envalid'
 import { BasicArguments, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
-import { env } from './validators'
 import { ask, askYesNo, source } from './zx-enhance'
 
 chalk.level = 2

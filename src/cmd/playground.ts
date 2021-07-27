@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
+import env from '../common/envalid'
 import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import env from '../common/validators'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
