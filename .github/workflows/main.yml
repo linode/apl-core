@@ -75,11 +75,6 @@ jobs:
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
       - if: github.ref == 'refs/heads/master'
-        name: Check if the branch is master 
-        id: branch_name
-        run: |
-          echo ::set-output name=master::true
-      - if: '${{ steps.branch_name.outputs.master }}'
         name: Prepare chart for publishing
         id: chart_prepare
         run: |
