@@ -3,8 +3,9 @@ import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { ENV, loadYaml, LOG_LEVEL, LOG_LEVELS } from '../common/no-deps'
+import { loadYaml, LOG_LEVEL, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { env } from '../common/validators'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const fileName = 'check-policies'
@@ -12,7 +13,7 @@ const outDir = '/tmp/otomi/conftest'
 let debug: OtomiDebugger
 
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   rmSync(outDir, { force: true, recursive: true })
 }
 
@@ -26,8 +27,8 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
   await setup(argv, options)
   debug.verbose('Policy checking STARTED')
 
-  const policiesFile = `${ENV.DIR}/env/policies.yaml`
-  const settingsFile = `${ENV.DIR}/env/settings.yaml`
+  const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
+  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settings = loadYaml(settingsFile)
   if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
     debug.log('Skipping')
@@ -39,7 +40,7 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
 
   const extraArgs: string[] = []
   if (LOG_LEVEL() === LOG_LEVELS.TRACE) extraArgs.push('--trace')
-  if (ENV.isCI) extraArgs.push('--no-color')
+  if (env.CI) extraArgs.push('--no-color')
 
   debug.verbose('Checking manifest against policies')
   const confTestOutput = (
@@ -62,7 +63,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await checkPolicies(argv, { skipKubeContextCheck: true })
   },
 }

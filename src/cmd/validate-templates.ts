@@ -6,7 +6,7 @@ import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { ENV, readdirRecurse } from '../common/no-deps'
+import { readdirRecurse, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
@@ -21,7 +21,7 @@ let k8sVersion: string
 let vk8sVersion: string
 
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   debug.log('Cleaning')
   rmSync(schemaOutputPath, { recursive: true, force: true })
   rmSync(outputPath, { recursive: true, force: true })
@@ -33,7 +33,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   debug = terminal(fileName)
 
   if (options) await otomi.prepareEnvironment(options)
-  k8sVersion = await otomi.getK8sVersion()
+  k8sVersion = otomi.getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
@@ -201,7 +201,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await validateTemplates(argv, { skipKubeContextCheck: true })
   },
 }

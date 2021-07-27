@@ -4,8 +4,9 @@ import { copyFile } from 'fs/promises'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
+import { BasicArguments, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
+import { env } from '../common/validators'
 import { genSops } from './gen-sops'
 
 const fileName = 'bootstrap'
@@ -15,7 +16,7 @@ export type Arguments = BasicArguments
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -25,13 +26,13 @@ const setup = (argv: Arguments): void => {
 }
 
 const rollBack = (): void => {
-  const dirContent = readdirSync(ENV.DIR)
+  const dirContent = readdirSync(env.ENV_DIR)
   dirContent.map((item) => rmSync(item, { recursive: true, force: true }))
 }
 
 const generateLooseSchema = (currDir: string) => {
   const schemaPath = '.vscode/values-schema.yaml'
-  const targetPath = `${ENV.DIR}/${schemaPath}`
+  const targetPath = `${env.ENV_DIR}/${schemaPath}`
   const sourcePath = `${currDir}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
@@ -46,12 +47,12 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
 
-  const currDir = ENV.PWD
+  const currDir = process.cwd()
 
-  const secretsFile = `${ENV.DIR}/.secrets`
-  const hasOtomi = existsSync(`${ENV.DIR}/bin/otomi`)
+  const secretsFile = `${env.ENV_DIR}/.secrets`
+  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
-  const binPath = `${ENV.DIR}/bin`
+  const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
   const otomiImage = `otomi/core:${otomi.imageTag()}`
   debug.verbose(`Intalling artifacts from ${otomiImage}`)
@@ -63,8 +64,8 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   debug.verbose('Copied bin files')
   debug.verbose(currDir)
   try {
-    mkdirSync(`${ENV.DIR}/.vscode`, { recursive: true })
-    await copy(`${currDir}/.values/.vscode`, `${ENV.DIR}/.vscode`, { overwrite: false, recursive: true })
+    mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
+    await copy(`${currDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { overwrite: false, recursive: true })
     debug.verbose('Copied vscode folder')
     generateLooseSchema(currDir)
     debug.verbose('Generated loose schema')
@@ -75,40 +76,40 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
 
   await Promise.allSettled(
     ['.gitattributes', '.secrets.sample']
-      .filter((val) => !existsSync(`${ENV.DIR}/${val.replace(/\.sample$/g, '')}`))
-      .map(async (val) => copyFile(`${currDir}/.values/${val}`, `${ENV.DIR}/${val}`)),
+      .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
+      .map(async (val) => copyFile(`${currDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
   await Promise.allSettled(
     ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
-      copyFile(`${currDir}/.values/${val}`, `${ENV.DIR}/${val}`),
+      copyFile(`${currDir}/.values/${val}`, `${env.ENV_DIR}/${val}`),
     ),
   )
-  if (!existsSync(`${ENV.DIR}/env`)) {
+  if (!existsSync(`${env.ENV_DIR}/env`)) {
     debug.log(`Copying basic values`)
-    await copy(`${currDir}/.values/env`, ENV.DIR, { overwrite: false, recursive: true })
+    await copy(`${currDir}/.values/env`, env.ENV_DIR, { overwrite: false, recursive: true })
   }
-  await $`git init ${ENV.DIR}`
-  copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${ENV.DIR}/.git/hooks/pre-commit`)
+  await $`git init ${env.ENV_DIR}`
+  copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   try {
     await genSops({ ...argv, dryRun: false }, { skipAll: true })
   } catch (error) {
     debug.error(error.message)
   }
-  if (process.env.GCLOUD_SERVICE_KEY?.length) {
-    writeFileSync(`${ENV.DIR}/gcp-key.json`, JSON.stringify(JSON.parse(process.env.GCLOUD_SERVICE_KEY), null, 2))
+  if (env.GCLOUD_SERVICE_KEY) {
+    writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
   }
 
-  const secretsFileEnv = `${ENV.DIR}/env/secrets.settings.yaml`
+  const secretsFileEnv = `${env.ENV_DIR}/env/secrets.settings.yaml`
   if (existsSync(secretsFile)) {
     const secretsContent = loadYaml(secretsFileEnv)
     if (secretsContent?.otomi?.pullSecret?.length) {
       debug.log('Copying Otomi Console Setup')
-      mkdirSync(`${ENV.DIR}/docker-compose`, { recursive: true })
-      await copy(`${currDir}/docker-compose`, `${ENV.DIR}/docker-compose`, { overwrite: true, recursive: true })
+      mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
+      await copy(`${currDir}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
       await Promise.allSettled(
-        ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${currDir}/${val}`, `${ENV.DIR}/${val}`)),
+        ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${currDir}/${val}`, `${env.ENV_DIR}/${val}`)),
       )
     }
   }
@@ -125,8 +126,8 @@ export const module = {
   describe: "Bootstrap values repo with artifacts corresponding to the cluster's stack version",
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
-    const envDirHasVals = existsSync(ENV.DIR) && readdirSync(ENV.DIR).length > 0
+    setParsedArgs(argv)
+    const envDirHasVals = existsSync(env.ENV_DIR) && readdirSync(env.ENV_DIR).length > 0
     try {
       await bootstrap(argv)
     } catch (error) {

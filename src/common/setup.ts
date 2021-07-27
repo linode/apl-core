@@ -4,8 +4,9 @@ import { fileURLToPath } from 'url'
 import { $, chalk, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
-import { BasicArguments, ENV, loadYaml, parser } from './no-deps'
+import { BasicArguments, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
+import { env } from './validators'
 import { ask, askYesNo, source } from './zx-enhance'
 
 chalk.level = 2
@@ -17,7 +18,7 @@ let otomiK8sVersion: string
 const debug = {
   prepEnv: terminal('prepare environment'),
   kubeContext: terminal('Check Kube Context'),
-  checkENVdir: terminal('Check ENV Dir'),
+  checkEnvDir: terminal('Check ENV Dir'),
   closeInCore: terminal('Close in otomi-core'),
 }
 /**
@@ -25,10 +26,10 @@ const debug = {
  * @returns
  */
 const checkKubeContext = async (): Promise<void> => {
-  if (ENV.isCI) return
+  if (env.CI) return
   debug.kubeContext.verbose('Validating kube context')
 
-  const envPath = `${ENV.DIR}/env/.env`
+  const envPath = `${env.ENV_DIR}/env/.env`
   if (!existsSync(envPath)) {
     const currentContext = (await $`kubectl config current-context`).stdout.trim()
     const output = await $`kubectl config get-contexts -o=name`
@@ -41,13 +42,7 @@ const checkKubeContext = async (): Promise<void> => {
     const res = await cliSelect({
       values: [...out, other],
       defaultValue: out.indexOf(currentContext),
-      valueRenderer: (value, selected) => {
-        if (selected) {
-          return chalk.underline(value)
-        }
-
-        return value
-      },
+      valueRenderer: (value, selected) => (selected ? chalk.underline(value) : value),
     })
     let val = res.value
     if (val === other) {
@@ -90,12 +85,12 @@ const checkKubeContext = async (): Promise<void> => {
  * Check the ENV_DIR parameter and whether or not the folder is populated
  * @returns
  */
-const checkENVdir = (): boolean => {
-  if (dirname.includes('otomi-core') && !ENV.DIR) {
-    debug.checkENVdir.exit(1, 'The ENV_DIR environment variable is not set')
+const checkEnvDir = (): boolean => {
+  if (dirname.includes('otomi-core') && !env.ENV_DIR) {
+    debug.checkEnvDir.exit(1, 'The ENV_DIR environment variable is not set')
   }
-  debug.checkENVdir.debug(ENV.DIR)
-  return readdirSync(ENV.DIR).length > 0
+  debug.checkEnvDir.debug(env.ENV_DIR)
+  return readdirSync(env.ENV_DIR).length > 0
 }
 
 export type PrepareEnvironmentOptions = {
@@ -116,7 +111,7 @@ export const otomi = {
   getK8sVersion: (): string => {
     if (otomiK8sVersion) return otomiK8sVersion
     if (!clusterFile) {
-      clusterFile = loadYaml(`${ENV.DIR}/env/cluster.yaml`)
+      clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
     }
     otomiK8sVersion = clusterFile.cluster?.k8sVersion
     return otomiK8sVersion
@@ -127,7 +122,7 @@ export const otomi = {
    */
   imageTag: (): string => {
     if (otomiImageTag) return otomiImageTag
-    const file = `${ENV.DIR}/env/settings.yaml`
+    const file = `${env.ENV_DIR}/env/settings.yaml`
     if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
     const settingsFile = loadYaml(file)
     otomiImageTag = settingsFile.otomi?.version ?? 'master'
@@ -140,7 +135,7 @@ export const otomi = {
   customerName: (): string => {
     if (otomiCustomerName) return otomiCustomerName
     if (!clusterFile) {
-      clusterFile = loadYaml(`${ENV.DIR}/env/cluster.yaml`)
+      clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
     }
     otomiCustomerName = clusterFile.cluster?.owner
     return otomiCustomerName
@@ -151,10 +146,10 @@ export const otomi = {
   prepareEnvironment: async (options?: PrepareEnvironmentOptions): Promise<void> => {
     if (options && options.skipAll) return
     debug.prepEnv.verbose('Checking environment')
-    if (!options?.skipEnvDirCheck && checkENVdir()) {
-      if (!ENV.isCI && !options?.skipEvaluateSecrets) await evaluateSecrets()
-      if (!ENV.isCI && !options?.skipKubeContextCheck) await checkKubeContext()
-      if (!ENV.isCI && !options?.skipDecrypt) await decrypt()
+    if (!options?.skipEnvDirCheck && checkEnvDir()) {
+      if (!env.CI && !options?.skipEvaluateSecrets) await evaluateSecrets()
+      if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
+      if (!env.CI && !options?.skipDecrypt) await decrypt()
     }
   },
   /**
@@ -162,7 +157,7 @@ export const otomi = {
    * @param command that is executed
    */
   closeIfInCore: (command: string): void => {
-    if (dirname.includes('otomi-core') || ENV.DIR.includes('otomi-core'))
+    if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core'))
       debug.closeInCore.exit(1, `'otomi ${command}' should not be ran from otomi-core`)
   },
 }

@@ -84,7 +84,7 @@ const helmOpts: { [key: string]: Options } = {
   // 'kube-context': {
   //   string: true,
   //   describe: 'Set kubectl context. Uses current context by default',
-  //   default: process.env.K8S_CONTEXT, // Possibly empty if assuming the sourcing of env files from $ENV.DIR
+  //   default: process.env.K8S_CONTEXT, // Possibly empty if assuming the sourcing of env files from $env.ENV_DIR
   // },
 }
 Object.keys(helmOpts).map((k) => {
@@ -140,10 +140,6 @@ export const basicOptions: { [key: string]: Options } = {
   inDocker: {
     boolean: true,
     default: false,
-    hidden: true,
-  },
-  inTerminal: {
-    boolean: true,
     hidden: true,
   },
 }

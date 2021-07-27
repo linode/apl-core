@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
-import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import env from '../common/validators'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -14,7 +14,7 @@ let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: BasicArguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -31,11 +31,13 @@ export const example = async (argv: BasicArguments, options?: PrepareEnvironment
 
   debug.log(fileName)
   debug.log(argv)
-  const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
-  script.stdout.pipe(debug.stream.log)
-  const out = await script
-  debug.log('Break')
-  debug.log(out.stdout.trim())
+  // const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
+  // script.stdout.pipe(debug.stream.log)
+  // const out = await script
+  // debug.log('Break')
+  // debug.log(out.stdout.trim())
+  debug.log(env)
+  debug.log(process.env)
 
   // throw new Error('Playground error')
 }
@@ -47,7 +49,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await example(argv, {})
   },
 }

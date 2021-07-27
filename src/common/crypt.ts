@@ -2,8 +2,9 @@ import { EventEmitter } from 'events'
 import { existsSync, writeFileSync } from 'fs'
 import { $, cd, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
-import { BasicArguments, ENV, parser, readdirRecurse } from './no-deps'
+import { BasicArguments, parser, readdirRecurse } from './no-deps'
 import { evaluateSecrets } from './secrets'
+import { env } from './validators'
 
 EventEmitter.defaultMaxListeners = 20
 
@@ -17,10 +18,10 @@ enum CRYPT_TYPE {
 const preCrypt = async (): Promise<void> => {
   term.verbose('Pre Crypt')
   await evaluateSecrets()
-  if (process.env.GCLOUD_SERVICE_KEY) {
+  if (env.GCLOUD_SERVICE_KEY) {
     term.verbose('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, process.env.GCLOUD_SERVICE_KEY.trim())
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
   }
 }
 
@@ -30,16 +31,16 @@ const postCrypt = (): void => {
 }
 
 const runOnSecretFiles = async (cmd: string[], filesArgs?: string[]): Promise<ProcessOutput[] | undefined> => {
-  const currDir = ENV.PWD
+  const currDir = process.cwd()
   let files: string[] = filesArgs ?? []
-  cd(`${ENV.DIR}`)
+  cd(`${env.ENV_DIR}`)
 
   if (files.length === 0) {
-    files = await readdirRecurse(`${ENV.DIR}/env`)
+    files = await readdirRecurse(`${env.ENV_DIR}/env`)
     files = files
       .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-      .map((file) => file.replace(ENV.DIR, '.'))
-    files = files.filter((file) => existsSync(`${ENV.DIR}/${file}`))
+      .map((file) => file.replace(env.ENV_DIR, '.'))
+    files = files.filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
   }
   await preCrypt()
 

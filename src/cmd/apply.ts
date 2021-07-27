@@ -4,8 +4,9 @@ import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { giteaPush } from '../common/gitea-push'
 import { hf, hfStream } from '../common/hf'
-import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
+import { LOG_LEVEL_STRING, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { env } from '../common/validators'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
@@ -20,7 +21,7 @@ interface Arguments extends HelmArgs, DroneArgs {}
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
 }
 /* eslint-enable no-useless-return */
@@ -37,7 +38,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 const deployAll = async (argv: Arguments) => {
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: debug.stream.log } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   if (output.exitCode > 0) {
     debug.exit(output.exitCode, output.stderr)
@@ -57,7 +58,7 @@ const deployAll = async (argv: Arguments) => {
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
-  if (!ENV.isCI) {
+  if (!env.CI) {
     await genDrone(argv)
     await giteaPush()
   }
@@ -79,7 +80,7 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
     await deployAll(argv)
   } else {
     debug.verbose('Start apply')
-    const skipCleanup = argv['skip-cleanup'] ? '--skip-cleanup' : ''
+    const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
     await hfStream(
       {
         fileOpts: argv.file,
@@ -98,7 +99,7 @@ export const module: CommandModule = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await apply(argv, { skipDecrypt: true })
   },
 }

@@ -6,38 +6,35 @@
  *  node --experimental-specifier-resolution=node ./dist/otomi.js -- <args>
  */
 
-import { bool, cleanEnv } from 'envalid'
 import { lstatSync, readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
 import { terminal } from './common/debug'
-import { ENV, parser } from './common/no-deps'
+import { parser } from './common/no-deps'
 import { otomi } from './common/setup'
+import { env } from './common/validators'
 import { basicOptions } from './common/yargs-opts'
 
-const env = cleanEnv(process.env, {
-  OTOMI_IN_DOCKER: bool({ default: false }),
-  OTOMI_DEV: bool({ default: false }),
-})
 const debug = terminal('global')
 const terminalScale = 0.75
 if (!env.OTOMI_IN_DOCKER) debug.exit(1, 'Please run this script using the `otomi` entry script')
 
-const envDirContent = readdirSync(ENV.DIR)
+const envDirContent = readdirSync(env.ENV_DIR)
 if (envDirContent.length > 0) {
   try {
     let errorMessage = ''
-    if (!lstatSync(`${ENV.DIR}/env`).isDirectory()) errorMessage += `\n${ENV.DIR}/env is not a directory`
-    if (!lstatSync(`${ENV.DIR}/env/charts`).isDirectory()) errorMessage += `\n${ENV.DIR}/env/charts is not a directory`
-    if (!lstatSync(`${ENV.DIR}/env/cluster.yaml`).isFile())
-      errorMessage += `\n${ENV.DIR}/env/cluster.yaml is not a file`
-    if (!lstatSync(`${ENV.DIR}/env/settings.yaml`).isFile())
-      errorMessage += `\n${ENV.DIR}/env/settings.yaml is not a file`
+    if (!lstatSync(`${env.ENV_DIR}/env`).isDirectory()) errorMessage += `\n${env.ENV_DIR}/env is not a directory`
+    if (!lstatSync(`${env.ENV_DIR}/env/charts`).isDirectory())
+      errorMessage += `\n${env.ENV_DIR}/env/charts is not a directory`
+    if (!lstatSync(`${env.ENV_DIR}/env/cluster.yaml`).isFile())
+      errorMessage += `\n${env.ENV_DIR}/env/cluster.yaml is not a file`
+    if (!lstatSync(`${env.ENV_DIR}/env/settings.yaml`).isFile())
+      errorMessage += `\n${env.ENV_DIR}/env/settings.yaml is not a file`
     if (errorMessage.trim().length > 0) {
-      debug.exit(1, `It seems like '${ENV.DIR}' is not a valid values repo.${errorMessage}`)
+      debug.exit(1, `It seems like '${env.ENV_DIR}' is not a valid values repo.${errorMessage}`)
     }
   } catch (error) {
-    debug.exit(1, `It seems like '${ENV.DIR}' is not a valid values repo.\n${error.message}`)
+    debug.exit(1, `It seems like '${env.ENV_DIR}' is not a valid values repo.\n${error.message}`)
   }
 }
 
@@ -61,7 +58,7 @@ try {
     .alias('h', 'help')
     .demandCommand()
   // .completion()
-  ENV.PARSED_ARGS = await parser.parseAsync()
+  await parser.parseAsync()
 } catch (error) {
   parser.showHelp()
   let errData = error.message

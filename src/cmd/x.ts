@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV, LOG_LEVEL, LOG_LEVELS } from '../common/no-deps'
+import { BasicArguments, LOG_LEVEL, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { stream } from '../common/zx-enhance'
 
@@ -10,7 +10,7 @@ let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: BasicArguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -24,7 +24,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<number> => {
   await setup(argv, options)
   const commands = argv._.slice(1)
-  if (LOG_LEVEL() >= LOG_LEVELS.VERBOSE) commands.push('-v')
+  if (LOG_LEVEL() >= LOG_LEVELS.INFO) commands.push('-v')
   const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
   return output.exitCode
 }
@@ -35,7 +35,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     const exitCode = await x(argv, { skipKubeContextCheck: true })
     process.exit(exitCode)
   },

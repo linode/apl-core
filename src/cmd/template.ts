@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { ENV } from '../common/no-deps'
+import { setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
@@ -14,7 +14,7 @@ let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -38,7 +38,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await template(argv, { skipKubeContextCheck: true })
   },
 }

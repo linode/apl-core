@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 type Arguments = BasicArguments
@@ -9,7 +9,7 @@ const fileName = 'status'
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -32,7 +32,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await status(argv, {})
   },
 }

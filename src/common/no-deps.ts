@@ -1,4 +1,3 @@
-import { bool, cleanEnv } from 'envalid'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import { load } from 'js-yaml'
 import fetch from 'node-fetch'
@@ -6,67 +5,45 @@ import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $ } from 'zx'
+import { env } from './validators'
 
 process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
 
+export const startingDir = process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 
 export interface BasicArguments extends YargsArguments {
+  inDocker: boolean
   logLevel: string
-  verbose: number
+  noInteractive: boolean
   skipCleanup: boolean
   trace: boolean
-  inTerminal: boolean
-  inDocker: boolean
+  verbose: number
 }
 
 export const defaultBasicArguments: BasicArguments = {
   _: [],
   $0: 'defaultBasicArgs',
+  inDocker: true,
   logLevel: 'WARN',
-  verbose: 0,
+  noInteractive: true,
   skipCleanup: false,
   trace: false,
-  inTerminal: true,
-  inDocker: true,
+  verbose: 0,
 }
 
-let parsedArgs: { [x: string]: unknown; _: (string | number)[]; $0: string }
-const cleanedEnv = cleanEnv(process.env, {
-  CI: bool({ default: false }),
-  TESTING: bool({ default: false }),
-  TRACE: bool({ default: false }),
-  OTOMI_IN_TERMINAL: bool({ default: true }),
-})
-export const ENV = {
-  set DIR(envDir: string) {
-    process.env.ENV_DIR = envDir
-  },
-  get DIR(): string {
-    return (process.env.ENV_DIR as string) ?? ENV.PWD
-  },
-  get PWD(): string {
-    return process.cwd()
-  },
-  set PARSED_ARGS(args: { [x: string]: unknown; _: (string | number)[]; $0: string }) {
-    parsedArgs = args
-  },
-  get PARSED_ARGS(): { [x: string]: unknown; _: (string | number)[]; $0: string } {
-    return parsedArgs
-  },
-  get isCI(): boolean {
-    return cleanedEnv.CI || !!ENV.PARSED_ARGS?.ci
-  },
-  get isTESTING(): boolean {
-    return cleanedEnv.TESTING
-  },
-  get inTerminal(): boolean {
-    return cleanedEnv.OTOMI_IN_TERMINAL
-  },
+let parsedArgs: BasicArguments
+
+export const setParsedArgs = (args: BasicArguments): void => {
+  parsedArgs = args
 }
+export const getParsedArgs = (): BasicArguments => {
+  return parsedArgs
+}
+
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
 }
@@ -99,22 +76,21 @@ export enum LOG_LEVELS {
   ERROR = -1,
   WARN = 0,
   INFO = 1,
-  VERBOSE = 1,
   DEBUG = 2,
   TRACE = 3,
 }
 
 let logLevel = Number.NEGATIVE_INFINITY
 export const LOG_LEVEL = (): number => {
-  if (!ENV.PARSED_ARGS) return LOG_LEVELS.ERROR
+  if (!getParsedArgs()) return LOG_LEVELS.ERROR
   if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
 
-  let LL = Number(LOG_LEVELS[(ENV.PARSED_ARGS as BasicArguments).logLevel?.toUpperCase() ?? 'WARN'])
-  const verbosity = Number((ENV.PARSED_ARGS as BasicArguments).verbose ?? 0)
-  const boolTrace = cleanedEnv.TRACE || ENV.PARSED_ARGS.trace
-  LL = boolTrace ? LOG_LEVELS.TRACE : LL
+  let logLevelNum = Number(LOG_LEVELS[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
+  const verbosity = Number(getParsedArgs().verbose ?? 0)
+  const boolTrace = env.TRACE || getParsedArgs().trace
+  logLevelNum = boolTrace ? LOG_LEVELS.TRACE : logLevelNum
 
-  logLevel = LL < 0 && verbosity === 0 ? LL : Math.max(LL, verbosity)
+  logLevel = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
   if (logLevel === LOG_LEVELS.TRACE) {
     $.verbose = true
     $.prefix = 'set -xeuo pipefail;'
@@ -145,7 +121,7 @@ export const deletePropertyPath = (object: any, path: string): void => {
 }
 export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
-export const waitToAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
+export const waitTillAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
   let count = 0
   // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
   do {
@@ -165,4 +141,4 @@ export const waitToAvailable = async (domain: string, subsequentExists = 3): Pro
   } while (count < subsequentExists)
 }
 
-export default { parser, ENV, asArray }
+export default { parser, asArray }

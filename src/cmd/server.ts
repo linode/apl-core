@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { startServer, stopServer } from '../server/index'
 
@@ -13,7 +13,7 @@ let debug: OtomiDebugger
 const cleanup = (argv: Arguments): void => {
   debug.log('Stopping server')
   stopServer()
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -36,7 +36,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await server(argv, {})
   },
 }

@@ -1,9 +1,10 @@
 import { Argv } from 'yargs'
-import { $ } from 'zx'
+import { $, cd } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { capitalize, ENV } from '../common/no-deps'
+import { capitalize, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { env } from '../common/validators'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -15,7 +16,7 @@ interface Arguments extends HelmArgs, DroneArgs {}
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -30,8 +31,8 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.verbose('Check for cluster diffs')
-  const settingsDiff = (await $`git -C ${ENV.DIR} diff env/settings.yaml`).stdout.trim()
-  const secretDiff = (await $`git -C ${ENV.DIR} diff env/secrets.settings.yaml`).stdout.trim()
+  const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
+  const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
   const versionChanges = settingsDiff.includes('+    version:')
   const secretChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
@@ -44,29 +45,33 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   await validateValues(argv)
 
   debug.verbose('Preparing values')
+
+  const currDir = process.cwd()
+  cd(env.ENV_DIR)
+
   const vals = await hfValues()
   const customerName = vals.cluster?.owner ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
 
   try {
-    await $`git -C ${ENV.DIR} config --local user.name`
+    await $`git config --local user.name`
   } catch (error) {
-    await $`git -C ${ENV.DIR} config --local user.name ${capitalize(customerName)}`
+    await $`git config --local user.name ${capitalize(customerName)}`
   }
   try {
-    await $`git -C ${ENV.DIR} config --local user.email`
+    await $`git config --local user.email`
   } catch (error) {
-    await $`git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
+    await $`git config --local user.email ${customerName}@${clusterDomain}`
   }
 
   preCommit(argv)
   debug.verbose('Do commit')
-  await $`git -C ${ENV.DIR} add .`
-  await $`git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
+  await $`git add .`
+  await $`git commit -m 'Manual commit' --no-verify`
 
   debug.verbose('Pulling latest values')
   try {
-    await $`git -C ${ENV.DIR} pull`
+    await $`git pull`
   } catch (error) {
     debug.exit(
       1,
@@ -74,12 +79,14 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
     )
   }
   try {
-    await $`git -C ${ENV.DIR} remote show origin`
-    await $`git -C ${ENV.DIR} push origin main`
+    await $`git remote show origin`
+    await $`git push origin main`
     debug.log('Sucessfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
     debug.exit(1, 'Pushing the values failed, please read the above error message and manually try again')
+  } finally {
+    cd(currDir)
   }
 }
 
@@ -90,7 +97,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await commit(argv, { skipKubeContextCheck: true })
   },
 }

@@ -3,7 +3,7 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { deletePropertyPath, ENV, loadYaml } from '../common/no-deps'
+import { deletePropertyPath, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
@@ -14,7 +14,7 @@ const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -27,7 +27,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const validateValues = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Values validation STARTED')
+  debug.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
@@ -45,9 +45,9 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
   try {
     debug.verbose('Loading values-schema.yaml')
     const valuesSchema = loadYaml('./values-schema.yaml')
-    debug.verbose('Initializing Ajv')
+    debug.debug('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
-    debug.verbose('Compiling Ajv validation')
+    debug.debug('Compiling Ajv validation')
     let validate: ValidateFunction<unknown>
     try {
       validate = ajv.compile(valuesSchema)
@@ -58,7 +58,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
     debug.verbose(`Validating values`)
     const val = validate(hfVal)
     if (val) {
-      debug.verbose('Values validation SUCCESSFUL')
+      debug.log('Values validation SUCCESSFUL')
     } else {
       validate.errors?.map((error: DefinedError) =>
         debug.error('%O', {
@@ -82,7 +82,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await validateValues(argv, { skipKubeContextCheck: true })
   },
 }

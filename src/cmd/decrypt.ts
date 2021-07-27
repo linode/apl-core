@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { decrypt as decryptFunc } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
+import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 interface Arguments extends BasicArguments {
@@ -12,7 +12,7 @@ let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -36,7 +36,7 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await decrypt(argv, { skipDecrypt: true, skipKubeContextCheck: true })
   },
 }

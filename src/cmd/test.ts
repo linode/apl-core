@@ -3,8 +3,9 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hf } from '../common/hf'
-import { ENV } from '../common/no-deps'
+import { setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { env } from '../common/validators'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
@@ -16,7 +17,7 @@ const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger
 
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   unlinkSync(tmpFile)
 }
 
@@ -49,8 +50,8 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
   const diffOutput = await diff(argv)
-  debug.log(diffOutput.stdout.replaceAll('../env', ENV.DIR))
-  debug.error(diffOutput.stderr.replaceAll('../env', ENV.DIR))
+  debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
+  debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
 }
 
 export const module = {
@@ -59,7 +60,7 @@ export const module = {
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await test(argv, { skipKubeContextCheck: true })
   },
 }

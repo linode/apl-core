@@ -7,8 +7,9 @@ import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
 import { OtomiDebugger, terminal } from './common/debug'
-import { BasicArguments, ENV, getFilename } from './common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/no-deps'
 import { cleanupHandler } from './common/setup'
+import { env } from './common/validators'
 import { basicOptions } from './common/yargs-opts'
 
 const fileName = getFilename(import.meta.url)
@@ -21,7 +22,7 @@ export type Arguments = BasicArguments
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
@@ -32,10 +33,9 @@ const setup = (argv: Arguments): void => {
 export const ciTests = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
-
-  ENV.DIR = `${ENV.PWD}/env`
-  symlinkSync(`${ENV.PWD}/tests/fixtures`, ENV.DIR)
-  debug.log(`Validating ${ENV.DIR} values`)
+  process.env.ENV_DIR = `${startingDir}/env`
+  symlinkSync(`${startingDir}/tests/fixtures`, env.ENV_DIR)
+  debug.log(`Validating ${env.ENV_DIR} values`)
 
   const xCommand = 'opa test policies -v'
   debug.verbose(xCommand)
@@ -64,7 +64,7 @@ export const module = {
   describe: 'CI tests',
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     debug = terminal(fileName)
 
     try {

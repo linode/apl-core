@@ -1,8 +1,8 @@
-import { cleanEnv, str } from 'envalid'
 import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { asArray, ENV, LOG_LEVELS } from './no-deps'
+import { asArray, LOG_LEVELS } from './no-deps'
+import { env } from './validators'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -11,10 +11,7 @@ const value = {
   rp: null,
 }
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
-const replaceHFPaths = (output: string): string => output.replaceAll('../env', ENV.DIR)
-const cleanedEnv = cleanEnv(process.env, {
-  KUBE_VERSION_OVERRIDE: str({ default: undefined }),
-})
+const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 export type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
@@ -32,9 +29,6 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     case LOG_LEVELS.FATAL:
       paramsCopy.logLevel = 'error'
       break
-    case LOG_LEVELS.VERBOSE:
-      paramsCopy.logLevel = 'info'
-      break
     case LOG_LEVELS.TRACE:
       paramsCopy.logLevel = 'debug'
       break
@@ -47,8 +41,8 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     throw new Error('No arguments were passed')
   }
 
-  if (cleanedEnv.KUBE_VERSION_OVERRIDE && cleanedEnv.KUBE_VERSION_OVERRIDE.length > 0) {
-    paramsCopy.args.push(`--set kubeVersionOverride=${cleanedEnv.KUBE_VERSION_OVERRIDE}`)
+  if (env.KUBE_VERSION_OVERRIDE && env.KUBE_VERSION_OVERRIDE.length > 0) {
+    paramsCopy.args.push(`--set kubeVersionOverride=${env.KUBE_VERSION_OVERRIDE}`)
   }
 
   const labels = paramsCopy.labelOpts?.map((item: string) => `-l=${item}`)
@@ -117,7 +111,7 @@ export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Str
   process.env.QUIET = '1'
   const args = ['template', '--skip-deps']
   if (outDir) args.push(`--output-dir=${outDir}`)
-  if (argv['skip-cleanup']) args.push('--skip-cleanup')
+  if (argv.skipCleanup) args.push('--skip-cleanup')
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {

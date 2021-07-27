@@ -1,6 +1,6 @@
 import { existsSync } from 'fs'
 import { terminal } from './debug'
-import { ENV } from './no-deps'
+import { env } from './validators'
 import { source } from './zx-enhance'
 
 /**
@@ -8,10 +8,12 @@ import { source } from './zx-enhance'
  */
 export const evaluateSecrets = async (): Promise<void> => {
   const debug = terminal('evaluateSecrets')
-  if (!existsSync(`${ENV.DIR}/.sops.yaml`)) {
-    debug.log(`Info: The 'secrets.*.yaml files' are not decrypted, because ${ENV.DIR}/.sops.yaml file is not present`)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.log(
+      `Info: The 'secrets.*.yaml files' are not decrypted, because ${env.ENV_DIR}/.sops.yaml file is not present`,
+    )
   }
-  const secretPath = `${ENV.DIR}/.secrets`
+  const secretPath = `${env.ENV_DIR}/.secrets`
   try {
     await source(secretPath)
   } catch (error) {
