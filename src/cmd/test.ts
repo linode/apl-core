@@ -8,11 +8,11 @@ import { getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { diff } from './diff'
+import { _diff } from './diff'
 import { lint } from './lint'
-import { validateTemplates } from './validate-templates'
+import { validateTemplates as validateTemplates } from './validate-templates'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger
 
@@ -22,18 +22,18 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _test = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   debug.log(await lint(argv))
   debug.log(await validateTemplates(argv))
-  // await checkPolicies(argv)
+  // await _checkPolicies(argv)
 
   const output: ProcessOutputTrimmed = await hf({
     fileOpts: 'helmfile.tpl/helmfile-init.yaml',
@@ -50,19 +50,19 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   writeFileSync(tmpFile, hfOutput.replace(/^.*basePath=.*$/gm, ''))
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
-  const diffOutput = await diff(argv)
+  const diffOutput = await _diff(argv)
   debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
   debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Run tests against the target cluster',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await test(argv, { skipKubeContextCheck: true })
+    await _test(argv, { skipKubeContextCheck: true })
   },
 }
 

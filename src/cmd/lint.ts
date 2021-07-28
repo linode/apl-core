@@ -5,7 +5,7 @@ import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -15,8 +15,8 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -42,7 +42,7 @@ export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Uses helmfile lint to lint your target manifests',
   builder: (parser: Argv): Argv => helmOptions(parser),
 

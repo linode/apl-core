@@ -10,7 +10,7 @@ export interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const providerMap = {
@@ -27,8 +27,8 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -82,7 +82,7 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({

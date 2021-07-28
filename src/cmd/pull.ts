@@ -9,7 +9,7 @@ import { Arguments as BootsrapArgs, bootstrap } from './bootstrap'
 
 interface Arguments extends HelmArgs, BootsrapArgs {}
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -19,28 +19,28 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  otomi.closeIfInCore(fileName)
+  otomi.exitIfInCore(cmdName)
   debug.info('Pull latest values')
   await $`git -C ${env.ENV_DIR} pull`
   await bootstrap(argv)
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: `Wrapper for git pull && ${otomi.scriptName} bootstrap`,
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await pull(argv, { skipKubeContextCheck: true })
+    await _pull(argv, { skipKubeContextCheck: true })
   },
 }
 

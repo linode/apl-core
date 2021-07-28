@@ -7,7 +7,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 interface Arguments extends BasicArguments {
   files?: string[]
 }
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -17,21 +17,20 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await otomi.prepareEnvironment({ ...options, skipDecrypt: true })
 }
 
 export const decrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.info('Starting decryption')
+  debug.info('otomi decrypt')
   await decryptFunc(...(argv.files ?? []))
-  debug.info('Decryption is done')
 }
 
 export const module = {
-  command: `${fileName} [files..]`,
+  command: `${cmdName} [files..]`,
   describe: 'Decrypts file(s) given as arguments in value repo, or all env/*.secrets.yaml when no arguments given',
   builder: (parser: Argv): Argv => parser,
 

@@ -6,7 +6,7 @@ import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -18,26 +18,26 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Starting server')
   startServer()
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: undefined,
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await server(argv, {})
+    await _server(argv, {})
   },
 }
 

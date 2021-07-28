@@ -6,7 +6,7 @@ const envalidPath = makeValidator((x) => {
   throw new Error('Expected a valid path')
 })
 
-export const env = cleanEnv(process.env, {
+const cleanSpec = {
   CI: bool({ default: false }),
   ENV_DIR: envalidPath({ default: process.cwd() }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
@@ -17,5 +17,6 @@ export const env = cleanEnv(process.env, {
   STATIC_COLORS: bool({ default: false }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
-})
-export default env
+}
+export const env = cleanEnv(process.env, cleanSpec)
+export const getEnv = (): typeof env => cleanEnv(process.env, cleanSpec)

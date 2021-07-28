@@ -5,7 +5,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 
 type Arguments = BasicArguments
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
@@ -14,12 +14,12 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   const output = await $`helm list -A -a`
@@ -27,13 +27,13 @@ export const status = async (argv: Arguments, options?: PrepareEnvironmentOption
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Show cluster status',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await status(argv, {})
+    await _status(argv, {})
   },
 }
 

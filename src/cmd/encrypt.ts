@@ -8,7 +8,7 @@ interface Arguments extends BasicArguments {
   files?: string[]
 }
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -18,27 +18,26 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const encrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _encrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.info('Starting encryption')
+  debug.info('otomi encrypt')
   await encryptFunc(...(argv.files ?? []))
-  debug.info('Encryption is done')
 }
 
 export const module = {
-  command: `${fileName} [files..]`,
+  command: `${cmdName} [files..]`,
   describe: 'Encrypts file(s) given as arguments in value repo, or all env/*.secrets.yaml when no arguments given',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await encrypt(argv, { skipDecrypt: true, skipKubeContextCheck: true })
+    await _encrypt(argv, { skipDecrypt: true, skipKubeContextCheck: true })
   },
 }
 

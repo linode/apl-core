@@ -7,9 +7,8 @@ import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { decrypt } from './decrypt'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
 let debug: OtomiDebugger
 
@@ -19,11 +18,10 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  await decrypt(argv)
 }
 
 const destroyAll = async () => {
@@ -64,7 +62,7 @@ const destroyAll = async () => {
   await $`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`
 }
 
-export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
@@ -83,13 +81,13 @@ export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptio
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Destroy all or some charts',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await destroy(argv, { skipDecrypt: true })
+    await _destroy(argv, {})
   },
 }
 

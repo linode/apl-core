@@ -17,7 +17,7 @@ export const evaluateSecrets = async (): Promise<void> => {
   try {
     await source(secretPath)
   } catch (error) {
-    debug.error('%s\n', `Unable to find the '${secretPath}' file.`, `Continuing without local secrets`)
+    debug.warn('%s\n', `Unable to find the '${secretPath}' file.`, `Continuing without local secrets`)
   }
 }
 

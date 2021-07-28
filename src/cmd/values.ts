@@ -5,7 +5,7 @@ import { values as valuesFunc } from '../common/hf'
 import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -15,13 +15,13 @@ const cleanup = (argv: BasicArguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Get values')
   const hfVal = await valuesFunc({ replacePath: true })
@@ -31,13 +31,13 @@ export const values = async (argv: BasicArguments, options?: PrepareEnvironmentO
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Show helmfile values for target cluster',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await values(argv, { skipKubeContextCheck: true })
+    await _values(argv, { skipKubeContextCheck: true })
   },
 }
 

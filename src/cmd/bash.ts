@@ -4,7 +4,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { BasicArguments, getFilename, parser, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -14,13 +14,13 @@ const cleanup = (argv: BasicArguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   if (argv._[0] === 'bash') parser.showHelp()
   else {
@@ -41,13 +41,13 @@ export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOpt
 }
 
 export const module: CommandModule = {
-  command: fileName,
+  command: cmdName,
   describe: 'Run interactive bash shell in otomi-core container',
   builder: (args: Argv): Argv => args,
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
+    await _bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
   },
 }
 

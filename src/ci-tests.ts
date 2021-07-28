@@ -11,7 +11,7 @@ import { BasicArguments, getFilename, setParsedArgs, startingDir } from './commo
 import { cleanupHandler } from './common/setup'
 import { basicOptions } from './common/yargs-opts'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 process.env.CI = '1'
@@ -26,7 +26,7 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = (argv: Arguments): void => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
 }
 
 export const ciTests = async (argv: Arguments): Promise<void> => {
@@ -37,7 +37,7 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
 
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)
-  const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAll: true })
+  const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAllPreChecks: true })
   if (opaExitCode !== 0) {
     debug.error('Opa policies failed')
     process.exit(1)
@@ -45,13 +45,13 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
 
   debug.info('Validate values')
 
-  await validateValues(argv, { skipAll: true })
+  await validateValues(argv, { skipAllPreChecks: true })
 
   debug.info('hf lint')
-  await hf({ ...argv, args: ['lint'] }, { skipAll: true })
+  await hf({ ...argv, args: ['lint'] }, { skipAllPreChecks: true })
 
   debug.info('Validate templates')
-  await validateTemplates(argv, { skipAll: true })
+  await validateTemplates(argv, { skipAllPreChecks: true })
 
   // TODO: checkPolicies is disabled on old CLI bin/ci-tests.sh
   // debug.info('Check policies')
@@ -59,12 +59,12 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'CI tests',
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    debug = terminal(fileName)
+    debug = terminal(cmdName)
 
     try {
       await ciTests(argv)
@@ -75,11 +75,9 @@ export const module = {
   },
 }
 
-export default module
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await yargs([...process.argv].slice(1))
-    .scriptName(fileName)
+    .scriptName(cmdName)
     .option(basicOptions)
     .command({ ...module, command: [module.command, '$0'] })
     .env('OTOMI')

@@ -6,9 +6,9 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
 /* Steps:
  * 1. Follow all TODO in this file
  * 2. Update src/cmd/index.ts and add:
- *      `import <fileName>Module from './<fileName>'`
- *      `export { default as <fileName> } from './<fileName>'
- *      add `<fileName>Module` to commands constant
+ *      `import <cmdName>Module from './<cmdName>'`
+ *      `export { default as <cmdName> } from './<cmdName>'
+ *      add `<cmdName>Module` to commands constant
  */
 
 // TODO: extend this interface with the HelmArguments from '../helm.opts.ts' or add the options that you define in the `builder` at the bottom
@@ -17,7 +17,7 @@ interface Arguments extends BasicArguments {
   TODO?: string
 }
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -27,29 +27,29 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
 // TODO: Rename function name to filename
-export const example = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _example = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   // TODO: Write your code here
-  debug.log(fileName)
+  debug.log(cmdName)
   console.log(argv)
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: '',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await example(argv, {}) // TODO: Replace with function name
+    await _example(argv, {}) // TODO: Replace with function name
   },
 }
 

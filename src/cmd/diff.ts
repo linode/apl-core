@@ -7,7 +7,7 @@ import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -17,13 +17,13 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<ProcessOutputTrimmed> => {
+export const _diff = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<ProcessOutputTrimmed> => {
   await setup(argv, options)
   await decrypt(argv)
   debug.info('Start Diff')
@@ -40,13 +40,13 @@ export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Diff k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await diff(argv, { skipDecrypt: true })
+    await _diff(argv, { skipDecrypt: true })
   },
 }
 

@@ -8,7 +8,7 @@ import { getFilename, loadYaml, logLevel, LOG_LEVELS, setParsedArgs } from '../c
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 const outDir = '/tmp/otomi/conftest'
 let debug: OtomiDebugger
 
@@ -18,12 +18,12 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Policy checking STARTED')
 
@@ -59,13 +59,13 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Check if generated manifests adhere to defined OPA policies',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await checkPolicies(argv, { skipKubeContextCheck: true })
+    await _checkPolicies(argv, { skipKubeContextCheck: true })
   },
 }
 

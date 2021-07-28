@@ -8,7 +8,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
  * but loaded into the application to run.
  */
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -18,17 +18,17 @@ const cleanup = (argv: BasicArguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
 // usage:
-export const example = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _playground = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
-  debug.log(fileName)
+  debug.log(cmdName)
   debug.log(argv)
   // // const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
   // // script.stdout.pipe(debug.stream.log)
@@ -42,14 +42,14 @@ export const example = async (argv: BasicArguments, options?: PrepareEnvironment
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   hidden: true,
   describe: undefined,
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await example(argv, {})
+    await _playground(argv, {})
   },
 }
 

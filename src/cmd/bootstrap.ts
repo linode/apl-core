@@ -9,7 +9,7 @@ import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../common/
 import { cleanupHandler, otomi } from '../common/setup'
 import { genSops } from './gen-sops'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 export type Arguments = BasicArguments
@@ -21,8 +21,8 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = (argv: Arguments): void => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 }
 
 const rollBack = (): void => {
@@ -94,7 +94,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   try {
-    await genSops({ ...argv, dryRun: false }, { skipAll: true })
+    await genSops({ ...argv, dryRun: false }, { skipAllPreChecks: true })
   } catch (error) {
     debug.error(error.message)
   }
@@ -123,7 +123,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: "Bootstrap values repo with artifacts corresponding to the cluster's stack version",
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {

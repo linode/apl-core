@@ -7,7 +7,7 @@ import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../com
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
@@ -19,8 +19,8 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -81,7 +81,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Validate values for each cluster against JSON schema (takes target options)',
   builder: (parser: Argv): Argv => helmOptions(parser),
 

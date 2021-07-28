@@ -9,10 +9,9 @@ import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { decrypt } from './decrypt'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger
@@ -27,11 +26,10 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  await decrypt(argv)
   mkdirSync(dir, { recursive: true })
 }
 
@@ -74,7 +72,7 @@ const deployAll = async (argv: Arguments) => {
   )
 }
 
-export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   if (argv._[0] === 'deploy' || (!argv.label && !argv.file)) {
     debug.info('Start deploy')
@@ -95,13 +93,13 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
 }
 
 export const module: CommandModule = {
-  command: fileName,
+  command: cmdName,
   describe: 'Apply K8S resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await apply(argv, { skipDecrypt: true })
+    await _apply(argv, {})
   },
 }
 

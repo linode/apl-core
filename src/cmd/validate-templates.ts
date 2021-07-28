@@ -10,7 +10,7 @@ import { getFilename, readdirRecurse, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
@@ -29,8 +29,8 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
   k8sVersion = otomi.getK8sVersion()
@@ -197,7 +197,7 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Validate generated manifests against supported k8s versions/CRDs and best practices',
   builder: (parser: Argv): Argv => helmOptions(parser),
 

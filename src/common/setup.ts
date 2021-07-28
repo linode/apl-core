@@ -34,7 +34,7 @@ const checkKubeContext = async (): Promise<void> => {
       .split('\n')
       .map((val) => val.trim())
       .filter(Boolean)
-    debug.log('No k8s context was defined in your values, please select one.')
+    debug.log(`No k8s context was defined in ${envPath} file , please select one.`)
     const res = await cliSelect({
       values: [...out, cancel],
       defaultValue: out.indexOf(currentContext),
@@ -96,7 +96,7 @@ export type PrepareEnvironmentOptions = {
   skipEvaluateSecrets?: boolean
   skipKubeContextCheck?: boolean
   skipDecrypt?: boolean
-  skipAll?: boolean
+  skipAllPreChecks?: boolean
 }
 
 let clusterFile: any
@@ -142,7 +142,7 @@ export const otomi = {
    * Prepare environment when running an otomi command
    */
   prepareEnvironment: async (options?: PrepareEnvironmentOptions): Promise<void> => {
-    if (options?.skipAll) return
+    if (options?.skipAllPreChecks) return
     const debug = terminal('prepareEnvironment')
     debug.info('Checking environment')
     if (!options?.skipEnvDirCheck && checkEnvDir()) {
@@ -155,9 +155,9 @@ export const otomi = {
    * If ran within otomi-core, stop execution as it should not be ran within that folder.
    * @param command that is executed
    */
-  closeIfInCore: (command: string): void => {
+  exitIfInCore: (command: string): void => {
     if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core')) {
-      const debug = terminal('closeIfInCore')
+      const debug = terminal('exitIfInCore')
       debug.error(`'otomi ${command}' should not be ran from otomi-core`)
       process.exit(1)
     }

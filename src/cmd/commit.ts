@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -9,7 +9,7 @@ import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
@@ -21,16 +21,17 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  otomi.closeIfInCore(fileName)
+  otomi.exitIfInCore(cmdName)
 }
 
 export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.info('Check for cluster diffs')
+  await nothrow($`git config diff.sopsdiffer.textconv "sops -d"`)
   const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
   const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
@@ -39,7 +40,7 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
   if (versionChanges || secretChanges) await genDrone(argv)
 }
 
-export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const _commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   await validateValues(argv)
@@ -92,14 +93,14 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
   describe: 'Execute wrapper for generate pipelines -> git commit changed files',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await commit(argv, { skipKubeContextCheck: true })
+    await _commit(argv, { skipKubeContextCheck: true })
   },
 }
 

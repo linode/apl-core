@@ -10,7 +10,7 @@ interface Arguments extends HelmArgs {
   args?: string[]
 }
 
-const fileName = getFilename(import.meta.url)
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -20,8 +20,8 @@ const cleanup = (argv: Arguments): void => {
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -45,7 +45,7 @@ export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): 
 }
 
 export const module = {
-  command: `${fileName} [args..]`,
+  command: `${cmdName} [args..]`,
   describe: undefined,
   builder: (parser: Argv): Argv => helmOptions(parser),
 

@@ -2,31 +2,31 @@ import { EventEmitter } from 'events'
 import { existsSync, writeFileSync } from 'fs'
 import { $, cd, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
-import { env } from './envalid'
+import { env, getEnv } from './envalid'
 import { BasicArguments, parser, readdirRecurse } from './no-deps'
 import { evaluateSecrets } from './secrets'
 
 EventEmitter.defaultMaxListeners = 20
 
 let debug: OtomiDebugger
-
 enum CRYPT_TYPE {
   ENCRYPT = 'enc', // 'sops -e',
   DECRYPT = 'dec', // 'sops --input-type=yaml --output-type yaml -d $1',
 }
 
 const preCrypt = async (): Promise<void> => {
-  debug.info('Pre Crypt')
+  debug.info('Checking prerequisites for the (de,en)crypt action')
   await evaluateSecrets()
-  if (env.GCLOUD_SERVICE_KEY) {
+  const secretEnv = getEnv()
+  if (secretEnv.GCLOUD_SERVICE_KEY) {
     debug.info('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(secretEnv.GCLOUD_SERVICE_KEY, null, 2))
   }
 }
 
 const postCrypt = (): void => {
-  debug.info('Post Crypt')
+  debug.info('Cleaning up after the (de,en)crypt action')
   process.env.GOOGLE_APPLICATION_CREDENTIALS = undefined
 }
 
@@ -71,12 +71,16 @@ const crypt = async (type: CRYPT_TYPE, ...files: string[]): Promise<ProcessOutpu
 export const decrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'decrypt'
   debug = terminal(namespace)
+  debug.info('Starting decryption')
   await crypt(CRYPT_TYPE.DECRYPT, ...files)
+  debug.info('Decryption is done')
 }
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
   debug = terminal(namespace)
+  debug.info('Starting encryption')
   await crypt(CRYPT_TYPE.ENCRYPT, ...files)
+  debug.info('Encryption is done')
 }
 
 export const rotate = async (): Promise<void> => {
