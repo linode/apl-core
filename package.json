@@ -96,7 +96,7 @@
     "husky:lint-staged": "lint-staged",
     "husky:pre-push": "run-p husky:lint-staged lint:hf spellcheck",
     "lint:hf": "TESTING=1 binzx/otomi hf lint",
-    "lint": "npx run-p spellcheck lint lint:ts",
+    "lint": "run-p spellcheck lint:hf lint:ts",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
     "lint:ts": "eslint --ext ts .",
     "lint:ts:fix": "eslint --fix --ext ts .",
