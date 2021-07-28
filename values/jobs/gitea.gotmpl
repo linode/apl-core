@@ -14,18 +14,18 @@ nativeSecrets:
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
-  env:
-    GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
-  image:
-    repository: badouralix/curl-http2
-  script: |
-    {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-    echo "Waiting until gitea is accessible at $GITEA_URL"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I $GITEA_URL); do 
-      printf '.'
-      sleep 5
-    done
-    echo READY!
+  - env:
+      GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
+    image:
+      repository: badouralix/curl-http2
+    script: |
+      {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+      echo "Waiting until gitea is accessible at $GITEA_URL"
+      until $(curl $INSECURE --output /dev/null --silent --head --fail -I $GITEA_URL); do 
+        printf '.'
+        sleep 5
+      done
+      echo READY!
 image:
   repository: otomi/tasks
   tag: v0.2.9

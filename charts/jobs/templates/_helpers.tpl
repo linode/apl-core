@@ -79,9 +79,9 @@ Create the name of the service account to use
 {{- $podSecurityContext := $v.podSecurityContext | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) -}}
 {{- $containers := list (dict "isInit" false "container" $v) }}
 {{- $hasMounts := or $v.files $v.secretMounts }}
-{{- if $v.init }}
-  {{- $containers = prepend $containers (dict "isInit" true "container" $v.init) }}
-  {{- if or $v.init.files $v.init.SecretMounts }}{{ $hasMounts = true }}{{ end }}
+{{- range $vi := $v.init }}
+  {{- $containers = prepend $containers (dict "isInit" true "container" $vi) }}
+  {{- if or $vi.files $vi.SecretMounts }}{{ $hasMounts = true }}{{ end }}
 {{ end }}
 template:
   metadata:

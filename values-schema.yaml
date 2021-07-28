@@ -271,6 +271,8 @@ definitions:
         $ref: '#/definitions/files'
       nativeSecrets:
         $ref: '#/definitions/nativeSecrets'
+      secrets:
+        $ref: '#/definitions/secrets'
       secretMounts:
         $ref: '#/definitions/secretMounts'
       command:
@@ -425,7 +427,9 @@ definitions:
         title: TTL after finished
         type: integer
       init:
-        $ref: '#/definitions/containerSpec'
+        type: array
+        items:
+          $ref: '#/definitions/containerSpec'
         nullable: true
     required:
       - name
