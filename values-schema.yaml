@@ -269,8 +269,8 @@ definitions:
         $ref: '#/definitions/env'
       files:
         $ref: '#/definitions/files'
-      secrets:
-        $ref: '#/definitions/secrets'
+      nativeSecrets:
+        $ref: '#/definitions/nativeSecrets'
       secretMounts:
         $ref: '#/definitions/secretMounts'
       command:
