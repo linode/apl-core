@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfStream } from '../common/hf'
-import { LOG_LEVEL_STRING, setParsedArgs } from '../common/no-deps'
+import { logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -31,7 +31,7 @@ export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions)
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
-      logLevel: LOG_LEVEL_STRING(),
+      logLevel: logLevelString(),
       args: ['diff', '--skip-deps'],
     },
     { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },

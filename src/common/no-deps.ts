@@ -80,26 +80,26 @@ export enum LOG_LEVELS {
   TRACE = 3,
 }
 
-let logLevel = Number.NEGATIVE_INFINITY
-export const LOG_LEVEL = (): number => {
+let logLevelVar = Number.NEGATIVE_INFINITY
+export const logLevel = (): number => {
   if (!getParsedArgs()) return LOG_LEVELS.ERROR
-  if (logLevel > Number.NEGATIVE_INFINITY) return logLevel
+  if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
 
   let logLevelNum = Number(LOG_LEVELS[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
   const verbosity = Number(getParsedArgs().verbose ?? 0)
   const boolTrace = env.TRACE || getParsedArgs().trace
   logLevelNum = boolTrace ? LOG_LEVELS.TRACE : logLevelNum
 
-  logLevel = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
-  if (logLevel === LOG_LEVELS.TRACE) {
+  logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
+  if (logLevelVar === LOG_LEVELS.TRACE) {
     $.verbose = true
     $.prefix = 'set -xeuo pipefail;'
   }
-  return logLevel
+  return logLevelVar
 }
 
-export const LOG_LEVEL_STRING = (): string => {
-  return LOG_LEVELS[LOG_LEVEL()].toString()
+export const logLevelString = (): string => {
+  return LOG_LEVELS[logLevel()].toString()
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

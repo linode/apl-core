@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import env from '../common/envalid'
+import { env } from '../common/envalid'
 import { BasicArguments, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 /**

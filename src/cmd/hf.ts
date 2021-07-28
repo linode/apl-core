@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfStream } from '../common/hf'
-import { LOG_LEVEL_STRING, setParsedArgs } from '../common/no-deps'
+import { logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
@@ -33,7 +33,7 @@ export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): 
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
-        logLevel: LOG_LEVEL_STRING(),
+        logLevel: logLevelString(),
         args: argv.args ?? [],
       },
       { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },

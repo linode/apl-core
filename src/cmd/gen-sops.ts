@@ -102,7 +102,7 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     try {
-      await genSops(argv, {})
+      await genSops(argv, { skipKubeContextCheck: true })
     } catch (error) {
       debug.exit(0, error.message)
     }

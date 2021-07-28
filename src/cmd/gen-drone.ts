@@ -52,7 +52,7 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
     branch,
     cluster,
     channel,
-    customer: otomi.customerName(),
+    customer: otomi.clusterOwner(),
     globalPullSecret,
     provider,
     webhook,

@@ -7,13 +7,13 @@ import { terminal } from './debug'
 import { env } from './envalid'
 import { BasicArguments, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
-import { ask, askYesNo, source } from './zx-enhance'
+import { askYesNo, source } from './zx-enhance'
 
 chalk.level = 2
 const dirname = fileURLToPath(import.meta.url)
 
 let otomiImageTag: string
-let otomiCustomerName: string
+let otomiClusterOwner: string
 let otomiK8sVersion: string
 const debug = {
   prepEnv: terminal('prepare environment'),
@@ -33,25 +33,20 @@ const checkKubeContext = async (): Promise<void> => {
   if (!existsSync(envPath)) {
     const currentContext = (await $`kubectl config current-context`).stdout.trim()
     const output = await $`kubectl config get-contexts -o=name`
-    const other = 'Other'
+    const cancel = 'Cancel'
     const out = output.stdout
       .split('\n')
       .map((val) => val.trim())
       .filter(Boolean)
     debug.kubeContext.log('No k8s context was defined in your values, please select one.')
     const res = await cliSelect({
-      values: [...out, other],
+      values: [...out, cancel],
       defaultValue: out.indexOf(currentContext),
       valueRenderer: (value, selected) => (selected ? chalk.underline(value) : value),
     })
-    let val = res.value
-    if (val === other) {
-      debug.kubeContext.log(
-        chalk.hex('#FFA500')(
-          'You are going to input a context that is not yet defined, not all commands might work as expected',
-        ),
-      )
-      val = await ask('What context should be selected?', { defaultAnswer: currentContext })
+    const val = res.value
+    if (val === cancel) {
+      debug.kubeContext.exit(0, 'Please set an appropriate K8S context')
     }
     writeFileSync(envPath, `export K8S_CONTEXT="${val}"\n`)
     process.env.K8S_CONTEXT = val
@@ -132,19 +127,19 @@ export const otomi = {
    * Find the customer name that is defined in configuration for otomi
    * @returns string
    */
-  customerName: (): string => {
-    if (otomiCustomerName) return otomiCustomerName
+  clusterOwner: (): string => {
+    if (otomiClusterOwner) return otomiClusterOwner
     if (!clusterFile) {
       clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
     }
-    otomiCustomerName = clusterFile.cluster?.owner
-    return otomiCustomerName
+    otomiClusterOwner = clusterFile.cluster?.owner
+    return otomiClusterOwner
   },
   /**
    * Prepare environment when running an otomi command
    */
   prepareEnvironment: async (options?: PrepareEnvironmentOptions): Promise<void> => {
-    if (options && options.skipAll) return
+    if (options?.skipAll) return
     debug.prepEnv.info('Checking environment')
     if (!options?.skipEnvDirCheck && checkEnvDir()) {
       if (!env.CI && !options?.skipEvaluateSecrets) await evaluateSecrets()

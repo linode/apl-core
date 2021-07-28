@@ -5,7 +5,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { giteaPush } from '../common/gitea-push'
 import { hf, hfStream } from '../common/hf'
-import { LOG_LEVEL_STRING, setParsedArgs } from '../common/no-deps'
+import { logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -53,7 +53,7 @@ const deployAll = async (argv: Arguments) => {
     {
       fileOpts: argv.file,
       labelOpts: [...(argv.label ?? []), 'stage!=post'],
-      logLevel: LOG_LEVEL_STRING(),
+      logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
@@ -66,7 +66,7 @@ const deployAll = async (argv: Arguments) => {
     {
       fileOpts: argv.file,
       labelOpts: [...(argv.label ?? []), 'stage=post'],
-      logLevel: LOG_LEVEL_STRING(),
+      logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
@@ -85,7 +85,7 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
-        logLevel: LOG_LEVEL_STRING(),
+        logLevel: logLevelString(),
         args: ['apply', '--skip-deps', skipCleanup],
       },
       { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
