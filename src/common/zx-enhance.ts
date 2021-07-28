@@ -54,7 +54,7 @@ export const ask = async (query: string, options?: AskType): Promise<string> => 
   const defaultAnswer = options?.defaultAnswer ?? ''
   const maxRetries = options?.maxRetries ?? MAX_RETRIES_QUESTION
 
-  if (!getParsedArgs() || getParsedArgs().noInteractive) return defaultAnswer
+  if (!getParsedArgs() || getParsedArgs().nonInteractive) return defaultAnswer
 
   const defaultMatchingFn = (answer: string) =>
     [...new Set(matching.map((val) => val.toLowerCase()))].includes(answer.toLowerCase())

@@ -2,14 +2,14 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { setParsedArgs } from '../common/no-deps'
+import { getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as BootsrapArgs, bootstrap } from './bootstrap'
 
 interface Arguments extends HelmArgs, BootsrapArgs {}
 
-const fileName = 'pull'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

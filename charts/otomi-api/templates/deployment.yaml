@@ -65,7 +65,7 @@ spec:
           securityContext: {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
-          command: ['sh', '-c', 'bin/server.sh']
+          command: ['sh', '-c', 'binzx/otomi server']
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}

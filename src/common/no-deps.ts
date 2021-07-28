@@ -18,7 +18,7 @@ export const getFilename = (path: string): string => fileURLToPath(path).split('
 export interface BasicArguments extends YargsArguments {
   inDocker: boolean
   logLevel: string
-  noInteractive: boolean
+  nonInteractive: boolean
   skipCleanup: boolean
   trace: boolean
   verbose: number
@@ -29,7 +29,7 @@ export const defaultBasicArguments: BasicArguments = {
   $0: 'defaultBasicArgs',
   inDocker: true,
   logLevel: 'WARN',
-  noInteractive: true,
+  nonInteractive: true,
   skipCleanup: false,
   trace: false,
   verbose: 0,

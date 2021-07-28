@@ -1,11 +1,11 @@
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, logLevel, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, logLevel, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { stream } from '../common/zx-enhance'
 
-const fileName = 'x'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

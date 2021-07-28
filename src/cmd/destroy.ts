@@ -3,13 +3,13 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hf, hfStream } from '../common/hf'
-import { logLevelString, setParsedArgs } from '../common/no-deps'
+import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
 
-const fileName = 'destroy'
+const fileName = getFilename(import.meta.url)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
 let debug: OtomiDebugger
 
@@ -32,7 +32,8 @@ const destroyAll = async () => {
 
   const output: ProcessOutputTrimmed = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
   if (output.exitCode > 0) {
-    debug.exit(output.exitCode, output.stderr)
+    debug.error(output.stderr)
+    process.exit(output.exitCode)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }

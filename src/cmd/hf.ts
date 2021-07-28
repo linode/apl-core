@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfStream } from '../common/hf'
-import { logLevelString, setParsedArgs } from '../common/no-deps'
+import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
@@ -10,7 +10,7 @@ interface Arguments extends HelmArgs {
   args?: string[]
 }
 
-const fileName = 'hf'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -39,13 +39,14 @@ export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): 
       { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   } catch (error) {
-    debug.exit(1, error.stderr)
+    debug.error(error.stderr)
+    process.exit(1)
   }
 }
 
 export const module = {
   command: `${fileName} [args..]`,
-  describe: '',
+  describe: undefined,
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

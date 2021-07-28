@@ -118,6 +118,9 @@
       "tag": true
     }
   },
+  "engines": {
+    "node": ">=15.0.0"
+  },
   "type": "module",
   "version": "0.13.11"
 }

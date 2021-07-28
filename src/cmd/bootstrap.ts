@@ -5,11 +5,11 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { BasicArguments, loadYaml, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
 import { genSops } from './gen-sops'
 
-const fileName = 'bootstrap'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 export type Arguments = BasicArguments
@@ -71,7 +71,8 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     debug.info('Generated loose schema')
   } catch (error) {
     debug.error(error)
-    debug.exit(1, `Could not copy from ${currDir}/.values/.vscode`)
+    debug.error(`Could not copy from ${currDir}/.values/.vscode`)
+    process.exit(1)
   }
 
   await Promise.allSettled(
@@ -133,7 +134,8 @@ export const module = {
     } catch (error) {
       debug.error('Error occurred, rolling back')
       if (!envDirHasVals) rollBack()
-      debug.exit(1, error)
+      debug.error(error)
+      process.exit(1)
     }
   },
 }

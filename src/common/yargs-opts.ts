@@ -122,7 +122,7 @@ export const basicOptions: { [key: string]: Options } = {
           .reduce((prev, curr) => Math.max(prev, curr)),
       ),
   },
-  'no-interactive': {
+  'non-interactive': {
     alias: 'ni',
     boolean: true,
     default: false,

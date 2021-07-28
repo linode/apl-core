@@ -15,15 +15,15 @@ export const giteaPush = async (): Promise<void> => {
   }
   const stage = hfVals.charts?.['cert-manager']?.stage === 'staging' ? ' -c http.sslVerify=false' : ' '
   debug.log(hfVals.cluster)
-  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.exit(1, 'cluster.domainSuffix is not set')
+  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.error('cluster.domainSuffix is not set')
+  process.exit(1)
   const giteaUrl = `gitea.${clusterDomain}`
 
   await waitTillAvailable(giteaUrl)
 
   const giteaPassword =
-    hfVals.charts?.gitea?.adminPassword ??
-    hfVals.otomi?.adminPassword ??
-    debug.exit(1, 'otomi.adminPassword is not set')
+    hfVals.charts?.gitea?.adminPassword ?? hfVals.otomi?.adminPassword ?? debug.error('otomi.adminPassword is not set')
+  process.exit(1)
   const giteaUser = 'otomi-admin'
   const giteaOrg = 'otomi'
   const giteaRepo = 'values'

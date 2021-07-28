@@ -3,11 +3,11 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { deletePropertyPath, loadYaml, setParsedArgs } from '../common/no-deps'
+import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'validate-values'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
@@ -31,7 +31,8 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
-    debug.exit(1, `Cannot pass option '${labelOpts}'`)
+    debug.error(`Cannot pass option '${labelOpts}'`)
+    process.exit(1)
   }
 
   debug.info('Getting values')
@@ -52,7 +53,8 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
     try {
       validate = ajv.compile(valuesSchema)
     } catch (error) {
-      debug.exit(1, `Schema is invalid: ${chalk.italic(error.message)}`)
+      debug.error(`Schema is invalid: ${chalk.italic(error.message)}`)
+      process.exit(1)
       return
     }
     debug.info(`Validating values`)
@@ -69,10 +71,12 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
           message: error.message,
         }),
       )
-      debug.exit(1, 'Values validation FAILED')
+      debug.error('Values validation FAILED')
+      process.exit(1)
     }
   } catch (error) {
-    debug.exit(1, error.message)
+    debug.error(error.message)
+    process.exit(1)
   }
 }
 

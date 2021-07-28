@@ -1,11 +1,11 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 type Arguments = BasicArguments
 
-const fileName = 'status'
+const fileName = getFilename(import.meta.url)
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {

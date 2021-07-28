@@ -1,13 +1,13 @@
-import { unlinkSync, writeFileSync } from 'fs'
+import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { setParsedArgs } from '../common/no-deps'
+import { getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'score-template'
+const fileName = getFilename(import.meta.url)
 const templatePath = '/tmp/template.yaml'
 let debug: OtomiDebugger
 
@@ -16,7 +16,7 @@ Note: Colors do not work: https://github.com/google/zx/issues/124
 */
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
-  unlinkSync(templatePath)
+  if (existsSync(templatePath)) unlinkSync(templatePath)
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
@@ -40,7 +40,7 @@ export const scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmen
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: undefined,
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

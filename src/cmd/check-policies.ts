@@ -4,11 +4,11 @@ import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
-import { loadYaml, logLevel, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
+import { getFilename, loadYaml, logLevel, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'check-policies'
+const fileName = getFilename(import.meta.url)
 const outDir = '/tmp/otomi/conftest'
 let debug: OtomiDebugger
 
@@ -53,7 +53,8 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
     .replace(/^.*TRAC.*[\r\n]/gm, '')
     .replace(/^.*PASS.*[\r\n]/gm, '')
   if (cleanConftest.indexOf('FAIL') > -1) {
-    debug.exit(1, cleanConftest)
+    debug.error(cleanConftest)
+    process.exit(1)
   }
 }
 

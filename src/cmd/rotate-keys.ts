@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
 import { rotate } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-const fileName = 'rotate-keys'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -29,7 +29,7 @@ export const rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironm
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: 'Rotate keys for all the sops secrets in the values repository',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {

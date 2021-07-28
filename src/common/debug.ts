@@ -40,7 +40,6 @@ export type OtomiDebugger = {
   warn: DebuggerType
   error: DebuggerType
   stream: OtomiStreamDebugger
-  exit: (exitCode: number, ...args: any[]) => void
 }
 
 const xtermColors = {
@@ -81,12 +80,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
   const debug = newDebug(`${namespace}:debug`, logLevel() >= LOG_LEVELS.DEBUG && terminalEnabled)
   const info = newDebug(`${namespace}:info`, logLevel() >= LOG_LEVELS.INFO && terminalEnabled)
   const warn = newDebug(`${namespace}:warn`, logLevel() >= LOG_LEVELS.WARN && terminalEnabled, console.warn)
-  const exit = (exitCode: number, ...args: any[]) => {
-    const exitDebug = newDebug(`${namespace}:crit`, true, console.error)
-    setColor(exitDebug, xtermColors.red)
-    args.map((arg) => exitDebug('', arg))
-    process.exit(exitCode)
-  }
+
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
   setColor(info, xtermColors.green)
@@ -100,7 +94,6 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
     info,
     warn,
     error,
-    exit,
     stream: {
       log: new DebugStream(log),
       trace: new DebugStream(trace),

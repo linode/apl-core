@@ -1,10 +1,10 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, parser, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, parser, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-const fileName = 'bash'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

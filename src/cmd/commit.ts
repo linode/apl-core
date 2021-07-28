@@ -3,13 +3,13 @@ import { $, cd } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { capitalize, setParsedArgs } from '../common/no-deps'
+import { capitalize, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
-const fileName = 'commit'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
@@ -73,10 +73,10 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   try {
     await $`git pull`
   } catch (error) {
-    debug.exit(
-      1,
+    debug.error(
       `When trying to pull from ${clusterDomain} merge conflicts occured\nPlease resolve these and run \`otomi commit\` again.`,
     )
+    process.exit(1)
   }
   try {
     await $`git remote show origin`
@@ -84,7 +84,8 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
     debug.log('Sucessfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
-    debug.exit(1, 'Pushing the values failed, please read the above error message and manually try again')
+    debug.error('Pushing the values failed, please read the above error message and manually try again')
+    process.exit(1)
   } finally {
     cd(currDir)
   }

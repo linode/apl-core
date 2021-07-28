@@ -6,11 +6,11 @@ import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { readdirRecurse, setParsedArgs } from '../common/no-deps'
+import { getFilename, readdirRecurse, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'validate-templates'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
@@ -191,7 +191,8 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0 || output.ERR) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
-    debug.exit(1, 'Templating FAILED')
+    debug.error('Templating FAILED')
+    process.exit(1)
   } else debug.log('Templating SUCCESS')
 }
 

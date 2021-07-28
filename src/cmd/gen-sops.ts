@@ -3,15 +3,14 @@ import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { BasicArguments, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
+import { BasicArguments, getFilename, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { askYesNo } from '../common/zx-enhance'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
-const fileName = 'gen-sops'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const providerMap = {
@@ -43,10 +42,6 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
 
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
-  if (existsSync(targetPath)) {
-    const overwrite = await askYesNo(`${targetPath} already exists, do you want to overwrite?`, { defaultYes: false })
-    if (!overwrite) return
-  }
   const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = providerMap[provider]
   const kmsKeys = settingsVals.kms.sops[provider].keys
@@ -88,7 +83,7 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({
       'dry-run': {
@@ -104,7 +99,8 @@ export const module = {
     try {
       await genSops(argv, { skipKubeContextCheck: true })
     } catch (error) {
-      debug.exit(0, error.message)
+      debug.error(error.message)
+      process.exit(0)
     }
   },
 }

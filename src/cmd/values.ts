@@ -2,10 +2,10 @@ import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { values as valuesFunc } from '../common/hf'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
-const fileName = 'values'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

@@ -4,7 +4,7 @@ import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hf } from '../common/hf'
-import { setParsedArgs } from '../common/no-deps'
+import { getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -12,7 +12,7 @@ import { diff } from './diff'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
 
-const fileName = 'test'
+const fileName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger
 
@@ -41,7 +41,8 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   })
 
   if (output.exitCode > 0) {
-    debug.exit(output.exitCode, output.stderr)
+    debug.error(output.stderr)
+    process.exit(output.exitCode)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }

@@ -17,7 +17,10 @@ import { basicOptions } from './common/yargs-opts'
 
 const debug = terminal('global')
 const terminalScale = 0.75
-if (!env.OTOMI_IN_DOCKER) debug.exit(1, 'Please run this script using the `otomi` entry script')
+if (!env.OTOMI_IN_DOCKER) {
+  debug.error('Please run this script using the `otomi` entry script')
+  process.exit(1)
+}
 
 const envDirContent = readdirSync(env.ENV_DIR)
 if (envDirContent.length > 0) {
@@ -31,10 +34,12 @@ if (envDirContent.length > 0) {
     if (!lstatSync(`${env.ENV_DIR}/env/settings.yaml`).isFile())
       errorMessage += `\n${env.ENV_DIR}/env/settings.yaml is not a file`
     if (errorMessage.trim().length > 0) {
-      debug.exit(1, `It seems like '${env.ENV_DIR}' is not a valid values repo.${errorMessage}`)
+      debug.error(`It seems like '${env.ENV_DIR}' is not a valid values repo.${errorMessage}`)
+      process.exit(1)
     }
   } catch (error) {
-    debug.exit(1, `It seems like '${env.ENV_DIR}' is not a valid values repo.\n${error.message}`)
+    debug.error(`It seems like '${env.ENV_DIR}' is not a valid values repo.\n${error.message}`)
+    process.exit(1)
   }
 }
 
@@ -65,5 +70,6 @@ try {
   if (env.OTOMI_DEV) {
     errData = error
   }
-  debug.exit(1, errData)
+  debug.error(errData)
+  process.exit(1)
 }

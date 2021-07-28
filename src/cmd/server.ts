@@ -1,12 +1,12 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 
-const fileName = 'server'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -32,7 +32,7 @@ export const server = async (argv: Arguments, options?: PrepareEnvironmentOption
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: undefined,
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {

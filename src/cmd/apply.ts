@@ -5,14 +5,14 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { giteaPush } from '../common/gitea-push'
 import { hf, hfStream } from '../common/hf'
-import { logLevelString, setParsedArgs } from '../common/no-deps'
+import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { decrypt } from './decrypt'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 
-const fileName = 'apply'
+const fileName = getFilename(import.meta.url)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger
@@ -41,7 +41,8 @@ const deployAll = async (argv: Arguments) => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   if (output.exitCode > 0) {
-    debug.exit(output.exitCode, output.stderr)
+    debug.error(output.stderr)
+    process.exit(output.exitCode)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }

@@ -1,7 +1,6 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 /**
  * This file is a scripting playground to test basic code
@@ -9,7 +8,7 @@ import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setu
  * but loaded into the application to run.
  */
 
-const fileName = 'playground'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -31,13 +30,13 @@ export const example = async (argv: BasicArguments, options?: PrepareEnvironment
 
   debug.log(fileName)
   debug.log(argv)
-  // const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
-  // script.stdout.pipe(debug.stream.log)
-  // const out = await script
-  // debug.log('Break')
-  // debug.log(out.stdout.trim())
-  debug.log(env)
-  debug.log(process.env)
+  // // const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
+  // // script.stdout.pipe(debug.stream.log)
+  // // const out = await script
+  // // debug.log('Break')
+  // // debug.log(out.stdout.trim())
+  // debug.log(env)
+  // debug.log(process.env)
 
   // throw new Error('Playground error')
 }

@@ -4,14 +4,14 @@ import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { BasicArguments, setParsedArgs, startingDir } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
-const fileName = 'gen-drone'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -75,7 +75,7 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({
       'dry-run': {

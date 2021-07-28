@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 /* Steps:
@@ -17,8 +17,7 @@ interface Arguments extends BasicArguments {
   TODO?: string
 }
 
-// TODO: Rename fileName var to name of file / otomi command
-const fileName = 'example'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

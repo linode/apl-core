@@ -39,7 +39,8 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   debug.info(xCommand)
   const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAll: true })
   if (opaExitCode !== 0) {
-    debug.exit(1, 'Opa policies failed')
+    debug.error('Opa policies failed')
+    process.exit(1)
   }
 
   debug.info('Validate values')
@@ -68,7 +69,8 @@ export const module = {
     try {
       await ciTests(argv)
     } catch (error) {
-      debug.exit(1, error)
+      debug.error(error)
+      process.exit(1)
     }
   },
 }

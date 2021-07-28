@@ -1,14 +1,14 @@
 import { Argv } from 'yargs'
 import { encrypt as encryptFunc } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, setParsedArgs } from '../common/no-deps'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 interface Arguments extends BasicArguments {
   files?: string[]
 }
 
-const fileName = 'encrypt'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */

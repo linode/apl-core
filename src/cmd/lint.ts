@@ -1,11 +1,11 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hf } from '../common/hf'
-import { logLevelString, setParsedArgs } from '../common/no-deps'
+import { getFilename, logLevelString, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'lint'
+const fileName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
@@ -43,7 +43,7 @@ export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 
 export const module = {
   command: fileName,
-  describe: '',
+  describe: 'Uses helmfile lint to lint your target manifests',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
