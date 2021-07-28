@@ -17,7 +17,8 @@ import { basicOptions } from './common/yargs-opts'
 
 const debug = terminal('global')
 const terminalScale = 0.75
-if (!env.OTOMI_IN_DOCKER) {
+if (!(env.OTOMI_IN_DOCKER || process.argv.includes('--get-yargs-completions'))) {
+  debug.error(process.argv)
   debug.error('Please run this script using the `otomi` entry script')
   process.exit(1)
 }
@@ -62,7 +63,7 @@ try {
     .help('help')
     .alias('h', 'help')
     .demandCommand()
-  // .completion()
+    .completion()
   await parser.parseAsync()
 } catch (error) {
   parser.showHelp()

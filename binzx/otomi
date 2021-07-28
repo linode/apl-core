@@ -266,7 +266,7 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
-if [ -n "$OTOMI_IN_DOCKER" ]; then
+if [ -n "$OTOMI_IN_DOCKER" ] || [[ $calling_args == *'--get-yargs-completions'* ]] ; then
   $cmd
   status=$?
 else
@@ -299,6 +299,7 @@ if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; th
   mkdir -p "$backup_path"
   mv "$tmp_env" "$backup_path/running_env"
 else
+  # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1
   rm -f "$tmp_env"
   rm -rf "$tmp_volume_dir"
