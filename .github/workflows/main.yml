@@ -74,7 +74,8 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
-      - name: Prepare chart for publishing
+      - if: github.ref == 'refs/heads/master'
+        name: Prepare chart for publishing
         id: chart_prepare
         run: |
           # Release new chart only if its version changes
