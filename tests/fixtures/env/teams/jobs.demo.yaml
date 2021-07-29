@@ -22,8 +22,6 @@ teamConfig:
                   init:
                       - env:
                             foo: bar
-                        nativeSecrets:
-                            foo: bar
                         image:
                             repository: busybox
                             tag: latest
@@ -34,8 +32,6 @@ teamConfig:
                             - mysecret-generic
                             - hello-otomi
                   name: contains-everything
-                  nativeSecrets:
-                      foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
                   secrets:

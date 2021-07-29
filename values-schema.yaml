@@ -271,6 +271,7 @@ definitions:
         $ref: '#/definitions/files'
       nativeSecrets:
         $ref: '#/definitions/nativeSecrets'
+        description: Reserved for internal use.
       secrets:
         $ref: '#/definitions/secrets'
       secretMounts:
