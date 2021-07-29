@@ -287,7 +287,6 @@ definitions:
     required:
       - image
       - resources
-    type: object
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -436,7 +435,6 @@ definitions:
       - name
       - script
       - type
-    type: object
   k8sVersion:
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
