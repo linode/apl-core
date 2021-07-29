@@ -88,7 +88,7 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   )
   if (!existsSync(`${env.ENV_DIR}/env`)) {
     debug.log(`Copying basic values`)
-    await copy(`${currDir}/.values/env`, env.ENV_DIR, { overwrite: false, recursive: true })
+    await copy(`${currDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
   }
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
