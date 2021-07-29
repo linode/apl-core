@@ -21,7 +21,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _sync = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
@@ -44,7 +44,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _sync(argv, {})
+    await sync(argv, {})
   },
 }
 

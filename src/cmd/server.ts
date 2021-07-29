@@ -24,7 +24,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Starting server')
   startServer()
@@ -37,7 +37,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _server(argv, {})
+    await server(argv, {})
   },
 }
 

@@ -21,7 +21,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const values = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Get values')
   const hfVal = await valuesFunc({ replacePath: true })
@@ -37,7 +37,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await _values(argv, { skipKubeContextCheck: true })
+    await values(argv, { skipKubeContextCheck: true })
   },
 }
 

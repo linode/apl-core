@@ -1,9 +1,9 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, chalk, nothrow } from 'zx'
+import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { BasicArguments, getFilename, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
+import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
@@ -43,8 +43,8 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
 
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
-  const kmsProvider = providerMap[provider]
-  const kmsKeys = settingsVals.kms.sops[provider].keys
+  const kmsProvider = providerMap[provider] as string
+  const kmsKeys = settingsVals.kms.sops[provider].keys as string
 
   const obj = {
     provider: kmsProvider,
@@ -52,12 +52,8 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   }
 
   debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
-  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
-  const quoteBackup = $.quote
-  $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${templatePath}`)
-  $.quote = quoteBackup
-  const output = processOutput.stdout
+
+  const output = await gucci(templatePath, obj)
   if (argv.dryRun) {
     debug.log(output)
   } else {

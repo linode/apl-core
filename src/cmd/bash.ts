@@ -20,7 +20,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   if (argv._[0] === 'bash') parser.showHelp()
   else {
@@ -47,7 +47,7 @@ export const module: CommandModule = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await _bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
+    await bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
   },
 }
 

@@ -47,7 +47,7 @@ if (envDirContent.length > 0) {
 try {
   parser.scriptName(otomi.scriptName)
   if (envDirContent.length === 0) {
-    parser.command({ ...bootstrap, command: [bootstrap.command, '$0'] })
+    parser.command(bootstrap)
   } else {
     commands.map((cmd: CommandModule) =>
       parser.command(cmd !== defaultCommand ? cmd : { ...cmd, command: [cmd.command as string, '$0'] }),
@@ -63,7 +63,7 @@ try {
     .help('help')
     .alias('h', 'help')
     .demandCommand()
-    .completion()
+    .completion('completion', false)
   await parser.parseAsync()
 } catch (error) {
   parser.showHelp()

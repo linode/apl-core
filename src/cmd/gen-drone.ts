@@ -1,10 +1,9 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { BasicArguments, getFilename, setParsedArgs, startingDir } from '../common/no-deps'
+import { BasicArguments, getFilename, gucci, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 
 export interface Arguments extends BasicArguments {
@@ -59,12 +58,7 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
     pullPolicy,
   }
 
-  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
-  const quoteBackup = $.quote
-  $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${startingDir}/tpl/.drone.yml.gotmpl`)
-  $.quote = quoteBackup
-  const output = processOutput.stdout
+  const output = await gucci(`${startingDir}/tpl/.drone.yml.gotmpl`, obj)
   if (argv.dryRun) {
     debug.log(output)
   } else {

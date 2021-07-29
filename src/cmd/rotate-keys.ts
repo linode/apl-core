@@ -20,7 +20,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Starting key rotation')
   await rotate()
@@ -34,7 +34,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await _rotateKeys(argv, { skipDecrypt: true, skipKubeContextCheck: true })
+    await rotateKeys(argv, { skipDecrypt: true, skipKubeContextCheck: true })
   },
 }
 

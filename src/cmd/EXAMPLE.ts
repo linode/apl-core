@@ -34,7 +34,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 }
 
 // TODO: Rename function name to filename
-export const _example = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const example = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   // TODO: Write your code here
@@ -49,7 +49,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _example(argv, {}) // TODO: Replace with function name
+    await example(argv, {}) // TODO: Replace with function name
   },
 }
 

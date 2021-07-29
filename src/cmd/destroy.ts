@@ -62,7 +62,7 @@ const destroyAll = async () => {
   await $`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`
 }
 
-export const _destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
@@ -87,7 +87,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _destroy(argv, {})
+    await destroy(argv, {})
   },
 }
 

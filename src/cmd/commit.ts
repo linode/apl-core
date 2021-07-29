@@ -40,7 +40,7 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
   if (versionChanges || secretChanges) await genDrone(argv)
 }
 
-export const _commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   await validateValues(argv)
@@ -100,7 +100,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _commit(argv, { skipKubeContextCheck: true })
+    await commit(argv, { skipKubeContextCheck: true })
   },
 }
 

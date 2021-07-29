@@ -24,7 +24,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _encrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const encrypt = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('otomi encrypt')
   await encryptFunc(...(argv.files ?? []))
@@ -37,7 +37,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _encrypt(argv, { skipDecrypt: true, skipKubeContextCheck: true })
+    await encrypt(argv, { skipDecrypt: true, skipKubeContextCheck: true })
   },
 }
 

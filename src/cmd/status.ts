@@ -19,7 +19,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
 
   const output = await $`helm list -A -a`
@@ -33,7 +33,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _status(argv, {})
+    await status(argv, {})
   },
 }
 

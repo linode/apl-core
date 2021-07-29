@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { env } from './envalid'
 
 process.stdin.isTTY = false
@@ -12,6 +12,7 @@ $.verbose = false // https://github.com/google/zx#verbose - don't need to print 
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
 
 export const startingDir = process.cwd()
+export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 
@@ -141,4 +142,21 @@ export const waitTillAvailable = async (domain: string, subsequentExists = 3): P
   } while (count < subsequentExists)
 }
 
+export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {
+  const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
+  const quoteBackup = $.quote
+  $.quote = (v) => v
+  const processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
+  $.quote = quoteBackup
+  return processOutput.stdout.trim()
+}
+
+/* Can't use for now because of:
+https://github.com/homeport/dyff/issues/173
+export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Promise<boolean> => {
+  const result = await nothrow($`git show HEAD:${filePath} | dyff between --filter "${jsonPathFilter}" --set-exit-code --omit-header - ${filePath}`)
+  const isThereADiff = result.exitCode === 1
+  return isThereADiff
+}
+*/
 export default { parser, asArray }

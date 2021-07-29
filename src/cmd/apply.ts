@@ -72,7 +72,7 @@ const deployAll = async (argv: Arguments) => {
   )
 }
 
-export const _apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   if (argv._[0] === 'deploy' || (!argv.label && !argv.file)) {
     debug.info('Start deploy')
@@ -99,7 +99,7 @@ export const module: CommandModule = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _apply(argv, {})
+    await apply(argv, {})
   },
 }
 

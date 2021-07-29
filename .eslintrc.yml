@@ -51,7 +51,7 @@ rules:
   '@typescript-eslint/no-unsafe-call': off
   '@typescript-eslint/no-non-null-assertion': off
   '@typescript-eslint/no-floating-promises': off
-  '@typescript-eslint/no-shadow': error,
+  '@typescript-eslint/no-shadow': error
   func-names: 'off'
   import/no-extraneous-dependencies: off
   import/extensions: off

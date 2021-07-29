@@ -35,10 +35,6 @@ silent() {
   fi
 }
 
-this_is_bash=$(ps -o ppid= $$)
-executing_shell=$(ps -o comm= $this_is_bash | sed "s/[^[:alnum:]\/]//g")
-path_to_exec_shell=$(which $executing_shell)
-
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ -f "package.json" ]; then
@@ -185,6 +181,7 @@ vars=(
   OTOMI_USERNAME 
   PROFILE 
   STATIC_COLORS 
+  SHELL 
   TESTING 
   TRACE 
   VAULT_TOKEN 
@@ -192,7 +189,6 @@ vars=(
 dump_vars "${vars[@]}"
 
 cat >>$tmp_env <<EOF
-SHELL=${path_to_exec_shell}
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
 OTOMI_IN_DOCKER=true
 EOF

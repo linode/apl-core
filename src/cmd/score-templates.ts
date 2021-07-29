@@ -26,7 +26,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Scoring STARTED')
   const result = await hfTemplate(argv)
@@ -45,7 +45,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _scoreTemplate(argv, { skipKubeContextCheck: true })
+    await scoreTemplate(argv, { skipKubeContextCheck: true })
   },
 }
 

@@ -25,7 +25,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _template = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const template = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Templating STARTED')
   await hfTemplate(argv, argv.outDir, { stdout: debug.stream.log, stderr: debug.stream.error })
@@ -39,7 +39,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _template(argv, { skipKubeContextCheck: true })
+    await template(argv, { skipKubeContextCheck: true })
   },
 }
 

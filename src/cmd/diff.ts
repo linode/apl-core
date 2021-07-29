@@ -23,7 +23,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _diff = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<ProcessOutputTrimmed> => {
+export const diff = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<ProcessOutputTrimmed> => {
   await setup(argv, options)
   await decrypt(argv)
   debug.info('Start Diff')
@@ -46,7 +46,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _diff(argv, { skipDecrypt: true })
+    await diff(argv, { skipDecrypt: true })
   },
 }
 

@@ -25,7 +25,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   otomi.exitIfInCore(cmdName)
   debug.info('Pull latest values')
@@ -40,7 +40,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _pull(argv, { skipKubeContextCheck: true })
+    await pull(argv, { skipKubeContextCheck: true })
   },
 }
 

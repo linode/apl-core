@@ -23,7 +23,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (options) await otomi.prepareEnvironment(options)
 }
 
-export const _checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Policy checking STARTED')
 
@@ -65,7 +65,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await _checkPolicies(argv, { skipKubeContextCheck: true })
+    await checkPolicies(argv, { skipKubeContextCheck: true })
   },
 }
 
