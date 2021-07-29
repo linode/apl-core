@@ -82,7 +82,7 @@ Create the name of the service account to use
 {{- range $vi := $v.init }}
   {{- $containers = prepend $containers (dict "isInit" true "container" $vi) }}
   {{- if or $vi.files $vi.SecretMounts }}{{ $hasMounts = true }}{{ end }}
-{{ end }}
+{{- end -}}
 template:
   metadata:
     labels: {{- include "jobs.labels" . | nindent 6 }}
@@ -101,11 +101,13 @@ template:
       {{- else }}
       runAsNonRoot: true
       {{- end }}
+  {{- $didNotPlaceInitContainer := true }}
   {{- range $item := $containers }}
     {{- $c := $item.container }}
     {{- $initSuffix := $item.isInit | ternary "-init" "" }}
-    {{- if and $item.isInit $c }}
+    {{- if and (and $item.isInit $didNotPlaceInitContainer) $c }}
     initContainers:
+      {{- $didNotPlaceInitContainer = false }}
     {{- end }}
     {{- if not $item.isInit }}
     containers:
