@@ -5,8 +5,8 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi } from '../common/setup'
+import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../common/utils'
 import { genSops } from './gen-sops'
 
 const cmdName = getFilename(import.meta.url)

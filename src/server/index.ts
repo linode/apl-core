@@ -4,7 +4,7 @@ import { Server } from 'http'
 import { preCommit } from '../cmd/commit'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { defaultBasicArguments } from '../common/no-deps'
+import { defaultBasicArguments } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()

@@ -3,8 +3,8 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -55,7 +55,6 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
     } catch (error) {
       debug.error(`Schema is invalid: ${chalk.italic(error.message)}`)
       process.exit(1)
-      return
     }
     debug.info(`Validating values`)
     const val = validate(hfVal)

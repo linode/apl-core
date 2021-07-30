@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { decrypt as decryptFunc } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 interface Arguments extends BasicArguments {
   files?: string[]

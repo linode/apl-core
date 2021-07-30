@@ -3,8 +3,8 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean

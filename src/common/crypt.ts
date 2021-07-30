@@ -3,14 +3,14 @@ import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
 import { env, getEnv } from './envalid'
-import { currDir, readdirRecurse } from './no-deps'
 import { evaluateSecrets } from './secrets'
+import { currDir, readdirRecurse } from './utils'
 
 EventEmitter.defaultMaxListeners = 20
 
 let debug: OtomiDebugger
 
-enum CRYPT_TYPE {
+enum CryptType {
   ENCRYPT = 'helm secrets enc',
   DECRYPT = 'helm secrets dec',
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
@@ -37,7 +37,7 @@ const getAllSecretFiles = async () => {
 
 type CR = {
   condition?: (path: string, file: string) => boolean
-  cmd: CRYPT_TYPE
+  cmd: CryptType
   post?: (result: ProcessOutput, path: string, file: string) => void
 }
 
@@ -94,7 +94,7 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 
   await runOnSecretFiles(
     {
-      cmd: CRYPT_TYPE.DECRYPT,
+      cmd: CryptType.DECRYPT,
       post: (r, p, f) => {
         debug.debug(r.stdout.trim())
         matchTimestamps(r, p, f)
@@ -136,7 +136,7 @@ export const encrypt = async (...files: string[]): Promise<void> => {
         debug.info(`Skipping encryption for ${file} as it has not changed`)
         return false
       },
-      cmd: CRYPT_TYPE.ENCRYPT,
+      cmd: CryptType.ENCRYPT,
       post: (r, p, f) => {
         debug.debug(r.stdout.trim())
         matchTimestamps(r, p, f)
@@ -152,7 +152,7 @@ export const rotate = async (): Promise<void> => {
   const namespace = 'rotate'
   debug = terminal(namespace)
   await runOnSecretFiles({
-    cmd: CRYPT_TYPE.ROTATE,
+    cmd: CryptType.ROTATE,
     post: (result: ProcessOutput, path: string, file: string) => {
       if (result.exitCode === 0) {
         debug.info(`Rotating sops key for '${chalk.italic(file)}' ${chalk.greenBright('succeeded')}`)

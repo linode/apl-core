@@ -5,8 +5,8 @@ import { $, chalk, nothrow } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
-import { BasicArguments, loadYaml, parser } from './no-deps'
 import { evaluateSecrets } from './secrets'
+import { BasicArguments, loadYaml, parser } from './utils'
 import { askYesNo, source } from './zx-enhance'
 
 chalk.level = 2

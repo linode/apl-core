@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 import { ask } from '../common/zx-enhance'
 
 interface Arguments extends BasicArguments {
