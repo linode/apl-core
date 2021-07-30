@@ -48,11 +48,12 @@ export const getParsedArgs = (): BasicArguments => {
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
 }
-export const readdirRecurse = async (dir: string): Promise<string[]> => {
+export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
   const dirs = readdirSync(dir, { withFileTypes: true })
   const files = await Promise.all(
     dirs.map(async (dirOrFile) => {
       const res = resolve(dir, dirOrFile.name)
+      if (opts?.skipHidden && dirOrFile.name.startsWith('.')) return []
       return dirOrFile.isDirectory() ? readdirRecurse(res) : res
     }),
   )
