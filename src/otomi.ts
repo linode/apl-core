@@ -17,14 +17,15 @@ import { basicOptions } from './common/yargs-opts'
 
 const debug = terminal('global')
 const terminalScale = 0.75
-if (!(env.OTOMI_IN_DOCKER || process.argv.includes('--get-yargs-completions'))) {
+const isAutoCompletion = process.argv.includes('--get-yargs-completions')
+if (!env.OTOMI_IN_DOCKER && !isAutoCompletion) {
   debug.error(process.argv)
   debug.error('Please run this script using the `otomi` entry script')
   process.exit(1)
 }
 
 const envDirContent = readdirSync(env.ENV_DIR)
-if (envDirContent.length > 0) {
+if (envDirContent.length > 0 && !isAutoCompletion) {
   try {
     let errorMessage = ''
     if (!lstatSync(`${env.ENV_DIR}/env`).isDirectory()) errorMessage += `\n${env.ENV_DIR}/env is not a directory`
@@ -46,7 +47,7 @@ if (envDirContent.length > 0) {
 
 try {
   parser.scriptName(otomi.scriptName)
-  if (envDirContent.length === 0) {
+  if (envDirContent.length === 0 && !isAutoCompletion) {
     parser.command(bootstrap)
   } else {
     commands.map((cmd: CommandModule) =>

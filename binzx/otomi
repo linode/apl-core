@@ -262,8 +262,11 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
-if [ -n "$OTOMI_IN_DOCKER" ] || [[ $calling_args == *'--get-yargs-completions'* ]] ; then
+if [ -n "$OTOMI_IN_DOCKER" ]; then
   $cmd
+  status=$?
+elif [[ $calling_args == *'--get-yargs-completions'* ]]; then 
+  docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
   docker run --rm $it \
