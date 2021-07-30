@@ -300,7 +300,7 @@ if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; th
 else
   # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1
-  rm -f "$tmp_env"
-  rm -rf "$tmp_volume_dir"
+  rm -f "$tmp_env" &>/dev/null
+  rm -rf "$tmp_volume_dir" &>/dev/null
 fi
 exit $status
