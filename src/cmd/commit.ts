@@ -36,8 +36,11 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
   const versionChanges = settingsDiff.includes('+    version:')
-  const secretChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
-  if (versionChanges || secretChanges) await genDrone(argv)
+  const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
+  const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
+  const secretMsTeamsHighPrioChanges = secretDiff.includes('+        highPrio: https://')
+  if (versionChanges || secretSlackChanges || secretMsTeamsLowPrioChanges || secretMsTeamsHighPrioChanges)
+    await genDrone(argv)
 }
 
 export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
