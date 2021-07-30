@@ -4,7 +4,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { getFilename, setParsedArgs } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as BootsrapArgs, bootstrap } from './bootstrap'
 
 interface Arguments extends HelmArgs, BootsrapArgs {}
@@ -36,7 +36,7 @@ export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 export const module = {
   command: cmdName,
   describe: `Wrapper for git pull && ${otomi.scriptName} bootstrap`,
-  builder: (parser: Argv): Argv => helmOptions(parser),
+  builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)

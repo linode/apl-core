@@ -6,7 +6,7 @@ import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { capitalize, getFilename, setParsedArgs } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
@@ -101,7 +101,7 @@ export const module = {
   command: cmdName,
   // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
   describe: 'Execute wrapper for generate pipelines -> git commit changed files',
-  builder: (parser: Argv): Argv => helmOptions(parser),
+  builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
