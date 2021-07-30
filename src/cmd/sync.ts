@@ -39,7 +39,7 @@ export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 
 export const module = {
   command: cmdName,
-  describe: 'Sync k8s resources',
+  describe: 'Sync all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

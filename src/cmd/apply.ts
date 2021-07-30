@@ -94,7 +94,7 @@ export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions
 
 export const module: CommandModule = {
   command: cmdName,
-  describe: 'Apply K8S resources',
+  describe: 'Apply all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

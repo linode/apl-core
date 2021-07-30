@@ -31,7 +31,7 @@ export const decrypt = async (argv: Arguments, options?: PrepareEnvironmentOptio
 
 export const module = {
   command: `${cmdName} [files..]`,
-  describe: 'Decrypts file(s) given as arguments in value repo, or all env/*.secrets.yaml when no arguments given',
+  describe: 'Decrypts file(s), given as arguments, or any file matching secrets.*.yaml in the values repository',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {

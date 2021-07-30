@@ -82,7 +82,7 @@ export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptio
 
 export const module = {
   command: cmdName,
-  describe: 'Destroy all or some charts',
+  describe: 'Destroy all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

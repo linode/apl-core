@@ -43,7 +43,7 @@ export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions)
 
 export const module = {
   command: cmdName,
-  describe: 'Uses helmfile lint to lint your target manifests',
+  describe: 'Uses helmfile lint to lint the target manifests',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

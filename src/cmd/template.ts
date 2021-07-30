@@ -34,7 +34,7 @@ export const template = async (argv: Arguments, options?: PrepareEnvironmentOpti
 
 export const module = {
   command: `${cmdName} [outDir]`,
-  describe: 'Export k8s resources',
+  describe: 'Export all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
