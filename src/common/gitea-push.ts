@@ -3,7 +3,7 @@ import { $, cd, nothrow } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { waitTillAvailable } from './no-deps'
+import { waitTillAvailable } from './utils'
 
 export const giteaPush = async (): Promise<void> => {
   const debug = terminal('Gitea Push')

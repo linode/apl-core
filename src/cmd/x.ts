@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, getFilename, logLevel, LOG_LEVELS, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, logLevel, LOG_LEVELS, setParsedArgs } from '../common/utils'
 import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)

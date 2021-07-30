@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import { $, chalk, ProcessOutput, ProcessPromise, question } from 'zx'
 import { DebugStream } from './debug'
 import { env } from './envalid'
-import { getParsedArgs } from './no-deps'
+import { getParsedArgs } from './utils'
 
 const MAX_RETRIES_QUESTION = 3
 

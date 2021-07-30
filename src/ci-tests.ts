@@ -1,5 +1,5 @@
 #!/usr/bin/env -S ENV_DIR=${PWD}/tests/fixtures node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm
-import { symlinkSync } from 'fs'
+import { existsSync, symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
 import { hf } from './cmd/hf'
@@ -7,8 +7,8 @@ import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
 import { OtomiDebugger, terminal } from './common/debug'
-import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/no-deps'
 import { cleanupHandler } from './common/setup'
+import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -32,7 +32,7 @@ const setup = (argv: Arguments): void => {
 export const ciTests = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
-  symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
+  if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
   debug.log(`Validating ${`${startingDir}/env`} values`)
 
   const xCommand = 'opa test policies -v'

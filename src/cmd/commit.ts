@@ -1,10 +1,11 @@
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { encrypt } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { capitalize, getFilename, setParsedArgs } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { capitalize, getFilename, setParsedArgs } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -69,6 +70,7 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   }
 
   preCommit(argv)
+  await encrypt()
   debug.info('Do commit')
   await $`git add .`
   await $`git commit -m 'Manual commit' --no-verify`
