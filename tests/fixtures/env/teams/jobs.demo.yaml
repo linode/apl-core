@@ -27,7 +27,7 @@ teamConfig:
                             tag: latest
                             pullPolicy: IfNotPresent
                         script: |
-                            echo "hello $receiver and $SOME-KEY"
+                            echo "hello foo $foo"
                         secrets:
                             - mysecret-generic
                             - hello-otomi
