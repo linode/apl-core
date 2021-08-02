@@ -20,9 +20,21 @@
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true,
+      "source.fixAll": true
+    }
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "prettier.enable": true,
+  "eslint.format.enable": true,
+  "eslint.validate": ["javascript", "typescript"],
   "files.associations": {
     "*.gotmpl": "helm",
     "*.tmpl": "nginx",
@@ -48,5 +60,6 @@
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci",
   "opa.roots": ["${workspaceFolder}/policies"],
-  "python.pythonPath": "/usr/local/bin/python3"
+  "python.pythonPath": "/usr/local/bin/python3",
+  "sops.enabled": false
 }

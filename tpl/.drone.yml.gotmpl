@@ -49,13 +49,13 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - cd .. && bin/otomi test
+      - cd .. && binzx/otomi test
 
   - name: apply
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     commands:
-      - cd .. && bin/otomi apply
+      - cd .. && binzx/otomi apply
     depends_on:
       - test
 
