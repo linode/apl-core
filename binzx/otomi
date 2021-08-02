@@ -21,6 +21,7 @@ readonly calling_args
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
+  source "$ENV_DIR/env/.env"
   NOPULL=1
 elif [ -z "$ENV_DIR" ]; then
   ENV_DIR=$PWD
@@ -173,7 +174,6 @@ vars=(
   GCLOUD_SERVICE_KEY
   K8S_CONTEXT
   KUBE_VERSION_OVERRIDE
-  NOPULL
   OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
   OTOMI_PASSWORD

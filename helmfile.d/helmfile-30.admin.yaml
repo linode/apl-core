@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: drone
-    installed: {{ $c | get "drone.enabled" false }}
+    installed: {{ ternary ($c | get "drone.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "drone" dict) "enabled") }}
     namespace: team-admin
     labels:
       pkg: drone

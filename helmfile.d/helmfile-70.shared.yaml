@@ -8,7 +8,7 @@ bases:
 
 releases:
   - name: harbor
-    installed: {{ $c | get "harbor.enabled" false }}
+    installed: {{ ternary ($c | get "harbor.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "harbor" dict) "enabled") }}
     namespace: harbor
     labels:
       pkg: harbor
@@ -28,7 +28,7 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") }}
+    installed: {{ ne ($v.otomi | get "pullSecret" "") "" }}
     namespace: otomi
     labels:
       stage: post

@@ -1,9 +1,3 @@
-image:
-  repository: otomi/core
-  # tag: master # defaults to .Chart.AppVersion
-tasksImage:
-  repository: otomi/tasks
-  # tag: master # defaults to "latest"
 cluster:
   apiName: ''
   apiServer: ''
@@ -12,8 +6,8 @@ cluster:
   name: 'dev'
   provider: ''
   region: ''
-kms:
-  sops:
+# kms:
+#   sops:
     # provider can be one of aws|azure|google|vault
     # provider: ''
     # aws:
