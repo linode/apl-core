@@ -21,6 +21,7 @@ readonly calling_args
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
+  source "$ENV_DIR/env/.env"
 elif [ -z "$ENV_DIR" ]; then
   ENV_DIR=$PWD
 else
@@ -40,7 +41,7 @@ otomi_version="latest"
 if [ -f "package.json" ]; then
   otomi_version="master"
 elif [ -f $ENV_DIR/env/settings.yaml ]; then
-  otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}'  $ENV_DIR/env/settings.yaml)
+  otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
 fi
 OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
@@ -130,12 +131,12 @@ check_update() {
   if [ "$last_commit_date_sec" -ne "0" ] && [ "$last_commit_date_sec" -gt "$last_file_change_sec" ]; then
     read -r -p "Newer version is available, do you want to update (yes/No)? " answer
     case ${answer:0:1} in
-    y | Y)
-      run_self_update
-      ;;
-    *)
-      return 0
-      ;;
+      y | Y)
+        run_self_update
+        ;;
+      *)
+        return 0
+        ;;
     esac
   fi
 }
@@ -148,7 +149,7 @@ tmp_env=$(mktemp)
 function dump_vars() {
   for var in "$@"; do
     val="${!var}"
-    [ -n "$val" ] && echo "$var=$val" >> $tmp_env
+    [ -n "$val" ] && echo "$var=$val" >>$tmp_env
   done
 }
 
@@ -159,32 +160,32 @@ if [ -t 1 ]; then
   OTOMI_IN_TERMINAL="true"
 fi
 
-vars=( 
-  AWS_ACCESS_KEY_ID 
-  AWS_REGION 
-  AWS_SECRET_ACCESS_KEY 
-  AZURE_CLIENT_ID 
-  AZURE_CLIENT_SECRET 
-  AZURE_TENANT_ID 
-  CI 
+vars=(
+  AWS_ACCESS_KEY_ID
+  AWS_REGION
+  AWS_SECRET_ACCESS_KEY
+  AZURE_CLIENT_ID
+  AZURE_CLIENT_SECRET
+  AZURE_TENANT_ID
+  CI
   DEBUG
   ENV_DIR
-  GCLOUD_SERVICE_KEY 
-  K8S_CONTEXT 
-  KUBE_VERSION_OVERRIDE 
-  OTOMI_DRY_RUN 
+  GCLOUD_SERVICE_KEY
+  K8S_CONTEXT
+  KUBE_VERSION_OVERRIDE
+  OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
-  OTOMI_PASSWORD 
-  OTOMI_PORT 
-  OTOMI_SERVER 
-  OTOMI_TAG 
-  OTOMI_USERNAME 
-  PROFILE 
-  STATIC_COLORS 
-  SHELL 
-  TESTING 
-  TRACE 
-  VAULT_TOKEN 
+  OTOMI_PASSWORD
+  OTOMI_PORT
+  OTOMI_SERVER
+  OTOMI_TAG
+  OTOMI_USERNAME
+  PROFILE
+  STATIC_COLORS
+  SHELL
+  TESTING
+  TRACE
+  VAULT_TOKEN
 )
 dump_vars "${vars[@]}"
 
@@ -194,7 +195,7 @@ OTOMI_IN_DOCKER=true
 EOF
 
 helm_config="$HOME/.config/helm"
-if [[ $(uname -s) == "Darwin" ]]; then 
+if [[ $(uname -s) == "Darwin" ]]; then
   helm_config="$HOME/Library/Preferences/helm"
 else
   readonly linux_workaround='--user=root:root'
@@ -240,7 +241,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] && [ -z $NOPULL ]; then 
+if [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ] && [ -z $NOPULL ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
@@ -252,7 +253,7 @@ fi
 
 it='-it'
 if [[ $calling_args == *'-non-interactive'* ]] ||
-    [[ $calling_args == *'-ni'* ]]; then
+  [[ $calling_args == *'-ni'* ]]; then
   it=''
 fi
 
@@ -265,7 +266,7 @@ mkdir -p /tmp/otomi
 if [ -n "$OTOMI_IN_DOCKER" ]; then
   $cmd
   status=$?
-elif [[ $calling_args == *'--get-yargs-completions'* ]]; then 
+elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
