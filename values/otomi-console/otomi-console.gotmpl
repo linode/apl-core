@@ -24,16 +24,20 @@
     {{- range $teamId, $team := $v.teamConfig.teams }}
       {{- if hasKey $team "services" -}}
         {{- range $s := $team.services -}}
-          {{- $sd := dict -}}
-            {{- with $s.name -}}{{ $sd = set $sd "name" . }}{{- end }}
-            {{- with $s.type -}}{{ $sd = set $sd "type" . }}{{- end }}
+          {{- $sd := dict "teamId" $teamId -}}
+            {{- if hasKey $s "name" -}}{{ $sd = set $sd "name" $s.name }}
+              {{- if hasKey $s "type" -}}
+                {{ $sd = set $sd "ingress" (dict "type" $s.type "domain" $v.cluster.domainSuffix "subdomain" (printf "%s.team-%s" $s.name $teamId)) }}
+              {{- end }}
+            {{- end }}
             {{- if hasKey $s "ksvc" -}}{{ $sd = set $sd "ksvc" true  }}{{- end }}
-            {{- with $s.port -}}{{ $sd = set $sd "port" . }}{{- end }}
+            {{- if hasKey $s "ownHost" -}}{{ $sd = set $sd "ownHost" $s.ownHost }}{{- end }}
             {{ $teamServices = append $teamServices $sd }}
         {{- end }}              
       {{- end }}
     {{- end }}
   {{- end }}
+  
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
@@ -67,7 +71,6 @@ env:
   CORE_VERSION: '{{ $version }}'
   TEAM_SERVICES: '{{ $teamServices | toJson }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
-
 
 podAnnotations:
   policy.otomi.io/ignore: "banned-image-tags,psp-allowed-users"
