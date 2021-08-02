@@ -27,6 +27,8 @@ const cleanup = (argv: Arguments): void => {
 
 const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  process.env.AZURE_CLIENT_ID = 'somevalue'
+  process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
 export const ciTests = async (argv: Arguments): Promise<void> => {
