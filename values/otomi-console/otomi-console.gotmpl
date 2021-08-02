@@ -23,8 +23,8 @@
 {{- range $teamId, $team := $v | get "teamConfig.teams" dict }}
   {{- range $s := $team | get "services" list }}
     {{- $sd := dict "teamId" $teamId }}
-    {{- if hasKey $s "name" -}}{{ $sd = set $sd "name" $s.name }}
-      {{- if hasKey $s "type" -}}
+    {{- if hasKey $s "name" }}{{ $sd = set $sd "name" $s.name }}
+      {{- if hasKey $s "type" }}
         {{ $sd = set $sd "ingress" (dict "type" $s.type "domain" $v.cluster.domainSuffix) }}
       {{- end }}
     {{- end }}
