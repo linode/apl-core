@@ -17,7 +17,6 @@ function teardown () {
 # env folder creation #
 #######################
 @test "env folder should not be overwritten" {
-    git init "$ENV_DIR"
     cluster_path="$env_path/cluster.yaml"
     mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
     binzx/otomi bootstrap
@@ -27,7 +26,6 @@ function teardown () {
 }
 
 @test "env folder should be created after bootstrap.sh" {
-    git init "$ENV_DIR"
     binzx/otomi bootstrap
     assert_file_exist "$env_path/charts"
     assert_file_exist "$env_path/teams"
