@@ -18,7 +18,7 @@ spec:
       initContainers:
         - name: bootstrap-values
           image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }}  
           resources:
             requests:
               memory: 200Mi
@@ -53,7 +53,7 @@ spec:
               mountPath: /secret
         - name: map-values
           image: otomi/tasks:latest
-          imagePullPolicy: Always
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             requests:
               memory: 200Mi
@@ -81,7 +81,7 @@ spec:
               mountPath: /secret
         - name: push-values
           image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             requests:
               memory: 200Mi
@@ -115,7 +115,7 @@ spec:
       containers:
         - name: otomi-install
           image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             limits:
               memory: 2Gi
