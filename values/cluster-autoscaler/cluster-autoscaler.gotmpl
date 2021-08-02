@@ -11,7 +11,7 @@ image:
   tag: v1.18.2
 {{ $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}
 autoDiscovery:
-  clusterName:  {{ printf "%s-%s-%s" $v.customer.name (index $map $v.cluster.provider) $v.cluster.name }}
+  clusterName:  {{ printf "%s-%s-%s" $v.cluster.owner (index $map $v.cluster.provider) $v.cluster.name }}
 
 cloudProvider: {{ $v.cluster.provider }}
 

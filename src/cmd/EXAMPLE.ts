@@ -1,14 +1,14 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 /* Steps:
  * 1. Follow all TODO in this file
  * 2. Update src/cmd/index.ts and add:
- *      `import <fileName>Module from './<fileName>'`
- *      `export { default as <fileName> } from './<fileName>'
- *      add `<fileName>Module` to commands constant
+ *      `import <cmdName>Module from './<cmdName>'`
+ *      `export { default as <cmdName> } from './<cmdName>'
+ *      add `<cmdName>Module` to commands constant
  */
 
 // TODO: extend this interface with the HelmArguments from '../helm.opts.ts' or add the options that you define in the `builder` at the bottom
@@ -17,19 +17,18 @@ interface Arguments extends BasicArguments {
   TODO?: string
 }
 
-// TODO: Rename fileName var to name of file / otomi command
-const fileName = 'example'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -39,17 +38,17 @@ export const example = async (argv: Arguments, options?: PrepareEnvironmentOptio
   await setup(argv, options)
 
   // TODO: Write your code here
-  debug.log(fileName)
+  debug.log(cmdName)
   console.log(argv)
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: '',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await example(argv, {}) // TODO: Replace with function name
   },
 }

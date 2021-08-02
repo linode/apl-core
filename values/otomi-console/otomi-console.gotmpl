@@ -11,14 +11,33 @@
   {{- $services = append $services $s -}}
 {{- end }}
 {{- end }}
+{{- $coreApps := list -}}
+{{- range $c := $v.teamConfig.services -}}
+{{- if hasKey $core.apps $c.name -}}
+  {{- $enabled := ($v.charts | get $c.name dict) | get "enabled" true -}}
+  {{- $c := set $c "enabled" $enabled -}}
+  {{- $coreApps = append $coreApps $c -}}
+{{- end }}
+{{- end }}
 {{- $teamServices := list -}}
-{{- range $s := $v.teamConfig.services -}}
-{{- if hasKey $core.apps $s.name -}}
-  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true -}}
-  {{- $s := set $s "enabled" $enabled -}}
-  {{- $teamServices = append $teamServices $s -}}
-{{- end }}
-{{- end }}
+  {{- if hasKey $v.teamConfig "teams" -}}
+    {{- range $teamId, $team := $v.teamConfig.teams }}
+      {{- if hasKey $team "services" -}}
+        {{- range $s := $team.services -}}
+          {{- $sd := dict "teamId" $teamId -}}
+            {{- if hasKey $s "name" -}}{{ $sd = set $sd "name" $s.name }}
+              {{- if hasKey $s "type" -}}
+                {{ $sd = set $sd "ingress" (dict "type" $s.type "domain" $v.cluster.domainSuffix "subdomain" (printf "%s.team-%s" $s.name $teamId)) }}
+              {{- end }}
+            {{- end }}
+            {{- if hasKey $s "ksvc" -}}{{ $sd = set $sd "ksvc" true  }}{{- end }}
+            {{- if hasKey $s "ownHost" -}}{{ $sd = set $sd "ownHost" $s.ownHost }}{{- end }}
+            {{ $teamServices = append $teamServices $sd }}
+        {{- end }}              
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
@@ -48,10 +67,10 @@ env:
   CLUSTERS: '{{ $v.otomi | get "additionalClusters" list | toJson }}'
   CONTEXT_PATH: ''
   CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
-  CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $teamServices | toJson }}}}'
+  CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $coreApps | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
+  TEAM_SERVICES: '{{ $teamServices | toJson }}'
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
-
 
 podAnnotations:
   policy.otomi.io/ignore: "banned-image-tags,psp-allowed-users"

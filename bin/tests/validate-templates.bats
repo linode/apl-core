@@ -8,7 +8,7 @@ function setup () {
     export ENV_DIR="$test_temp_dir"
     env_path="$ENV_DIR/env"
     git init "$ENV_DIR"
-    bin/bootstrap.sh
+    binzx/otomi bootstrap
 }
 
 function teardown () {
@@ -20,6 +20,6 @@ function teardown () {
 # bin/validate-templates 
 #####
 @test "Validating templates should run successfully" {
-    run timeout 10 bin/validate-templates.sh -l name=gitea
+    run timeout 10 binzx/otomi validate-templates -l name=gitea
     assert_output --partial 'Generating k8s '
 }

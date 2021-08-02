@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 import { ask } from '../common/zx-enhance'
 
 interface Arguments extends BasicArguments {
@@ -16,18 +16,18 @@ interface Arguments extends BasicArguments {
   }
 }
 
-const fileName = 'regcred'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -53,8 +53,8 @@ export const regCred = async (argv: Arguments, options?: PrepareEnvironmentOptio
 }
 
 export const module = {
-  command: fileName,
-  describe: '',
+  command: cmdName,
+  describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({
       server: {
@@ -73,7 +73,7 @@ export const module = {
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await regCred(argv, { skipKubeContextCheck: true })
   },
 }

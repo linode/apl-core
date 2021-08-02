@@ -1,45 +1,53 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hf } from '../common/hf'
-import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'lint'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
 export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Start linting')
-  const output = await hf({
-    fileOpts: argv.file,
-    labelOpts: argv.label,
-    logLevel: LOG_LEVEL_STRING(),
-    args: ['lint', '--skip-deps'],
-  })
-  debug.verbose(output)
+  debug.info('Start linting')
+  await hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: argv.label,
+      logLevel: logLevelString(),
+      args: ['lint', '--skip-deps'],
+    },
+    {
+      trim: true,
+      streams: {
+        stdout: debug.stream.log,
+        stderr: debug.stream.error,
+      },
+    },
+  )
 }
 
 export const module = {
-  command: fileName,
-  describe: '',
+  command: cmdName,
+  describe: 'Uses helmfile lint to lint the target manifests',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await lint(argv, { skipKubeContextCheck: true })
   },
 }

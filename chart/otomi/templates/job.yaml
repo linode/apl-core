@@ -17,10 +17,8 @@ spec:
         runAsGroup: 999
       initContainers:
         - name: bootstrap-values
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          {{- with .Values.image.pullPolicy }}
-          imagePullPolicy: {{ . }}
-          {{- end }}
+          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }}  
           resources:
             requests:
               memory: 200Mi
@@ -39,7 +37,7 @@ spec:
             - name: CI
               value: '1'
             - name: OTOMI_VERSION
-              value: {{ .Values.image.tag | default .Chart.AppVersion }}
+              value: {{ .Values.otomi.version  | default .Chart.AppVersion }}
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: OTOMI_VALUES_INPUT
@@ -53,10 +51,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: map-values
-          image: {{ .Values.tasksImage.repository }}:{{ .Values.tasksImage.tag | default "latest" }}
-          {{- with .Values.image.pullPolicy }}
-          imagePullPolicy: {{ . }}
-          {{- end }}
+          image: otomi/tasks:latest
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             requests:
               memory: 200Mi
@@ -83,10 +79,8 @@ spec:
             - name: values-secret
               mountPath: /secret
         - name: push-values
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          {{- with .Values.image.pullPolicy }}
-          imagePullPolicy: {{ . }}
-          {{- end }}
+          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             requests:
               memory: 200Mi
@@ -118,10 +112,8 @@ spec:
               mountPath: /secret
       containers:
         - name: otomi-install
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-          {{- with .Values.image.pullPolicy }}
-          imagePullPolicy: {{ . }}
-          {{- end }}
+          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
           resources:
             limits:
               memory: 2Gi

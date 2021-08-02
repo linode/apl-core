@@ -1,27 +1,27 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, gucci, setParsedArgs, startingDir } from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
-const fileName = 'gen-drone'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -51,30 +51,25 @@ export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOpti
     branch,
     cluster,
     channel,
-    customer: otomi.customerName(),
+    customer: otomi.clusterOwner(),
     globalPullSecret,
     provider,
     webhook,
     pullPolicy,
   }
 
-  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
-  const quoteBackup = $.quote
-  $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${ENV.PWD}/tpl/.drone.yml.gotmpl`)
-  $.quote = quoteBackup
-  const output = processOutput.stdout
+  const output = await gucci(`${startingDir}/tpl/.drone.yml.gotmpl`, obj)
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    writeFileSync(`${ENV.DIR}/.drone.yml`, output)
-    debug.log(`gen-drone is done and the configuration is written to: ${ENV.DIR}/.drone.yml`)
+    writeFileSync(`${env.ENV_DIR}/.drone.yml`, output)
+    debug.log(`gen-drone is done and the configuration is written to: ${env.ENV_DIR}/.drone.yml`)
   }
 }
 
 export const module = {
-  command: fileName,
-  describe: '',
+  command: cmdName,
+  describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({
       'dry-run': {
@@ -86,7 +81,7 @@ export const module = {
     }),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await genDrone(argv, { skipKubeContextCheck: true })
   },
 }

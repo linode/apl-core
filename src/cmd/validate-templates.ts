@@ -5,12 +5,12 @@ import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfTemplate } from '../common/hf'
-import { ENV, readdirRecurse } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, readdirRecurse, setParsedArgs } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'validate-templates'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
@@ -21,7 +21,7 @@ let k8sVersion: string
 let vk8sVersion: string
 
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   debug.log('Cleaning')
   rmSync(schemaOutputPath, { recursive: true, force: true })
   rmSync(outputPath, { recursive: true, force: true })
@@ -29,11 +29,11 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  k8sVersion = await otomi.getK8sVersion()
+  k8sVersion = otomi.getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
@@ -156,12 +156,12 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
 
   debug.log('Validating resources')
   const quiet = argv.verbose ? '' : '--quiet'
-  debug.verbose(`Schema Output Path: ${schemaOutputPath}`)
-  debug.verbose(`Skip kinds: ${skipKinds.join(', ')}`)
-  debug.verbose(`Skip Filenames: ${skipFilenames.join(', ')}`)
-  debug.verbose(`K8S Resource Path: ${k8sResourcesPath}`)
-  debug.verbose(`Schema location: file://${schemaOutputPath}`)
-  debug.verbose(
+  debug.info(`Schema Output Path: ${schemaOutputPath}`)
+  debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
+  debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
+  debug.info(`K8S Resource Path: ${k8sResourcesPath}`)
+  debug.info(`Schema location: file://${schemaOutputPath}`)
+  debug.info(
     `Command: \`kubeval ${quiet} --skip-kinds ${skipKinds} --ignored-filename-patterns ${skipFilenames} --force-color -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}\``,
   )
   const kubevalOutput = await nothrow(
@@ -187,21 +187,22 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
       })
       return prevObj
     })
-  output.PASS?.map((_val: string) => debug.verbose(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
+  output.PASS?.map((_val: string) => debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0 || output.ERR) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
-    debug.exit(1, 'Templating FAILED')
+    debug.error('Templating FAILED')
+    process.exit(1)
   } else debug.log('Templating SUCCESS')
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Validate generated manifests against supported k8s versions/CRDs and best practices',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await validateTemplates(argv, { skipKubeContextCheck: true })
   },
 }

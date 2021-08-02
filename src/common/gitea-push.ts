@@ -1,32 +1,36 @@
 import { existsSync } from 'fs'
 import { $, cd, nothrow } from 'zx'
 import { terminal } from './debug'
+import { env } from './envalid'
 import { hfValues } from './hf'
-import { ENV } from './no-deps'
+import { waitTillAvailable } from './utils'
 
 export const giteaPush = async (): Promise<void> => {
   const debug = terminal('Gitea Push')
-  debug.verbose('Gitea push')
+  debug.info('Gitea push')
   const hfVals = await hfValues()
   if (!hfVals.charts?.gitea?.enabled) {
-    debug.verbose('Gitea is disabled')
+    debug.info('Gitea is disabled')
     return
   }
   const stage = hfVals.charts?.['cert-manager']?.stage === 'staging' ? ' -c http.sslVerify=false' : ' '
   debug.log(hfVals.cluster)
-  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.exit(1, 'cluster.domainSuffix is not set')
+  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.error('cluster.domainSuffix is not set')
+  process.exit(1)
   const giteaUrl = `gitea.${clusterDomain}`
+
+  await waitTillAvailable(giteaUrl)
+
   const giteaPassword =
-    hfVals.charts?.gitea?.adminPassword ??
-    hfVals.otomi?.adminPassword ??
-    debug.exit(1, 'otomi.adminPassword is not set')
+    hfVals.charts?.gitea?.adminPassword ?? hfVals.otomi?.adminPassword ?? debug.error('otomi.adminPassword is not set')
+  process.exit(1)
   const giteaUser = 'otomi-admin'
   const giteaOrg = 'otomi'
   const giteaRepo = 'values'
 
-  const currDir = ENV.PWD
+  const currDir = process.cwd()
 
-  cd(`${ENV.DIR}`)
+  cd(`${env.ENV_DIR}`)
   try {
     if (!existsSync('.git')) {
       await $`git init`

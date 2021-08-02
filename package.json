@@ -96,18 +96,20 @@
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
-    "husky:pre-push": "run-p husky:lint-staged lint spellcheck",
-    "lint": "TESTING=1 binzx/otomi hf lint",
-    "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml'",
-    "lint:all": "npx run-p spellcheck lint",
+    "husky:pre-push": "run-p husky:lint-staged lint:hf spellcheck",
+    "lint:hf": "TESTING=1 binzx/otomi hf lint",
+    "lint": "run-p spellcheck lint:hf lint:ts",
+    "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
+    "lint:ts": "eslint --ext ts .",
+    "lint:ts:fix": "eslint --fix --ext ts .",
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
     "score-templates": "TESTING=1 binzx/otomi score-templates",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "test": "run-s spellcheck test:bats lint validate-templates check-policies",
-    "test:bats": "TESTING=1 binzx/otomi x bats -T bin/tests",
-    "test:ci": "TESTING=1 binzx/otomi x bash -c 'bin/ci-tests.sh'",
+    "test:bats": "TESTING=1 binzx/otomi x bats -- -T bin/tests",
+    "test:ci": "TESTING=1 binzx/otomi x src/ci-tests.ts",
     "test:opa": "binzx/otomi x opa test policies -v",
     "un-release": "sh -c 'git tag -d $1 && git push origin :refs/tags/$1' sh",
     "validate-templates": "TESTING=1 binzx/otomi validate-templates",
@@ -119,7 +121,7 @@
     }
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=15.0.0"
   },
   "type": "module",
   "version": "0.13.11"

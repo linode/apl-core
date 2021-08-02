@@ -229,13 +229,16 @@ definitions:
         $ref: '#/definitions/k8sVersion'
       name:
         type: string
+      owner:
+        $ref: '#/definitions/idName'
+        description: The name of the organization owning the cluster.
       provider:
         type: string
         enum:
           - aws
           - azure
           - google
-          - oneprem
+          - onprem
       region:
         description: Dependent on provider.
         examples:
@@ -247,7 +250,9 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         type: string
     required:
+      - k8sVersion
       - name
+      - owner
       - provider
   containerSpec:
     additionalProperties: false
@@ -907,10 +912,6 @@ definitions:
 properties:
   alerts:
     $ref: '#/definitions/alerts'
-  apps:
-    description: The list of otomi apps that are shown in the console.
-    type: object
-    properties: {}
   azure:
     description: Azure specific configuration.
     properties:
@@ -1849,11 +1850,6 @@ properties:
             default: false
   cluster:
     $ref: '#/definitions/cluster'
-  customer:
-    additionalProperties: false
-    properties:
-      name:
-        type: string
   dns:
     additionalProperties: false
     properties:
@@ -1936,24 +1932,6 @@ properties:
       - provider
   home:
     $ref: '#/definitions/alerts'
-  k8s:
-    additionalProperties: false
-    properties:
-      namespaces:
-        items:
-          additionalProperties: false
-          properties:
-            disableIstioInjection:
-              type: boolean
-            disablePolicyChecks:
-              type: boolean
-            name:
-              type: string
-          required:
-            - name
-        type: array
-    required:
-      - namespaces
   kms:
     additionalProperties: false
     properties:
@@ -2365,10 +2343,6 @@ properties:
                   type: string
                 user:
                   type: string
-  services:
-    items:
-      $ref: '#/definitions/service'
-    type: array
   smtp:
     additionalProperties: false
     properties:
@@ -2392,24 +2366,16 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
-  sops:
-    description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:
     additionalProperties: false
     properties:
-      services:
-        description: An internal otomi object (do not edit it).
-        type: array
       teams:
         additionalProperties: false
         patternProperties:
           ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$:
             $ref: '#/definitions/team'
 required:
-  - alerts
   - cluster
-  - customer
   - oidc
   - otomi
   - teamConfig
-  - services

@@ -1,51 +1,49 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfStream } from '../common/hf'
-import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { decrypt } from './decrypt'
+import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'sync'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
 export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  await decrypt(argv)
-  debug.verbose('Start sync')
-  const skipCleanup = argv['skip-cleanup'] ? '--skip-cleanup' : ''
+  debug.info('Start sync')
+  const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hfStream(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
-      logLevel: LOG_LEVEL_STRING(),
+      logLevel: logLevelString(),
       args: ['sync', '--skip-deps', skipCleanup],
     },
     { trim: true, streams: { stdout: debug.stream.log } },
   )
-  // debug.verbose(output)
+  // debug.info(output)
 }
 
 export const module = {
-  command: fileName,
-  describe: 'Sync k8s resources',
+  command: cmdName,
+  describe: 'Sync all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await sync(argv, {})
   },
 }

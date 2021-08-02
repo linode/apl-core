@@ -24,7 +24,7 @@ npm run compile:watch &
 
 | Done? | Command                                                      |
 | :---: | ------------------------------------------------------------ |
-|  ❓   | apply                                                        |
+|  ✅   | apply                                                        |
 |  ✅   | bash                                                         |
 |  🟥   | bats // Do we even need BATS? If we have JS? Probably not... |
 |  ✅   | bootstrap                                                    |
@@ -32,7 +32,7 @@ npm run compile:watch &
 |  ✅   | commit                                                       |
 |  🟥   | console as otomiConsole                                      |
 |  ✅   | decrypt                                                      |
-|  ❓   | destroy                                                      |
+|  ✅   | destroy                                                      |
 |  ✅   | diff                                                         |
 |  ✅   | encrypt                                                      |
 |  ✅   | genDrone                                                     |
@@ -62,9 +62,9 @@ npm run compile:watch &
 |  ⬜   | bin/build-constraints.sh           |
 |  ⬜   | bin/check-console.sh               |
 |  ✅   | bin/check-policies.sh              |
-|  ⬜   | bin/ci-test.sh                     |
+|  ✅   | bin/ci-test.sh                     |
 |  🟥   | bin/colors.sh #Using chalk package |
-|  ⬜   | bin/common-modules.sh              |
+|  ✅   | bin/common-modules.sh              |
 |  ✅   | bin/common.sh                      |
 |  ⬜   | bin/create-pull-keys.sh            |
 |  ✅   | bin/crypt.sh                       |
@@ -82,7 +82,7 @@ npm run compile:watch &
 |  ✅   | bin/serve-handler.sh               |
 |  ✅   | bin/server.sh                      |
 |  ⬜   | bin/skeleton-chart.sh              |
-|  ⬜   | bin/test.sh                        |
+|  ✅   | bin/test.sh                        |
 |  ✅   | bin/validate-templates.sh          |
 |  ✅   | bin/validate-values                |
 |       |                                    |

@@ -55,6 +55,7 @@ rules:
   func-names: 'off'
   import/no-extraneous-dependencies: off
   import/extensions: off
+  import/prefer-default-export: off
   eol-last: ['error', 'always']
   no-shadow: 'off'
   no-unused-vars: error

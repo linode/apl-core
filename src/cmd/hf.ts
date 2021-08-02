@@ -1,26 +1,27 @@
 import { Argv } from 'yargs'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
+import { env } from '../common/envalid'
 import { hfStream } from '../common/hf'
-import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
 interface Arguments extends HelmArgs {
   args?: string[]
 }
 
-const fileName = 'hf'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -32,24 +33,25 @@ export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): 
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
-        logLevel: LOG_LEVEL_STRING(),
+        logLevel: logLevelString(),
         args: argv.args ?? [],
       },
       { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   } catch (error) {
-    debug.exit(1, error)
+    debug.error(error.stderr)
+    process.exit(1)
   }
 }
 
 export const module = {
-  command: `${fileName} [args..]`,
-  describe: '',
+  command: `${cmdName} [args..]`,
+  describe: undefined,
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
-    await hf(argv, { skipKubeContextCheck: ENV.isTESTING })
+    setParsedArgs(argv)
+    await hf(argv, { skipKubeContextCheck: env.TESTING })
   },
 }
 

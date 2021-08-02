@@ -27,6 +27,11 @@ ARG CONFTEST_VERSION=0.25.0
 # https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.12.1
 
+ARG NODE_VERSION=16
+
+#https://github.com/homeport/dyff
+ARG DYFF_VERSION=1.4.3
+
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
 # https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
@@ -132,8 +137,12 @@ RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && m
 ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
 RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
-# node lts
-RUN curl -sL https://deb.nodesource.com/setup_current.x | bash -
+#dyff 
+ADD https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/dyff_${DYFF_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/dyff dyff
+
+# node
+RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 

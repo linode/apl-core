@@ -1,89 +1,164 @@
 import { EventEmitter } from 'events'
-import { existsSync, writeFileSync } from 'fs'
-import { $, cd, nothrow, ProcessOutput } from 'zx'
+import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
+import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
-import { BasicArguments, ENV, parser, readdirRecurse } from './no-deps'
+import { env, getEnv } from './envalid'
 import { evaluateSecrets } from './secrets'
+import { currDir, readdirRecurse } from './utils'
 
 EventEmitter.defaultMaxListeners = 20
 
-let term: OtomiDebugger
+let debug: OtomiDebugger
 
-enum CRYPT_TYPE {
-  ENCRYPT = 'enc', // 'sops -e',
-  DECRYPT = 'dec', // 'sops --input-type=yaml --output-type yaml -d $1',
+enum CryptType {
+  ENCRYPT = 'helm secrets enc',
+  DECRYPT = 'helm secrets dec',
+  ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
 
 const preCrypt = async (): Promise<void> => {
-  term.verbose('Pre Crypt')
+  debug.info('Checking prerequisites for the (de,en)crypt action')
   await evaluateSecrets()
-  if (process.env.GCLOUD_SERVICE_KEY) {
-    term.verbose('Writing GOOGLE_APPLICATION_CREDENTIAL')
+  const secretEnv = getEnv()
+  if (secretEnv.GCLOUD_SERVICE_KEY) {
+    debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, process.env.GCLOUD_SERVICE_KEY.trim())
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(secretEnv.GCLOUD_SERVICE_KEY, null, 2))
   }
 }
 
-const postCrypt = (): void => {
-  term.verbose('Post Crypt')
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = undefined
+const getAllSecretFiles = async () => {
+  const files = await readdirRecurse(env.ENV_DIR, { skipHidden: true })
+  return files
+    .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
+    .map((file) => file.replace(env.ENV_DIR, '.'))
+    .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
 }
 
-const runOnSecretFiles = async (cmd: string[], filesArgs?: string[]): Promise<ProcessOutput[] | undefined> => {
-  const currDir = ENV.PWD
-  let files: string[] = filesArgs ?? []
-  cd(`${ENV.DIR}`)
+type CR = {
+  condition?: (path: string, file: string) => boolean
+  cmd: CryptType
+  post?: (result: ProcessOutput, path: string, file: string) => void
+}
+
+const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
+  const currDirVal = await currDir()
+  let files: string[] = filesArgs
+  cd(env.ENV_DIR)
 
   if (files.length === 0) {
-    files = await readdirRecurse(`${ENV.DIR}/env`)
-    files = files
-      .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-      .map((file) => file.replace(ENV.DIR, '.'))
-    files = files.filter((file) => existsSync(`${ENV.DIR}/${file}`))
+    files = await getAllSecretFiles()
   }
   await preCrypt()
-
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   EventEmitter.defaultMaxListeners = files.length + 5
   try {
-    const commands = files.map(async (file) => nothrow($`${cmd} ${file}`))
-    const results = await Promise.all(commands)
-    results.filter((res) => res.exitCode !== 0).map((val) => term.warn(val))
+    const commands = files.map(async (file) => {
+      if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
+        debug.debug(`${crypt.cmd} ${file}`)
+        const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
+        if (crypt.post) crypt.post(result, env.ENV_DIR, file)
+        return result
+      }
+      return undefined
+    })
+    const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
+    results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
     return results
   } catch (error) {
-    term.error(error)
+    debug.error(error)
     return undefined
   } finally {
-    cd(currDir)
-    postCrypt()
+    cd(currDirVal)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
   }
 }
 
-const crypt = async (type: CRYPT_TYPE, ...files: string[]): Promise<ProcessOutput[] | void> => {
-  const helmArgs = ['helm', 'secrets', type]
-  const res = (await runOnSecretFiles(helmArgs, files))?.map((result) => result.stdout.trim())
-  term.verbose(`Running crypt type ${type}`)
-  res?.map((result) => term.debug(result))
+const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
+  if (res.exitCode !== 0) return
+  const absFilePath = `${path}/${file}`
+  if (!existsSync(`${absFilePath}.dec`)) return
+
+  const encTS = statSync(absFilePath)
+  const decTS = statSync(`${absFilePath}.dec`)
+  utimesSync(`${absFilePath}.dec`, decTS.atime, encTS.mtime)
+  const encSec = Math.round(encTS.mtimeMs / 1000)
+  const decSec = Math.round(decTS.mtimeMs / 1000)
+  debug.debug(`Updating timestamp for ${absFilePath}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'decrypt'
-  term = terminal(namespace)
-  await crypt(CRYPT_TYPE.DECRYPT, ...files)
+  debug = terminal(namespace)
+  debug.info('Starting decryption')
+
+  await runOnSecretFiles(
+    {
+      cmd: CryptType.DECRYPT,
+      post: (r, p, f) => {
+        debug.debug(r.stdout.trim())
+        matchTimestamps(r, p, f)
+      },
+    },
+    files,
+  )
+
+  debug.info('Decryption is done')
 }
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
-  term = terminal(namespace)
-  await crypt(CRYPT_TYPE.ENCRYPT, ...files)
+  debug = terminal(namespace)
+  debug.info('Starting encryption')
+  let encFiles = files
+
+  if (encFiles.length === 0) encFiles = await getAllSecretFiles()
+  await runOnSecretFiles(
+    {
+      condition: (path: string, file: string): boolean => {
+        const absFilePath = `${path}/${file}`
+
+        const encExists = existsSync(absFilePath)
+        const decExists = existsSync(`${absFilePath}.dec`)
+        if (encExists !== decExists) return true
+        if (!encExists || !decExists) return false
+
+        // if there is a .dec && .dec is > 1s newer
+        debug.debug(`Found decrypted ${file}.dec`)
+
+        const encTS = statSync(absFilePath)
+        const decTS = statSync(`${absFilePath}.dec`)
+
+        const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
+        if (timeDiff > 1) {
+          debug.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
+          return true
+        }
+        debug.info(`Skipping encryption for ${file} as it has not changed`)
+        return false
+      },
+      cmd: CryptType.ENCRYPT,
+      post: (r, p, f) => {
+        debug.debug(r.stdout.trim())
+        matchTimestamps(r, p, f)
+      },
+    },
+    files,
+  )
+
+  debug.info('Encryption is done')
 }
 
 export const rotate = async (): Promise<void> => {
   const namespace = 'rotate'
-  term = terminal(namespace)
-  const verboseArg = (parser.argv as BasicArguments).verbose >= 1 ? ['--verbose'] : []
-  const sopsArgs = ['sops', ...verboseArg, '--input-type=yaml', '--output-type=yaml', '-i', '-r']
-
-  const res = (await runOnSecretFiles(sopsArgs))?.map((result) => result.stderr)
-  if (verboseArg.length > 0) res?.map((result) => term.verbose(result))
+  debug = terminal(namespace)
+  await runOnSecretFiles({
+    cmd: CryptType.ROTATE,
+    post: (result: ProcessOutput, path: string, file: string) => {
+      if (result.exitCode === 0) {
+        debug.info(`Rotating sops key for '${chalk.italic(file)}' ${chalk.greenBright('succeeded')}`)
+      } else {
+        debug.warn(`Rotating sops key for '${chalk.italic(file)}' ${chalk.redBright('failed')}`)
+      }
+    },
+  })
 }

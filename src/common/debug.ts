@@ -1,12 +1,7 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
-import { bool, cleanEnv } from 'envalid'
 import { Writable, WritableOptions } from 'stream'
-import { ENV, LOG_LEVEL, LOG_LEVELS } from './no-deps'
-
-const cleanedEnv = cleanEnv(process.env, {
-  STATIC_COLORS: bool({ default: false }),
-})
-const SET_STATIC_COLORS = cleanedEnv.STATIC_COLORS
+import { env } from './envalid'
+import { logLevel, logLevels } from './utils'
 
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
@@ -31,7 +26,7 @@ export type OtomiStreamDebugger = {
   log: DebugStream
   trace: DebugStream
   debug: DebugStream
-  verbose: DebugStream
+  info: DebugStream
   warn: DebugStream
   error: DebugStream
 }
@@ -41,11 +36,10 @@ export type OtomiDebugger = {
   log: DebuggerType
   trace: DebuggerType
   debug: DebuggerType
-  verbose: DebuggerType
+  info: DebuggerType
   warn: DebuggerType
   error: DebuggerType
   stream: OtomiStreamDebugger
-  exit: (exitCode: number, ...args: any[]) => void
 }
 
 const xtermColors = {
@@ -55,7 +49,7 @@ const xtermColors = {
 }
 const setColor = (term: DebuggerType, color: number[]) => {
   // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
-  if (!('namespace' in term && SET_STATIC_COLORS)) return
+  if (!('namespace' in term && env.STATIC_COLORS)) return
   const terminal: DebugDebugger = term
   const colons = (terminal.namespace.match(/:/g) || ['']).length - 1
   terminal.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
@@ -67,7 +61,7 @@ const setColor = (term: DebuggerType, color: number[]) => {
 export function terminal(namespace: string): OtomiDebugger
 export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
   const newDebug = (baseNamespace: string, enabled = true, cons = console.log): DebuggerType => {
-    if (ENV.inTerminal) {
+    if (env.OTOMI_IN_TERMINAL) {
       const newDebugObj: DebugDebugger = commonDebug.extend(baseNamespace)
       newDebugObj.enabled = enabled
       return newDebugObj
@@ -80,21 +74,16 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
     }
   }
   const base = newDebug(`${namespace}`, terminalEnabled)
-  const log = newDebug(`${namespace}:log`, terminalEnabled)
-  const trace = newDebug(`${namespace}:trace`, LOG_LEVEL() >= LOG_LEVELS.TRACE && terminalEnabled)
-  const debug = newDebug(`${namespace}:debug`, LOG_LEVEL() >= LOG_LEVELS.DEBUG && terminalEnabled)
-  const verbose = newDebug(`${namespace}:verbose`, LOG_LEVEL() >= LOG_LEVELS.VERBOSE && terminalEnabled)
-  const warn = newDebug(`${namespace}:warn`, LOG_LEVEL() >= LOG_LEVELS.WARN && terminalEnabled, console.warn)
-  const error = newDebug(`${namespace}:error`, LOG_LEVEL() >= LOG_LEVELS.ERROR && terminalEnabled, console.error)
-  const exit = (exitCode: number, ...args: any[]) => {
-    const exitDebug = newDebug(`${namespace}:crit`, terminalEnabled, console.error)
-    setColor(exitDebug, xtermColors.red)
-    args.map((arg) => exitDebug('', arg))
-    process.exit(exitCode)
-  }
+  const log = newDebug(`${namespace}:log`, true)
+  const error = newDebug(`${namespace}:error`, true, console.error)
+  const trace = newDebug(`${namespace}:trace`, logLevel() >= logLevels.TRACE && terminalEnabled)
+  const debug = newDebug(`${namespace}:debug`, logLevel() >= logLevels.DEBUG && terminalEnabled)
+  const info = newDebug(`${namespace}:info`, logLevel() >= logLevels.INFO && terminalEnabled)
+  const warn = newDebug(`${namespace}:warn`, logLevel() >= logLevels.WARN && terminalEnabled, console.warn)
+
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
-  setColor(verbose, xtermColors.green)
+  setColor(info, xtermColors.green)
 
   const newDebugger: OtomiDebugger = {
     enabled: terminalEnabled ?? true,
@@ -102,15 +91,14 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
     log,
     trace,
     debug,
-    verbose,
+    info,
     warn,
     error,
-    exit,
     stream: {
       log: new DebugStream(log),
       trace: new DebugStream(trace),
       debug: new DebugStream(debug),
-      verbose: new DebugStream(verbose),
+      info: new DebugStream(info),
       warn: new DebugStream(warn),
       error: new DebugStream(error),
     },

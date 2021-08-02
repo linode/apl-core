@@ -2,56 +2,64 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hfValues } from '../common/hf'
-import { ENV, loadYaml } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const fileName = 'validate-values'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
+
+const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
 
 export const validateValues = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Values validation STARTED')
+  debug.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
-    debug.exit(1, `Cannot pass option '${labelOpts}'`)
+    debug.error(`Cannot pass option '${labelOpts}'`)
+    process.exit(1)
   }
 
-  debug.verbose('Getting values')
+  debug.info('Getting values')
   const hfVal = await hfValues()
 
+  // eslint-disable-next-line no-restricted-syntax
+  for (const internalPath of internalPaths) {
+    deletePropertyPath(hfVal, internalPath)
+  }
+
   try {
-    debug.verbose('Loading values-schema.yaml')
+    debug.info('Loading values-schema.yaml')
     const valuesSchema = loadYaml('./values-schema.yaml')
-    debug.verbose('Initializing Ajv')
+    debug.debug('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
-    debug.verbose('Compiling Ajv validation')
+    debug.debug('Compiling Ajv validation')
     let validate: ValidateFunction<unknown>
     try {
       validate = ajv.compile(valuesSchema)
     } catch (error) {
-      debug.exit(1, `Schema is invalid: ${chalk.italic(error.message)}`)
-      return
+      debug.error(`Schema is invalid: ${chalk.italic(error.message)}`)
+      process.exit(1)
     }
-    debug.verbose(`Validating values`)
+    debug.info(`Validating values`)
     const val = validate(hfVal)
     if (val) {
-      debug.verbose('Values validation SUCCESSFUL')
+      debug.log('Values validation SUCCESSFUL')
     } else {
       validate.errors?.map((error: DefinedError) =>
         debug.error('%O', {
@@ -62,20 +70,22 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
           message: error.message,
         }),
       )
-      debug.exit(1, 'Values validation FAILED')
+      debug.error('Values validation FAILED')
+      process.exit(1)
     }
   } catch (error) {
-    debug.exit(1, error.message)
+    debug.error(error.message)
+    process.exit(1)
   }
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Validate values for each cluster against JSON schema (takes target options)',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await validateValues(argv, { skipKubeContextCheck: true })
   },
 }

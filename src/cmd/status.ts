@@ -1,20 +1,20 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { BasicArguments, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 type Arguments = BasicArguments
 
-const fileName = 'status'
+const cmdName = getFilename(import.meta.url)
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -27,12 +27,12 @@ export const status = async (argv: Arguments, options?: PrepareEnvironmentOption
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   describe: 'Show cluster status',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await status(argv, {})
   },
 }

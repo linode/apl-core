@@ -2,28 +2,26 @@ import { unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments, helmOptions } from '../common/helm-opts'
 import { hf, hfStream } from '../common/hf'
-import { ENV, LOG_LEVEL_STRING } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { decrypt } from './decrypt'
 
-const fileName = 'destroy'
+const cmdName = getFilename(import.meta.url)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
 let debug: OtomiDebugger
 
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
   unlinkSync(templateFile)
 }
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  await decrypt(argv)
 }
 
 const destroyAll = async () => {
@@ -32,7 +30,8 @@ const destroyAll = async () => {
 
   const output: ProcessOutputTrimmed = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
   if (output.exitCode > 0) {
-    debug.exit(output.exitCode, output.stderr)
+    debug.error(output.stderr)
+    process.exit(output.exitCode)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }
@@ -65,7 +64,7 @@ const destroyAll = async () => {
 
 export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Start destroy')
+  debug.info('Start destroy')
   if (!argv.label && !argv.file) {
     destroyAll()
   } else {
@@ -73,22 +72,22 @@ export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptio
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
-        logLevel: LOG_LEVEL_STRING(),
+        logLevel: logLevelString(),
         args: 'destroy',
       },
-      { trim: true, streams: { stdout: debug.stream.log } },
+      { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   }
 }
 
 export const module = {
-  command: fileName,
-  describe: 'Destroy all or some charts',
+  command: cmdName,
+  describe: 'Destroy all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
-    await destroy(argv, { skipDecrypt: true })
+    setParsedArgs(argv)
+    await destroy(argv, {})
   },
 }
 

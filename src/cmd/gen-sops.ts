@@ -1,16 +1,16 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, chalk, nothrow } from 'zx'
+import { chalk } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
+import { env } from '../common/envalid'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { askYesNo } from '../common/zx-enhance'
+import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
-const fileName = 'gen-sops'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 const providerMap = {
@@ -22,13 +22,13 @@ const providerMap = {
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
 }
@@ -36,19 +36,15 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, { ...options, skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
 
-  const settingsFile = `${ENV.DIR}/env/settings.yaml`
+  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile)
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
 
-  const targetPath = `${ENV.DIR}/.sops.yaml`
-  if (existsSync(targetPath)) {
-    const overwrite = await askYesNo(`${targetPath} already exists, do you want to overwrite?`, { defaultYes: false })
-    if (!overwrite) return
-  }
-  const templatePath = `${ENV.PWD}/tpl/.sops.yaml.gotmpl`
-  const kmsProvider = providerMap[provider]
-  const kmsKeys = settingsVals.kms.sops[provider].keys
+  const targetPath = `${env.ENV_DIR}/.sops.yaml`
+  const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
+  const kmsProvider = providerMap[provider] as string
+  const kmsKeys = settingsVals.kms.sops[provider].keys as string
 
   const obj = {
     provider: kmsProvider,
@@ -56,12 +52,8 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   }
 
   debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
-  const gucciArgs = Object.entries(obj).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
-  const quoteBackup = $.quote
-  $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${templatePath}`)
-  $.quote = quoteBackup
-  const output = processOutput.stdout
+
+  const output = await gucci(templatePath, obj)
   if (argv.dryRun) {
     debug.log(output)
   } else {
@@ -69,16 +61,16 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
     debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
   }
 
-  if (!ENV.isCI) {
-    if (!existsSync(`${ENV.DIR}/.secrets`)) {
-      debug.error(`Expecting ${ENV.DIR}/.secrets to exist and hold credentials for SOPS`)
+  if (!env.CI) {
+    if (!existsSync(`${env.ENV_DIR}/.secrets`)) {
+      debug.error(`Expecting ${env.ENV_DIR}/.secrets to exist and hold credentials for SOPS`)
       return
     }
   }
   if (provider === 'google') {
-    if (process.env.GCLOUD_SERVICE_KEY) {
+    if (env.GCLOUD_SERVICE_KEY) {
       debug.log('Creating gcp-key.json for vscode.')
-      writeFileSync(`${ENV.DIR}/gcp-key.json`, JSON.stringify(JSON.parse(process.env.GCLOUD_SERVICE_KEY), null, 2))
+      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }
@@ -86,8 +78,8 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
 }
 
 export const module = {
-  command: fileName,
-  describe: '',
+  command: cmdName,
+  describe: undefined,
   builder: (parser: Argv): Argv =>
     parser.options({
       'dry-run': {
@@ -99,11 +91,12 @@ export const module = {
     }),
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     try {
-      await genSops(argv, {})
+      await genSops(argv, { skipKubeContextCheck: true })
     } catch (error) {
-      debug.exit(0, error.message)
+      debug.error(error.message)
+      process.exit(0)
     }
   },
 }

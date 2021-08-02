@@ -20,8 +20,6 @@ charts:
         enabled: true
     httpbin:
         enabled: true
-customer:
-    name: demo
 dns:
     zones: []
     provider:

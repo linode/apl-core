@@ -1,71 +1,110 @@
 import { Argv } from 'yargs'
-import { $ } from 'zx'
+import { $, cd, nothrow } from 'zx'
+import { encrypt } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { Arguments as HelmArgs, helmOptions } from '../common/helm-opts'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { capitalize, ENV } from '../common/no-deps'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { capitalize, getFilename, setParsedArgs } from '../common/utils'
+import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
-const fileName = 'commit'
+const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
 /* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
-  if (argv['skip-cleanup']) return
+  if (argv.skipCleanup) return
 }
 /* eslint-enable no-useless-return */
 
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === fileName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(fileName)
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 
   if (options) await otomi.prepareEnvironment(options)
-  otomi.closeIfInCore(fileName)
+  otomi.exitIfInCore(cmdName)
 }
 
 export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
-  pcDebug.verbose('Check for cluster diffs')
-  const settingsDiff = (await $`git -C ${ENV.DIR} diff env/settings.yaml`).stdout.trim()
-  const secretDiff = (await $`git -C ${ENV.DIR} diff env/secrets.settings.yaml`).stdout.trim()
+  pcDebug.info('Check for cluster diffs')
+  await nothrow($`git config diff.sopsdiffer.textconv "sops -d"`)
+  const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
+  const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
   const versionChanges = settingsDiff.includes('+    version:')
-  const secretChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
-  if (versionChanges || secretChanges) await genDrone(argv)
+  const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
+  const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
+  const secretMsTeamsHighPrioChanges = secretDiff.includes('+        highPrio: https://')
+  if (versionChanges || secretSlackChanges || secretMsTeamsLowPrioChanges || secretMsTeamsHighPrioChanges)
+    await genDrone(argv)
 }
 
 export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.verbose('Pulling latest values')
-  await $`git -C ${ENV.DIR} pull`
+
   await validateValues(argv)
 
-  debug.verbose('Preparing values')
+  debug.info('Preparing values')
+
+  const currDir = process.cwd()
+  cd(env.ENV_DIR)
+
   const vals = await hfValues()
-  const customerName = vals.customer?.name ?? 'otomi'
+  const ownerName = vals.cluster?.owner ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
-  await $`git -C ${ENV.DIR} config --local user.name || git -C ${ENV.DIR} config --local user.name ${capitalize(
-    customerName,
-  )}`
-  await $`git -C ${ENV.DIR} config --local user.email || git -C ${ENV.DIR} config --local user.email ${customerName}@${clusterDomain}`
+
+  try {
+    await $`git config --local user.name`
+  } catch (error) {
+    await $`git config --local user.name ${capitalize(ownerName)}`
+  }
+  try {
+    await $`git config --local user.email`
+  } catch (error) {
+    await $`git config --local user.email ${ownerName}@${clusterDomain}`
+  }
 
   preCommit(argv)
-  debug.verbose('Do commit')
-  await $`git -C ${ENV.DIR} add . && git -C ${ENV.DIR} commit -m 'Manual commit' --no-verify`
+  await encrypt()
+  debug.info('Do commit')
+  await $`git add .`
+  await $`git commit -m 'Manual commit' --no-verify`
+
+  debug.info('Pulling latest values')
+  try {
+    await $`git pull`
+  } catch (error) {
+    debug.error(
+      `When trying to pull from ${clusterDomain} merge conflicts occured\nPlease resolve these and run \`otomi commit\` again.`,
+    )
+    process.exit(1)
+  }
+  try {
+    await $`git remote show origin`
+    await $`git push origin main`
+    debug.log('Sucessfully pushed the updated values')
+  } catch (error) {
+    debug.error(error.stderr)
+    debug.error('Pushing the values failed, please read the above error message and manually try again')
+    process.exit(1)
+  } finally {
+    cd(currDir)
+  }
 }
 
 export const module = {
-  command: fileName,
+  command: cmdName,
   // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
   describe: 'Execute wrapper for generate pipelines -> git commit changed files',
-  builder: (parser: Argv): Argv => helmOptions(parser),
+  builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv)
     await commit(argv, { skipKubeContextCheck: true })
   },
 }

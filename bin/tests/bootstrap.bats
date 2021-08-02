@@ -17,18 +17,16 @@ function teardown () {
 # env folder creation #
 #######################
 @test "env folder should not be overwritten" {
-    git init "$ENV_DIR"
     cluster_path="$env_path/cluster.yaml"
     mkdir -p "$env_path" && touch $cluster_path && echo "clouds: please-do-not-remove" > $cluster_path
-    bin/otomi bootstrap -t
+    binzx/otomi bootstrap
 
     assert_file_not_exist "$env_path/charts"
     assert_file_not_exist "$env_path/teams"
 }
 
 @test "env folder should be created after bootstrap.sh" {
-    git init "$ENV_DIR"
-    bin/bootstrap.sh
+    binzx/otomi bootstrap
     assert_file_exist "$env_path/charts"
     assert_file_exist "$env_path/teams"
 }
@@ -38,20 +36,20 @@ function teardown () {
 ################
 @test "bootstrap.sh should pass with new ENV_DIR (otomi-values) folder" {
     git init "$ENV_DIR"
-    run bin/bootstrap.sh
+    binzx/otomi bootstrap
     assert_success
 }
 
 @test "bootstrap.sh multiple times should pass with new ENV_DIR (otomi-values)" {
     git init "$test_temp_dir"
-    bin/bootstrap.sh
-    run bin/bootstrap.sh
+    binzx/otomi bootstrap
+    binzx/otomi bootstrap
     assert_success
 }
 
 @test "bootstrap.sh creates a valid loose schema" {
     git init "$ENV_DIR"
-    run bin/bootstrap.sh
+    binzx/otomi bootstrap
     assert_success
     assert_file_exist "$ENV_DIR/.vscode/values-schema.yaml"
 
