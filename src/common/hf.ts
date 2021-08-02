@@ -2,7 +2,7 @@ import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
-import { asArray, LOG_LEVELS } from './utils'
+import { asArray, logLevels } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -25,11 +25,11 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   paramsCopy.logLevel ??= 'warn'
 
   // Only ERROR, WARN, INFO or DEBUG are allowed, map other to closest neighbor
-  switch (LOG_LEVELS[paramsCopy.logLevel.toUpperCase()]) {
-    case LOG_LEVELS.FATAL:
+  switch (logLevels[paramsCopy.logLevel.toUpperCase()]) {
+    case logLevels.FATAL:
       paramsCopy.logLevel = 'error'
       break
-    case LOG_LEVELS.TRACE:
+    case logLevels.TRACE:
       paramsCopy.logLevel = 'debug'
       break
     default:

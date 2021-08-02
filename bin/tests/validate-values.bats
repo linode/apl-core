@@ -17,6 +17,6 @@ function teardown () {
 }
 
 @test "Validating values should run successfully" {
-    eval "run timeout 5 bin/validate-values.sh"
+    eval "run timeout 5 binzx/otomi validate-values"
     assert_output --partial "/tmp/otomi/values/values.yaml passed test"
 }

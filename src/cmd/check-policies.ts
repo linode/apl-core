@@ -5,7 +5,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, loadYaml, logLevel, LOG_LEVELS, setParsedArgs } from '../common/utils'
+import { getFilename, loadYaml, logLevel, logLevels, setParsedArgs } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -39,7 +39,7 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
   debug.debug(template)
 
   const extraArgs: string[] = []
-  if (logLevel() === LOG_LEVELS.TRACE) extraArgs.push('--trace')
+  if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
   if (env.CI) extraArgs.push('--no-color')
 
   debug.info('Checking manifest against policies')
