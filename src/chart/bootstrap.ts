@@ -6,8 +6,9 @@ import { $, cd } from 'zx'
 import { bootstrap as bootstrapFunc } from '../cmd/bootstrap'
 import { decrypt } from '../cmd/decrypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { BasicArguments, ENV, loadYaml } from '../common/no-deps'
+import { env } from '../common/envalid'
 import { cleanupHandler } from '../common/setup'
+import { BasicArguments, currDir, loadYaml, setParsedArgs } from '../common/utils'
 import { stream } from '../common/zx-enhance'
 import { getFilename } from './common'
 
@@ -41,15 +42,17 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
   const byor = !!chartValues?.charts?.['otomi-api']?.git
   if (!clusterDomain) throw new Error('cluster.domainSuffix was not set')
 
-  if (!giteaEnabled && !byor) debug.exit(1, 'Gitea was disabled but no charts.otomi-api.git config was given.')
-
-  if (!ENV.PWD.startsWith('/home/app/stack')) {
-    rmSync(`${ENV.DIR}/.git`, { recursive: true, force: true })
-    rmSync(`${ENV.DIR}/.vscode`, { recursive: true, force: true })
-    rmSync(`${ENV.DIR}/*`, { recursive: true, force: true })
+  if (!giteaEnabled && !byor) {
+    debug.error('Gitea was disabled but no charts.otomi-api.git config was given.')
+    process.exit(1)
   }
-  const currDir = ENV.PWD
-  cd(ENV.DIR)
+  const currDirVar = await currDir()
+  if (!currDirVar.startsWith('/home/app/stack')) {
+    rmSync(`${env.ENV_DIR}/.git`, { recursive: true, force: true })
+    rmSync(`${env.ENV_DIR}/.vscode`, { recursive: true, force: true })
+    rmSync(`${env.ENV_DIR}/*`, { recursive: true, force: true })
+  }
+  cd(env.ENV_DIR)
   let username = 'Otomi Admin'
   let email = `otomi-admin@${clusterDomain}`
   let password = ''
@@ -76,19 +79,19 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     $`git config user.email "${email}"`,
     $`git remote add origin "${remote}"`,
   ])
-  debug.verbose('Trying to do a git pull')
-  await stream($`git checkout -b ${branch}`, { stdout: debug.stream.verbose, stderr: debug.stream.error })
-  await stream($`git pull origin ${branch}`, { stdout: debug.stream.verbose, stderr: debug.stream.error })
-  cd(currDir)
+  debug.info('Trying to do a git pull')
+  await stream($`git checkout -b ${branch}`, { stdout: debug.stream.info, stderr: debug.stream.error })
+  await stream($`git pull origin ${branch}`, { stdout: debug.stream.info, stderr: debug.stream.error })
+  cd(currDirVar)
 
   await bootstrapFunc(argv)
 
-  if (existsSync(`${ENV.DIR}/.sops.yaml`)) {
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     await decrypt(argv, {})
   }
-  copyFileSync('./value-schema.yaml', `${ENV.DIR}/value-schema.yaml`)
+  copyFileSync('./value-schema.yaml', `${env.ENV_DIR}/value-schema.yaml`)
 
-  await $`chmod a+w -R ${ENV.DIR}/env`
+  await $`chmod a+w -R ${env.ENV_DIR}/env`
   debug.log(`Done Bootstrapping`)
 }
 
@@ -97,11 +100,12 @@ export const module = {
   describe: 'Bootstrap values using the chart',
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
-    ENV.PARSED_ARGS = argv
+    setParsedArgs(argv as BasicArguments)
     try {
       await bootstrap(argv)
     } catch (error) {
-      debug.exit(1, error)
+      debug.error(error)
+      process.exit(1)
     }
   },
 }
