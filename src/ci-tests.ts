@@ -10,6 +10,7 @@ import { OtomiDebugger, terminal } from './common/debug'
 import { cleanupHandler } from './common/setup'
 import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
+import { source } from './common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
@@ -27,8 +28,6 @@ const cleanup = (argv: Arguments): void => {
 
 const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  process.env.AZURE_CLIENT_ID = 'somevalue'
-  process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
 export const ciTests = async (argv: Arguments): Promise<void> => {
@@ -36,7 +35,7 @@ export const ciTests = async (argv: Arguments): Promise<void> => {
   setup(args)
   if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
   debug.log(`Validating ${`${startingDir}/env`} values`)
-
+  await source(`${startingDir}/env/.env`)
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)
   const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAllPreChecks: true })
