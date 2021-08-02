@@ -154,7 +154,7 @@ function dump_vars() {
   done
 }
 
-OTOMI_PORT=${OTOMI_PORT:-192019}
+OTOMI_PORT=${OTOMI_PORT:-17771}
 OTOMI_IN_TERMINAL="false"
 if [ -t 1 ]; then
   # shellcheck disable=SC2034
@@ -260,7 +260,7 @@ fi
 
 network='--network host'
 if [[ $calling_args == 'server'* ]]; then
-  network="--init -p $OTOMI_PORT:192019"
+  network="--init -p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
 mkdir -p /tmp/otomi
