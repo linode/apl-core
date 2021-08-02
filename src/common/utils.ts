@@ -73,7 +73,7 @@ export const loadYaml = (path: string): any => {
   return load(readFileSync(path, 'utf-8')) as any
 }
 
-export enum LOG_LEVELS {
+export enum logLevels {
   FATAL = -2,
   ERROR = -1,
   WARN = 0,
@@ -84,16 +84,16 @@ export enum LOG_LEVELS {
 
 let logLevelVar = Number.NEGATIVE_INFINITY
 export const logLevel = (): number => {
-  if (!getParsedArgs()) return LOG_LEVELS.ERROR
+  if (!getParsedArgs()) return logLevels.ERROR
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
 
-  let logLevelNum = Number(LOG_LEVELS[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
+  let logLevelNum = Number(logLevels[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
   const verbosity = Number(getParsedArgs().verbose ?? 0)
   const boolTrace = env.TRACE || getParsedArgs().trace
-  logLevelNum = boolTrace ? LOG_LEVELS.TRACE : logLevelNum
+  logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
 
   logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
-  if (logLevelVar === LOG_LEVELS.TRACE) {
+  if (logLevelVar === logLevels.TRACE) {
     $.verbose = true
     $.prefix = 'set -xeuo pipefail;'
   }
@@ -101,7 +101,7 @@ export const logLevel = (): number => {
 }
 
 export const logLevelString = (): string => {
-  return LOG_LEVELS[logLevel()].toString()
+  return logLevels[logLevel()].toString()
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

@@ -1,7 +1,7 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { Writable, WritableOptions } from 'stream'
 import { env } from './envalid'
-import { logLevel, LOG_LEVELS } from './utils'
+import { logLevel, logLevels } from './utils'
 
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
@@ -76,10 +76,10 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
   const base = newDebug(`${namespace}`, terminalEnabled)
   const log = newDebug(`${namespace}:log`, true)
   const error = newDebug(`${namespace}:error`, true, console.error)
-  const trace = newDebug(`${namespace}:trace`, logLevel() >= LOG_LEVELS.TRACE && terminalEnabled)
-  const debug = newDebug(`${namespace}:debug`, logLevel() >= LOG_LEVELS.DEBUG && terminalEnabled)
-  const info = newDebug(`${namespace}:info`, logLevel() >= LOG_LEVELS.INFO && terminalEnabled)
-  const warn = newDebug(`${namespace}:warn`, logLevel() >= LOG_LEVELS.WARN && terminalEnabled, console.warn)
+  const trace = newDebug(`${namespace}:trace`, logLevel() >= logLevels.TRACE && terminalEnabled)
+  const debug = newDebug(`${namespace}:debug`, logLevel() >= logLevels.DEBUG && terminalEnabled)
+  const info = newDebug(`${namespace}:info`, logLevel() >= logLevels.INFO && terminalEnabled)
+  const warn = newDebug(`${namespace}:warn`, logLevel() >= logLevels.WARN && terminalEnabled, console.warn)
 
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)

@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, logLevel, LOG_LEVELS, setParsedArgs } from '../common/utils'
+import { BasicArguments, getFilename, logLevel, logLevels, setParsedArgs } from '../common/utils'
 import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)
@@ -24,7 +24,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
 export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<number> => {
   await setup(argv, options)
   const commands = argv._.slice(1)
-  if (logLevel() >= LOG_LEVELS.INFO) commands.push('-v')
+  if (logLevel() >= logLevels.INFO) commands.push('-v')
   const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
   return output.exitCode
 }
