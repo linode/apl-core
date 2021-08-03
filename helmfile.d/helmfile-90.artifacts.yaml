@@ -15,7 +15,7 @@ releases:
     values:
       - ../values/raw/istio-raw.gotmpl
       - snippets/common.gotmpl
-  - name: job-gitea
+  - name: job-gitea-prepare
     installed: {{ $c | get "gitea.enabled" false }}
     labels:
       pkg: gitea

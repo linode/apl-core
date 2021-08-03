@@ -24,13 +24,6 @@ releases:
     <<: *jobs
     labels:
       group: jobs
-  - name: job-drone
-    installed: false #{{ $c | get "drone.enabled" false }}
-    labels:
-      pkg: drone
-      stage: post
-      group: jobs
-    <<: *jobs
   - name: job-gitea-add-users
     installed: {{ $c | get "gitea.enabled" false }}
     labels:

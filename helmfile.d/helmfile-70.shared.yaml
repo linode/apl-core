@@ -30,8 +30,6 @@ releases:
   - name: otomi-api
     installed: {{ ne ($v.otomi | get "pullSecret" "") "" }}
     namespace: otomi
-    labels:
-      stage: post
     <<: *default
   - name: otomi-console
     installed: true
