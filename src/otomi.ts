@@ -18,7 +18,7 @@ import { basicOptions } from './common/yargs-opts'
 const debug = terminal('global')
 const terminalScale = 0.75
 const isAutoCompletion = process.argv.includes('--get-yargs-completions')
-if (!env.OTOMI_IN_DOCKER && !isAutoCompletion) {
+if (!env.IN_DOCKER && !isAutoCompletion) {
   debug.error(process.argv)
   debug.error('Please run this script using the `otomi` entry script')
   process.exit(1)

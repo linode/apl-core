@@ -17,7 +17,6 @@ export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 
 export interface BasicArguments extends YargsArguments {
-  inDocker: boolean
   logLevel: string
   nonInteractive: boolean
   skipCleanup: boolean
@@ -28,7 +27,6 @@ export interface BasicArguments extends YargsArguments {
 export const defaultBasicArguments: BasicArguments = {
   _: [],
   $0: 'defaultBasicArgs',
-  inDocker: true,
   logLevel: 'WARN',
   nonInteractive: true,
   skipCleanup: false,
@@ -68,8 +66,11 @@ export const capitalize = (s: string): string =>
       .join(' ')) ||
   ''
 
-export const loadYaml = (path: string): any => {
-  if (!existsSync(path)) throw new Error(`${path} does not exists`)
+export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
+  if (!existsSync(path)) {
+    if (opts?.noError) return null
+    throw new Error(`${path} does not exists`)
+  }
   return load(readFileSync(path, 'utf-8')) as any
 }
 

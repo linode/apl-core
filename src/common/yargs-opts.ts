@@ -113,14 +113,13 @@ export const basicOptions: { [key: string]: Options } = {
   verbose: {
     alias: 'v',
     count: true,
-    coerce: (val: number) =>
-      Math.min(
-        val,
-        Object.keys(logLevels)
-          .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
-          .map(Number)
-          .reduce((prev, curr) => Math.max(prev, curr)),
-      ),
+    coerce: (val: number) => {
+      const ll = Object.keys(logLevels)
+        .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
+        .map(Number)
+        .reduce((prev, curr) => Math.max(prev, curr))
+      return Math.min(Math.max(val, Number(process.env.VERBOSITY || '0')), ll)
+    },
   },
   'non-interactive': {
     alias: 'ni',
@@ -133,11 +132,6 @@ export const basicOptions: { [key: string]: Options } = {
     hidden: true,
   },
   dev: {
-    boolean: true,
-    default: false,
-    hidden: true,
-  },
-  inDocker: {
     boolean: true,
     default: false,
     hidden: true,

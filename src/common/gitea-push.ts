@@ -3,7 +3,7 @@ import { $, cd, nothrow } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { waitTillAvailable } from './utils'
+import { currDir, waitTillAvailable } from './utils'
 
 export const giteaPush = async (): Promise<void> => {
   const debug = terminal('Gitea Push')
@@ -15,22 +15,23 @@ export const giteaPush = async (): Promise<void> => {
   }
   const stage = hfVals.charts?.['cert-manager']?.stage === 'staging' ? ' -c http.sslVerify=false' : ' '
   debug.log(hfVals.cluster)
-  const clusterDomain = hfVals.cluster?.domainSuffix ?? debug.error('cluster.domainSuffix is not set')
-  process.exit(1)
+  const clusterDomain = hfVals.cluster?.domainSuffix
+  if (!clusterDomain) {
+    debug.error('cluster.domainSuffix is not set')
+    process.exit(1)
+  }
   const giteaUrl = `gitea.${clusterDomain}`
 
   await waitTillAvailable(giteaUrl)
 
-  const giteaPassword =
-    hfVals.charts?.gitea?.adminPassword ?? hfVals.otomi?.adminPassword ?? debug.error('otomi.adminPassword is not set')
-  process.exit(1)
+  const giteaPassword = hfVals.charts?.gitea?.adminPassword ?? hfVals.otomi?.adminPassword
   const giteaUser = 'otomi-admin'
   const giteaOrg = 'otomi'
   const giteaRepo = 'values'
 
-  const currDir = process.cwd()
+  const currDirVal = await currDir()
 
-  cd(`${env.ENV_DIR}`)
+  cd(env.ENV_DIR)
   try {
     if (!existsSync('.git')) {
       await $`git init`
@@ -61,7 +62,7 @@ export const giteaPush = async (): Promise<void> => {
   } catch (error) {
     debug.error(error)
   } finally {
-    cd(currDir)
+    cd(currDirVal)
   }
 }
 
