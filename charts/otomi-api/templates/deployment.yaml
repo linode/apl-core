@@ -1,4 +1,4 @@
-{{- $giteaUrl := print "https://gitea.".Values.cluster.domainSuffix }}
+{{- $giteaUrl := printf "https://gitea.%s" .Values.clusterDomainSuffix }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,7 +30,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "otomi-api.serviceAccountName" . }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if include .Values.env.GIT_REPO_URL $giteaUrl }}
+      {{- if contains $giteaUrl .Values.env.GIT_REPO_URL }}
       initContainers:
         - name: waitforgitea
           env:
