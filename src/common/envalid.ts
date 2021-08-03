@@ -12,7 +12,7 @@ const cleanSpec = {
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   OTOMI_DEV: bool({ default: false }),
-  OTOMI_IN_DOCKER: bool({ default: false }),
+  IN_DOCKER: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
   STATIC_COLORS: bool({ default: false }),
   TESTING: bool({ default: false }),
