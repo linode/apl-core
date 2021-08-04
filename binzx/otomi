@@ -242,7 +242,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ]; then
+if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
