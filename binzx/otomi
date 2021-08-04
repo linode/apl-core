@@ -154,7 +154,7 @@ function dump_vars() {
   done
 }
 
-OTOMI_PORT=${OTOMI_PORT:-192019}
+OTOMI_PORT=${OTOMI_PORT:-17771}
 OTOMI_IN_TERMINAL="false"
 if [ -t 1 ]; then
   # shellcheck disable=SC2034
@@ -244,7 +244,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ]; then
+if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
@@ -262,7 +262,7 @@ fi
 
 network='--network host'
 if [[ $calling_args == 'server'* ]]; then
-  network="--init -p $OTOMI_PORT:192019"
+  network="--init -p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
 mkdir -p /tmp/otomi

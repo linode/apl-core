@@ -13,11 +13,13 @@ export const evaluateSecrets = async (): Promise<void> => {
       `Info: The 'secrets.*.yaml files' are not decrypted, because ${env.ENV_DIR}/.sops.yaml file is not present`,
     )
   }
-  const secretPath = `${env.ENV_DIR}/.secrets`
-  try {
-    await source(secretPath)
-  } catch (error) {
-    debug.warn('%s\n', `Unable to find the '${secretPath}' file.`, `Continuing without local secrets`)
+  if (!env.CI) {
+    const secretPath = `${env.ENV_DIR}/.secrets`
+    if (existsSync(secretPath)) {
+      await source(secretPath)
+    } else {
+      debug.warn('%s\n', `Unable to find the '${secretPath}' file (while not in CI).`)
+    }
   }
 }
 
