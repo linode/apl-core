@@ -181,18 +181,20 @@ vars=(
   OTOMI_SERVER
   OTOMI_TAG
   OTOMI_USERNAME
+  OTOMI_NON_INTERACTIVE
   PROFILE
   STATIC_COLORS
   SHELL
   TESTING
   TRACE
+  VERBOSITY
   VAULT_TOKEN
 )
 dump_vars "${vars[@]}"
 
 cat >>$tmp_env <<EOF
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
-OTOMI_IN_DOCKER=true
+IN_DOCKER=1
 EOF
 
 helm_config="$HOME/.config/helm"
@@ -225,7 +227,7 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   else
     executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
   fi
-  echo "OTOMI_DEV=true" >>$tmp_env
+  echo "OTOMI_DEV=1" >>$tmp_env
 fi
 
 check_volume_path() {
@@ -264,7 +266,7 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
-if [ -n "$OTOMI_IN_DOCKER" ]; then
+if [ -n "$IN_DOCKER" ]; then
   $cmd
   status=$?
 elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
