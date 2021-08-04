@@ -43,7 +43,7 @@ env:
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   CLUSTER_ID: {{ printf "%s/%s" $c.provider $c.name }}
-  CLUSTER_NAME: {{ $c.apiName }}
+  CLUSTER_NAME: {{ $c | get "apiName" "api" }}
   CLUSTER_APISERVER: {{ $c.apiServer }}
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
