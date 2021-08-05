@@ -194,6 +194,7 @@ dump_vars "${vars[@]}"
 
 cat >>$tmp_env <<EOF
 OTOMI_CALLER_COMMAND=${BASH_SOURCE[0]##*/}
+IN_DOCKER=1
 EOF
 
 helm_config="$HOME/.config/helm"
