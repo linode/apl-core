@@ -13,6 +13,7 @@
 {{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
 
 replicaCount: 1
+clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 {{- with $o | get "resources.api" nil }}
 resources:

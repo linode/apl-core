@@ -5,7 +5,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { capitalize, getFilename, setParsedArgs } from '../common/utils'
+import { currDir, getFilename, setParsedArgs, waitTillAvailable } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -51,29 +51,17 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
 
   debug.info('Preparing values')
 
-  const currDir = process.cwd()
+  const currDirVal = await currDir()
   cd(env.ENV_DIR)
 
   const vals = await hfValues()
-  const ownerName = vals.cluster?.owner ?? 'otomi'
   const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
-
-  try {
-    await $`git config --local user.name`
-  } catch (error) {
-    await $`git config --local user.name ${capitalize(ownerName)}`
-  }
-  try {
-    await $`git config --local user.email`
-  } catch (error) {
-    await $`git config --local user.email ${ownerName}@${clusterDomain}`
-  }
 
   preCommit(argv)
   await encrypt()
   debug.info('Do commit')
-  await $`git add .`
-  await $`git commit -m 'Manual commit' --no-verify`
+  await $`git add -A`
+  await $`git commit -m 'otomi commit' --no-verify`
 
   debug.info('Pulling latest values')
   try {
@@ -85,15 +73,21 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
     process.exit(1)
   }
   try {
+    let stage = ''
+    if (!vals.charts?.gitea?.enabled) {
+      const giteaUrl = `gitea.${clusterDomain}`
+      if (vals.charts?.['cert-manager']?.stage === 'staging') stage = ' -c http.sslVerify=false'
+      await waitTillAvailable(giteaUrl)
+    }
     await $`git remote show origin`
-    await $`git push origin main`
+    await $`git${stage} push origin main`
     debug.log('Sucessfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
     debug.error('Pushing the values failed, please read the above error message and manually try again')
     process.exit(1)
   } finally {
-    cd(currDir)
+    cd(currDirVal)
   }
 }
 

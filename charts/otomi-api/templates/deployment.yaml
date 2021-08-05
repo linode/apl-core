@@ -33,14 +33,12 @@ spec:
       {{- if contains $giteaUrl .Values.env.GIT_REPO_URL }}
       initContainers:
         - name: waitforgitea
-          env:
-            - name: GITEA_URL
-              value: {{ $giteaUrl }}/otomi/values
-          image: badouralix/curl-http2
+          image: alpine/git
           script: |
-            {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}export INSECURE='--insecure'{{ end }}
-            echo "Waiting until gitea is accessible at $GITEA_URL"
-            until $(curl $INSECURE --output /dev/null --silent --head --fail -I $GITEA_URL); do 
+            {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
+            GITEA_URL=https://$GIT_USER:$GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
+            echo "Waiting until gitea is accessible at gitea.{{ .Values.clusterDomainSuffix }}/otomi/values"
+            until $(git $NOSSL ls-remote $GITEA_URL); do 
               printf '.'
               sleep 5
             done

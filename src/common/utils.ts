@@ -22,6 +22,7 @@ export interface BasicArguments extends YargsArguments {
   skipCleanup: boolean
   trace: boolean
   verbose: number
+  debug: boolean
 }
 
 export const defaultBasicArguments: BasicArguments = {
@@ -32,6 +33,7 @@ export const defaultBasicArguments: BasicArguments = {
   skipCleanup: false,
   trace: false,
   verbose: 0,
+  debug: false,
 }
 
 let parsedArgs: BasicArguments
@@ -69,7 +71,7 @@ export const capitalize = (s: string): string =>
 export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
   if (!existsSync(path)) {
     if (opts?.noError) return null
-    throw new Error(`${path} does not exists`)
+    throw new Error(`${path} does not exist`)
   }
   return load(readFileSync(path, 'utf-8')) as any
 }

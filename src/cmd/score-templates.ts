@@ -1,4 +1,4 @@
-import { existsSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
@@ -29,10 +29,8 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 export const scoreTemplate = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
   debug.info('Scoring STARTED')
-  const result = await hfTemplate(argv)
+  await hfTemplate(argv, templatePath)
   debug.info('Scoring DONE')
-
-  writeFileSync(templatePath, result)
 
   const scoreResult = await nothrow($`kube-score score ${templatePath}`)
   debug.log(scoreResult.stdout.trim())

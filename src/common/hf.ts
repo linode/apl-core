@@ -1,8 +1,9 @@
 import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
+import { terminal } from './debug'
 import { env } from './envalid'
-import { asArray, logLevels } from './utils'
+import { asArray, getParsedArgs, logLevels } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -10,14 +11,17 @@ const value = {
   clean: null,
   rp: null,
 }
+
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
+
 export type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
   logLevel?: string | null
   args: string | string[]
 }
+
 const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   const paramsCopy: HFParams = { ...args }
   paramsCopy.fileOpts = asArray(paramsCopy.fileOpts ?? [])
@@ -29,12 +33,14 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     case logLevels.FATAL:
       paramsCopy.logLevel = 'error'
       break
+    case logLevels.DEBUG:
     case logLevels.TRACE:
-      paramsCopy.logLevel = 'debug'
+      paramsCopy.logLevel = 'info'
       break
     default:
       break
   }
+  if (getParsedArgs().debug) paramsCopy.logLevel = 'debug'
 
   paramsCopy.args = asArray(paramsCopy.args).filter(Boolean)
   if (!paramsCopy.args || paramsCopy.args.length === 0) {
@@ -75,10 +81,11 @@ export type HFOptions = {
 
 export const hfStream = (args: HFParams, opts?: HFOptions): ProcessPromise<ProcessOutput> => {
   const proc = opts?.trim ? hfTrimmed(args) : hfCore(args)
-  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout)
-  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr)
+  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
   return proc
 }
+
 export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
   return new ProcessOutputTrimmed(await hfStream(args, opts))
 }
@@ -87,6 +94,7 @@ export type ValuesOptions = {
   replacePath?: boolean
   asString?: boolean
 }
+
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
   if (opts?.replacePath && value.rp) {
     if (opts?.asString) return dump(value.rp)
@@ -108,6 +116,7 @@ export const hfValues = async (): Promise<any> => {
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {
+  const debug = terminal('hfTemplate')
   process.env.QUIET = '1'
   const args = ['template', '--skip-deps']
   if (outDir) args.push(`--output-dir=${outDir}`)
@@ -115,9 +124,16 @@ export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Str
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
-    template += await hf({ ...params, fileOpts: 'helmfile.tpl/helmfile-init.yaml' }, { streams })
+    const file = 'helmfile.tpl/helmfile-init.yaml'
+    debug.debug(`Templating ${file} started`)
+    const outInit = await hf({ ...params, fileOpts: file }, { streams })
+    debug.debug(`Templating ${file} done`)
+    template += outInit.stdout
     template += '\n'
   }
-  template += await hf(params, { streams })
+  debug.debug('Templating charts started')
+  const outAll = await hf(params, { streams })
+  debug.debug('Templating charts done')
+  template += outAll.stdout
   return template
 }

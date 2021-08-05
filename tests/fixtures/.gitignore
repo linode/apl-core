@@ -1,0 +1,12 @@
+/.history
+/.prettierrc.yml
+/.vscode
+/.gitattributes
+/*.json
+*.yaml.dec
+.decrypted~*
+/docker-compose*
+/bin/
+core.yaml
+.secrets
+.env

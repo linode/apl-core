@@ -1,13 +1,13 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { cleanupHandler, otomi } from '../common/setup'
-import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../common/utils'
-import { genSops } from './gen-sops'
+import { OtomiDebugger, terminal } from '../../common/debug'
+import { env } from '../../common/envalid'
+import { cleanupHandler, otomi } from '../../common/setup'
+import { BasicArguments, getFilename, loadYaml, setParsedArgs } from '../../common/utils'
+import { genSops } from '../gen-sops'
+import { merge } from './lib/chart'
 
 const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
@@ -43,7 +43,7 @@ const generateLooseSchema = (currDir: string) => {
   debug.info(`Stored YAML schema at: ${targetPath}`)
 }
 
-export const bootstrap = async (argv: Arguments): Promise<void> => {
+export const bootstrapValues = async (argv: Arguments): Promise<void> => {
   const args = { ...argv }
   setup(args)
 
@@ -90,8 +90,6 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
     debug.log(`Copying basic values`)
     await copy(`${currDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
   }
-  await $`git init ${env.ENV_DIR}`
-  copyFileSync(`${currDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   try {
     await genSops({ ...argv, dryRun: false }, { skipAllPreChecks: true })
@@ -114,6 +112,10 @@ export const bootstrap = async (argv: Arguments): Promise<void> => {
       )
     }
   }
+
+  // If we run from chart installer, VALUES_INPUT will be set
+  if (process.env.VALUES_INPUT) await merge()
+
   if (!hasOtomi) {
     debug.log('You can now use the otomi CLI')
     debug.log('Start by sourcing aliases:')
@@ -130,7 +132,7 @@ export const module = {
     setParsedArgs(argv)
     const envDirHasVals = existsSync(env.ENV_DIR) && readdirSync(env.ENV_DIR).length > 0
     try {
-      await bootstrap(argv)
+      await bootstrapValues(argv)
     } catch (error) {
       debug.error('Error occurred, rolling back')
       if (!envDirHasVals) rollBack()

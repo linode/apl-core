@@ -35,7 +35,7 @@ const helmOpts: { [key: string]: Options } = {
     coerce: (files: string[]) => {
       if (!files || files.length === 0) return files
       files.filter((val) => {
-        if (!existsSync(val)) throw new Error(`Expected file "${chalk.italic(val)}" does not exists.`)
+        if (!existsSync(val)) throw new Error(`Expected file "${chalk.italic(val)}" does not exist.`)
         return true
       })
       return files
@@ -78,7 +78,7 @@ const helmOpts: { [key: string]: Options } = {
   //   coerce: (file: string) => {
   //     if (!file || file.length === 0) return file
   //     if (existsSync(file)) return file
-  //     throw new Error(`State values file expected, but ${file} does not exists`)
+  //     throw new Error(`State values file expected, but ${file} does not exist`)
   //   },
   // },
   // 'kube-context': {
@@ -123,6 +123,11 @@ export const basicOptions: { [key: string]: Options } = {
   },
   'non-interactive': {
     alias: 'ni',
+    boolean: true,
+    default: false,
+  },
+  debug: {
+    alias: 'd',
     boolean: true,
     default: false,
   },

@@ -1,9 +1,7 @@
 import { Argv } from 'yargs'
-import { cd } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, currDir, getFilename, setParsedArgs } from '../common/utils'
+import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -31,14 +29,24 @@ export const playground = async (argv: BasicArguments, options?: PrepareEnvironm
   await setup(argv, options)
 
   debug.log(cmdName)
-  debug.log(argv)
+  debug.info('info')
+  debug.warn('warn')
+  debug.error('error')
+  debug.debug('debug')
+  debug.trace('trace')
+  debug.log(argv.nonInteractive)
+  // debug.log(argv)
 
-  console.log(process.cwd())
-  console.log(await currDir())
-  cd(env.ENV_DIR)
-  console.log(process.cwd())
-  console.log(await currDir())
-
+  // console.log(process.cwd())
+  // console.log(await currDir())
+  // cd(env.ENV_DIR)
+  // console.log(process.cwd())
+  // console.log(await currDir())
+  // const cdVal = await currDir()
+  // const path = `${cdVal}/values-schema.yaml`
+  // // const yaml = loadYaml(path)
+  // const yaml2 = load(readFileSync(path, 'utf-8'), { json: true }) as any
+  // console.log(yaml2.properties?.alerts)
   // // const script = $`echo 1; sleep 1; echo 2; sleep 1; echo 3;`
   // // script.stdout.pipe(debug.stream.log)
   // // const out = await script
@@ -58,7 +66,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await playground(argv, {})
+    await playground(argv, { skipAllPreChecks: true })
   },
 }
 

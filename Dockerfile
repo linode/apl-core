@@ -14,7 +14,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then \
   npm install cspell && npm run spellcheck; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.19 as test
+FROM otomi/tools:v1.4.20 as test
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
@@ -28,7 +28,7 @@ COPY --chown=app . .
 RUN if [ "$SKIP_TESTS" = 'false' ]; then npm ci; src/ci-tests.ts; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.19 as prod
+FROM otomi/tools:v1.4.20 as prod
 
 ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
