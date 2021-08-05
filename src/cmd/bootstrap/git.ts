@@ -1,6 +1,6 @@
 import { copyFileSync, rmSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { OtomiDebugger, terminal } from '../../common/debug'
 import { env } from '../../common/envalid'
 import { hfValues } from '../../common/hf'
@@ -79,8 +79,8 @@ export const bootstrapGit = async (argv: Arguments, options?: PrepareEnvironment
     $`git remote add origin "${remote}"`,
   ])
   debug.info('Trying to do a git pull')
-  await stream($`git checkout -b ${branch}`, { stdout: debug.stream.info, stderr: debug.stream.error })
-  await stream($`git pull origin ${branch}`, { stdout: debug.stream.info, stderr: debug.stream.error })
+  await stream(nothrow($`git checkout -b ${branch}`), { stdout: debug.stream.info, stderr: debug.stream.error })
+  await stream(nothrow($`git pull origin ${branch}`), { stdout: debug.stream.info, stderr: debug.stream.error })
   cd(currDirVar)
 }
 

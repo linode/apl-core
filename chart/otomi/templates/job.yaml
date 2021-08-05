@@ -29,13 +29,9 @@ spec:
           command: [bash, -c]
           args:
             - |
-              binzx/otomi chart prepare
-              binzx/otomi chart merge
-              binzx/otomi chart push
+              binzx/otomi bootstrap
               binzx/otomi apply
           env:
-            - name: IN_DOCKER
-              value: '1'
             - name: VERBOSITY
               value: '1'
             - name: OTOMI_NON_INTERACTIVE

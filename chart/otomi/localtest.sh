@@ -6,7 +6,6 @@ set -e
 docker run --rm -it \
   --env-file=../.env \
   -e VERBOSITY=1 \
-  -e IN_DOCKER=1 \
   -e OTOMI_VALUES_INPUT=/secret/values.yaml \
   -e OTOMI_NON_INTERACTIVE='true' \
   -w ${WORKDIR:-$PWD} \
