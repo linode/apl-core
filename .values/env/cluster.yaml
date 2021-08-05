@@ -1,9 +1,1 @@
-cluster:
-    apiName:
-    apiServer:
-    domainSuffix:
-    k8sVersion:
-    name:
-    owner:
-    provider:
-    region:
+cluster: {}
