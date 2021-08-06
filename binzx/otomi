@@ -36,19 +36,34 @@ silent() {
     "$@" &>/dev/null
   fi
 }
+# shellcheck disable=SC2155
+readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+in_core=false
+if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+  in_core=true
+fi
+
+function docker_tag_exists() {
+  curl --silent -f -lSL https://index.docker.io/v1/repositories/otomi/core/tags/$1 >/dev/null
+}
 
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
-if [ -f "package.json" ]; then
-  otomi_version="master"
-elif [ -f $ENV_DIR/env/settings.yaml ]; then
+if [ "$in_core" = true ]; then
+  current_branch="$(git branch --show-current 2>/dev/null)"
+  current_branch="${current_branch##*/}"
+  current_branch="${current_branch:-'master'}"
+  otomi_version='master'
+  if docker_tag_exists $current_branch; then
+    otomi_version=$current_branch
+  fi
+elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
 fi
 OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
-# shellcheck disable=SC2155
-readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
@@ -117,8 +132,7 @@ EOF
 }
 
 check_update() {
-  if [[ $base_dir == *"otomi-core"* ]] ||
-    [[ $(pwd) == *"otomi-core"* ]] ||
+  if [ "$in_core" = true ] ||
     [[ $calling_args == *'-non-interactive'* ]] ||
     [[ $calling_args == *'-ni'* ]]; then
     return 0
@@ -210,7 +224,7 @@ executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otom
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
-if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+if [ "$in_core" = true ]; then
   silent echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
@@ -244,7 +258,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
