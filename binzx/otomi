@@ -44,10 +44,6 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   in_core=true
 fi
 
-function docker_tag_exists() {
-  curl --silent -f -lSL https://index.docker.io/v1/repositories/otomi/core/tags/$1 >/dev/null
-}
-
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ "$in_core" = true ]; then
@@ -55,9 +51,7 @@ if [ "$in_core" = true ]; then
   current_branch="${current_branch##*/}"
   current_branch="${current_branch:-'master'}"
   otomi_version='master'
-  if docker_tag_exists $current_branch; then
-    otomi_version=$current_branch
-  fi
+  otomi_version=$current_branch
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
 fi

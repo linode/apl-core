@@ -21,7 +21,7 @@
     "node-fetch": "^2.6.1",
     "tar": "^6.1.0",
     "yargs": "^17.0.1",
-    "zx": "^2.0.0"
+    "zx": "github:google/zx"
   },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {

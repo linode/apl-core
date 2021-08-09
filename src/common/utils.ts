@@ -4,7 +4,8 @@ import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $, cd, nothrow } from 'zx'
+import { terminal } from './debug'
 import { env } from './envalid'
 
 process.stdin.isTTY = false
@@ -67,6 +68,34 @@ export const capitalize = (s: string): string =>
       .map((s2) => s2[0].toUpperCase() + s2.slice(1))
       .join(' ')) ||
   ''
+
+export const gitPush = async (
+  branch: string,
+  sslVerify,
+  giteaUrl: string | undefined = undefined,
+): Promise<boolean> => {
+  const debug = terminal('Gitea Push')
+  debug.info('Gitea push')
+  let skipSslVerify = ''
+  if (giteaUrl) {
+    if (!sslVerify) skipSslVerify = '-c http.sslVerify=false'
+    await waitTillAvailable(giteaUrl)
+  }
+
+  const currDirVal = await currDir()
+
+  cd(env.ENV_DIR)
+  try {
+    await $`git ${skipSslVerify} push -u origin ${branch} -f`
+    debug.log('Otomi-values has been pushed to gitea')
+    return true
+  } catch (error) {
+    debug.error(error)
+    return false
+  } finally {
+    cd(currDirVal)
+  }
+}
 
 export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
   if (!existsSync(path)) {

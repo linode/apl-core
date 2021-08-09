@@ -2,6 +2,8 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $otomiVersion := $v.otomi | get "version" "latest" }}
+{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $otomiVersion) }}
 
 type: Job
 name: gitea-push
@@ -12,24 +14,10 @@ nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
-init:
-  env:
-    GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
-  image: 
-    repository: alpine/git
-  script: |
-    {{ if $skipVerify }}NOSSL=' -c http.sslVerify=false'{{ end }}
-    GITEA_URL=https://otomi-admin:$GITEA_PASSWORD@gitea.{{ $v.cluster.domainSuffix }}/otomi/values
-    echo "Waiting until gitea is accessible at gitea.{{ $v.cluster.domainSuffix }}/otomi/values"
-    until $(git $NOSSL ls-remote $GITEA_URL); do 
-      printf '.'
-      sleep 5
-    done
-    echo READY!
 image:
   repository: otomi/core
-  tag: master
-  pullPolicy: Always
+  tag: {{ $otomiVersion }}
+  pullPolicy: {{ $pullPolicy }}
 script: |
   binzx/otomi bootstrap
   binzx/otomi commit

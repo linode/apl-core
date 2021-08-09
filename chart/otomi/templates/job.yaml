@@ -29,7 +29,7 @@ spec:
           command: [bash, -c]
           args:
             - |
-              binzx/otomi bootstrap
+              binzx/otomi bootstrap values
               binzx/otomi apply
           env:
             - name: VERBOSITY

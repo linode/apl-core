@@ -1,4 +1,5 @@
 import { Argv } from 'yargs'
+import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
@@ -36,7 +37,9 @@ export const playground = async (argv: BasicArguments, options?: PrepareEnvironm
   debug.trace('trace')
   debug.log(argv.nonInteractive)
   // debug.log(argv)
-
+  const test = '"something"'
+  const out = await $`echo "${test}"`
+  console.log(out.stdout)
   // console.log(process.cwd())
   // console.log(await currDir())
   // cd(env.ENV_DIR)

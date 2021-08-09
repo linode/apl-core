@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { BasicArguments } from '../../common/utils'
+import { BasicArguments, setParsedArgs } from '../../common/utils'
 import { bootstrapGit, module as gitModule } from './git'
 import { bootstrapValues, module as valuesModule } from './values'
 
@@ -19,6 +19,7 @@ export const module = {
     return parser
   },
   handler: async (argv: Arguments): Promise<void> => {
+    setParsedArgs(argv)
     await bootstrapValues(argv)
     await bootstrapGit(argv)
   },

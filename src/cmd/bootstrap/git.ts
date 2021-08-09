@@ -1,12 +1,11 @@
-import { copyFileSync, rmSync } from 'fs'
+import { copyFileSync, existsSync } from 'fs'
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
+import { $, cd } from 'zx'
 import { OtomiDebugger, terminal } from '../../common/debug'
 import { env } from '../../common/envalid'
 import { hfValues } from '../../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../../common/setup'
-import { BasicArguments, currDir, getFilename, setParsedArgs } from '../../common/utils'
-import { stream } from '../../common/zx-enhance'
+import { BasicArguments, currDir, getFilename, gitPush, setParsedArgs } from '../../common/utils'
 
 type Arguments = BasicArguments
 
@@ -28,11 +27,20 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const bootstrapGit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
+  if (existsSync(`${env.ENV_DIR}/.git`)) {
+    debug.info('Values repo already git initialized.')
+    return
+  }
+  debug.info('Initializing values repo.')
   const currDirVal = await currDir()
+
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`${currDirVal}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   const chartValues = await hfValues()
+  // now we can change pwd to avoid a lot of git boilerplating
+  cd(env.ENV_DIR)
+
   const stage = chartValues?.charts?.['cert-manager']?.stage ?? 'production'
   if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
 
@@ -44,43 +52,34 @@ export const bootstrapGit = async (argv: Arguments, options?: PrepareEnvironment
     debug.error('Gitea was disabled but no charts.otomi-api.git config was given.')
     process.exit(1)
   }
-  const currDirVar = await currDir()
-  if (env.OTOMI_DEV) {
-    rmSync(`${env.ENV_DIR}/.git`, { recursive: true, force: true })
-    rmSync(`${env.ENV_DIR}/.vscode`, { recursive: true, force: true })
-    rmSync(`${env.ENV_DIR}/*`, { recursive: true, force: true })
-  }
-  cd(env.ENV_DIR)
   let username = 'Otomi Admin'
-  let email = `otomi-admin@${clusterDomain}`
-  let password = ''
-  let remote = ''
-  let branch = 'main'
+  let email
+  let password
+  let remote
+  const branch = 'main'
+  let healthUrl
   if (!giteaEnabled) {
     const otomiApiGit = chartValues?.charts?.['otomi-api']?.git
     username = otomiApiGit?.user
     password = otomiApiGit?.password
-    email = otomiApiGit?.email ?? email
+    email = `otomi-admin@${clusterDomain}`
     remote = otomiApiGit?.repoUrl
-    branch = otomiApiGit?.branch ?? branch
+    healthUrl = remote
   } else {
-    const giteaUser = 'otomi-admin'
-    const giteaPassword = chartValues?.charts?.gitea?.adminPassword ?? chartValues?.otomi?.adminPassword
+    username = 'otomi-admin'
+    password = chartValues?.charts?.gitea?.adminPassword ?? chartValues?.otomi?.adminPassword
     const giteaUrl = `gitea.${clusterDomain}`
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
-    remote = `https://${giteaUser}:${giteaPassword}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+    healthUrl = `https://gitea.${clusterDomain}`
+    remote = `https://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
-  await Promise.all([
-    $`git config --local user.name "${username}"`,
-    $`git config --local user.password "${password}"`,
-    $`git config --local user.email "${email}"`,
-    $`git remote add origin "${remote}"`,
-  ])
-  debug.info('Trying to do a git pull')
-  await stream(nothrow($`git checkout -b ${branch}`), { stdout: debug.stream.info, stderr: debug.stream.error })
-  await stream(nothrow($`git pull origin ${branch}`), { stdout: debug.stream.info, stderr: debug.stream.error })
-  cd(currDirVar)
+  await $`git config --local user.name ${username}`
+  await $`git config --local user.password ${password}`
+  await $`git config --local user.email ${email}`
+  await $`git checkout -b ${branch}`
+  await $`git remote add origin ${remote}`
+  cd(currDirVal)
 }
 
 export const module = {

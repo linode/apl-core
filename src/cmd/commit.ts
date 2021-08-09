@@ -5,7 +5,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { currDir, getFilename, setParsedArgs, waitTillAvailable } from '../common/utils'
+import { currDir, getFilename, gitPush, setParsedArgs } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -72,16 +72,21 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
     )
     process.exit(1)
   }
+  let healthUrl
+  let branch
+  if (!vals.charts?.gitea?.enabled) {
+    healthUrl = `gitea.${clusterDomain}`
+    branch = 'main'
+  } else {
+    // @ts-ignore
+    branch = vals.charts!['otomi-api']!.git!.branch ?? 'main'
+  }
+
   try {
-    let stage = ''
-    if (!vals.charts?.gitea?.enabled) {
-      const giteaUrl = `gitea.${clusterDomain}`
-      if (vals.charts?.['cert-manager']?.stage === 'staging') stage = ' -c http.sslVerify=false'
-      await waitTillAvailable(giteaUrl)
-    }
+    const stage = vals.charts?.['cert-manager']?.stage === 'staging'
     await $`git remote show origin`
-    await $`git${stage} push origin main`
-    debug.log('Sucessfully pushed the updated values')
+    await gitPush(branch, stage, healthUrl)
+    debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
     debug.error('Pushing the values failed, please read the above error message and manually try again')
