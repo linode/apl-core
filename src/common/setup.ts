@@ -23,6 +23,14 @@ let otomiK8sVersion: string
 const checkKubeContext = async (): Promise<void> => {
   if (env.CI) return
   const debug = terminal('checkKubeContext')
+
+  if (existsSync('/var/run/secrets/kubernetes.io/serviceaccount/token')) {
+    // Command is performed in Pod with service account token mounted as a file
+    // Read more: https://kubernetes.io/docs/tasks/run-application/access-api-from-pod/#directly-accessing-the-rest-api
+    debug.info('Discovered service account token')
+    return
+  }
+
   debug.info('Validating kube context')
 
   const envPath = `${env.ENV_DIR}/env/.env`
