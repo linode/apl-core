@@ -40,7 +40,8 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     default:
       break
   }
-  if (getParsedArgs().debug) paramsCopy.logLevel = 'debug'
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.debug) paramsCopy.logLevel = 'debug'
 
   paramsCopy.args = asArray(paramsCopy.args).filter(Boolean)
   if (!paramsCopy.args || paramsCopy.args.length === 0) {

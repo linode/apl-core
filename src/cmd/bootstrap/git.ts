@@ -28,7 +28,6 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 
 export const bootstrapGit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  debug.log(1)
   const currDirVal = await currDir()
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`${currDirVal}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
