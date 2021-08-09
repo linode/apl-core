@@ -233,12 +233,7 @@ definitions:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
       provider:
-        type: string
-        enum:
-          - aws
-          - azure
-          - google
-          - onprem
+        $ref: '#/definitions/provider'
       region:
         description: Dependent on provider.
         examples:
@@ -493,6 +488,13 @@ definitions:
     maximum: 32768
     minimum: 80
     type: number
+  provider:
+    type: string
+    enum:
+      - aws
+      - azure
+      - google
+      - onprem
   redisChart:
     properties:
       _rawValues:
@@ -2056,7 +2058,19 @@ properties:
       additionalClusters:
         type: array
         items:
-          $ref: '#/definitions/cluster'
+          title: Additional cluster
+          description: A k8s cluster managed by Otomi.
+          properties:
+            domainSuffix:
+              $ref: '#/definitions/domain'
+            name:
+              $ref: '#/definitions/idName'
+            provider:
+              $ref: '#/definitions/provider'
+          required:
+            - domainSuffix
+            - name
+            - provider
       adminPassword:
         type: string
         default: bladibla
