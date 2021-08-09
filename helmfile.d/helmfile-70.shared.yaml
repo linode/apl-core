@@ -8,7 +8,7 @@ bases:
 
 releases:
   - name: drone
-    installed: {{ ternary ($c | get "drone.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "drone" dict) "enabled") }}
+    installed: {{ $c | get "drone.enabled" "false" }}
     namespace: team-admin
     labels:
       pkg: drone
@@ -23,7 +23,7 @@ releases:
       - ../values/drone/drone-admit-members.gotmpl
       - snippets/common.gotmpl
   - name: harbor
-    installed: {{ ternary ($c | get "harbor.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "harbor" dict) "enabled") }}
+    installed: {{ $c | get "harbor.enabled" "false" }}
     namespace: harbor
     labels:
       pkg: harbor
@@ -43,7 +43,7 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: {{ ne ($v.otomi | get "pullSecret" "") "" }}
+    installed: true
     namespace: otomi
     <<: *default
   - name: otomi-console

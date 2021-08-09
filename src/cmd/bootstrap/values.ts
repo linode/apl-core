@@ -100,18 +100,12 @@ export const bootstrapValues = async (argv: Arguments): Promise<void> => {
     writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
   }
 
-  const secretsFileEnv = `${env.ENV_DIR}/env/secrets.settings.yaml`
-  if (existsSync(secretsFile)) {
-    const secretsContent = loadYaml(secretsFileEnv)
-    if (secretsContent?.otomi?.pullSecret?.length) {
-      debug.log('Copying Otomi Console Setup')
-      mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
-      await copy(`${currDirVal}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
-      await Promise.allSettled(
-        ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${currDirVal}/${val}`, `${env.ENV_DIR}/${val}`)),
-      )
-    }
-  }
+  debug.log('Copying Otomi Console Setup')
+  mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
+  await copy(`${currDirVal}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
+  await Promise.allSettled(
+    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${currDirVal}/${val}`, `${env.ENV_DIR}/${val}`)),
+  )
 
   // If we run from chart installer, VALUES_INPUT will be set
   if (process.env.VALUES_INPUT) await merge()

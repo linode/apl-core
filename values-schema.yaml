@@ -2105,11 +2105,6 @@ properties:
           - ce
           - ee
         type: string
-      pullSecret:
-        default: ''
-        description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
-        type: string
-        x-secret: true
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'

@@ -8,24 +8,24 @@ cluster:
   region: ''
 # kms:
 #   sops:
-    # provider can be one of aws|azure|google|vault
-    # provider: ''
-    # aws:
-    #   clientID: ''
-    #   clientSecret: ''
-    #   accessKey: ''
-    #   secretKey: ''
-    # azure:
-    #   tenantID: ''
-    #   clientID: ''
-    #   clientSecret: ''
-    #   keys: ''
-    # google:
-    #   accountJson: ''
-    #   project: ''
-    #   keys: ''
-    # vault:
-    #   token: ''
+# provider can be one of aws|azure|google|vault
+# provider: ''
+# aws:
+#   clientID: ''
+#   clientSecret: ''
+#   accessKey: ''
+#   secretKey: ''
+# azure:
+#   tenantID: ''
+#   clientID: ''
+#   clientSecret: ''
+#   keys: ''
+# google:
+#   accountJson: ''
+#   project: ''
+#   keys: ''
+# vault:
+#   token: ''
 oidc:
   clientID: ''
   clientSecret: ''
@@ -36,10 +36,9 @@ oidc:
   tenantID: ''
   tokenUrl: ''
 otomi:
-  pullSecret: ''
   adminPassword: ''
   isMultitenant: true
-  # The version should not be changed! (Consider it read only) 
+  # The version should not be changed! (Consider it read only)
   version: APP_VERSION_PLACEHOLDER
 customer:
   name: ''

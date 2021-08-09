@@ -62,7 +62,7 @@ env:
   CLUSTER: '{{ $v.cluster | toJson }}'
   CLUSTERS: '{{ $v.otomi | get "additionalClusters" list | toJson }}'
   CONTEXT_PATH: ''
-  CONSOLE_MODE: {{ and (ne ($v.otomi | get "pullSecret" "") "") (ne ($v.otomi | get "mode" "ee") "ce") | ternary "ee" "ce" }}
+  CONSOLE_MODE: ee
   CORE: '{"services":{{ $services | toJson }},"teamConfig":{"services":{{ $coreApps | toJson }}}}'
   CORE_VERSION: '{{ $version }}'
   TEAM_SERVICES: '{{ $teamServices | toJson }}'
