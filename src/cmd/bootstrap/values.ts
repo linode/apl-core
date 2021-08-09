@@ -49,7 +49,6 @@ export const bootstrapValues = async (argv: Arguments): Promise<void> => {
 
   const currDirVal = await currDir()
 
-  const secretsFile = `${env.ENV_DIR}/.secrets`
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const binPath = `${env.ENV_DIR}/bin`
