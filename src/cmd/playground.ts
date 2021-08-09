@@ -2,6 +2,7 @@ import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { generateSecrets } from './lib/gen-secrets'
 
 /**
  * This file is a scripting playground to test basic code
@@ -30,12 +31,13 @@ export const playground = async (argv: BasicArguments, options?: PrepareEnvironm
   await setup(argv, options)
 
   debug.log(cmdName)
-  debug.info('info')
-  debug.warn('warn')
-  debug.error('error')
-  debug.debug('debug')
-  debug.trace('trace')
-  debug.log(argv.nonInteractive)
+  await generateSecrets()
+  // debug.info('info')
+  // debug.warn('warn')
+  // debug.error('error')
+  // debug.debug('debug')
+  // debug.trace('trace')
+  // debug.log(argv.nonInteractive)
   // debug.log(argv)
   const test = '"something"'
   const out = await $`echo "${test}"`

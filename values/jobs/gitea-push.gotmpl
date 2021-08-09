@@ -39,7 +39,8 @@ script: |
   ! binzx/otomi pull && binzx/otomi commit
 runPolicy: OnSpecChange
 files: 
-  {{- $files := split "\n" (exec "bash" (list "-c" (printf "find %s -type f | grep -v '.git' | grep -v '.history'" (env "ENV_DIR"))) | trim) }}
+  {{- $files := split "\n" (exec "bash" (list "-c" (printf "find %s -type f ! -path '*/.git/*' ! -path '*/.history/*'" (env "ENV_DIR"))) | trim) }}
+  
   {{- range $file := $files }}
   '{{ $file | replace (env "ENV_DIR") "/home/app/stack/env" }}': |
     {{- readFile $file | nindent 4 }}

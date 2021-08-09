@@ -5,25 +5,10 @@ import yaml from 'js-yaml'
 import { merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
 import { loadYaml, terminal } from '../../common/utils'
+import { extractSecrets, generateSecrets } from './gen-secrets'
 
 const debug = terminal('chart')
 let hasSops = false
-const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
-  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf']
-
-  return Object.keys(schema)
-    .flatMap((key) => {
-      const childObj = schema[key]
-      if (typeof childObj !== 'object') return false
-      if ('x-secret' in childObj) return parentAddress ? `${parentAddress}.${key}` : key
-      let address = `${parentAddress}.${key}`
-      if (parentAddress === undefined) address = key
-      else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
-      return extractSecrets(childObj, address)
-    })
-    .filter(Boolean)
-    .map((s: string) => s.replace(/^properties\./, ''))
-}
 
 export const mergeFileValues = async (targetPath: string, newValues: Record<string, unknown>): Promise<void> => {
   debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(newValues)}`)
@@ -46,6 +31,8 @@ export const getChartValues = (): any | undefined => {
 export const mergeChartValues = async (): Promise<void> => {
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
   const values = getChartValues()
+  const generatedSecrets = yaml.load(await generateSecrets())
+  merge(values, generatedSecrets)
 
   // creating secret files
   const schema = loadYaml('values-schema.yaml')
