@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -8,9 +8,9 @@ ARG KUBECTL_VERSION=1.20.6
 ARG HELM_VERSION=3.5.4
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.1.3
-# https://github.com/zendesk/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=2.0.3
-# https://github.com/mozilla/sops/releases
+# https://github.com/jkroepke/helm-secrets
+ARG HELM_SECRETS_VERSION=3.7.0
+# https://github.com/mozilla/sops/releases:
 ARG SOPS_VERSION=3.7.1
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.4.0
@@ -27,6 +27,11 @@ ARG CONFTEST_VERSION=0.25.0
 # https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.12.1
 
+ARG NODE_VERSION=16
+
+#https://github.com/homeport/dyff
+ARG DYFF_VERSION=1.4.3
+
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
 # https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
@@ -38,16 +43,17 @@ ARG BATS_FILE_VERSION=0.2.0
 WORKDIR /
 
 RUN apt-get update -qq \
+  && apt install --reinstall coreutils \
   && apt install -qqy --no-install-recommends \
   apt-transport-https \
   awscli \
   ca-certificates \
   curl \
-  coreutils \
   gettext \
   git \
   gnupg2 \
   groff \
+  locales \
   nano \
   netcat \
   openssh-server \
@@ -60,6 +66,9 @@ RUN apt-get update -qq \
   groff \
   awscli \
   && rm -rf /var/lib/apt/lists/*
+
+# set locale
+RUN locale-gen en_US.UTF-8
 
 # jq
 RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
@@ -90,8 +99,8 @@ RUN chmod +x sops
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
 RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
-RUN echo "exec $*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
-RUN helm plugin install https://github.com/futuresimple/helm-secrets --version ${HELM_SECRETS_VERSION}
+RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
 
 # helmfile
 ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
@@ -128,10 +137,14 @@ RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && m
 ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
 RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
-# node lts
-RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+#dyff 
+ADD https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/dyff_${DYFF_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/dyff dyff
+
+# node
+RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
-  npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2
+  npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
 # bats
 ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp

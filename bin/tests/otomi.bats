@@ -18,6 +18,6 @@ function teardown () {
 }
 
 @test "otomi without arguments prints help message" {
-    run bin/otomi
+    run binzx/otomi
     assert_failure 1
 }

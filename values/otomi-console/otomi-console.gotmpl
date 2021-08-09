@@ -20,24 +20,20 @@
 {{- end }}
 {{- end }}
 {{- $teamServices := list -}}
-  {{- if hasKey $v.teamConfig "teams" -}}
-    {{- range $teamId, $team := $v.teamConfig.teams }}
-      {{- if hasKey $team "services" -}}
-        {{- range $s := $team.services -}}
-          {{- $sd := dict "teamId" $teamId -}}
-            {{- if hasKey $s "name" -}}{{ $sd = set $sd "name" $s.name }}
-              {{- if hasKey $s "type" -}}
-                {{ $sd = set $sd "ingress" (dict "type" $s.type "domain" $v.cluster.domainSuffix "subdomain" (printf "%s.team-%s" $s.name $teamId)) }}
-              {{- end }}
-            {{- end }}
-            {{- if hasKey $s "ksvc" -}}{{ $sd = set $sd "ksvc" true  }}{{- end }}
-            {{- if hasKey $s "ownHost" -}}{{ $sd = set $sd "ownHost" $s.ownHost }}{{- end }}
-            {{ $teamServices = append $teamServices $sd }}
-        {{- end }}              
+{{- range $teamId, $team := $v | get "teamConfig.teams" dict }}
+  {{- range $s := $team | get "services" list }}
+    {{- $sd := dict "teamId" $teamId }}
+    {{- if hasKey $s "name" }}{{ $sd = set $sd "name" $s.name }}
+      {{- if hasKey $s "type" }}
+        {{ $sd = set $sd "ingress" (dict "type" $s.type "domain" $v.cluster.domainSuffix) }}
       {{- end }}
     {{- end }}
-  {{- end }}
-  
+    {{- if hasKey $s "ksvc" }}{{ $sd = set $sd "ksvc" true }}{{ end }}
+    {{- if hasKey $s "ownHost" }}{{ $sd = set $sd "ownHost" $s.ownHost }}{{ end }}
+    {{ $teamServices = append $teamServices $sd }}
+  {{- end }}              
+{{- end }}
+
 # fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557
 # so we get package.json version in two regexFind steps:
 {{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}

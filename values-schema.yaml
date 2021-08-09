@@ -318,6 +318,7 @@ definitions:
         maxLength: 131072
         type: string
     nullable: true
+    type: object
     title: Environment variables
   files:
     additionalProperties: false
@@ -475,6 +476,7 @@ definitions:
         maxLength: 131072
         type: string
     nullable: true
+    type: object
     title: Kubernetes secrets
   podSpec:
     allOf:
@@ -730,7 +732,9 @@ definitions:
                       - additionalProperties: false
                         nullable: true
                         title: 'Off'
+                        type: string
                       - nullable: true
+                        type: object
                         properties:
                           additionalProperties: false
                           semver:
@@ -912,10 +916,6 @@ definitions:
 properties:
   alerts:
     $ref: '#/definitions/alerts'
-  apps:
-    description: The list of otomi apps that are shown in the console.
-    type: object
-    properties: {}
   azure:
     description: Azure specific configuration.
     properties:
@@ -960,7 +960,7 @@ properties:
           email:
             $ref: '#/definitions/email'
           stage:
-            default: staging
+            default: production
             description: |
               The Let’s Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
@@ -1782,6 +1782,7 @@ properties:
           seal:
             description: Use a KMS to encrypt and decrypt the master key
             nullable: true
+            type: object
             oneOf:
               - title: gcpckms
                 properties:
@@ -1935,24 +1936,6 @@ properties:
       - provider
   home:
     $ref: '#/definitions/alerts'
-  k8s:
-    additionalProperties: false
-    properties:
-      namespaces:
-        items:
-          additionalProperties: false
-          properties:
-            disableIstioInjection:
-              type: boolean
-            disablePolicyChecks:
-              type: boolean
-            name:
-              type: string
-          required:
-            - name
-        type: array
-    required:
-      - namespaces
   kms:
     additionalProperties: false
     properties:
@@ -2364,10 +2347,6 @@ properties:
                   type: string
                 user:
                   type: string
-  services:
-    items:
-      $ref: '#/definitions/service'
-    type: array
   smtp:
     additionalProperties: false
     properties:
@@ -2391,23 +2370,16 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
-  sops:
-    description: DON'T EDIT THIS YOURSELF! This is a SOPS governed property. Exists here only to avoid warnings in console.
   teamConfig:
     additionalProperties: false
     properties:
-      services:
-        description: An internal otomi object (do not edit it).
-        type: array
       teams:
         additionalProperties: false
         patternProperties:
           ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$:
             $ref: '#/definitions/team'
 required:
-  - alerts
   - cluster
   - oidc
   - otomi
   - teamConfig
-  - services
