@@ -15,103 +15,6 @@ spec:
       securityContext:
         runAsUser: 999
         runAsGroup: 999
-      initContainers:
-        - name: bootstrap-values
-          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }}  
-          resources:
-            requests:
-              memory: 200Mi
-              cpu: 250m
-            limits:
-              memory: 1Gi
-              cpu: '1'
-          command: [bash, -c]
-          args: 
-            - |
-              {{ .Files.Get "scripts/bootstrap-values.sh" | nindent 14 }}
-          env:
-            - name: IN_DOCKER
-              value: '1'
-            - name: VERBOSE
-              value: '1'
-            - name: CI
-              value: '1'
-            - name: OTOMI_VERSION
-              value: {{ .Values.otomi.version  | default .Chart.AppVersion }}
-            - name: ENV_DIR
-              value: /home/app/stack/env
-            - name: OTOMI_VALUES_INPUT
-              value: /secret/values.yaml
-          envFrom:
-            - secretRef:
-                name: {{ include "otomi.fullname" . }}-sops-secrets
-          volumeMounts:
-            - name: otomi-values
-              mountPath: /home/app/stack/env
-            - name: values-secret
-              mountPath: /secret
-        - name: map-values
-          image: otomi/tasks:latest
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
-          resources:
-            requests:
-              memory: 200Mi
-              cpu: 250m
-            limits:
-              memory: 1Gi
-              cpu: '1'
-          command: [sh, -c]
-          args:
-            - |
-              npm run tasks:otomi-chart
-          env:
-            - name: IN_DOCKER
-              value: '1'
-            - name: OTOMI_VALUES_INPUT
-              value: /secret/values.yaml
-            - name: OTOMI_ENV_DIR
-              value: /env
-            - name: OTOMI_SCHEMA_PATH
-              value: /env/values-schema.yaml
-          volumeMounts:
-            - name: otomi-values
-              mountPath: /env
-            - name: values-secret
-              mountPath: /secret
-        - name: push-values
-          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
-          resources:
-            requests:
-              memory: 200Mi
-              cpu: 250m
-            limits:
-              memory: 1Gi
-              cpu: '1'
-          command: [bash, -c]
-          args:
-            - |
-              {{ .Files.Get "scripts/push-values.sh" | nindent 14 }}
-          env:
-            - name: IN_DOCKER
-              value: '1'
-            - name: VERBOSE
-              value: '1'
-            - name: CI
-              value: 'true'
-            - name: ENV_DIR
-              value: /home/app/stack/env
-            - name: OTOMI_VALUES_INPUT
-              value: /secret/values.yaml
-          envFrom:
-            - secretRef:
-                name: {{ include "otomi.fullname" . }}-sops-secrets
-          volumeMounts:
-            - name: otomi-values
-              mountPath: /home/app/stack/env
-            - name: values-secret
-              mountPath: /secret
       containers:
         - name: otomi-install
           image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
@@ -123,20 +26,28 @@ spec:
             requests:
               memory: 1Gi
               cpu: '1'
-          command: [bin/deploy.sh]
+          command: [bash, -c]
+          args:
+            - |
+              binzx/otomi bootstrap
+              binzx/otomi apply
           env:
-            - name: IN_DOCKER
+            - name: VERBOSITY
               value: '1'
-            - name: VERBOSE
-              value: '1'
+            - name: OTOMI_NON_INTERACTIVE
+              value: 'true'
             - name: ENV_DIR
               value: /home/app/stack/env
+            - name: VALUES_INPUT
+              value: /secret/values.yaml
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env
+            - name: values-secret
+              mountPath: /secret
       volumes:
         - name: values-secret
           secret:

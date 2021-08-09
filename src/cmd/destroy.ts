@@ -6,7 +6,7 @@ import { hf, hfStream } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
-import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
@@ -25,10 +25,14 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
 }
 
 const destroyAll = async () => {
-  await $`kubectl -n olm delete deploy --all`
-  await hf({ args: 'destroy' })
+  const debugStream = { stdout: debug.stream.debug }
+  await stream($`kubectl -n olm delete deploy --all`, debugStream)
+  await hf({ args: 'destroy' }, { streams: debugStream })
 
-  const output: ProcessOutputTrimmed = await hf({ fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' })
+  const output: ProcessOutputTrimmed = await hf(
+    { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
+    { streams: { stdout: debug.stream.debug } },
+  )
   if (output.exitCode > 0) {
     debug.error(output.stderr)
     process.exit(output.exitCode)
@@ -37,7 +41,7 @@ const destroyAll = async () => {
   }
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
-  await $`kubectl delete -f ${templateFile}`
+  await stream($`kubectl delete -f ${templateFile}`, debugStream)
 
   const ourCRDS = [
     'appgw.ingress.k8s.io',
@@ -58,8 +62,8 @@ const destroyAll = async () => {
     .filter((crd) => ourCRDS.filter((ourCRD) => ourCRD.includes(crd)).length > 0)
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
-  Promise.allSettled(allOurCRDS.map(async (val) => $`kubectl delete crd ${val}`))
-  await $`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`
+  Promise.allSettled(allOurCRDS.map(async (val) => stream($`kubectl delete crd ${val}`, debugStream)))
+  await stream($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`, debugStream)
 }
 
 export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {

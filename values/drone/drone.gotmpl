@@ -1,14 +1,17 @@
 {{- $v := .Values }}
 {{- $d := $v.charts | get "drone" dict }}
+{{- $oa := $v.charts | get "otomi-api" dict }}
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $hasGitea := $g | get "enabled" true }}
 {{- $provider := $d | get "sourceControl.provider" ($hasGitea | ternary "gitea" nil) }}
+{{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $hasStagingCerts := eq ($cm | get "stage" "production") "staging" }}
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
+{{- $otomiApiUsesOtomiGitea := eq ($oa | get "env.GIT_REPO_URL" "" ) "" }}
 
 clusterDomain: {{ $v.cluster.domainSuffix }}
 
@@ -29,6 +32,7 @@ sourceControl:
   secret: drone-source-control
   provider: gitea
 {{- end }}
+otomiApiUsesOtomiGitea: {{ $otomiApiUsesOtomiGitea }}
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users

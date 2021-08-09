@@ -4,8 +4,7 @@
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 
 type: Job
-name: gitea
-enabled: true
+name: gitea-prepare
 env:
   GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
@@ -30,5 +29,6 @@ image:
   repository: otomi/tasks
   tag: v0.2.9
   # pullPolicy: Always
-script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
+script: |
+  {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
 runPolicy: OnSpecChange

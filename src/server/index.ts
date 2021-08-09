@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
-import { preCommit } from '../cmd/commit'
+import { commit } from '../cmd/commit'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { defaultBasicArguments } from '../common/utils'
@@ -35,9 +35,9 @@ app.get('/encrypt', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/pre-commit', async (req: Request, res: Response) => {
+app.get('/commit', async (req: Request, res: Response) => {
   try {
-    await preCommit(defaultBasicArguments)
+    await commit(defaultBasicArguments)
     res.status(200).send('ok')
   } catch (error) {
     res.status(500).send(error)

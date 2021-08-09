@@ -12,43 +12,43 @@ read -p "$msg" answer <&2
 answer=${answer:-$path}
 
 if [ ! -d $answer ]; then
-    echo "$answer does not exist, please provide an existing path"
-    exit 1
+  echo "$answer does not exist, please provide an existing path"
+  exit 1
 fi
 
 if [[ $PATH != *$answer* ]]; then
-    echo "$answer is not in your PATH please add it to run $script from anywhere"
-    echo "export PATH=$answer:\$PATH"
+  echo "$answer is not in your PATH please add it to run $script from anywhere"
+  echo "export PATH=$answer:\$PATH"
 fi
 
 file="$answer/$script"
-if command -v wget &> /dev/null; then
-    wget $remote -O $file
-elif command -v curl &> /dev/null; then
-    curl $remote -o $file
+if command -v wget &>/dev/null; then
+  wget $remote -O $file
+elif command -v curl &>/dev/null; then
+  curl $remote -o $file
 fi
 chmod +x $file
 
 if [[ $SHELL == *zsh* ]] || [[ $SHELL == *bash* ]]; then
-    readonly msgAC="Do you want to install autocompletion for otomi? [Yes/no]: "
-    read -p "$msgAC" autocompleteAnswer <&2
-    autocompleteAnswer=${autocompleteAnswer:-yes}
-    case $autocompleteAnswer in
-        [Yy]* )
-            acPath='/usr/local/share/zsh/site-functions/_otomi'
-            if [[ $SHELL == *bash* ]]; then 
-                acPath='/usr/local/etc/bash_completion.d/otomi.bash'
-            fi
-            otomi completion | tr -d '\r'  > $acPath
-            chmod +x $acPath
-            echo "Autocompletion has been installed in ${acPath}"
-            echo "Please restart your terminal to use autocompletion"
-        ;;
-        [Nn]* )
-            echo "If you need autocompletion you can run:"
-            echo "\`otomi completion\`"
-        ;;
-    esac
+  readonly msgAC="Do you want to install autocompletion for otomi? [Yes/no]: "
+  read -p "$msgAC" autocompleteAnswer <&2
+  autocompleteAnswer=${autocompleteAnswer:-yes}
+  case $autocompleteAnswer in
+    [Yy]*)
+      acPath='/usr/local/share/zsh/site-functions/_otomi'
+      if [[ $SHELL == *bash* ]]; then
+        acPath='/usr/local/etc/bash_completion.d/otomi.bash'
+      fi
+      otomi completion | tr -d '\r' >$acPath
+      chmod +x $acPath
+      echo "Autocompletion has been installed in ${acPath}"
+      echo "Please restart your terminal to use autocompletion"
+      ;;
+    [Nn]*)
+      echo "If you need autocompletion you can run:"
+      echo "\`otomi completion\`"
+      ;;
+  esac
 fi
 
 echo "Otomi has been installed in $file"

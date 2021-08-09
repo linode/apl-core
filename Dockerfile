@@ -31,6 +31,8 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then npm ci; src/ci-tests.ts; fi
 FROM otomi/tools:v1.4.19 as prod
 
 ENV APP_HOME=/home/app/stack
+ENV IN_DOCKER=1
+
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 

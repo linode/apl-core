@@ -27,7 +27,7 @@ spec:
         prometheus.io/port: "8000"
 {{- end }}
 {{- if .Values.server.annotations }}
-{{ toYaml .Values.server.annotations | indent 8 }}
+        {{ toYaml .Values.server.annotations | nindent 8 }}
 {{- end }}
       labels:
         app: {{ template "drone.name" . }}
@@ -38,118 +38,126 @@ spec:
       imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- if .Values.server.securityContext }}
-      securityContext: 
-        {{- toYaml .Values.server.securityContext | nindent 8 }}
+      securityContext: {{- toYaml .Values.server.securityContext | nindent 8 }}
 {{- end }}
 {{- if .Values.server.schedulerName }}
       schedulerName: "{{ .Values.server.schedulerName }}"
 {{- end }}
 {{- if .Values.server.affinity }}
-      affinity:
-{{ toYaml .Values.server.affinity | indent 8 }}
+      affinity: {{- toYaml .Values.server.affinity | nindent 8 }}
 {{- end }}
 {{- if .Values.server.nodeSelector }}
-      nodeSelector:
-{{ toYaml .Values.server.nodeSelector | indent 8 }}
+      nodeSelector: {{- toYaml .Values.server.nodeSelector | nindent 8 }}
 {{- end }}
 {{- with .Values.server.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 6 }}
+      tolerations: {{- toYaml . | nindent 8 }}
 {{- end }}
       initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
+      {{- if .Values.otomiApiUsesOtomiGitea }}
+        - name: waitforgitea
+          image: alpine/git
+          script: |
+            {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
+            GITEA_URL=https://$DRONE_GIT_USERNAME:$DRONE_GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
+            echo "Waiting until gitea is accessible at gitea.{{ .Values.clusterDomainSuffix }}/otomi/values"
+            until $(git $NOSSL ls-remote $GITEA_URL); do 
+              printf '.'
+              sleep 5
+            done
+            echo READY!
+      {{- end }}
       containers:
-      - name: server
-        image: "{{ .Values.images.server.repository }}:{{ .Values.images.server.tag }}"
-        imagePullPolicy: {{ .Values.images.server.pullPolicy }}
-        env:
-          - name: DRONE_AGENTS_ENABLED
-            value: "true"
-          - name: DRONE_GIT_ALWAYS_AUTH
-            value: {{ .Values.server.alwaysAuth | quote }}
-          - name: DRONE_SERVER_HOST
-          {{- if hasKey .Values.server "host" }}
-            value: "{{ .Values.server.host }}"
-          {{- else }}
-            value: "{{ template "drone.fullname" . }}"
+        - name: server
+          image: "{{ .Values.images.server.repository }}:{{ .Values.images.server.tag }}"
+          imagePullPolicy: {{ .Values.images.server.pullPolicy }}
+          env:
+            - name: DRONE_AGENTS_ENABLED
+              value: "true"
+            - name: DRONE_GIT_ALWAYS_AUTH
+              value: {{ .Values.server.alwaysAuth | quote }}
+            - name: DRONE_SERVER_HOST
+            {{- if hasKey .Values.server "host" }}
+              value: "{{ .Values.server.host }}"
+            {{- else }}
+              value: "{{ template "drone.fullname" . }}"
+            {{- end }}
+            - name: DRONE_RPC_PROTO
+              value: "{{ .Values.server.rpcProtocol }}"
+            - name: DRONE_RPC_HOST
+              value: "{{ template "drone.fullname" . }}.{{ template "drone.namespace" . }}:{{ .Values.service.httpPort }}"
+            - name: DRONE_SERVER_PROTO
+              value: {{ .Values.server.protocol }}
+            - name: DRONE_RPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "drone.fullname" . }}
+                  key: secret
+            {{- range $secret, $keys := .Values.server.envSecrets }}
+            {{- range $keys }}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: {{ . | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.server.adminUser }}
+            - name: DRONE_USER_CREATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "drone.fullname" . }}-envfile
+                  key: DRONE_USER_CREATE
+            {{- end }}
+            {{- range $key, $value := .Values.server.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- include "drone.providerEnvs" . | nindent 12 }}
+          ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+          - name: https
+            containerPort: 443
+            protocol: TCP
+          - name: grpc
+            containerPort: 9000
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources: {{- toYaml .Values.server.resources | nindent 12 }}
+          volumeMounts:
+          {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
+          - name: bitbucket-private-key
+            mountPath: /etc/bitbucket
+            readOnly: true
           {{- end }}
-          - name: DRONE_RPC_PROTO
-            value: "{{ .Values.server.rpcProtocol }}"
-          - name: DRONE_RPC_HOST
-            value: {{ template "drone.fullname" . }}.{{ template "drone.namespace" . }}:{{ .Values.service.httpPort }}
-          - name: DRONE_SERVER_PROTO
-            value: {{ .Values.server.protocol }}
-          - name: DRONE_RPC_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: {{ template "drone.fullname" . }}
-                key: secret
-          {{- range $secret, $keys := .Values.server.envSecrets }}
-          {{- range $keys }}
-          - name: {{ . }}
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret }}
-                key: {{ . | quote }}
-          {{- end }}
-          {{- end }}
-          {{- if .Values.server.adminUser }}
-          - name: DRONE_USER_CREATE
-            valueFrom:
-              secretKeyRef:
-                name: {{ template "drone.fullname" . }}-envfile
-                key: DRONE_USER_CREATE
-          {{- end }}
-          {{- range $key, $value := .Values.server.env }}
-          - name: {{ $key }}
-            value: {{ $value | quote }}
-          {{- end }}
-          {{ template "drone.providerEnvs" . }}
-        ports:
-        - name: http
-          containerPort: 80
-          protocol: TCP
-        - name: https
-          containerPort: 443
-          protocol: TCP
-        - name: grpc
-          containerPort: 9000
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-        resources:
-{{ toYaml .Values.server.resources | indent 10 }}
-        volumeMounts:
-        {{ if eq .Values.sourceControl.provider "bitbucketServer" -}}
-        - name: bitbucket-private-key
-          mountPath: /etc/bitbucket
-          readOnly: true
-        {{ end }}
-        - name: data
-          mountPath: /var/lib/drone
-        {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 8 }}
-{{- with .Values.server.extraContainers }}
-{{ tpl . $ | indent 6 }}
-{{- end }}
+          - name: data
+            mountPath: /var/lib/drone
+          {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 12 }}
+        {{- with .Values.server.extraContainers }}
+        {{- tpl . $ | nindent 8 }}
+        {{- end }}
       volumes:
-      {{ if eq .Values.sourceControl.provider "bitbucketServer" -}}
-      - name: bitbucket-private-key
-        secret:
-          secretName: {{ template "drone.sourceControlSecret" . }}
-          items:
-            - key: {{ .Values.sourceControl.bitbucketServer.privateKey }}
-              path: key.pem
-      {{ end -}}
-      - name: data
-      {{- if .Values.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.persistence.existingClaim | default (include "drone.fullname" .) }}
-      {{- else }}
-        emptyDir: {}
-      {{- end -}}
-      {{- include "extraRootCA.volumes" (dict "rootCA" .Values.extraRootCA) | nindent 6 }}
-{{- with .Values.server.extraVolumes }}
-{{ tpl . $ | indent 6 }}
-{{- end }}
+      {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
+        - name: bitbucket-private-key
+          secret:
+            secretName: {{ template "drone.sourceControlSecret" . }}
+            items:
+              - key: {{ .Values.sourceControl.bitbucketServer.privateKey }}
+                path: key.pem
+      {{- end }}
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "drone.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
+        {{- include "extraRootCA.volumes" (dict "rootCA" .Values.extraRootCA) | nindent 8 }}
+        {{- with .Values.server.extraVolumes }}
+        {{ tpl . $ | nindent 8 }}
+        {{- end }}
 {{ end }}

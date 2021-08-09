@@ -1,3 +1,4 @@
+{{- $giteaUrl := printf "https://gitea.%s" .Values.clusterDomainSuffix }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,6 +30,20 @@ spec:
       {{- end }}
       serviceAccountName: {{ template "otomi-api.serviceAccountName" . }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if contains $giteaUrl .Values.env.GIT_REPO_URL }}
+      initContainers:
+        - name: waitforgitea
+          image: alpine/git
+          script: |
+            {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
+            GITEA_URL=https://$GIT_USER:$GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
+            echo "Waiting until gitea is accessible at gitea.{{ .Values.clusterDomainSuffix }}/otomi/values"
+            until $(git $NOSSL ls-remote $GITEA_URL); do 
+              printf '.'
+              sleep 5
+            done
+            echo READY!
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}

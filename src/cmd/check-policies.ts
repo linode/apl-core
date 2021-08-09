@@ -35,8 +35,7 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
     return
   }
   debug.info('Generating k8s manifest for cluster')
-  const template = await hfTemplate(argv, outDir)
-  debug.debug(template)
+  await hfTemplate(argv, outDir, { stdout: debug.stream.debug })
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')

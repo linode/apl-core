@@ -2,14 +2,12 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { giteaPush } from '../common/gitea-push'
 import { hf, hfStream } from '../common/hf'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(import.meta.url)
 const dir = '/tmp/otomi/'
@@ -51,20 +49,7 @@ const deployAll = async (argv: Arguments) => {
   await hf(
     {
       fileOpts: argv.file,
-      labelOpts: [...(argv.label ?? []), 'stage!=post'],
-      logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
-    },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
-  )
-  if (!env.CI) {
-    await genDrone(argv)
-    await giteaPush()
-  }
-  await hf(
-    {
-      fileOpts: argv.file,
-      labelOpts: [...(argv.label ?? []), 'stage=post'],
+      labelOpts: argv.label,
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },

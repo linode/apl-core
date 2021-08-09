@@ -19,7 +19,7 @@ export const source = async (path: string, force = false): Promise<void> => {
     return
   }
   if (!existsSync(path)) {
-    throw new Error(`'${path}' does not exists`)
+    throw new Error(`'${path}' does not exist`)
   }
 
   const envVars = (await $`source ${path} && env`).stdout
@@ -95,8 +95,8 @@ export type Streams = {
   stderr?: DebugStream
 }
 export const stream = (cmd: ProcessPromise<ProcessOutput>, streams?: Streams): ProcessPromise<ProcessOutput> => {
-  if (streams?.stdout) cmd.stdout.pipe(streams.stdout)
-  if (streams?.stderr) cmd.stderr.pipe(streams.stderr)
+  if (streams?.stdout) cmd.stdout.pipe(streams.stdout, { end: false })
+  if (streams?.stderr) cmd.stderr.pipe(streams.stderr, { end: false })
   return cmd
 }
 

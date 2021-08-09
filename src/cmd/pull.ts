@@ -5,7 +5,7 @@ import { env } from '../common/envalid'
 import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
 import { getFilename, setParsedArgs } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
-import { Arguments as BootsrapArgs, bootstrap } from './bootstrap'
+import { Arguments as BootsrapArgs, bootstrapValues } from './bootstrap/values'
 
 interface Arguments extends HelmArgs, BootsrapArgs {}
 
@@ -30,7 +30,7 @@ export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   otomi.exitIfInCore(cmdName)
   debug.info('Pull latest values')
   await $`git -C ${env.ENV_DIR} pull`
-  await bootstrap(argv)
+  await bootstrapValues(argv)
 }
 
 export const module = {
