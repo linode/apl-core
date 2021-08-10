@@ -10,7 +10,7 @@ import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArg
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger = terminal(cmdName)
+const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
 const outputPath = '/tmp/otomi/generated-crd-schemas'
@@ -152,7 +152,7 @@ export const validateTemplates = async (): Promise<void> => {
   const skipFilenames = ['crd', 'constraint']
 
   debug.log('Validating resources')
-  const quiet = argv.verbose ? '' : '--quiet'
+  const quiet = !argv.verbose ? undefined : '--quiet'
   debug.info(`Schema Output Path: ${schemaOutputPath}`)
   debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
   debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)

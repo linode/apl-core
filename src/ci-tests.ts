@@ -19,7 +19,7 @@ import {
 import { basicOptions } from './common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 process.env.CI = '1'
 process.env.IN_DOCKER = '1'
@@ -27,7 +27,6 @@ process.env.IN_DOCKER = '1'
 export type Arguments = BasicArguments
 
 const setup = (): void => {
-  debug = terminal(cmdName)
   process.env.AZURE_CLIENT_ID = 'somevalue'
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
@@ -35,7 +34,7 @@ const setup = (): void => {
 export const ciTests = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
-  debug.log(`Validating ${`${startingDir}/env`} values`)
+  debug.log(`Running CI tests with values from ${`${startingDir}/tests/fixtures/`}`)
 
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)
@@ -47,15 +46,15 @@ export const ciTests = async (): Promise<void> => {
 
   await validateValues()
 
-  debug.info('hf lint')
+  debug.info('Running hf lint')
   await hf({ ...argv, args: ['lint'] })
 
-  debug.info('Validate templates')
+  debug.info('Running validate-templates')
   await validateTemplates()
 
-  // TODO: checkPolicies is disabled on old CLI bin/ci-tests.sh
+  // TODO: checkPolicies is disabled until it works again
   // debug.info('Check policies')
-  // await checkPolicies(argv, { skipAll: true })
+  // await checkPolicies(argv)
 }
 
 export const module = {

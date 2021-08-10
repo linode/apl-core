@@ -136,7 +136,7 @@ spec:
           {{- end }}
           - name: data
             mountPath: /var/lib/drone
-          {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 12 }}
+          {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 10 }}
         {{- with .Values.server.extraContainers }}
         {{- tpl . $ | nindent 8 }}
         {{- end }}

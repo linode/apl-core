@@ -15,7 +15,7 @@ const cleanup = (argv: Arguments): void => {
   if (existsSync(templatePath)) unlinkSync(templatePath)
 }
 
-const setup = async (argv: Arguments): Promise<void> => {
+const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
 }
 
