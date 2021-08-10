@@ -8,7 +8,7 @@ import { loadYaml, terminal } from '../../common/utils'
 
 const debug = terminal('chart')
 let hasSops = false
-const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
+export const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf']
 
   return Object.keys(schema)
@@ -16,9 +16,11 @@ const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
       const childObj = schema[key]
       if (typeof childObj !== 'object') return false
       if ('x-secret' in childObj) return parentAddress ? `${parentAddress}.${key}` : key
-      let address = `${parentAddress}.${key}`
-      if (parentAddress === undefined) address = key
-      else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
+      let address
+      if (parentAddress === undefined) {
+        address = schemaKeywords.includes(key) ? undefined : key
+      } else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
+      else address = `${parentAddress}.${key}`
       return extractSecrets(childObj, address)
     })
     .filter(Boolean)
