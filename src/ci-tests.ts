@@ -6,8 +6,16 @@ import { hf } from './cmd/hf'
 import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
-import { cleanupHandler } from './common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, startingDir, terminal } from './common/utils'
+import { prepareEnvironment } from './common/setup'
+import {
+  BasicArguments,
+  getFilename,
+  getParsedArgs,
+  OtomiDebugger,
+  setParsedArgs,
+  startingDir,
+  terminal,
+} from './common/utils'
 import { basicOptions } from './common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -18,41 +26,32 @@ process.env.IN_DOCKER = '1'
 
 export type Arguments = BasicArguments
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = (argv: Arguments): void => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+const setup = (): void => {
+  debug = terminal(cmdName)
   process.env.AZURE_CLIENT_ID = 'somevalue'
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
-export const ciTests = async (argv: Arguments): Promise<void> => {
-  const args = { ...argv }
-  setup(args)
+export const ciTests = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
   debug.log(`Validating ${`${startingDir}/env`} values`)
 
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)
-  const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] }, { skipAllPreChecks: true })
+  const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] })
   if (opaExitCode !== 0) {
     debug.error('Opa policies failed')
     process.exit(1)
   }
 
-  debug.info('Validate values')
-
-  await validateValues(argv, { skipAllPreChecks: true })
+  await validateValues()
 
   debug.info('hf lint')
-  await hf({ ...argv, args: ['lint'] }, { skipAllPreChecks: true })
+  await hf({ ...argv, args: ['lint'] })
 
   debug.info('Validate templates')
-  await validateTemplates(argv, { skipAllPreChecks: true })
+  await validateTemplates()
 
   // TODO: checkPolicies is disabled on old CLI bin/ci-tests.sh
   // debug.info('Check policies')
@@ -65,10 +64,11 @@ export const module = {
   builder: (parser: Argv): Argv => parser,
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    debug = terminal(cmdName)
+    await prepareEnvironment({ skipAllPreChecks: true })
+    setup()
 
     try {
-      await ciTests(argv)
+      await ciTests()
     } catch (error) {
       debug.error(error)
       process.exit(1)

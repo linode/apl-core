@@ -83,7 +83,7 @@ export const bootstrapGit = async (): Promise<void> => {
   }
 }
 
-export const bootstrapValues = async (argv: Arguments): Promise<void> => {
+export const bootstrapValues = async (): Promise<void> => {
   const cwd = await currDir()
 
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
@@ -142,7 +142,7 @@ export const bootstrapValues = async (argv: Arguments): Promise<void> => {
   if (env.VALUES_INPUT) await mergeChartValues()
 
   try {
-    await genSops({ ...argv, dryRun: false }, { skipAllPreChecks: true })
+    await genSops()
   } catch (error) {
     debug.error(error.message)
   }
@@ -171,7 +171,7 @@ export const module = {
       3. cli install: n-th time (.git exists), so pull > bootstrap values
     */
     if (env.VALUES_INPUT) await bootstrapGit()
-    await bootstrapValues(argv)
+    await bootstrapValues()
   },
 }
 export default module

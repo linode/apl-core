@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { hf, hfStream } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { cleanupHandler } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -15,22 +15,21 @@ let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-/* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
 }
-/* eslint-enable no-useless-return */
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = (): void => {
+  const argv: Arguments = getParsedArgs()
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await prepareEnvironment(options)
   mkdirSync(dir, { recursive: true })
 }
 
-const applyAll = async (argv: Arguments) => {
+const applyAll = async () => {
+  const argv: Arguments = getParsedArgs()
   debug.info('Start apply all')
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
@@ -60,7 +59,7 @@ const applyAll = async (argv: Arguments) => {
 export const apply = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (!argv.label && !argv.file) {
-    await applyAll(argv)
+    await applyAll()
     return
   }
   debug.info('Start apply')
@@ -83,7 +82,7 @@ export const module: CommandModule = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await setup(argv, {})
+    setup()
     await apply()
   },
 }

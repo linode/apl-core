@@ -2,25 +2,22 @@ import { unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { hf, hfStream } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { cleanupHandler } from '../common/setup'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   unlinkSync(templateFile)
 }
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
 }
 
 const destroyAll = async () => {
@@ -65,8 +62,8 @@ const destroyAll = async () => {
   await stream($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`, debugStream)
 }
 
-export const destroy = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const destroy = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
     destroyAll()
@@ -90,7 +87,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await destroy(argv, {})
+    setup(argv)
+    await destroy()
   },
 }
 

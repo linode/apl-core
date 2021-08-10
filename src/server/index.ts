@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { decrypt, encrypt } from '../common/crypt'
-import { defaultBasicArguments, terminal } from '../common/utils'
+import { terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()
@@ -36,7 +36,7 @@ app.get('/encrypt', async (req: Request, res: Response) => {
 
 app.get('/commit', async (req: Request, res: Response) => {
   try {
-    await commit(defaultBasicArguments)
+    await commit()
     res.status(200).send('ok')
   } catch (error) {
     res.status(500).send(error)
