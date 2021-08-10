@@ -1,7 +1,7 @@
-import { Arguments, Argv } from 'yargs'
+import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { generateSecrets } from './lib/gen-secrets'
 
 /**
@@ -15,8 +15,6 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 // usage:
 export const playground = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
-
   debug.log(cmdName)
   await generateSecrets()
   // debug.info('info')
