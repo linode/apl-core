@@ -17,11 +17,9 @@ export const extractSecrets = (schema: any, parentAddress?: string): Array<strin
       if (typeof childObj !== 'object') return false
       if ('x-secret' in childObj) return parentAddress ? `${parentAddress}.${key}` : key
       let address
-      if (parentAddress === undefined)
-      {
+      if (parentAddress === undefined) {
         address = schemaKeywords.includes(key) ? undefined : key
-      } 
-      else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
+      } else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
       else address = `${parentAddress}.${key}`
       return extractSecrets(childObj, address)
     })
