@@ -44,7 +44,7 @@ rules:
   '@typescript-eslint/no-unsafe-assignment': off
   '@typescript-eslint/no-unsafe-member-access': off
   '@typescript-eslint/no-unsafe-return': off
-  '@typescript-eslint/no-use-before-define': ['error']
+  '@typescript-eslint/no-use-before-define': off
   # this next line is disabling all the warnings about non typed stuff:
   # '@typescript-eslint/explicit-module-boundary-types': off
   '@typescript-eslint/restrict-template-expressions': off

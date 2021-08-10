@@ -225,6 +225,8 @@ definitions:
       entrypoint:
         description: A Kubernetes API public IP address (onprem only).
         type: string
+      k8sContext:
+        $ref: '#/definitions/k8sContext'
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
       name:
@@ -245,6 +247,7 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         type: string
     required:
+      - k8sContext
       - k8sVersion
       - name
       - owner
@@ -427,6 +430,9 @@ definitions:
       - script
       - type
     type: object
+  k8sContext:
+    description: The cluster k8s context as found in $KUBECONFIG.
+    type: string
   k8sVersion:
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:

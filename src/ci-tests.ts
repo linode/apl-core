@@ -6,9 +6,8 @@ import { hf } from './cmd/hf'
 import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
-import { OtomiDebugger, terminal } from './common/debug'
 import { cleanupHandler } from './common/setup'
-import { BasicArguments, getFilename, setParsedArgs, startingDir } from './common/utils'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, startingDir, terminal } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)

@@ -1,8 +1,7 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, parser, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, OtomiDebugger, parser, setParsedArgs, terminal } from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
@@ -17,7 +16,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {

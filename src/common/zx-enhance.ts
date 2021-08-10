@@ -1,35 +1,8 @@
-import * as dotenv from 'dotenv'
-import { existsSync } from 'fs'
-import { $, chalk, ProcessOutput, ProcessPromise, question } from 'zx'
-import { DebugStream } from './debug'
+import { chalk, ProcessOutput, ProcessPromise, question } from 'zx'
 import { env } from './envalid'
-import { getParsedArgs } from './utils'
+import { DebugStream, getParsedArgs } from './utils'
 
 const MAX_RETRIES_QUESTION = 3
-
-/**
- * Do a bi-directional source.
- * Sourcing using `bash` within zx, only applies to those commands, but are not avaialbe using `process.env.ENV_VAR_HERE`
- * This function also maps that to process.env, making it bi-directional
- * @param path
- * @param force force sourcing of a file - even if it has previously been sourced
- */
-export const source = async (path: string, force = false): Promise<void> => {
-  if (!force && path in process.env) {
-    return
-  }
-  if (!existsSync(path)) {
-    throw new Error(`'${path}' does not exist`)
-  }
-
-  const envVars = (await $`source ${path} && env`).stdout
-  const envVarAsObj = dotenv.parse(envVars)
-  Object.entries(envVarAsObj).map(([key, value]) => {
-    process.env[key] = value
-    return value
-  })
-  process.env[path] = 'true'
-}
 
 export type AskType = {
   choices?: string[]

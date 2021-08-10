@@ -1,3 +1,4 @@
+import { config } from 'dotenv'
 import { bool, cleanEnv, json, makeValidator, str } from 'envalid'
 import { existsSync, lstatSync } from 'fs'
 
@@ -17,6 +18,13 @@ const cleanSpec = {
   STATIC_COLORS: bool({ default: false }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
+  VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
-export const env = cleanEnv(process.env, cleanSpec)
-export const getEnv = (): typeof env => cleanEnv(process.env, cleanSpec)
+let pEnv: any = process.env
+const path = `${pEnv.ENV_DIR}/.secrets`
+if (pEnv.ENV_DIR && existsSync(path)) {
+  const result = config({ path }) // this sets vars from .env onto process.env
+  if (result.error) console.error(result.error)
+  pEnv = { ...pEnv, ...result.parsed }
+}
+export const env = cleanEnv(pEnv, cleanSpec)

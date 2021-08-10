@@ -1,7 +1,7 @@
 import { CommandModule } from 'yargs'
 import { module as applyModule } from './apply'
 import { module as bashModule } from './bash'
-import { module as bootstrapModule } from './bootstrap/index'
+import { module as bootstrapModule } from './bootstrap'
 import { module as checkPoliciesModule } from './check-policies'
 import { module as commitModule } from './commit'
 import { module as decryptModule } from './decrypt'
@@ -14,7 +14,6 @@ import { module as hfModule } from './hf'
 import { module as lintModule } from './lint'
 import { module as playgroundModule } from './playground'
 import { module as pullModule } from './pull'
-import { module as regCredModule } from './regcred'
 import { module as rotateKeysModule } from './rotate-keys'
 import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
@@ -29,7 +28,7 @@ import { module as xModule } from './x'
 
 export { module as apply } from './apply'
 export { module as bash } from './bash'
-export { module as bootstrap } from './bootstrap/index'
+export { module as bootstrap } from './bootstrap'
 export { module as checkPolicies } from './check-policies'
 export { module as commit } from './commit'
 export { module as decrypt } from './decrypt'
@@ -41,7 +40,6 @@ export { module as genSops } from './gen-sops'
 export { module as hf } from './hf'
 export { module as lint } from './lint'
 export { module as pull } from './pull'
-export { module as regCred } from './regcred'
 export { module as rotateKeys } from './rotate-keys'
 export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
@@ -70,7 +68,6 @@ export const commands: CommandModule[] = [
   lintModule,
   playgroundModule,
   pullModule,
-  regCredModule,
   rotateKeysModule,
   scoreTemplatesModule,
   serverModule,

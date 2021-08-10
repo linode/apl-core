@@ -1,10 +1,9 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { deletePropertyPath, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -22,7 +21,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const validateValues = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
@@ -36,11 +35,11 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
   }
 
   debug.info('Getting values')
-  const hfVal = await hfValues()
+  const chartValues = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
-    deletePropertyPath(hfVal, internalPath)
+    deletePropertyPath(chartValues, internalPath)
   }
 
   try {
@@ -57,7 +56,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
       process.exit(1)
     }
     debug.info(`Validating values`)
-    const val = validate(hfVal)
+    const val = validate(chartValues)
     if (val) {
       debug.log('Values validation SUCCESSFUL')
     } else {

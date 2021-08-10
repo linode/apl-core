@@ -32,6 +32,8 @@ spec:
               binzx/otomi bootstrap
               binzx/otomi apply
           env:
+            - name: CI
+              value: '1'
             - name: VERBOSITY
               value: '1'
             - name: OTOMI_NON_INTERACTIVE

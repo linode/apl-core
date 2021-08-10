@@ -6,13 +6,12 @@
  *  node --experimental-specifier-resolution=node ./dist/otomi.js -- <args>
  */
 
-import { lstatSync, readdirSync } from 'fs'
+import { readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { bootstrap, commands, defaultCommand } from './cmd'
-import { terminal } from './common/debug'
 import { env } from './common/envalid'
-import { otomi } from './common/setup'
-import { parser } from './common/utils'
+import { scriptName } from './common/setup'
+import { parser, terminal } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
 
 const debug = terminal('global')
@@ -25,28 +24,9 @@ if (!env.IN_DOCKER && !isAutoCompletion) {
 }
 
 const envDirContent = readdirSync(env.ENV_DIR)
-if (envDirContent.length > 0 && !isAutoCompletion) {
-  try {
-    let errorMessage = ''
-    if (!lstatSync(`${env.ENV_DIR}/env`).isDirectory()) errorMessage += `\n${env.ENV_DIR}/env is not a directory`
-    if (!lstatSync(`${env.ENV_DIR}/env/charts`).isDirectory())
-      errorMessage += `\n${env.ENV_DIR}/env/charts is not a directory`
-    if (!lstatSync(`${env.ENV_DIR}/env/cluster.yaml`).isFile())
-      errorMessage += `\n${env.ENV_DIR}/env/cluster.yaml is not a file`
-    if (!lstatSync(`${env.ENV_DIR}/env/settings.yaml`).isFile())
-      errorMessage += `\n${env.ENV_DIR}/env/settings.yaml is not a file`
-    if (errorMessage.trim().length > 0) {
-      debug.error(`It seems like '${env.ENV_DIR}' is not a valid values repo.${errorMessage}`)
-      process.exit(1)
-    }
-  } catch (error) {
-    debug.error(`It seems like '${env.ENV_DIR}' is not a valid values repo.\n${error.message}`)
-    process.exit(1)
-  }
-}
 
 try {
-  parser.scriptName(otomi.scriptName)
+  parser.scriptName(scriptName)
   if (envDirContent.length === 0 && !isAutoCompletion) {
     parser.command(bootstrap)
   } else {

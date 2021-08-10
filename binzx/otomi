@@ -28,7 +28,7 @@ elif [ -z "$ENV_DIR" ]; then
 else
   mkdir -p $ENV_DIR
 fi
-# set -x
+
 silent() {
   if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
     "$@"
@@ -44,10 +44,6 @@ if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
   in_core=true
 fi
 
-function docker_tag_exists() {
-  curl --silent -f -lSL https://index.docker.io/v1/repositories/otomi/core/tags/$1 >/dev/null
-}
-
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ "$in_core" = true ]; then
@@ -55,9 +51,7 @@ if [ "$in_core" = true ]; then
   current_branch="${current_branch##*/}"
   current_branch="${current_branch:-'master'}"
   otomi_version='master'
-  if docker_tag_exists $current_branch; then
-    otomi_version=$current_branch
-  fi
+  otomi_version=$current_branch
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
 fi
@@ -158,7 +152,6 @@ check_update() {
 silent echo "Checking for updates"
 [ -z $CI ] && check_update
 
-silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 
 function dump_vars() {
@@ -186,7 +179,6 @@ vars=(
   DEBUG
   ENV_DIR
   GCLOUD_SERVICE_KEY
-  K8S_CONTEXT
   KUBE_VERSION_OVERRIDE
   OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
@@ -202,6 +194,7 @@ vars=(
   TESTING
   TRACE
   VERBOSITY
+  VALUES_INPUT
   VAULT_TOKEN
 )
 dump_vars "${vars[@]}"

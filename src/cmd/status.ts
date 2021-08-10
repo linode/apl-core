@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
 import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 type Arguments = BasicArguments
@@ -16,7 +16,7 @@ const cleanup = (argv: Arguments): void => {
 const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const status = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {

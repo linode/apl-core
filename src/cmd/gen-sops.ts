@@ -1,10 +1,18 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import {
+  BasicArguments,
+  getFilename,
+  gucci,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  startingDir,
+  terminal,
+} from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
@@ -30,7 +38,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
@@ -39,7 +47,10 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile)
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
-  if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
+  if (!provider) {
+    debug.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
+    return
+  }
 
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
@@ -62,8 +73,9 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
   }
 
   if (!env.CI) {
-    if (!existsSync(`${env.ENV_DIR}/.secrets`)) {
-      debug.error(`Expecting ${env.ENV_DIR}/.secrets to exist and hold credentials for SOPS`)
+    const secretPath = `${env.ENV_DIR}/.secrets`
+    if (!existsSync(secretPath)) {
+      debug.error(`Expecting ${secretPath} to exist and hold credentials for SOPS`)
       return
     }
   }

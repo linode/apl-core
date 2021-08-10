@@ -1,8 +1,7 @@
 import { Argv } from 'yargs'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hf } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -18,7 +17,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const lint = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
