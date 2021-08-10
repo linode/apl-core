@@ -5,12 +5,12 @@ import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, getK8sVersion, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
+import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
 const outputPath = '/tmp/otomi/generated-crd-schemas'
@@ -27,11 +27,9 @@ const cleanup = (argv: Arguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = async (argv: Arguments): Promise<void> => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
 
-  if (options) await prepareEnvironment(options)
   k8sVersion = getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 
@@ -131,8 +129,8 @@ const processCrdWrapper = async (argv: Arguments) => {
   await Promise.all(prep)
 }
 
-export const validateTemplates = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const validateTemplates = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   await processCrdWrapper(argv)
   const constraintKinds = [
     'PspAllowedRepos',
@@ -154,7 +152,7 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
   const skipFilenames = ['crd', 'constraint']
 
   debug.log('Validating resources')
-  const quiet = argv.verbose ? '' : '--quiet'
+  const quiet = !argv.verbose ? undefined : '--quiet'
   debug.info(`Schema Output Path: ${schemaOutputPath}`)
   debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
   debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
@@ -202,7 +200,9 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateTemplates(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await setup(argv)
+    await validateTemplates()
   },
 }
 

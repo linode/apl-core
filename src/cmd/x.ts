@@ -1,9 +1,9 @@
-import { Argv } from 'yargs'
+import { Arguments, Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
+  getParsedArgs,
   logLevel,
   logLevels,
   OtomiDebugger,
@@ -13,23 +13,10 @@ import {
 import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: BasicArguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const x = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<number> => {
-  await setup(argv, options)
+export const x = async (inArgv?: Arguments): Promise<number> => {
+  const argv: Arguments = inArgv ?? getParsedArgs()
   const commands = argv._.slice(1)
   if (logLevel() >= logLevels.INFO) commands.push('-v')
   const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
@@ -43,7 +30,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    const exitCode = await x(argv, { skipKubeContextCheck: true })
+    const exitCode = await x()
     process.exit(exitCode)
   },
 }

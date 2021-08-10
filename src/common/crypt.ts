@@ -2,7 +2,11 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { env } from './envalid'
-import { currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+import { BasicArguments, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+
+export interface Arguments extends BasicArguments {
+  files?: string[]
+}
 
 EventEmitter.defaultMaxListeners = 20
 

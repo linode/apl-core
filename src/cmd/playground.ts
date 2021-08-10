@@ -1,7 +1,7 @@
-import { Argv } from 'yargs'
+import { Arguments, Argv } from 'yargs'
 import { $ } from 'zx'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { generateSecrets } from './lib/gen-secrets'
 
 /**
@@ -11,24 +11,11 @@ import { generateSecrets } from './lib/gen-secrets'
  */
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
-
-/* eslint-disable no-useless-return */
-const cleanup = (argv: BasicArguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
+const debug: OtomiDebugger = terminal(cmdName)
 
 // usage:
-export const playground = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const playground = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
 
   debug.log(cmdName)
   await generateSecrets()
@@ -71,7 +58,8 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await playground(argv, { skipAllPreChecks: true })
+    await prepareEnvironment({ skipAllPreChecks: true })
+    await playground()
   },
 }
 

@@ -1,26 +1,12 @@
 import { Argv } from 'yargs'
 import { rotate } from '../common/crypt'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: BasicArguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const rotateKeys = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const rotateKeys = async (): Promise<void> => {
   debug.info('Starting key rotation')
   await rotate()
   debug.info('Key rotation is done')
@@ -33,7 +19,8 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await rotateKeys(argv, { skipDecrypt: true, skipKubeContextCheck: true })
+    await prepareEnvironment({ skipDecrypt: true, skipKubeContextCheck: true })
+    await rotateKeys()
   },
 }
 
