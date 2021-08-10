@@ -212,7 +212,7 @@ fi
 
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-set -x
+
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
