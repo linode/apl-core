@@ -5,7 +5,7 @@ import yaml from 'js-yaml'
 import { merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
 import { loadYaml, terminal } from '../../common/utils'
-import { extractSecrets, generateSecrets } from './gen-secrets'
+import { extractSecrets } from './gen-secrets'
 
 const debug = terminal('chart')
 let hasSops = false
@@ -28,11 +28,8 @@ export const getChartValues = (): any | undefined => {
   return env.VALUES_INPUT ? loadYaml(env.VALUES_INPUT) : undefined
 }
 
-export const mergeChartValues = async (): Promise<void> => {
+export const mergeValues = async (values: any): Promise<void> => {
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  const values = getChartValues()
-  const generatedSecrets = yaml.load(await generateSecrets())
-  merge(values, generatedSecrets)
 
   // creating secret files
   const schema = loadYaml('values-schema.yaml')

@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
+import yaml from 'js-yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { encrypt } from '../common/crypt'
@@ -8,8 +9,9 @@ import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag } from '../common/setup'
 import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { generateSecrets } from './lib/gen-secrets'
 import { genSops } from './gen-sops'
-import { getChartValues, mergeChartValues } from './lib/chart'
+import { getChartValues, mergeValues } from './lib/chart'
 
 export type Arguments = BasicArguments
 
@@ -139,7 +141,15 @@ export const bootstrapValues = async (): Promise<void> => {
   )
 
   // If we run from chart installer, VALUES_INPUT will be set
-  if (env.VALUES_INPUT) await mergeChartValues()
+  // Merge user in put values.yaml with current values
+  if (env.VALUES_INPUT) {
+    const values = loadYaml(env.VALUES_INPUT)
+    await mergeValues(values)
+  }
+
+  // Generate passwords and merge with values
+  const generatedSecrets = yaml.load(await generateSecrets()) // FIXME: only merge passwords if the passwords are not yet there
+  await mergeValues(generatedSecrets)
 
   try {
     await genSops()

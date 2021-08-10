@@ -60,8 +60,8 @@ export const generateSecrets = async (): Promise<string> => {
   }
   console.log(dump(obj))
 
-  writeFileSync('./temp.yaml', dump(obj))
-  const allSecrets = await gucci('./temp.yaml', {})
+  writeFileSync('./temp.bak', dump(obj))
+  const allSecrets = await gucci('./temp.bak', {})
 
   console.log(allSecrets)
 
