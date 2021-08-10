@@ -47,7 +47,6 @@ fi
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ "$in_core" = true ]; then
-  set -x
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch=${current_branch##*/}
   current_branch=${current_branch:-'master'}
