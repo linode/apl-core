@@ -3,8 +3,7 @@ import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { defaultBasicArguments } from '../common/utils'
+import { defaultBasicArguments, terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()

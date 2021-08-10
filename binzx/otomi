@@ -28,7 +28,7 @@ elif [ -z "$ENV_DIR" ]; then
 else
   mkdir -p $ENV_DIR
 fi
-# set -x
+
 silent() {
   if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
     "$@"
@@ -152,7 +152,6 @@ check_update() {
 silent echo "Checking for updates"
 [ -z $CI ] && check_update
 
-silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 
 function dump_vars() {
@@ -180,7 +179,6 @@ vars=(
   DEBUG
   ENV_DIR
   GCLOUD_SERVICE_KEY
-  K8S_CONTEXT
   KUBE_VERSION_OVERRIDE
   OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
@@ -196,6 +194,7 @@ vars=(
   TESTING
   TRACE
   VERBOSITY
+  VALUES_INPUT
   VAULT_TOKEN
 )
 dump_vars "${vars[@]}"

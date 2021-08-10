@@ -1,7 +1,6 @@
 import { Argv } from 'yargs'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
@@ -21,7 +20,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {

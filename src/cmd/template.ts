@@ -1,8 +1,7 @@
 import { Argv } from 'yargs'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
 interface Arguments extends HelmArgs {
@@ -22,7 +21,7 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const template = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {

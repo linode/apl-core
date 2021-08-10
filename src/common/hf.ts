@@ -1,9 +1,8 @@
 import { dump, load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { terminal } from './debug'
 import { env } from './envalid'
-import { asArray, getParsedArgs, logLevels } from './utils'
+import { asArray, getParsedArgs, logLevels, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 

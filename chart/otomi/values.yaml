@@ -2,8 +2,10 @@ cluster:
   apiName: ''
   apiServer: ''
   domainSuffix: ''
+  k8sContext: ''
   k8sVersion: '1.20'
   name: 'dev'
+  owner: ''
   provider: ''
   region: ''
 # kms:
@@ -30,11 +32,9 @@ oidc:
   clientID: ''
   clientSecret: ''
   adminGroupID: ''
-  authUrl: ''
   issuer: ''
   teamAdminGroupID: ''
   tenantID: ''
-  tokenUrl: ''
 otomi:
   adminPassword: ''
   isMultitenant: true

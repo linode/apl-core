@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -22,7 +22,7 @@ const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions):
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 // usage:

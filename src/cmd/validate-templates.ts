@@ -4,10 +4,9 @@ import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, readdirRecurse, setParsedArgs } from '../common/utils'
+import { cleanupHandler, getK8sVersion, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { getFilename, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -32,8 +31,8 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
-  k8sVersion = otomi.getK8sVersion()
+  if (options) await prepareEnvironment(options)
+  k8sVersion = getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []

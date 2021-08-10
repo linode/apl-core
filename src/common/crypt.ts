@@ -1,10 +1,8 @@
 import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
-import { OtomiDebugger, terminal } from './debug'
-import { env, getEnv } from './envalid'
-import { evaluateSecrets } from './secrets'
-import { currDir, readdirRecurse } from './utils'
+import { env } from './envalid'
+import { currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
 
 EventEmitter.defaultMaxListeners = 20
 
@@ -16,23 +14,22 @@ enum CryptType {
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
 
-const preCrypt = async (): Promise<void> => {
+const preCrypt = (): void => {
   debug.info('Checking prerequisites for the (de,en)crypt action')
-  await evaluateSecrets()
-  const secretEnv = getEnv()
-  if (secretEnv.GCLOUD_SERVICE_KEY) {
+  if (env.GCLOUD_SERVICE_KEY) {
     debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(secretEnv.GCLOUD_SERVICE_KEY, null, 2))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
   }
 }
 
 const getAllSecretFiles = async () => {
   const files = await readdirRecurse(env.ENV_DIR, { skipHidden: true })
+  debug.debug('files: ', files)
   return files
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
     .map((file) => file.replace(env.ENV_DIR, '.'))
-    .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
+  // .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
 }
 
 type CR = {
@@ -42,16 +39,17 @@ type CR = {
 }
 
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
-  const currDirVal = await currDir()
+  const cwd = await currDir()
   let files: string[] = filesArgs
   cd(env.ENV_DIR)
 
   if (files.length === 0) {
     files = await getAllSecretFiles()
   }
-  await preCrypt()
+  preCrypt()
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   EventEmitter.defaultMaxListeners = files.length + 5
+  debug.debug('runOnSecretFiles - files: ', files)
   try {
     const commands = files.map(async (file) => {
       if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
@@ -69,7 +67,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
     debug.error(error)
     return undefined
   } finally {
-    cd(currDirVal)
+    cd(cwd)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
   }
 }
@@ -112,15 +110,17 @@ export const encrypt = async (...files: string[]): Promise<void> => {
   let encFiles = files
 
   if (encFiles.length === 0) encFiles = await getAllSecretFiles()
+  debug.debug('encFiles: ', encFiles)
   await runOnSecretFiles(
     {
       condition: (path: string, file: string): boolean => {
         const absFilePath = `${path}/${file}`
 
-        const encExists = existsSync(absFilePath)
         const decExists = existsSync(`${absFilePath}.dec`)
-        if (encExists !== decExists) return true
-        if (!encExists || !decExists) return false
+        if (!decExists) {
+          debug.debug(`Did not find decrypted ${file}.dec`)
+          return true
+        }
 
         // if there is a .dec && .dec is > 1s newer
         debug.debug(`Found decrypted ${file}.dec`)

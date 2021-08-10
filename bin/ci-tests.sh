@@ -7,7 +7,7 @@ set -e
 . bin/common.sh
 
 testEnv=$PWD/tests/fixtures
-source $testEnv/env/.env
+source $testEnv/env/.secrets
 echo "Validating $testEnv values"
 
 ln -s $testEnv env

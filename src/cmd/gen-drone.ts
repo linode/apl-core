@@ -1,10 +1,23 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, gucci, setParsedArgs, startingDir } from '../common/utils'
+import {
+  cleanupHandler,
+  getClusterOwner,
+  getImageTag,
+  prepareEnvironment,
+  PrepareEnvironmentOptions,
+} from '../common/setup'
+import {
+  BasicArguments,
+  getFilename,
+  gucci,
+  OtomiDebugger,
+  setParsedArgs,
+  startingDir,
+  terminal,
+} from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean
@@ -23,35 +36,36 @@ const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Prom
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
+  if (options) await prepareEnvironment(options)
 }
 
 export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
   await setup(argv, options)
-  const hfVals = await hfValues()
-  if (!hfVals.charts?.drone?.enabled) {
+  const allValues = await hfValues()
+  if (!allValues.charts?.drone?.enabled) {
     return
   }
-  const receiver = hfVals.alerts?.drone ?? 'slack'
-  const branch = hfVals.charts?.['otomi-api']?.git?.branch ?? 'main'
+  const receiver = allValues.alerts?.drone ?? 'slack'
+  const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
 
   const key = receiver === 'slack' ? 'url' : 'lowPrio'
-  const channel = receiver === 'slack' ? hfVals.alerts?.[receiver]?.channel ?? 'dev-mon' : undefined
+  const channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'dev-mon' : undefined
 
-  const webhook = hfVals.alerts?.[receiver]?.[key]
+  const webhook = allValues.alerts?.[receiver]?.[key]
   if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
 
-  const cluster = hfVals.cluster?.name
-  const globalPullSecret = hfVals.otomi?.globalPullSecret
-  const provider = hfVals.alerts.drone
-  const pullPolicy = otomi.imageTag().startsWith('v') ? 'if-not-exists' : 'always'
+  const cluster = allValues.cluster?.name
+  const globalPullSecret = allValues.otomi?.globalPullSecret
+  const provider = allValues.alerts.drone
+  const imageTag = getImageTag()
+  const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
 
   const obj = {
-    imageTag: otomi.imageTag(),
+    imageTag,
     branch,
     cluster,
     channel,
-    customer: otomi.clusterOwner(),
+    customer: getClusterOwner(),
     globalPullSecret,
     provider,
     webhook,
