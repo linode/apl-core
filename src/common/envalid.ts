@@ -9,7 +9,7 @@ const envalidPath = makeValidator((x) => {
 
 const cleanSpec = {
   CI: bool({ default: false }),
-  ENV_DIR: envalidPath({ default: process.cwd() }),
+  ENV_DIR: envalidPath({ default: `{process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   OTOMI_DEV: bool({ default: false }),
