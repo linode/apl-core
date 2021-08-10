@@ -47,10 +47,10 @@ fi
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
 if [ "$in_core" = true ]; then
-  current_branch="$(git branch --show-current 2>/dev/null)"
-  current_branch="${current_branch##*/}"
-  current_branch="${current_branch:-'master'}"
-  otomi_version='master'
+  set -x
+  current_branch=$(git branch --show-current 2>/dev/null)
+  current_branch=${current_branch##*/}
+  current_branch=${current_branch:-'master'}
   otomi_version=$current_branch
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
@@ -213,7 +213,7 @@ fi
 
 stack_dir='/home/app/stack'
 executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-
+set -x
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
@@ -304,10 +304,7 @@ else
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
-  running_date=$(date -u '+%y%m%d-%H%M')
-  backup_path="/tmp/otomi/otomi-$running_date"
-  mkdir -p "$backup_path"
-  mv "$tmp_env" "$backup_path/running_env"
+  echo "keeping files"
 else
   # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1
