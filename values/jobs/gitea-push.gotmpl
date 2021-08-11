@@ -55,12 +55,6 @@ script: |
     binzx/otomi commit
   fi
 runPolicy: OnSpecChange
-files: 
-  {{- $files := split "\n" (exec "/home/app/stack/binzx/otomi" (list "files") | trim) }}
-  {{- range $file := $files }}
-  '/secrets/{{ $file }}': |
-    {{- readFile (printf "%s/%s" (env "ENV_DIR") $file) | nindent 4 }}
-  {{- end }}
 podSecurityContext:
   runAsUser: 999
   runAsGroup: 999
