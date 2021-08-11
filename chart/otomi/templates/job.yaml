@@ -29,6 +29,7 @@ spec:
           command: [bash, -c]
           args:
             - |
+              set -e
               binzx/otomi bootstrap
               binzx/otomi decrypt
               binzx/otomi apply
