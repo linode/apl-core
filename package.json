@@ -111,7 +111,7 @@
     "release:github": "github-release-from-changelog",
     "score-templates": "TESTING=1 binzx/otomi score-templates",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
-    "test": "run-p spellcheck test:bats lint validate-templates",
+    "test": "run-p spellcheck lint validate-templates",
     "test:bats": "TESTING=1 binzx/otomi x bats -- -T bin/tests",
     "test:ci": "TESTING=1 binzx/otomi x src/ci-tests.ts",
     "test:opa": "binzx/otomi x opa test policies -v",

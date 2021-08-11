@@ -50,7 +50,6 @@ script: |
     mkdir /home/app/stack/env
     cp -r /secrets/* /home/app/stack/env/
     cp -r /secrets/. /home/app/stack/env/
-    ls -als /home/app/stack/env/env/
     binzx/otomi bootstrap
     binzx/otomi decrypt
     binzx/otomi commit

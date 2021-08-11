@@ -15,8 +15,9 @@
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
 if [ -n "$TESTING" ]; then
-  # CI=1
-  ENV_DIR="$PWD/tests/fixtures"
+  CI=1
+  echo "ENV_DIR: $ENV_DIR"
+  [ -z "$ENV_DIR" ] && ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
   AZURE_CLIENT_ID=somevalue
   AZURE_CLIENT_SECRET=somesecret
