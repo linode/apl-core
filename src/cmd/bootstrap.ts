@@ -17,8 +17,9 @@ const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = (cwd: string) => {
+  // FIXME: why there are 2 target paths for loose schema?
   const schemaPath = `${cwd}/.vscode/values-schema.yaml`
-  const targetPath = `${env.ENV_DIR}/${schemaPath}`
+  const targetPath = `${env.ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${cwd}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
@@ -105,13 +106,14 @@ export const bootstrapValues = async (): Promise<void> => {
     mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
     await copy(`${cwd}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { overwrite: false, recursive: true })
     debug.info('Copied vscode folder')
-    generateLooseSchema(cwd)
-    debug.info('Generated loose schema')
   } catch (error) {
     debug.error(error)
     debug.error(`Could not copy from ${cwd}/.values/.vscode`)
     process.exit(1)
   }
+
+  generateLooseSchema(cwd)
+  debug.info('Generated loose schema')
 
   await Promise.allSettled(
     ['.gitattributes', '.secrets.sample']
