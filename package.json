@@ -100,7 +100,7 @@
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "husky:lint-staged": "lint-staged",
-    "husky:pre-push": "run-p husky:lint-staged lint:hf spellcheck",
+    "husky:pre-push": "run-p husky:lint-staged spellcheck lint:hf -- -ni",
     "lint:hf": "TESTING=1 binzx/otomi hf lint",
     "lint": "run-p spellcheck lint:hf lint:ts",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",

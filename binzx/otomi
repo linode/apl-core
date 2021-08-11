@@ -18,6 +18,8 @@ if [ -n "$TESTING" ]; then
   # CI=1
   ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
+  AZURE_CLIENT_ID=bla
+  AZURE_CLIENT_SECRET=dida
 elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
   ENV_DIR="$PWD/env"
 elif [ -z "$IN_DOCKER" ]; then
