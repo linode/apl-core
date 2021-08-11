@@ -2,30 +2,25 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { deletePropertyPath, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import {
+  deletePropertyPath,
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const validateValues = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const validateValues = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   debug.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
@@ -85,7 +80,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateValues(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await validateValues()
   },
 }
 

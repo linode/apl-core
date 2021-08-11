@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfStream } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 
 interface Arguments extends HelmArgs {
@@ -10,23 +10,10 @@ interface Arguments extends HelmArgs {
 }
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const hf = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const hf = async (inArgs?: Arguments): Promise<void> => {
+  const argv: Arguments = inArgs ?? getParsedArgs()
   try {
     await hfStream(
       {
@@ -50,7 +37,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await hf(argv, { skipKubeContextCheck: env.TESTING })
+    await prepareEnvironment({ skipKubeContextCheck: env.TESTING })
+    await hf()
   },
 }
 

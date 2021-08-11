@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions, scriptName } from '../common/setup'
+import { prepareEnvironment, scriptName } from '../common/setup'
 import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapValues } from './bootstrap'
@@ -10,23 +10,9 @@ import { bootstrapValues } from './bootstrap'
 type Arguments = HelmArgs
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const pull = async (): Promise<void> => {
   const allValues = await hfValues()
   const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
   debug.info('Pulling latest values')
@@ -42,7 +28,7 @@ export const pull = async (argv: Arguments, options?: PrepareEnvironmentOptions)
     cd(cwd)
   }
 
-  await bootstrapValues(argv)
+  await bootstrapValues()
 }
 
 export const module = {
@@ -52,7 +38,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await pull(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await pull()
   },
 }
 

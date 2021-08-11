@@ -2,16 +2,11 @@ import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import {
-  cleanupHandler,
-  getClusterOwner,
-  getImageTag,
-  prepareEnvironment,
-  PrepareEnvironmentOptions,
-} from '../common/setup'
+import { getClusterOwner, getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
+  getParsedArgs,
   gucci,
   OtomiDebugger,
   setParsedArgs,
@@ -24,23 +19,10 @@ export interface Arguments extends BasicArguments {
 }
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const genDrone = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const genDrone = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   const allValues = await hfValues()
   if (!allValues.charts?.drone?.enabled) {
     return
@@ -96,7 +78,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await genDrone(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await genDrone()
   },
 }
 

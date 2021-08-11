@@ -1,27 +1,13 @@
 import { Argv } from 'yargs'
 import { hfStream } from '../common/hf'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const sync = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hfStream(
@@ -33,7 +19,6 @@ export const sync = async (argv: Arguments, options?: PrepareEnvironmentOptions)
     },
     { trim: true, streams: { stdout: debug.stream.log } },
   )
-  // debug.info(output)
 }
 
 export const module = {
@@ -43,7 +28,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await sync(argv, {})
+    await sync()
   },
 }
 

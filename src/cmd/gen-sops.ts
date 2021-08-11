@@ -2,10 +2,11 @@ import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { env } from '../common/envalid'
-import { cleanupHandler, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
+  getParsedArgs,
   gucci,
   loadYaml,
   OtomiDebugger,
@@ -19,7 +20,7 @@ export interface Arguments extends BasicArguments {
 }
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const providerMap = {
   aws: 'kms',
@@ -28,22 +29,8 @@ const providerMap = {
   vault: 'hc_vault_transit_uri',
 }
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await prepareEnvironment(options)
-}
-
-export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, { ...options, skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
-
+export const genSops = async (): Promise<void> => {
+  const argv: BasicArguments = getParsedArgs()
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile)
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
@@ -104,12 +91,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    try {
-      await genSops(argv, { skipKubeContextCheck: true })
-    } catch (error) {
-      debug.error(error.message)
-      process.exit(0)
-    }
+    await prepareEnvironment({ skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
+    await genSops()
   },
 }
 

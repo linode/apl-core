@@ -4,7 +4,7 @@ import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { exitIfInCore, prepareEnvironment, PrepareEnvironmentOptions } from '../common/setup'
+import { exitIfInCore, prepareEnvironment } from '../common/setup'
 import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapGit } from './bootstrap'
@@ -18,12 +18,11 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (options) await prepareEnvironment(options)
+const setup = (): void => {
   exitIfInCore(cmdName)
 }
 
-export const preCommit = async (argv: DroneArgs): Promise<void> => {
+export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.info('Check for cluster diffs')
   await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
@@ -35,7 +34,7 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
   const secretMsTeamsHighPrioChanges = secretDiff.includes('+        highPrio: https://')
   if (versionChanges || secretSlackChanges || secretMsTeamsLowPrioChanges || secretMsTeamsHighPrioChanges)
-    await genDrone(argv)
+    await genDrone()
 }
 
 export const gitPush = async (
@@ -65,10 +64,8 @@ export const gitPush = async (
   }
 }
 
-export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
-
-  await validateValues(argv)
+export const commit = async (): Promise<void> => {
+  await validateValues()
 
   debug.info('Preparing values')
 
@@ -78,13 +75,13 @@ export const commit = async (argv: Arguments, options?: PrepareEnvironmentOption
   const values = getChartValues() ?? (await hfValues())
   const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
 
-  preCommit(argv)
+  preCommit()
   await encrypt()
   debug.info('Committing values')
   await $`git add -A`
   await $`git commit -m 'otomi commit' --no-verify`
 
-  if (!env.CI) await pull(argv, options)
+  if (!env.CI) await pull()
   let healthUrl
   let branch
   if (!values.charts?.gitea?.enabled) {
@@ -116,14 +113,16 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    const options = { skipKubeContextCheck: true }
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    setup()
+
     if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
       debug.info('Values repo already git initialized.')
-      await pull(argv, options)
+      await pull()
     } else {
       await bootstrapGit()
     }
-    await commit(argv, options)
+    await commit()
   },
 }
 
