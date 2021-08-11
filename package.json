@@ -16,6 +16,8 @@
     "dotenv": "^10.0.0",
     "envalid": "^7.1.1",
     "express": "^4.17.1",
+    "fs-extra": "^9.1.0",
+    "ignore-walk": "^3.0.4",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
     "node-fetch": "^2.6.1",

@@ -25,8 +25,8 @@ ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-COPY --from=test /home/app/stack/dist .
-COPY --chown=app package*.json ./
+COPY --from=test /home/app/stack/dist /home/app/stack/dist
+COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 

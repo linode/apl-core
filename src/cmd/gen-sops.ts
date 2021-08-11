@@ -91,7 +91,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
+    await prepareEnvironment({ skipDecrypt: true, skipKubeContextCheck: true })
     await genSops()
   },
 }

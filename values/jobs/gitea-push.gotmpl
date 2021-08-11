@@ -1,18 +1,24 @@
 {{- $v := .Values }}
+{{- $s := $v | get "kms.sops" dict }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" -}}
+{{- $cm := $c | get "cert-manager" }}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 {{- $otomiVersion := $v.otomi | get "version" "latest" }}
 {{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $otomiVersion) }}
 {{- $giteaUrl := print "https://gitea." $v.cluster.domainSuffix }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 
 type: Job
 name: gitea-push
 env:
   GITEA_URL: {{ $giteaUrl }}
   DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
+  CI: '1'
+  IN_DOCKER: '1'
+  VERBOSITY: '3'
 nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+  {{- $sopsEnv | nindent 2 }}
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 image:
@@ -22,25 +28,48 @@ image:
 init:
   env:
     GITEA_URL: {{ $giteaUrl }}
+  nativeSecrets:
+    GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
   image: 
     repository: alpine/git
   script: |
     {{ if $skipVerify }}NOSSL=' -c http.sslVerify=false'{{ end }}
     GITEA_URL=https://otomi-admin:$GITEA_PASSWORD@gitea.{{ $v.cluster.domainSuffix }}/otomi/values
     echo "Waiting until gitea is accessible at {{ $giteaUrl }}/otomi/values"
-    until $(git $NOSSL ls-remote $GITEA_URL); do 
+    until git $NOSSL ls-remote $GITEA_URL >/dev/null; do 
       printf '.'
       sleep 5
     done
     echo READY!
 script: |
-  binzx/otomi bootstrap
-  # only run initial commit (when repo is empty)np
-  ! binzx/otomi pull && binzx/otomi commit
+  {{ if $skipVerify }}NOSSL=' -c http.sslVerify=false'{{ end }}
+  GITEA_URL=https://otomi-admin:$GITEA_PASSWORD@gitea.{{ $v.cluster.domainSuffix }}/otomi/values
+  test=$(git $NOSSL ls-remote $GITEA_URL)
+  # only run initial commit (when repo is empty)
+  if [ -z "$test" ]; then
+    mkdir /home/app/stack/env
+    cp -r /secrets/* /home/app/stack/env/
+    cp -r /secrets/. /home/app/stack/env/
+    ls -als /home/app/stack/env/env/
+    binzx/otomi bootstrap
+    binzx/otomi decrypt
+    binzx/otomi commit
+  fi
 runPolicy: OnSpecChange
 files: 
-  {{- $files := split "\n" (exec "bash" (list "-c" (printf "find %s -type f | grep -v '.git' | grep -v '.history'" (env "ENV_DIR"))) | trim) }}
+  {{- $files := split "\n" (exec "/home/app/stack/binzx/otomi" (list "files") | trim) }}
   {{- range $file := $files }}
-  '{{ $file | replace (env "ENV_DIR") "/home/app/stack/env" }}': |
-    {{- readFile $file | nindent 4 }}
+  '/secrets/{{ $file }}': |
+    {{- readFile (printf "%s/%s" (env "ENV_DIR") $file) | nindent 4 }}
   {{- end }}
+podSecurityContext:
+  runAsUser: 999
+  runAsGroup: 999
+backoffLimit: 33 
+resources:
+  limits:
+    memory: 2Gi
+    cpu: '2'
+  requests:
+    memory: 1Gi
+    cpu: '1'

@@ -14,20 +14,19 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
-if [ -n "$CI" ] || [ -n "$TESTING" ]; then
+if [ -n "$TESTING" ]; then
+  # CI=1
+  ENV_DIR="$PWD/tests/fixtures"
+  NOPULL=1
+elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
+  ENV_DIR="$PWD/env"
+elif [ -z "$IN_DOCKER" ]; then
+  mkdir -p $ENV_DIR
+fi
+if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
 fi
 readonly calling_args
-if [ -n "$TESTING" ]; then
-  CI=1
-  ENV_DIR="$PWD/tests/fixtures"
-  source "$ENV_DIR/env/.env"
-  NOPULL=1
-elif [ -z "$ENV_DIR" ]; then
-  ENV_DIR=$PWD
-else
-  mkdir -p $ENV_DIR
-fi
 
 silent() {
   if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
@@ -186,7 +185,6 @@ vars=(
   OTOMI_SERVER
   OTOMI_TAG
   OTOMI_USERNAME
-  OTOMI_NON_INTERACTIVE
   PROFILE
   STATIC_COLORS
   SHELL

@@ -1,15 +1,10 @@
 import { config } from 'dotenv'
-import { bool, cleanEnv, json, makeValidator, str } from 'envalid'
-import { existsSync, lstatSync } from 'fs'
-
-const envalidPath = makeValidator((x) => {
-  if (existsSync(x) && lstatSync(x).isDirectory()) return x
-  throw new Error('Expected a valid path')
-})
+import { bool, cleanEnv, json, str } from 'envalid'
+import { existsSync } from 'fs'
 
 const cleanSpec = {
   CI: bool({ default: false }),
-  ENV_DIR: envalidPath({ default: `{process.cwd()}/env` }),
+  ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   OTOMI_DEV: bool({ default: false }),

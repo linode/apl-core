@@ -1,5 +1,6 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
+import walk from 'ignore-walk'
 import { load } from 'js-yaml'
 import fetch from 'node-fetch'
 import { resolve } from 'path'
@@ -154,6 +155,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
 }
+
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
   const dirs = readdirSync(dir, { withFileTypes: true })
   const files = await Promise.all(
@@ -164,6 +166,14 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
     }),
   )
   return files.flat()
+}
+
+export const getEnvFiles = (): Promise<string[]> => {
+  return walk({
+    path: env.ENV_DIR,
+    ignoreFiles: ['.gitignore'],
+    follow: true,
+  })
 }
 
 export const capitalize = (s: string): string =>
