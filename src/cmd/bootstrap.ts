@@ -127,6 +127,10 @@ export const bootstrapValues = async (): Promise<void> => {
   if (!existsSync(`${env.ENV_DIR}/env`)) {
     debug.log(`Copying basic values`)
     await copy(`${cwd}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
+
+    // Generate passwords and merge with values only if there are no values already
+    const generatedSecrets = yaml.load(await generateSecrets())
+    await mergeValues(generatedSecrets)
   }
 
   if (env.GCLOUD_SERVICE_KEY) {
@@ -146,10 +150,6 @@ export const bootstrapValues = async (): Promise<void> => {
     const values = loadYaml(env.VALUES_INPUT)
     await mergeValues(values)
   }
-
-  // Generate passwords and merge with values
-  const generatedSecrets = yaml.load(await generateSecrets()) // FIXME: only merge passwords if the passwords are not yet there
-  await mergeValues(generatedSecrets)
 
   try {
     await genSops()
