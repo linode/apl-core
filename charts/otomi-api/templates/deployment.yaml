@@ -33,7 +33,7 @@ spec:
       {{- if contains $giteaUrl .Values.env.GIT_REPO_URL }}
       initContainers:
         - name: waitforgitea
-          image: alpine/git
+          image: alpine/git:v2.30.2
           script: |
             {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
             GITEA_URL=https://$GIT_USER:$GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
