@@ -55,7 +55,7 @@ spec:
       initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
       {{- if .Values.otomiApiUsesOtomiGitea }}
         - name: waitforgitea
-          image: alpine/git
+          image: alpine/git:v2.30.2
           # FIXME: why do we need to wait for gitea?
           command:
             - /bin/sh
