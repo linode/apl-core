@@ -33,6 +33,7 @@ spec:
               binzx/otomi bootstrap
               binzx/otomi decrypt
               binzx/otomi apply
+              binzx/otomi commit
           env:
             - name: CI
               value: '1'
@@ -53,9 +54,11 @@ spec:
             - name: values-secret
               mountPath: /secret
       volumes:
+        # Mount data provided by user
         - name: values-secret
           secret:
             secretName: '{{ .Release.Name }}-values'
+        # Otomi bootstrap populates data /secret/values.yaml to /home/app/stack/env
         - name: otomi-values
           emptyDir: {}
       restartPolicy: Never
