@@ -55,7 +55,7 @@ spec:
       initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
       {{- if .Values.otomiApiUsesOtomiGitea }}
         - name: waitforgitea
-          image: alpine/git
+          image: alpine/git:v2.30.2
           script: |
             {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
             GITEA_URL=https://$DRONE_GIT_USERNAME:$DRONE_GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
