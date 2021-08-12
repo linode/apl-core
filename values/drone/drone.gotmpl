@@ -13,7 +13,7 @@
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $otomiApiUsesOtomiGitea := eq ($oa | get "env.GIT_REPO_URL" "" ) "" }}
 
-clusterDomain: {{ $v.cluster.domainSuffix }}
+clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 images:
   server:
