@@ -54,6 +54,7 @@ env:
   {{- if $skipVerify }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
+  CI: '1'
   {{- end }}
 
 core:
