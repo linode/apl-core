@@ -51,11 +51,6 @@ try {
     .completion('completion', false)
   await parser.parseAsync()
 } catch (error) {
-  parser.showHelp()
-  let errData = error.message
-  if (env.OTOMI_DEV) {
-    errData = error
-  }
-  debug.error(errData)
+  debug.error(error)
   process.exit(1)
 }
