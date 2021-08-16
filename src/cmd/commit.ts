@@ -44,16 +44,16 @@ export const gitPush = async (
 ): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
-  let skipSslVerify = ''
+  const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
   if (giteaUrl) {
-    if (!sslVerify) skipSslVerify = '-c http.sslVerify=false'
+    if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
     await waitTillAvailable(giteaUrl)
   }
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`git ${skipSslVerify} push -u origin ${branch} -f`
+    await $`git push -u origin ${branch} -f`
     gitDebug.log('Otomi values have been pushed to git.')
     return true
   } catch (error) {
@@ -61,6 +61,7 @@ export const gitPush = async (
     return false
   } finally {
     cd(cwd)
+    process.env.GIT_SSL_NO_VERIFY = currentGitSSLVerify
   }
 }
 

@@ -187,7 +187,7 @@ export const validateTemplates = async (): Promise<void> => {
   output.PASS?.map((_val: string) => debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0) {
-    if (output.ERR) output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
+    output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
     debug.error('Templating FAILED')
     process.exit(1)
   } else debug.log('Templating SUCCESS')

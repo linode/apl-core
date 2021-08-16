@@ -242,7 +242,9 @@ export const deletePropertyPath = (object: any, path: string): void => {
 }
 export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
-export const waitTillAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
+export const waitTillAvailable = async (dom: string, subsequentExists = 3): Promise<void> => {
+  // node-fetch 'only absolute URLs are supported' thats why https needs to be prepended if it doesn't exist
+  const domain = dom.startsWith('http') ? dom : `https://${dom}`
   const waitDebug = terminal('waitTillAvailable')
   let count = 0
   // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
@@ -255,9 +257,11 @@ export const waitTillAvailable = async (domain: string, subsequentExists = 3): P
         count += 1
       } else {
         count = 0
+        waitDebug.debug(`Waiting for ${domain} could not fetch, trying again`)
       }
-    } catch (_) {
+    } catch (error) {
       count = 0
+      waitDebug.error(error.message)
     }
     // eslint-disable-next-line no-await-in-loop
     await delay(250)
