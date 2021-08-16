@@ -84,12 +84,11 @@ export const commit = async (): Promise<void> => {
   if (!env.CI) await pull()
   let healthUrl
   let branch
-  if (!values.charts?.gitea?.enabled) {
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
+  } else {
     healthUrl = `gitea.${clusterDomain}`
     branch = 'main'
-  } else {
-    // @ts-ignore
-    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
   }
 
   try {
