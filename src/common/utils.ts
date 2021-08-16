@@ -243,9 +243,11 @@ export const deletePropertyPath = (object: any, path: string): void => {
 export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
 export const waitTillAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
+  const waitDebug = terminal('waitTillAvailable')
   let count = 0
   // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
   do {
+    waitDebug.debug(`Waiting for ${domain} ...`)
     try {
       // eslint-disable-next-line no-await-in-loop
       const res = await fetch(domain, { redirect: 'follow' })
@@ -260,6 +262,7 @@ export const waitTillAvailable = async (domain: string, subsequentExists = 3): P
     // eslint-disable-next-line no-await-in-loop
     await delay(250)
   } while (count < subsequentExists)
+  waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
 export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {
