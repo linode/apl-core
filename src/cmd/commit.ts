@@ -44,16 +44,16 @@ export const gitPush = async (
 ): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
-  let skipSslVerify = ''
+  const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
   if (giteaUrl) {
-    if (!sslVerify) skipSslVerify = '-c http.sslVerify=false'
+    if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
     await waitTillAvailable(giteaUrl)
   }
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`git ${skipSslVerify} push -u origin ${branch} -f`
+    await $`git push -u origin ${branch} -f`
     gitDebug.log('Otomi values have been pushed to git.')
     return true
   } catch (error) {
@@ -61,6 +61,7 @@ export const gitPush = async (
     return false
   } finally {
     cd(cwd)
+    process.env.GIT_SSL_NO_VERIFY = currentGitSSLVerify
   }
 }
 
@@ -84,12 +85,11 @@ export const commit = async (): Promise<void> => {
   if (!env.CI) await pull()
   let healthUrl
   let branch
-  if (!values.charts?.gitea?.enabled) {
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
+  } else {
     healthUrl = `gitea.${clusterDomain}`
     branch = 'main'
-  } else {
-    // @ts-ignore
-    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
   }
 
   try {

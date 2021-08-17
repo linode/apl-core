@@ -17,16 +17,19 @@ const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = (cwd: string) => {
-  const schemaPath = '.vscode/values-schema.yaml'
-  const targetPath = `${env.ENV_DIR}/${schemaPath}`
+  // FIXME: why there are 2 target paths for loose schema?
+  const schemaPath = `${cwd}/.vscode/values-schema.yaml`
+  const targetPath = `${env.ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${cwd}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
   const trimmedVS = JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)
   writeFileSync(targetPath, trimmedVS)
-  if (cwd !== '/home/app/stack' && !existsSync(`${cwd}/${schemaPath}`))
-    writeFileSync(`${cwd}/.values/values-schema.yaml`, trimmedVS)
-  debug.info(`Stored YAML schema at: ${targetPath}`)
+  if (!env.CI && !env.IN_DOCKER) {
+    debug.info(`Stored loose YAML schema at: ${schemaPath}`)
+    writeFileSync(schemaPath, trimmedVS)
+  }
+  debug.info(`Stored loose YAML schema at: ${targetPath}`)
 }
 
 export const bootstrapGit = async (): Promise<void> => {
@@ -103,13 +106,14 @@ export const bootstrapValues = async (): Promise<void> => {
     mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
     await copy(`${cwd}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { overwrite: false, recursive: true })
     debug.info('Copied vscode folder')
-    generateLooseSchema(cwd)
-    debug.info('Generated loose schema')
   } catch (error) {
     debug.error(error)
     debug.error(`Could not copy from ${cwd}/.values/.vscode`)
     process.exit(1)
   }
+
+  generateLooseSchema(cwd)
+  debug.info('Generated loose schema')
 
   await Promise.allSettled(
     ['.gitattributes', '.secrets.sample']
@@ -170,7 +174,7 @@ export const module = {
       2. cli install: first time, so git init > bootstrap values
       3. cli install: n-th time (.git exists), so pull > bootstrap values
     */
-    if (env.VALUES_INPUT) await bootstrapGit()
+    await bootstrapGit()
     await bootstrapValues()
   },
 }

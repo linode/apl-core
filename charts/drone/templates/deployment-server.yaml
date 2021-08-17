@@ -53,19 +53,6 @@ spec:
       tolerations: {{- toYaml . | nindent 8 }}
 {{- end }}
       initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
-      {{- if .Values.otomiApiUsesOtomiGitea }}
-        - name: waitforgitea
-          image: alpine/git
-          script: |
-            {{ if (merge .Values dict) | dig "env" "GIT_SSL_NO_VERIFY" nil }}NOSSL=' -c http.sslVerify=false'{{ end }}
-            GITEA_URL=https://$DRONE_GIT_USERNAME:$DRONE_GIT_PASSWORD@gitea.{{ .Values.clusterDomainSuffix }}/otomi/values
-            echo "Waiting until gitea is accessible at gitea.{{ .Values.clusterDomainSuffix }}/otomi/values"
-            until $(git $NOSSL ls-remote $GITEA_URL); do 
-              printf '.'
-              sleep 5
-            done
-            echo READY!
-      {{- end }}
       containers:
         - name: server
           image: "{{ .Values.images.server.repository }}:{{ .Values.images.server.tag }}"

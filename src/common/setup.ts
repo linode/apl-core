@@ -60,7 +60,6 @@ const checkEnvDir = (): boolean => {
 
 export type PrepareEnvironmentOptions = {
   skipEnvDirCheck?: boolean
-  skipEvaluateSecrets?: boolean
   skipKubeContextCheck?: boolean
   skipDecrypt?: boolean
   skipAllPreChecks?: boolean

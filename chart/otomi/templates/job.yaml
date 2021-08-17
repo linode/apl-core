@@ -29,15 +29,18 @@ spec:
           command: [bash, -c]
           args:
             - |
+              set -e
               binzx/otomi bootstrap
+              binzx/otomi decrypt
               binzx/otomi apply
+              binzx/otomi commit
           env:
             - name: CI
               value: '1'
+            - name: IN_DOCKER
+              value: '1'
             - name: VERBOSITY
               value: '1'
-            - name: OTOMI_NON_INTERACTIVE
-              value: 'true'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT
@@ -51,9 +54,11 @@ spec:
             - name: values-secret
               mountPath: /secret
       volumes:
+        # Mount data provided by user
         - name: values-secret
           secret:
             secretName: '{{ .Release.Name }}-values'
+        # Otomi bootstrap populates data /secret/values.yaml to /home/app/stack/env
         - name: otomi-values
           emptyDir: {}
       restartPolicy: Never

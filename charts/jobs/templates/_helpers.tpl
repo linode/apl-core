@@ -69,7 +69,8 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "flatten-name" -}}
-{{ printf "job-%s" (. | replace "." "-" | replace "/" "-") }}
+{{- $res := regexReplaceAll "[()/_-]{1}" . "" -}}
+{{- regexReplaceAll "[|.]{1}" $res "-" | trimAll "-" | lower -}}
 {{- end -}}
 
 {{- define "podspec" -}}
@@ -79,6 +80,7 @@ Create the name of the service account to use
 {{- $podSecurityContext := $v.podSecurityContext | default (dict "runAsNonRoot" true "runAsUser" 1001 "runAsGroup" 1001) -}}
 {{- $containers := list (dict "isInit" false "container" $v) }}
 {{- $hasMounts := or $v.files $v.secretMounts }}
+{{- $vols := include "file-volumes" $v | fromYaml }}
 {{- if $v.init }}
   {{- $containers = prepend $containers (dict "isInit" true "container" $v.init) }}
   {{- if or $v.init.files $v.init.SecretMounts }}{{ $hasMounts = true }}{{ end }}
@@ -103,7 +105,7 @@ template:
       {{- end }}
   {{- range $item := $containers }}
     {{- $c := $item.container }}
-    {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+    {{- $initSuffix := $item.isInit | ternary "-i" "" }}
     {{- if and $item.isInit $c }}
     initContainers:
     {{- end }}
@@ -113,7 +115,7 @@ template:
     {{- if $c }}
       - image: {{ $c.image.repository | default $v.image.repository }}:{{ $c.image.tag | default (hasKey $c.image "repository" | ternary "latest" ($v.image.tag | default "latest")) }}
         imagePullPolicy: {{ $c.image.pullPolicy | default $v.image.pullPolicy | default "IfNotPresent"}}
-        name: {{ $.Release.Name }}{{ $initSuffix }}
+        name: {{ print $.Release.Name $initSuffix | trunc 63 | trimSuffix "-" }}
         command:
           - {{ $c.shell | default "/bin/sh" }}
           - -c
@@ -124,11 +126,11 @@ template:
         envFrom:
         {{- if $c.env }}
         - configMapRef:
-            name: {{ $.Release.Name }}-env{{ $initSuffix }}
+            name: {{ print $.Release.Name "-env" $initSuffix | trunc 63 | trimSuffix "-" }}
         {{- end }}
         {{- if $c.nativeSecrets }}
         - secretRef:
-            name: {{ $.Release.Name }}{{ $initSuffix }}
+            name: {{ print $.Release.Name $initSuffix | trunc 63 | trimSuffix "-" }}
         {{- end }}
       {{- end }}
       {{- with $c.secrets }}
@@ -153,14 +155,15 @@ template:
     {{- end }}
     {{- if or $c.files $c.secretMounts }}
         volumeMounts:
-      {{- range $location, $content := $c.files }}
-          - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
-            mountPath: {{ $location }}
+      {{- range $dir, $files := $vols }}
+          - name: {{ print $.Release.Name (include "flatten-name" $dir) | trunc 63 }}
+            mountPath: {{ $dir }}
             readOnly: true
       {{- end }}
       {{- range $location, $secret := $c.secretMounts }}
-          - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
-            mountPath: {{ $location }}
+          - name: {{ print $.Release.Name $initSuffix | trunc 63 | trimSuffix "-"}}
+            mountPath: {{ $location | dir }}
+            subPath: {{ $location | base }}
             readOnly: true
       {{- end }}
     {{- end }}
@@ -168,16 +171,21 @@ template:
     restartPolicy: Never
   {{- if $hasMounts }}
     volumes:
-    {{- range $item := $containers }}    
-      {{- $c := $item.container }}
-      {{- $initSuffix := $item.isInit | ternary "-init" "" }}
-      {{- range $location, $content := $c.files }}
-      - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+    {{- range $dir, $files := $vols }}
+      - name: {{ print $.Release.Name (include "flatten-name" $dir) | trunc 63 }}
         configMap:
-          name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
-      {{- end }}
+          name: {{ print $.Release.Name (include "flatten-name" $dir) | trunc 63 }}
+          items:
+            {{- range $fileContent := $files }}
+            - key: {{ $fileContent.name }}
+              path: {{ $fileContent.name }}
+            {{- end }}
+    {{- end }}
+    {{- range $item := $containers }}
+      {{- $c := $item.container }}
+      {{- $initSuffix := $item.isInit | ternary "-i" "" }}
       {{- range $location, $secret := $c.secretMounts }}
-      - name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+      - name: {{ print $.Release.Name (include "flatten-name" $location) $initSuffix | trunc 63 }}
         secret:
           secretName: {{ $secret }}
       {{- end }}
@@ -186,3 +194,22 @@ template:
 backoffLimit: 3
 ttlSecondsAfterFinished: {{ $v.ttlSecondsAfterFinished | default 86400 }}
 {{- end -}}
+
+{{/* aggregate all the files and create a dict by dirname > list (filename content) */}}
+{{- define "file-volumes" }}
+{{- $vols := dict }}
+{{- range $location, $content := .files }}
+  {{- $dir := $location | dir }}
+  {{- $file := $location | base }}
+  {{- $fileContent := (dict "name" $file "content" $content) }}
+  {{- $files := list }}
+  {{- if hasKey $vols $dir }}
+    {{- $files = (index $vols $dir) }}
+  {{- end }}
+  {{- $files = append $files $fileContent }}
+  {{- $vols = set $vols $dir $files }}
+{{- end }}  
+{{- range $dir, $files := $vols }}
+{{ $dir }}: {{- $files | toYaml | nindent 2 }}
+{{- end }}
+{{- end }}
