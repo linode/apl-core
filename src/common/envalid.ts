@@ -1,8 +1,8 @@
-import { parse } from 'dotenv'
+import { DotenvParseOutput, parse } from 'dotenv'
 import { bool, cleanEnv, json, str } from 'envalid'
 import { existsSync, readFileSync } from 'fs'
 
-export const dotEnvParse = (path: string): void => {
+export const dotEnvParse = (path: string): DotenvParseOutput => {
   if (!existsSync(path)) {
     throw new Error(`${path} does not exist.`)
   }
@@ -15,6 +15,7 @@ export const dotEnvParse = (path: string): void => {
     process.env[k] = v
     return v
   })
+  return result
 }
 
 const cleanSpec = {
