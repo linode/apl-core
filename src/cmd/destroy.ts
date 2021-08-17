@@ -1,4 +1,4 @@
-import { unlinkSync, writeFileSync } from 'fs'
+import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { hf, hfStream } from '../common/hf'
@@ -13,7 +13,7 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
-  unlinkSync(templateFile)
+  if (existsSync(templateFile)) unlinkSync(templateFile)
 }
 
 const setup = (argv: Arguments): void => {

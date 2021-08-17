@@ -11,9 +11,8 @@
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
-{{- $otomiApiUsesOtomiGitea := eq ($oa | get "env.GIT_REPO_URL" "" ) "" }}
 
-clusterDomain: {{ $v.cluster.domainSuffix }}
+clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 images:
   server:
@@ -32,7 +31,6 @@ sourceControl:
   secret: drone-source-control
   provider: gitea
 {{- end }}
-otomiApiUsesOtomiGitea: {{ $otomiApiUsesOtomiGitea }}
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users

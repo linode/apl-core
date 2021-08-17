@@ -2,11 +2,12 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $giteaUrl := print "https://gitea." $v.cluster.domainSuffix }}
 
 type: Job
 name: gitea-prepare
 env:
-  GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
+  GITEA_URL: {{ $giteaUrl }}
   DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
 nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
@@ -14,13 +15,15 @@ annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
   env:
-    GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
+    GITEA_URL: {{ $giteaUrl }}
+  nativeSecrets:
+    GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
   image:
     repository: badouralix/curl-http2
   script: |
     {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
     echo "Waiting until gitea is accessible at $GITEA_URL"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I $GITEA_URL); do 
+    until curl $INSECURE --output /dev/null --silent --head --fail -I $GITEA_URL >/dev/null; do 
       printf '.'
       sleep 5
     done

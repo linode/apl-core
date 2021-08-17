@@ -1,5 +1,6 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
+import walk from 'ignore-walk'
 import { load } from 'js-yaml'
 import fetch from 'node-fetch'
 import { resolve } from 'path'
@@ -154,6 +155,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
 }
+
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
   const dirs = readdirSync(dir, { withFileTypes: true })
   const files = await Promise.all(
@@ -164,6 +166,14 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
     }),
   )
   return files.flat()
+}
+
+export const getEnvFiles = (): Promise<string[]> => {
+  return walk({
+    path: env.ENV_DIR,
+    ignoreFiles: ['.gitignore'],
+    follow: true,
+  })
 }
 
 export const capitalize = (s: string): string =>
@@ -232,10 +242,14 @@ export const deletePropertyPath = (object: any, path: string): void => {
 }
 export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
-export const waitTillAvailable = async (domain: string, subsequentExists = 3): Promise<void> => {
+export const waitTillAvailable = async (dom: string, subsequentExists = 3): Promise<void> => {
+  // node-fetch 'only absolute URLs are supported' thats why https needs to be prepended if it doesn't exist
+  const domain = dom.startsWith('http') ? dom : `https://${dom}`
+  const waitDebug = terminal('waitTillAvailable')
   let count = 0
   // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
   do {
+    waitDebug.debug(`Waiting for ${domain} ...`)
     try {
       // eslint-disable-next-line no-await-in-loop
       const res = await fetch(domain, { redirect: 'follow' })
@@ -243,13 +257,16 @@ export const waitTillAvailable = async (domain: string, subsequentExists = 3): P
         count += 1
       } else {
         count = 0
+        waitDebug.debug(`Waiting for ${domain} could not fetch, trying again`)
       }
-    } catch (_) {
+    } catch (error) {
       count = 0
+      waitDebug.error(error.message)
     }
     // eslint-disable-next-line no-await-in-loop
     await delay(250)
   } while (count < subsequentExists)
+  waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
 export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {

@@ -1,15 +1,16 @@
 {{- $v := .Values }}
 {{- $ := . }}
 {{- $containers := list (dict "isInit" false "container" $v) }}
+{{- $vols := include "file-volumes" $v }}
 {{- if $v.init }}{{ $containers = prepend $containers (dict "isInit" true "container" $v.init) }}{{ end }}
 {{- range $item := $containers }}
   {{- $c := $item.container }}
-  {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+  {{- $initSuffix := $item.isInit | ternary "-i" "" }}
   {{- with $c.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-env{{ $initSuffix }}
+  name: {{ print $.Release.Name "-env" $initSuffix | trunc 63 }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
     {{- range $key, $value := . }}
@@ -17,15 +18,17 @@ data:
     {{- end }}
 ---
   {{- end }}
-  {{- range $location, $content := $c.files }}
+{{- end }}
+{{- range $dir, $files := $vols | fromYaml }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-{{ include "flatten-name" $location }}{{ $initSuffix }}
+  name: {{ print $.Release.Name (include "flatten-name" $dir) | trunc 63 }}
   labels: {{- include "jobs.labels" $ | nindent 4 }}
 data:
-  {{ include "flatten-name" $location }}: |
-    {{- toYaml $content | quote | nindent 4 }} 
----
+  {{- range $fileContent := $files }}
+  {{ $fileContent.name }}: |
+    {{- toString $fileContent.content | nindent 4 }}
   {{- end }}
+---
 {{- end }}

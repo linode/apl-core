@@ -22,6 +22,10 @@ if (!env.IN_DOCKER && !isAutoCompletion) {
   debug.error('Please run this script using the `otomi` entry script')
   process.exit(1)
 }
+if (env.TESTING) {
+  process.env.AZURE_CLIENT_ID = 'somevalue'
+  process.env.AZURE_CLIENT_SECRET = 'somesecret'
+}
 
 const envDirContent = readdirSync(env.ENV_DIR)
 
@@ -47,11 +51,6 @@ try {
     .completion('completion', false)
   await parser.parseAsync()
 } catch (error) {
-  parser.showHelp()
-  let errData = error.message
-  if (env.OTOMI_DEV) {
-    errData = error
-  }
-  debug.error(errData)
+  debug.error(error)
   process.exit(1)
 }

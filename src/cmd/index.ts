@@ -8,6 +8,7 @@ import { module as decryptModule } from './decrypt'
 import { module as destroyModule } from './destroy'
 import { module as diffModule } from './diff'
 import { module as encryptModule } from './encrypt'
+import { module as filesModule } from './files'
 import { module as genDroneModule } from './gen-drone'
 import { module as genSopsModule } from './gen-sops'
 import { module as hfModule } from './hf'
@@ -35,6 +36,7 @@ export { module as decrypt } from './decrypt'
 export { module as destroy } from './destroy'
 export { module as diff } from './diff'
 export { module as encrypt } from './encrypt'
+export { module as files } from './files'
 export { module as genDrone } from './gen-drone'
 export { module as genSops } from './gen-sops'
 export { module as hf } from './hf'
@@ -62,6 +64,7 @@ export const commands: CommandModule[] = [
   destroyModule,
   diffModule,
   encryptModule,
+  filesModule,
   genDroneModule,
   genSopsModule,
   hfModule,

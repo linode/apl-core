@@ -94,10 +94,10 @@ spec:
           configMap:
             name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $dir }}
             items:
-            {{- range $fileContent := $files }}
-            - key: {{ $fileContent.name }}
-              path: {{ $fileContent.name }}
-            {{- end }}
+              {{- range $fileContent := $files }}
+              - key: {{ $fileContent.name }}
+                path: {{ $fileContent.name }}
+              {{- end }}
   {{- end }}
   {{- range $location, $secret := $k.secretMounts }}
         - name: {{ $.Release.Name }}-{{ $s.name }}-{{ include "flatten-name" $location }}
