@@ -1,6 +1,21 @@
-import { config } from 'dotenv'
+import { parse } from 'dotenv'
 import { bool, cleanEnv, json, str } from 'envalid'
-import { existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
+
+export const dotEnvParse = (path: string): void => {
+  if (!existsSync(path)) {
+    throw new Error(`${path} does not exist.`)
+  }
+  const buf = readFileSync(path)
+    .toString()
+    .replace(/export(\s+)/gi, '')
+
+  const result = parse(buf)
+  Object.entries(result).map(([k, v]) => {
+    process.env[k] = v
+    return v
+  })
+}
 
 const cleanSpec = {
   CI: bool({ default: false }),
@@ -15,11 +30,9 @@ const cleanSpec = {
   TRACE: bool({ default: false }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
-let pEnv: any = process.env
-const path = `${pEnv.ENV_DIR}/.secrets`
-if (pEnv.ENV_DIR && existsSync(path)) {
-  const result = config({ path }) // this sets vars from .env onto process.env
-  if (result.error) console.error(result.error)
-  pEnv = { ...pEnv, ...result.parsed }
+
+const path = `${process.env.ENV_DIR}/.secrets`
+if (process.env.ENV_DIR && existsSync(path)) {
+  dotEnvParse(path)
 }
-export const env = cleanEnv(pEnv, cleanSpec)
+export const env = cleanEnv(process.env, cleanSpec)
