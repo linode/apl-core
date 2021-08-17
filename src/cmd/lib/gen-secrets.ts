@@ -1,19 +1,8 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { writeFileSync } from 'fs'
 import { dump } from 'js-yaml'
-import { omit } from 'lodash-es'
+import { omit, set } from 'lodash-es'
 import { gucci, loadYaml } from '../../common/utils'
-
-const jsonPathToObj = (jsonPath: string, obj, value: string) => {
-  const arr = jsonPath.split('.')
-  let tmpObj = obj
-  for (let i = 0; i < arr.length - 1; i++) {
-    const item = arr[i]
-    if (!tmpObj[item]) tmpObj[item] = {}
-    tmpObj = tmpObj[item]
-  }
-  tmpObj[arr[arr.length - 1]] = `{{ ${value} }}`
-}
 
 export const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf']
@@ -55,8 +44,9 @@ export const generateSecrets = async (): Promise<string> => {
   console.log(secretsValuesPath)
 
   const obj = {}
+
   for (let i = 0; i < secretGenerators.length; i++) {
-    if (secretGenerators[i] !== 'empty') jsonPathToObj(secretsValuesPath[i], obj, secretGenerators[i])
+    if (secretGenerators[i] !== 'empty') set(obj, secretsValuesPath[i], `{{ ${secretGenerators[i]} }}`)
   }
   console.log(dump(obj))
 
