@@ -16,8 +16,7 @@
 calling_args="$*"
 if [ -n "$TESTING" ]; then
   CI=1
-  echo "ENV_DIR: $ENV_DIR"
-  [ -z "$ENV_DIR" ] && ENV_DIR="$PWD/tests/fixtures"
+  ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
   AZURE_CLIENT_ID=somevalue
   AZURE_CLIENT_SECRET=somesecret
