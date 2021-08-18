@@ -39,19 +39,19 @@ export const generateSecrets = async (): Promise<string> => {
   const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig']) // FIXME: lets fix the team part later
   const secretGenerators = extractSecretGenerators(cleanSchema)
   const secretsValuesPath = extractSecrets(cleanSchema)
-  console.log(secretGenerators)
-  console.log(secretsValuesPath)
+  console.debug(secretGenerators)
+  console.debug(secretsValuesPath)
 
   const obj = {}
 
   secretsValuesPath.forEach((path, i) => {
     if (secretGenerators[i] !== 'empty') set(obj, path, `{{ ${secretGenerators[i]} }}`)
   })
-  console.log(dump(obj))
 
+  console.debug(dump(obj))
   const allSecrets = await gucci(dump(obj), {})
 
-  console.log(allSecrets)
+  console.info(allSecrets)
 
   return allSecrets
 
