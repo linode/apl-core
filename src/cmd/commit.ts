@@ -46,7 +46,7 @@ export const gitPush = async (
   gitDebug.info('Starting git push.')
 
   const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
-  if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
+  if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'true'
   if (giteaUrl) await waitTillAvailable(giteaUrl)
 
   const cwd = await currDir()
@@ -92,7 +92,7 @@ export const commit = async (): Promise<void> => {
   }
 
   try {
-    const sslVerify = values.charts?.['cert-manager']?.stage === 'staging'
+    const sslVerify = values.charts?.['cert-manager']?.stage !== 'staging'
     await $`git remote show origin`
     await gitPush(branch, sslVerify, healthUrl)
     debug.log('Successfully pushed the updated values')
