@@ -52,7 +52,7 @@ export const gitPush = async (
   const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`git push -u origin ${branch} -f`
+    await $`echo $GIT_SSL_NO_VERIFY && git push -u origin ${branch} -f`
     gitDebug.log('Otomi values have been pushed to git.')
     return true
   } catch (error) {
