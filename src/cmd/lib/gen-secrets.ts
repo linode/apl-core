@@ -1,5 +1,4 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
-import { writeFileSync } from 'fs'
 import { dump } from 'js-yaml'
 import { omit, set } from 'lodash-es'
 import { gucci, loadYaml } from '../../common/utils'
@@ -45,13 +44,12 @@ export const generateSecrets = async (): Promise<string> => {
 
   const obj = {}
 
-  for (let i = 0; i < secretGenerators.length; i++) {
-    if (secretGenerators[i] !== 'empty') set(obj, secretsValuesPath[i], `{{ ${secretGenerators[i]} }}`)
-  }
+  secretsValuesPath.forEach((path, i) => {
+    if (secretGenerators[i] !== 'empty') set(obj, path, `{{ ${secretGenerators[i]} }}`)
+  })
   console.log(dump(obj))
 
-  writeFileSync('./temp.bak', dump(obj))
-  const allSecrets = await gucci('./temp.bak', {})
+  const allSecrets = await gucci(dump(obj), {})
 
   console.log(allSecrets)
 

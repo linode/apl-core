@@ -256,7 +256,15 @@ export const gucci = async (tmpl: string, args: { [key: string]: string }): Prom
   const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
   const quoteBackup = $.quote
   $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
+  let processOutput
+  if (existsSync(tmpl)) {
+    // input string is a file path
+    processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
+  } else {
+    // input string is a go template content
+    const str = tmpl.replace(/"/g, '\\"')
+    processOutput = await nothrow($`echo "${str}" | gucci`)
+  }
   $.quote = quoteBackup
   return processOutput.stdout.trim()
 }
