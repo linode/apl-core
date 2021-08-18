@@ -44,11 +44,10 @@ export const gitPush = async (
 ): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
+
   const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
-  if (giteaUrl) {
-    if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
-    await waitTillAvailable(giteaUrl)
-  }
+  if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
+  if (giteaUrl) await waitTillAvailable(giteaUrl)
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
