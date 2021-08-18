@@ -37,22 +37,16 @@ export const preCommit = async (): Promise<void> => {
     await genDrone()
 }
 
-export const gitPush = async (
-  branch: string,
-  sslVerify: boolean,
-  giteaUrl: string | undefined = undefined,
-): Promise<boolean> => {
+export const gitPush = async (branch: string, giteaUrl: string | undefined = undefined): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
 
-  const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
-  if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'true'
   if (giteaUrl) await waitTillAvailable(giteaUrl)
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`echo $GIT_SSL_NO_VERIFY && git push -u origin ${branch} -f`
+    await $`git push -u origin ${branch} -f`
     gitDebug.log('Otomi values have been pushed to git.')
     return true
   } catch (error) {
@@ -60,7 +54,6 @@ export const gitPush = async (
     return false
   } finally {
     cd(cwd)
-    process.env.GIT_SSL_NO_VERIFY = currentGitSSLVerify
   }
 }
 
@@ -92,9 +85,10 @@ export const commit = async (): Promise<void> => {
   }
 
   try {
-    const sslVerify = values.charts?.['cert-manager']?.stage !== 'staging'
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) process.env.GIT_SSL_NO_VERIFY = 'true'
     await $`git remote show origin`
-    await gitPush(branch, sslVerify, healthUrl)
+    await gitPush(branch, healthUrl)
     debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
