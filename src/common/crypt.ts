@@ -70,6 +70,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
   const filesChunked = chunkArray(files, chunkSize)
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
+  // EventEmitter.defaultMaxListeners is 10, if we increate chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   debug.debug('runOnSecretFiles - files: ', files)
   try {
