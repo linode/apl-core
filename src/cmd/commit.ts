@@ -37,11 +37,9 @@ export const preCommit = async (): Promise<void> => {
     await genDrone()
 }
 
-export const gitPush = async (branch: string, giteaUrl: string | undefined = undefined): Promise<boolean> => {
+export const gitPush = async (branch: string): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
-
-  if (giteaUrl) await waitTillAvailable(giteaUrl)
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
@@ -86,9 +84,13 @@ export const commit = async (): Promise<void> => {
 
   try {
     const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
-    if (isCertStaging) process.env.GIT_SSL_NO_VERIFY = 'true'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+    if (healthUrl) await waitTillAvailable(healthUrl)
     await $`git remote show origin`
-    await gitPush(branch, healthUrl)
+    await gitPush(branch)
     debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
