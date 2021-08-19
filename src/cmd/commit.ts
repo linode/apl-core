@@ -37,23 +37,14 @@ export const preCommit = async (): Promise<void> => {
     await genDrone()
 }
 
-export const gitPush = async (
-  branch: string,
-  sslVerify: boolean,
-  giteaUrl: string | undefined = undefined,
-): Promise<boolean> => {
+export const gitPush = async (branch: string): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
-  let skipSslVerify = ''
-  if (giteaUrl) {
-    if (!sslVerify) skipSslVerify = '-c http.sslVerify=false'
-    await waitTillAvailable(giteaUrl)
-  }
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`git ${skipSslVerify} push -u origin ${branch} -f`
+    await $`git push -u origin ${branch} -f`
     gitDebug.log('Otomi values have been pushed to git.')
     return true
   } catch (error) {
@@ -84,18 +75,22 @@ export const commit = async (): Promise<void> => {
   if (!env.CI) await pull()
   let healthUrl
   let branch
-  if (!values.charts?.gitea?.enabled) {
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
+  } else {
     healthUrl = `gitea.${clusterDomain}`
     branch = 'main'
-  } else {
-    // @ts-ignore
-    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
   }
 
   try {
-    const sslVerify = values.charts?.['cert-manager']?.stage === 'staging'
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+    if (healthUrl) await waitTillAvailable(healthUrl)
     await $`git remote show origin`
-    await gitPush(branch, sslVerify, healthUrl)
+    await gitPush(branch)
     debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)

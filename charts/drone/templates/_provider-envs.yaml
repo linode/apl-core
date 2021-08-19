@@ -35,7 +35,7 @@
   {{- if .Values.sourceControl.gitea.server }}
   value: {{ .Values.sourceControl.gitea.server }}
   {{- else }}
-  value: https://gitea.{{ .Values.clusterDomain }}
+  value: https://gitea.{{ .Values.clusterDomainSuffix }}
   {{- end }}
 - name: DRONE_GIT_USERNAME
   value: {{ .Values.sourceControl.username | default "otomi-admin" }}

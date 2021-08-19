@@ -28,7 +28,7 @@ const preCrypt = (): void => {
 }
 
 const getAllSecretFiles = async () => {
-  const files = await readdirRecurse(env.ENV_DIR, { skipHidden: true })
+  const files = await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true })
   debug.debug('files: ', files)
   return files
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
