@@ -42,6 +42,21 @@ type CR = {
   post?: (result: ProcessOutput, path: string, file: string) => void
 }
 
+const processFileChunk = async (crypt: CR, files: string[]): Promise<ProcessOutput[]> => {
+  const commands = files.map(async (file) => {
+    if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
+      debug.debug(`${crypt.cmd} ${file}`)
+      const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
+      if (crypt.post) crypt.post(result, env.ENV_DIR, file)
+      return result
+    }
+    return undefined
+  })
+  const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
+  results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
+  return results
+}
+
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
   const cwd = await currDir()
   let files: string[] = filesArgs
@@ -51,21 +66,31 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
     files = await getAllSecretFiles()
   }
   preCrypt()
+  const CHUNK_SIZE = 5
+  const filesChunked = files.reduce((resultArray: string[][], item: string, index: number) => {
+    const chunkIndex = Math.floor(index / CHUNK_SIZE)
+
+    if (!resultArray[chunkIndex]) {
+      // eslint-disable-next-line no-param-reassign
+      resultArray[chunkIndex] = [] // start a new chunk
+    }
+
+    resultArray[chunkIndex].push(item)
+
+    return resultArray
+  }, [])
+
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
-  EventEmitter.defaultMaxListeners = files.length + 5
+  if (CHUNK_SIZE + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = CHUNK_SIZE + 2
   debug.debug('runOnSecretFiles - files: ', files)
   try {
-    const commands = files.map(async (file) => {
-      if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
-        debug.debug(`${crypt.cmd} ${file}`)
-        const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
-        if (crypt.post) crypt.post(result, env.ENV_DIR, file)
-        return result
-      }
-      return undefined
-    })
-    const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
-    results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
+    const results: ProcessOutput[] = []
+    // eslint-disable-next-line no-restricted-syntax
+    for (const fileChunk of filesChunked) {
+      // eslint-disable-next-line no-await-in-loop
+      const chunkResult = await processFileChunk(crypt, fileChunk)
+      results.push(...chunkResult)
+    }
     return results
   } catch (error) {
     debug.error(error)
