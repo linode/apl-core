@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { env } from './envalid'
-import { BasicArguments, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+import { BasicArguments, chunkArray, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
 
 export interface Arguments extends BasicArguments {
   files?: string[]
@@ -66,22 +66,11 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
     files = await getAllSecretFiles()
   }
   preCrypt()
-  const CHUNK_SIZE = 5
-  const filesChunked = files.reduce((resultArray: string[][], item: string, index: number) => {
-    const chunkIndex = Math.floor(index / CHUNK_SIZE)
-
-    if (!resultArray[chunkIndex]) {
-      // eslint-disable-next-line no-param-reassign
-      resultArray[chunkIndex] = [] // start a new chunk
-    }
-
-    resultArray[chunkIndex].push(item)
-
-    return resultArray
-  }, [])
+  const chunkSize = 5
+  const filesChunked = chunkArray(files, chunkSize)
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
-  if (CHUNK_SIZE + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = CHUNK_SIZE + 2
+  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   debug.debug('runOnSecretFiles - files: ', files)
   try {
     const results: ProcessOutput[] = []
