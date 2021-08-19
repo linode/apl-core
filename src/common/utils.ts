@@ -279,7 +279,7 @@ export const gucci = async (tmpl: string, args: { [key: string]: string }): Prom
     processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
   } else {
     // input string is a go template content
-    const str = tmpl.replace(/"/g, '\\"')
+    const str = tmpl.replaceAll('"', '\\"')
     processOutput = await nothrow($`echo "${str}" | gucci ${gucciArgs}`)
   }
   $.quote = quoteBackup

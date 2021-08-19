@@ -132,7 +132,7 @@ export const bootstrapValues = async (): Promise<void> => {
     debug.log(`Copying basic values`)
     await copy(`${cwd}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
 
-    // Generate passwords and merge with values only if there are no values already
+    // Generate passwords and merge with values only if there are no env folder already (first call to bootstrap)
     const generatedSecrets = yaml.load(await generateSecrets())
     await mergeValues(generatedSecrets)
   }
