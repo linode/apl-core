@@ -112,7 +112,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   debug.info('Checking environment')
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
     if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
-    if (!env.CI && !options?.skipDecrypt) await decrypt()
+    if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && !options?.skipDecrypt) await decrypt()
   }
 }
 /**

@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { hf, hfStream } from '../common/hf'
-import { cleanupHandler } from '../common/setup'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -83,6 +83,7 @@ export const module: CommandModule = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     setup()
+    await prepareEnvironment()
     await apply()
   },
 }

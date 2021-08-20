@@ -31,7 +31,6 @@ spec:
             - |
               set -e
               binzx/otomi bootstrap
-              binzx/otomi decrypt
               binzx/otomi apply
               binzx/otomi commit
           env:
