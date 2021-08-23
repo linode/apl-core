@@ -182,14 +182,6 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const capitalize = (s: string): string =>
-  (s &&
-    s
-      .split(' ')
-      .map((s2) => s2[0].toUpperCase() + s2.slice(1))
-      .join(' ')) ||
-  ''
-
 export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
   if (!existsSync(path)) {
     if (opts?.noError) return null

@@ -88,7 +88,7 @@ export const getImageTag = (): string => {
   const file = `${env.ENV_DIR}/env/settings.yaml`
   if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
   const settingsFile = loadYaml(file)
-  otomiImageTag = settingsFile.otomi?.version ?? 'master'
+  otomiImageTag = settingsFile?.otomi?.version ?? 'master'
   return otomiImageTag
 }
 /**
@@ -112,7 +112,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   debug.info('Checking environment')
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
     if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
-    if (!env.CI && !options?.skipDecrypt) await decrypt()
+    if (!options?.skipDecrypt) await decrypt()
   }
 }
 /**

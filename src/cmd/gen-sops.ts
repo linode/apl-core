@@ -1,6 +1,5 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { chalk } from 'zx'
 import { env } from '../common/envalid'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -14,6 +13,7 @@ import {
   startingDir,
   terminal,
 } from '../common/utils'
+import { getChartValues } from './lib/chart'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
@@ -51,7 +51,9 @@ export const genSops = async (): Promise<void> => {
     keys: kmsKeys,
   }
 
-  debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
+  const exists = existsSync(targetPath)
+  debug.debug('sops file already exists')
+  debug.log(`Creating sops file for provider ${provider}`)
 
   const output = await gucci(templatePath, obj)
 
@@ -61,21 +63,23 @@ export const genSops = async (): Promise<void> => {
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    writeFileSync(`${targetPath}`, output)
+    writeFileSync(targetPath, output)
     debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
   }
 
   if (!env.CI) {
     const secretPath = `${env.ENV_DIR}/.secrets`
-    if (!existsSync(secretPath)) {
-      debug.error(`Expecting ${secretPath} to exist and hold credentials for SOPS`)
-      return
+    if (exists && !existsSync(secretPath)) {
+      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
     }
   }
   if (provider === 'google') {
-    if (env.GCLOUD_SERVICE_KEY) {
+    let serviceKeyJson = env.GCLOUD_SERVICE_KEY
+    const chartValues = getChartValues()
+    if (chartValues) serviceKeyJson = JSON.parse(chartValues?.kms?.sops?.google?.accountJson)
+    if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
-      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
+      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }

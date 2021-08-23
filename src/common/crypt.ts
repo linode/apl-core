@@ -19,11 +19,11 @@ enum CryptType {
 }
 
 const preCrypt = (): void => {
-  debug.info('Checking prerequisites for the (de,en)crypt action')
+  debug.debug('Checking prerequisites for the (de,en)crypt action')
   if (env.GCLOUD_SERVICE_KEY) {
     debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
 }
 
@@ -92,13 +92,16 @@ const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
 export const decrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'decrypt'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping decryption')
+    return
+  }
   debug.info('Starting decryption')
 
   await runOnSecretFiles(
     {
       cmd: CryptType.DECRYPT,
       post: (r, p, f) => {
-        debug.debug(r.stdout.trim())
         matchTimestamps(r, p, f)
       },
     },
@@ -110,6 +113,10 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping encryption')
+    return
+  }
   debug.info('Starting encryption')
   let encFiles = files
 
@@ -155,6 +162,10 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 export const rotate = async (): Promise<void> => {
   const namespace = 'rotate'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping rotation')
+    return
+  }
   await runOnSecretFiles({
     cmd: CryptType.ROTATE,
     post: (result: ProcessOutput, path: string, file: string) => {

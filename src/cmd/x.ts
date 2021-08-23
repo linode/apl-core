@@ -1,5 +1,6 @@
 import { Arguments, Argv } from 'yargs'
 import { $, nothrow } from 'zx'
+import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { stream } from '../common/zx-enhance'
 
@@ -20,6 +21,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
+    await prepareEnvironment({ skipAllPreChecks: true })
     const exitCode = await x()
     process.exit(exitCode)
   },

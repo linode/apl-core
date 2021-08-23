@@ -1,6 +1,6 @@
-import { Arguments, Argv } from 'yargs'
+import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -12,8 +12,6 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 // usage:
 export const playground = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
-
   debug.log(cmdName)
   // console.log(argv)
   // console.log(process.stdin.isTTY)
@@ -49,6 +47,7 @@ export const playground = async (): Promise<void> => {
   // debug.log(process.env)
 
   // throw new Error('Playground error')
+  await Promise.resolve()
 }
 
 export const module = {
