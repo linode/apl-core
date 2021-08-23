@@ -55,7 +55,7 @@
   },
   "yaml.schemas": {
     "https://json-schema.org/draft-07/schema": "values-schema.yaml",
-    ".values/values-schema.yaml": "**/env/*.yaml"
+    ".vscode/values-schema.yaml": "**/env/*.yaml"
   },
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci",
