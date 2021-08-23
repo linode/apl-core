@@ -1,8 +1,6 @@
 import { Arguments, Argv } from 'yargs'
-import { $ } from 'zx'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -17,16 +15,21 @@ export const playground = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
 
   debug.log(cmdName)
+  // console.log(argv)
+  // console.log(process.stdin.isTTY)
+  // console.log(process.stdout.isTTY)
+  // const answer = await question('How are you?')
+  // console.log(answer)
   debug.info('info')
   debug.warn('warn')
   debug.error('error')
   debug.debug('debug')
   debug.trace('trace')
-  debug.log(argv.nonInteractive)
-  // debug.log(argv)
-  const test = '"something"'
-  const out = await $`echo "${test}"`
-  console.log(out.stdout)
+  // debug.log(argv.nonInteractive)
+  // // debug.log(argv)
+  // const test = '"something"'
+  // const out = await $`echo "${test}"`
+  // console.log(out.stdout)
   // console.log(process.cwd())
   // console.log(await currDir())
   // cd(env.ENV_DIR)
@@ -49,7 +52,7 @@ export const playground = async (): Promise<void> => {
 }
 
 export const module = {
-  command: cmdName,
+  command: `${cmdName} [opts...]`,
   hidden: true,
   describe: undefined,
   builder: (parser: Argv): Argv => parser,

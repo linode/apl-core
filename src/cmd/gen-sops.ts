@@ -33,6 +33,8 @@ export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile)
+  // TODO: Use validate values to validate tree at this specific point
+  // validateValues('kms.sops.provider')
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     debug.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -52,6 +54,10 @@ export const genSops = async (): Promise<void> => {
   debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
 
   const output = await gucci(templatePath, obj)
+
+  // TODO: Remove when validate-values can validate subpaths
+  if (!output) return
+
   if (argv.dryRun) {
     debug.log(output)
   } else {

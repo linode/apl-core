@@ -75,7 +75,7 @@ type crdSchema = {
 
 const processCrd = (path: string): crdSchema[] => {
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
-    (singleDoc) => singleDoc?.kind === 'CustomResourceDefinition',
+    (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
 
   const documentResult = documents.flatMap((document: any) => {
