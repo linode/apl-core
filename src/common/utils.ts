@@ -7,12 +7,11 @@ import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 import { env } from './envalid'
 
-process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
-$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
+$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
 export const startingDir = process.cwd()
 export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
@@ -43,6 +42,8 @@ let parsedArgs: BasicArguments
 
 export const setParsedArgs = (args: BasicArguments): void => {
   parsedArgs = args
+  // Call needed to init LL for debugger and ZX calls:
+  logLevel()
 }
 export const getParsedArgs = (): BasicArguments => {
   return parsedArgs
@@ -105,26 +106,31 @@ const setColor = (term: DebuggerType, color: number[]) => {
 /* eslint-disable no-redeclare */
 export function terminal(namespace: string): OtomiDebugger
 export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
-  const newDebug = (baseNamespace: string, enabled = true, cons = console.log): DebuggerType => {
+  const newDebug = (baseNamespace: string, cons = console.log): DebuggerType => {
     if (env.OTOMI_IN_TERMINAL) {
       const newDebugObj: DebugDebugger = commonDebug.extend(baseNamespace)
-      newDebugObj.enabled = enabled
+      newDebugObj.enabled = true
       return newDebugObj
     }
-    if (enabled) {
-      return cons
-    }
-    return () => {
-      /* Do nothing */
-    }
+    return cons
   }
-  const base = newDebug(`${namespace}`, terminalEnabled)
-  const log = newDebug(`${namespace}:log`, true)
-  const error = newDebug(`${namespace}:error`, true, console.error)
-  const trace = newDebug(`${namespace}:trace`, logLevel() >= logLevels.TRACE && terminalEnabled)
-  const debug = newDebug(`${namespace}:debug`, logLevel() >= logLevels.DEBUG && terminalEnabled)
-  const info = newDebug(`${namespace}:info`, logLevel() >= logLevels.INFO && terminalEnabled)
-  const warn = newDebug(`${namespace}:warn`, logLevel() >= logLevels.WARN && terminalEnabled, console.warn)
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noop = () => {}
+  // @ts-ignore
+  const base = (...args: any[]) => (terminalEnabled ? newDebug(`${namespace}`) : noop)(...args)
+  // @ts-ignore
+  const log = (...args: any[]) => newDebug(`${namespace}:log`)(...args)
+  // @ts-ignore
+  const error = (...args: any[]) => newDebug(`${namespace}:error`, console.error)(...args)
+  // @ts-ignore
+  const trace = (...args: any[]) => (logLevel() >= logLevels.TRACE ? newDebug(`${namespace}:trace`) : noop)(...args)
+  // @ts-ignore
+  const debug = (...args: any[]) => (logLevel() >= logLevels.DEBUG ? newDebug(`${namespace}:debug`) : noop)(...args)
+  // @ts-ignore
+  const info = (...args: any[]) => (logLevel() >= logLevels.INFO ? newDebug(`${namespace}:info`) : noop)(...args)
+  const warn = (...args: any[]) =>
+    // @ts-ignore
+    (logLevel() >= logLevels.WARN ? newDebug(`${namespace}:warn`, console.warn) : noop)(...args)
 
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
@@ -176,14 +182,6 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const capitalize = (s: string): string =>
-  (s &&
-    s
-      .split(' ')
-      .map((s2) => s2[0].toUpperCase() + s2.slice(1))
-      .join(' ')) ||
-  ''
-
 export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
   if (!existsSync(path)) {
     if (opts?.noError) return null
@@ -202,6 +200,14 @@ export enum logLevels {
 }
 
 let logLevelVar = Number.NEGATIVE_INFINITY
+/**
+ * Determines loglevel from 4 different sources
+ * - Parsed Argument: LOG_LEVEL   [string]
+ * - Parsed Argument: Verbose (v) [number]
+ * - Parsed Argument: Trace (t)   [boolean]
+ * - Environment variable: TRACE  [(un)set]
+ * @returns highest loglevel
+ */
 export const logLevel = (): number => {
   if (!getParsedArgs()) return logLevels.ERROR
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
@@ -269,13 +275,23 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
   waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
-export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {
+export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string | undefined> => {
+  const debug = terminal('gucci')
   const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
   const quoteBackup = $.quote
   $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
-  $.quote = quoteBackup
-  return processOutput.stdout.trim()
+  try {
+    const processOutput = await $`gucci ${gucciArgs} ${tmpl}`
+    return processOutput.stdout.trim()
+  } catch (error) {
+    debug.warn('Gucci templating failed (possibly due to missing values)')
+    debug.debug(error)
+    // TODO: Don't swallow when validate-values can validate subpaths
+    return undefined
+    // throw error
+  } finally {
+    $.quote = quoteBackup
+  }
 }
 
 /* Can't use for now because of:

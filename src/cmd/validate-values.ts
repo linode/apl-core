@@ -19,7 +19,10 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
 
+// TODO: Accept json path to validate - on empty, validate all
 export const validateValues = async (): Promise<void> => {
+  // TODO: Make this return true or error tree
+  // Create an end point function (when running otomi validate-values) to print current messages.
   const argv: Arguments = getParsedArgs()
   debug.log('Values validation STARTED')
 
