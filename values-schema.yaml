@@ -661,10 +661,6 @@ definitions:
     definitions:
       otomiAdminUsername:
         x-secret: '"otomi-admin"'
-      azure:
-        x-secret: 'printf "%s-%s-%s" (randAlpha 5) (randAlpha 6) (randAlpha 8)'
-      github:
-        x-secret: 'randAlpha 32'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -1046,7 +1042,7 @@ properties:
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
-            description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/ 
+            description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
             type: string
             x-secret: 'randAlphaNum 32'
           sourceControl:
