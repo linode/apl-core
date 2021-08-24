@@ -7,12 +7,11 @@ import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 import { env } from './envalid'
 
-process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
-$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
+$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
 export const startingDir = process.cwd()
 export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
@@ -41,8 +40,12 @@ export const defaultBasicArguments: BasicArguments = {
 
 let parsedArgs: BasicArguments
 
+const debuggers = {}
+
 export const setParsedArgs = (args: BasicArguments): void => {
   parsedArgs = args
+  // Call needed to init LL for debugger and ZX calls:
+  logLevel()
 }
 export const getParsedArgs = (): BasicArguments => {
   return parsedArgs
@@ -105,32 +108,35 @@ const setColor = (term: DebuggerType, color: number[]) => {
 /* eslint-disable no-redeclare */
 export function terminal(namespace: string): OtomiDebugger
 export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
-  const newDebug = (baseNamespace: string, enabled = true, cons = console.log): DebuggerType => {
+  const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     if (env.OTOMI_IN_TERMINAL) {
-      const newDebugObj: DebugDebugger = commonDebug.extend(baseNamespace)
-      newDebugObj.enabled = enabled
-      return newDebugObj
+      if (debuggers[namespace]) return debuggers[namespace]
+      const createDebuggerObj: DebugDebugger = commonDebug.extend(baseNamespace)
+      createDebuggerObj.enabled = true
+      debuggers[namespace] = createDebuggerObj
+      return createDebuggerObj
     }
-    if (enabled) {
-      return cons
-    }
-    return () => {
-      /* Do nothing */
-    }
+    return cons
   }
-  const base = newDebug(`${namespace}`, terminalEnabled)
-  const log = newDebug(`${namespace}:log`, true)
-  const error = newDebug(`${namespace}:error`, true, console.error)
-  const trace = newDebug(`${namespace}:trace`, logLevel() >= logLevels.TRACE && terminalEnabled)
-  const debug = newDebug(`${namespace}:debug`, logLevel() >= logLevels.DEBUG && terminalEnabled)
-  const info = newDebug(`${namespace}:info`, logLevel() >= logLevels.INFO && terminalEnabled)
-  const warn = newDebug(`${namespace}:warn`, logLevel() >= logLevels.WARN && terminalEnabled, console.warn)
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noop = () => {}
+  const base = (...args: any[]) => (terminalEnabled ? createDebugger(`${namespace}`) : noop).call(undefined, args)
+  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, args)
+  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, args)
+  const trace = (...args: any[]) =>
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, args)
+  const debug = (...args: any[]) =>
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, args)
+  const info = (...args: any[]) =>
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, args)
+  const warn = (...args: any[]) =>
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, args)
 
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
   setColor(info, xtermColors.green)
 
-  const newDebugger: OtomiDebugger = {
+  const createDebuggerger: OtomiDebugger = {
     enabled: terminalEnabled ?? true,
     base,
     log,
@@ -148,7 +154,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
       error: new DebugStream(error),
     },
   }
-  return newDebugger
+  return createDebuggerger
 }
 /* eslint-enable no-redeclare */
 
@@ -176,14 +182,6 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const capitalize = (s: string): string =>
-  (s &&
-    s
-      .split(' ')
-      .map((s2) => s2[0].toUpperCase() + s2.slice(1))
-      .join(' ')) ||
-  ''
-
 export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
   if (!existsSync(path)) {
     if (opts?.noError) return null
@@ -202,6 +200,14 @@ export enum logLevels {
 }
 
 let logLevelVar = Number.NEGATIVE_INFINITY
+/**
+ * Determines loglevel from 4 different sources
+ * - Parsed Argument: LOG_LEVEL   [string]
+ * - Parsed Argument: Verbose (v) [number]
+ * - Parsed Argument: Trace (t)   [boolean]
+ * - Environment variable: TRACE  [(un)set]
+ * @returns highest loglevel
+ */
 export const logLevel = (): number => {
   if (!getParsedArgs()) return logLevels.ERROR
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
@@ -269,21 +275,31 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
   waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
-export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {
+export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string | undefined> => {
+  const debug = terminal('gucci')
   const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
   const quoteBackup = $.quote
   $.quote = (v) => v
-  let processOutput
-  if (existsSync(tmpl)) {
-    // input string is a file path
-    processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
-  } else {
-    // input string is a go template content
-    const str = tmpl.replaceAll('"', '\\"')
-    processOutput = await nothrow($`echo "${str}" | gucci ${gucciArgs}`)
+  try {
+    let processOutput
+    if (existsSync(tmpl)) {
+      // input string is a file path
+      processOutput = await $`gucci ${gucciArgs} ${tmpl}`
+    } else {
+      // input string is a go template content
+      const str = tmpl.replaceAll('"', '\\"')
+      processOutput = await $`echo "${str}" | gucci ${gucciArgs}`
+    }
+    return processOutput.stdout.trim()
+  } catch (error) {
+    debug.warn('Gucci templating failed (possibly due to missing values)')
+    debug.debug(error)
+    // TODO: Don't swallow when validate-values can validate subpaths
+    return undefined
+    // throw error
+  } finally {
+    $.quote = quoteBackup
   }
-  $.quote = quoteBackup
-  return processOutput.stdout.trim()
 }
 
 /* Can't use for now because of:

@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 
 ---
 {{ readFile "snippets/templates.gotmpl" }}

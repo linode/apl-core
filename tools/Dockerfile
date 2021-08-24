@@ -13,7 +13,7 @@ ARG HELM_SECRETS_VERSION=3.7.0
 # https://github.com/mozilla/sops/releases:
 ARG SOPS_VERSION=3.7.1
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.4.0
+ARG GUCCI_VERSION=1.5.0
 # https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.138.7
 # https://github.com/open-policy-agent/opa/releases

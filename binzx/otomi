@@ -22,14 +22,14 @@ if [ -n "$TESTING" ]; then
   AZURE_CLIENT_SECRET=somesecret
 elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
   ENV_DIR="$PWD/env"
-elif [ -z "$IN_DOCKER" ]; then
+elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
+[ -z $ENV_DIR ] && echo "No ENV_DIR set!" && exit 1
 if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
 fi
 readonly calling_args
-
 silent() {
   if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
     "$@"

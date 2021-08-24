@@ -1,9 +1,6 @@
 import { Argv } from 'yargs'
-import { $ } from 'zx'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { generateSecrets } from './lib/gen-secrets'
-
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -16,17 +13,21 @@ const debug: OtomiDebugger = terminal(cmdName)
 // usage:
 export const playground = async (): Promise<void> => {
   debug.log(cmdName)
-  await generateSecrets()
-  // debug.info('info')
-  // debug.warn('warn')
-  // debug.error('error')
-  // debug.debug('debug')
-  // debug.trace('trace')
+  // console.log(argv)
+  // console.log(process.stdin.isTTY)
+  // console.log(process.stdout.isTTY)
+  // const answer = await question('How are you?')
+  // console.log(answer)
+  debug.info('info')
+  debug.warn('warn')
+  debug.error('error')
+  debug.debug('debug')
+  debug.trace('trace')
   // debug.log(argv.nonInteractive)
-  // debug.log(argv)
-  const test = '"something"'
-  const out = await $`echo "${test}"`
-  console.log(out.stdout)
+  // // debug.log(argv)
+  // const test = '"something"'
+  // const out = await $`echo "${test}"`
+  // console.log(out.stdout)
   // console.log(process.cwd())
   // console.log(await currDir())
   // cd(env.ENV_DIR)
@@ -46,10 +47,11 @@ export const playground = async (): Promise<void> => {
   // debug.log(process.env)
 
   // throw new Error('Playground error')
+  await Promise.resolve()
 }
 
 export const module = {
-  command: cmdName,
+  command: `${cmdName} [opts...]`,
   hidden: true,
   describe: undefined,
   builder: (parser: Argv): Argv => parser,
