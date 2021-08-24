@@ -51,6 +51,6 @@ jobs:
           cp -r ./kind/env/ ./env/
 
           npm set-script prepare "" && \
-            npm ci && \
+            npm i typescript && \
             npm run compile && \
             /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply

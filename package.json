@@ -90,7 +90,7 @@
     "url": "git+https://github.com/redkubes/otomi-core.git"
   },
   "run-if-changed": {
-    "package-lock.json": "npm install --prefer-offline --no-audit"
+    "package-lock.json": "npm ci --prefer-offline --no-audit"
   },
   "scripts": {
     "check-policies": "TESTING=1 binzx/otomi check-policies",
