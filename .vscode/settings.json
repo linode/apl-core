@@ -27,9 +27,6 @@
       "source.fixAll": true
     }
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true
-  },
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "prettier.enable": true,
