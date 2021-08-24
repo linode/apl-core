@@ -163,7 +163,7 @@ export const bootstrapValues = async (): Promise<void> => {
 
   await genSops()
 
-  if (env.VALUES_INPUT && existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
 
   if (!hasOtomi) {
     debug.log('You can now use the otomi CLI')
