@@ -26,6 +26,7 @@ elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
 [ -z $ENV_DIR ] && echo "No ENV_DIR set!" && exit 1
+[[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
 if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
 fi

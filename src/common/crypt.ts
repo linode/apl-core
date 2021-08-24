@@ -28,12 +28,12 @@ const preCrypt = (): void => {
 }
 
 const getAllSecretFiles = async () => {
-  const files = await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true })
-  debug.debug('files: ', files)
-  return files
+  const files = (await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true }))
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-    .map((file) => file.replace(env.ENV_DIR, '.'))
+    .map((file) => file.replace(`${env.ENV_DIR}/`, ''))
   // .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
+  debug.debug('getAllSecretFiles: ', files)
+  return files
 }
 
 type CR = {
@@ -53,7 +53,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
   preCrypt()
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   EventEmitter.defaultMaxListeners = files.length + 5
-  debug.debug('runOnSecretFiles - files: ', files)
+  debug.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     const commands = files.map(async (file) => {
       if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
@@ -83,10 +83,10 @@ const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
 
   const encTS = statSync(absFilePath)
   const decTS = statSync(`${absFilePath}.dec`)
-  utimesSync(`${absFilePath}.dec`, decTS.atime, encTS.mtime)
+  utimesSync(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  debug.debug(`Updating timestamp for ${absFilePath}.dec from ${decSec} to ${encSec}`)
+  debug.debug(`Updating timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (...files: string[]): Promise<void> => {
@@ -118,10 +118,6 @@ export const encrypt = async (...files: string[]): Promise<void> => {
     return
   }
   debug.info('Starting encryption')
-  let encFiles = files
-
-  if (encFiles.length === 0) encFiles = await getAllSecretFiles()
-  debug.debug('encFiles: ', encFiles)
   await runOnSecretFiles(
     {
       condition: (path: string, file: string): boolean => {
@@ -129,7 +125,7 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 
         const decExists = existsSync(`${absFilePath}.dec`)
         if (!decExists) {
-          debug.debug(`Did not find decrypted ${file}.dec`)
+          debug.debug(`Did not find decrypted ${absFilePath}.dec`)
           return true
         }
 
@@ -138,7 +134,8 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 
         const encTS = statSync(absFilePath)
         const decTS = statSync(`${absFilePath}.dec`)
-
+        debug.debug('encTS.mtime: ', encTS.mtime)
+        debug.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
         if (timeDiff > 1) {
           debug.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
