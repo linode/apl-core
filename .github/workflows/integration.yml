@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/json-schema-org/json-schema-spec/draft-07/schema.json
+name: Integrate helmfile releases
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*'
+env:
+  CACHE_REGISTRY: ghcr.io
+  CACHE_REPO: redkubes/otomi-core
+  REPO: otomi/core
+  GIT_USER: redkubesbot
+  GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+  KIND_TAG: v1.19.0
+
+jobs:
+  kind:
+    runs-on: ubuntu-latest
+    container:
+      image: otomi/tools:kind
+      options: --user=root:root
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ env.GIT_PASSWORD }}
+      - run: helm plugin install https://github.com/databus23/helm-diff
+        continue-on-error: true
+      # Important info: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#docker-container-filesystem
+      - name: K8s in Docker
+        continue-on-error: true
+        run: |
+          export PATH=$PATH:/home/app/tools
+          export KUBECONFIG=$PWD/kind/kubeconfig
+          export KIND_EXPERIMENTAL_DOCKER_NETWORK=${{ job.container.network }}
+
+          kind create cluster \
+            --name kind \
+            --kubeconfig $KUBECONFIG \
+            --image kindest/node:${{ env.KIND_TAG }} \
+            --config=./kind/config.yaml
+
+          [ -n "$KIND_EXPERIMENTAL_DOCKER_NETWORK" ] && \
+            kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
+
+          chmod +r $KUBECONFIG
+
+          mkdir -p ./env/env
+          cp -r ./kind/env/ ./env/
+
+          npm set-script prepare "" && \
+            npm ci && \
+            npm run compile && \
+            /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
