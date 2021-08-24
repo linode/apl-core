@@ -40,6 +40,8 @@ export const defaultBasicArguments: BasicArguments = {
 
 let parsedArgs: BasicArguments
 
+const debuggers = {}
+
 export const setParsedArgs = (args: BasicArguments): void => {
   parsedArgs = args
   // Call needed to init LL for debugger and ZX calls:
@@ -106,37 +108,35 @@ const setColor = (term: DebuggerType, color: number[]) => {
 /* eslint-disable no-redeclare */
 export function terminal(namespace: string): OtomiDebugger
 export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
-  const newDebug = (baseNamespace: string, cons = console.log): DebuggerType => {
+  const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     if (env.OTOMI_IN_TERMINAL) {
-      const newDebugObj: DebugDebugger = commonDebug.extend(baseNamespace)
-      newDebugObj.enabled = true
-      return newDebugObj
+      if (debuggers[namespace]) return debuggers[namespace]
+      const createDebuggerObj: DebugDebugger = commonDebug.extend(baseNamespace)
+      createDebuggerObj.enabled = true
+      debuggers[namespace] = createDebuggerObj
+      return createDebuggerObj
     }
     return cons
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {}
-  // @ts-ignore
-  const base = (...args: any[]) => (terminalEnabled ? newDebug(`${namespace}`) : noop)(...args)
-  // @ts-ignore
-  const log = (...args: any[]) => newDebug(`${namespace}:log`)(...args)
-  // @ts-ignore
-  const error = (...args: any[]) => newDebug(`${namespace}:error`, console.error)(...args)
-  // @ts-ignore
-  const trace = (...args: any[]) => (logLevel() >= logLevels.TRACE ? newDebug(`${namespace}:trace`) : noop)(...args)
-  // @ts-ignore
-  const debug = (...args: any[]) => (logLevel() >= logLevels.DEBUG ? newDebug(`${namespace}:debug`) : noop)(...args)
-  // @ts-ignore
-  const info = (...args: any[]) => (logLevel() >= logLevels.INFO ? newDebug(`${namespace}:info`) : noop)(...args)
+  const base = (...args: any[]) => (terminalEnabled ? createDebugger(`${namespace}`) : noop).call(undefined, args)
+  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, args)
+  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, args)
+  const trace = (...args: any[]) =>
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, args)
+  const debug = (...args: any[]) =>
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, args)
+  const info = (...args: any[]) =>
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, args)
   const warn = (...args: any[]) =>
-    // @ts-ignore
-    (logLevel() >= logLevels.WARN ? newDebug(`${namespace}:warn`, console.warn) : noop)(...args)
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, args)
 
   setColor(error, xtermColors.red)
   setColor(warn, xtermColors.orange)
   setColor(info, xtermColors.green)
 
-  const newDebugger: OtomiDebugger = {
+  const createDebuggerger: OtomiDebugger = {
     enabled: terminalEnabled ?? true,
     base,
     log,
@@ -154,7 +154,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
       error: new DebugStream(error),
     },
   }
-  return newDebugger
+  return createDebuggerger
 }
 /* eslint-enable no-redeclare */
 

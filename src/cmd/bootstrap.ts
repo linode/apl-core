@@ -20,7 +20,7 @@ const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = (cwd: string) => {
-  const schemaPath = `${cwd}/.vscode/values-schema.yaml`
+  const devOnlyPath = `${cwd}/.vscode/values-schema.yaml`
   const targetPath = `${env.ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${cwd}/values-schema.yaml`
 
@@ -30,8 +30,8 @@ const generateLooseSchema = (cwd: string) => {
   debug.info(`Stored loose YAML schema at: ${targetPath}`)
   if (dirname.includes('otomi-core')) {
     // for validation of .values/env/* files we also generate a loose schema here:
-    writeFileSync(schemaPath, trimmedVS)
-    debug.debug(`Stored loose YAML schema for otomi-core devs at: ${schemaPath}`)
+    writeFileSync(devOnlyPath, trimmedVS)
+    debug.debug(`Stored loose YAML schema for otomi-core devs at: ${devOnlyPath}`)
   }
 }
 
