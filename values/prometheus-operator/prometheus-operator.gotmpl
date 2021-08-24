@@ -81,7 +81,11 @@ prometheus:
         metadata:
           name: promdata
         spec:
+          {{- if eq $v.cluster.provider "kind" }}
+          storageClassName: standard
+          {{- else }}
           storageClassName: fast
+          {{- end}}
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:

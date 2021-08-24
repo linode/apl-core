@@ -501,6 +501,7 @@ definitions:
       - azure
       - google
       - onprem
+      - kind
   redisChart:
     properties:
       _rawValues:

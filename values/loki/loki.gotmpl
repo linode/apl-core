@@ -58,7 +58,11 @@ persistence:
   accessModes:
   - ReadWriteOnce
   size: {{ $l | get "persistence.size" "20Gi" }}
+  {{- if eq $v.cluster.provider "kind" }}
+  storageClassName: standard
+  {{- else }}
   storageClassName: fast
+  {{- end}}
 
 ## Assign a PriorityClassName to pods if set
 # priorityClassName:

@@ -54,3 +54,4 @@ jobs:
             npm i typescript && \
             npm run compile && \
             /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
+      # - run: kind delete cluster --name kind

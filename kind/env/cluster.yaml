@@ -4,4 +4,4 @@ cluster:
   k8sVersion: '1.19'
   name: kind
   owner: redkubes
-  provider: onprem
+  provider: kind
