@@ -25,7 +25,6 @@ elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
 elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
-[ -z $ENV_DIR ] && echo "No ENV_DIR set!" && exit 1
 [[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
 if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
@@ -41,14 +40,14 @@ silent() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-in_core=false
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
-  in_core=true
+  in_core=1
 fi
-
+[ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
+[ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
-if [ "$in_core" = true ]; then
+if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch=${current_branch##*/}
   current_branch=${current_branch:-'master'}
@@ -127,7 +126,7 @@ EOF
 }
 
 check_update() {
-  if [ "$in_core" = true ] ||
+  if [ -n "$in_core" ] ||
     [[ $calling_args == *'-non-interactive'* ]] ||
     [[ $calling_args == *'-ni'* ]]; then
     return 0
@@ -217,7 +216,7 @@ executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otom
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
-if [ "$in_core" = true ]; then
+if [ -n "$in_core" ]; then
   silent echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
