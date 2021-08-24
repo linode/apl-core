@@ -69,7 +69,6 @@ env:
   TEAMS: '{{ keys $v.teamConfig.teams | sortAlpha | toJson }}'
 
 podAnnotations:
-  policy.otomi.io/ignore: "banned-image-tags,psp-allowed-users"
   policy.otomi.io/ignore.wget: "container-limits"
 
 podSecurityContext:
