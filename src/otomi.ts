@@ -14,6 +14,7 @@ import { scriptName } from './common/setup'
 import { parser, terminal } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
 
+console.profile('otomi')
 const debug = terminal('global')
 const terminalScale = 0.75
 const isAutoCompletion = process.argv.includes('--get-yargs-completions')
@@ -53,4 +54,6 @@ try {
 } catch (error) {
   debug.error(error)
   process.exit(1)
+} finally {
+  console.profileEnd('otomi')
 }

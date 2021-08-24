@@ -6,9 +6,13 @@ import { asArray, getParsedArgs, logLevels, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-const value = {
-  clean: null,
-  rp: null,
+interface iValue {
+  clean?: any
+  rp?: any
+}
+const value: iValue = {
+  clean: undefined,
+  rp: undefined,
 }
 
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
@@ -104,18 +108,19 @@ export const values = async (opts?: ValuesOptions): Promise<any | string> => {
     if (opts?.asString) return dump(value.clean)
     return value.clean
   }
+
   const output = await hf(
     { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
     { trim: true },
   )
-  value.clean = load(output.stdout) as any
-  value.rp = load(replaceHFPaths(output.stdout)) as any
+  value.clean = (load(output.stdout) as any).renderedvalues
+  value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
   if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
-  return opts && opts.replacePath ? value.rp : value.clean
+  return opts?.replacePath ? value.rp : value.clean
 }
 
 export const hfValues = async (): Promise<any> => {
-  return (await values({ replacePath: true })).renderedvalues
+  return values({ replacePath: true })
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

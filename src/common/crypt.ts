@@ -19,21 +19,21 @@ enum CryptType {
 }
 
 const preCrypt = (): void => {
-  debug.info('Checking prerequisites for the (de,en)crypt action')
+  debug.debug('Checking prerequisites for the (de,en)crypt action')
   if (env.GCLOUD_SERVICE_KEY) {
     debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
 }
 
 const getAllSecretFiles = async () => {
-  const files = await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true })
-  debug.debug('files: ', files)
-  return files
+  const files = (await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true }))
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-    .map((file) => file.replace(env.ENV_DIR, '.'))
+    .map((file) => file.replace(`${env.ENV_DIR}/`, ''))
   // .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
+  debug.debug('getAllSecretFiles: ', files)
+  return files
 }
 
 type CR = {
@@ -72,7 +72,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increate chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
-  debug.debug('runOnSecretFiles - files: ', files)
+  debug.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     const results: ProcessOutput[] = []
     // eslint-disable-next-line no-restricted-syntax
@@ -98,22 +98,25 @@ const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
 
   const encTS = statSync(absFilePath)
   const decTS = statSync(`${absFilePath}.dec`)
-  utimesSync(`${absFilePath}.dec`, decTS.atime, encTS.mtime)
+  utimesSync(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  debug.debug(`Updating timestamp for ${absFilePath}.dec from ${decSec} to ${encSec}`)
+  debug.debug(`Updating timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'decrypt'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping decryption')
+    return
+  }
   debug.info('Starting decryption')
 
   await runOnSecretFiles(
     {
       cmd: CryptType.DECRYPT,
       post: (r, p, f) => {
-        debug.debug(r.stdout.trim())
         matchTimestamps(r, p, f)
       },
     },
@@ -125,11 +128,11 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping encryption')
+    return
+  }
   debug.info('Starting encryption')
-  let encFiles = files
-
-  if (encFiles.length === 0) encFiles = await getAllSecretFiles()
-  debug.debug('encFiles: ', encFiles)
   await runOnSecretFiles(
     {
       condition: (path: string, file: string): boolean => {
@@ -137,7 +140,7 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 
         const decExists = existsSync(`${absFilePath}.dec`)
         if (!decExists) {
-          debug.debug(`Did not find decrypted ${file}.dec`)
+          debug.debug(`Did not find decrypted ${absFilePath}.dec`)
           return true
         }
 
@@ -146,7 +149,8 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 
         const encTS = statSync(absFilePath)
         const decTS = statSync(`${absFilePath}.dec`)
-
+        debug.debug('encTS.mtime: ', encTS.mtime)
+        debug.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
         if (timeDiff > 1) {
           debug.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
@@ -170,6 +174,10 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 export const rotate = async (): Promise<void> => {
   const namespace = 'rotate'
   debug = terminal(namespace)
+  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.debug('Skipping rotation')
+    return
+  }
   await runOnSecretFiles({
     cmd: CryptType.ROTATE,
     post: (result: ProcessOutput, path: string, file: string) => {
