@@ -40,7 +40,7 @@ export const mergeValues = async (values: any, overwrite = true): Promise<void> 
   const schema = loadYaml('values-schema.yaml')
   const derefSchema = await $RefParser.dereference(schema)
   const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
-  const secretsJsonPath = extractSecrets(cleanSchema)
+  const secretsJsonPath = extractSecrets(cleanSchema).map((item) => item.Address)
   debug.debug('secretsJsonPath: ', secretsJsonPath)
   const secrets = pick(values, secretsJsonPath)
   // removing secrets
