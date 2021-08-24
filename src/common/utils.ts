@@ -290,6 +290,18 @@ export const gucci = async (tmpl: string, args: { [key: string]: string }): Prom
   }
 }
 
+export const chunkArray = (input: any[], chunkSize: number): any[][] => {
+  return input.reduce((resultArray: string[][], item: string, index: number) => {
+    const chunkIndex = Math.floor(index / chunkSize)
+
+    // eslint-disable-next-line no-param-reassign
+    if (!resultArray[chunkIndex]) resultArray[chunkIndex] = [] // start a new chunk
+    resultArray[chunkIndex].push(item)
+
+    return resultArray
+  }, [])
+}
+
 /* Can't use for now because of:
 https://github.com/homeport/dyff/issues/173
 export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Promise<boolean> => {

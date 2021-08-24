@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { env } from './envalid'
-import { BasicArguments, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+import { BasicArguments, chunkArray, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
 
 export interface Arguments extends BasicArguments {
   files?: string[]
@@ -42,6 +42,21 @@ type CR = {
   post?: (result: ProcessOutput, path: string, file: string) => void
 }
 
+const processFileChunk = async (crypt: CR, files: string[]): Promise<ProcessOutput[]> => {
+  const commands = files.map(async (file) => {
+    if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
+      debug.debug(`${crypt.cmd} ${file}`)
+      const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
+      if (crypt.post) crypt.post(result, env.ENV_DIR, file)
+      return result
+    }
+    return undefined
+  })
+  const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
+  results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
+  return results
+}
+
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
   const cwd = await currDir()
   let files: string[] = filesArgs
@@ -51,21 +66,21 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
     files = await getAllSecretFiles()
   }
   preCrypt()
+  const chunkSize = 5
+  const filesChunked = chunkArray(files, chunkSize)
+
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
-  EventEmitter.defaultMaxListeners = files.length + 5
+  // EventEmitter.defaultMaxListeners is 10, if we increate chunkSize in the future then this line will prevent it from crashing
+  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   debug.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
-    const commands = files.map(async (file) => {
-      if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
-        debug.debug(`${crypt.cmd} ${file}`)
-        const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
-        if (crypt.post) crypt.post(result, env.ENV_DIR, file)
-        return result
-      }
-      return undefined
-    })
-    const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
-    results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
+    const results: ProcessOutput[] = []
+    // eslint-disable-next-line no-restricted-syntax
+    for (const fileChunk of filesChunked) {
+      // eslint-disable-next-line no-await-in-loop
+      const chunkResult = await processFileChunk(crypt, fileChunk)
+      results.push(...chunkResult)
+    }
     return results
   } catch (error) {
     debug.error(error)
