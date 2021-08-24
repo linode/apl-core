@@ -30,10 +30,11 @@ spec:
           args:
             - |
               set -e
+              ! kubectl -n otomi get cm otomi-status && echo 'Already installed. Installation of Otomi with chart can happen only once! To destroy or modify the configuration please use the Otomi CLI.' && exit 1   
               binzx/otomi bootstrap
-              binzx/otomi decrypt
               binzx/otomi apply
               binzx/otomi commit
+              kubectl -n otomi create cm otomi-status --from-literal=status=Installed 
           env:
             - name: CI
               value: '1'

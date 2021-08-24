@@ -11,9 +11,9 @@ import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { generateSecrets } from './lib/gen-secrets'
 import { genSops } from './gen-sops'
 import { mergeValues } from './lib/chart'
+import { generateSecrets } from './lib/gen-secrets'
 
 export type Arguments = BasicArguments
 
@@ -42,7 +42,7 @@ export const bootstrapGit = async (): Promise<void> => {
     // scenario 3: pull > bootstrap values
     debug.info('Values repo already git initialized.')
   } else {
-    // scenario 1 or 2 (2 will only be called upon first otomi commit)
+    // scenario 1 or 2 or 4(2 will only be called upon first otomi commit)
     debug.info('Initializing values repo.')
     const cwd = await currDir()
     cd(env.ENV_DIR)
@@ -147,10 +147,6 @@ export const bootstrapValues = async (): Promise<void> => {
   if (!existsSync(`${env.ENV_DIR}/env`)) {
     debug.log(`Copying basic values`)
     await copy(`${cwd}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
-
-    // Generate passwords and merge with values only if there are no env folder already (first call to bootstrap)
-    const generatedSecrets = yaml.load(await generateSecrets())
-    await mergeValues(generatedSecrets)
   }
 
   debug.log('Copying Otomi Console Setup')
@@ -159,6 +155,11 @@ export const bootstrapValues = async (): Promise<void> => {
   await Promise.allSettled(
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${cwd}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
+
+  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
+  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
+  const generatedSecrets = yaml.load(await generateSecrets())
+  await mergeValues(generatedSecrets, false)
 
   // If we run from chart installer, VALUES_INPUT will be set
   // Merge user in put values.yaml with current values
@@ -270,6 +271,8 @@ export const module = {
       1. chart install: assume empty env dir, so git init > bootstrap values (=load skeleton files, then merge chart values) > and commit
       2. cli install: first time, so git init > bootstrap values
       3. cli install: n-th time (.git exists), so pull > bootstrap values
+      4. chart install: n-th time. (values are stored in some git repository), so configure git, then clone values, then merge chart values) > and commit
+
     */
     await bootstrapValues()
     await decrypt()

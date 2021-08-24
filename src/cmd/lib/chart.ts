@@ -10,7 +10,11 @@ import { extractSecrets } from './gen-secrets'
 const debug = terminal('chart')
 let hasSops = false
 
-export const mergeFileValues = async (targetPath: string, newValues: Record<string, unknown>): Promise<void> => {
+export const mergeFileValues = async (
+  targetPath: string,
+  newValues: Record<string, unknown>,
+  overwrite = true,
+): Promise<void> => {
   debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(newValues)}`)
   if (!existsSync(targetPath)) {
     // If the targetPath doesn't exist, just create it and write the valueObject in it.
@@ -20,6 +24,7 @@ export const mergeFileValues = async (targetPath: string, newValues: Record<stri
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
 
   const values = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+  if (!overwrite) merge(newValues, values)
   merge(values, newValues)
   return writeFile(`${targetPath}${suffix}`, yaml.dump(values))
 }
@@ -28,7 +33,7 @@ export const getChartValues = (): any | undefined => {
   return env.VALUES_INPUT ? loadYaml(env.VALUES_INPUT) : undefined
 }
 
-export const mergeValues = async (values: any): Promise<void> => {
+export const mergeValues = async (values: any, overwrite = true): Promise<void> => {
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
 
   // creating secret files
@@ -46,13 +51,14 @@ export const mergeValues = async (values: any): Promise<void> => {
 
   const promises: Promise<void>[] = []
 
-  if (settings) promises.push(mergeFileValues(`${env.ENV_DIR}/env/settings.yaml`, settings))
-  if (secretSettings) promises.push(mergeFileValues(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings))
+  if (settings) promises.push(mergeFileValues(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (secretSettings)
+    promises.push(mergeFileValues(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   // creating non secret files
   if (plainValues.cluster)
-    promises.push(mergeFileValues(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }))
+    promises.push(mergeFileValues(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
-    promises.push(mergeFileValues(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }))
+    promises.push(mergeFileValues(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
 
   const plainChartPromises = Object.keys(plainValues.charts || {}).map((chart) => {
     const valueObject = {
@@ -60,7 +66,7 @@ export const mergeValues = async (values: any): Promise<void> => {
         [chart]: plainValues.charts[chart],
       },
     }
-    return mergeFileValues(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject)
+    return mergeFileValues(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
   })
   const secretChartPromises = Object.keys(secrets.charts || {}).map((chart) => {
     const valueObject = {
@@ -68,7 +74,7 @@ export const mergeValues = async (values: any): Promise<void> => {
         [chart]: values.charts[chart],
       },
     }
-    return mergeFileValues(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject)
+    return mergeFileValues(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])
