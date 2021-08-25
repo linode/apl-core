@@ -89,18 +89,18 @@ export type OtomiDebugger = {
   stream: OtomiStreamDebugger
 }
 
-const xtermColors = {
-  red: [52, 124, 9, 202, 211],
-  orange: [58, 130, 202, 208, 214],
-  green: [2, 28, 34, 46, 78, 119],
-}
-const setColor = (term: DebuggerType, color: number[]) => {
-  // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
-  if (!('namespace' in term && env.STATIC_COLORS)) return
-  const t: DebugDebugger = term
-  const colons = (t.namespace.match(/:/g) || ['']).length - 1
-  t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
-}
+// const xtermColors = {
+//   red: [52, 124, 9, 202, 211],
+//   orange: [58, 130, 202, 208, 214],
+//   green: [2, 28, 34, 46, 78, 119],
+// }
+// const setColor = (term: DebuggerType, color: number[]) => {
+//   // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
+//   if (!('namespace' in term && env.STATIC_COLORS)) return
+//   const t: DebugDebugger = term
+//   const colons = (t.namespace.match(/:/g) || ['']).length - 1
+//   t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
+// }
 /*
  * Must be function to be able to export overrides.
  */
