@@ -40,7 +40,7 @@
     "@types/js-yaml": "^4.0.1",
     "@types/lodash": "^4.14.168",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.13.48",
+    "@types/node": "^16.7.1",
     "@types/sinon": "^9.0.11",
     "@types/sinon-chai": "^3.2.5",
     "@types/supertest": "^2.0.11",
