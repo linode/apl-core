@@ -14,6 +14,7 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
+
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
@@ -28,6 +29,9 @@ fi
 [[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
 if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
+fi
+if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
+  calling_args="x -- ${calling_args:2}"
 fi
 readonly calling_args
 silent() {
@@ -244,7 +248,7 @@ check_volume_path() {
   return 0
 }
 
-cmd="${executable} $*"
+cmd="${executable} $calling_args"
 # If command is "otomi bash"
 if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
