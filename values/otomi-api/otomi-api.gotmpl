@@ -39,6 +39,7 @@ secrets:
 env:
   # DEBUG: '*'
   VERBOSE: '1'
+  VERBOSITY: '2'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   {{- if hasKey $o "disableSync" }}
@@ -63,6 +64,8 @@ core:
 
 tools:
   enabled: {{ $sopsEnabled }}
+  env:
+    VERBOSITY: '2'
   {{- if $sopsEnabled }}
   image:
     repository: otomi/core
