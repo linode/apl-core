@@ -17,7 +17,7 @@
     "lib": ["ES2021", "ESNext"]
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src"],
+  "include": ["src", "test"],
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module"

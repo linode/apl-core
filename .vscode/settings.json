@@ -61,5 +61,7 @@
   "shellformat.flag": "-i 2 -ci",
   "opa.roots": ["${workspaceFolder}/policies"],
   "python.pythonPath": "/usr/local/bin/python3",
-  "sops.enabled": false
+  "sops.enabled": false,
+  "mochaExplorer.files": "test/*.test.ts",
+  "mochaExplorer.require": "ts-node/register"
 }
