@@ -1,12 +1,12 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
-import { existsSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { existsSync, promises as fsPromises } from 'fs'
 import yaml from 'js-yaml'
 import { merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
 import { loadYaml, terminal } from '../../common/utils'
 import { extractSecrets } from './gen-secrets'
 
+const { writeFile } = fsPromises
 const debug = terminal('chart')
 let hasSops = false
 

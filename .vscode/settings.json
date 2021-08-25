@@ -62,6 +62,6 @@
   "opa.roots": ["${workspaceFolder}/policies"],
   "python.pythonPath": "/usr/local/bin/python3",
   "sops.enabled": false,
-  "mochaExplorer.files": "test/*.test.ts",
+  "mochaExplorer.files": "tests/*.test.ts",
   "mochaExplorer.require": "ts-node/register"
 }

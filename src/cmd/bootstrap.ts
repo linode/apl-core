@@ -1,6 +1,5 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
-import { copyFile } from 'fs/promises'
 import yaml from 'js-yaml'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
@@ -14,6 +13,8 @@ import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParse
 import { genSops } from './gen-sops'
 import { mergeValues } from './lib/chart'
 import { generateSecrets } from './lib/gen-secrets'
+
+const { copyFile } = fsPromises
 
 export type Arguments = BasicArguments
 
