@@ -268,7 +268,7 @@ fi
 
 network='--network host'
 if [[ $calling_args == 'server'* ]]; then
-  network="--init -p $OTOMI_PORT:$OTOMI_PORT"
+  network="-p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
 mkdir -p /tmp/otomi
@@ -279,7 +279,7 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  docker run --rm $it \
+  docker run --rm --init $it \
     $linux_workaround \
     $network \
     $stack_volume \

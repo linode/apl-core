@@ -1,5 +1,5 @@
 import { dump, load } from 'js-yaml'
-import { Transform } from 'stream'
+import { Readable, Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
 import { asArray, getParsedArgs, logLevels, terminal } from './utils'
@@ -15,7 +15,7 @@ const value: iValue = {
   rp: undefined,
 }
 
-const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
+const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 export type HFParams = {
@@ -65,17 +65,22 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-const hfTrimmed = (args: HFParams): ProcessPromise<ProcessOutput> => {
+const hfTrimmed = (args: HFParams): { proc: ProcessPromise<ProcessOutput>; stdout: Readable; stderr: Readable } => {
   const transform = new Transform({
     transform(chunk, encoding, next) {
-      const transformation = trimHFOutput(chunk.toString()).trim()
+      const str = chunk.toString()
+      const transformation = trimHFOutput(str).trim()
+      // if (str.indexOf('basePath=') > -1) console.debug('transformation:', `${str} > ${transformation}`)
       if (transformation && transformation.length > 0) this.push(transformation)
       next()
     },
   })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
-  proc.stdout.pipe(transform)
-  return proc
+  return {
+    stdout: proc.stdout,
+    stderr: proc.stderr.pipe(transform),
+    proc,
+  }
 }
 
 export type HFOptions = {
@@ -83,11 +88,11 @@ export type HFOptions = {
   streams?: Streams
 }
 
-export const hfStream = (args: HFParams, opts?: HFOptions): ProcessPromise<ProcessOutput> => {
-  const proc = opts?.trim ? hfTrimmed(args) : hfCore(args)
-  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return proc
+export const hfStream = (args: HFParams, opts: HFOptions = {}): ProcessPromise<ProcessOutput> => {
+  const trimmedOutput = hfTrimmed(args)
+  if (opts?.streams?.stdout) trimmedOutput.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) trimmedOutput.stderr.pipe(opts.streams.stderr, { end: false })
+  return trimmedOutput.proc
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
