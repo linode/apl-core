@@ -1,5 +1,6 @@
 import { Argv } from 'yargs'
 import { hfStream } from '../common/hf'
+import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
@@ -28,6 +29,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
+    await prepareEnvironment()
     await sync()
   },
 }

@@ -1,5 +1,6 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 type Arguments = BasicArguments
@@ -18,6 +19,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
+    await prepareEnvironment({ skipEnvDirCheck: true, skipDecrypt: true })
     await status()
   },
 }
