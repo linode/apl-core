@@ -247,6 +247,7 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         type: string
     required:
+      - domainSuffix
       - k8sContext
       - k8sVersion
       - name

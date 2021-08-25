@@ -39,8 +39,8 @@ function kint() {
 }
 
 alias kintd="k9s --kubeconfig ./kind/kubeconfig" 
-alias kintk="KUBECONFIG=./kind/kubeconfig k"
-alias kintoto="KUBECONFIG=./kind/kubeconfig binzx/otomi"
+alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
+alias kintoto="KUBECONFIG=$PWD/kind/kubeconfig ENV_DIR=$PWD/kind/env binzx/otomi"
 
 function kpo() {
   labels=$1

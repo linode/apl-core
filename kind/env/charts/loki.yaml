@@ -1,9 +1,8 @@
 charts:
-    loki:
-        persistence:
-            size: 20Gi
-        retention:
-            duration: 24h
-            period: 24h
-        storageType: filesystem
-        v11StartDate: '2021-05-13'
+  loki:
+    persistence:
+      size: 20Gi
+    retention:
+      duration: 24h
+      period: 24h
+    storageType: filesystem

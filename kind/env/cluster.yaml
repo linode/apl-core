@@ -1,6 +1,6 @@
 cluster:
   domainSuffix: kind.eks.otomi.cloud
-  k8sContext: otomi-onprem-kind
+  k8sContext: kind-kind
   k8sVersion: '1.19'
   name: kind
   owner: redkubes
