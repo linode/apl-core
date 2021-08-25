@@ -119,21 +119,21 @@ export function terminal(namespace: string): OtomiDebugger {
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {}
-  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, args)
-  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, args)
-  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, args)
+  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, ...args)
+  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, ...args)
+  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, ...args)
   const trace = (...args: any[]) =>
-    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
   const debug = (...args: any[]) =>
-    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
   const info = (...args: any[]) =>
-    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
   const warn = (...args: any[]) =>
-    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, args)
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, ...args)
 
-  setColor(error, xtermColors.red)
-  setColor(warn, xtermColors.orange)
-  setColor(info, xtermColors.green)
+  // setColor(error, xtermColors.red)
+  // setColor(warn, xtermColors.orange)
+  // setColor(info, xtermColors.green)
 
   return {
     base,

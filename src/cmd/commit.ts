@@ -4,7 +4,7 @@ import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { exitIfInCore, prepareEnvironment } from '../common/setup'
+import { prepareEnvironment } from '../common/setup'
 import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapGit } from './bootstrap'
@@ -17,10 +17,6 @@ const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends HelmArgs, DroneArgs {}
-
-const setup = (): void => {
-  exitIfInCore(cmdName)
-}
 
 export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
@@ -70,7 +66,12 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   debug.info('Committing values')
   await $`git add -A`
-  await $`git commit -m 'otomi commit' --no-verify`
+  try {
+    await $`git commit -m 'otomi commit' --no-verify`
+  } catch (e) {
+    debug.error(e.stdout)
+    debug.log('Something went wrong trying to commit. Did you make any changes?')
+  }
 
   if (!env.CI) await pull()
   let healthUrl
@@ -109,10 +110,8 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    setup()
 
     if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
-      debug.info('Values repo already git initialized.')
       await pull()
     } else {
       await bootstrapGit()

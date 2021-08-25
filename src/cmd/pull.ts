@@ -20,10 +20,12 @@ export const pull = async (): Promise<void> => {
   cd(env.ENV_DIR)
   try {
     await $`git fetch`
-    await $`git merge origin/${branch}`
+    await $`if git log >/dev/null; then git merge origin/${branch}; fi`
   } catch (error) {
-    debug.error(`Merge conflicts occured when trying to pull.\nPlease resolve these and run \`otomi commit\` again.`)
-    process.exit(env.CI ? 0 : 1)
+    debug.error(error.stdout)
+    debug.warn(
+      `An error occured when trying to pull (maybe not problematic).\nIf you see merge conflicts then please resolve these and run \`otomi commit\` again.`,
+    )
   } finally {
     cd(cwd)
   }

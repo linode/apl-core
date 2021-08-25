@@ -13,6 +13,7 @@ const dirname = fileURLToPath(import.meta.url)
 let otomiImageTag: string
 let otomiClusterOwner: string
 let otomiK8sVersion: string
+export const rootDir = process.cwd()
 
 /**
  * Check whether the environment matches the configuration for the kubernetes context
