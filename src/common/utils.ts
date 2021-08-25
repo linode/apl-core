@@ -79,7 +79,6 @@ export type OtomiStreamDebugger = {
   error: DebugStream
 }
 export type OtomiDebugger = {
-  enabled: boolean
   base: DebuggerType
   log: DebuggerType
   trace: DebuggerType
@@ -98,29 +97,29 @@ const xtermColors = {
 const setColor = (term: DebuggerType, color: number[]) => {
   // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
   if (!('namespace' in term && env.STATIC_COLORS)) return
-  const terminal: DebugDebugger = term
-  const colons = (terminal.namespace.match(/:/g) || ['']).length - 1
-  terminal.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
+  const t: DebugDebugger = term
+  const colons = (t.namespace.match(/:/g) || ['']).length - 1
+  t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
 }
 /*
  * Must be function to be able to export overrides.
  */
 /* eslint-disable no-redeclare */
-export function terminal(namespace: string): OtomiDebugger
-export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
+export function terminal(namespace: string): OtomiDebugger {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
+    const signature = namespace + baseNamespace
     if (env.OTOMI_IN_TERMINAL) {
-      if (debuggers[namespace]) return debuggers[namespace]
-      const createDebuggerObj: DebugDebugger = commonDebug.extend(baseNamespace)
-      createDebuggerObj.enabled = true
-      debuggers[namespace] = createDebuggerObj
-      return createDebuggerObj
+      if (debuggers[signature]) return debuggers[signature]
+      const debugObj: DebugDebugger = commonDebug.extend(baseNamespace)
+      debuggers[signature] = debugObj
+      debugObj.enabled = true
+      return debugObj
     }
     return cons
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {}
-  const base = (...args: any[]) => (terminalEnabled ? createDebugger(`${namespace}`) : noop).call(undefined, args)
+  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, args)
   const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, args)
   const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, args)
   const trace = (...args: any[]) =>
@@ -136,8 +135,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
   setColor(warn, xtermColors.orange)
   setColor(info, xtermColors.green)
 
-  const createDebuggerger: OtomiDebugger = {
-    enabled: terminalEnabled ?? true,
+  return {
     base,
     log,
     trace,
@@ -154,9 +152,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
       error: new DebugStream(error),
     },
   }
-  return createDebuggerger
 }
-/* eslint-enable no-redeclare */
 
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
@@ -300,6 +296,18 @@ export const gucci = async (tmpl: string, args: { [key: string]: string }): Prom
   } finally {
     $.quote = quoteBackup
   }
+}
+
+export const chunkArray = (input: any[], chunkSize: number): any[][] => {
+  return input.reduce((resultArray: string[][], item: string, index: number) => {
+    const chunkIndex = Math.floor(index / chunkSize)
+
+    // eslint-disable-next-line no-param-reassign
+    if (!resultArray[chunkIndex]) resultArray[chunkIndex] = [] // start a new chunk
+    resultArray[chunkIndex].push(item)
+
+    return resultArray
+  }, [])
 }
 
 /* Can't use for now because of:
