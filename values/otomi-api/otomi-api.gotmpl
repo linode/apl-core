@@ -18,7 +18,6 @@
   {{- $apps = append $apps $s }}
 {{- end }}
 {{- end }}
-{{- $services := dict "services" $apps }}
 {{- $teamApps := list }}
 {{- range $c := $v.teamConfig.services }}
 {{- if hasKey $core.apps $c.name }}
@@ -27,7 +26,6 @@
   {{- $teamApps = append $teamApps $c }}
 {{- end }}
 {{- end }}
-{{- $teamConfig := dict "services" $teamApps }}
 {{/* END: set the enabled flags on core services based on the chart enabled flags */}}
 
 replicaCount: 1
@@ -79,8 +77,8 @@ env:
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
-  services: {{- toYaml $services | nindent 4 }}
-  teamConfig: {{- toYaml $teamConfig | nindent 4 }}
+  services: {{- toYaml $apps | nindent 4 }}
+  teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
   enabled: {{ $sopsEnabled }}
