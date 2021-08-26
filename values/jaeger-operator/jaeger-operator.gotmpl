@@ -26,6 +26,8 @@ jaeger:
       sidecarSecurityContext:
         runAsNonRoot: true
         runAsUser: 1000
+    annotations:
+      sidecar.istio.io/inject: "true"
     collector:
       resources:
         limits:
