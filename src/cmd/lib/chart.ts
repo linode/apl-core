@@ -1,10 +1,9 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { existsSync, promises as fsPromises } from 'fs'
 import yaml from 'js-yaml'
-import { merge, omit, pick } from 'lodash-es'
+import { cloneDeep, merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
-import { loadYaml, terminal } from '../../common/utils'
-import { extractSecrets } from './gen-secrets'
+import { extract, loadYaml, objectToPaths, terminal } from '../../common/utils'
 
 const { writeFile } = fsPromises
 const debug = terminal('chart')
@@ -12,21 +11,21 @@ let hasSops = false
 
 export const mergeFileValues = async (
   targetPath: string,
-  newValues: Record<string, unknown>,
+  toBeMergedValues: Record<string, unknown>,
   overwrite = true,
 ): Promise<void> => {
-  debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(newValues)}`)
+  debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(toBeMergedValues)}`)
   if (!existsSync(targetPath)) {
     // If the targetPath doesn't exist, just create it and write the valueObject in it.
     // It doesn't matter if it is secret or not. and always write in its yaml file
-    return writeFile(targetPath, yaml.dump(newValues ?? {}))
+    return writeFile(targetPath, yaml.dump(toBeMergedValues ?? {}))
   }
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
 
-  const values = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
-  if (!overwrite) merge(newValues, values)
-  merge(values, newValues)
-  return writeFile(`${targetPath}${suffix}`, yaml.dump(values))
+  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+
+  const mergeResult = merge(cloneDeep(originalValues), toBeMergedValues, !overwrite ? originalValues : {})
+  return writeFile(`${targetPath}${suffix}`, yaml.dump(mergeResult))
 }
 
 export const getChartValues = (): any | undefined => {
@@ -40,7 +39,9 @@ export const mergeValues = async (values: any, overwrite = true): Promise<void> 
   const schema = loadYaml('values-schema.yaml')
   const derefSchema = await $RefParser.dereference(schema)
   const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
-  const secretsJsonPath = extractSecrets(cleanSchema).map((item) => item.Address)
+  const leaf = 'x-secret'
+  const schemaSecrets = extract(cleanSchema, leaf, (val: any) => (val.length > 0 ? `{{ ${val} }}` : val))
+  const secretsJsonPath = objectToPaths(schemaSecrets, leaf)
   debug.debug('secretsJsonPath: ', secretsJsonPath)
   const secrets = pick(values, secretsJsonPath)
   // removing secrets

@@ -9,10 +9,18 @@ import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
-import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  BasicArguments,
+  currDir,
+  generateSecrets,
+  getFilename,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { genSops } from './gen-sops'
 import { mergeValues } from './lib/chart'
-import { generateSecrets } from './lib/gen-secrets'
 
 const { copyFile } = fsPromises
 

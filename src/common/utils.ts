@@ -1,7 +1,9 @@
+import $RefParser from '@apidevtools/json-schema-ref-parser'
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
-import { load } from 'js-yaml'
+import { dump, load } from 'js-yaml'
+import { omit } from 'lodash-es'
 import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
@@ -318,4 +320,47 @@ export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Pro
   return isThereADiff
 }
 */
+
+export const extract = (schema: any, leaf: string, mapValue = (val: any) => val): Record<string, unknown> => {
+  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
+  return Object.keys(schema)
+    .map((key) => {
+      const childObj = schema[key]
+      if (key === leaf) return schemaKeywords.includes(key) ? mapValue(childObj) : { [key]: mapValue(childObj) }
+      if (typeof childObj !== 'object') return {}
+      const obj = extract(childObj, leaf, mapValue)
+      if ('extractedValue' in obj) return { [key]: obj.extractedValue }
+      return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
+        ? obj
+        : { [key]: obj }
+    })
+    .reduce((accumulator, extractedValue) => {
+      return typeof extractedValue !== 'object'
+        ? { ...accumulator, extractedValue }
+        : { ...accumulator, ...extractedValue }
+    }, {})
+}
+export const objectToPaths = (object: any, removeField = '', path = ''): string[] => {
+  return Object.entries(object)
+    .flatMap(([k, v]) => {
+      if (typeof v === 'object') return objectToPaths(v, removeField, path.length ? `${path}.${k}` : k)
+      return path.length ? `${path}.${k}` : k
+    })
+    .map((val: string) => (removeField.length ? val.replaceAll(`.${removeField}`, '') : val))
+}
+
+export const generateSecrets = async (): Promise<string> => {
+  const debug: OtomiDebugger = terminal('generateSecrets')
+
+  const schema = loadYaml('values-schema.yaml')
+  const derefSchema = await $RefParser.dereference(schema)
+  const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
+  const secretsObject = extract(cleanSchema, 'x-secret', (val: any) => (val?.length > 0 ? `{{ ${val} }}` : undefined))
+  debug.debug(dump(secretsObject))
+  const allSecrets = await gucci(dump(secretsObject), {})
+  debug.debug(allSecrets)
+
+  return allSecrets!
+}
+
 export default { parser, asArray }
