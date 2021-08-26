@@ -18,13 +18,13 @@ cr:
         - '**'
       pod_annotations:
         policy.otomi.io/ignore: psp-allowed-users
-        resources:
+        sidecar.istio.io/inject: "true"
       ingress_enabled: false
-      namespace: istio-system
+      namespace: kiali
       resources:
         limits:
-          cpu: 100m
-          memory: 128Mi
+          cpu: 500m
+          memory: 512Mi
         requests:
           cpu: 10m
           memory: 32Mi
@@ -54,10 +54,10 @@ cr:
           - app_label: istiod
             is_core: true
           - app_label: istio-ingressgateway-public
-            is_core: false
+            is_core: true
             is_proxy: true
           - app_label: istio-ingressgateway-private
-            is_core: false
+            is_core: true
             is_proxy: true
           - app_label: istio-egressgateway
             is_core: false
@@ -66,31 +66,28 @@ cr:
       prometheus:
         auth:
           insecure_skip_verify: {{ $hasStagingCerts }}
-          password: {{ $v.otomi.adminPassword }}
-          type: "basic"
-          username: admin
+          type: none
         cache_duration: 10
         cache_enabled: true
         cache_expiration: 300
-        in_cluster_url: http://po-prometheus.monitoring:9090/
+        in_cluster_url: http://po-prometheus.monitoring:9090
         is_core: false
         url: https://{{ $appsDomain }}/prometheus/
       tracing:
         auth:
           insecure_skip_verify: {{ $hasStagingCerts }}
-          password: {{ $v.otomi.adminPassword }}
-          type: "basic"
-          username: admin
+          type: none
         enabled: true
-        in_cluster_url: http://jaeger-operator-jaeger-query.jaeger-operator:16686/
+        in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686
         is_core: false
         namespace_selector: true
         url: https://{{ $appsDomain }}/jaeger/
-        #use_grpc:
-        whitelist_istio_system: ["jaeger-query", "istio-ingressgateway"]
+        use_grpc: true
+        whitelist_istio_system: ["istio-ingressgateway-public","istio-ingressgateway-private","istio-egressgateway"]
     istio_component_namespaces:
       prometheus: monitoring
       grafana: monitoring
+      jaeger: jaeger
     istio_namespace: istio-system
     server:
       web_root: /kiali
@@ -99,7 +96,7 @@ cr:
 resources:
   limits:
     cpu: 500m
-    memory: 512Mi
+    memory: 256Mi
   requests:
     cpu: 100m
     memory: 150Mi

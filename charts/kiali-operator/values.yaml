@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator
-  tag: v1.35.0
+  tag: v1.39.0
   pullPolicy: Always
   pullSecrets: []
 
