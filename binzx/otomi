@@ -150,7 +150,7 @@ check_update() {
   fi
 }
 silent echo "Checking for updates"
-[ -z $CI ] && check_update
+[ -z $CI ] && [ -z $IN_DOCKER ] && check_update
 
 tmp_env=$(mktemp)
 

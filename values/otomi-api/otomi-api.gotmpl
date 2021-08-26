@@ -5,10 +5,30 @@
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $hasGitea := $g | get "enabled" true }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $teamConfig := dict "services" $v.teamConfig.services }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 {{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
+{{/* START: set the enabled flags on core services based on the chart enabled flags */}}
+{{- $core := readFile "../../core.yaml" | fromYaml }}
+{{- $apps := list }}
+{{- range $s := $v.services }}
+{{- if hasKey $core.apps $s.name }}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true }}
+  {{- $s := set $s "enabled" $enabled }}
+  {{- $apps = append $apps $s }}
+{{- end }}
+{{- end }}
+{{- $services := dict "services" $apps }}
+{{- $teamApps := list }}
+{{- range $c := $v.teamConfig.services }}
+{{- if hasKey $core.apps $c.name }}
+  {{- $enabled := ($v.charts | get $c.name dict) | get "enabled" true }}
+  {{- $c := set $c "enabled" $enabled }}
+  {{- $teamApps = append $teamApps $c }}
+{{- end }}
+{{- end }}
+{{- $teamConfig := dict "services" $teamApps }}
+{{/* END: set the enabled flags on core services based on the chart enabled flags */}}
 
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
@@ -59,7 +79,7 @@ env:
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
-  services: {{- toYaml $v.services | nindent 4 }}
+  services: {{- toYaml $services | nindent 4 }}
   teamConfig: {{- toYaml $teamConfig | nindent 4 }}
 
 tools:

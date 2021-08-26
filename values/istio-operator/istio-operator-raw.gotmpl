@@ -215,7 +215,7 @@ resources:
         pilot:
           {{- if eq $cm.stage "staging" }}
           jwksResolverExtraRootCA: |
-            {{- $v.letsencryptCA | nindent 12 }}
+            {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 12 }}
           {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
