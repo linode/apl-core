@@ -1269,7 +1269,7 @@ properties:
                 properties:
                   htpasswd:
                     type: string
-                    x-secret: 'randAlphaNum 60'
+                    x-secret: 'htpasswd .dot.username .v.registry.credentials.password'
                   username:
                     type: string
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'

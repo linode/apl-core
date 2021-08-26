@@ -3,13 +3,13 @@ import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { omit } from 'lodash-es'
+import { get, omit } from 'lodash-es'
 import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $ } from 'zx'
+import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
@@ -273,20 +273,46 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
   waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
-export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string | undefined> => {
+export const objectToPaths = (object: any, removeField = '', path = ''): string[] => {
+  return Object.entries(object)
+    .flatMap(([k, v]) => {
+      if (typeof v === 'object') return objectToPaths(v, removeField, path.length ? `${path}.${k}` : k)
+      return path.length ? `${path}.${k}` : k
+    })
+    .map((val: string) => (removeField.length ? val.replaceAll(`.${removeField}`, '') : val))
+}
+
+export const flattenObject = (obj: unknown): { [key: string]: string } => {
+  return objectToPaths(obj)
+    .map((value) => {
+      return { [value]: get(obj, value) }
+    })
+    .reduce((acc, base) => {
+      return { ...acc, ...base }
+    }, {})
+}
+
+export const gucci = async (tmpl: string | unknown, args: { [key: string]: any }): Promise<string | undefined> => {
   const debug = terminal('gucci')
-  const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
+
+  const kv = flattenObject(args)
+  const gucciArgs = Object.entries(kv).map(([k, v]) => {
+    if (['(', ')', '^', '[', ']', '$'].some((v) => k.includes(v))) return ''
+    return `-s ${k}='${v ?? ''}'`
+  })
+
   const quoteBackup = $.quote
   $.quote = (v) => v
   try {
-    let processOutput
-    if (existsSync(tmpl)) {
+    let processOutput: ProcessOutput
+    const tmplIsString = typeof tmpl === 'string'
+    const templateContent: string = tmplIsString ? (tmpl as string) : dump(tmpl, { lineWidth: -1 })
+    if (tmplIsString && existsSync(templateContent)) {
       // input string is a file path
-      processOutput = await $`gucci ${gucciArgs} ${tmpl}`
+      processOutput = await $`gucci ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
-      const str = tmpl.replaceAll('"', '\\"')
-      processOutput = await $`echo "${str}" | gucci ${gucciArgs}`
+      processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci ${gucciArgs}`
     }
     return processOutput.stdout.trim()
   } catch (error) {
@@ -340,27 +366,26 @@ export const extract = (schema: any, leaf: string, mapValue = (val: any) => val)
         : { ...accumulator, ...extractedValue }
     }, {})
 }
-export const objectToPaths = (object: any, removeField = '', path = ''): string[] => {
-  return Object.entries(object)
-    .flatMap(([k, v]) => {
-      if (typeof v === 'object') return objectToPaths(v, removeField, path.length ? `${path}.${k}` : k)
-      return path.length ? `${path}.${k}` : k
-    })
-    .map((val: string) => (removeField.length ? val.replaceAll(`.${removeField}`, '') : val))
-}
 
-export const generateSecrets = async (): Promise<string> => {
+export const generateSecrets = async (): Promise<any> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
 
   const schema = loadYaml('values-schema.yaml')
   const derefSchema = await $RefParser.dereference(schema)
   const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
-  const secretsObject = extract(cleanSchema, 'x-secret', (val: any) => (val?.length > 0 ? `{{ ${val} }}` : undefined))
+  const secretsObject = extract(cleanSchema, 'x-secret', (val: any) => {
+    if (val.length > 0) {
+      const localRefs = ['.dot.', '.v.', '.root.']
+      if (localRefs.some((localRef) => val.includes(localRef))) return val
+      return `{{ ${val} }}`
+    }
+    return undefined
+  })
   debug.debug(dump(secretsObject))
   const allSecrets = await gucci(dump(secretsObject), {})
   debug.debug(allSecrets)
 
-  return allSecrets!
+  return load(allSecrets!)
 }
 
 export default { parser, asArray }

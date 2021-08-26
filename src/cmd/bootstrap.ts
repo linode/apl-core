@@ -164,7 +164,7 @@ export const bootstrapValues = async (): Promise<void> => {
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = yaml.load(await generateSecrets())
+  const generatedSecrets = await generateSecrets()
   await mergeValues(generatedSecrets, false)
 
   // If we run from chart installer, VALUES_INPUT will be set
