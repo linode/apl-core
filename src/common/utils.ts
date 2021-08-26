@@ -91,18 +91,18 @@ export type OtomiDebugger = {
   stream: OtomiStreamDebugger
 }
 
-const xtermColors = {
-  red: [52, 124, 9, 202, 211],
-  orange: [58, 130, 202, 208, 214],
-  green: [2, 28, 34, 46, 78, 119],
-}
-const setColor = (term: DebuggerType, color: number[]) => {
-  // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
-  if (!('namespace' in term && env.STATIC_COLORS)) return
-  const t: DebugDebugger = term
-  const colons = (t.namespace.match(/:/g) || ['']).length - 1
-  t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
-}
+// const xtermColors = {
+//   red: [52, 124, 9, 202, 211],
+//   orange: [58, 130, 202, 208, 214],
+//   green: [2, 28, 34, 46, 78, 119],
+// }
+// const setColor = (term: DebuggerType, color: number[]) => {
+//   // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
+//   if (!('namespace' in term && env.STATIC_COLORS)) return
+//   const t: DebugDebugger = term
+//   const colons = (t.namespace.match(/:/g) || ['']).length - 1
+//   t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
+// }
 /*
  * Must be function to be able to export overrides.
  */
@@ -121,21 +121,21 @@ export function terminal(namespace: string): OtomiDebugger {
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {}
-  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, args)
-  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, args)
-  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, args)
+  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, ...args)
+  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, ...args)
+  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, ...args)
   const trace = (...args: any[]) =>
-    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
   const debug = (...args: any[]) =>
-    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
   const info = (...args: any[]) =>
-    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, args)
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
   const warn = (...args: any[]) =>
-    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, args)
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, ...args)
 
-  setColor(error, xtermColors.red)
-  setColor(warn, xtermColors.orange)
-  setColor(info, xtermColors.green)
+  // setColor(error, xtermColors.red)
+  // setColor(warn, xtermColors.orange)
+  // setColor(info, xtermColors.green)
 
   return {
     base,

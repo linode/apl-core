@@ -8,7 +8,7 @@ import { $, cd } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getImageTag, prepareEnvironment } from '../common/setup'
+import { getImageTag, prepareEnvironment, rootDir } from '../common/setup'
 import {
   BasicArguments,
   currDir,
@@ -30,10 +30,10 @@ const cmdName = getFilename(import.meta.url)
 const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
-const generateLooseSchema = (cwd: string) => {
-  const devOnlyPath = `${cwd}/.vscode/values-schema.yaml`
+const generateLooseSchema = () => {
+  const devOnlyPath = `${rootDir}/.vscode/values-schema.yaml`
   const targetPath = `${env.ENV_DIR}/.vscode/values-schema.yaml`
-  const sourcePath = `${cwd}/values-schema.yaml`
+  const sourcePath = `${rootDir}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
   const trimmedVS = JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)
@@ -61,8 +61,7 @@ export const bootstrapGit = async (): Promise<void> => {
       values = loadYaml(env.VALUES_INPUT)
     } else if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`)) {
       // TODO: Make else once defaults are removed from defaults.gotmpl
-      const clstr = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-      if (!clstr.provider) {
+      if (!loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
         debug.info('Skipping git repo configuration')
         return
       }
@@ -111,12 +110,11 @@ export const bootstrapGit = async (): Promise<void> => {
     await $`git checkout -b ${branch}`
     await $`git remote add origin ${remote}`
     cd(cwd)
+    debug.log(`Done bootstrapping git`)
   }
 }
 
 export const bootstrapValues = async (): Promise<void> => {
-  const cwd = await currDir()
-
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const binPath = `${env.ENV_DIR}/bin`
@@ -125,44 +123,43 @@ export const bootstrapValues = async (): Promise<void> => {
   debug.info(`Intalling artifacts from ${otomiImage}`)
 
   await Promise.allSettled([
-    copyFile(`${cwd}/bin/aliases`, `${binPath}/aliases`),
-    copyFile(`${cwd}/binzx/otomi`, `${binPath}/otomi`),
+    copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
+    copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
   ])
   debug.info('Copied bin files')
   try {
     mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
-    await copy(`${cwd}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
+    await copy(`${rootDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
     debug.info('Copied vscode folder')
   } catch (error) {
     debug.error(error)
-    debug.error(`Could not copy from ${cwd}/.values/.vscode`)
+    debug.error(`Could not copy from ${rootDir}/.values/.vscode`)
     process.exit(1)
   }
 
-  generateLooseSchema(cwd)
-  debug.info('Generated loose schema')
+  generateLooseSchema()
 
   await Promise.allSettled(
     ['.gitattributes', '.secrets.sample']
       .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
-      .map(async (val) => copyFile(`${cwd}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
+      .map(async (val) => copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
   await Promise.allSettled(
     ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
-      copyFile(`${cwd}/.values/${val}`, `${env.ENV_DIR}/${val}`),
+      copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`),
     ),
   )
   if (!existsSync(`${env.ENV_DIR}/env`)) {
     debug.log(`Copying basic values`)
-    await copy(`${cwd}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
+    await copy(`${rootDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
   }
 
   debug.log('Copying Otomi Console Setup')
   mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
-  await copy(`${cwd}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
+  await copy(`${rootDir}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
   await Promise.allSettled(
-    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${cwd}/${val}`, `${env.ENV_DIR}/${val}`)),
+    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
