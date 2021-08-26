@@ -1,6 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
-import yaml from 'js-yaml'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'

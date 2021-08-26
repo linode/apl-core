@@ -297,7 +297,7 @@ export const gucci = async (tmpl: string | unknown, args: { [key: string]: any }
 
   const kv = flattenObject(args)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
-    if (['(', ')', '^', '[', ']', '$'].some((v) => k.includes(v))) return ''
+    if (['(', ')', '^', '[', ']', '$'].some((vv) => k.includes(vv))) return ''
     return `-s ${k}='${v ?? ''}'`
   })
 

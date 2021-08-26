@@ -24,7 +24,7 @@ const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const pp = (obj: unknown): string => JSON.stringify(obj, null, 2)
-
+console.log(pp)
 // usage:
 export const playground = async (): Promise<void> => {
   debug.log(cmdName)
@@ -67,6 +67,7 @@ export const playground = async (): Promise<void> => {
   const res = Object.entries(gucciFlat)
     .filter(([k, v]) => {
       const localRefs = ['.dot.', '.v.', '.root.', '.o.']
+      console.log(k)
       return localRefs.some((localRef) => v?.includes(localRef))
     })
     .map(([path, v]: string[]) => {
