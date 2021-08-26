@@ -20,7 +20,6 @@ if [ -f "$ENV_DIR/.sops.yaml" ]; then
 fi
 [ -f "$api_secrets.dec" ] && api_secrets="$api_secrets.dec"
 [ -f "$settings_secrets.dec" ] && settings_secrets="$settings_secrets.dec"
-pull_secret="$(yq m $settings $settings_secrets | yq r - 'otomi.pullSecret')"
 repo_url=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.repoUrl')
 branch=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.branch')
 email=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.email')
@@ -28,7 +27,6 @@ user=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.user')
 password=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.password')
 
 # all present?
-[ "$pull_secret" = "" ] && err "otomi.pullSecret not set in $ENV_DIR/env/secrets.settings.yaml!" && err=1
 [ "$repo_url" = "" ] || [ "$repo_url" = "github.com/redkubes/otomi-values-demo.git" ] && error="\nrepoUrl: $repo_url "
 [ "$email" = "" ] || [ "$email" = "some@secret.value" ] && error="$error\nemail: $email"
 [ "$user" = "" ] || [ "$user" = "somesecretvalue" ] && error="$error\nuser: $user"
@@ -36,7 +34,6 @@ password=$(yq m $api_secrets $api_settings | yq r - 'charts[otomi-api].git.passw
 [ "$error" != '' ] && printf "Error: Make sure the git details are correctly added to 'charts/*otomi-api.yaml'. Incorrect values found for git: $error\n" >&2
 [ "$err" != '' ] || [ "$error" != '' ] && exit 1
 
-echo "export PULL_SECRET=$pull_secret" >/tmp/otomi-env
 echo "export GIT_REPO_URL=$repo_url" >>/tmp/otomi-env
 echo "export GIT_BRANCH=$branch" >>/tmp/otomi-env
 echo "export GIT_EMAIL=$email" >>/tmp/otomi-env

@@ -1,15 +1,12 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { giteaPush } from '../common/gitea-push'
 import { hf, hfStream } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, logLevelString, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(import.meta.url)
 const dir = '/tmp/otomi/'
@@ -18,22 +15,22 @@ let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-/* eslint-disable no-useless-return */
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
 }
-/* eslint-enable no-useless-return */
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = (): void => {
+  const argv: Arguments = getParsedArgs()
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
   mkdirSync(dir, { recursive: true })
 }
 
-const deployAll = async (argv: Arguments) => {
+const applyAll = async () => {
+  const argv: Arguments = getParsedArgs()
+  debug.info('Start apply all')
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
@@ -51,20 +48,7 @@ const deployAll = async (argv: Arguments) => {
   await hf(
     {
       fileOpts: argv.file,
-      labelOpts: [...(argv.label ?? []), 'stage!=post'],
-      logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
-    },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
-  )
-  if (!env.CI) {
-    await genDrone(argv)
-    await giteaPush()
-  }
-  await hf(
-    {
-      fileOpts: argv.file,
-      labelOpts: [...(argv.label ?? []), 'stage=post'],
+      labelOpts: argv.label,
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
@@ -72,24 +56,23 @@ const deployAll = async (argv: Arguments) => {
   )
 }
 
-export const apply = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
-  if (argv._[0] === 'deploy' || (!argv.label && !argv.file)) {
-    debug.info('Start deploy')
-    await deployAll(argv)
-  } else {
-    debug.info('Start apply')
-    const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-    await hfStream(
-      {
-        fileOpts: argv.file,
-        labelOpts: argv.label,
-        logLevel: logLevelString(),
-        args: ['apply', '--skip-deps', skipCleanup],
-      },
-      { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
-    )
+export const apply = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
+  if (!argv.label && !argv.file) {
+    await applyAll()
+    return
   }
+  debug.info('Start apply')
+  const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
+  await hfStream(
+    {
+      fileOpts: argv.file,
+      labelOpts: argv.label,
+      logLevel: logLevelString(),
+      args: ['apply', '--skip-deps', skipCleanup],
+    },
+    { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+  )
 }
 
 export const module: CommandModule = {
@@ -99,7 +82,9 @@ export const module: CommandModule = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await apply(argv, {})
+    setup()
+    await prepareEnvironment()
+    await apply()
   },
 }
 

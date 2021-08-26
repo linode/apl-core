@@ -8,13 +8,13 @@ import { module as decryptModule } from './decrypt'
 import { module as destroyModule } from './destroy'
 import { module as diffModule } from './diff'
 import { module as encryptModule } from './encrypt'
+import { module as filesModule } from './files'
 import { module as genDroneModule } from './gen-drone'
 import { module as genSopsModule } from './gen-sops'
 import { module as hfModule } from './hf'
 import { module as lintModule } from './lint'
 import { module as playgroundModule } from './playground'
 import { module as pullModule } from './pull'
-import { module as regCredModule } from './regcred'
 import { module as rotateKeysModule } from './rotate-keys'
 import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
@@ -36,12 +36,12 @@ export { module as decrypt } from './decrypt'
 export { module as destroy } from './destroy'
 export { module as diff } from './diff'
 export { module as encrypt } from './encrypt'
+export { module as files } from './files'
 export { module as genDrone } from './gen-drone'
 export { module as genSops } from './gen-sops'
 export { module as hf } from './hf'
 export { module as lint } from './lint'
 export { module as pull } from './pull'
-export { module as regCred } from './regcred'
 export { module as rotateKeys } from './rotate-keys'
 export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
@@ -64,13 +64,13 @@ export const commands: CommandModule[] = [
   destroyModule,
   diffModule,
   encryptModule,
+  filesModule,
   genDroneModule,
   genSopsModule,
   hfModule,
   lintModule,
   playgroundModule,
   pullModule,
-  regCredModule,
   rotateKeysModule,
   scoreTemplatesModule,
   serverModule,

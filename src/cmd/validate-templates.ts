@@ -4,14 +4,13 @@ import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, chalk, nothrow } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, readdirRecurse, setParsedArgs } from '../common/utils'
+import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
 const outputPath = '/tmp/otomi/generated-crd-schemas'
@@ -28,12 +27,10 @@ const cleanup = (argv: Arguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = async (argv: Arguments): Promise<void> => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
 
-  if (options) await otomi.prepareEnvironment(options)
-  k8sVersion = otomi.getK8sVersion()
+  k8sVersion = getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
@@ -78,7 +75,7 @@ type crdSchema = {
 
 const processCrd = (path: string): crdSchema[] => {
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
-    (singleDoc) => singleDoc?.kind === 'CustomResourceDefinition',
+    (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
 
   const documentResult = documents.flatMap((document: any) => {
@@ -132,8 +129,8 @@ const processCrdWrapper = async (argv: Arguments) => {
   await Promise.all(prep)
 }
 
-export const validateTemplates = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const validateTemplates = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   await processCrdWrapper(argv)
   const constraintKinds = [
     'PspAllowedRepos',
@@ -155,15 +152,12 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
   const skipFilenames = ['crd', 'constraint']
 
   debug.log('Validating resources')
-  const quiet = argv.verbose ? '' : '--quiet'
+  const quiet = !argv.verbose ? [] : ['--quiet']
   debug.info(`Schema Output Path: ${schemaOutputPath}`)
   debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
   debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
   debug.info(`K8S Resource Path: ${k8sResourcesPath}`)
   debug.info(`Schema location: file://${schemaOutputPath}`)
-  debug.info(
-    `Command: \`kubeval ${quiet} --skip-kinds ${skipKinds} --ignored-filename-patterns ${skipFilenames} --force-color -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}\``,
-  )
   const kubevalOutput = await nothrow(
     $`kubeval ${quiet} --skip-kinds ${skipKinds.join(',')} --ignored-filename-patterns ${skipFilenames.join(
       ',',
@@ -187,9 +181,9 @@ export const validateTemplates = async (argv: Arguments, options?: PrepareEnviro
       })
       return prevObj
     })
-  output.PASS?.map((_val: string) => debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
+  output.PASS?.map((_val: string) => debug.debug(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
-  if (kubevalOutput.exitCode !== 0 || output.ERR) {
+  if (kubevalOutput.exitCode !== 0) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
     debug.error('Templating FAILED')
     process.exit(1)
@@ -203,7 +197,9 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateTemplates(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await setup(argv)
+    await validateTemplates()
   },
 }
 

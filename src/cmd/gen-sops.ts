@@ -1,17 +1,26 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { chalk } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, gucci, loadYaml, setParsedArgs, startingDir } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import {
+  BasicArguments,
+  getFilename,
+  getParsedArgs,
+  gucci,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  startingDir,
+  terminal,
+} from '../common/utils'
+import { getChartValues } from './lib/chart'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const providerMap = {
   aws: 'kms',
@@ -20,26 +29,17 @@ const providerMap = {
   vault: 'hc_vault_transit_uri',
 }
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
-}
-
-export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, { ...options, skipEvaluateSecrets: true, skipDecrypt: true, skipKubeContextCheck: true })
-
+export const genSops = async (): Promise<void> => {
+  const argv: BasicArguments = getParsedArgs()
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile)
+  // TODO: Use validate values to validate tree at this specific point
+  // validateValues('kms.sops.provider')
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
-  if (!provider) throw new Error('No sops information given. Assuming no sops enc/decryption needed.')
+  if (!provider) {
+    debug.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
+    return
+  }
 
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
@@ -51,26 +51,35 @@ export const genSops = async (argv: Arguments, options?: PrepareEnvironmentOptio
     keys: kmsKeys,
   }
 
-  debug.log(chalk.magenta(`Creating sops file for provider ${provider}`))
+  const exists = existsSync(targetPath)
+  debug.debug('sops file already exists')
+  debug.log(`Creating sops file for provider ${provider}`)
 
   const output = await gucci(templatePath, obj)
+
+  // TODO: Remove when validate-values can validate subpaths
+  if (!output) return
+
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    writeFileSync(`${targetPath}`, output)
+    writeFileSync(targetPath, output)
     debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
   }
 
   if (!env.CI) {
-    if (!existsSync(`${env.ENV_DIR}/.secrets`)) {
-      debug.error(`Expecting ${env.ENV_DIR}/.secrets to exist and hold credentials for SOPS`)
-      return
+    const secretPath = `${env.ENV_DIR}/.secrets`
+    if (exists && !existsSync(secretPath)) {
+      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
     }
   }
   if (provider === 'google') {
-    if (env.GCLOUD_SERVICE_KEY) {
+    let serviceKeyJson = env.GCLOUD_SERVICE_KEY
+    const chartValues = getChartValues()
+    if (chartValues) serviceKeyJson = JSON.parse(chartValues?.kms?.sops?.google?.accountJson)
+    if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
-      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(env.GCLOUD_SERVICE_KEY, null, 2))
+      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }
@@ -92,12 +101,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    try {
-      await genSops(argv, { skipKubeContextCheck: true })
-    } catch (error) {
-      debug.error(error.message)
-      process.exit(0)
-    }
+    await prepareEnvironment({ skipDecrypt: true, skipKubeContextCheck: true })
+    await genSops()
   },
 }
 

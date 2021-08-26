@@ -1,31 +1,23 @@
 import { Argv } from 'yargs'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
+const cleanup = (): void => {
   debug.log('Stopping server')
   stopServer()
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
 }
 
-export const server = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+const setup = (argv: Arguments): void => {
+  if (argv._[0] === cmdName) cleanupHandler(() => cleanup())
+}
+
+export const server = (): void => {
   debug.info('Starting server')
   startServer()
 }
@@ -37,7 +29,9 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await server(argv, {})
+    await prepareEnvironment({ skipAllPreChecks: true })
+    setup(argv)
+    server()
   },
 }
 

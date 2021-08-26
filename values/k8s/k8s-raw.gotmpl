@@ -97,18 +97,6 @@ resources:
     - kind: ServiceAccount
       name: default
       namespace: team-admin
-  {{- if $v | get "otomi.pullSecret" nil }}
-  {{- range $ns := list "drone-pipelines" "otomi" "maintenance" }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: gcr-json-key
-      namespace: {{ $ns }}
-    type: kubernetes.io/dockerconfigjson
-    data:
-      .dockerconfigjson: {{ $v.otomi.pullSecret }}
-  {{- end }}
-  {{- end }}
   - apiVersion: scheduling.k8s.io/v1
     kind: PriorityClass
     metadata:

@@ -41,11 +41,14 @@ oidc:
     tenantID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     subClaimMapper: oid
 otomi:
+    additionalClusters:
+        - domainSuffix: demo.eks.otomi.cloud
+          name: demo
+          provider: aws
     hasCloudLB: false
     isHomeMonitored: true
     isManaged: true
     isMultitenant: true
-    mode: ce
     version: master
 smtp:
     auth_username: no-reply@doma.in

@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.20.6
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.5.4
+ARG HELM_VERSION=3.6.3
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.1.3
 # https://github.com/jkroepke/helm-secrets
@@ -13,7 +13,7 @@ ARG HELM_SECRETS_VERSION=3.7.0
 # https://github.com/mozilla/sops/releases:
 ARG SOPS_VERSION=3.7.1
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.4.0
+ARG GUCCI_VERSION=1.5.0
 # https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.138.7
 # https://github.com/open-policy-agent/opa/releases

@@ -6,7 +6,6 @@
 
 type: CronJob
 name: gitea-add-users
-enabled: true
 env:
   GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   GITEA_REPO: values

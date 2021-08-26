@@ -1,32 +1,29 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { deletePropertyPath, getFilename, loadYaml, setParsedArgs } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import {
+  deletePropertyPath,
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
-}
-
-export const validateValues = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+// TODO: Accept json path to validate - on empty, validate all
+export const validateValues = async (): Promise<void> => {
+  // TODO: Make this return true or error tree
+  // Create an end point function (when running otomi validate-values) to print current messages.
+  const argv: Arguments = getParsedArgs()
   debug.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
@@ -36,11 +33,11 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
   }
 
   debug.info('Getting values')
-  const hfVal = await hfValues()
+  const chartValues = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
-    deletePropertyPath(hfVal, internalPath)
+    deletePropertyPath(chartValues, internalPath)
   }
 
   try {
@@ -57,7 +54,7 @@ export const validateValues = async (argv: Arguments, options?: PrepareEnvironme
       process.exit(1)
     }
     debug.info(`Validating values`)
-    const val = validate(hfVal)
+    const val = validate(chartValues)
     if (val) {
       debug.log('Values validation SUCCESSFUL')
     } else {
@@ -86,7 +83,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await validateValues(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await validateValues()
   },
 }
 

@@ -14,21 +14,26 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
-if [ -n "$CI" ] || [ -n "$TESTING" ]; then
-  calling_args="$calling_args --non-interactive"
-fi
-readonly calling_args
+
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
-  source "$ENV_DIR/env/.env"
   NOPULL=1
-elif [ -z "$ENV_DIR" ]; then
-  ENV_DIR=$PWD
-else
+  AZURE_CLIENT_ID=somevalue
+  AZURE_CLIENT_SECRET=somesecret
+elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
+  ENV_DIR="$PWD/env"
+elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
-# set -x
+[[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
+if [ -n "$CI" ]; then
+  calling_args="$calling_args --non-interactive"
+fi
+if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
+  calling_args="x -- ${calling_args:2}"
+fi
+readonly calling_args
 silent() {
   if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
     "$@"
@@ -36,19 +41,27 @@ silent() {
     "$@" &>/dev/null
   fi
 }
+# shellcheck disable=SC2155
+readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
+if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+  in_core=1
+fi
+[ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
+[ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
-if [ -f "package.json" ]; then
-  otomi_version="master"
-elif [ -f $ENV_DIR/env/settings.yaml ]; then
+if [ -n "$in_core" ]; then
+  current_branch=$(git branch --show-current 2>/dev/null)
+  current_branch=${current_branch##*/}
+  current_branch=${current_branch:-'master'}
+  otomi_version=$current_branch
+elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
 fi
 OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
 readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
-# shellcheck disable=SC2155
-readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
@@ -117,8 +130,7 @@ EOF
 }
 
 check_update() {
-  if [[ $base_dir == *"otomi-core"* ]] ||
-    [[ $(pwd) == *"otomi-core"* ]] ||
+  if [ -n "$in_core" ] ||
     [[ $calling_args == *'-non-interactive'* ]] ||
     [[ $calling_args == *'-ni'* ]]; then
     return 0
@@ -142,9 +154,8 @@ check_update() {
   fi
 }
 silent echo "Checking for updates"
-[ -z $CI ] && check_update
+[ -z $CI ] && [ -z $IN_DOCKER ] && check_update
 
-silent echo "Preparing docker environment variables"
 tmp_env=$(mktemp)
 
 function dump_vars() {
@@ -172,7 +183,6 @@ vars=(
   DEBUG
   ENV_DIR
   GCLOUD_SERVICE_KEY
-  K8S_CONTEXT
   KUBE_VERSION_OVERRIDE
   OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
@@ -181,13 +191,13 @@ vars=(
   OTOMI_SERVER
   OTOMI_TAG
   OTOMI_USERNAME
-  OTOMI_NON_INTERACTIVE
   PROFILE
   STATIC_COLORS
   SHELL
   TESTING
   TRACE
   VERBOSITY
+  VALUES_INPUT
   VAULT_TOKEN
 )
 dump_vars "${vars[@]}"
@@ -210,7 +220,7 @@ executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otom
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
-if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+if [ -n "$in_core" ]; then
   silent echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
@@ -238,13 +248,13 @@ check_volume_path() {
   return 0
 }
 
-cmd="${executable} $*"
+cmd="${executable} $calling_args"
 # If command is "otomi bash"
 if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
@@ -262,7 +272,7 @@ fi
 
 network='--network host'
 if [[ $calling_args == 'server'* ]]; then
-  network="--init -p $OTOMI_PORT:$OTOMI_PORT"
+  network="-p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
 mkdir -p /tmp/otomi
@@ -273,7 +283,7 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  docker run --rm $it \
+  docker run --rm --init $it \
     $linux_workaround \
     $network \
     $stack_volume \
@@ -297,10 +307,7 @@ else
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
-  running_date=$(date -u '+%y%m%d-%H%M')
-  backup_path="/tmp/otomi/otomi-$running_date"
-  mkdir -p "$backup_path"
-  mv "$tmp_env" "$backup_path/running_env"
+  echo "keeping files"
 else
   # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1

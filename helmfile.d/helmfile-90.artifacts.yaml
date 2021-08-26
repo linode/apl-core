@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
@@ -15,10 +15,4 @@ releases:
     values:
       - ../values/raw/istio-raw.gotmpl
       - snippets/common.gotmpl
-  - name: job-gitea
-    installed: {{ $c | get "gitea.enabled" false }}
-    labels:
-      pkg: gitea
-      group: jobs
-    <<: *jobs
 

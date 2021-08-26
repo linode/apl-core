@@ -1,11 +1,10 @@
 import { unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hf } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
@@ -14,25 +13,20 @@ import { validateTemplates } from './validate-templates'
 
 const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   unlinkSync(tmpFile)
 }
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
 }
 
-export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
-
-  debug.log(await lint(argv))
-  debug.log(await validateTemplates(argv))
+export const test = async (): Promise<void> => {
+  debug.log(await lint())
+  debug.log(await validateTemplates())
   // await checkPolicies(argv)
 
   const output: ProcessOutputTrimmed = await hf({
@@ -50,7 +44,7 @@ export const test = async (argv: Arguments, options?: PrepareEnvironmentOptions)
   writeFileSync(tmpFile, hfOutput.replace(/^.*basePath=.*$/gm, ''))
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
-  const diffOutput = await diff(argv)
+  const diffOutput = await diff()
   debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
   debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
 }
@@ -62,7 +56,9 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await test(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    setup(argv)
+    await test()
   },
 }
 

@@ -1,30 +1,36 @@
 import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { getFilename, loadYaml, logLevel, logLevels, setParsedArgs } from '../common/utils'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import {
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  logLevel,
+  logLevels,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
 const outDir = '/tmp/otomi/conftest'
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   rmSync(outDir, { force: true, recursive: true })
 }
 
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
+const setup = (argv: Arguments): void => {
   if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-  if (options) await otomi.prepareEnvironment(options)
 }
 
-export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const checkPolicies = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
   debug.info('Policy checking STARTED')
 
   const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
@@ -35,8 +41,7 @@ export const checkPolicies = async (argv: Arguments, options?: PrepareEnvironmen
     return
   }
   debug.info('Generating k8s manifest for cluster')
-  const template = await hfTemplate(argv, outDir)
-  debug.debug(template)
+  await hfTemplate(argv, outDir, { stdout: debug.stream.debug })
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
@@ -65,7 +70,9 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await checkPolicies(argv, { skipKubeContextCheck: true })
+    setup(argv)
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    await checkPolicies()
   },
 }
 

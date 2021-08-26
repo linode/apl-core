@@ -1,38 +1,27 @@
+import { existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
-import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { capitalize, getFilename, setParsedArgs } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
+import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { getChartValues } from './lib/chart'
+import { pull } from './pull'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: Arguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
-  otomi.exitIfInCore(cmdName)
-}
-
-export const preCommit = async (argv: DroneArgs): Promise<void> => {
+export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.info('Check for cluster diffs')
-  await nothrow($`git config diff.sopsdiffer.textconv "sops -d"`)
+  await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
   const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
   const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
 
@@ -41,71 +30,93 @@ export const preCommit = async (argv: DroneArgs): Promise<void> => {
   const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
   const secretMsTeamsHighPrioChanges = secretDiff.includes('+        highPrio: https://')
   if (versionChanges || secretSlackChanges || secretMsTeamsLowPrioChanges || secretMsTeamsHighPrioChanges)
-    await genDrone(argv)
+    await genDrone()
 }
 
-export const commit = async (argv: Arguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const gitPush = async (branch: string): Promise<boolean> => {
+  const gitDebug = terminal('gitPush')
+  gitDebug.info('Starting git push.')
 
-  await validateValues(argv)
+  const cwd = await currDir()
+  cd(env.ENV_DIR)
+  try {
+    await $`git push -u origin ${branch} -f`
+    gitDebug.log('Otomi values have been pushed to git.')
+    return true
+  } catch (error) {
+    gitDebug.error(error)
+    return false
+  } finally {
+    cd(cwd)
+  }
+}
+
+export const commit = async (): Promise<void> => {
+  await validateValues()
 
   debug.info('Preparing values')
 
-  const currDir = process.cwd()
+  const cwd = await currDir()
   cd(env.ENV_DIR)
 
-  const vals = await hfValues()
-  const ownerName = vals.cluster?.owner ?? 'otomi'
-  const clusterDomain = vals.cluster.domainSuffix ?? vals.cluster.apiName
+  const values = getChartValues() ?? (await hfValues())
+  const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
 
-  try {
-    await $`git config --local user.name`
-  } catch (error) {
-    await $`git config --local user.name ${capitalize(ownerName)}`
-  }
-  try {
-    await $`git config --local user.email`
-  } catch (error) {
-    await $`git config --local user.email ${ownerName}@${clusterDomain}`
-  }
-
-  preCommit(argv)
+  preCommit()
   await encrypt()
-  debug.info('Do commit')
-  await $`git add .`
-  await $`git commit -m 'Manual commit' --no-verify`
-
-  debug.info('Pulling latest values')
+  debug.info('Committing values')
+  await $`git add -A`
   try {
-    await $`git pull`
-  } catch (error) {
-    debug.error(
-      `When trying to pull from ${clusterDomain} merge conflicts occured\nPlease resolve these and run \`otomi commit\` again.`,
-    )
-    process.exit(1)
+    await $`git commit -m 'otomi commit' --no-verify`
+  } catch (e) {
+    debug.error(e.stdout)
+    debug.log('Something went wrong trying to commit. Did you make any changes?')
   }
+
+  if (!env.CI) await pull()
+  let healthUrl
+  let branch
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
+  } else {
+    healthUrl = `gitea.${clusterDomain}`
+    branch = 'main'
+  }
+
   try {
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+    if (healthUrl) await waitTillAvailable(healthUrl)
     await $`git remote show origin`
-    await $`git push origin main`
-    debug.log('Sucessfully pushed the updated values')
+    await gitPush(branch)
+    debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
     debug.error('Pushing the values failed, please read the above error message and manually try again')
     process.exit(1)
   } finally {
-    cd(currDir)
+    cd(cwd)
   }
 }
 
 export const module = {
   command: cmdName,
-  // As discussed: https://otomi.slack.com/archives/C011D78FP47/p1623843840012900
   describe: 'Execute wrapper for generate pipelines -> git commit changed files',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await commit(argv, { skipKubeContextCheck: true })
+    await prepareEnvironment({ skipKubeContextCheck: true })
+
+    if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
+      await pull()
+    } else {
+      await bootstrapGit()
+    }
+    await commit()
   },
 }
 

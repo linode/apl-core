@@ -225,6 +225,8 @@ definitions:
       entrypoint:
         description: A Kubernetes API public IP address (onprem only).
         type: string
+      k8sContext:
+        $ref: '#/definitions/k8sContext'
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
       name:
@@ -233,12 +235,7 @@ definitions:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
       provider:
-        type: string
-        enum:
-          - aws
-          - azure
-          - google
-          - onprem
+        $ref: '#/definitions/provider'
       region:
         description: Dependent on provider.
         examples:
@@ -250,6 +247,8 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         type: string
     required:
+      - domainSuffix
+      - k8sContext
       - k8sVersion
       - name
       - owner
@@ -436,6 +435,10 @@ definitions:
       - name
       - script
       - type
+    type: object
+  k8sContext:
+    description: The cluster k8s context as found in $KUBECONFIG.
+    type: string
   k8sVersion:
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
@@ -497,6 +500,13 @@ definitions:
     maximum: 32768
     minimum: 80
     type: number
+  provider:
+    type: string
+    enum:
+      - aws
+      - azure
+      - google
+      - onprem
   redisChart:
     properties:
       _rawValues:
@@ -2060,7 +2070,19 @@ properties:
       additionalClusters:
         type: array
         items:
-          $ref: '#/definitions/cluster'
+          title: Additional cluster
+          description: A k8s cluster managed by Otomi.
+          properties:
+            domainSuffix:
+              $ref: '#/definitions/domain'
+            name:
+              $ref: '#/definitions/idName'
+            provider:
+              $ref: '#/definitions/provider'
+          required:
+            - domainSuffix
+            - name
+            - provider
       adminPassword:
         type: string
         default: bladibla
@@ -2109,11 +2131,6 @@ properties:
           - ce
           - ee
         type: string
-      pullSecret:
-        default: ''
-        description: The pullsecret to deploy the Otomi API and Console. Requires an Otomi license.
-        type: string
-        x-secret: true
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'

@@ -5,14 +5,31 @@
 {{- $cm := $v.charts | get "cert-manager" dict }}
 {{- $hasGitea := $g | get "enabled" true }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $teamConfig := dict "services" $v.teamConfig.services }}
-{{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" -}}
-{{- $coreVersion := (printf "v%s" $version) }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
 {{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
 {{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
+{{/* START: set the enabled flags on core services based on the chart enabled flags */}}
+{{- $core := readFile "../../core.yaml" | fromYaml }}
+{{- $apps := list }}
+{{- range $s := $v.services }}
+{{- if hasKey $core.apps $s.name }}
+  {{- $enabled := ($v.charts | get $s.name dict) | get "enabled" true }}
+  {{- $s := set $s "enabled" $enabled }}
+  {{- $apps = append $apps $s }}
+{{- end }}
+{{- end }}
+{{- $teamApps := list }}
+{{- range $c := $v.teamConfig.services }}
+{{- if hasKey $core.apps $c.name }}
+  {{- $enabled := ($v.charts | get $c.name dict) | get "enabled" true }}
+  {{- $c := set $c "enabled" $enabled }}
+  {{- $teamApps = append $teamApps $c }}
+{{- end }}
+{{- end }}
+{{/* END: set the enabled flags on core services based on the chart enabled flags */}}
 
 replicaCount: 1
+clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 {{- with $o | get "resources.api" nil }}
 resources:
@@ -40,13 +57,14 @@ secrets:
 env:
   # DEBUG: '*'
   VERBOSE: '1'
+  VERBOSITY: '2'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   {{- if hasKey $o "disableSync" }}
   DISABLE_SYNC: true
   {{- end }}
   USE_SOPS: {{ $sopsEnabled }}
-  CORE_VERSION: '{{ $version }}'
+  CORE_VERSION: '{{ $v.otomi.version }}'
   {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
   NO_AUTHZ: true
   {{- end }}
@@ -54,18 +72,22 @@ env:
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   {{- end }}
+  CI: '1'
+  IN_DOCKER: '1'
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
-  services: {{- toYaml $v.services | nindent 4 }}
-  teamConfig: {{- toYaml $teamConfig | nindent 4 }}
+  services: {{- toYaml $apps | nindent 4 }}
+  teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
   enabled: {{ $sopsEnabled }}
+  env:
+    VERBOSITY: '2'
   {{- if $sopsEnabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" $coreVersion }}
+    tag: {{ $o | get "tools.image.tag" $v.otomi.version }}
     pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
     {{- with $o | get "resources.tools" nil }}
     resources:

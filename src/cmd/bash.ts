@@ -1,27 +1,21 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { cleanupHandler, otomi, PrepareEnvironmentOptions } from '../common/setup'
-import { BasicArguments, getFilename, parser, setParsedArgs } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import {
+  BasicArguments,
+  getFilename,
+  getParsedArgs,
+  OtomiDebugger,
+  parser,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
-let debug: OtomiDebugger
+const debug: OtomiDebugger = terminal(cmdName)
 
-/* eslint-disable no-useless-return */
-const cleanup = (argv: BasicArguments): void => {
-  if (argv.skipCleanup) return
-}
-/* eslint-enable no-useless-return */
-
-const setup = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
-  if (options) await otomi.prepareEnvironment(options)
-}
-
-export const bash = async (argv: BasicArguments, options?: PrepareEnvironmentOptions): Promise<void> => {
-  await setup(argv, options)
+export const bash = async (): Promise<void> => {
+  const argv: BasicArguments = getParsedArgs()
   if (argv._[0] === 'bash') parser.showHelp()
   else {
     const command = argv._.slice(1).join(' ')
@@ -47,7 +41,8 @@ export const module: CommandModule = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await bash(argv, { skipKubeContextCheck: true, skipDecrypt: true })
+    await prepareEnvironment({ skipKubeContextCheck: true, skipDecrypt: true })
+    await bash()
   },
 }
 

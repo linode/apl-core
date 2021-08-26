@@ -48,7 +48,7 @@ fi
 git init $ENV_DIR
 cp -f $PWD/bin/hooks/pre-commit $ENV_DIR/.git/hooks/
 readonly secrets_file="$ENV_DIR/env/secrets.settings.yaml"
-if [ -f "$secrets_file" ] && [ "$(cat $secrets_file | yq r - otomi.pullSecret)" != '' ]; then
+if [ -f "$secrets_file" ]; then
   echo "Copying Otomi Console setup"
   cp -rf $PWD/docker-compose $ENV_DIR/
   cp -f $PWD/core.yaml $ENV_DIR/

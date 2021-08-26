@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
@@ -19,7 +19,7 @@ releases:
     namespace: shared
     <<: *default
   - name: kubeapps
-    installed: {{ ternary ($c | get "kubeapps.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "kubeapps" dict) "enabled") }}
+    installed: {{ $c | get "kubeapps.enabled" "false" }}
     namespace: kubeapps
     <<: *default
   - name: gitea

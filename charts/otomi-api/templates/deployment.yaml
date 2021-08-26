@@ -1,3 +1,4 @@
+{{- $giteaUrl := printf "https://gitea.%s" .Values.clusterDomainSuffix }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -65,7 +66,8 @@ spec:
           securityContext: {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
-          command: ['sh', '-c', 'binzx/otomi server']
+          command: ['sh']
+          args: ['-c', 'binzx/otomi server -vv']
           envFrom:
             - secretRef:
                 name: {{ include "otomi-api.fullname" . }}

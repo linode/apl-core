@@ -1,28 +1,11 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
 {{- $c := $v.charts }}
 
 releases:
-  - name: drone
-    installed: {{ ternary ($c | get "drone.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "drone" dict) "enabled") }}
-    namespace: team-admin
-    labels:
-      pkg: drone
-      stage: post
-    <<: *default
-  - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "gitea") "github") }}
-    namespace: team-admin
-    labels:
-      pkg: drone
-      stage: post
-    chart: ../charts/drone-admit-members
-    values:
-      - ../values/drone/drone-admit-members.gotmpl
-      - snippets/common.gotmpl
   - name: gitlab
     installed: false
     namespace: team-admin

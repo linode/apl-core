@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 
 ---
 {{ readFile "snippets/templates.gotmpl" }}
@@ -7,8 +7,23 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
+  - name: drone
+    installed: {{ $c | get "drone.enabled" "false" }}
+    namespace: team-admin
+    labels:
+      pkg: drone
+    <<: *default
+  - name: drone-admit-members
+    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "gitea") "github") }}
+    namespace: team-admin
+    labels:
+      pkg: drone
+    chart: ../charts/drone-admit-members
+    values:
+      - ../values/drone/drone-admit-members.gotmpl
+      - snippets/common.gotmpl
   - name: harbor
-    installed: {{ ternary ($c | get "harbor.enabled" "false") (ne ($v.otomi | get "pullSecret" "") "") (hasKey ($c | get "harbor" dict) "enabled") }}
+    installed: {{ $c | get "harbor.enabled" "false" }}
     namespace: harbor
     labels:
       pkg: harbor
@@ -28,10 +43,8 @@ releases:
       pkg: oauth2-proxy
     <<: *raw
   - name: otomi-api
-    installed: {{ ne ($v.otomi | get "pullSecret" "") "" }}
+    installed: true
     namespace: otomi
-    labels:
-      stage: post
     <<: *default
   - name: otomi-console
     installed: true
