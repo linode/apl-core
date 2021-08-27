@@ -181,9 +181,9 @@ export const bootstrapValues = async (): Promise<void> => {
     )
   }
   // If we run from chart installer, VALUES_INPUT will be set
-  // Merge user in put values.yaml with current values
+  // Merge chart input with current values
   if (isChart()) {
-    const vals = await hfValues()
+    const vals = await hfValues(true)
 
     await nothrow($`kubectl create secret generic otomi-password --from-literal='admin'='${vals.otomi.adminPassword}'`)
     debug.log(

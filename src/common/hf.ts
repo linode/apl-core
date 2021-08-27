@@ -100,20 +100,22 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
 }
 
 export type ValuesOptions = {
-  replacePath?: boolean
   asString?: boolean
+  replacePath?: boolean
+  skipCache?: boolean
 }
 
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
-  if (opts?.replacePath && value.rp) {
-    if (opts?.asString) return dump(value.rp)
-    return value.rp
+  if (!opts?.skipCache) {
+    if (opts?.replacePath && value.rp) {
+      if (opts?.asString) return dump(value.rp)
+      return value.rp
+    }
+    if (value.clean) {
+      if (opts?.asString) return dump(value.clean)
+      return value.clean
+    }
   }
-  if (value.clean) {
-    if (opts?.asString) return dump(value.clean)
-    return value.clean
-  }
-
   const output = await hf(
     { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
     { trim: true },
@@ -124,8 +126,8 @@ export const values = async (opts?: ValuesOptions): Promise<any | string> => {
   return opts?.replacePath ? value.rp : value.clean
 }
 
-export const hfValues = async (): Promise<any> => {
-  return values({ replacePath: true })
+export const hfValues = async (skipCache = false): Promise<any> => {
+  return values({ replacePath: true, skipCache })
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

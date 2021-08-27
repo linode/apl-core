@@ -32,15 +32,16 @@ spec:
               set -e
               kubectl -n otomi get cm otomi-status && echo 'Already installed. Installation of Otomi with chart can happen only once! To destroy or modify the configuration please use the Otomi CLI.' && exit 1   
               binzx/otomi bootstrap
-              binzx/otomi apply
-              kubectl -n otomi create cm otomi-status --from-literal=status='Installed using chart'
+              sleep infinity
+              # binzx/otomi apply
+              # kubectl -n otomi create cm otomi-status --from-literal=status='Installed using chart'
           env:
             - name: CI
               value: '1'
             - name: IN_DOCKER
               value: '1'
             - name: VERBOSITY
-              value: '1'
+              value: '2'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT
