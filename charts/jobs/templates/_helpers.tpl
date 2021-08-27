@@ -106,7 +106,7 @@ template:
   {{- $didNotPlaceInitContainer := true }}
   {{- range $item := $containers }}
     {{- $c := $item.container }}
-    {{- $initSuffix := $item.isInit | ternary "-init" "" }}
+    {{- $initSuffix := $item.isInit | ternary "-i" "" }}
     {{- if and (and $item.isInit $didNotPlaceInitContainer) $c }}
     initContainers:
       {{- $didNotPlaceInitContainer = false }}

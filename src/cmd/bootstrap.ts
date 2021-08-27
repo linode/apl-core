@@ -1,6 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
-import { omit } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
@@ -12,7 +11,6 @@ import { getImageTag, prepareEnvironment, rootDir } from '../common/setup'
 import {
   BasicArguments,
   currDir,
-  flattenObject,
   generateSecrets,
   getFilename,
   isChart,
@@ -185,10 +183,9 @@ export const bootstrapValues = async (): Promise<void> => {
   // If we run from chart installer, VALUES_INPUT will be set
   // Merge user in put values.yaml with current values
   if (isChart()) {
-    const flatObj = omit(flattenObject(generatedSecrets), Object.keys(flattenObject(values)))
+    const vals = await hfValues()
 
-    const kubeSec = Object.entries(flatObj).map(([key, value]) => `--from-literal='${key}'='${value}'`)
-    await nothrow($`kubectl create secret generic otomi-passwords ${kubeSec}`)
+    await nothrow($`kubectl create secret generic otomi-passwords --from-literal='admin'='${vals.otomi.adminPassword}'`)
     debug.log(
       'A kubernetes secret has been created under the `otomi` namespace called `otomi-password` which contains all the generated passwords.',
     )
