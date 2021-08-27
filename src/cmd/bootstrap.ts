@@ -185,9 +185,9 @@ export const bootstrapValues = async (): Promise<void> => {
   if (isChart()) {
     const vals = await hfValues()
 
-    await nothrow($`kubectl create secret generic otomi-passwords --from-literal='admin'='${vals.otomi.adminPassword}'`)
+    await nothrow($`kubectl create secret generic otomi-password --from-literal='admin'='${vals.otomi.adminPassword}'`)
     debug.log(
-      'A kubernetes secret has been created under the `otomi` namespace called `otomi-password` which contains all the generated passwords.',
+      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
     )
     await mapValuesObjectIntoFiles(values)
   }

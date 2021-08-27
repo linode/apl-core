@@ -73,7 +73,7 @@ gitea:
       prometheusSelector: system
   oauth:
     enabled: true
-    name: {{ $hasKeycloak | ternary $k.idp.alias "otomi" }}
+    name: {{ $hasKeycloak | ternary ($k | get "idp.alias" "otomi") "otomi" }}
     provider: openidConnect
     key: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
     secret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}

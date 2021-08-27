@@ -1499,6 +1499,7 @@ properties:
                 type: string
               clientID:
                 type: string
+                x-secret: '"otomi"'
               clientSecret:
                 type: string
                 x-secret: 'randAlpha 20'
