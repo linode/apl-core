@@ -2,7 +2,7 @@ import { existsSync, promises as fsPromises } from 'fs'
 import { dump } from 'js-yaml'
 import { cloneDeep, isEmpty, merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
-import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from '../../common/utils'
+import { extract, flattenObject, getValuesSchema, isChart, loadYaml, terminal } from '../../common/utils'
 
 const { writeFile } = fsPromises
 const debug = terminal('chart')
@@ -32,7 +32,7 @@ export const mergeValueIntoFile = async (
 }
 
 export const getChartValues = (): any | undefined => {
-  return env.VALUES_INPUT ? loadYaml(env.VALUES_INPUT) : undefined
+  return isChart() ? loadYaml(env.VALUES_INPUT) : undefined
 }
 
 export const mapValuesObjectIntoFiles = async (values: Record<string, any>, overwrite = true): Promise<void> => {

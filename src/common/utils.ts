@@ -53,6 +53,14 @@ export const getParsedArgs = (): BasicArguments => {
   return parsedArgs
 }
 
+export const isCLI = (): boolean => {
+  return !env.VALUES_INPUT
+}
+
+export const isChart = (): boolean => {
+  return !!env.VALUES_INPUT
+}
+
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
 export type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)

@@ -299,7 +299,7 @@ definitions:
         type: string
       clientSecretValue:
         type: string
-        x-secret: 'randAlphaNum 32'
+        x-secret: ''
   email:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
@@ -660,7 +660,7 @@ definitions:
   secretTemplates:
     definitions:
       otomiAdminUsername:
-        x-secret: '"otomi-admin"'
+        x-secret: '"admin"'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -872,7 +872,7 @@ definitions:
       password:
         description: Will be used to separate team resources.
         type: string
-        x-secret: 'randAlpha 24'
+        x-secret: ''
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
@@ -1010,7 +1010,7 @@ properties:
             type: string
           adminToken:
             type: string
-            x-secret: 'randAlphaNum 32'
+            x-secret: ''
           debug:
             default: false
             type: boolean
@@ -1160,7 +1160,7 @@ properties:
             type: boolean
           adminPassword:
             type: string
-            x-secret: 'randAlphaNum 24'
+            x-secret: ''
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
@@ -1182,7 +1182,7 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: 'randAlphaNum 20'
+            x-secret: ''
           core:
             properties:
               secret:
@@ -1269,13 +1269,13 @@ properties:
                 properties:
                   htpasswd:
                     type: string
-                    x-secret: 'htpasswd .dot.username .dot.password'
+                    x-secret: 'htpasswd .dot.username (.dot.password | default .o.adminPassword)'
                   username:
                     type: string
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
                   password:
                     type: string
-                    x-secret: 'randAlphaNum 20'
+                    x-secret: '.dot.password | default .o.adminPassword'
             required:
               - secret
               - credentials
@@ -1741,7 +1741,7 @@ properties:
             properties:
               adminPassword:
                 type: string
-                x-secret: 'randAlphaNum 20'
+                x-secret: ''
           prometheus:
             additionalProperties: false
             properties:

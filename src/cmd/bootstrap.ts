@@ -1,9 +1,10 @@
 import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
+import { omit } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -11,8 +12,10 @@ import { getImageTag, prepareEnvironment, rootDir } from '../common/setup'
 import {
   BasicArguments,
   currDir,
+  flattenObject,
   generateSecrets,
   getFilename,
+  isChart,
   loadYaml,
   OtomiDebugger,
   setParsedArgs,
@@ -49,7 +52,7 @@ let bootstrapVals: Record<string, any>
 export const getValues = async (): Promise<Record<string, any>> => {
   if (bootstrapVals) return bootstrapVals
 
-  if (env.VALUES_INPUT) bootstrapVals = loadYaml(env.VALUES_INPUT) as Record<string, any>
+  if (isChart()) bootstrapVals = loadYaml(env.VALUES_INPUT) as Record<string, any>
   else bootstrapVals = await hfValues()
 
   return bootstrapVals
@@ -174,9 +177,21 @@ export const bootstrapValues = async (): Promise<void> => {
   const generatedSecrets = await generateSecrets(values)
   await mapValuesObjectIntoFiles(generatedSecrets, false)
 
+  if (!values?.otomi?.adminPassword) {
+    debug.log(
+      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
+    )
+  }
   // If we run from chart installer, VALUES_INPUT will be set
   // Merge user in put values.yaml with current values
-  if (env.VALUES_INPUT) {
+  if (isChart()) {
+    const flatObj = omit(flattenObject(generatedSecrets), Object.keys(flattenObject(values)))
+
+    const kubeSec = Object.entries(flatObj).map(([key, value]) => `--from-literal='${key}'='${value}'`)
+    await nothrow($`kubectl -n otomi create secret generic otomi-passwords ${kubeSec}`)
+    debug.log(
+      'A kubernetes secret has been created under the `otomi` namespace called `otomi-password` which contains all the generated passwords.',
+    )
     await mapValuesObjectIntoFiles(values)
   }
 
