@@ -54,7 +54,7 @@ export const genDrone = async (): Promise<void> => {
     pullPolicy,
   }
 
-  const output = await gucci(`${startingDir}/tpl/.drone.yml.gotmpl`, obj)
+  const output = (await gucci(`${startingDir}/tpl/.drone.yml.gotmpl`, obj)) as string
 
   // TODO: Remove when validate-values can validate subpaths
   if (!output) {

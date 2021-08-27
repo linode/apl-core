@@ -9,7 +9,6 @@ import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillA
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { getChartValues } from './lib/chart'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
@@ -59,7 +58,7 @@ export const commit = async (): Promise<void> => {
   const cwd = await currDir()
   cd(env.ENV_DIR)
 
-  const values = getChartValues() ?? (await hfValues())
+  const values = await hfValues()
   const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
 
   preCommit()

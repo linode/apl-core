@@ -1,15 +1,16 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
+import { unset } from 'lodash-es'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import {
-  deletePropertyPath,
   getFilename,
   getParsedArgs,
   loadYaml,
   OtomiDebugger,
   setParsedArgs,
+  startingDir,
   terminal,
 } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
@@ -33,16 +34,16 @@ export const validateValues = async (): Promise<void> => {
   }
 
   debug.info('Getting values')
-  const chartValues = await hfValues()
+  const values = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
-    deletePropertyPath(chartValues, internalPath)
+    unset(values, internalPath)
   }
 
   try {
     debug.info('Loading values-schema.yaml')
-    const valuesSchema = loadYaml('./values-schema.yaml')
+    const valuesSchema = loadYaml(`${startingDir}/values-schema.yaml`) as Record<string, any>
     debug.debug('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
     debug.debug('Compiling Ajv validation')
@@ -54,7 +55,7 @@ export const validateValues = async (): Promise<void> => {
       process.exit(1)
     }
     debug.info(`Validating values`)
-    const val = validate(chartValues)
+    const val = validate(values)
     if (val) {
       debug.log('Values validation SUCCESSFUL')
     } else {

@@ -19,7 +19,7 @@ import {
   terminal,
 } from '../common/utils'
 import { genSops } from './gen-sops'
-import { mergeValues } from './lib/chart'
+import { mapValuesObjectIntoFiles } from './lib/chart'
 
 const { copyFile } = fsPromises
 
@@ -45,6 +45,16 @@ const generateLooseSchema = () => {
   }
 }
 
+let bootstrapVals: Record<string, any>
+export const getValues = async (): Promise<Record<string, any>> => {
+  if (bootstrapVals) return bootstrapVals
+
+  if (env.VALUES_INPUT) bootstrapVals = loadYaml(env.VALUES_INPUT) as Record<string, any>
+  else bootstrapVals = await hfValues()
+
+  return bootstrapVals
+}
+
 export const bootstrapGit = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     // scenario 3: pull > bootstrap values
@@ -55,17 +65,13 @@ export const bootstrapGit = async (): Promise<void> => {
     const cwd = await currDir()
     cd(env.ENV_DIR)
 
-    let values: any
-    if (env.VALUES_INPUT) {
-      values = loadYaml(env.VALUES_INPUT)
-    } else if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`)) {
-      // TODO: Make else once defaults are removed from defaults.gotmpl
-      if (!loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
-        debug.info('Skipping git repo configuration')
-        return
-      }
-      values = await hfValues()
+    const values = await getValues()
+    // TODO: Make else once defaults are removed from defaults.gotmpl
+    if (!values?.cluster?.provider) {
+      debug.info('Skipping git repo configuration')
+      return
     }
+
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
@@ -84,9 +90,9 @@ export const bootstrapGit = async (): Promise<void> => {
       return
     }
     let username = 'Otomi Admin'
-    let email
-    let password
-    let remote
+    let email: string
+    let password: string
+    let remote: string
     const branch = 'main'
     if (!giteaEnabled) {
       const otomiApiGit = values?.charts?.['otomi-api']?.git
@@ -161,16 +167,17 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
+  const values = await getValues()
+
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = await generateSecrets()
-  await mergeValues(generatedSecrets, false)
+  const generatedSecrets = await generateSecrets(values)
+  await mapValuesObjectIntoFiles(generatedSecrets, false)
 
   // If we run from chart installer, VALUES_INPUT will be set
   // Merge user in put values.yaml with current values
   if (env.VALUES_INPUT) {
-    const values = loadYaml(env.VALUES_INPUT)
-    await mergeValues(values)
+    await mapValuesObjectIntoFiles(values)
   }
 
   await genSops()
