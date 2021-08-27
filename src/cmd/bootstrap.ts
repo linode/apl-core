@@ -188,7 +188,7 @@ export const bootstrapValues = async (): Promise<void> => {
     const flatObj = omit(flattenObject(generatedSecrets), Object.keys(flattenObject(values)))
 
     const kubeSec = Object.entries(flatObj).map(([key, value]) => `--from-literal='${key}'='${value}'`)
-    await nothrow($`kubectl -n otomi create secret generic otomi-passwords ${kubeSec}`)
+    await nothrow($`kubectl create secret generic otomi-passwords ${kubeSec}`)
     debug.log(
       'A kubernetes secret has been created under the `otomi` namespace called `otomi-password` which contains all the generated passwords.',
     )
