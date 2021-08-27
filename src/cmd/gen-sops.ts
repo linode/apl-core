@@ -1,6 +1,7 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
@@ -13,7 +14,6 @@ import {
   startingDir,
   terminal,
 } from '../common/utils'
-import { getChartValues } from './lib/chart'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean
@@ -32,7 +32,7 @@ const providerMap = {
 export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
-  const settingsVals = loadYaml(settingsFile)
+  const settingsVals = loadYaml(settingsFile) as Record<string, any>
   // TODO: Use validate values to validate tree at this specific point
   // validateValues('kms.sops.provider')
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
@@ -55,7 +55,7 @@ export const genSops = async (): Promise<void> => {
   debug.debug('sops file already exists')
   debug.log(`Creating sops file for provider ${provider}`)
 
-  const output = await gucci(templatePath, obj)
+  const output = (await gucci(templatePath, obj)) as string
 
   // TODO: Remove when validate-values can validate subpaths
   if (!output) return
@@ -75,8 +75,11 @@ export const genSops = async (): Promise<void> => {
   }
   if (provider === 'google') {
     let serviceKeyJson = env.GCLOUD_SERVICE_KEY
-    const chartValues = getChartValues()
-    if (chartValues) serviceKeyJson = JSON.parse(chartValues?.kms?.sops?.google?.accountJson)
+    if (!serviceKeyJson) {
+      const values = await hfValues()
+      if (values) serviceKeyJson = JSON.parse(values?.kms?.sops?.google?.accountJson)
+    }
+
     if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
       writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))

@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
+import { chunk } from 'lodash-es'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { env } from './envalid'
-import { BasicArguments, chunkArray, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+import { BasicArguments, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
 
 export interface Arguments extends BasicArguments {
   files?: string[]
@@ -67,7 +68,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
   }
   preCrypt()
   const chunkSize = 5
-  const filesChunked = chunkArray(files, chunkSize)
+  const filesChunked = chunk(files, chunkSize)
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increate chunkSize in the future then this line will prevent it from crashing

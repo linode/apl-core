@@ -19,11 +19,11 @@ definitions:
           critical:
             $ref: '#/definitions/email'
             description: One or more email addresses (comma separated) for critical events.
-            x-secret: true
+            x-secret: ''
           nonCritical:
             $ref: '#/definitions/email'
             description: One or more email addresses (comma separated) for non-critical events.
-            x-secret: true
+            x-secret: ''
       groupInterval:
         default: 5m
         description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
@@ -34,11 +34,11 @@ definitions:
           highPrio:
             description: The low prio web hook.
             type: string
-            x-secret: true
+            x-secret: ''
           lowPrio:
             description: The high prio web hook.
             type: string
-            x-secret: true
+            x-secret: ''
       receivers:
         description: Notification receivers.
         items:
@@ -66,7 +66,7 @@ definitions:
           url:
             $ref: '#/definitions/url'
             description: A Slack webhook URL.
-            x-secret: true
+            x-secret: ''
     allOf:
       - anyOf:
           - not:
@@ -129,26 +129,26 @@ definitions:
         title: AWS access key
         description: An AWS access key ID.
         type: string
-        x-secret: true
+        x-secret: ''
       region:
         type: string
       secretKey:
         title: AWS secret key
         description: An AWS secret key.
         type: string
-        x-secret: true
+        x-secret: ''
   azure:
     definitions:
       clientId:
         title: Azure client id
         description: An Azure client id.
         type: string
-        x-secret: true
+        x-secret: ''
       clientSecret:
         title: Azure client secret
         description: An Azure client secret.
         type: string
-        x-secret: true
+        x-secret: ''
       environment:
         title: Azure environment
         description: An Azure environment. Don't specify this if you don't know what you are doing!
@@ -302,7 +302,7 @@ definitions:
         type: string
       clientSecretValue:
         type: string
-        x-secret: true
+        x-secret: ''
   email:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
@@ -330,15 +330,12 @@ definitions:
     definitions:
       accountJson:
         type: string
-        x-secret: true
+        x-secret: ''
       projectId:
         type: string
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
-  htpasswd:
-    type: string
-    x-secret: true
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
@@ -534,7 +531,7 @@ definitions:
         default: standalone
       password:
         type: string
-        x-secret: true
+        x-secret: 'randAlpha 24'
       resources:
         additionalProperties: false
         properties:
@@ -554,23 +551,6 @@ definitions:
           slave:
             $ref: '#/definitions/size'
     type: object
-  securityContext:
-    additionalProperties:
-      uniqueItems: true
-    properties:
-      runAsNonRoot:
-        type: boolean
-        default: true
-      runAsUser:
-        type: integer
-        minimum": 0
-        maximum": 65535
-        default: 1001
-      runAsGroup:
-        type: integer
-        minimum": 0
-        maximum": 65535
-        default: 1001
   registry:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
@@ -611,16 +591,18 @@ definitions:
         type: integer
       minReplicas:
         type: integer
-  size:
-    description: Disk size. Valid units are E|P|T|G|Ti|Gi.
-    examples:
-      - 1Gi
-      - 0.5Ti
-    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
+  script:
+    description: May specify a non-empty string containing an executable script.
     type: string
-  subdomainType:
-    type: string
-    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+    properties:
+      id:
+        readOnly: true
+        type: string
+      name:
+        $ref: '#/definitions/idName'
+    required:
+      - name
+      - type
   secret:
     type: object
     properties:
@@ -678,18 +660,6 @@ definitions:
           - type
           - crt
           - key
-  script:
-    description: May specify a non-empty string containing an executable script.
-    type: string
-    properties:
-      id:
-        readOnly: true
-        type: string
-      name:
-        $ref: '#/definitions/idName'
-    required:
-      - name
-      - type
   secrets:
     description: List of secret names that will have their props injected as env vars into the container.
     items:
@@ -708,6 +678,27 @@ definitions:
         type: string
     title: Secret mounts
     type: object
+  secretTemplates:
+    definitions:
+      otomiAdminUsername:
+        x-secret: '"admin"'
+  securityContext:
+    additionalProperties:
+      uniqueItems: true
+    properties:
+      runAsNonRoot:
+        type: boolean
+        default: true
+      runAsUser:
+        type: integer
+        minimum": 0
+        maximum": 65535
+        default: 1001
+      runAsGroup:
+        type: integer
+        minimum": 0
+        maximum": 65535
+        default: 1001
   service:
     additionalProperties: false
     properties:
@@ -856,6 +847,16 @@ definitions:
     required:
       - name
       - type
+  size:
+    description: Disk size. Valid units are E|P|T|G|Ti|Gi.
+    examples:
+      - 1Gi
+      - 0.5Ti
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
+    type: string
+  subdomainType:
+    type: string
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   team:
     additionalProperties: false
     properties:
@@ -892,7 +893,7 @@ definitions:
       password:
         description: Will be used to separate team resources.
         type: string
-        x-secret: true
+        x-secret: ''
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
@@ -987,7 +988,7 @@ properties:
           stage:
             default: production
             description: |
-              The Let’s Encrypt environment that is used for issuing certificates.
+              The Let's Encrypt environment that is used for issuing certificates.
               The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
               Read more about rate limits: https://letsencrypt.org/docs/rate-limits/.
             enum:
@@ -1030,7 +1031,7 @@ properties:
             type: string
           adminToken:
             type: string
-            x-secret: true
+            x-secret: ''
           debug:
             default: false
             type: boolean
@@ -1062,9 +1063,9 @@ properties:
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
-            description: A secret used by drone-admit-members plugin.
+            description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
             type: string
-            x-secret: true
+            x-secret: 'randAlphaNum 32'
           sourceControl:
             additionalProperties: false
             properties:
@@ -1075,19 +1076,20 @@ properties:
                   consumerKey:
                     default: consumerKey
                     type: string
-                    x-secret: true
+                    x-secret: ''
                   passwordKey:
                     default: password
                     type: string
-                    x-secret: true
+                    x-secret: ''
                   privateKey:
                     default: privateKey
                     type: string
-                    x-secret: true
+                    x-secret: ''
                   server:
                     type: string
                   username:
                     type: string
+                    x-secret: ''
               gitea:
                 allOf:
                   - $ref: '#/definitions/droneGit'
@@ -1179,11 +1181,11 @@ properties:
             type: boolean
           adminPassword:
             type: string
-            x-secret: true
+            x-secret: ''
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: true
+            x-secret: 'randAlphaNum 20'
         allOf:
           - anyOf:
               - not:
@@ -1201,22 +1203,22 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: true
+            x-secret: ''
           core:
             properties:
               secret:
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 20'
               xsrfKey:
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 40'
           enabled:
             type: boolean
           jobservice:
             properties:
               secret:
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 20'
           persistence:
             additionalProperties: false
             properties:
@@ -1262,7 +1264,7 @@ properties:
                         type: string
                       accountkey:
                         type: string
-                        x-secret: true
+                        x-secret: ''
                       container:
                         type: string
                       realm:
@@ -1274,7 +1276,7 @@ properties:
                         type: string
                       encodedkey:
                         type: string
-                        x-secret: true
+                        x-secret: ''
                       rootdirectory:
                         type: string
                   type:
@@ -1283,18 +1285,18 @@ properties:
             properties:
               secret:
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 20'
               credentials:
                 properties:
                   htpasswd:
-                    $ref: '#/definitions/htpasswd'
+                    type: string
+                    x-secret: 'htpasswd .dot.username (.dot.password | default .o.adminPassword)'
                   username:
                     type: string
+                    $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
                   password:
                     type: string
-                    x-secret: true
-                required:
-                  - htpasswd
+                    x-secret: ''
             required:
               - secret
               - credentials
@@ -1325,7 +1327,7 @@ properties:
                 $ref: '#/definitions/resources'
           secretKey:
             type: string
-            x-secret: true
+            x-secret: 'randAlpha 20'
       hello:
         properties:
           enabled:
@@ -1499,11 +1501,11 @@ properties:
                 type: string
               clientSecret:
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 20'
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: true
+            x-secret: 'randAlphaNum 20'
           resources:
             additionalProperties: false
             properties:
@@ -1527,7 +1529,7 @@ properties:
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: true
+            x-secret: 'randAlphaNum 20'
         allOf:
           - anyOf:
               - not:
@@ -1559,7 +1561,7 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: true
+            x-secret: 'randAlphaNum 20'
           persistence:
             additionalProperties: false
             properties:
@@ -1585,7 +1587,7 @@ properties:
             properties:
               account_key:
                 type: string
-                x-secret: true
+                x-secret: ''
               account_name:
                 type: string
               container_name:
@@ -1691,7 +1693,7 @@ properties:
                 description: Cookie secret must be 128 bit base64 encoded string.
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
-                x-secret: true
+                x-secret: 'randAlpha 24'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
       otomi-api:
@@ -1710,7 +1712,7 @@ properties:
                 type: string
               password:
                 type: string
-                x-secret: true
+                x-secret: ''
               repoUrl:
                 $ref: '#/definitions/repoUrl'
               user:
@@ -1760,7 +1762,7 @@ properties:
             properties:
               adminPassword:
                 type: string
-                x-secret: true
+                x-secret: ''
           prometheus:
             additionalProperties: false
             properties:
@@ -1838,7 +1840,7 @@ properties:
                         type: string
                       secret_key:
                         type: string
-                        x-secret: true
+                        x-secret: ''
                       endpoint:
                         type: string
                     required:
@@ -1860,7 +1862,7 @@ properties:
                         type: string
                       client_secret:
                         type: string
-                        x-secret: true
+                        x-secret: ''
                     required:
                       - vault_name
                       - tenant_id
@@ -1931,7 +1933,7 @@ properties:
                     title: Client secret
                     type: string
                     description: Azure Application Client Secret
-                    x-secret: true
+                    x-secret: ''
                   useManagedIdentityExtension:
                     title: Using managed identities?
                     type: boolean
@@ -2032,7 +2034,7 @@ properties:
                     type: string
                   token:
                     type: string
-                    x-secret: true
+                    x-secret: ''
                 required:
                   - keys
                   - token
@@ -2058,7 +2060,7 @@ properties:
         type: string
       clientSecret:
         type: string
-        x-secret: true
+        x-secret: ''
       issuer:
         $ref: '#/definitions/url'
       scope:
@@ -2100,8 +2102,7 @@ properties:
             - provider
       adminPassword:
         type: string
-        default: bladibla
-        x-secret: true
+        x-secret: 'randAlphaNum 20'
       globalPullSecret:
         title: Global pullsecret
         description: Will be connected to each "default" service account in all otomi app namespaces.
@@ -2113,7 +2114,7 @@ properties:
             type: string
           password:
             type: string
-            x-secret: true
+            x-secret: ''
           email:
             type: string
             default: not@us.ed
@@ -2139,13 +2140,6 @@ properties:
         default: true
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
-      mode:
-        default: ee
-        description: The otomi-core edition. Either community edition (ce) or enterprise edition (ee).
-        enum:
-          - ce
-          - ee
-        type: string
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
@@ -2386,10 +2380,10 @@ properties:
         type: string
       auth_password:
         type: string
-        x-secret: true
+        x-secret: ''
       auth_secret:
         type: string
-        x-secret: true
+        x-secret: ''
       auth_username:
         type: string
       from:

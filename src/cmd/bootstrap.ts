@@ -1,17 +1,28 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
-import { copyFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment, rootDir } from '../common/setup'
-import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  BasicArguments,
+  currDir,
+  generateSecrets,
+  getFilename,
+  isChart,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { genSops } from './gen-sops'
-import { mergeChartValues } from './lib/chart'
+import { mapValuesObjectIntoFiles } from './lib/chart'
+
+const { copyFile } = fsPromises
 
 export type Arguments = BasicArguments
 
@@ -35,27 +46,33 @@ const generateLooseSchema = () => {
   }
 }
 
+let bootstrapVals: Record<string, any>
+export const getValues = async (): Promise<Record<string, any>> => {
+  if (bootstrapVals) return bootstrapVals
+
+  if (isChart()) bootstrapVals = loadYaml(env.VALUES_INPUT) as Record<string, any>
+  else bootstrapVals = await hfValues()
+
+  return bootstrapVals
+}
+
 export const bootstrapGit = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     // scenario 3: pull > bootstrap values
     debug.info('Values repo already git initialized.')
   } else {
-    // scenario 1 or 2 (2 will only be called upon first otomi commit)
+    // scenario 1 or 2 or 4(2 will only be called upon first otomi commit)
     debug.info('Initializing values repo.')
     const cwd = await currDir()
     cd(env.ENV_DIR)
 
-    let values: any
-    if (env.VALUES_INPUT) {
-      values = loadYaml(env.VALUES_INPUT)
-    } else if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`)) {
-      // TODO: Make else once defaults are removed from defaults.gotmpl
-      if (!loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
-        debug.info('Skipping git repo configuration')
-        return
-      }
-      values = await hfValues()
+    const values = await getValues()
+    // TODO: Make else once defaults are removed from defaults.gotmpl
+    if (!values?.cluster?.provider) {
+      debug.info('Skipping git repo configuration')
+      return
     }
+
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
@@ -74,9 +91,9 @@ export const bootstrapGit = async (): Promise<void> => {
       return
     }
     let username = 'Otomi Admin'
-    let email
-    let password
-    let remote
+    let email: string
+    let password: string
+    let remote: string
     const branch = 'main'
     if (!giteaEnabled) {
       const otomiApiGit = values?.charts?.['otomi-api']?.git
@@ -151,12 +168,29 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
+  const values = await getValues()
+
+  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
+  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
+  const generatedSecrets = await generateSecrets(values)
+  await mapValuesObjectIntoFiles(generatedSecrets, false)
+
+  if (!values?.otomi?.adminPassword) {
+    debug.log(
+      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
+    )
+  }
   // If we run from chart installer, VALUES_INPUT will be set
-  if (env.VALUES_INPUT) await mergeChartValues()
-  // TODO: Enable wizard
-  // else if (process.stdout.isTTY) {
-  //   await askBasicQuestions()
-  // }
+  // Merge user in put values.yaml with current values
+  if (isChart()) {
+    const vals = await hfValues()
+
+    await nothrow($`kubectl create secret generic otomi-passwords --from-literal='admin'='${vals.otomi.adminPassword}'`)
+    debug.log(
+      'A kubernetes secret has been created under the `otomi` namespace called `otomi-password` which contains all the generated passwords.',
+    )
+    await mapValuesObjectIntoFiles(values)
+  }
 
   await genSops()
 
@@ -261,6 +295,8 @@ export const module = {
       1. chart install: assume empty env dir, so git init > bootstrap values (=load skeleton files, then merge chart values) > and commit
       2. cli install: first time, so git init > bootstrap values
       3. cli install: n-th time (.git exists), so pull > bootstrap values
+      4. chart install: n-th time. (values are stored in some git repository), so configure git, then clone values, then merge chart values) > and commit
+
     */
     await bootstrapValues()
     await decrypt()

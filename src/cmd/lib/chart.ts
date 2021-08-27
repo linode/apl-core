@@ -1,59 +1,49 @@
-import $RefParser from '@apidevtools/json-schema-ref-parser'
-import { existsSync } from 'fs'
-import { writeFile } from 'fs/promises'
-import yaml from 'js-yaml'
-import { merge, omit, pick } from 'lodash-es'
+import { existsSync, promises as fsPromises } from 'fs'
+import { dump } from 'js-yaml'
+import { cloneDeep, isEmpty, merge, omit, pick } from 'lodash-es'
 import { env } from '../../common/envalid'
-import { loadYaml, terminal } from '../../common/utils'
+import { extract, flattenObject, getValuesSchema, isChart, loadYaml, terminal } from '../../common/utils'
 
+const { writeFile } = fsPromises
 const debug = terminal('chart')
 let hasSops = false
-export const extractSecrets = (schema: any, parentAddress?: string): Array<string> => {
-  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf']
 
-  return Object.keys(schema)
-    .flatMap((key) => {
-      const childObj = schema[key]
-      if (typeof childObj !== 'object') return false
-      if ('x-secret' in childObj) return parentAddress ? `${parentAddress}.${key}` : key
-      let address
-      if (parentAddress === undefined) {
-        address = schemaKeywords.includes(key) ? undefined : key
-      } else if (schemaKeywords.includes(key) || !Number.isNaN(Number(key))) address = parentAddress
-      else address = `${parentAddress}.${key}`
-      return extractSecrets(childObj, address)
-    })
-    .filter(Boolean)
-    .map((s: string) => s.replace(/^properties\./, ''))
+const objectToString = (obj: Record<string, any>): string => {
+  return isEmpty(obj) ? '' : dump(obj)
 }
 
-export const mergeFileValues = async (targetPath: string, newValues: Record<string, unknown>): Promise<void> => {
-  debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(newValues)}`)
+export const mergeValueIntoFile = async (
+  targetPath: string,
+  toBeMergedValues: Record<string, any>,
+  overwrite = true,
+): Promise<void> => {
+  debug.debug(`targetPath: ${targetPath}, values: ${JSON.stringify(toBeMergedValues)}`)
   if (!existsSync(targetPath)) {
     // If the targetPath doesn't exist, just create it and write the valueObject in it.
     // It doesn't matter if it is secret or not. and always write in its yaml file
-    return writeFile(targetPath, yaml.dump(newValues ?? {}))
+    return writeFile(targetPath, objectToString(toBeMergedValues))
   }
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
 
-  const values = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
-  merge(values, newValues)
-  return writeFile(`${targetPath}${suffix}`, yaml.dump(values))
+  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+
+  const mergeResult = merge(cloneDeep(originalValues), toBeMergedValues, !overwrite ? originalValues : {})
+  return writeFile(`${targetPath}${suffix}`, objectToString(mergeResult))
 }
 
 export const getChartValues = (): any | undefined => {
-  return env.VALUES_INPUT ? loadYaml(env.VALUES_INPUT) : undefined
+  return isChart() ? loadYaml(env.VALUES_INPUT) : undefined
 }
 
-export const mergeChartValues = async (): Promise<void> => {
+export const mapValuesObjectIntoFiles = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  const values = getChartValues()
 
   // creating secret files
-  const schema = loadYaml('values-schema.yaml')
-  const derefSchema = await $RefParser.dereference(schema)
-  const cleanSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
-  const secretsJsonPath = extractSecrets(cleanSchema)
+  const schema = await getValuesSchema()
+  const leaf = 'x-secret'
+  const schemaSecrets = extract(schema, leaf, (val: any) => (val.length > 0 ? `{{ ${val} }}` : val))
+  // Get all JSON paths for secrets, without the .x-secret appended
+  const secretsJsonPath = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
   debug.debug('secretsJsonPath: ', secretsJsonPath)
   const secrets = pick(values, secretsJsonPath)
   // removing secrets
@@ -64,13 +54,14 @@ export const mergeChartValues = async (): Promise<void> => {
 
   const promises: Promise<void>[] = []
 
-  if (settings) promises.push(mergeFileValues(`${env.ENV_DIR}/env/settings.yaml`, settings))
-  if (secretSettings) promises.push(mergeFileValues(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings))
+  if (settings) promises.push(mergeValueIntoFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (secretSettings)
+    promises.push(mergeValueIntoFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   // creating non secret files
   if (plainValues.cluster)
-    promises.push(mergeFileValues(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }))
+    promises.push(mergeValueIntoFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
-    promises.push(mergeFileValues(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }))
+    promises.push(mergeValueIntoFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
 
   const plainChartPromises = Object.keys(plainValues.charts || {}).map((chart) => {
     const valueObject = {
@@ -78,15 +69,15 @@ export const mergeChartValues = async (): Promise<void> => {
         [chart]: plainValues.charts[chart],
       },
     }
-    return mergeFileValues(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject)
+    return mergeValueIntoFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
   })
-  const secretChartPromises = Object.keys(secrets.charts || {}).map((chart) => {
+  const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, unknown>).map((chart) => {
     const valueObject = {
       charts: {
         [chart]: values.charts[chart],
       },
     }
-    return mergeFileValues(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject)
+    return mergeValueIntoFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])
