@@ -42,9 +42,9 @@ nativeSecrets:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}
-  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+  KEYCLOAK_CLIENT_ID: {{ $k | get "idp.clientID" "otomi" }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-  IDP_ALIAS: {{ $k.idp.alias }}
+  IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
