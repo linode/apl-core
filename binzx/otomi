@@ -35,7 +35,7 @@ if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
 fi
 readonly calling_args
 silent() {
-  if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
+  if { [[ $VERBOSITY -gt 0 ]] || [[ " $calling_args" == *' -v'* ]]; } && [ -t 1 ]; then
     "$@"
   else
     "$@" &>/dev/null
