@@ -6,9 +6,8 @@
  *  node --experimental-specifier-resolution=node ./dist/otomi.js -- <args>
  */
 
-import { readdirSync } from 'fs'
 import { CommandModule } from 'yargs'
-import { bootstrap, commands, defaultCommand } from './cmd'
+import { commands, defaultCommand } from './cmd'
 import { env } from './common/envalid'
 import { scriptName } from './common/setup'
 import { parser, terminal } from './common/utils'
@@ -28,17 +27,11 @@ if (env.TESTING) {
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
-const envDirContent = readdirSync(env.ENV_DIR)
-
 try {
   parser.scriptName(scriptName)
-  if (envDirContent.length === 0 && !isAutoCompletion) {
-    parser.command(bootstrap)
-  } else {
-    commands.map((cmd: CommandModule) =>
-      parser.command(cmd !== defaultCommand ? cmd : { ...cmd, command: [cmd.command as string, '$0'] }),
-    )
-  }
+  commands.map((cmd: CommandModule) =>
+    parser.command(cmd !== defaultCommand ? cmd : { ...cmd, command: [cmd.command as string, '$0'] }),
+  )
   parser
     .option(basicOptions)
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
@@ -48,11 +41,13 @@ try {
     .env('OTOMI')
     .help('help')
     .alias('h', 'help')
+    .strictCommands()
     .demandCommand()
     .completion('completion', false)
   await parser.parseAsync()
 } catch (error) {
-  debug.error(error)
+  if (`${error}`.includes('Unknown command')) parser.showHelp()
+  else debug.error(error)
   process.exit(1)
 } finally {
   console.profileEnd('otomi')

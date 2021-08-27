@@ -2,7 +2,7 @@
 {{- $ := . }}
 {{- $containers := list (dict "isInit" false "container" $v) }}
 {{- $vols := include "file-volumes" $v }}
-{{- if $v.init }}{{ $containers = prepend $containers (dict "isInit" true "container" $v.init) }}{{ end }}
+{{- range $vi := $v.init }}{{ $containers = prepend $containers (dict "isInit" true "container" $vi) }}{{ end }}
 {{- range $item := $containers }}
   {{- $c := $item.container }}
   {{- $initSuffix := $item.isInit | ternary "-i" "" }}

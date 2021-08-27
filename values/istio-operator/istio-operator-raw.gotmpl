@@ -200,7 +200,7 @@ resources:
             autoInject: enabled
           tracer:
             zipkin:
-              address: jaeger-operator-jaeger-collector.jaeger-operator:9411 
+              address: jaeger-operator-jaeger-collector.jaeger:9411 
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
@@ -215,7 +215,7 @@ resources:
         pilot:
           {{- if eq $cm.stage "staging" }}
           jwksResolverExtraRootCA: |
-            {{- $v.letsencryptCA | nindent 12 }}
+            {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 12 }}
           {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
