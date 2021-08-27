@@ -493,7 +493,7 @@ definitions:
               - properties:
                   fsGroup:
                     description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
-                    type: string
+                    type: integer
                   fsGroupChangePolicy:
                     description:
                       'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
