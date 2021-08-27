@@ -1275,7 +1275,7 @@ properties:
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
                   password:
                     type: string
-                    x-secret: '.dot.password | default .o.adminPassword'
+                    x-secret: ''
             required:
               - secret
               - credentials
