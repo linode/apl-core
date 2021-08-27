@@ -298,10 +298,10 @@ export const gucci = async (
     const templateContent: string = tmplIsString ? (tmpl as string) : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
     if (tmplIsString && existsSync(templateContent)) {
-      processOutput = await $`gucci ${gucciArgs} ${templateContent}`
+      processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
-      processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci ${gucciArgs}`
+      processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci -o missingkey=zero ${gucciArgs}`
     }
     // Defaults to returning string, unless stated otherwise
     if (!opts?.asObject) return processOutput.stdout.trim()
@@ -406,7 +406,7 @@ export const generateSecrets = async (values: Record<string, any>): Promise<Reco
 
       const sDot = v.replaceAll('.dot.', `.${dotDot}.`)
       const vDot = sDot.replaceAll('.v.', `.${dotV}.`)
-      const oDot = vDot.replaceAll('.o.', '.otomi')
+      const oDot = vDot.replaceAll('.o.', '.otomi.')
       const rootDot = oDot.replaceAll('.root.', '.')
       return [path, rootDot]
     })
