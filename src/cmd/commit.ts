@@ -5,7 +5,7 @@ import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
+import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -59,7 +59,6 @@ export const commit = async (): Promise<void> => {
   cd(env.ENV_DIR)
 
   const values = await hfValues()
-  const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
 
   preCommit()
   await encrypt()
@@ -73,12 +72,10 @@ export const commit = async (): Promise<void> => {
   }
 
   if (!env.CI) await pull()
-  let healthUrl
-  let branch
+  let branch: string
   if (values.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
   } else {
-    healthUrl = `gitea.${clusterDomain}`
     branch = 'main'
   }
 
@@ -88,7 +85,6 @@ export const commit = async (): Promise<void> => {
       process.env.GIT_SSL_NO_VERIFY = 'true'
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
-    if (healthUrl) await waitTillAvailable(healthUrl)
     await $`git remote show origin`
     await gitPush(branch)
     debug.log('Successfully pushed the updated values')

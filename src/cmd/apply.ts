@@ -1,11 +1,22 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, cd, nothrow } from 'zx'
+import { env } from '../common/envalid'
 import { hf, hfStream } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getParsedArgs,
+  logLevelString,
+  OtomiDebugger,
+  setParsedArgs,
+  startingDir,
+  terminal,
+  waitTillAvailable,
+} from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { commit } from './commit'
 import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(import.meta.url)
@@ -26,6 +37,17 @@ const setup = (): void => {
   debug = terminal(cmdName)
 
   mkdirSync(dir, { recursive: true })
+}
+
+const commitOnFirstRun = async () => {
+  cd(env.ENV_DIR)
+
+  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+  await waitTillAvailable(healthUrl)
+
+  if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
+  await commit()
+  cd(startingDir)
 }
 
 const applyAll = async () => {
@@ -54,6 +76,8 @@ const applyAll = async () => {
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
+
+  await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {
