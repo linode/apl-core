@@ -58,7 +58,7 @@ stringData:
     || \
     ( \
       export GITEA_AUTH_ID=$(gitea admin auth list | grep {{ .Values.gitea.oauth.name | quote }} | awk -F " "  "{print \$1}"); \
-      gitea admin auth update-oauth --id ${GITEA_AUTH_ID} \
+      gitea admin auth update-oauth --id "${GITEA_AUTH_ID}" \
       {{- include "gitea.oauth_settings" . | nindent 6 }} \
     ) \
     {{- end }}

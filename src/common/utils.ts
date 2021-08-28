@@ -240,6 +240,7 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
   const domain = dom.startsWith('http') ? dom : `https://${dom}`
   const waitDebug = terminal('waitTillAvailable')
   let count = 0
+  const timeout = 10
   // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
   do {
     waitDebug.debug(`Waiting for ${domain} ...`)
@@ -257,9 +258,9 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
       waitDebug.error(error.message)
     }
     // eslint-disable-next-line no-await-in-loop
-    await sleep(250)
+    await sleep(timeout * 1000)
   } while (count < subsequentExists)
-  waitDebug.debug(`Waiting for ${domain} succeeded`)
+  waitDebug.debug(`Waiting ${timeout} secs for ${domain} to become available`)
 }
 
 export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {

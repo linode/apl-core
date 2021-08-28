@@ -19,7 +19,6 @@ interface Arguments extends HelmArgs, DroneArgs {}
 export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.info('Check for cluster diffs')
-  cd(env.ENV_DIR)
   const settingsDiff = (await nothrow($`git diff env/settings.yaml`)).stdout.trim()
   const secretDiff = (await nothrow($`git diff env/secrets.settings.yaml`)).stdout.trim()
   cd(rootDir)
@@ -50,13 +49,9 @@ export const gitPush = async (branch: string): Promise<boolean> => {
 
 export const commit = async (): Promise<void> => {
   await validateValues()
-
   debug.info('Preparing values')
-
-  cd(env.ENV_DIR)
-
   const values = await hfValues()
-
+  cd(env.ENV_DIR)
   preCommit()
   await encrypt()
   debug.info('Committing values')
@@ -69,7 +64,9 @@ export const commit = async (): Promise<void> => {
     debug.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
-  if (!env.CI) await pull()
+  // if (!env.CI) await pull()
+  // previous command returned to rootDir, so go back to env:
+  cd(env.ENV_DIR)
   let branch: string
   if (values.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? 'main'

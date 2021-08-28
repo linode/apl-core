@@ -61,3 +61,5 @@ spec:
         - name: otomi-values
           emptyDir: {}
       restartPolicy: Never
+      # Don't restart as it recreates passwords every time!
+      backoffLimit: 1
