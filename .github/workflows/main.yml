@@ -78,12 +78,8 @@ jobs:
         name: Prepare chart for publishing
         id: chart_prepare
         run: |
-          # Release new chart only if its version changes, or if package version changes
-          [ ! $(git show ${{ github.sha }} chart/otomi/Chart.yaml | grep '^+version:.*$') ] && version_changed=1
-          [ ! $(git show ${{ github.sha }} package.json | grep '^+version:.*$') ] && package_changed=1
-          [ -z $version_changed ] && echo "No chart version change detected."
-          [ -z $package_changed ] && echo "No package version changes detected."
-          [ -z $version_changed ] && [ -z $package_changed ] && echo "Skipping chart publication..." && exit 
+          # Release new chart only if its version changes
+          [ ! $(git show ${{ github.sha }} chart/otomi/Chart.yaml | grep '^+version:.*$') ] && echo "No chart changes detected. Skipping." && exit
           echo ::set-output name=has_chart_changes::true
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
