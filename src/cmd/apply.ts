@@ -9,8 +9,8 @@ import {
   getParsedArgs,
   logLevelString,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
-  startingDir,
   terminal,
   waitTillAvailable,
 } from '../common/utils'
@@ -48,7 +48,7 @@ const commitOnFirstRun = async () => {
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
   await commit()
   await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
-  cd(startingDir)
+  cd(rootDir)
 }
 
 const applyAll = async () => {

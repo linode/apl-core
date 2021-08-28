@@ -5,23 +5,23 @@ import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
-import { genSops } from './gen-sops'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getImageTag, prepareEnvironment, rootDir } from '../common/setup'
+import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
-  currDir,
   generateSecrets,
   getFilename,
   isChart,
   loadYaml,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
   terminal,
 } from '../common/utils'
 import { writeValues } from '../common/values'
+import { genSops } from './gen-sops'
 
 export const getChartValues = (): any | undefined => {
   return loadYaml(env.VALUES_INPUT)
@@ -50,8 +50,6 @@ const generateLooseSchema = () => {
 }
 
 export const bootstrapValues = async (): Promise<void> => {
-  const originalValues = isChart() ? getChartValues() : await hfValues(true)
-
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const binPath = `${env.ENV_DIR}/bin`
@@ -100,6 +98,7 @@ export const bootstrapValues = async (): Promise<void> => {
   )
 
   // Done, write chart values if we got any
+  const originalValues = isChart() ? getChartValues() : await hfValues(true)
   if (isChart()) await writeValues(originalValues)
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
@@ -144,7 +143,6 @@ export const bootstrapGit = async (): Promise<void> => {
   } else {
     // scenario 1 or 2 or 4(2 will only be called upon first otomi commit)
     debug.info('Initializing values repo.')
-    const cwd = await currDir()
     cd(env.ENV_DIR)
 
     const values = await hfValues(true)
@@ -196,7 +194,9 @@ export const bootstrapGit = async (): Promise<void> => {
     await $`git config --local user.email ${email}`
     await $`git checkout -b ${branch}`
     await $`git remote add origin ${remote}`
-    cd(cwd)
+    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+
+    cd(rootDir)
     debug.log(`Done bootstrapping git`)
   }
 }

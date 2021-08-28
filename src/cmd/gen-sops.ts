@@ -10,8 +10,8 @@ import {
   gucci,
   loadYaml,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
-  startingDir,
   terminal,
 } from '../common/utils'
 
@@ -42,7 +42,7 @@ export const genSops = async (): Promise<void> => {
   }
 
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
-  const templatePath = `${startingDir}/tpl/.sops.yaml.gotmpl`
+  const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = providerMap[provider] as string
   const kmsKeys = settingsVals.kms.sops[provider].keys as string
 

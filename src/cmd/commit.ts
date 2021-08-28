@@ -5,9 +5,8 @@ import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { getFilename, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
-import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -20,10 +19,10 @@ interface Arguments extends HelmArgs, DroneArgs {}
 export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
   pcDebug.info('Check for cluster diffs')
-  await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
-  const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
-  const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
-
+  cd(env.ENV_DIR)
+  const settingsDiff = (await nothrow($`git diff env/settings.yaml`)).stdout.trim()
+  const secretDiff = (await nothrow($`git diff env/secrets.settings.yaml`)).stdout.trim()
+  cd(rootDir)
   const versionChanges = settingsDiff.includes('+    version:')
   const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
   const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
@@ -36,7 +35,6 @@ export const gitPush = async (branch: string): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
 
-  const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
     await $`git push -u origin ${branch} -f`
@@ -46,7 +44,7 @@ export const gitPush = async (branch: string): Promise<boolean> => {
     gitDebug.error(error)
     return false
   } finally {
-    cd(cwd)
+    cd(rootDir)
   }
 }
 
@@ -55,7 +53,6 @@ export const commit = async (): Promise<void> => {
 
   debug.info('Preparing values')
 
-  const cwd = await currDir()
   cd(env.ENV_DIR)
 
   const values = await hfValues()
@@ -68,6 +65,7 @@ export const commit = async (): Promise<void> => {
     await $`git commit -m 'otomi commit' --no-verify`
   } catch (e) {
     debug.error(e.stdout)
+    debug.error(e.stderr)
     debug.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
@@ -93,7 +91,7 @@ export const commit = async (): Promise<void> => {
     debug.error('Pushing the values failed, please read the above error message and manually try again')
     process.exit(1)
   } finally {
-    cd(cwd)
+    cd(rootDir)
   }
 }
 
@@ -108,8 +106,8 @@ export const module = {
 
     if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
       await pull()
-    } else {
-      await bootstrapGit()
+      // } else {
+      //   await bootstrapGit()
     }
     await commit()
   },
