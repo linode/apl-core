@@ -248,7 +248,6 @@ definitions:
         type: string
     required:
       - domainSuffix
-      - k8sContext
       - k8sVersion
       - name
       - owner

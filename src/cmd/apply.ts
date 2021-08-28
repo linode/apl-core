@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { env } from '../common/envalid'
-import { hf, hfStream } from '../common/hf'
+import { hf, hfStream, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
@@ -43,6 +43,12 @@ const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+  const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
+  if (isCertStaging) {
+    process.env.GIT_SSL_NO_VERIFY = 'true'
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  }
+
   await waitTillAvailable(healthUrl)
 
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
