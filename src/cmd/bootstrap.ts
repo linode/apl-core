@@ -1,9 +1,11 @@
-import { copyFileSync, existsSync, mkdirSync, promises as fsPromises, writeFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
+import { copyFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { genSops } from './gen-sops'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -19,10 +21,11 @@ import {
   setParsedArgs,
   terminal,
 } from '../common/utils'
-import { genSops } from './gen-sops'
-import { mapValuesObjectIntoFiles } from './lib/chart'
+import { writeValues } from '../common/values'
 
-const { copyFile } = fsPromises
+export const getChartValues = (): any | undefined => {
+  return loadYaml(env.VALUES_INPUT)
+}
 
 export type Arguments = BasicArguments
 
@@ -46,14 +49,92 @@ const generateLooseSchema = () => {
   }
 }
 
-let bootstrapVals: Record<string, any>
-export const getValues = async (): Promise<Record<string, any>> => {
-  if (bootstrapVals) return bootstrapVals
+export const bootstrapValues = async (): Promise<void> => {
+  const originalValues = isChart() ? getChartValues() : await hfValues(true)
 
-  if (isChart()) bootstrapVals = loadYaml(env.VALUES_INPUT) as Record<string, any>
-  else bootstrapVals = await hfValues()
+  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
-  return bootstrapVals
+  const binPath = `${env.ENV_DIR}/bin`
+  mkdirSync(binPath, { recursive: true })
+  const otomiImage = `otomi/core:${getImageTag()}`
+  debug.info(`Intalling artifacts from ${otomiImage}`)
+
+  await Promise.allSettled([
+    copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
+    copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
+  ])
+  debug.info('Copied bin files')
+  try {
+    mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
+    await copy(`${rootDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
+    debug.info('Copied vscode folder')
+  } catch (error) {
+    debug.error(error)
+    debug.error(`Could not copy from ${rootDir}/.values/.vscode`)
+    process.exit(1)
+  }
+
+  generateLooseSchema()
+
+  await Promise.allSettled(
+    ['.gitattributes', '.secrets.sample']
+      .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
+      .map(async (val) => copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
+  )
+
+  await Promise.allSettled(
+    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
+      copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`),
+    ),
+  )
+  if (!existsSync(`${env.ENV_DIR}/env`)) {
+    debug.log(`Copying basic values`)
+    await copy(`${rootDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
+  }
+
+  debug.log('Copying Otomi Console Setup')
+  mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
+  await copy(`${rootDir}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
+  await Promise.allSettled(
+    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
+  )
+
+  // Done, write chart values if we got any
+  if (isChart()) await writeValues(originalValues)
+
+  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
+  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
+  const generatedSecrets = await generateSecrets(originalValues)
+  await writeValues(generatedSecrets, false)
+
+  // if we did not have the admin password before we know we have generated it for the first time
+  // so tell the user about it
+  if (!originalValues?.otomi?.adminPassword) {
+    debug.log(
+      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
+    )
+  }
+  if (isChart()) {
+    // Write some output for the user about password access via a secret
+    const updatedValues = await hfValues(true)
+
+    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null'`)
+    await nothrow(
+      $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
+    )
+    debug.log(
+      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
+    )
+  }
+
+  await genSops()
+
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
+
+  if (!hasOtomi) {
+    debug.log('You can now use the otomi CLI')
+  }
+  debug.log(`Done bootstrapping values`)
 }
 
 export const bootstrapGit = async (): Promise<void> => {
@@ -66,7 +147,7 @@ export const bootstrapGit = async (): Promise<void> => {
     const cwd = await currDir()
     cd(env.ENV_DIR)
 
-    const values = await getValues()
+    const values = await hfValues(true)
     // TODO: Make else once defaults are removed from defaults.gotmpl
     if (!values?.cluster?.provider) {
       debug.info('Skipping git repo configuration')
@@ -118,88 +199,6 @@ export const bootstrapGit = async (): Promise<void> => {
     cd(cwd)
     debug.log(`Done bootstrapping git`)
   }
-}
-
-export const bootstrapValues = async (): Promise<void> => {
-  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
-
-  const binPath = `${env.ENV_DIR}/bin`
-  mkdirSync(binPath, { recursive: true })
-  const otomiImage = `otomi/core:${getImageTag()}`
-  debug.info(`Intalling artifacts from ${otomiImage}`)
-
-  await Promise.allSettled([
-    copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
-    copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
-  ])
-  debug.info('Copied bin files')
-  try {
-    mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
-    await copy(`${rootDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
-    debug.info('Copied vscode folder')
-  } catch (error) {
-    debug.error(error)
-    debug.error(`Could not copy from ${rootDir}/.values/.vscode`)
-    process.exit(1)
-  }
-
-  generateLooseSchema()
-
-  await Promise.allSettled(
-    ['.gitattributes', '.secrets.sample']
-      .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
-      .map(async (val) => copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
-  )
-
-  await Promise.allSettled(
-    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
-      copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`),
-    ),
-  )
-  if (!existsSync(`${env.ENV_DIR}/env`)) {
-    debug.log(`Copying basic values`)
-    await copy(`${rootDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
-  }
-
-  debug.log('Copying Otomi Console Setup')
-  mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
-  await copy(`${rootDir}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
-  await Promise.allSettled(
-    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
-  )
-
-  const values = await getValues()
-
-  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
-  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = await generateSecrets(values)
-  await mapValuesObjectIntoFiles(generatedSecrets, false)
-
-  if (!values?.otomi?.adminPassword) {
-    debug.log(
-      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
-    )
-  }
-  // If we run from chart installer, VALUES_INPUT will be set
-  // Merge chart input with current values
-  if (isChart()) {
-    const vals = await hfValues(true)
-
-    await nothrow($`kubectl create secret generic otomi-password --from-literal='admin'='${vals.otomi.adminPassword}'`)
-    debug.log(
-      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
-    )
-    await mapValuesObjectIntoFiles(values)
-  }
-
-  await genSops()
-
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
-
-  if (!hasOtomi) {
-    debug.log('You can now use the otomi CLI')
-  }
-  debug.log(`Done bootstrapping values`)
 }
 
 // const notEmpty = (answer: string): boolean => answer?.trim().length > 0

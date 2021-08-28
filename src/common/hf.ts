@@ -1,4 +1,4 @@
-import { dump, load } from 'js-yaml'
+import { load } from 'js-yaml'
 import { Readable, Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
@@ -108,11 +108,11 @@ export type ValuesOptions = {
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
   if (!opts?.skipCache) {
     if (opts?.replacePath && value.rp) {
-      if (opts?.asString) return dump(value.rp)
+      if (opts?.asString) return value.rp
       return value.rp
     }
     if (value.clean) {
-      if (opts?.asString) return dump(value.clean)
+      if (opts?.asString) return value.clean
       return value.clean
     }
   }

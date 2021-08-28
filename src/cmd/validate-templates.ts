@@ -1,4 +1,5 @@
-import { promises as fsPromises, readFileSync, rmSync } from 'fs'
+import { readFileSync, rmSync } from 'fs'
+import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
@@ -7,8 +8,6 @@ import { hfTemplate } from '../common/hf'
 import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
-
-const { mkdir, writeFile } = fsPromises
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

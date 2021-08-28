@@ -188,7 +188,7 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const loadYaml = (path: string, opts?: { noError: boolean }): Record<string, any> | undefined => {
+export const loadYaml = (path: string, opts?: { noError: boolean }) => {
   if (!existsSync(path)) {
     if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)
@@ -280,7 +280,7 @@ export const gucci = async (
   tmpl: string | unknown,
   args: { [key: string]: any },
   opts?: GucciOptions,
-): Promise<string | Record<string, any> | undefined> => {
+): Promise<string | Record<string, unknown> | undefined> => {
   const debug = terminal('gucci')
 
   const kv = flattenObject(args)
@@ -306,13 +306,12 @@ export const gucci = async (
     // Defaults to returning string, unless stated otherwise
     if (!opts?.asObject) return processOutput.stdout.trim()
     try {
-      return load(processOutput.stdout.trim()) as Record<string, any>
+      return load(processOutput.stdout.trim()) as Record<string, unknown>
     } catch (_) {
       // Fallback to returning string - as it aparently isn't yaml
       return processOutput.stdout.trim()
     }
   } catch (error) {
-    debug.warn('Gucci templating failed (possibly due to missing values)')
     debug.debug(error)
     // TODO: Don't swallow when validate-values can validate subpaths
     return undefined
@@ -331,11 +330,7 @@ export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Pro
 }
 */
 
-export const extract = (
-  schema: Record<string, any>,
-  leaf: string,
-  mapValue = (val: any) => val,
-): Record<string, unknown> => {
+export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
   return Object.keys(schema)
     .map((key) => {
@@ -344,8 +339,11 @@ export const extract = (
       if (typeof childObj !== 'object') return {}
       const obj = extract(childObj, leaf, mapValue)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
+      // eslint-disable-next-line no-nested-ternary
       return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
-        ? obj
+        ? obj === '{}'
+          ? undefined
+          : obj
         : { [key]: obj }
     })
     .reduce((accumulator, extractedValue) => {
@@ -355,8 +353,8 @@ export const extract = (
     }, {})
 }
 
-let valuesSchema: Record<string, any>
-export const getValuesSchema = async (): Promise<Record<string, any>> => {
+let valuesSchema: Record<string, unknown>
+export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
   if (valuesSchema) return valuesSchema
   const schema = loadYaml(`${startingDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
@@ -369,7 +367,7 @@ export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
-export const generateSecrets = async (values: Record<string, any>): Promise<Record<string, any>> => {
+export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
@@ -384,6 +382,7 @@ export const generateSecrets = async (values: Record<string, any>): Promise<Reco
     }
     return undefined
   })
+  debug.debug('secrets: ', secrets)
   debug.info('First round of templating')
   const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, unknown>
   const firstTemplateFlattend = flattenObject(firstTemplateRound)
@@ -416,17 +415,22 @@ export const generateSecrets = async (values: Record<string, any>): Promise<Reco
     set(firstTemplateRound, k, `{{ ${v} }}`)
     return [k, v]
   })
+  debug.debug('firstTemplateRound: ', firstTemplateRound)
 
   debug.info('Gather all values for the second round of templating')
   const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), values)
+  debug.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
 
   debug.info('Second round of templating')
   const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
     asObject: true,
-  })) as Record<string, any>
+  })) as Record<string, unknown>
+  debug.debug('secondTemplateRound: ', secondTemplateRound)
 
   debug.info('Generated all secrets')
-  return pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
+  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
+  debug.debug('generateSecrets result: ', res)
+  return res
 }
 
 export default { parser, asArray }

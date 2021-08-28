@@ -47,7 +47,7 @@ const commitOnFirstRun = async () => {
 
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
   await commit()
-  await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed using CLI'`)
+  await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
   cd(startingDir)
 }
 
