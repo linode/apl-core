@@ -12,8 +12,8 @@ import {
   getFilename,
   getParsedArgs,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
-  startingDir,
   terminal,
 } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
@@ -33,8 +33,8 @@ const setup = (): void => {
 
 export const ciTests = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
-  debug.log(`Running CI tests with values from ${`${startingDir}/tests/fixtures/`}`)
+  if (!existsSync(`${rootDir}/env`)) symlinkSync(`${rootDir}/tests/fixtures`, `${rootDir}/env`)
+  debug.log(`Running CI tests with values from ${`${rootDir}/tests/fixtures/`}`)
 
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)

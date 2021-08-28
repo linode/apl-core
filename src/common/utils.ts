@@ -15,7 +15,7 @@ import { env } from './envalid'
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
-export const startingDir = process.cwd()
+export const rootDir = process.cwd()
 export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
@@ -356,7 +356,7 @@ export const extract = (schema: Record<string, any>, leaf: string, mapValue = (v
 let valuesSchema: Record<string, unknown>
 export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
   if (valuesSchema) return valuesSchema
-  const schema = loadYaml(`${startingDir}/values-schema.yaml`)
+  const schema = loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
   valuesSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
 
