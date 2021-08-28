@@ -32,7 +32,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipDecrypt: true })
+    await prepareEnvironment()
     await diff()
   },
 }

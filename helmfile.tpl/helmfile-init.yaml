@@ -2,7 +2,7 @@
 # Running: hf_ -f helmfile.d/dump.yaml build
 
 bases:
-  - ../helmfile.d/snippets/defaults.gotmpl
+  - ../helmfile.d/snippets/env.gotmpl
 ---
 {{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}

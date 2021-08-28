@@ -1,5 +1,4 @@
 import { Argv } from 'yargs'
-import { env } from '../common/envalid'
 import { hfStream } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
@@ -37,7 +36,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipKubeContextCheck: env.TESTING })
+    await prepareEnvironment()
     await hf()
   },
 }

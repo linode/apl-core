@@ -15,19 +15,21 @@ image:
   # tag: latest
   pullPolicy: IfNotPresent
 
-init: {}
-  # env: {}
-  # image:
-  #     repository: busybox
-  #     tag: latest
-  #     pullPolicy: IfNotPresent
-  # script: echo "bla"
-  # secrets:
-  # - name: secret-name
-  #   entries:
-  #       - foo
-  #       - bar
-  # files: {}
+init: []
+  # - env: {}
+  #   image:
+  #       repository: busybox
+  #       tag: latest
+  #       pullPolicy: IfNotPresent
+  #   nativeSecrets:
+  #     foo: bar
+  #   script: echo "bla"
+  #   secrets:
+  #   - name: secret-name
+  #     entries:
+  #         - foo
+  #         - bar
+  #   files: {}
 
 resources:
   limits:

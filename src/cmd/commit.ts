@@ -4,12 +4,11 @@ import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { exitIfInCore, prepareEnvironment } from '../common/setup'
-import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { getChartValues } from './lib/chart'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
@@ -17,10 +16,6 @@ const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends HelmArgs, DroneArgs {}
-
-const setup = (): void => {
-  exitIfInCore(cmdName)
-}
 
 export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
@@ -37,18 +32,9 @@ export const preCommit = async (): Promise<void> => {
     await genDrone()
 }
 
-export const gitPush = async (
-  branch: string,
-  sslVerify: boolean,
-  giteaUrl: string | undefined = undefined,
-): Promise<boolean> => {
+export const gitPush = async (branch: string): Promise<boolean> => {
   const gitDebug = terminal('gitPush')
   gitDebug.info('Starting git push.')
-  const currentGitSSLVerify = process.env.GIT_SSL_NO_VERIFY
-  if (giteaUrl) {
-    if (!sslVerify) process.env.GIT_SSL_NO_VERIFY = 'false'
-    await waitTillAvailable(giteaUrl)
-  }
 
   const cwd = await currDir()
   cd(env.ENV_DIR)
@@ -61,7 +47,6 @@ export const gitPush = async (
     return false
   } finally {
     cd(cwd)
-    process.env.GIT_SSL_NO_VERIFY = currentGitSSLVerify
   }
 }
 
@@ -73,29 +58,35 @@ export const commit = async (): Promise<void> => {
   const cwd = await currDir()
   cd(env.ENV_DIR)
 
-  const values = getChartValues() ?? (await hfValues())
-  const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
+  const values = await hfValues()
 
   preCommit()
   await encrypt()
   debug.info('Committing values')
   await $`git add -A`
-  await $`git commit -m 'otomi commit' --no-verify`
+  try {
+    await $`git commit -m 'otomi commit' --no-verify`
+  } catch (e) {
+    debug.error(e.stdout)
+    debug.log('Something went wrong trying to commit. Did you make any changes?')
+  }
 
   if (!env.CI) await pull()
-  let healthUrl
-  let branch
+  let branch: string
   if (values.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
   } else {
-    healthUrl = `gitea.${clusterDomain}`
     branch = 'main'
   }
 
   try {
-    const sslVerify = values.charts?.['cert-manager']?.stage === 'staging'
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
     await $`git remote show origin`
-    await gitPush(branch, sslVerify, healthUrl)
+    await gitPush(branch)
     debug.log('Successfully pushed the updated values')
   } catch (error) {
     debug.error(error.stderr)
@@ -114,10 +105,8 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    setup()
 
     if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
-      debug.info('Values repo already git initialized.')
       await pull()
     } else {
       await bootstrapGit()

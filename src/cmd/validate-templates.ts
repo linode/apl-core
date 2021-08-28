@@ -75,7 +75,7 @@ type crdSchema = {
 
 const processCrd = (path: string): crdSchema[] => {
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
-    (singleDoc) => singleDoc?.kind === 'CustomResourceDefinition',
+    (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
 
   const documentResult = documents.flatMap((document: any) => {
@@ -152,15 +152,12 @@ export const validateTemplates = async (): Promise<void> => {
   const skipFilenames = ['crd', 'constraint']
 
   debug.log('Validating resources')
-  const quiet = !argv.verbose ? undefined : '--quiet'
+  const quiet = !argv.verbose ? [] : ['--quiet']
   debug.info(`Schema Output Path: ${schemaOutputPath}`)
   debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
   debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
   debug.info(`K8S Resource Path: ${k8sResourcesPath}`)
   debug.info(`Schema location: file://${schemaOutputPath}`)
-  debug.info(
-    `Command: \`kubeval ${quiet} --skip-kinds ${skipKinds} --ignored-filename-patterns ${skipFilenames} --force-color -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}\``,
-  )
   const kubevalOutput = await nothrow(
     $`kubeval ${quiet} --skip-kinds ${skipKinds.join(',')} --ignored-filename-patterns ${skipFilenames.join(
       ',',
@@ -184,7 +181,7 @@ export const validateTemplates = async (): Promise<void> => {
       })
       return prevObj
     })
-  output.PASS?.map((_val: string) => debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
+  output.PASS?.map((_val: string) => debug.debug(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))

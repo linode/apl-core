@@ -1,18 +1,19 @@
+import $RefParser from '@apidevtools/json-schema-ref-parser'
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
-import { load } from 'js-yaml'
+import { dump, load } from 'js-yaml'
+import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
 import fetch from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $, ProcessOutput, sleep } from 'zx'
 import { env } from './envalid'
 
-process.stdin.isTTY = false
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
-$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L89
+$.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
 export const startingDir = process.cwd()
 export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
@@ -41,11 +42,23 @@ export const defaultBasicArguments: BasicArguments = {
 
 let parsedArgs: BasicArguments
 
+const debuggers = {}
+
 export const setParsedArgs = (args: BasicArguments): void => {
   parsedArgs = args
+  // Call needed to init LL for debugger and ZX calls:
+  logLevel()
 }
 export const getParsedArgs = (): BasicArguments => {
   return parsedArgs
+}
+
+export const isCLI = (): boolean => {
+  return !env.VALUES_INPUT
+}
+
+export const isChart = (): boolean => {
+  return !!env.VALUES_INPUT
 }
 
 const commonDebug: DebugDebugger = Debug('otomi')
@@ -76,7 +89,6 @@ export type OtomiStreamDebugger = {
   error: DebugStream
 }
 export type OtomiDebugger = {
-  enabled: boolean
   base: DebuggerType
   log: DebuggerType
   trace: DebuggerType
@@ -87,51 +99,53 @@ export type OtomiDebugger = {
   stream: OtomiStreamDebugger
 }
 
-const xtermColors = {
-  red: [52, 124, 9, 202, 211],
-  orange: [58, 130, 202, 208, 214],
-  green: [2, 28, 34, 46, 78, 119],
-}
-const setColor = (term: DebuggerType, color: number[]) => {
-  // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
-  if (!('namespace' in term && env.STATIC_COLORS)) return
-  const terminal: DebugDebugger = term
-  const colons = (terminal.namespace.match(/:/g) || ['']).length - 1
-  terminal.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
-}
+// const xtermColors = {
+//   red: [52, 124, 9, 202, 211],
+//   orange: [58, 130, 202, 208, 214],
+//   green: [2, 28, 34, 46, 78, 119],
+// }
+// const setColor = (term: DebuggerType, color: number[]) => {
+//   // Console.{log,warn,error} don't have namespace, so we know if it is in there that we use the DebugDebugger
+//   if (!('namespace' in term && env.STATIC_COLORS)) return
+//   const t: DebugDebugger = term
+//   const colons = (t.namespace.match(/:/g) || ['']).length - 1
+//   t.color = color[Math.max(0, Math.min(colons, color.length - 1))].toString()
+// }
 /*
  * Must be function to be able to export overrides.
  */
 /* eslint-disable no-redeclare */
-export function terminal(namespace: string): OtomiDebugger
-export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDebugger {
-  const newDebug = (baseNamespace: string, enabled = true, cons = console.log): DebuggerType => {
+export function terminal(namespace: string): OtomiDebugger {
+  const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
+    const signature = namespace + baseNamespace
     if (env.OTOMI_IN_TERMINAL) {
-      const newDebugObj: DebugDebugger = commonDebug.extend(baseNamespace)
-      newDebugObj.enabled = enabled
-      return newDebugObj
+      if (debuggers[signature]) return debuggers[signature]
+      const debugObj: DebugDebugger = commonDebug.extend(baseNamespace)
+      debuggers[signature] = debugObj
+      debugObj.enabled = true
+      return debugObj
     }
-    if (enabled) {
-      return cons
-    }
-    return () => {
-      /* Do nothing */
-    }
+    return cons
   }
-  const base = newDebug(`${namespace}`, terminalEnabled)
-  const log = newDebug(`${namespace}:log`, true)
-  const error = newDebug(`${namespace}:error`, true, console.error)
-  const trace = newDebug(`${namespace}:trace`, logLevel() >= logLevels.TRACE && terminalEnabled)
-  const debug = newDebug(`${namespace}:debug`, logLevel() >= logLevels.DEBUG && terminalEnabled)
-  const info = newDebug(`${namespace}:info`, logLevel() >= logLevels.INFO && terminalEnabled)
-  const warn = newDebug(`${namespace}:warn`, logLevel() >= logLevels.WARN && terminalEnabled, console.warn)
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noop = () => {}
+  const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, ...args)
+  const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, ...args)
+  const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, ...args)
+  const trace = (...args: any[]) =>
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
+  const debug = (...args: any[]) =>
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
+  const info = (...args: any[]) =>
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
+  const warn = (...args: any[]) =>
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, ...args)
 
-  setColor(error, xtermColors.red)
-  setColor(warn, xtermColors.orange)
-  setColor(info, xtermColors.green)
+  // setColor(error, xtermColors.red)
+  // setColor(warn, xtermColors.orange)
+  // setColor(info, xtermColors.green)
 
-  const newDebugger: OtomiDebugger = {
-    enabled: terminalEnabled ?? true,
+  return {
     base,
     log,
     trace,
@@ -148,9 +162,7 @@ export function terminal(namespace: string, terminalEnabled?: boolean): OtomiDeb
       error: new DebugStream(error),
     },
   }
-  return newDebugger
 }
-/* eslint-enable no-redeclare */
 
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
@@ -176,20 +188,12 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const capitalize = (s: string): string =>
-  (s &&
-    s
-      .split(' ')
-      .map((s2) => s2[0].toUpperCase() + s2.slice(1))
-      .join(' ')) ||
-  ''
-
-export const loadYaml = (path: string, opts?: { noError: boolean }): any => {
+export const loadYaml = (path: string, opts?: { noError: boolean }) => {
   if (!existsSync(path)) {
-    if (opts?.noError) return null
+    if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)
   }
-  return load(readFileSync(path, 'utf-8')) as any
+  return load(readFileSync(path, 'utf-8')) as Record<string, any>
 }
 
 export enum logLevels {
@@ -202,6 +206,14 @@ export enum logLevels {
 }
 
 let logLevelVar = Number.NEGATIVE_INFINITY
+/**
+ * Determines loglevel from 4 different sources
+ * - Parsed Argument: LOG_LEVEL   [string]
+ * - Parsed Argument: Verbose (v) [number]
+ * - Parsed Argument: Trace (t)   [boolean]
+ * - Environment variable: TRACE  [(un)set]
+ * @returns highest loglevel
+ */
 export const logLevel = (): number => {
   if (!getParsedArgs()) return logLevels.ERROR
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
@@ -222,25 +234,6 @@ export const logLevel = (): number => {
 export const logLevelString = (): string => {
   return logLevels[logLevel()].toString()
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const deletePropertyPath = (object: any, path: string): void => {
-  if (!object || !path) {
-    return
-  }
-  const pathList = path.split('.')
-  let obj = object
-  for (let i = 0; i < pathList.length - 1; i++) {
-    obj = obj[pathList[i]]
-
-    if (!obj) {
-      return
-    }
-  }
-
-  delete obj[pathList.pop() as string]
-}
-export const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
 export const waitTillAvailable = async (dom: string, subsequentExists = 3): Promise<void> => {
   // node-fetch 'only absolute URLs are supported' thats why https needs to be prepended if it doesn't exist
@@ -264,18 +257,68 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
       waitDebug.error(error.message)
     }
     // eslint-disable-next-line no-await-in-loop
-    await delay(250)
+    await sleep(250)
   } while (count < subsequentExists)
   waitDebug.debug(`Waiting for ${domain} succeeded`)
 }
 
-export const gucci = async (tmpl: string, args: { [key: string]: string }): Promise<string> => {
-  const gucciArgs = Object.entries(args).map(([k, v]) => `-s ${k}='${v ?? ''}'`)
+export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {
+  return Object.entries(obj)
+    .flatMap(([key, value]) => {
+      const subPath = path.length ? `${path}.${key}` : key
+      if (typeof value === 'object') return flattenObject(value, subPath)
+      return { [subPath]: value }
+    })
+    .reduce((acc, base) => {
+      return { ...acc, ...base }
+    }, {})
+}
+export interface GucciOptions {
+  asObject?: boolean
+}
+export const gucci = async (
+  tmpl: string | unknown,
+  args: { [key: string]: any },
+  opts?: GucciOptions,
+): Promise<string | Record<string, unknown> | undefined> => {
+  const debug = terminal('gucci')
+
+  const kv = flattenObject(args)
+  const gucciArgs = Object.entries(kv).map(([k, v]) => {
+    // Cannot template if key contains regex characters, so skip
+    if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
+    return `-s ${k}='${v ?? ''}'`
+  })
+
   const quoteBackup = $.quote
   $.quote = (v) => v
-  const processOutput = await nothrow($`gucci ${gucciArgs} ${tmpl}`)
-  $.quote = quoteBackup
-  return processOutput.stdout.trim()
+  try {
+    let processOutput: ProcessOutput
+    const tmplIsString = typeof tmpl === 'string'
+    const templateContent: string = tmplIsString ? (tmpl as string) : dump(tmpl, { lineWidth: -1 })
+    // Cannot be a path if it wasn't a string
+    if (tmplIsString && existsSync(templateContent)) {
+      processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
+    } else {
+      // input string is a go template content
+      processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci -o missingkey=zero ${gucciArgs}`
+    }
+    // Defaults to returning string, unless stated otherwise
+    if (!opts?.asObject) return processOutput.stdout.trim()
+    try {
+      return load(processOutput.stdout.trim()) as Record<string, unknown>
+    } catch (_) {
+      // Fallback to returning string - as it aparently isn't yaml
+      return processOutput.stdout.trim()
+    }
+  } catch (error) {
+    debug.debug(error)
+    // TODO: Don't swallow when validate-values can validate subpaths
+    return undefined
+    // throw error
+  } finally {
+    $.quote = quoteBackup
+  }
 }
 
 /* Can't use for now because of:
@@ -286,4 +329,108 @@ export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Pro
   return isThereADiff
 }
 */
+
+export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
+  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
+  return Object.keys(schema)
+    .map((key) => {
+      const childObj = schema[key]
+      if (key === leaf) return schemaKeywords.includes(key) ? mapValue(childObj) : { [key]: mapValue(childObj) }
+      if (typeof childObj !== 'object') return {}
+      const obj = extract(childObj, leaf, mapValue)
+      if ('extractedValue' in obj) return { [key]: obj.extractedValue }
+      // eslint-disable-next-line no-nested-ternary
+      return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
+        ? obj === '{}'
+          ? undefined
+          : obj
+        : { [key]: obj }
+    })
+    .reduce((accumulator, extractedValue) => {
+      return typeof extractedValue !== 'object'
+        ? { ...accumulator, extractedValue }
+        : { ...accumulator, ...extractedValue }
+    }, {})
+}
+
+let valuesSchema: Record<string, unknown>
+export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
+  if (valuesSchema) return valuesSchema
+  const schema = loadYaml(`${startingDir}/values-schema.yaml`)
+  const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
+  valuesSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
+
+  return valuesSchema
+}
+
+export const stringContainsSome = (str: string, ...args: string[]): boolean => {
+  return args.some((arg) => str.includes(arg))
+}
+
+export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  const debug: OtomiDebugger = terminal('generateSecrets')
+  const leaf = 'x-secret'
+  const localRefs = ['.dot.', '.v.', '.root.', '.o.']
+
+  const schema = await getValuesSchema()
+
+  debug.info('Extracting secrets')
+  const secrets = extract(schema, leaf, (val: any) => {
+    if (val.length > 0) {
+      if (stringContainsSome(val, ...localRefs)) return val
+      return `{{ ${val} }}`
+    }
+    return undefined
+  })
+  debug.debug('secrets: ', secrets)
+  debug.info('First round of templating')
+  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, unknown>
+  const firstTemplateFlattend = flattenObject(firstTemplateRound)
+
+  debug.info('Parsing values for second round of templating')
+  const expandedTemplates = Object.entries(firstTemplateFlattend)
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    .filter(([_, v]) => stringContainsSome(v, ...localRefs))
+    .map(([path, v]: string[]) => {
+      /*
+       * dotDot:
+       *  Get full path, except last item, this allows to parse for siblings
+       * dotV:
+       *  Get .v by getting the second . after charts
+       *  charts.hello.world
+       *  ^----------^ Get this content (charts.hello)
+       */
+      const dotDot = path.slice(0, path.lastIndexOf('.'))
+      const dotV = path.slice(0, path.indexOf('.', path.indexOf('charts.') + 'charts.'.length))
+
+      const sDot = v.replaceAll('.dot.', `.${dotDot}.`)
+      const vDot = sDot.replaceAll('.v.', `.${dotV}.`)
+      const oDot = vDot.replaceAll('.o.', '.otomi.')
+      const rootDot = oDot.replaceAll('.root.', '.')
+      return [path, rootDot]
+    })
+
+  expandedTemplates.map(([k, v]) => {
+    // Activate these templates and put them back into the object
+    set(firstTemplateRound, k, `{{ ${v} }}`)
+    return [k, v]
+  })
+  debug.debug('firstTemplateRound: ', firstTemplateRound)
+
+  debug.info('Gather all values for the second round of templating')
+  const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), values)
+  debug.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
+
+  debug.info('Second round of templating')
+  const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
+    asObject: true,
+  })) as Record<string, unknown>
+  debug.debug('secondTemplateRound: ', secondTemplateRound)
+
+  debug.info('Generated all secrets')
+  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
+  debug.debug('generateSecrets result: ', res)
+  return res
+}
+
 export default { parser, asArray }

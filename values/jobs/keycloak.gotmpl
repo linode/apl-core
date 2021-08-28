@@ -19,16 +19,16 @@ description: Configure OIDC as a primary auhentication method and populate teams
 annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
-  image:
-    repository: badouralix/curl-http2
-  script: |
-    {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
-    echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
-    until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domainSuffix }}); do 
-      printf '.'
-      sleep 5
-    done
-    echo READY!
+  - image:
+      repository: badouralix/curl-http2
+    script: |
+      {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+      echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
+      until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domainSuffix }}); do 
+        printf '.'
+        sleep 5
+      done
+      echo READY!
 image:
   repository: otomi/tasks
   tag: v0.2.9
@@ -44,7 +44,7 @@ nativeSecrets:
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-  IDP_ALIAS: {{ $k.idp.alias }}
+  IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'

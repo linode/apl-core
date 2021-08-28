@@ -1,5 +1,5 @@
 bases:
-  - snippets/defaults.gotmpl
+  - snippets/env.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
@@ -10,5 +10,6 @@ releases:
     installed: {{ $c | get "keycloak.enabled" true }}
     labels:
       pkg: keycloak
+      group: jobs
     <<: *jobs
 

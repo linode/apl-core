@@ -101,8 +101,8 @@ tools:
 
   resources:
     limits:
-      cpu: 400m
-      memory: 128Mi
+      cpu: 500m
+      memory: 500Mi
     requests:
       cpu: 100m
       memory: 100Mi

@@ -10,7 +10,7 @@ node_modules/
 !.cspell.json
 !package*.json
 *.DS_Store
-.values/values-schema.yaml
+.vscode/values-schema.yaml
 .env
 .secrets
 chart/otomi/values.schema.json

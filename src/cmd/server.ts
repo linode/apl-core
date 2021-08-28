@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { cleanupHandler } from '../common/setup'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { startServer, stopServer } from '../server/index'
 
@@ -27,8 +27,9 @@ export const module = {
   describe: undefined,
   builder: (parser: Argv): Argv => parser,
 
-  handler: (argv: Arguments): void => {
+  handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
+    await prepareEnvironment({ skipAllPreChecks: true })
     setup(argv)
     server()
   },

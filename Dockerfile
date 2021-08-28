@@ -21,6 +21,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && n
 FROM otomi/tools:v1.4.19 as prod
 
 ENV APP_HOME=/home/app/stack
+ENV IN_DOCKER='1'
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME

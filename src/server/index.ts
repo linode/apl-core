@@ -19,6 +19,7 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 
 app.get('/decrypt', async (req: Request, res: Response) => {
   try {
+    debug.log('Request to decrypt')
     await decrypt()
     res.status(200).send('ok')
   } catch (error) {
@@ -27,6 +28,7 @@ app.get('/decrypt', async (req: Request, res: Response) => {
 })
 app.get('/encrypt', async (req: Request, res: Response) => {
   try {
+    debug.log('Request to encrypt')
     await encrypt()
     res.status(200).send('ok')
   } catch (error) {
@@ -36,6 +38,7 @@ app.get('/encrypt', async (req: Request, res: Response) => {
 
 app.get('/commit', async (req: Request, res: Response) => {
   try {
+    debug.log('Request to commit')
     await commit()
     res.status(200).send('ok')
   } catch (error) {

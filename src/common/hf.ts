@@ -1,17 +1,21 @@
-import { dump, load } from 'js-yaml'
-import { Transform } from 'stream'
+import { load } from 'js-yaml'
+import { Readable, Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
 import { asArray, getParsedArgs, logLevels, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-const value = {
-  clean: null,
-  rp: null,
+interface iValue {
+  clean?: any
+  rp?: any
+}
+const value: iValue = {
+  clean: undefined,
+  rp: undefined,
 }
 
-const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
+const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 export type HFParams = {
@@ -61,17 +65,22 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-const hfTrimmed = (args: HFParams): ProcessPromise<ProcessOutput> => {
+const hfTrimmed = (args: HFParams): { proc: ProcessPromise<ProcessOutput>; stdout: Readable; stderr: Readable } => {
   const transform = new Transform({
     transform(chunk, encoding, next) {
-      const transformation = trimHFOutput(chunk.toString()).trim()
+      const str = chunk.toString()
+      const transformation = trimHFOutput(str).trim()
+      // if (str.indexOf('basePath=') > -1) console.debug('transformation:', `${str} > ${transformation}`)
       if (transformation && transformation.length > 0) this.push(transformation)
       next()
     },
   })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
-  proc.stdout.pipe(transform)
-  return proc
+  return {
+    stdout: proc.stdout,
+    stderr: proc.stderr.pipe(transform),
+    proc,
+  }
 }
 
 export type HFOptions = {
@@ -79,11 +88,11 @@ export type HFOptions = {
   streams?: Streams
 }
 
-export const hfStream = (args: HFParams, opts?: HFOptions): ProcessPromise<ProcessOutput> => {
-  const proc = opts?.trim ? hfTrimmed(args) : hfCore(args)
-  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return proc
+export const hfStream = (args: HFParams, opts: HFOptions = {}): ProcessPromise<ProcessOutput> => {
+  const trimmedOutput = hfTrimmed(args)
+  if (opts?.streams?.stdout) trimmedOutput.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) trimmedOutput.stderr.pipe(opts.streams.stderr, { end: false })
+  return trimmedOutput.proc
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
@@ -91,31 +100,34 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
 }
 
 export type ValuesOptions = {
-  replacePath?: boolean
   asString?: boolean
+  replacePath?: boolean
+  skipCache?: boolean
 }
 
 export const values = async (opts?: ValuesOptions): Promise<any | string> => {
-  if (opts?.replacePath && value.rp) {
-    if (opts?.asString) return dump(value.rp)
-    return value.rp
-  }
-  if (value.clean) {
-    if (opts?.asString) return dump(value.clean)
-    return value.clean
+  if (!opts?.skipCache) {
+    if (opts?.replacePath && value.rp) {
+      if (opts?.asString) return value.rp
+      return value.rp
+    }
+    if (value.clean) {
+      if (opts?.asString) return value.clean
+      return value.clean
+    }
   }
   const output = await hf(
     { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
     { trim: true },
   )
-  value.clean = load(output.stdout) as any
-  value.rp = load(replaceHFPaths(output.stdout)) as any
+  value.clean = (load(output.stdout) as any).renderedvalues
+  value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
   if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
-  return opts && opts.replacePath ? value.rp : value.clean
+  return opts?.replacePath ? value.rp : value.clean
 }
 
-export const hfValues = async (): Promise<any> => {
-  return (await values({ replacePath: true })).renderedvalues
+export const hfValues = async (skipCache = false): Promise<any> => {
+  return values({ replacePath: true, skipCache })
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

@@ -19,6 +19,7 @@ extends:
   - plugin:import/errors
   - plugin:import/warnings
   - plugin:import/typescript
+  - plugin:chai-friendly/recommended
 
 plugins:
   - import
