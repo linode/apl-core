@@ -7,3 +7,4 @@ export VERBOSITY=2
 
 binzx/otomi bootstrap
 # binzx/otomi apply
+# binzx/otomi commit

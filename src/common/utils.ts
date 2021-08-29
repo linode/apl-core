@@ -53,14 +53,6 @@ export const getParsedArgs = (): BasicArguments => {
   return parsedArgs
 }
 
-export const isCLI = (): boolean => {
-  return !env.VALUES_INPUT
-}
-
-export const isChart = (): boolean => {
-  return !!env.VALUES_INPUT
-}
-
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
 export type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)
@@ -188,7 +180,7 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const loadYaml = (path: string, opts?: { noError: boolean }) => {
+export const loadYaml = (path: string, opts?: { noError: boolean }): Record<string, any> | undefined => {
   if (!existsSync(path)) {
     if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)

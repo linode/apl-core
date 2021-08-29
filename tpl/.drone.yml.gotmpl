@@ -39,9 +39,10 @@ steps:
         themeColor: 009EEA
 {{- end }}
   - name: prepare-env
-    image: alpine:latest
+    image: ubuntu:20.04
     commands:
-      - chmod -R a+w env
+      - groupadd -r -g 999 app && useradd -r -g 999 -u 999 app
+      - chmod -R a+w env && chown -R app env
 
   - name: test
     image: otomi/core:{{ .imageTag }}

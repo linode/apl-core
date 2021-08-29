@@ -13,14 +13,13 @@ import {
   BasicArguments,
   generateSecrets,
   getFilename,
-  isChart,
   loadYaml,
   OtomiDebugger,
   rootDir,
   setParsedArgs,
   terminal,
 } from '../common/utils'
-import { writeValues } from '../common/values'
+import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 
 export const getChartValues = (): any | undefined => {
@@ -98,8 +97,8 @@ export const bootstrapValues = async (): Promise<void> => {
   )
 
   // Done, write chart values if we got any
-  const originalValues = isChart() ? getChartValues() : await hfValues(true)
-  if (isChart()) await writeValues(originalValues)
+  const originalValues = isChart ? getChartValues() : await hfValues(true)
+  if (isChart) await writeValues(originalValues)
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
@@ -113,7 +112,7 @@ export const bootstrapValues = async (): Promise<void> => {
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-  if (isChart()) {
+  if (isChart) {
     // Write some output for the user about password access via a secret
     const updatedValues = await hfValues(true)
 
@@ -146,21 +145,21 @@ export const bootstrapGit = async (): Promise<void> => {
     cd(env.ENV_DIR)
 
     const values = await hfValues(true)
-    // TODO: Make else once defaults are removed from defaults.gotmpl
-    if (!values?.cluster?.provider) {
-      debug.info('Skipping git repo configuration')
-      return
-    }
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
-    const stage = values?.charts?.['cert-manager']?.stage ?? 'production'
-    if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
+    // const stage = values?.charts?.['cert-manager']?.stage ?? 'production'
+    // if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
 
     const giteaEnabled = values?.charts?.gitea?.enabled ?? true
     const clusterDomain = values?.cluster?.domainSuffix
     const byor = !!values?.charts?.['otomi-api']?.git
+
+    if (!byor && !clusterDomain) {
+      debug.info('Skipping git repo configuration')
+      return
+    }
 
     if (!giteaEnabled && !byor) {
       debug.error('Gitea was disabled but no charts.otomi-api.git config was given.')

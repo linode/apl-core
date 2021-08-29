@@ -25,8 +25,8 @@ const setup = (argv: Arguments): void => {
 }
 
 export const test = async (): Promise<void> => {
-  debug.log(await lint())
-  debug.log(await validateTemplates())
+  await lint()
+  await validateTemplates()
   // await checkPolicies(argv)
 
   const output: ProcessOutputTrimmed = await hf({
