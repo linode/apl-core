@@ -3,7 +3,7 @@ import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash-es'
 import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
 import { env } from './envalid'
-import { BasicArguments, currDir, OtomiDebugger, readdirRecurse, terminal } from './utils'
+import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'
 
 export interface Arguments extends BasicArguments {
   files?: string[]
@@ -59,7 +59,6 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<ProcessOutp
 }
 
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
-  const cwd = await currDir()
   let files: string[] = filesArgs
   cd(env.ENV_DIR)
 
@@ -87,7 +86,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
     debug.error(error)
     return undefined
   } finally {
-    cd(cwd)
+    cd(rootDir)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
   }
 }

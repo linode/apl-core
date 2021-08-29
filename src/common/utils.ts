@@ -15,8 +15,8 @@ import { env } from './envalid'
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
-export const rootDir = process.cwd()
-export const currDir = async (): Promise<string> => (await $`pwd`).stdout.trim()
+// we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
+export const rootDir = process.cwd().includes('/env') ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 
