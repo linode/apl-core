@@ -1,2 +1,3 @@
 charts:
-    hello: {}
+    hello:
+        enabled: false
