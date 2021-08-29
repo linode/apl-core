@@ -1,8 +1,7 @@
 {{- define "extraRootCA.init" }}
-{{- $image := "busybox:stable" }}
 {{- if .rootCA }}
 - name: extra-root-ca-init
-  image: {{ $image }}
+  image: {{ .image }}
   {{- include "common.resources" . | nindent 2 }}
   command: ["sh"]
   args:
@@ -23,7 +22,7 @@
   - name: extra-root-ca-new
     mountPath: "/etc/ssl/certs-new"
 - name: extra-root-ca-finish
-  image: {{ $image }}
+  image: {{ .image }}
   {{- include "common.resources" . | nindent 2 }}
   command: ["sh"]
   args:
