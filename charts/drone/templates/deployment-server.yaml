@@ -1,5 +1,5 @@
 {{- if eq (include "drone.providerOK" .) "true" }}
-{{- $image := (print .Values.images.server.repository .Values.images.server.tag) }}
+{{- $image := (printf "%s:%s" .Values.images.server.repository .Values.images.server.tag) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
