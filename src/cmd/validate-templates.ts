@@ -3,10 +3,18 @@ import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
-import { $, chalk, nothrow } from 'zx'
+import { $, cd, chalk, nothrow } from 'zx'
 import { hfTemplate } from '../common/hf'
 import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getParsedArgs,
+  OtomiDebugger,
+  readdirRecurse,
+  rootDir,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -113,6 +121,7 @@ const processCrdWrapper = async (argv: Arguments) => {
   process.env.KUBE_VERSION_OVERRIDE = oldK8SVoverride
 
   debug.log('Processing CRD files...')
+  cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
   const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))

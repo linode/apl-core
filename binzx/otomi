@@ -306,7 +306,7 @@ else
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
-  echo "keeping files"
+  silent echo "keeping files"
 else
   # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1
