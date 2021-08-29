@@ -10,6 +10,8 @@ const objectToString = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj)
 }
 
+export const isChart = !!env.VALUES_INPUT
+
 export function removeBlankAttributes(obj: Record<string, unknown>): Record<string, unknown> {
   const options: CleanOptions = {
     emptyArrays: false,

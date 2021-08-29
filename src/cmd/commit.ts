@@ -1,4 +1,3 @@
-import { existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
@@ -6,6 +5,7 @@ import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
+import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
@@ -18,10 +18,14 @@ interface Arguments extends HelmArgs, DroneArgs {}
 
 export const preCommit = async (): Promise<void> => {
   const pcDebug = terminal('Pre Commit')
+  if (isChart) {
+    // skip git checks, just do the work
+    await genDrone()
+    return
+  }
   pcDebug.info('Check for cluster diffs')
   const settingsDiff = (await nothrow($`git diff env/settings.yaml`)).stdout.trim()
   const secretDiff = (await nothrow($`git diff env/secrets.settings.yaml`)).stdout.trim()
-  cd(rootDir)
   const versionChanges = settingsDiff.includes('+    version:')
   const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
   const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
@@ -64,7 +68,7 @@ export const commit = async (): Promise<void> => {
     debug.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
-  // if (!env.CI) await pull()
+  if (!env.CI && !isChart) await pull()
   // previous command returned to rootDir, so go back to env:
   cd(env.ENV_DIR)
   let branch: string
@@ -100,12 +104,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-
-    if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
-      await pull()
-      // } else {
-      //   await bootstrapGit()
-    }
     await commit()
   },
 }

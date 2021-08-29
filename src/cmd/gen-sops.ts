@@ -77,7 +77,8 @@ export const genSops = async (): Promise<void> => {
     let serviceKeyJson = env.GCLOUD_SERVICE_KEY
     if (!serviceKeyJson) {
       const values = await hfValues()
-      if (values) serviceKeyJson = JSON.parse(values?.kms?.sops?.google?.accountJson)
+      if (values && values?.kms?.sops?.google?.accountJson)
+        serviceKeyJson = JSON.parse(values?.kms?.sops?.google?.accountJson)
     }
 
     if (serviceKeyJson) {

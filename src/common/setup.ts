@@ -65,17 +65,14 @@ export type PrepareEnvironmentOptions = {
   skipAllPreChecks?: boolean
 }
 
-let clusterFile: any
 export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
 /**
  * Find the cluster kubernetes version in the values
  * @returns String of the kubernetes version on the cluster
  */
 export const getK8sVersion = (): string => {
-  if (otomiK8sVersion) return otomiK8sVersion
-  if (!clusterFile) {
-    clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  }
+  // if (otomiK8sVersion) return otomiK8sVersion
+  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiK8sVersion = clusterFile.cluster?.k8sVersion
   return otomiK8sVersion
 }
@@ -97,9 +94,7 @@ export const getImageTag = (): string => {
  */
 export const getClusterOwner = (): string => {
   if (otomiClusterOwner) return otomiClusterOwner
-  if (!clusterFile) {
-    clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  }
+  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiClusterOwner = clusterFile.cluster?.owner
   return otomiClusterOwner
 }
