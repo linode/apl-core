@@ -74,7 +74,7 @@ export const bootstrapValues = async (): Promise<void> => {
   generateLooseSchema()
 
   await Promise.allSettled(
-    ['.gitattributes', '.secrets.sample']
+    ['.secrets.sample']
       .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
       .map(async (val) => copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
   )
@@ -127,7 +127,12 @@ export const bootstrapValues = async (): Promise<void> => {
 
   await genSops()
 
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    // encryption related stuff
+    const file = '.gitattributes'
+    await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+    await encrypt()
+  }
 
   if (!hasOtomi) {
     debug.log('You can now use the otomi CLI')

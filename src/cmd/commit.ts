@@ -60,6 +60,7 @@ export const commit = async (): Promise<void> => {
   preCommit()
   await encrypt()
   d.info('Committing values')
+  cd(env.ENV_DIR)
   await $`git add -A`
   try {
     await $`git commit -m 'otomi commit' --no-verify`
