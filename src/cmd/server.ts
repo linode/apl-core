@@ -13,8 +13,8 @@ const cleanup = (): void => {
   stopServer()
 }
 
-const setup = (argv: Arguments): void => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup())
+const setup = (): void => {
+  cleanupHandler(() => cleanup())
 }
 
 export const server = (): void => {
@@ -30,7 +30,7 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    setup(argv)
+    setup()
     server()
   },
 }

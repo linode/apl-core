@@ -36,7 +36,7 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
 
   k8sVersion = getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
@@ -140,6 +140,7 @@ const processCrdWrapper = async (argv: Arguments) => {
 
 export const validateTemplates = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
+  await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
     'PspAllowedRepos',
@@ -207,7 +208,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await setup(argv)
     await validateTemplates()
   },
 }

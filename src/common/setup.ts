@@ -73,7 +73,7 @@ export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
 export const getK8sVersion = (): string => {
   if (otomiK8sVersion) return otomiK8sVersion
   const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  otomiK8sVersion = clusterFile.cluster?.k8sVersion
+  otomiK8sVersion = clusterFile.cluster!.k8sVersion!
   return otomiK8sVersion
 }
 /**
