@@ -34,7 +34,7 @@ const cleanup = (argv: Arguments): void => {
 
 const setup = (): void => {
   const argv: Arguments = getParsedArgs()
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
   mkdirSync(dir, { recursive: true })

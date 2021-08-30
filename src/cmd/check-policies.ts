@@ -26,7 +26,7 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = (argv: Arguments): void => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
 }
 
 export const checkPolicies = async (): Promise<void> => {

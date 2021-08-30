@@ -5,11 +5,8 @@
   "[shell]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[ejs]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "[js]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
