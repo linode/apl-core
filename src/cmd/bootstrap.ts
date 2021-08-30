@@ -15,6 +15,7 @@ import {
   getFilename,
   loadYaml,
   OtomiDebugger,
+  Pojo,
   rootDir,
   setParsedArgs,
   terminal,
@@ -22,7 +23,7 @@ import {
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 
-export const getChartValues = (): any | undefined => {
+export const getChartValues = (): Pojo | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
@@ -98,11 +99,11 @@ export const bootstrapValues = async (): Promise<void> => {
 
   // Done, write chart values if we got any
   const originalValues = isChart ? getChartValues() : await hfValues(true)
-  if (isChart) await writeValues(originalValues)
+  if (isChart) await writeValues(originalValues as Pojo)
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = await generateSecrets(originalValues)
+  const generatedSecrets = await generateSecrets(originalValues as Pojo)
   await writeValues(generatedSecrets, false)
 
   // if we did not have the admin password before we know we have generated it for the first time

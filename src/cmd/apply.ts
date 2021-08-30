@@ -1,4 +1,4 @@
-import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { env } from '../common/envalid'
@@ -43,7 +43,7 @@ const setup = (): void => {
 const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
-  await $`cat .git/config`
+  if (!existsSync('.git/config')) return
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
   debug.debug('healthUrl: ', healthUrl)
   const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'

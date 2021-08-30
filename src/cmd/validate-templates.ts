@@ -10,6 +10,7 @@ import {
   getFilename,
   getParsedArgs,
   OtomiDebugger,
+  Pojo,
   readdirRecurse,
   rootDir,
   setParsedArgs,
@@ -82,13 +83,13 @@ type crdSchema = {
 }
 
 const processCrd = (path: string): crdSchema[] => {
-  const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
-    (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
-  )
+  const documents: Pojo[] = loadAll(readFileSync(path, 'utf-8')).filter(
+    (singleDoc: Pojo) => singleDoc?.kind === 'CustomResourceDefinition',
+  ) as Pojo[]
 
-  const documentResult = documents.flatMap((document: any) => {
+  const documentResult = documents.flatMap((document: Pojo) => {
     const versions = document.spec.versions ?? [{ name: document.spec.version }]
-    const versionSchema = versions.flatMap((version: any) => {
+    const versionSchema = versions.flatMap((version: Pojo) => {
       const vers = version.name
       const schema = version.schema ?? document?.spec?.validation
       return {
@@ -176,15 +177,15 @@ export const validateTemplates = async (): Promise<void> => {
     .split('\n')
     .map((x) => {
       const [k, v] = x.split(' - ')
-      const obj: any = {}
+      const obj: Pojo = {}
       obj[k] = [v]
       return obj
     })
     .reduce((prev, curr) => {
       const prevObj = { ...prev }
-      Object.entries(curr).map(([key, value]: [string, any[]]) => {
-        const prevArr: any[] = prevObj[key] ?? []
-        const currArr: any[] = value ?? []
+      Object.entries(curr).map(([key, value]: [string, Pojo[]]) => {
+        const prevArr: Pojo[] = prevObj[key] ?? []
+        const currArr: Pojo[] = value ?? []
         prevObj[key] = [...new Set([...prevArr, ...currArr])]
         return key
       })

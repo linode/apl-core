@@ -4,7 +4,7 @@ import { $, chalk } from 'zx'
 import { decrypt } from './crypt'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { BasicArguments, loadYaml, parser, terminal } from './utils'
+import { BasicArguments, loadYaml, parser, Pojo, terminal } from './utils'
 import { askYesNo } from './zx-enhance'
 
 chalk.level = 2
@@ -23,7 +23,7 @@ const checkKubeContext = async (): Promise<void> => {
   const d = terminal('checkKubeContext')
   d.info('Validating kube context')
 
-  const values: any = await hfValues()
+  const values: Pojo = await hfValues()
   const currentContext = (await $`kubectl config current-context`).stdout.trim()
   const k8sContext = values?.cluster?.k8sContext
   d.debug('currentContext: ', currentContext)
@@ -72,7 +72,7 @@ export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
  */
 export const getK8sVersion = (): string => {
   if (otomiK8sVersion) return otomiK8sVersion
-  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
+  const clusterFile: Pojo = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`) as Pojo
   otomiK8sVersion = clusterFile.cluster?.k8sVersion
   return otomiK8sVersion
 }
@@ -94,7 +94,7 @@ export const getImageTag = (): string => {
  */
 export const getClusterOwner = (): string => {
   if (otomiClusterOwner) return otomiClusterOwner
-  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
+  const clusterFile: Pojo = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`) as Pojo
   otomiClusterOwner = clusterFile.cluster?.owner
   return otomiClusterOwner
 }

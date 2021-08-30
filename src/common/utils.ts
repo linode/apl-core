@@ -40,6 +40,8 @@ export const defaultBasicArguments: BasicArguments = {
   debug: false,
 }
 
+export type Pojo = Record<string, any>
+
 let parsedArgs: BasicArguments
 
 const debuggers = {}
@@ -180,12 +182,12 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const loadYaml = (path: string, opts?: { noError: boolean }): Record<string, any> | undefined => {
+export const loadYaml = (path: string, opts?: { noError: boolean }): Pojo | undefined => {
   if (!existsSync(path)) {
     if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)
   }
-  return load(readFileSync(path, 'utf-8')) as Record<string, any>
+  return load(readFileSync(path, 'utf-8')) as Pojo
 }
 
 export enum logLevels {
@@ -255,7 +257,7 @@ export const waitTillAvailable = async (dom: string, subsequentExists = 3): Prom
   waitDebug.debug(`Waiting ${timeout} secs for ${domain} to become available`)
 }
 
-export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {
+export const flattenObject = (obj: Pojo, path = ''): { [key: string]: string } => {
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
@@ -273,7 +275,7 @@ export const gucci = async (
   tmpl: string | unknown,
   args: { [key: string]: any },
   opts?: GucciOptions,
-): Promise<string | Record<string, unknown>> => {
+): Promise<string | Pojo> => {
   const kv = flattenObject(args)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
@@ -285,10 +287,10 @@ export const gucci = async (
   $.quote = (v) => v
   try {
     let processOutput: ProcessOutput
-    const tmplIsString = typeof tmpl === 'string'
-    const templateContent: string = tmplIsString ? (tmpl as string) : dump(tmpl, { lineWidth: -1 })
+    // Cannot store typeof check in variable because ESLint complained...
+    const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
-    if (tmplIsString && existsSync(templateContent)) {
+    if (typeof tmpl === 'string' && existsSync(templateContent)) {
       processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
@@ -296,7 +298,7 @@ export const gucci = async (
     }
     // Defaults to returning string, unless stated otherwise
     if (!opts?.asObject) return processOutput.stdout.trim()
-    return load(processOutput.stdout.trim()) as Record<string, unknown>
+    return load(processOutput.stdout.trim()) as Pojo
   } finally {
     $.quote = quoteBackup
   }
@@ -311,7 +313,7 @@ export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Pro
 }
 */
 
-export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
+export const extract = (schema: Pojo, leaf: string, mapValue = (val: any) => val): any => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
   return Object.keys(schema)
     .map((key) => {
@@ -334,8 +336,8 @@ export const extract = (schema: Record<string, any>, leaf: string, mapValue = (v
     }, {})
 }
 
-let valuesSchema: Record<string, unknown>
-export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
+let valuesSchema: Pojo
+export const getValuesSchema = async (): Promise<Pojo> => {
   if (valuesSchema) return valuesSchema
   const schema = loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
@@ -348,7 +350,7 @@ export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
-export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
+export const generateSecrets = async (values: Pojo): Promise<Pojo> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
@@ -356,7 +358,7 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   const schema = await getValuesSchema()
 
   debug.info('Extracting secrets')
-  const secrets = extract(schema, leaf, (val: any) => {
+  const secrets = extract(schema, leaf, (val: string) => {
     if (val.length > 0) {
       if (stringContainsSome(val, ...localRefs)) return val
       return `{{ ${val} }}`
@@ -365,7 +367,7 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   })
   debug.debug('secrets: ', secrets)
   debug.info('First round of templating')
-  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, unknown>
+  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Pojo
   const firstTemplateFlattend = flattenObject(firstTemplateRound)
 
   debug.info('Parsing values for second round of templating')
@@ -405,7 +407,7 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   debug.info('Second round of templating')
   const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
     asObject: true,
-  })) as Record<string, unknown>
+  })) as Pojo
   debug.debug('secondTemplateRound: ', secondTemplateRound)
 
   debug.info('Generated all secrets')

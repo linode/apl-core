@@ -4,7 +4,16 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  OtomiDebugger,
+  Pojo,
+  rootDir,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -35,7 +44,7 @@ export const validateValues = async (): Promise<void> => {
 
   try {
     debug.info('Loading values-schema.yaml')
-    const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, unknown>
+    const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Pojo
     debug.debug('Initializing Ajv')
     const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
     debug.debug('Compiling Ajv validation')

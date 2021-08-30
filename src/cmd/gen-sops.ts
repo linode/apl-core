@@ -10,6 +10,7 @@ import {
   gucci,
   loadYaml,
   OtomiDebugger,
+  Pojo,
   rootDir,
   setParsedArgs,
   terminal,
@@ -32,7 +33,7 @@ const providerMap = {
 export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
-  const settingsVals = loadYaml(settingsFile) as Record<string, any>
+  const settingsVals = loadYaml(settingsFile) as Pojo
   // TODO: Use validate values to validate tree at this specific point
   // validateValues('kms.sops.provider')
   const provider: string | undefined = settingsVals?.kms?.sops?.provider

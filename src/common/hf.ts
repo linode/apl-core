@@ -2,13 +2,13 @@ import { load } from 'js-yaml'
 import { Readable, Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
-import { asArray, getParsedArgs, logLevels, terminal } from './utils'
+import { asArray, getParsedArgs, logLevels, Pojo, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 interface iValue {
-  clean?: any
-  rp?: any
+  clean?: Pojo
+  rp?: Pojo
 }
 const value: iValue = {
   clean: undefined,
@@ -100,19 +100,16 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
 }
 
 export type ValuesOptions = {
-  asString?: boolean
   replacePath?: boolean
   skipCache?: boolean
 }
 
-export const values = async (opts?: ValuesOptions): Promise<any | string> => {
+export const values = async (opts?: ValuesOptions): Promise<Pojo> => {
   if (!opts?.skipCache) {
     if (opts?.replacePath && value.rp) {
-      if (opts?.asString) return value.rp
       return value.rp
     }
     if (value.clean) {
-      if (opts?.asString) return value.clean
       return value.clean
     }
   }
@@ -120,13 +117,12 @@ export const values = async (opts?: ValuesOptions): Promise<any | string> => {
     { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
     { trim: true },
   )
-  value.clean = (load(output.stdout) as any).renderedvalues
-  value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
-  return opts?.replacePath ? value.rp : value.clean
+  value.clean = (load(output.stdout) as Pojo).renderedvalues
+  value.rp = (load(replaceHFPaths(output.stdout)) as Pojo).renderedvalues
+  return (opts?.replacePath ? value.rp : value.clean) as Pojo
 }
 
-export const hfValues = async (skipCache = false): Promise<any> => {
+export const hfValues = async (skipCache = false): Promise<Pojo> => {
   return values({ replacePath: true, skipCache })
 }
 

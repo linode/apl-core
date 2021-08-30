@@ -15,7 +15,7 @@ const cleanSpec = {
   TRACE: bool({ default: false }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
-let pEnv: any = process.env
+let pEnv: any = process.env as any
 const path = `${pEnv.ENV_DIR}/.secrets`
 if (pEnv.ENV_DIR && existsSync(path)) {
   const result = config({ path }) // this sets vars from .env onto process.env
