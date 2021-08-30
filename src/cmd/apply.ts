@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { env } from '../common/envalid'
-import { hf, hfStream, hfValues } from '../common/hf'
+import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
@@ -43,7 +43,6 @@ const setup = (): void => {
 const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
-  await $`cat .git/config`
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
   debug.debug('healthUrl: ', healthUrl)
   const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
@@ -86,7 +85,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 
-  if (!isChart && !env.IN_DOCKER) await commitOnFirstRun()
+  if (!isChart && !env.CI) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {
@@ -97,14 +96,14 @@ export const apply = async (): Promise<void> => {
   }
   debug.info('Start apply')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-  await hfStream(
+  await hf(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps', skipCleanup],
     },
-    { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 }
 

@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { Arguments, decrypt } from '../common/crypt'
-import { hfStream } from '../common/hf'
+import { hf } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { helmOptions } from '../common/yargs-opts'
@@ -13,14 +13,14 @@ export const diff = async (): Promise<ProcessOutputTrimmed> => {
   const argv: Arguments = getParsedArgs()
   await decrypt(...(argv.files ?? []))
   debug.info('Start Diff')
-  const res = await hfStream(
+  const res = await hf(
     {
       fileOpts: argv.file as string[],
       labelOpts: argv.label as string[],
       logLevel: logLevelString(),
       args: ['diff', '--skip-deps'],
     },
-    { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   return new ProcessOutputTrimmed(res)
 }

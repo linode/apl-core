@@ -2,15 +2,16 @@
 import { existsSync, symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
-import { hf } from './cmd/hf'
 import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
+import { hf } from './common/hf'
 import { prepareEnvironment } from './common/setup'
 import {
   BasicArguments,
   getFilename,
   getParsedArgs,
+  logLevelString,
   OtomiDebugger,
   rootDir,
   setParsedArgs,
@@ -47,7 +48,13 @@ export const ciTests = async (): Promise<void> => {
   await validateValues()
 
   debug.info('Running hf lint')
-  await hf({ ...argv, args: ['lint'] })
+  await hf(
+    {
+      logLevel: logLevelString(),
+      args: ['lint'],
+    },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+  )
 
   debug.info('Running validate-templates')
   await validateTemplates()
@@ -65,13 +72,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     setup()
-
-    try {
-      await ciTests()
-    } catch (error) {
-      debug.error(error)
-      process.exit(1)
-    }
+    await ciTests()
   },
 }
 
