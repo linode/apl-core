@@ -23,7 +23,7 @@ const checkKubeContext = async (): Promise<void> => {
   const d = terminal('checkKubeContext')
   d.info('Validating kube context')
 
-  const values: any = await hfValues()
+  const values = await hfValues()
   const currentContext = (await $`kubectl config current-context`).stdout.trim()
   const k8sContext = values?.cluster?.k8sContext
   d.debug('currentContext: ', currentContext)

@@ -1,5 +1,5 @@
 import { load } from 'js-yaml'
-import { Readable, Transform } from 'stream'
+import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
 import { asArray, getParsedArgs, logLevels, terminal } from './utils'
@@ -65,68 +65,53 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-const hfTrimmed = (args: HFParams): { proc: ProcessPromise<ProcessOutput>; stdout: Readable; stderr: Readable } => {
+export type HFOptions = {
+  streams?: Streams
+}
+
+export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
+  // we do some transformations to strip out unwanted noise, which helmfile generates because reasons
   const transform = new Transform({
     transform(chunk, encoding, next) {
       const str = chunk.toString()
       const transformation = trimHFOutput(str).trim()
-      // if (str.indexOf('basePath=') > -1) console.debug('transformation:', `${str} > ${transformation}`)
       if (transformation && transformation.length > 0) this.push(transformation)
       next()
     },
   })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
-  return {
+  const output = {
     stdout: proc.stdout,
     stderr: proc.stderr.pipe(transform),
     proc,
   }
-}
 
-export type HFOptions = {
-  trim?: boolean
-  streams?: Streams
-}
-
-export const hfStream = (args: HFParams, opts: HFOptions = {}): ProcessPromise<ProcessOutput> => {
-  const trimmedOutput = hfTrimmed(args)
-  if (opts?.streams?.stdout) trimmedOutput.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) trimmedOutput.stderr.pipe(opts.streams.stderr, { end: false })
-  return trimmedOutput.proc
-}
-
-export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
-  return new ProcessOutputTrimmed(await hfStream(args, opts))
+  if (opts?.streams?.stdout) output.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) output.stderr.pipe(opts.streams.stderr, { end: false })
+  return new ProcessOutputTrimmed(await output.proc)
 }
 
 export type ValuesOptions = {
-  asString?: boolean
   replacePath?: boolean
   skipCache?: boolean
 }
 
-export const values = async (opts?: ValuesOptions): Promise<any | string> => {
+export const values = async (opts?: ValuesOptions): Promise<Record<string, any>> => {
   if (!opts?.skipCache) {
     if (opts?.replacePath && value.rp) {
-      if (opts?.asString) return value.rp
       return value.rp
     }
     if (value.clean) {
-      if (opts?.asString) return value.clean
       return value.clean
     }
   }
-  const output = await hf(
-    { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
-    { trim: true },
-  )
+  const output = await hf({ fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
   value.clean = (load(output.stdout) as any).renderedvalues
   value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
   return opts?.replacePath ? value.rp : value.clean
 }
 
-export const hfValues = async (skipCache = false): Promise<any> => {
+export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
   return values({ replacePath: true, skipCache })
 }
 

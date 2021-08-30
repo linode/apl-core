@@ -1,7 +1,7 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { hf, hfStream } from '../common/hf'
+import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
@@ -81,14 +81,14 @@ export const destroy = async (): Promise<void> => {
   if (!argv.label && !argv.file) {
     destroyAll()
   } else {
-    await hfStream(
+    await hf(
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
         logLevel: logLevelString(),
         args: 'destroy',
       },
-      { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+      { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   }
 }

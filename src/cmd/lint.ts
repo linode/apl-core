@@ -18,7 +18,6 @@ export const lint = async (): Promise<void> => {
       args: ['lint', '--skip-deps'],
     },
     {
-      trim: true,
       streams: {
         stdout: debug.stream.log,
         stderr: debug.stream.error,

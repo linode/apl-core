@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { env } from '../common/envalid'
-import { hf, hfStream, hfValues } from '../common/hf'
+import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
@@ -97,14 +97,14 @@ export const apply = async (): Promise<void> => {
   }
   debug.info('Start apply')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-  await hfStream(
+  await hf(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps', skipCleanup],
     },
-    { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 }
 
