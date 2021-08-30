@@ -1,10 +1,13 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-await-in-loop */
 import $RefParser from '@apidevtools/json-schema-ref-parser'
+import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
-import fetch from 'node-fetch'
+import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
@@ -227,32 +230,44 @@ export const logLevelString = (): string => {
   return logLevels[logLevel()].toString()
 }
 
-export const waitTillAvailable = async (dom: string, subsequentExists = 3): Promise<void> => {
-  // node-fetch 'only absolute URLs are supported' thats why https needs to be prepended if it doesn't exist
-  const domain = dom.startsWith('http') ? dom : `https://${dom}`
-  const waitDebug = terminal('waitTillAvailable')
+export async function waitTillAvailable(url: string, status = 200): Promise<void> {
+  const retryOptions: Options = {
+    retries: 10,
+    factor: 2,
+    // minTimeout: The number of milliseconds before starting the first retry. Default is 1000.
+    minTimeout: 1000,
+    // The maximum number of milliseconds between two retries.
+    maxTimeout: 30000,
+  }
+  const minimumSuccessful = 10
   let count = 0
-  const timeout = 10
-  // Need to wait for 3 subsequent exists, since DNS doesn't always propagate equally
-  do {
-    waitDebug.debug(`Waiting for ${domain} ...`)
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const res = await fetch(domain, { redirect: 'follow' })
-      if (res.ok) {
-        count += 1
-      } else {
-        count = 0
-        waitDebug.debug(`Waiting for ${domain} could not fetch, trying again`)
-      }
-    } catch (error) {
-      count = 0
-      waitDebug.error(error.message)
-    }
-    // eslint-disable-next-line no-await-in-loop
-    await sleep(timeout * 1000)
-  } while (count < subsequentExists)
-  waitDebug.debug(`Waiting ${timeout} secs for ${domain} to become available`)
+  try {
+    do {
+      await retry(async (bail) => {
+        try {
+          const fetchOptions: RequestInit = {
+            redirect: 'follow',
+          }
+          const res = await fetch(url, fetchOptions)
+          if (res.status !== status) {
+            console.warn(`GET ${res.url} ${res.status}`)
+            bail(new Error(`Retry`))
+          } else {
+            count += 1
+            await sleep(1000)
+          }
+        } catch (e) {
+          // Print system errors like ECONNREFUSED
+          console.error(e.message)
+          count = 0
+          throw e
+        }
+      }, retryOptions)
+    } while (count < minimumSuccessful)
+  } catch (e) {
+    console.log('Max retry tries has been reached')
+    process.exit(1)
+  }
 }
 
 export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {
