@@ -43,7 +43,6 @@ const setup = (): void => {
 const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
-  await $`cat .git/config`
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
   debug.debug('healthUrl: ', healthUrl)
   const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
@@ -86,7 +85,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 
-  if (!isChart && !env.IN_DOCKER) await commitOnFirstRun()
+  if (!isChart && !env.CI) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {
