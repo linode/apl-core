@@ -51,8 +51,7 @@ const checkKubeContext = async (): Promise<void> => {
 const checkEnvDir = (): boolean => {
   const d = terminal('checkEnvDir')
   if (dirname.includes('otomi-core') && !env.ENV_DIR) {
-    d.error('The ENV_DIR environment variable is not set')
-    process.exit(1)
+    throw new Error('The ENV_DIR environment variable is not set')
   }
   d.debug(`ENV_DIR: ${env.ENV_DIR}`)
   return readdirSync(env.ENV_DIR).length > 0
@@ -116,9 +115,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
  */
 export const exitIfInCore = (command: string): void => {
   if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core')) {
-    const d = terminal('exitIfInCore')
-    d.error(`'otomi ${command}' should not be ran from otomi-core`)
-    process.exit(1)
+    throw new Error(`'otomi ${command}' should not be ran from otomi-core`)
   }
 }
 

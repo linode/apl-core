@@ -66,8 +66,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   if (output.exitCode > 0) {
-    debug.error(output.stderr)
-    process.exit(output.exitCode)
+    throw new Error(output.stderr)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }

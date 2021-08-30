@@ -89,8 +89,7 @@ export const commit = async (): Promise<void> => {
     d.log('Successfully pushed the updated values')
   } catch (error) {
     d.error(error.stderr)
-    d.error('Pushing the values failed, please read the above error message and manually try again')
-    process.exit(1)
+    throw new Error('Pushing the values failed, please read the above error message and manually try again')
   } finally {
     cd(rootDir)
   }

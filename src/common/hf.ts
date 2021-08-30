@@ -111,7 +111,7 @@ export const values = async (opts?: ValuesOptions): Promise<Record<string, any>>
   return opts?.replacePath ? value.rp : value.clean
 }
 
-export const sxhfValues = async (skipCache = false): Promise<Record<string, any>> => {
+export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
   return values({ replacePath: true, skipCache })
 }
 

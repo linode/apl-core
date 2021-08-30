@@ -67,8 +67,7 @@ export const bootstrapValues = async (): Promise<void> => {
     debug.info('Copied vscode folder')
   } catch (error) {
     debug.error(error)
-    debug.error(`Could not copy from ${rootDir}/.values/.vscode`)
-    process.exit(1)
+    throw new Error(`Could not copy from ${rootDir}/.values/.vscode`)
   }
 
   generateLooseSchema()
@@ -167,8 +166,7 @@ export const bootstrapGit = async (): Promise<void> => {
     }
 
     if (!giteaEnabled && !byor) {
-      debug.error('Gitea was disabled but no charts.otomi-api.git config was given.')
-      process.exit(1)
+      throw new Error('Gitea was disabled but no charts.otomi-api.git config was given.')
     } else if (!clusterDomain) {
       debug.info('No values defined for git. Skipping git repository configuration')
       return

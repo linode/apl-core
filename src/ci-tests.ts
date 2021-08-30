@@ -41,8 +41,7 @@ export const ciTests = async (): Promise<void> => {
   debug.info(xCommand)
   const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] })
   if (opaExitCode !== 0) {
-    debug.error('Opa policies failed')
-    process.exit(1)
+    throw new Error('Opa policies failed')
   }
 
   await validateValues()

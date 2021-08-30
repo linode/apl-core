@@ -2,6 +2,7 @@
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
+import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/utils'
 
@@ -23,16 +24,24 @@ app.get('/decrypt', async (req: Request, res: Response) => {
     await decrypt()
     res.status(200).send('ok')
   } catch (error) {
-    res.status(500).send(error)
+    debug.error(error)
+    res.status(500).send(`${error}`)
   }
 })
 app.get('/encrypt', async (req: Request, res: Response) => {
   try {
     debug.log('Request to encrypt')
+    await validateValues()
     await encrypt()
     res.status(200).send('ok')
   } catch (error) {
-    res.status(500).send(error)
+    const err = `${error}`
+    let status = 500
+    debug.error(err)
+    if (err.includes('Values validation FAILED')) {
+      status = 422
+    }
+    res.status(status).send(err)
   }
 })
 
@@ -42,7 +51,8 @@ app.get('/commit', async (req: Request, res: Response) => {
     await commit()
     res.status(200).send('ok')
   } catch (error) {
-    res.status(500).send(error)
+    debug.error(error)
+    res.status(500).send(`${error}`)
   }
 })
 
