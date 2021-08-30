@@ -273,9 +273,7 @@ export const gucci = async (
   tmpl: string | unknown,
   args: { [key: string]: any },
   opts?: GucciOptions,
-): Promise<string | Record<string, unknown> | undefined> => {
-  const debug = terminal('gucci')
-
+): Promise<string | Record<string, unknown>> => {
   const kv = flattenObject(args)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
@@ -298,17 +296,7 @@ export const gucci = async (
     }
     // Defaults to returning string, unless stated otherwise
     if (!opts?.asObject) return processOutput.stdout.trim()
-    try {
-      return load(processOutput.stdout.trim()) as Record<string, unknown>
-    } catch (_) {
-      // Fallback to returning string - as it aparently isn't yaml
-      return processOutput.stdout.trim()
-    }
-  } catch (error) {
-    debug.debug(error)
-    // TODO: Don't swallow when validate-values can validate subpaths
-    return undefined
-    // throw error
+    return load(processOutput.stdout.trim()) as Record<string, unknown>
   } finally {
     $.quote = quoteBackup
   }

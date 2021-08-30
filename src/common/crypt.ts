@@ -101,7 +101,7 @@ const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
   utimesSync(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  debug.debug(`Updating timestamp for ${file}.dec from ${decSec} to ${encSec}`)
+  debug.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (...files: string[]): Promise<void> => {
@@ -125,6 +125,7 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 
   debug.info('Decryption is done')
 }
+
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
   debug = terminal(namespace)

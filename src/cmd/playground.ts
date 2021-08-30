@@ -13,9 +13,6 @@ const debug: OtomiDebugger = terminal(cmdName)
 export const playground = async (): Promise<void> => {
   debug.log(cmdName)
 
-  // console.log(pp(await generateSecrets(await getValues())))
-
-  // throw new Error('Playground error')
   await Promise.resolve()
 }
 

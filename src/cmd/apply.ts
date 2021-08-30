@@ -14,6 +14,7 @@ import {
   terminal,
   waitTillAvailable,
 } from '../common/utils'
+import { isChart } from '../common/values'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { commit } from './commit'
@@ -42,13 +43,14 @@ const setup = (): void => {
 const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
+  await $`cat .git/config`
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+  debug.debug('healthUrl: ', healthUrl)
   const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
   if (isCertStaging) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
-
   await waitTillAvailable(healthUrl)
 
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
@@ -84,7 +86,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 
-  await commitOnFirstRun()
+  if (!isChart && !env.IN_DOCKER) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {
