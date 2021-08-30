@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash-es'
-import { $, cd, chalk, nothrow, ProcessOutput } from 'zx'
+import { $, cd, ProcessOutput } from 'zx'
 import { env } from './envalid'
 import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'
 
@@ -38,27 +38,28 @@ const getAllSecretFiles = async () => {
 }
 
 type CR = {
-  condition?: (path: string, file: string) => boolean
+  condition?: (file: string) => boolean
   cmd: CryptType
-  post?: (result: ProcessOutput, path: string, file: string) => void
+  post?: (file: string) => void
 }
 
-const processFileChunk = async (crypt: CR, files: string[]): Promise<ProcessOutput[]> => {
+const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOutput | undefined)[]> => {
   const commands = files.map(async (file) => {
-    if (!crypt.condition || crypt.condition(env.ENV_DIR, file)) {
+    if (!crypt.condition || crypt.condition(file)) {
       debug.debug(`${crypt.cmd} ${file}`)
-      const result = await nothrow($`${crypt.cmd.split(' ')} ${file}`)
-      if (crypt.post) crypt.post(result, env.ENV_DIR, file)
+      const result = $`${crypt.cmd.split(' ')} ${file}`
+      result.then((res) => {
+        if (crypt.post) crypt.post(file)
+        return res
+      })
       return result
     }
     return undefined
   })
-  const results = (await Promise.all(commands)).filter(Boolean) as ProcessOutput[]
-  results.filter((res: ProcessOutput) => res.exitCode !== 0).map((val) => debug.warn(val))
-  return results
+  return Promise.all(commands)
 }
 
-const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<ProcessOutput[] | undefined> => {
+const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<void> => {
   let files: string[] = filesArgs
   cd(env.ENV_DIR)
 
@@ -70,30 +71,27 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<Pr
   const filesChunked = chunk(files, chunkSize)
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
-  // EventEmitter.defaultMaxListeners is 10, if we increate chunkSize in the future then this line will prevent it from crashing
+  // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   debug.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
-    const results: ProcessOutput[] = []
     // eslint-disable-next-line no-restricted-syntax
     for (const fileChunk of filesChunked) {
       // eslint-disable-next-line no-await-in-loop
-      const chunkResult = await processFileChunk(crypt, fileChunk)
-      results.push(...chunkResult)
+      await processFileChunk(crypt, fileChunk)
     }
-    return results
+    return
   } catch (error) {
     debug.error(error)
-    return undefined
+    return
   } finally {
     cd(rootDir)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
   }
 }
 
-const matchTimestamps = (res: ProcessOutput, path: string, file: string) => {
-  if (res.exitCode !== 0) return
-  const absFilePath = `${path}/${file}`
+const matchTimestamps = (file: string) => {
+  const absFilePath = `${env.ENV_DIR}/${file}`
   if (!existsSync(`${absFilePath}.dec`)) return
 
   const encTS = statSync(absFilePath)
@@ -116,9 +114,7 @@ export const decrypt = async (...files: string[]): Promise<void> => {
   await runOnSecretFiles(
     {
       cmd: CryptType.DECRYPT,
-      post: (r, p, f) => {
-        matchTimestamps(r, p, f)
-      },
+      post: matchTimestamps,
     },
     files,
   )
@@ -136,8 +132,8 @@ export const encrypt = async (...files: string[]): Promise<void> => {
   debug.info('Starting encryption')
   await runOnSecretFiles(
     {
-      condition: (path: string, file: string): boolean => {
-        const absFilePath = `${path}/${file}`
+      condition: (file: string): boolean => {
+        const absFilePath = `${env.ENV_DIR}/${file}`
 
         const decExists = existsSync(`${absFilePath}.dec`)
         if (!decExists) {
@@ -161,32 +157,10 @@ export const encrypt = async (...files: string[]): Promise<void> => {
         return false
       },
       cmd: CryptType.ENCRYPT,
-      post: (r, p, f) => {
-        debug.debug(r.stdout.trim())
-        matchTimestamps(r, p, f)
-      },
+      post: matchTimestamps,
     },
     files,
   )
 
   debug.info('Encryption is done')
-}
-
-export const rotate = async (): Promise<void> => {
-  const namespace = 'rotate'
-  debug = terminal(namespace)
-  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    debug.debug('Skipping rotation')
-    return
-  }
-  await runOnSecretFiles({
-    cmd: CryptType.ROTATE,
-    post: (result: ProcessOutput, path: string, file: string) => {
-      if (result.exitCode === 0) {
-        debug.info(`Rotating sops key for '${chalk.italic(file)}' ${chalk.greenBright('succeeded')}`)
-      } else {
-        debug.warn(`Rotating sops key for '${chalk.italic(file)}' ${chalk.redBright('failed')}`)
-      }
-    },
-  })
 }
