@@ -9,7 +9,7 @@ import { terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()
-let server: Server§
+let server: Server
 
 export const stopServer = (): void => {
   server?.close()
