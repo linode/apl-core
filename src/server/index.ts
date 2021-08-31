@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
 import express, { Request, Response } from 'express'
+import { existsSync, symlinkSync } from 'fs'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { validateValues } from '../cmd/validate-values'
@@ -56,8 +57,10 @@ app.get('/commit', async (req: Request, res: Response) => {
   }
 })
 
-export const startServer = (): void => {
+export const startServer = async (): Promise<void> => {
   server = app.listen(17771, '0.0.0.0')
+  const k8sPath = '/tmp/otomi-values'
+  if (existsSync(k8sPath)) symlinkSync(k8sPath, 'env')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
 
