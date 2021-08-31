@@ -10,7 +10,7 @@ bases:
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 
 releases:
-  {{- range $teamId, $team := $tc.teams }}
+  {{- range $teamId, $team := $tc | get "teams" dict }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
