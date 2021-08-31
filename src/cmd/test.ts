@@ -1,4 +1,4 @@
-import { unlinkSync, writeFileSync } from 'fs'
+import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
 import { env } from '../common/envalid'
@@ -16,16 +16,13 @@ const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger = terminal(cmdName)
 
-const cleanup = (argv: Arguments): void => {
-  debug = terminal(cmdName)
+const cleanup = async (argv: Arguments): Promise<void> => {
   if (argv.skipCleanup) return
-  try {
-    unlinkSync(tmpFile)
-  }
-  catch (e) { debug.error(e) }
+  if(existsSync(tmpFile)) unlinkSync(tmpFile)
 }
 
 const setup = (argv: Arguments): void => {
+  debug = terminal(cmdName)
   cleanupHandler(() => cleanup(argv))
 }
 
