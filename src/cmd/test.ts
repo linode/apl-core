@@ -16,7 +16,7 @@ const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger = terminal(cmdName)
 
-const cleanup = async (argv: Arguments): Promise<void> => {
+const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
   if(existsSync(tmpFile)) unlinkSync(tmpFile)
 }
