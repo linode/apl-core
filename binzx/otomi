@@ -276,14 +276,18 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
+container_name='otomi-core-dev-container'
+count=$(ps -a | grep $container_name | wc -l) >/dev/null
+container_name="$container_name-$count"
+
 if [ -n "$IN_DOCKER" ]; then
   $cmd
   status=$?
 elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
-  docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
+  docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  docker run --rm --init $it \
+  docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
     $stack_volume \
