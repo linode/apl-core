@@ -15,12 +15,19 @@ export const stopServer = (): void => {
   server?.close()
 }
 
+function symlinkEnvDir() {
+  const repoPath = '/tmp/otomi-values'
+  const envPath = 'env'
+  if (!existsSync(repoPath)) throw new Error(`The git repository does not exist at ${repoPath} path`)
+  if (!existsSync(envPath)) symlinkSync(repoPath, envPath)
+}
 app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
 })
 
 app.get('/decrypt', async (req: Request, res: Response) => {
   try {
+    symlinkEnvDir()
     debug.log('Request to decrypt')
     await decrypt()
     res.status(200).send('ok')
@@ -31,6 +38,7 @@ app.get('/decrypt', async (req: Request, res: Response) => {
 })
 app.get('/encrypt', async (req: Request, res: Response) => {
   try {
+    symlinkEnvDir()
     debug.log('Request to encrypt')
     await validateValues()
     await encrypt()
@@ -48,6 +56,7 @@ app.get('/encrypt', async (req: Request, res: Response) => {
 
 app.get('/commit', async (req: Request, res: Response) => {
   try {
+    symlinkEnvDir()
     debug.log('Request to commit')
     await commit()
     res.status(200).send('ok')
@@ -59,8 +68,6 @@ app.get('/commit', async (req: Request, res: Response) => {
 
 export const startServer = async (): Promise<void> => {
   server = app.listen(17771, '0.0.0.0')
-  const k8sPath = '/tmp/otomi-values'
-  if (existsSync(k8sPath)) symlinkSync(k8sPath, 'env')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
 
