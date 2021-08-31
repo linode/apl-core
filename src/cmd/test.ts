@@ -14,11 +14,15 @@ import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
-const debug: OtomiDebugger = terminal(cmdName)
+let debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
+  debug = terminal(cmdName)
   if (argv.skipCleanup) return
-  unlinkSync(tmpFile)
+  try {
+    unlinkSync(tmpFile)
+  }
+  catch (e) { debug.error(e) }
 }
 
 const setup = (argv: Arguments): void => {
