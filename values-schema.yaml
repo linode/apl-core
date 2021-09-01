@@ -477,34 +477,33 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  podSecurityContext:
+    allOf:
+      - $ref: '#/definitions/securityContext'
+      - properties:
+          fsGroup:
+            description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
+            type: integer
+          fsGroupChangePolicy:
+            description:
+              'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
+              This field has two possible values:
+              - OnRootMismatch: Only change permissions and ownership if permission and ownership of root directory does not match with expected permissions of the volume. This could help shorten the time it takes to change ownership and permission of a volume.
+              - Always: Always change permission and ownership of the volume when volume is mounted.'
+            type: string
+            enum:
+              - Always
+              - OnRootMismatch
+    description: Security context for the pod.
+    title: Pod security context
   podSpec:
     allOf:
       - properties:
           annotations:
             $ref: '#/definitions/annotations'
             title: Pod annotations
-          podSecurityContext:
-            allOf:
-              - $ref: '#/definitions/securityContext'
-              - properties:
-                  fsGroup:
-                    description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
-                    type: integer
-                  fsGroupChangePolicy:
-                    description:
-                      'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
-                      This field has two possible values:
-                      - OnRootMismatch: Only change permissions and ownership if permission and ownership of root directory does not match with expected permissions of the volume. This could help shorten the time it takes to change ownership and permission of a volume.
-                      - Always: Always change permission and ownership of the volume when volume is mounted.'
-                    type: string
-                    enum:
-                      - Always
-                      - OnRootMismatch
-            description: Security context for the pod.
-            title: Pod security context
-        required:
-          - podSecurityContext
         type: object
+      - $ref: '#/definitions/podSecurityContext'
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
@@ -582,6 +581,11 @@ definitions:
         $ref: '#/definitions/resource'
         description: Requested resources (guaranteed).
     title: Pod resources
+  runAsUser:
+    type: integer
+    minimum": 0
+    maximum": 65535
+    default: 1001
   scaling:
     additionalProperties: false
     description: Min and max number of replicas.
@@ -685,14 +689,11 @@ definitions:
     additionalProperties:
       uniqueItems: true
     properties:
+      runAsUser:
+        $ref: '#/definitions/runAsUser'
       runAsNonRoot:
         type: boolean
         default: true
-      runAsUser:
-        type: integer
-        minimum": 0
-        maximum": 65535
-        default: 1001
       runAsGroup:
         type: integer
         minimum": 0
@@ -738,7 +739,18 @@ definitions:
         anyOf:
           - description: Details for a knative service that will be deployed and operated.
             allOf:
-              - $ref: '#/definitions/podSpec'
+              - properties:
+                  annotations:
+                    $ref: '#/definitions/annotations'
+                    title: Pod annotations
+                type: object
+              - properties:
+                  securityContext:
+                    additionalProperties:
+                      uniqueItems: true
+                  runAsUser:
+                    $ref: '#/definitions/runAsUser'
+              - $ref: '#/definitions/containerSpec'
               - properties:
                   autoCD:
                     additionalProperties: false
@@ -790,7 +802,7 @@ definitions:
                     description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
                     title: Scale to zero
                     type: boolean
-          - description: Choose this when the ks.vc is already deployed
+          - description: Choose this when the ksvc is already deployed
             properties:
               predeployed:
                 default: true

@@ -72,9 +72,9 @@ spec:
           {{- with $k.resources }}
           resources: {{- . | toYaml | nindent 12 }}
           {{- end }}
-          # {{- with $k.securityContext }}
-          # securityContext: {{- . | toYaml | nindent 12 }}
-          # {{- end }}
+          {{- with $k.securityContext }}
+          securityContext: {{- . | toYaml | nindent 12 }}
+          {{- end }}
 {{- if or $k.files $k.secretMounts }}
           volumeMounts:
   {{- range $dir, $files := $vols }}
