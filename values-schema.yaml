@@ -252,15 +252,11 @@ definitions:
       - name
       - owner
       - provider
-  containerSpec:
+  containerSpecNoSec:
     additionalProperties: false
     properties:
       image:
         $ref: '#/definitions/image'
-      securityContext:
-        $ref: '#/definitions/securityContext'
-        description: Security context for the container.
-        title: Security context
       resources:
         $ref: '#/definitions/resources'
       env:
@@ -285,6 +281,10 @@ definitions:
     required:
       - image
       - resources
+  containerSpec:
+    allOf:
+      - $ref: '#/definitions/securityContext'
+      - $ref: '#/definitions/containerSpecNoSec'
   cpuQuantity:
     description: 'Amount of cores, or slice of cpu in millis.'
     examples:
@@ -504,6 +504,7 @@ definitions:
             title: Pod annotations
         type: object
       - $ref: '#/definitions/podSecurityContext'
+      - $ref: '#/definitions/securityContext'
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
@@ -756,7 +757,7 @@ definitions:
                         description: Whether this container has a read-only root filesystem. Default is false.
                         type: boolean
                         default: false
-              - $ref: '#/definitions/containerSpec'
+              - $ref: '#/definitions/containerSpecNoSec'
               - properties:
                   autoCD:
                     additionalProperties: false
