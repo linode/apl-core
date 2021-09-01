@@ -299,10 +299,9 @@ export const gucci = async (
   $.quote = (v) => v
   try {
     let processOutput: ProcessOutput
-    const tmplIsString = typeof tmpl === 'string'
-    const templateContent: string = tmplIsString ? (tmpl as string) : dump(tmpl, { lineWidth: -1 })
+    const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
-    if (tmplIsString && existsSync(templateContent)) {
+    if (typeof tmpl === 'string' && existsSync(templateContent)) {
       processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
