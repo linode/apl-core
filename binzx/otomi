@@ -271,8 +271,6 @@ if [[ $calling_args == 'server'* ]]; then
   network="--init -p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
-set -x
-
 mkdir -p /tmp/otomi
 if [ -n "$IN_DOCKER" ]; then
   $cmd
@@ -294,7 +292,7 @@ else
     $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
     $(check_volume_path $HOME/.aws "/home/app/.aws") \
     $(check_volume_path $HOME/.azure "/home/app/.azure") \
-    $(check_volume_path $ENV_DIR "$stack_dir/env/env") \
+    $(check_volume_path $ENV_DIR "$stack_dir/env") \
     $(check_volume_path $ENV_DIR "$ENV_DIR") \
     $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
     --env-file "$tmp_env" \

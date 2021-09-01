@@ -1,5 +1,3 @@
 {{- $v := .Values }}
-{{- if not (eq $v.cluster.provider "kind") }}
 resources:
 {{ tpl (readFile (printf "pv-%s.gotmpl" $v.cluster.provider)) $v}}
-{{- end }}

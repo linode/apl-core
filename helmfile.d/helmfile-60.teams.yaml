@@ -9,6 +9,7 @@ bases:
 {{- $po := index $v.charts "prometheus-operator" }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 
+{{ if not (eq $v.cluster.provider "kind") }}
 releases:
   {{- range $teamId, $team := $tc.teams }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
@@ -210,3 +211,4 @@ releases:
   {{- end }}
   {{- end }}
   {{- end }}
+{{- end }}
