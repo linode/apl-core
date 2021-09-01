@@ -5,7 +5,8 @@ import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/utils'
+import { env } from '../common/envalid'
+import { rootDir, terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()
@@ -16,13 +17,12 @@ export const stopServer = (): void => {
 }
 
 const symlinkEnvDir = (): void => {
-  const repoPath = '/tmp/otomi-values'
-  const envPath = 'env'
-  if (!existsSync(repoPath)) {
-    console.warn(`Values at ${repoPath} are not mounted yet!`)
+  const envPath = `${rootDir}/env`
+  if (!existsSync(env.ENV_DIR)) {
+    console.warn(`Values at ${env.ENV_DIR} are not mounted yet!`)
     return
   }
-  if (!existsSync(envPath)) symlinkSync(repoPath, envPath)
+  if (!existsSync(envPath)) symlinkSync(env.ENV_DIR, envPath)
 }
 
 app.use((req, res, next) => {
