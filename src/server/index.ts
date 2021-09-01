@@ -72,7 +72,7 @@ app.get('/commit', async (req: Request, res: Response) => {
   }
 })
 
-export const startServer = async (): Promise<void> => {
+export const startServer = (): void => {
   server = app.listen(17771, '0.0.0.0')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
