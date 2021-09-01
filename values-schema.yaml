@@ -582,6 +582,7 @@ definitions:
         description: Requested resources (guaranteed).
     title: Pod resources
   runAsUser:
+    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
     minimum": 0
     maximum": 65535
@@ -692,9 +693,11 @@ definitions:
       runAsUser:
         $ref: '#/definitions/runAsUser'
       runAsNonRoot:
+        description: Enforces that the container must run as non root. This implies that the UID must also be set with runAsUser.
         type: boolean
         default: true
       runAsGroup:
+        description: The GID to run the entrypoint of the container process. Defaults to group specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
         type: integer
         minimum": 0
         maximum": 65535
@@ -746,10 +749,13 @@ definitions:
                 type: object
               - properties:
                   securityContext:
-                    additionalProperties:
-                      uniqueItems: true
-                  runAsUser:
-                    $ref: '#/definitions/runAsUser'
+                    properties:
+                      runAsUser:
+                        $ref: '#/definitions/runAsUser'
+                      readOnlyRootFilesystem:
+                        description: Whether this container has a read-only root filesystem. Default is false.
+                        type: boolean
+                        default: false
               - $ref: '#/definitions/containerSpec'
               - properties:
                   autoCD:
