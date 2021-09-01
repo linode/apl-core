@@ -1,0 +1,11 @@
+#!/bin/bash
+. bin/aliases
+
+if [ -z "$ENV_DIR" ]; then
+  echo "You did not set ENV_DIR yet!"
+else
+  set -a
+  PATH=./binzx:$PATH
+  source $ENV_DIR/.secrets
+  set +a
+fi
