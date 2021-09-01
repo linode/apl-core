@@ -15,7 +15,7 @@ export const stopServer = (): void => {
   server?.close()
 }
 
-function symlinkEnvDir() {
+const symlinkEnvDir = (): void => {
   const repoPath = '/tmp/otomi-values'
   const envPath = 'env'
   if (!existsSync(repoPath)) {
@@ -25,8 +25,8 @@ function symlinkEnvDir() {
   if (!existsSync(envPath)) symlinkSync(repoPath, envPath)
 }
 
-app.use(function (req, res, next) {
-  symLinkEnvDir()
+app.use((req, res, next) => {
+  symlinkEnvDir()
   next()
 })
 
