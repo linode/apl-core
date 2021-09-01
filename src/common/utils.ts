@@ -265,8 +265,7 @@ export async function waitTillAvailable(url: string, status = 200): Promise<void
       }, retryOptions)
     } while (count < minimumSuccessful)
   } catch (e) {
-    console.log('Max retry tries has been reached')
-    process.exit(1)
+    throw new Error(`Max retries (${retryOptions.retries}) has been reached!`)
   }
 }
 

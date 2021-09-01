@@ -21,11 +21,9 @@ export const validateValues = async (): Promise<void> => {
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
-    debug.error(`Cannot pass option '${labelOpts}'`)
-    process.exit(1)
+    throw new Error(`Cannot pass option '${labelOpts}'`)
   }
 
-  debug.info('Getting values')
   const values = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
@@ -33,39 +31,32 @@ export const validateValues = async (): Promise<void> => {
     unset(values, internalPath)
   }
 
+  debug.info('Loading values-schema.yaml')
+  const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, unknown>
+  debug.debug('Initializing Ajv')
+  const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
+  debug.debug('Compiling Ajv validation')
+  let validate: ValidateFunction<unknown>
   try {
-    debug.info('Loading values-schema.yaml')
-    const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, unknown>
-    debug.debug('Initializing Ajv')
-    const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
-    debug.debug('Compiling Ajv validation')
-    let validate: ValidateFunction<unknown>
-    try {
-      validate = ajv.compile(valuesSchema)
-    } catch (error) {
-      debug.error(`Schema is invalid: ${chalk.italic(error.message)}`)
-      process.exit(1)
-    }
-    debug.info(`Validating values`)
-    const val = validate(values)
-    if (val) {
-      debug.log('Values validation SUCCESSFUL')
-    } else {
-      validate.errors?.map((error: DefinedError) =>
-        debug.error('%O', {
-          keyword: error.keyword,
-          dataPath: error.instancePath,
-          schemaPath: error.schemaPath,
-          params: error.params,
-          message: error.message,
-        }),
-      )
-      debug.error('Values validation FAILED')
-      process.exit(1)
-    }
+    validate = ajv.compile(valuesSchema)
   } catch (error) {
-    debug.error(error.message)
-    process.exit(1)
+    throw new Error(`Schema is invalid: ${chalk.italic(error.message)}`)
+  }
+  debug.info(`Validating values`)
+  const val = validate(values)
+  if (val) {
+    debug.log('Values validation SUCCESSFUL')
+  } else {
+    validate.errors?.map((error: DefinedError) =>
+      debug.error('%O', {
+        keyword: error.keyword,
+        dataPath: error.instancePath,
+        schemaPath: error.schemaPath,
+        params: error.params,
+        message: error.message,
+      }),
+    )
+    throw new Error('Values validation FAILED')
   }
 }
 

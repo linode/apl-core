@@ -31,6 +31,7 @@ const setup = (argv: Arguments): void => {
 
 export const checkPolicies = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
+  setup(argv)
   debug.info('Policy checking STARTED')
 
   const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
@@ -58,8 +59,7 @@ export const checkPolicies = async (): Promise<void> => {
     .replace(/^.*TRAC.*[\r\n]/gm, '')
     .replace(/^.*PASS.*[\r\n]/gm, '')
   if (cleanConftest.indexOf('FAIL') > -1) {
-    debug.error(cleanConftest)
-    process.exit(1)
+    throw new Error(cleanConftest)
   }
 }
 
@@ -70,7 +70,6 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    setup(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await checkPolicies()
   },
