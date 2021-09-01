@@ -59,7 +59,6 @@ app.get('/commit', async (req: Request, res: Response) => {
 })
 
 export const startServer = (): void => {
-  server = app.listen(17771, '0.0.0.0')
   const k8sEnvDirPath = env.ENV_DIR
   const dockerEnvDir = `${rootDir}/env`
   // accomodate k8s deployment with shared values dir, and make symlink to /home/app/stack/env
@@ -71,6 +70,7 @@ export const startServer = (): void => {
       symlinkSync(k8sEnvDirPath, dockerEnvDir)
     }
   }
+  server = app.listen(17771, '0.0.0.0')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
 
