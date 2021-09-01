@@ -5,7 +5,8 @@ import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/utils'
+import { env } from '../common/envalid'
+import { rootDir, terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()
@@ -57,10 +58,10 @@ app.get('/commit', async (req: Request, res: Response) => {
   }
 })
 
-export const startServer = async (): Promise<void> => {
+export const startServer = (): void => {
   server = app.listen(17771, '0.0.0.0')
-  const k8sEnvDirPath = '/tmp/otomi-values'
-  const dockerEnvDir = '/home/app/stack/env'
+  const k8sEnvDirPath = env.ENV_DIR
+  const dockerEnvDir = `${rootDir}/env`
   // accomodate k8s deployment with shared values dir, and make symlink to /home/app/stack/env
   if (k8sEnvDirPath && !existsSync(k8sEnvDirPath)) {
     debug.info('Creating k8s values folder for symlink: ', k8sEnvDirPath)
