@@ -18,7 +18,7 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
-  if(existsSync(tmpFile)) unlinkSync(tmpFile)
+  if (existsSync(tmpFile)) unlinkSync(tmpFile)
 }
 
 const setup = (argv: Arguments): void => {
