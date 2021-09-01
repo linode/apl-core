@@ -4,7 +4,7 @@ import { $ } from 'zx'
 import { env } from '../common/envalid'
 import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
@@ -14,7 +14,7 @@ import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
-const debug: OtomiDebugger = terminal(cmdName)
+let debug: OtomiDebugger
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return
@@ -23,9 +23,11 @@ const cleanup = (argv: Arguments): void => {
 
 const setup = (argv: Arguments): void => {
   cleanupHandler(() => cleanup(argv))
+  debug = terminal(cmdName)
 }
 
 export const test = async (): Promise<void> => {
+  setup(getParsedArgs())
   await validateValues()
   await lint()
   await validateTemplates()
@@ -58,7 +60,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    setup(argv)
     await test()
   },
 }
