@@ -18,16 +18,24 @@ export const stopServer = (): void => {
 function symlinkEnvDir() {
   const repoPath = '/tmp/otomi-values'
   const envPath = 'env'
-  if (!existsSync(repoPath)) throw new Error(`The git repository does not exist at ${repoPath} path`)
+  if (!existsSync(repoPath)) {
+    console.warn(`Values at ${repoPath} are not mounted yet!`)
+    return
+  }
   if (!existsSync(envPath)) symlinkSync(repoPath, envPath)
 }
+
+app.use(function (req, res, next) {
+  symLinkEnvDir()
+  next()
+})
+
 app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
 })
 
 app.get('/decrypt', async (req: Request, res: Response) => {
   try {
-    symlinkEnvDir()
     debug.log('Request to decrypt')
     await decrypt()
     res.status(200).send('ok')
@@ -38,7 +46,6 @@ app.get('/decrypt', async (req: Request, res: Response) => {
 })
 app.get('/encrypt', async (req: Request, res: Response) => {
   try {
-    symlinkEnvDir()
     debug.log('Request to encrypt')
     await validateValues()
     await encrypt()
@@ -56,7 +63,6 @@ app.get('/encrypt', async (req: Request, res: Response) => {
 
 app.get('/commit', async (req: Request, res: Response) => {
   try {
-    symlinkEnvDir()
     debug.log('Request to commit')
     await commit()
     res.status(200).send('ok')
