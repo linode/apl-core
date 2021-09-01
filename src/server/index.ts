@@ -5,7 +5,8 @@ import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/utils'
+import { env } from '../common/envalid'
+import { rootDir, terminal } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()
@@ -14,6 +15,20 @@ let server: Server
 export const stopServer = (): void => {
   server?.close()
 }
+
+const symlinkEnvDir = (): void => {
+  const envPath = `${rootDir}/env`
+  if (!existsSync(env.ENV_DIR)) {
+    console.warn(`Values at ${env.ENV_DIR} are not mounted yet!`)
+    return
+  }
+  if (!existsSync(envPath)) symlinkSync(env.ENV_DIR, envPath)
+}
+
+app.use((req, res, next) => {
+  symlinkEnvDir()
+  next()
+})
 
 app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
@@ -57,10 +72,8 @@ app.get('/commit', async (req: Request, res: Response) => {
   }
 })
 
-export const startServer = async (): Promise<void> => {
+export const startServer = (): void => {
   server = app.listen(17771, '0.0.0.0')
-  const k8sPath = '/tmp/otomi-values'
-  if (existsSync(k8sPath)) symlinkSync(k8sPath, 'env')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
 
