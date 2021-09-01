@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { hfStream } from '../common/hf'
+import { hf } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
@@ -11,14 +11,14 @@ export const sync = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-  await hfStream(
+  await hf(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
       args: ['sync', '--skip-deps', skipCleanup],
     },
-    { trim: true, streams: { stdout: debug.stream.log } },
+    { streams: { stdout: debug.stream.log } },
   )
 }
 

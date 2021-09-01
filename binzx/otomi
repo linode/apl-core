@@ -14,6 +14,7 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
+
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
@@ -25,13 +26,16 @@ elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
 elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
-[ -z $ENV_DIR ] && echo "No ENV_DIR set!" && exit 1
+[[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
 if [ -n "$CI" ]; then
   calling_args="$calling_args --non-interactive"
 fi
+if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
+  calling_args="x -- ${calling_args:2}"
+fi
 readonly calling_args
 silent() {
-  if [[ $calling_args == *'-v'* ]] && [ -t 1 ]; then
+  if { [[ $VERBOSITY -gt 0 ]] || [[ " $calling_args" == *' -v'* ]]; } && [ -t 1 ]; then
     "$@"
   else
     "$@" &>/dev/null
@@ -40,14 +44,14 @@ silent() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-in_core=false
 if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
-  in_core=true
+  in_core=1
 fi
-
+[ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
+[ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 otomi_version="latest"
-if [ "$in_core" = true ]; then
+if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch=${current_branch##*/}
   current_branch=${current_branch:-'master'}
@@ -126,7 +130,7 @@ EOF
 }
 
 check_update() {
-  if [ "$in_core" = true ] ||
+  if [ -n "$in_core" ] ||
     [[ $calling_args == *'-non-interactive'* ]] ||
     [[ $calling_args == *'-ni'* ]]; then
     return 0
@@ -150,7 +154,7 @@ check_update() {
   fi
 }
 silent echo "Checking for updates"
-[ -z $CI ] && check_update
+[ -z $CI ] && [ -z $IN_DOCKER ] && check_update
 
 tmp_env=$(mktemp)
 
@@ -216,7 +220,7 @@ executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otom
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
-if [ "$in_core" = true ]; then
+if [ -n "$in_core" ]; then
   silent echo "Checking if in dev environment"
   if [[ $base_dir == *"otomi-core"* ]]; then
     stack_dir=$(cd "$base_dir/.." && pwd)
@@ -244,7 +248,7 @@ check_volume_path() {
   return 0
 }
 
-cmd="${executable} $*"
+cmd="${executable} $calling_args"
 # If command is "otomi bash"
 if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
@@ -268,18 +272,22 @@ fi
 
 network='--network host'
 if [[ $calling_args == 'server'* ]]; then
-  network="--init -p $OTOMI_PORT:$OTOMI_PORT"
+  network="-p $OTOMI_PORT:$OTOMI_PORT"
 fi
 
 mkdir -p /tmp/otomi
+container_name='otomi-core-dev-container'
+count=$(ps -a | grep $container_name | wc -l) >/dev/null
+container_name="$container_name-$count"
+
 if [ -n "$IN_DOCKER" ]; then
   $cmd
   status=$?
 elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
-  docker run --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
+  docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  docker run --rm $it \
+  docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
     $stack_volume \
@@ -303,7 +311,7 @@ else
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
-  echo "keeping files"
+  silent echo "keeping files"
 else
   # Docker seems to be slow to release these files, needs to sleep to make sure that the file & volume are released and can be removed
   sleep 0.1

@@ -1,17 +1,10 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
+import { unset } from 'lodash-es'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import {
-  deletePropertyPath,
-  getFilename,
-  getParsedArgs,
-  loadYaml,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -28,51 +21,42 @@ export const validateValues = async (): Promise<void> => {
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
-    debug.error(`Cannot pass option '${labelOpts}'`)
-    process.exit(1)
+    throw new Error(`Cannot pass option '${labelOpts}'`)
   }
 
-  debug.info('Getting values')
-  const chartValues = await hfValues()
+  const values = await hfValues()
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
-    deletePropertyPath(chartValues, internalPath)
+    unset(values, internalPath)
   }
 
+  debug.info('Loading values-schema.yaml')
+  const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, unknown>
+  debug.debug('Initializing Ajv')
+  const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
+  debug.debug('Compiling Ajv validation')
+  let validate: ValidateFunction<unknown>
   try {
-    debug.info('Loading values-schema.yaml')
-    const valuesSchema = loadYaml('./values-schema.yaml')
-    debug.debug('Initializing Ajv')
-    const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
-    debug.debug('Compiling Ajv validation')
-    let validate: ValidateFunction<unknown>
-    try {
-      validate = ajv.compile(valuesSchema)
-    } catch (error) {
-      debug.error(`Schema is invalid: ${chalk.italic(error.message)}`)
-      process.exit(1)
-    }
-    debug.info(`Validating values`)
-    const val = validate(chartValues)
-    if (val) {
-      debug.log('Values validation SUCCESSFUL')
-    } else {
-      validate.errors?.map((error: DefinedError) =>
-        debug.error('%O', {
-          keyword: error.keyword,
-          dataPath: error.instancePath,
-          schemaPath: error.schemaPath,
-          params: error.params,
-          message: error.message,
-        }),
-      )
-      debug.error('Values validation FAILED')
-      process.exit(1)
-    }
+    validate = ajv.compile(valuesSchema)
   } catch (error) {
-    debug.error(error.message)
-    process.exit(1)
+    throw new Error(`Schema is invalid: ${chalk.italic(error.message)}`)
+  }
+  debug.info(`Validating values`)
+  const val = validate(values)
+  if (val) {
+    debug.log('Values validation SUCCESSFUL')
+  } else {
+    validate.errors?.map((error: DefinedError) =>
+      debug.error('%O', {
+        keyword: error.keyword,
+        dataPath: error.instancePath,
+        schemaPath: error.schemaPath,
+        params: error.params,
+        message: error.message,
+      }),
+    )
+    throw new Error('Values validation FAILED')
   }
 }
 

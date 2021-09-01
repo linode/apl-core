@@ -30,8 +30,8 @@ spec:
           args:
             - |
               set -e
+              kubectl -n otomi get cm otomi-status && echo 'Already installed. Installation of Otomi with chart can happen only once! To destroy or modify the configuration please use the Otomi CLI.' && exit 1   
               binzx/otomi bootstrap
-              binzx/otomi decrypt
               binzx/otomi apply
               binzx/otomi commit
           env:
@@ -62,3 +62,5 @@ spec:
         - name: otomi-values
           emptyDir: {}
       restartPolicy: Never
+  # Don't restart as it recreates passwords every time!
+  backoffLimit: 1

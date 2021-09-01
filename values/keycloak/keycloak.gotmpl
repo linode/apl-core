@@ -53,7 +53,7 @@ keycloak:
       cp -Rv /themes/* /opt/jboss/keycloak/themes/
   extraInitContainers:
     - name: keycloak-otomi-branding
-      image: otomi/console:v0.4.43
+      image: otomi/console:v0.4.53
       imagePullPolicy: IfNotPresent
       securityContext:
         runAsUser: 1000

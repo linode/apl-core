@@ -1,18 +1,20 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
+
+# keep list of all apps for frontend
 apps:
   alertmanager: {}
   drone: {}
   gitea: {}
+  # gilab: {}
   grafana: {}
-  grafana-istio: {}
   harbor: {}
+  hello: {}
   httpbin: {}
   keycloak: {}
   kiali: {}
   kubeapps: {}
   loki: {}
   prometheus: {}
-  prometheus-istio: {}
   sitespeed: {}
   jaeger: {}
   vault: {}
@@ -113,7 +115,7 @@ services:
     svc: kiali
     forwardPath: true
     port: 20001
-    namespace: istio-system
+    namespace: kiali
     type: public
     auth: true
   - name: notary
@@ -201,7 +203,7 @@ services:
     svc: jaeger-operator-jaeger-query
     port: 16686
     forwardPath: true
-    namespace: jaeger-operator
+    namespace: jaeger
     type: public
     auth: true
   - name: vault

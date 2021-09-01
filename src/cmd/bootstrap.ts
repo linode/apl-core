@@ -4,14 +4,27 @@ import { copyFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
-import { BasicArguments, currDir, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  BasicArguments,
+  generateSecrets,
+  getFilename,
+  loadYaml,
+  OtomiDebugger,
+  rootDir,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
+import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
-import { mergeChartValues } from './lib/chart'
+
+export const getChartValues = (): any | undefined => {
+  return loadYaml(env.VALUES_INPUT)
+}
 
 export type Arguments = BasicArguments
 
@@ -19,10 +32,10 @@ const cmdName = getFilename(import.meta.url)
 const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
-const generateLooseSchema = (cwd: string) => {
-  const devOnlyPath = `${cwd}/.vscode/values-schema.yaml`
+const generateLooseSchema = () => {
+  const devOnlyPath = `${rootDir}/.vscode/values-schema.yaml`
   const targetPath = `${env.ENV_DIR}/.vscode/values-schema.yaml`
-  const sourcePath = `${cwd}/values-schema.yaml`
+  const sourcePath = `${rootDir}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
   const trimmedVS = JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)
@@ -35,49 +48,133 @@ const generateLooseSchema = (cwd: string) => {
   }
 }
 
+export const bootstrapValues = async (): Promise<void> => {
+  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
+
+  const binPath = `${env.ENV_DIR}/bin`
+  mkdirSync(binPath, { recursive: true })
+  const otomiImage = `otomi/core:${getImageTag()}`
+  debug.info(`Intalling artifacts from ${otomiImage}`)
+
+  await Promise.allSettled([
+    copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
+    copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
+  ])
+  debug.info('Copied bin files')
+  try {
+    mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
+    await copy(`${rootDir}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
+    debug.info('Copied vscode folder')
+  } catch (error) {
+    debug.error(error)
+    throw new Error(`Could not copy from ${rootDir}/.values/.vscode`)
+  }
+
+  generateLooseSchema()
+
+  await Promise.allSettled(
+    ['.secrets.sample']
+      .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
+      .map(async (val) => copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
+  )
+
+  await Promise.allSettled(
+    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
+      copyFile(`${rootDir}/.values/${val}`, `${env.ENV_DIR}/${val}`),
+    ),
+  )
+  if (!existsSync(`${env.ENV_DIR}/env`)) {
+    debug.log(`Copying basic values`)
+    await copy(`${rootDir}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
+  }
+
+  debug.log('Copying Otomi Console Setup')
+  mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
+  await copy(`${rootDir}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
+  await Promise.allSettled(
+    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
+  )
+
+  // Done, write chart values if we got any
+  const originalValues = isChart ? getChartValues() : await hfValues(true)
+  if (isChart) await writeValues(originalValues)
+
+  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
+  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
+  const generatedSecrets = await generateSecrets(originalValues)
+  await writeValues(generatedSecrets, false)
+
+  // if we did not have the admin password before we know we have generated it for the first time
+  // so tell the user about it
+  if (!originalValues?.otomi?.adminPassword) {
+    debug.log(
+      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
+    )
+  }
+  if (isChart) {
+    // Write some output for the user about password access via a secret
+    const updatedValues = await hfValues(true)
+
+    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null'`)
+    await nothrow(
+      $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
+    )
+    debug.log(
+      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
+    )
+  }
+
+  await genSops()
+
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    // encryption related stuff
+    const file = '.gitattributes'
+    await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+    await encrypt()
+  }
+
+  if (!hasOtomi) {
+    debug.log('You can now use the otomi CLI')
+  }
+  debug.log(`Done bootstrapping values`)
+}
+
 export const bootstrapGit = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     // scenario 3: pull > bootstrap values
     debug.info('Values repo already git initialized.')
   } else {
-    // scenario 1 or 2 (2 will only be called upon first otomi commit)
+    // scenario 1 or 2 or 4(2 will only be called upon first otomi commit)
     debug.info('Initializing values repo.')
-    const cwd = await currDir()
     cd(env.ENV_DIR)
 
-    let values: any
-    if (env.VALUES_INPUT) {
-      values = loadYaml(env.VALUES_INPUT)
-    } else if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`)) {
-      // TODO: Make else once defaults are removed from defaults.gotmpl
-      const clstr = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-      if (!clstr.provider) {
-        debug.info('Skipping git repo configuration')
-        return
-      }
-      values = await hfValues()
-    }
+    const values = await hfValues(true)
+
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
-    const stage = values?.charts?.['cert-manager']?.stage ?? 'production'
-    if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
+    // const stage = values?.charts?.['cert-manager']?.stage ?? 'production'
+    // if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
 
     const giteaEnabled = values?.charts?.gitea?.enabled ?? true
     const clusterDomain = values?.cluster?.domainSuffix
     const byor = !!values?.charts?.['otomi-api']?.git
 
+    if (!byor && !clusterDomain) {
+      debug.info('Skipping git repo configuration')
+      return
+    }
+
     if (!giteaEnabled && !byor) {
-      debug.error('Gitea was disabled but no charts.otomi-api.git config was given.')
-      process.exit(1)
+      throw new Error('Gitea was disabled but no charts.otomi-api.git config was given.')
     } else if (!clusterDomain) {
       debug.info('No values defined for git. Skipping git repository configuration')
       return
     }
     let username = 'Otomi Admin'
-    let email
-    let password
-    let remote
+    let email: string
+    let password: string
+    let remote: string
     const branch = 'main'
     if (!giteaEnabled) {
       const otomiApiGit = values?.charts?.['otomi-api']?.git
@@ -99,76 +196,11 @@ export const bootstrapGit = async (): Promise<void> => {
     await $`git config --local user.email ${email}`
     await $`git checkout -b ${branch}`
     await $`git remote add origin ${remote}`
-    cd(cwd)
+    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+
+    cd(rootDir)
+    debug.log(`Done bootstrapping git`)
   }
-}
-
-export const bootstrapValues = async (): Promise<void> => {
-  const cwd = await currDir()
-
-  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
-
-  const binPath = `${env.ENV_DIR}/bin`
-  mkdirSync(binPath, { recursive: true })
-  const otomiImage = `otomi/core:${getImageTag()}`
-  debug.info(`Intalling artifacts from ${otomiImage}`)
-
-  await Promise.allSettled([
-    copyFile(`${cwd}/bin/aliases`, `${binPath}/aliases`),
-    copyFile(`${cwd}/binzx/otomi`, `${binPath}/otomi`),
-  ])
-  debug.info('Copied bin files')
-  try {
-    mkdirSync(`${env.ENV_DIR}/.vscode`, { recursive: true })
-    await copy(`${cwd}/.values/.vscode`, `${env.ENV_DIR}/.vscode`, { recursive: true })
-    debug.info('Copied vscode folder')
-  } catch (error) {
-    debug.error(error)
-    debug.error(`Could not copy from ${cwd}/.values/.vscode`)
-    process.exit(1)
-  }
-
-  generateLooseSchema(cwd)
-  debug.info('Generated loose schema')
-
-  await Promise.allSettled(
-    ['.gitattributes', '.secrets.sample']
-      .filter((val) => !existsSync(`${env.ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
-      .map(async (val) => copyFile(`${cwd}/.values/${val}`, `${env.ENV_DIR}/${val}`)),
-  )
-
-  await Promise.allSettled(
-    ['.gitignore', '.prettierrc.yml', 'README.md'].map(async (val) =>
-      copyFile(`${cwd}/.values/${val}`, `${env.ENV_DIR}/${val}`),
-    ),
-  )
-  if (!existsSync(`${env.ENV_DIR}/env`)) {
-    debug.log(`Copying basic values`)
-    await copy(`${cwd}/.values/env`, `${env.ENV_DIR}/env`, { overwrite: false, recursive: true })
-  }
-
-  debug.log('Copying Otomi Console Setup')
-  mkdirSync(`${env.ENV_DIR}/docker-compose`, { recursive: true })
-  await copy(`${cwd}/docker-compose`, `${env.ENV_DIR}/docker-compose`, { overwrite: true, recursive: true })
-  await Promise.allSettled(
-    ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${cwd}/${val}`, `${env.ENV_DIR}/${val}`)),
-  )
-
-  // If we run from chart installer, VALUES_INPUT will be set
-  if (env.VALUES_INPUT) await mergeChartValues()
-  // TODO: Enable wizard
-  // else if (process.stdout.isTTY) {
-  //   await askBasicQuestions()
-  // }
-
-  await genSops()
-
-  if (env.VALUES_INPUT && existsSync(`${env.ENV_DIR}/.sops.yaml`)) await encrypt()
-
-  if (!hasOtomi) {
-    debug.log('You can now use the otomi CLI')
-  }
-  debug.log(`Done bootstrapping values`)
 }
 
 // const notEmpty = (answer: string): boolean => answer?.trim().length > 0
@@ -264,6 +296,8 @@ export const module = {
       1. chart install: assume empty env dir, so git init > bootstrap values (=load skeleton files, then merge chart values) > and commit
       2. cli install: first time, so git init > bootstrap values
       3. cli install: n-th time (.git exists), so pull > bootstrap values
+      4. chart install: n-th time. (values are stored in some git repository), so configure git, then clone values, then merge chart values) > and commit
+
     */
     await bootstrapValues()
     await decrypt()

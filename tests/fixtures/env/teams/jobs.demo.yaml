@@ -20,22 +20,18 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   init:
-                      env:
-                          foo: bar
-                      nativeSecrets:
-                          foo: bar
-                      image:
-                          repository: busybox
-                          tag: latest
-                          pullPolicy: IfNotPresent
-                      script: |
-                          echo "hello $receiver and $SOME-KEY"
-                      secrets:
-                          - mysecret-generic
-                          - hello-otomi
+                      - env:
+                            foo: bar
+                        image:
+                            repository: busybox
+                            tag: latest
+                            pullPolicy: IfNotPresent
+                        script: |
+                            echo "hello foo $foo"
+                        secrets:
+                            - mysecret-generic
+                            - hello-otomi
                   name: contains-everything
-                  nativeSecrets:
-                      foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
                   secrets:
@@ -58,14 +54,14 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   init:
-                      env:
-                          foo: bar
-                      image:
-                          repository: busybox
-                          tag: latest
-                          pullPolicy: IfNotPresent
-                      script: |
-                          echo "hello $receiver"
+                      - env:
+                            foo: bar
+                        image:
+                            repository: busybox
+                            tag: latest
+                            pullPolicy: IfNotPresent
+                        script: |
+                            echo "hello $receiver"
                   name: also-contains-everything-and-cron
                   runPolicy: Always
                   schedule: 0 1 * * *
@@ -97,13 +93,13 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   init:
-                      env:
-                          foo: bar
-                      image:
-                          repository: busybox
-                          tag: latest
-                          pullPolicy: IfNotPresent
-                      script: echo "hello world"
+                      - env:
+                            foo: bar
+                        image:
+                            repository: busybox
+                            tag: latest
+                            pullPolicy: IfNotPresent
+                        script: echo "hello world"
                   name: init-cronjob
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"

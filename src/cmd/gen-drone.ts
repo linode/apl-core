@@ -9,8 +9,8 @@ import {
   getParsedArgs,
   gucci,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
-  startingDir,
   terminal,
 } from '../common/utils'
 
@@ -54,7 +54,7 @@ export const genDrone = async (): Promise<void> => {
     pullPolicy,
   }
 
-  const output = await gucci(`${startingDir}/tpl/.drone.yml.gotmpl`, obj)
+  const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj)) as string
 
   // TODO: Remove when validate-values can validate subpaths
   if (!output) {
@@ -65,8 +65,10 @@ export const genDrone = async (): Promise<void> => {
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    writeFileSync(`${env.ENV_DIR}/.drone.yml`, output)
-    debug.log(`gen-drone is done and the configuration is written to: ${env.ENV_DIR}/.drone.yml`)
+    const file = `${env.ENV_DIR}/.drone.yml`
+    writeFileSync(file, output)
+    debug.debug('.drone.yml: ', output)
+    debug.log(`gen-drone is done and the configuration is written to: ${file}`)
   }
 }
 

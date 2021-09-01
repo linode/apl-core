@@ -3,10 +3,18 @@ import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
-import { $, chalk, nothrow } from 'zx'
+import { $, cd, chalk, nothrow } from 'zx'
 import { hfTemplate } from '../common/hf'
 import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, OtomiDebugger, readdirRecurse, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getParsedArgs,
+  OtomiDebugger,
+  readdirRecurse,
+  rootDir,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
@@ -28,7 +36,7 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = async (argv: Arguments): Promise<void> => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
 
   k8sVersion = getK8sVersion()
   vk8sVersion = `v${k8sVersion}`
@@ -113,6 +121,7 @@ const processCrdWrapper = async (argv: Arguments) => {
   process.env.KUBE_VERSION_OVERRIDE = oldK8SVoverride
 
   debug.log('Processing CRD files...')
+  cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
   const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
@@ -131,6 +140,7 @@ const processCrdWrapper = async (argv: Arguments) => {
 
 export const validateTemplates = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
+  await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
     'PspAllowedRepos',
@@ -185,8 +195,7 @@ export const validateTemplates = async (): Promise<void> => {
   output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
   if (kubevalOutput.exitCode !== 0) {
     output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
-    debug.error('Templating FAILED')
-    process.exit(1)
+    throw new Error('Templating FAILED')
   } else debug.log('Templating SUCCESS')
 }
 
@@ -198,7 +207,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await setup(argv)
     await validateTemplates()
   },
 }

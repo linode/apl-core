@@ -1,2 +1,3 @@
 charts:
-    httpbin: {}
+    httpbin:
+        enabled: false

@@ -1,8 +1,8 @@
-import { dump, load } from 'js-yaml'
+import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
-import { asArray, getParsedArgs, logLevels, terminal } from './utils'
+import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -15,7 +15,7 @@ const value: iValue = {
   rp: undefined,
 }
 
-const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|basePath=)/gm, '')
+const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 export type HFParams = {
@@ -65,62 +65,54 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-const hfTrimmed = (args: HFParams): ProcessPromise<ProcessOutput> => {
+export type HFOptions = {
+  streams?: Streams
+}
+
+export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
+  // we do some transformations to strip out unwanted noise, which helmfile generates because reasons
   const transform = new Transform({
     transform(chunk, encoding, next) {
-      const transformation = trimHFOutput(chunk.toString()).trim()
+      const str = chunk.toString()
+      const transformation = trimHFOutput(str).trim()
       if (transformation && transformation.length > 0) this.push(transformation)
       next()
     },
   })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
-  proc.stdout.pipe(transform)
-  return proc
-}
+  const output = {
+    stdout: proc.stdout,
+    stderr: proc.stderr.pipe(transform),
+    proc,
+  }
 
-export type HFOptions = {
-  trim?: boolean
-  streams?: Streams
-}
-
-export const hfStream = (args: HFParams, opts?: HFOptions): ProcessPromise<ProcessOutput> => {
-  const proc = opts?.trim ? hfTrimmed(args) : hfCore(args)
-  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return proc
-}
-
-export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
-  return new ProcessOutputTrimmed(await hfStream(args, opts))
+  if (opts?.streams?.stdout) output.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) output.stderr.pipe(opts.streams.stderr, { end: false })
+  return new ProcessOutputTrimmed(await output.proc)
 }
 
 export type ValuesOptions = {
   replacePath?: boolean
-  asString?: boolean
+  skipCache?: boolean
 }
 
-export const values = async (opts?: ValuesOptions): Promise<any | string> => {
-  if (opts?.replacePath && value.rp) {
-    if (opts?.asString) return dump(value.rp)
-    return value.rp
+export const values = async (opts?: ValuesOptions): Promise<Record<string, any>> => {
+  if (!opts?.skipCache) {
+    if (opts?.replacePath && value.rp) {
+      return value.rp
+    }
+    if (value.clean) {
+      return value.clean
+    }
   }
-  if (value.clean) {
-    if (opts?.asString) return dump(value.clean)
-    return value.clean
-  }
-
-  const output = await hf(
-    { fileOpts: `${process.cwd()}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' },
-    { trim: true },
-  )
+  const output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
   value.clean = (load(output.stdout) as any).renderedvalues
   value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  if (opts?.asString) return opts && opts.replacePath ? replaceHFPaths(output.stdout) : output.stdout
   return opts?.replacePath ? value.rp : value.clean
 }
 
-export const hfValues = async (): Promise<any> => {
-  return values({ replacePath: true })
+export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
+  return values({ replacePath: true, skipCache })
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

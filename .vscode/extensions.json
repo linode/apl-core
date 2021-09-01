@@ -11,6 +11,7 @@
     "mads-hartmann.bash-ide-vscode",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "ms-vscode-remote.remote-containers",
     "pascalreitermann93.vscode-yaml-sort",
     "redhat.vscode-yaml",
     "streetsidesoftware.code-spell-checker",

@@ -20,16 +20,16 @@ let otomiK8sVersion: string
  */
 const checkKubeContext = async (): Promise<void> => {
   if (env.CI) return
-  const debug = terminal('checkKubeContext')
-  debug.info('Validating kube context')
+  const d = terminal('checkKubeContext')
+  d.info('Validating kube context')
 
-  const values: any = await hfValues()
+  const values = await hfValues()
   const currentContext = (await $`kubectl config current-context`).stdout.trim()
   const k8sContext = values?.cluster?.k8sContext
-  debug.debug('currentContext: ', currentContext)
-  debug.debug('k8sContext: ', k8sContext)
+  d.debug('currentContext: ', currentContext)
+  d.debug('k8sContext: ', k8sContext)
 
-  debug.info(`Using kube context: ${currentContext}`)
+  d.info(`Using kube context: ${currentContext}`)
 
   if (k8sContext !== currentContext) {
     let fixContext = false
@@ -49,12 +49,11 @@ const checkKubeContext = async (): Promise<void> => {
  * @returns
  */
 const checkEnvDir = (): boolean => {
-  const debug = terminal('checkEnvDir')
+  const d = terminal('checkEnvDir')
   if (dirname.includes('otomi-core') && !env.ENV_DIR) {
-    debug.error('The ENV_DIR environment variable is not set')
-    process.exit(1)
+    throw new Error('The ENV_DIR environment variable is not set')
   }
-  debug.debug(`ENV_DIR: ${env.ENV_DIR}`)
+  d.debug(`ENV_DIR: ${env.ENV_DIR}`)
   return readdirSync(env.ENV_DIR).length > 0
 }
 
@@ -65,7 +64,6 @@ export type PrepareEnvironmentOptions = {
   skipAllPreChecks?: boolean
 }
 
-let clusterFile: any
 export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
 /**
  * Find the cluster kubernetes version in the values
@@ -73,10 +71,8 @@ export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
  */
 export const getK8sVersion = (): string => {
   if (otomiK8sVersion) return otomiK8sVersion
-  if (!clusterFile) {
-    clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  }
-  otomiK8sVersion = clusterFile.cluster?.k8sVersion
+  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
+  otomiK8sVersion = clusterFile.cluster!.k8sVersion!
   return otomiK8sVersion
 }
 /**
@@ -97,9 +93,7 @@ export const getImageTag = (): string => {
  */
 export const getClusterOwner = (): string => {
   if (otomiClusterOwner) return otomiClusterOwner
-  if (!clusterFile) {
-    clusterFile = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  }
+  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiClusterOwner = clusterFile.cluster?.owner
   return otomiClusterOwner
 }
@@ -108,8 +102,8 @@ export const getClusterOwner = (): string => {
  */
 export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): Promise<void> => {
   if (options?.skipAllPreChecks) return
-  const debug = terminal('prepareEnvironment')
-  debug.info('Checking environment')
+  const d = terminal('prepareEnvironment')
+  d.info('Checking environment')
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
     if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
@@ -121,9 +115,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
  */
 export const exitIfInCore = (command: string): void => {
   if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core')) {
-    const debug = terminal('exitIfInCore')
-    debug.error(`'otomi ${command}' should not be ran from otomi-core`)
-    process.exit(1)
+    throw new Error(`'otomi ${command}' should not be ran from otomi-core`)
   }
 }
 

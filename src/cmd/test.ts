@@ -10,6 +10,7 @@ import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
+import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
@@ -21,12 +22,13 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = (argv: Arguments): void => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
 }
 
 export const test = async (): Promise<void> => {
-  debug.log(await lint())
-  debug.log(await validateTemplates())
+  await validateValues()
+  await lint()
+  await validateTemplates()
   // await checkPolicies(argv)
 
   const output: ProcessOutputTrimmed = await hf({
@@ -35,8 +37,7 @@ export const test = async (): Promise<void> => {
   })
 
   if (output.exitCode > 0) {
-    debug.error(output.stderr)
-    process.exit(output.exitCode)
+    throw new Error(output.stderr)
   } else if (output.stderr.length > 0) {
     debug.error(output.stderr)
   }

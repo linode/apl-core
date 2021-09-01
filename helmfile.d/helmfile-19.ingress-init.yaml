@@ -10,5 +10,6 @@ releases:
     installed: {{ $c | get "keycloak.enabled" true }}
     labels:
       pkg: keycloak
+      group: jobs
     <<: *jobs
 

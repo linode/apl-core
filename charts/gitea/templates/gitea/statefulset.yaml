@@ -40,7 +40,7 @@ spec:
       initContainers: 
         {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 8 }}
         - name: init
-          image: "{{ include "gitea.image" . }}"
+          image: "{{ $image }}"
           command: ["/usr/sbin/init_gitea.sh"]
           {{- include "common.resources" . | nindent 10 }}
           env:

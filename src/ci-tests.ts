@@ -2,18 +2,19 @@
 import { existsSync, symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
-import { hf } from './cmd/hf'
 import { validateTemplates } from './cmd/validate-templates'
 import { validateValues } from './cmd/validate-values'
 import { x } from './cmd/x'
+import { hf } from './common/hf'
 import { prepareEnvironment } from './common/setup'
 import {
   BasicArguments,
   getFilename,
   getParsedArgs,
+  logLevelString,
   OtomiDebugger,
+  rootDir,
   setParsedArgs,
-  startingDir,
   terminal,
 } from './common/utils'
 import { basicOptions } from './common/yargs-opts'
@@ -33,21 +34,26 @@ const setup = (): void => {
 
 export const ciTests = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (!existsSync(`${startingDir}/env`)) symlinkSync(`${startingDir}/tests/fixtures`, `${startingDir}/env`)
-  debug.log(`Running CI tests with values from ${`${startingDir}/tests/fixtures/`}`)
+  if (!existsSync(`${rootDir}/env`)) symlinkSync(`${rootDir}/tests/fixtures`, `${rootDir}/env`)
+  debug.log(`Running CI tests with values from ${`${rootDir}/tests/fixtures/`}`)
 
   const xCommand = 'opa test policies -v'
   debug.info(xCommand)
   const opaExitCode = await x({ ...argv, _: ['x', ...xCommand.split(' ')] })
   if (opaExitCode !== 0) {
-    debug.error('Opa policies failed')
-    process.exit(1)
+    throw new Error('Opa policies failed')
   }
 
   await validateValues()
 
   debug.info('Running hf lint')
-  await hf({ ...argv, args: ['lint'] })
+  await hf(
+    {
+      logLevel: logLevelString(),
+      args: ['lint'],
+    },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+  )
 
   debug.info('Running validate-templates')
   await validateTemplates()
@@ -65,13 +71,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     setup()
-
-    try {
-      await ciTests()
-    } catch (error) {
-      debug.error(error)
-      process.exit(1)
-    }
+    await ciTests()
   },
 }
 

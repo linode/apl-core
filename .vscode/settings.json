@@ -5,11 +5,8 @@
   "[shell]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[ejs]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "[js]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -58,5 +55,7 @@
   "shellformat.flag": "-i 2 -ci",
   "opa.roots": ["${workspaceFolder}/policies"],
   "python.pythonPath": "/usr/local/bin/python3",
-  "sops.enabled": false
+  "sops.enabled": false,
+  "mochaExplorer.files": "tests/*.test.ts",
+  "mochaExplorer.require": "ts-node/register"
 }

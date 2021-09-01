@@ -1,34 +1,30 @@
-import { existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { exitIfInCore, prepareEnvironment } from '../common/setup'
-import { currDir, getFilename, OtomiDebugger, setParsedArgs, terminal, waitTillAvailable } from '../common/utils'
+import { prepareEnvironment } from '../common/setup'
+import { getFilename, rootDir, setParsedArgs, terminal } from '../common/utils'
+import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
-import { bootstrapGit } from './bootstrap'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { getChartValues } from './lib/chart'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
-const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-const setup = (): void => {
-  exitIfInCore(cmdName)
-}
-
 export const preCommit = async (): Promise<void> => {
-  const pcDebug = terminal('Pre Commit')
-  pcDebug.info('Check for cluster diffs')
-  await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
-  const settingsDiff = (await $`git diff env/settings.yaml`).stdout.trim()
-  const secretDiff = (await $`git diff env/secrets.settings.yaml`).stdout.trim()
-
+  const d = terminal('preCommit')
+  if (isChart) {
+    // skip git checks, just do the work
+    await genDrone()
+    return
+  }
+  d.info('Check for cluster diffs')
+  const settingsDiff = (await nothrow($`git diff env/settings.yaml`)).stdout.trim()
+  const secretDiff = (await nothrow($`git diff env/secrets.settings.yaml`)).stdout.trim()
   const versionChanges = settingsDiff.includes('+    version:')
   const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
   const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
@@ -38,48 +34,48 @@ export const preCommit = async (): Promise<void> => {
 }
 
 export const gitPush = async (branch: string): Promise<boolean> => {
-  const gitDebug = terminal('gitPush')
-  gitDebug.info('Starting git push.')
+  const d = terminal('gitPush')
+  d.info('Starting git push.')
 
-  const cwd = await currDir()
   cd(env.ENV_DIR)
   try {
-    await $`git push -u origin ${branch} -f`
-    gitDebug.log('Otomi values have been pushed to git.')
+    await $`git push -u origin ${branch}`
+    d.log('Otomi values have been pushed to git.')
     return true
-  } catch (error) {
-    gitDebug.error(error)
+  } catch (e) {
+    d.info(e.stdout)
+    d.error(e.stderr)
     return false
   } finally {
-    cd(cwd)
+    cd(rootDir)
   }
 }
 
 export const commit = async (): Promise<void> => {
+  const d = terminal('commit')
   await validateValues()
-
-  debug.info('Preparing values')
-
-  const cwd = await currDir()
+  d.info('Preparing values')
+  const values = await hfValues()
   cd(env.ENV_DIR)
-
-  const values = getChartValues() ?? (await hfValues())
-  const clusterDomain = values?.cluster.domainSuffix ?? values?.cluster.apiName
-
   preCommit()
   await encrypt()
-  debug.info('Committing values')
+  d.info('Committing values')
+  cd(env.ENV_DIR)
   await $`git add -A`
-  await $`git commit -m 'otomi commit' --no-verify`
+  try {
+    await $`git commit -m 'otomi commit' --no-verify`
+  } catch (e) {
+    d.info(e.stdout)
+    d.error(e.stderr)
+    d.log('Something went wrong trying to commit. Did you make any changes?')
+  }
 
-  if (!env.CI) await pull()
-  let healthUrl
-  let branch
+  if (!env.CI && !isChart) await pull()
+  // previous command returned to rootDir, so go back to env:
+  cd(env.ENV_DIR)
+  let branch = 'main'
   if (values.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? 'main'
-  } else {
-    healthUrl = `gitea.${clusterDomain}`
-    branch = 'main'
+    branch = values.charts!['otomi-api']!.git!.branch ?? branch
   }
 
   try {
@@ -88,16 +84,14 @@ export const commit = async (): Promise<void> => {
       process.env.GIT_SSL_NO_VERIFY = 'true'
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
-    if (healthUrl) await waitTillAvailable(healthUrl)
     await $`git remote show origin`
     await gitPush(branch)
-    debug.log('Successfully pushed the updated values')
+    d.log('Successfully pushed the updated values')
   } catch (error) {
-    debug.error(error.stderr)
-    debug.error('Pushing the values failed, please read the above error message and manually try again')
-    process.exit(1)
+    d.error(error.stderr)
+    throw new Error('Pushing the values failed, please read the above error message and manually try again')
   } finally {
-    cd(cwd)
+    cd(rootDir)
   }
 }
 
@@ -109,14 +103,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    setup()
-
-    if (!env.CI && existsSync(`${env.ENV_DIR}/.git`)) {
-      debug.info('Values repo already git initialized.')
-      await pull()
-    } else {
-      await bootstrapGit()
-    }
     await commit()
   },
 }

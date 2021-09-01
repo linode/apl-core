@@ -1,7 +1,7 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
-import { hf, hfStream } from '../common/hf'
+import { $, nothrow } from 'zx'
+import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
@@ -17,27 +17,35 @@ const cleanup = (argv: Arguments): void => {
 }
 
 const setup = (argv: Arguments): void => {
-  if (argv._[0] === cmdName) cleanupHandler(() => cleanup(argv))
+  cleanupHandler(() => cleanup(argv))
 }
 
 const destroyAll = async () => {
-  const debugStream = { stdout: debug.stream.debug }
-  await stream($`kubectl -n olm delete deploy --all`, debugStream)
+  debug.log('Uninstalling otomi...')
+  const debugStream = { stdout: debug.stream.debug, stderr: debug.stream.error }
+  debug.info('Removing problematic part: olm deployments...')
+  await stream(nothrow($`kubectl -n olm delete deploy --all`), debugStream)
+  debug.info('Removing problematic part: kiali finalizer...')
+  await stream(
+    nothrow($`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`),
+    debugStream,
+  )
+  debug.info('Uninstalling all charts...')
   await hf({ args: 'destroy' }, { streams: debugStream })
-
+  debug.info('Uninstalled all charts.')
+  debug.info('Uninstalling applied manifests...')
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: debug.stream.debug } },
+    { streams: debugStream },
   )
-  if (output.exitCode > 0) {
-    debug.error(output.stderr)
-    process.exit(output.exitCode)
-  } else if (output.stderr.length > 0) {
+  if (output.exitCode > 0 || output.stderr.length > 0) {
     debug.error(output.stderr)
   }
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
-  await stream($`kubectl delete -f ${templateFile}`, debugStream)
+  await stream(nothrow($`kubectl delete -f ${templateFile}`), debugStream)
+  debug.info('Uninstalled all manifests.')
+  debug.info('Uninstalling CRDs...')
 
   const ourCRDS = [
     'appgw.ingress.k8s.io',
@@ -58,8 +66,13 @@ const destroyAll = async () => {
     .filter((crd) => ourCRDS.filter((ourCRD) => ourCRD.includes(crd)).length > 0)
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
-  Promise.allSettled(allOurCRDS.map(async (val) => stream($`kubectl delete crd ${val}`, debugStream)))
-  await stream($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`, debugStream)
+  Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
+  debug.info('Removing problematic api service: v1.packages.operators.coreos.com...')
+  await stream(
+    nothrow($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`),
+    debugStream,
+  )
+  debug.log('Uninstalled otomi!')
 }
 
 export const destroy = async (): Promise<void> => {
@@ -68,14 +81,14 @@ export const destroy = async (): Promise<void> => {
   if (!argv.label && !argv.file) {
     destroyAll()
   } else {
-    await hfStream(
+    await hf(
       {
         fileOpts: argv.file,
         labelOpts: argv.label,
         logLevel: logLevelString(),
         args: 'destroy',
       },
-      { trim: true, streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+      { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
     )
   }
 }
