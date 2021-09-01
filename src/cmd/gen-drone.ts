@@ -2,7 +2,7 @@ import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getClusterOwner, getImageTag, prepareEnvironment } from '../common/setup'
+import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
@@ -37,6 +37,8 @@ export const genDrone = async (): Promise<void> => {
   if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
 
   const cluster = allValues.cluster?.name
+  const owner = allValues.cluster?.owner
+  const cloudProvider = allValues.cluster?.provider
   const globalPullSecret = allValues.otomi?.globalPullSecret
   const provider = allValues.alerts.drone
   const imageTag = getImageTag()
@@ -46,8 +48,9 @@ export const genDrone = async (): Promise<void> => {
     imageTag,
     branch,
     cluster,
+    cloudProvider,
     channel,
-    customer: getClusterOwner(),
+    owner,
     globalPullSecret,
     provider,
     webhook,

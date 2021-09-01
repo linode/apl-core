@@ -22,8 +22,6 @@ spec:
   template:
     metadata:
       annotations:
-        policy.otomi.io/ignore: container-limits
-        policy.otomi.io/ignore-sidecar: psp-allowed-users
         {{- $hasMinScale := false }}
         {{- range $a := $k.annotations }}
           {{- if (contains "autoscaling.knative.dev/minScale" $a) }}{{ $hasMinScale = true }}{{ end }}
@@ -72,9 +70,9 @@ spec:
           {{- with $k.resources }}
           resources: {{- . | toYaml | nindent 12 }}
           {{- end }}
-          # {{- with $k.securityContext }}
-          # securityContext: {{- . | toYaml | nindent 12 }}
-          # {{- end }}
+          {{- with $k.securityContext }}
+          securityContext: {{- . | toYaml | nindent 12 }}
+          {{- end }}
 {{- if or $k.files $k.secretMounts }}
           volumeMounts:
   {{- range $dir, $files := $vols }}

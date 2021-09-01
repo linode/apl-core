@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
 import express, { Request, Response } from 'express'
-import { existsSync, symlinkSync } from 'fs'
+import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
 import { validateValues } from '../cmd/validate-values'
@@ -15,20 +15,6 @@ let server: Server
 export const stopServer = (): void => {
   server?.close()
 }
-
-const symlinkEnvDir = (): void => {
-  const envPath = `${rootDir}/env`
-  if (!existsSync(env.ENV_DIR)) {
-    console.warn(`Values at ${env.ENV_DIR} are not mounted yet!`)
-    return
-  }
-  if (!existsSync(envPath)) symlinkSync(env.ENV_DIR, envPath)
-}
-
-app.use((req, res, next) => {
-  symlinkEnvDir()
-  next()
-})
 
 app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
@@ -73,6 +59,17 @@ app.get('/commit', async (req: Request, res: Response) => {
 })
 
 export const startServer = (): void => {
+  const k8sEnvDirPath = env.ENV_DIR
+  const dockerEnvDir = `${rootDir}/env`
+  // accomodate k8s deployment with shared values dir, and make symlink to /home/app/stack/env
+  if (k8sEnvDirPath && !existsSync(k8sEnvDirPath)) {
+    debug.info('Creating k8s values folder for symlink: ', k8sEnvDirPath)
+    mkdirSync(k8sEnvDirPath)
+    if (!existsSync(dockerEnvDir)) {
+      debug.info(`Creating symlink from ${k8sEnvDirPath} to ${dockerEnvDir}`)
+      symlinkSync(k8sEnvDirPath, dockerEnvDir)
+    }
+  }
   server = app.listen(17771, '0.0.0.0')
   debug.log(`Container listening on http://0.0.0.0:17771`)
 }
