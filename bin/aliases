@@ -38,7 +38,15 @@ function kint() {
 
 alias kintd="EDITOR=vim k9s --kubeconfig ./kind/kubeconfig" 
 alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
-alias kintoto="KUBECONFIG=$PWD/kind/kubeconfig ENV_DIR=$PWD/kind binzx/otomi"
+
+function kintoto() {
+  export KUBECONFIG=$PWD/kind/kubeconfig 
+  export ENV_DIR=$PWD/kind
+  export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
+  echo $METALLB_SUBNET
+
+  binzx/otomi $@
+}
 
 function kpo() {
   labels=$1

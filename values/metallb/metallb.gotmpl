@@ -1,0 +1,9 @@
+{{- $v := .Values }}
+{{- $metalLBSubnet := requiredEnv "METALLB_SUBNET" }}
+
+configInline:
+  address-pools:
+  - name: kind
+    protocol: layer2
+    addresses:
+    - {{ $metalLBSubnet | replace "0/16" "3" }}-{{ $metalLBSubnet | replace "0.0/16" "255.254" -}}

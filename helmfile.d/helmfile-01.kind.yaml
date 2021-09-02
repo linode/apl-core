@@ -1,0 +1,14 @@
+bases:
+  - snippets/env.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Environment.Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: metallb
+    installed: {{ eq $v.cluster.provider "kind" }}
+    namespace: metallb-system
+    labels:
+      pkg: kind
+    <<: *default
