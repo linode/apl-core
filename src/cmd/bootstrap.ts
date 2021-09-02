@@ -20,7 +20,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal
+  terminal,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
