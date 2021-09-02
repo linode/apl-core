@@ -128,8 +128,10 @@ export const bootstrapValues = async (): Promise<void> => {
         ([k, v]) => `--from-literal='${k}'='${v}'`,
       )
       debug.info(secretLiterals)
-      debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
-      await nothrow($`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
+      debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`)
+      const result = await nothrow($`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`)
+      debug.info(`Create secret exited with (${result.exitCode})`)
+      debug.info(result.stdout)
     } else {
       debug.info('Found secrets on cluster, recovering')
       generatedSecrets = kubeSecretObject
