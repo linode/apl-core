@@ -20,7 +20,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal,
+  terminal
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -120,12 +120,16 @@ export const bootstrapValues = async (): Promise<void> => {
   let generatedSecrets = await generateSecrets(originalValues)
   if (isChart) {
     const kubeSecretObject = await getKubeSecret(k8sPasswordName)
+    debug.info('Checking if passwords already exist on cluster')
+    debug.debug(kubeSecretObject)
     if (isEmpty(kubeSecretObject)) {
+      debug.info('Creating secret on cluster as failover')
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
         ([k, v]) => `--from-literal='${k}'='${v}'`,
       )
       await nothrow($`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
     } else {
+      debug.debug('Found secrets on cluster, recovering')
       generatedSecrets = kubeSecretObject
     }
   }
