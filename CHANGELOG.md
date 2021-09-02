@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.5](https://github.com/redkubes/otomi-core/compare/v0.14.4...v0.14.5) (2021-09-02)
+
+
+### Bug Fixes
+
+* encode git pass, fixes redkubes/unassigned-issues[#261](https://github.com/redkubes/otomi-core/issues/261) ([02cac44](https://github.com/redkubes/otomi-core/commit/02cac44bc0fc3265c09e38d0c8ae683857a6ef5a))
+* harbor enabled flag ([37c1ee9](https://github.com/redkubes/otomi-core/commit/37c1ee92b5ee919dc629d8f4e0073228ee753ba6))
+* harbor secret length, more dns conf options for aws, updated chart values ([280867c](https://github.com/redkubes/otomi-core/commit/280867cef70f4fc1fa136c3c93a2004c9a4ee103))
+* should handle error ([#561](https://github.com/redkubes/otomi-core/issues/561)) ([c17b7d9](https://github.com/redkubes/otomi-core/commit/c17b7d9ec982bea76bc578d082302e7a982cde2e))
+* wrongly indented property ([#574](https://github.com/redkubes/otomi-core/issues/574)) ([82fa930](https://github.com/redkubes/otomi-core/commit/82fa930b60f2558c16e4ee4a6c8dfaffee846894))
+
 ### [0.14.4](https://github.com/redkubes/otomi-core/compare/v0.14.2...v0.14.4) (2021-09-02)
 
 
