@@ -27,6 +27,8 @@ teamConfig:
                   ownHost: true
                   auth: true
                   ksvc:
+                      securityContext:
+                          runAsUser: 1002
                       image:
                           repository: otomi/nodejs-helloworld
                           tag: v1.2.12

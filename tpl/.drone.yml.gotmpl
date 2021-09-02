@@ -27,7 +27,7 @@ steps:
       channel: {{ .channel }}
       username: Drone
       template: >
-        Started syncing cluster '{{ .cluster }}' for customer '{{ .customer }}'...
+        Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
 {{- else if eq .provider "msteams" }}
   - name: notify-start
@@ -36,7 +36,7 @@ steps:
       webhook: {{ .webhook }}
       content:
         title: Started syncing cluster
-        text: Started syncing cluster '{{ .cluster }}' for customer '{{ .customer }}'...
+        text: Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         themeColor: 009EEA
 {{- end }}
   - name: prepare-env
@@ -72,9 +72,9 @@ steps:
       username: Drone
       template: >
         {{ print "{" "{" }}#success build.status{{ print "}" "}" }}
-        Completed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' :)
+        Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' :)
         {{ print "{" "{" }}else{{ print "}" "}" }}
-        Failed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' ;( Please take a look.
+        Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' ;( Please take a look.
         {{ print "{" "{" }}/success{{ print "}" "}" }}
 
         Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
@@ -92,7 +92,7 @@ steps:
       webhook: {{ .webhook }}
       content:
         title: Completed syncing cluster
-        text: Completed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' :)
+        text: Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' :)
         themeColor: 228B22
     when:
       status:
@@ -106,7 +106,7 @@ steps:
       webhook: {{ .webhook }}
       content:
         title: Failed syncing cluster
-        text: Failed syncing cluster '{{ .cluster }}' for customer '{{ .customer }}' ;( Please take a look.
+        text: Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' ;( Please take a look.
         themeColor: EA4300
     when:
       status:
