@@ -127,7 +127,7 @@ export const bootstrapValues = async (): Promise<void> => {
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(([k, v]) => `--from-literal=${k}=${v}`)
       debug.info(secretLiterals)
       debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`)
-      const result = await $`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`
+      const result = await $`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`
       debug.info(`Create secret exited with (${result.exitCode})`)
       debug.info(result.stdout)
       debug.error(result.stderr)
