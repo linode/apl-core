@@ -53,6 +53,14 @@ const generateLooseSchema = () => {
   }
 }
 
+const bootstrapHfValues = async ({ skipCache }: { skipCache?: boolean }): Promise<Record<string, any>> => {
+  // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
+  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
+    return hfValues({ skipCache })
+  // otherwise
+  return {}
+}
+
 export const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
@@ -113,7 +121,7 @@ export const bootstrapValues = async (): Promise<void> => {
     await decrypt()
   }
 
-  if (!isChart) originalValues = await hfValues({ skipCache: true })
+  if (!isChart) originalValues = await bootstrapHfValues({ skipCache: true })
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
@@ -150,7 +158,7 @@ export const bootstrapValues = async (): Promise<void> => {
   }
   if (isChart) {
     // Write some output for the user about password access via a secret
-    const updatedValues = await hfValues({ skipCache: true })
+    const updatedValues = await bootstrapHfValues({ skipCache: true })
 
     await nothrow($`kubectl delete secret generic otomi-password &>/dev/null`)
     await nothrow(
@@ -184,7 +192,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await hfValues({ skipCache: true })
+    const values = await bootstrapHfValues({ skipCache: true })
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
