@@ -27,20 +27,23 @@ export const genDrone = async (): Promise<void> => {
   if (!allValues.charts?.drone?.enabled) {
     return
   }
-  const receiver = allValues.alerts?.drone ?? 'slack'
+  const receiver = allValues.alerts?.drone
   const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
 
-  const key = receiver === 'slack' ? 'url' : 'lowPrio'
-  const channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'dev-mon' : undefined
-
-  const webhook = allValues.alerts?.[receiver]?.[key]
-  if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
+  let webhook
+  let channel
+  if (receiver) {
+    const key = receiver === 'slack' ? 'url' : 'lowPrio'
+    channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'dev-mon' : undefined
+    webhook = allValues.alerts?.[receiver]?.[key]
+    if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
+  }
 
   const cluster = allValues.cluster?.name
   const owner = allValues.cluster?.owner
   const cloudProvider = allValues.cluster?.provider
   const globalPullSecret = allValues.otomi?.globalPullSecret
-  const provider = allValues.alerts.drone
+  const provider = allValues.alerts?.drone
   const imageTag = getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
 
