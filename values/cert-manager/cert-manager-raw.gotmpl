@@ -4,9 +4,11 @@
 {{- $p := $dns.provider }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $letsEncryptStage := printf "%s%s" "letsencrypt-" $cm.stage }}
+{{- $clusterIssuer := ternary "selfsigned-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind" )}}
 
 resources:
-{{- if or (hasKey $p "azure") (hasKey $p "google") }}
+{{- if and (not (eq $clusterIssuer "selfsigned-cluster-issuer")) (or (hasKey $p "azure") (hasKey $p "google")) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -21,17 +23,19 @@ resources:
       # aws via service account access not yet implemented, expecting role to be on node
       {{- end }}
 {{- end }}
-{{- range $stage := (list "staging" "production") }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
-      name: letsencrypt-{{ $stage }}
+      name: {{ $clusterIssuer }}
     spec:
+      {{ if eq $clusterIssuer "selfsigned-cluster-issuer" }}
+      selfSigned: {}
+      {{- else }}
       acme:
-        server: https://acme{{ (eq $stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
+        server: https://acme{{ (eq $cm.stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
         privateKeySecretRef:
-          name: letsencrypt-{{ $stage }}
+          name: {{ $letsEncryptStage }}
         solvers:
           - selector: {}
             dns01:
@@ -57,13 +61,11 @@ resources:
                   key: secret
                   name: "dns-secret"
               {{- end }}
-
-
-{{- end }}
+      {{- end }}
 # generate all da certs
 {{- range $domInfo := $vars.domains }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
+  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "issuer" $clusterIssuer) $v) | nindent 4 }}
   {{- end }}
 {{- end }}

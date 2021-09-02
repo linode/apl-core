@@ -1,5 +1,5 @@
 cluster:
-  domainSuffix: kind.eks.otomi.cloud
+  domainSuffix: kind.local
   k8sContext: kind-kind
   k8sVersion: '1.19'
   name: kind

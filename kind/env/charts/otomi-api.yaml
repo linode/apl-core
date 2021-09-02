@@ -1,6 +1,10 @@
 charts:
   otomi-api:
     _rawValues: {}
+    git:
+      localPath: /tmp/otomi-values
+      repoUrl: github.com/svatwork/otomi-values1.git
+      branch: master
     image:
       pullPolicy: Always
       tag: latest

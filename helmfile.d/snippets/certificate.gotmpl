@@ -10,9 +10,8 @@ spec:
   - '{{ .domain }}'
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-{{ .stage }}
+    name: {{ .issuer }}
   usages:
     - digital signature
     - key encipherment
     - ocsp signing
-      
