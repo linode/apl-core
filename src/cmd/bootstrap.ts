@@ -18,9 +18,9 @@ import {
   getKubeSecret,
   loadYaml,
   OtomiDebugger,
+  terminal,
   rootDir,
   setParsedArgs,
-  terminal,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -127,9 +127,11 @@ export const bootstrapValues = async (): Promise<void> => {
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
         ([k, v]) => `--from-literal='${k}'='${v}'`,
       )
+      debug.info(secretLiterals)
+      debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
       await nothrow($`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
     } else {
-      debug.debug('Found secrets on cluster, recovering')
+      debug.info('Found secrets on cluster, recovering')
       generatedSecrets = kubeSecretObject
     }
   }
