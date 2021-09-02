@@ -52,9 +52,13 @@ const commitOnFirstRun = async () => {
   }
   await waitTillAvailable(healthUrl)
 
-  if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
+  if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) {
+    debug.info('Already data in the git repository, not first commit')
+    return
+  }
   await commit()
   await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
+  await nothrow($`kubectl delete secret otomi-generated-passwords`)
   cd(rootDir)
 }
 
@@ -84,7 +88,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
 
-  if (!isChart && !env.CI) await commitOnFirstRun()
+  if (!env.CI || isChart) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {

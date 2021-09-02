@@ -24,8 +24,9 @@ import {
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
+import { validateValues } from './validate-values'
 
-export const getChartValues = (): any | undefined => {
+export const getChartValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
@@ -34,6 +35,7 @@ export type Arguments = BasicArguments
 const cmdName = getFilename(import.meta.url)
 const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
+const k8sPasswordName = 'otomi-generated-passwords'
 
 const generateLooseSchema = () => {
   const devOnlyPath = `${rootDir}/.vscode/values-schema.yaml`
@@ -98,25 +100,25 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  let originalValues
+  let originalValues: Record<string, any> = {}
   if (isChart) {
     // write chart values if we got any
-    originalValues = getChartValues()
+    originalValues = getChartValues() as Record<string, any>
     await writeValues(originalValues)
-  } else {
-    // try to decrypt if we already have a sops file
-    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-      await decrypt()
-    }
-    // otherwise we can't read original values ;p
-    originalValues = await hfValues(true)
   }
+
+  await genSops()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
+    await encrypt()
+    await decrypt()
+  }
+
+  if (!isChart) originalValues = await hfValues({ skipCache: true })
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
   let generatedSecrets = await generateSecrets(originalValues)
   if (isChart) {
-    const k8sPasswordName = 'otomi-generated-passwords'
     const kubeSecretObject = await getKubeSecret(k8sPasswordName)
     if (isEmpty(kubeSecretObject)) {
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
@@ -129,6 +131,12 @@ export const bootstrapValues = async (): Promise<void> => {
   }
   await writeValues(generatedSecrets, false)
 
+  try {
+    if (!isEmpty(originalValues)) await validateValues()
+  } catch (error) {
+    debug.error(error)
+    throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
+  }
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it
   if (!originalValues?.otomi?.adminPassword) {
@@ -138,9 +146,9 @@ export const bootstrapValues = async (): Promise<void> => {
   }
   if (isChart) {
     // Write some output for the user about password access via a secret
-    const updatedValues = await hfValues(true)
+    const updatedValues = await hfValues({ skipCache: true })
 
-    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null'`)
+    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null`)
     await nothrow(
       $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
     )
@@ -148,8 +156,6 @@ export const bootstrapValues = async (): Promise<void> => {
       'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
     )
   }
-
-  await genSops()
 
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     // encryption related stuff
@@ -174,7 +180,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await hfValues(true)
+    const values = await hfValues({ skipCache: true })
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)

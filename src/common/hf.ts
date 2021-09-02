@@ -1,8 +1,9 @@
+import { existsSync } from 'fs'
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env } from './envalid'
-import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
+import { asArray, getParsedArgs, loadYaml, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -91,7 +92,7 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export type ValuesOptions = {
+type ValuesOptions = {
   replacePath?: boolean
   skipCache?: boolean
 }
@@ -111,8 +112,12 @@ export const values = async (opts?: ValuesOptions): Promise<Record<string, any>>
   return opts?.replacePath ? value.rp : value.clean
 }
 
-export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
-  return values({ replacePath: true, skipCache })
+export const hfValues = async (opts?: Omit<ValuesOptions, 'replacePath'>): Promise<Record<string, any>> => {
+  // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
+  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
+    return values({ replacePath: true, ...opts })
+  // otherwise
+  return {}
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {
