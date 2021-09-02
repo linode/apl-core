@@ -65,10 +65,10 @@ export const startServer = (): void => {
   if (k8sEnvDirPath && !existsSync(k8sEnvDirPath)) {
     debug.info('Creating k8s values folder for symlink: ', k8sEnvDirPath)
     mkdirSync(k8sEnvDirPath)
-    if (!existsSync(dockerEnvDir)) {
-      debug.info(`Creating symlink from ${k8sEnvDirPath} to ${dockerEnvDir}`)
-      symlinkSync(k8sEnvDirPath, dockerEnvDir)
-    }
+  }
+  if (!existsSync(dockerEnvDir)) {
+    debug.info(`Creating symlink from ${k8sEnvDirPath} to ${dockerEnvDir}`)
+    symlinkSync(k8sEnvDirPath, dockerEnvDir)
   }
   server = app.listen(17771, '0.0.0.0')
   debug.log(`Container listening on http://0.0.0.0:17771`)

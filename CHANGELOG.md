@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.4](https://github.com/redkubes/otomi-core/compare/v0.14.2...v0.14.4) (2021-09-02)
+
+
+### Bug Fixes
+
+* ksvc sidecar annotations, drone without alerts ([db26520](https://github.com/redkubes/otomi-core/commit/db26520e998a4241e6318e82d83e92a634a737e4))
+* otomi server create symlink ([#570](https://github.com/redkubes/otomi-core/issues/570)) ([b01d2d5](https://github.com/redkubes/otomi-core/commit/b01d2d545144aa033ca5424b7907e146d201bee2))
+* server regression ([79eb51e](https://github.com/redkubes/otomi-core/commit/79eb51e4779dee2844b945fe10d7f5dca36fdf8e))
+
+
+### Others
+
+* **release:** 0.14.3 ([d9810ae](https://github.com/redkubes/otomi-core/commit/d9810ae5018a9825fa43fc99ffed6e9ac9478928))
+
+### [0.14.3](https://github.com/redkubes/otomi-core/compare/v0.14.2...v0.14.3) (2021-09-02)
+
+
+### Bug Fixes
+
+* ksvc sidecar annotations, drone without alerts ([db26520](https://github.com/redkubes/otomi-core/commit/db26520e998a4241e6318e82d83e92a634a737e4))
+* otomi server create symlink ([#570](https://github.com/redkubes/otomi-core/issues/570)) ([b01d2d5](https://github.com/redkubes/otomi-core/commit/b01d2d545144aa033ca5424b7907e146d201bee2))
+* server regression ([79eb51e](https://github.com/redkubes/otomi-core/commit/79eb51e4779dee2844b945fe10d7f5dca36fdf8e))
+
 ### [0.14.2](https://github.com/redkubes/otomi-core/compare/v0.14.1...v0.14.2) (2021-09-02)
 
 

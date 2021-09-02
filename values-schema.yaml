@@ -130,13 +130,19 @@ definitions:
         description: An AWS access key ID.
         type: string
         x-secret: ''
-      region:
-        type: string
       secretKey:
         title: AWS secret key
         description: An AWS secret key.
         type: string
         x-secret: ''
+      region:
+        title: AWS region
+        description: An AWS region.
+        type: string
+      role:
+        description: Role may be set explicitly if no metadata can be accessed.
+        example: arn:aws:iam::YYYYYYYYYYYY:role/dns-manager
+        type: string
   azure:
     definitions:
       clientId:
@@ -1345,7 +1351,7 @@ properties:
                 $ref: '#/definitions/resources'
           secretKey:
             type: string
-            x-secret: 'randAlpha 20'
+            x-secret: 'randAlpha 16'
       hello:
         properties:
           enabled:
@@ -1915,8 +1921,14 @@ properties:
             properties:
               aws:
                 properties:
+                  accessKeyID:
+                    $ref: '#/definitions/aws/definitions/accessKey'
+                  secretAccessKey:
+                    $ref: '#/definitions/aws/definitions/secretKey'
                   region:
-                    type: string
+                    $ref: '#/definitions/aws/definitions/region'
+                  role:
+                    $ref: '#/definitions/aws/definitions/role'
                 required:
                   - region
             required:
@@ -1997,11 +2009,17 @@ properties:
                     description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: AWS KMS keys
                     type: string
+                  accessKey:
+                    $ref: '#/definitions/aws/definitions/accessKey'
+                  secretKey:
+                    $ref: '#/definitions/aws/definitions/secretKey'
                   region:
                     $ref: '#/definitions/aws/definitions/region'
                 required:
+                  - accessKey
                   - keys
                   - region
+                  - secretKey
             required:
               - aws
           - properties:
@@ -2014,9 +2032,15 @@ properties:
                     description: Comma separated list of one or two paths to keys as defined in Azure Keyvault. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: Azure Keyvault keys
                     type: string
+                  clientId:
+                    $ref: '#/definitions/azure/definitions/clientId'
+                  clientSecret:
+                    $ref: '#/definitions/azure/definitions/clientSecret'
                   tenantId:
                     $ref: '#/definitions/azure/definitions/tenantId'
                 required:
+                  - clientId
+                  - clientSecret
                   - keys
                   - tenantId
             required:
