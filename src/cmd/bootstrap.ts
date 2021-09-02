@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
+import { isEmpty } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
@@ -11,8 +12,10 @@ import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
+  flattenObject,
   generateSecrets,
   getFilename,
+  getKubeSecret,
   loadYaml,
   OtomiDebugger,
   rootDir,
@@ -111,7 +114,19 @@ export const bootstrapValues = async (): Promise<void> => {
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = await generateSecrets(originalValues)
+  let generatedSecrets = await generateSecrets(originalValues)
+  if (isChart) {
+    const k8sPasswordName = 'otomi-generated-passwords'
+    const kubeSecretObject = await getKubeSecret(k8sPasswordName)
+    if (isEmpty(kubeSecretObject)) {
+      const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
+        ([k, v]) => `--from-literal='${k}'='${v}'`,
+      )
+      await nothrow($`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`)
+    } else {
+      generatedSecrets = kubeSecretObject
+    }
+  }
   await writeValues(generatedSecrets, false)
 
   // if we did not have the admin password before we know we have generated it for the first time

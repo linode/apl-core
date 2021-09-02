@@ -12,7 +12,7 @@ import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, ProcessOutput, sleep } from 'zx'
+import { $, nothrow, ProcessOutput, sleep } from 'zx'
 import { env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
@@ -425,6 +425,21 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
   debug.debug('generateSecrets result: ', res)
   return res
+}
+
+export const getKubeSecret = async (secretName: string, namespace?: string): Promise<Record<string, any>> => {
+  const opts: string[] = []
+  if (namespace && namespace.length > 0) opts.push(`-n ${namespace}`)
+  const passwordSecret = await nothrow($`kubectl get secret ${opts} ${secretName} -o jsonpath='{.data}'`)
+  if (passwordSecret.exitCode !== 0) return {}
+  const jsonObj = JSON.parse(passwordSecret.stdout.trim())
+  const decodedKVPair = Object.entries(jsonObj).map(([k, v]) => [
+    k,
+    Buffer.from(v as string, 'base64').toString('utf-8'),
+  ])
+  const loadedSecrets = {}
+  decodedKVPair.forEach(([k, v]) => set(loadedSecrets, k, v))
+  return loadedSecrets
 }
 
 export default { parser, asArray }
