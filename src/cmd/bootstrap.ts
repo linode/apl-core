@@ -125,7 +125,7 @@ export const bootstrapValues = async (): Promise<void> => {
     if (isEmpty(kubeSecretObject)) {
       debug.info('Creating secret on cluster as failover')
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
-        ([k, v]) => `--from-literal='${k}'='${v}'`,
+        ([k, v]) => `--from-literal=${k}='${v}'`,
       )
       debug.info(secretLiterals)
       debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`)
