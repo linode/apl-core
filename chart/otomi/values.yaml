@@ -1,52 +1,53 @@
 cluster:
-  apiName: ''
-  apiServer: ''
   domainSuffix: ''
-  k8sContext: ''
   k8sVersion: '1.20'
   name: 'dev'
   owner: ''
-  provider: ''
-  region: ''
+  provider: '' # provider can be one of aws|azure|google
 # kms:
 #   sops:
 # provider can be one of aws|azure|google|vault
 # provider: ''
 # aws:
-#   clientID: ''
-#   clientSecret: ''
+#   keys: ''
 #   accessKey: ''
 #   secretKey: ''
+#   region: ''
 # azure:
+#   keys: ''
 #   tenantID: ''
 #   clientID: ''
 #   clientSecret: ''
-#   keys: ''
 # google:
+#   keys: ''
 #   accountJson: ''
 #   project: ''
-#   keys: ''
 # vault:
 #   token: ''
 oidc:
   clientID: ''
   clientSecret: ''
-  adminGroupID: ''
   issuer: ''
-  teamAdminGroupID: ''
   tenantID: ''
+  # IDP group id used to identify global admin
+  adminGroupID: ''
+  # IDP group id used to identify team admin
+  teamAdminGroupID: ''
 otomi:
   adminPassword: ''
-  isMultitenant: true
-  # The version should not be changed! (Consider it read only)
+  # release versions can be found here: https://github.com/redkubes/otomi-core/releases
   version: APP_VERSION_PLACEHOLDER
-customer:
-  name: ''
 dns:
   provider:
     # provide one of the following below: aws|azure|google
     # aws:
+    #   # next two keys are optional for explicit access with an iam role
+    #   # (if no metadata exists with implicit role access to manage dns)
+    #   accessKeySecret: ''
+    #   secretAccessKey: ''
+    #   # region is always needed
     #   region: eu-central-1
+    #   role: '' # optional ARN, may be set explicitly if no metadata can be accessed
     # azure:
     #   aadClientId: ''
     #   aadClientSecret: ''
@@ -59,34 +60,9 @@ charts:
   cert-manager:
     email: ''
     # stage defaults to 'production'
-    # stage: staging
+    stage: staging
 
   external-dns:
     domainFilters:
       - ''
     # zoneIdFilters: []
-  gitea:
-    postgresqlPassword: ''
-    enabled: true
-  keycloak:
-    # keycloak is enabled by default
-    # enabled: false
-    idp:
-      alias: otomi # shown on keycloak login page as a button
-      # credentials that will be used by the apps' clients to access keycloak in the cluster:
-      clientID: ''
-      clientSecret: ''
-    postgresqlPassword: '' # this needs to be set to avoid generating a new one each time
-  loki:
-    adminPassword: '' # used for log splitting by team
-  nginx-ingress:
-    private:
-      enabled: false # enable to start a LB on the private network
-  kubeapps:
-    postgresqlPassword: '' # this needs to be set to avoid generating a new one each time
-  oauth2-proxy:
-    config:
-      cookieSecret: '' # this needs to be set to avoid generating a new one each time 3
-teamConfig: {}
-alerts: {}
-services: []
