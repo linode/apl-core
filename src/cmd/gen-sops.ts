@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -51,7 +51,6 @@ export const genSops = async (): Promise<void> => {
     keys: kmsKeys,
   }
 
-  const exists = existsSync(targetPath)
   debug.debug('sops file already exists')
   debug.log(`Creating sops file for provider ${provider}`)
 
@@ -67,12 +66,6 @@ export const genSops = async (): Promise<void> => {
     debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
   }
 
-  if (!env.CI) {
-    const secretPath = `${env.ENV_DIR}/.secrets`
-    if (exists && !existsSync(secretPath)) {
-      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
-    }
-  }
   if (provider === 'google') {
     let serviceKeyJson = env.GCLOUD_SERVICE_KEY
     if (!serviceKeyJson) {
