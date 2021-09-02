@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
+import { $, cd, chalk, nothrow } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -121,16 +121,13 @@ export const bootstrapValues = async (): Promise<void> => {
   if (isChart) {
     const kubeSecretObject = await getKubeSecret(k8sPasswordName)
     debug.info('Checking if passwords already exist on cluster')
-    debug.debug(kubeSecretObject)
     if (isEmpty(kubeSecretObject)) {
       debug.info('Creating secret on cluster as failover')
       const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(([k, v]) => `--from-literal=${k}=${v}`)
-      debug.info(secretLiterals)
-      debug.info(`kubectl create secret generic ${k8sPasswordName} ${secretLiterals.join(' ')}`)
       const result = await $`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`
-      debug.info(`Create secret exited with (${result.exitCode})`)
-      debug.info(result.stdout)
-      debug.error(result.stderr)
+      debug.info(`Created secrets in the cluster ${k8sPasswordName}`)
+      debug.debug(result.stdout)
+      debug.debug(chalk.redBright(result.stderr))
     } else {
       debug.info('Found secrets on cluster, recovering')
       generatedSecrets = kubeSecretObject
