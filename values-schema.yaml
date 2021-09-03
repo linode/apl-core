@@ -1238,7 +1238,7 @@ properties:
                 x-secret: 'randAlpha 40'
           enabled:
             type: boolean
-            default: false
+            default: true
           jobservice:
             properties:
               secret:
