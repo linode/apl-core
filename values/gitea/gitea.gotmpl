@@ -11,7 +11,8 @@
 
 nameOverride: gitea
 fullnameOverride: gitea
-# clusterDomain: {{ $v.cluster.domainSuffix }}
+clusterDomain: {{ $v.cluster.domainSuffix }}
+otomiVersion: {{ $v.otomi.version }}
 
 resources:
   limits:
