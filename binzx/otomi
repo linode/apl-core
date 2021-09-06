@@ -282,6 +282,7 @@ count=$(($count))
 container_name="$container_name-$count"
 
 if [ -n "$IN_DOCKER" ]; then
+  silent echo $cmd
   $cmd
   status=$?
 elif [[ $calling_args == *'--get-yargs-completions'* ]]; then

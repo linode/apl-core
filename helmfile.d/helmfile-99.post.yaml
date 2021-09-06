@@ -14,7 +14,7 @@ releases:
       pkg: ingress-azure
       group: jobs
   - name: job-harbor
-    installed: {{ $c | get "harbor.enabled" false }}
+    installed: {{ $c | get "harbor.enabled" true }}
     labels:
       pkg: harbor
       group: jobs
