@@ -590,6 +590,19 @@ definitions:
         $ref: '#/definitions/resource'
         description: Requested resources (guaranteed).
     title: Pod resources
+  runAsUserRange:
+    type: object
+    additionalProperties: false
+    required: [min, max]
+    properties:
+      min:
+        type: integer
+        minimum": 0
+        maximum": 65535
+      max:
+        type: integer
+        minimum": 0
+        maximum": 65535
   runAsUser:
     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
@@ -2267,14 +2280,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/runAsUserRange'
           runAsGroup:
             type: object
             properties:
@@ -2284,14 +2290,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/runAsUserRange'
           supplementalGroups:
             type: object
             properties:
@@ -2301,14 +2300,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/runAsUserRange'
           fsGroup:
             type: object
             properties:
@@ -2318,14 +2310,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/runAsUserRange'
           enabled:
             type: boolean
             default: false
