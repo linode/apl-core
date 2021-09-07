@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.6](https://github.com/redkubes/otomi-core/compare/v0.14.5...v0.14.6) (2021-09-03)
+
+
+### Bug Fixes
+
+* harbor enabled by default [ci skip] ([8b57522](https://github.com/redkubes/otomi-core/commit/8b57522be69dede420c107b4adb3dadb1938f8d8))
+
+
+### Others
+
+* **release:** 0.14.5 ([3f121bf](https://github.com/redkubes/otomi-core/commit/3f121bf64eaad564d76c658aa40a74160b9ddac7))
+
 ### [0.14.4](https://github.com/redkubes/otomi-core/compare/v0.14.2...v0.14.4) (2021-09-02)
 
 ### Bug Fixes
