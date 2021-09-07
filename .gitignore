@@ -15,3 +15,5 @@ node_modules/
 .secrets
 chart/otomi/values.schema.json
 !tsconfig.json
+workflow/
+kind/kubeconfig

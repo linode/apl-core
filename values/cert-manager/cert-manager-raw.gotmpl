@@ -5,7 +5,7 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $letsEncryptStage := printf "%s%s" "letsencrypt-" $cm.stage }}
-{{- $clusterIssuer := ternary "selfsigned-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind" )}}
+{{- $clusterIssuer := ternary "selfsigned-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind")}}
 
 resources:
 {{- if and (not (eq $clusterIssuer "selfsigned-cluster-issuer")) (or (hasKey $p "azure") (hasKey $p "google")) }}

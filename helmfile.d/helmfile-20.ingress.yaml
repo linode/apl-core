@@ -41,7 +41,7 @@ releases:
       tag: ingress
     <<: *default
   - name: nginx-ingress
-    installed: {{ not (eq $v.cluster.provider "kind") }}
+    installed: true
     namespace: ingress
     labels:
       tag: ingress

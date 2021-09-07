@@ -5,4 +5,4 @@ charts:
       - otomi.cloud
     zoneIdFilters:
       - otomi
-    enabled: false
+    enabled: true
