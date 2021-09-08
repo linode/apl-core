@@ -221,7 +221,7 @@ definitions:
     properties:
       apiName:
         description: Only used for API/UI to show in app.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
@@ -337,7 +337,7 @@ definitions:
         type: string
         x-secret: ''
       projectId:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
@@ -428,6 +428,7 @@ definitions:
       ttlSecondsAfterFinished:
         default: 86400
         description: Time To Live after job is finished in seconds. Will be removed afterwards.
+        minimum: 0
         title: TTL after finished
         type: integer
       init:
@@ -442,7 +443,7 @@ definitions:
     type: object
   k8sContext:
     description: The cluster k8s context as found in $KUBECONFIG.
-    type: string
+    $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
@@ -737,7 +738,7 @@ definitions:
       domain:
         description: A custom service domain name (max 64 bytes).
         maxLength: 64
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       forwardPath:
         default: false
         description: Whether to forward the path into the service, or 'terminate' it.
@@ -747,7 +748,7 @@ definitions:
         type: boolean
       host:
         description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       id:
         description: Unique identifier created by and used in API. Optional.
         type: string
@@ -808,12 +809,12 @@ definitions:
                             description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
                             example: master-v1.*.*
                             title: Glob string pattern
-                            type: string
+                            $ref: '#/definitions/wordCharacterPattern'
                           tagMatcher:
                             default: glob
                             enum:
                               - glob
-                            type: string
+                            $ref: '#/definitions/wordCharacterPattern'
                         required:
                           - glob
                         title: Glob pattern matching
@@ -852,13 +853,13 @@ definitions:
         type: boolean
       path:
         description: Used by otomi-console to render a path for the app. Only used by core services.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       paths:
         items:
           description: |
             Path mapping to only route certain paths to the service. This allows micro services to operate on the same domain and port.
             When left empty all paths will go to this service.
-          type: string
+          $ref: '#/definitions/wordCharacterPattern'
         # nullable: true
         type: array
       port:
@@ -902,7 +903,7 @@ definitions:
         $ref: '#/definitions/azure/definitions/monitor'
       clusters:
         items:
-          type: string
+          $ref: '#/definitions/wordCharacterPattern'
         type: array
       secrets:
         items:
@@ -925,7 +926,7 @@ definitions:
         properties:
           groupMapping:
             description: IDP group id to map onto this team.
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
       password:
         description: Will be used to separate team resources.
         type: string
@@ -969,15 +970,16 @@ definitions:
       properties:
         name:
           description: Name must match mount name.
-          type: string
+          $ref: '#/definitions/wordCharacterPattern'
         configMap:
           properties:
             name:
-              type: string
+              $ref: '#/definitions/wordCharacterPattern'
     type: array
   wordCharacterPattern:
     type: string
-    pattern: '^/w$'
+    # At least one non whitespace character
+    pattern: ^[^\s]+$
 properties:
   alerts:
     $ref: '#/definitions/alerts'
@@ -1676,7 +1678,8 @@ properties:
             type: string
             default: 1024m
           maxBodySizeBytes:
-            type: number
+            type: integer
+            minimum: 0
             default: 1073741824
             description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
           modsecurity:
@@ -2175,10 +2178,10 @@ properties:
             type: string
             x-secret: ''
           email:
-            type: string
+            $ref: '#/definitions/email'
             default: not@us.ed
           server:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
             default: docker.io
         required:
           - username
