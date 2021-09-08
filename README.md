@@ -8,12 +8,12 @@
 
 Otomi is the first and only Kubernetes-based Operating System. Use Otomi to built your Internal Developer Platform (IDP) or Enterprise-grade Container Platform.
 
-Otomi is **free**, **easy to install**, comes with an **intuitive UI** and ready to use **built-in applications** and offers an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can log in and start deploying and managing your containerized applications and use all build-in applications. Get started at [otomi.io](https://otomi.io/).
+Otomi is **free**, **easy to install**, comes with an **intuitive UI** and ready to use **built-in applications** and offers an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can log in and start deploying and managing your containerized applications and use all built-in applications. Get started at [otomi.io](https://otomi.io/).
 
 Otomi includes:
 
 - Developer self-service, hiding the Kubernetes internals
-- Pre-configured and ready to use applications like Harbor, Prometheus, Grafana Loki, HashiCorp Vault, Open Policy Agent, KeyCloak, Jaeger, Kiali and more
+- Pre-configured and ready to use applications like Harbor, Prometheus, Grafana Loki, HashiCorp Vault, Open Policy Agent, Keycloak, Jaeger, Kiali and more
 - Application configuration management for all integrated applications: Providing a base profile configuration to support the most common use-cases
 - Multi-tenancy: Create teams and provide SSO access to teams and shared applications
 - Implemented policies for better governance and security. Manifests are checked both statically and on the cluster at runtime for policy obedience
