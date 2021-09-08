@@ -597,17 +597,17 @@ definitions:
     properties:
       min:
         type: integer
-        minimum": 0
-        maximum": 65535
+        minimum: 0
+        maximum: 65535
       max:
         type: integer
-        minimum": 0
-        maximum": 65535
+        minimum: 0
+        maximum: 65535
   linuxUserId:
     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
-    minimum": 0
-    maximum": 65535
+    minimum: 0
+    maximum: 65535
     default: 1001
   scaling:
     additionalProperties: false
