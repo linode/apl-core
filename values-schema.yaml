@@ -346,7 +346,7 @@ definitions:
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
     type: string
   clusterName:
-    pattern: '[\w]'
+    pattern: '#/definitions/wordCharacterPattern'
     type: string
   image:
     additionalProperties: false
