@@ -39,13 +39,24 @@ function kint() {
 alias kintd="EDITOR=vim k9s --kubeconfig ./kind/kubeconfig" 
 alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
 
+function kintnet() {
+  set -e 
+  ran=$RANDOM
+  kintk run --rm -i --tty netshoot-$ran --image=nicolaka/netshoot --restart=Never -- sh \
+    || kintk delete pod network-multitool-$ran
+}
+
 function kintoto() {
   export KUBECONFIG=$PWD/kind/kubeconfig 
   export ENV_DIR=$PWD/kind
-  export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
-  echo $METALLB_SUBNET
-
+  # export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
+  # echo $METALLB_SUBNET
+     
   binzx/otomi $@
+}
+
+function kinthdel() {
+  kintk --namespace $0 delete secret sh.helm.release.v1.$0.v1
 }
 
 function kpo() {
