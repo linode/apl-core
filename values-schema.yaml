@@ -491,7 +491,7 @@ definitions:
       - properties:
           fsGroup:
             description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
-            type: integer
+            $ref: '#/definitions/linuxUserId'
           fsGroupChangePolicy:
             description: |
               'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
@@ -590,7 +590,7 @@ definitions:
         $ref: '#/definitions/resource'
         description: Requested resources (guaranteed).
     title: Pod resources
-  runAsUserRange:
+  linuxUserIdRange:
     type: object
     additionalProperties: false
     required: [min, max]
@@ -603,7 +603,7 @@ definitions:
         type: integer
         minimum": 0
         maximum": 65535
-  runAsUser:
+  linuxUserId:
     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
     minimum": 0
@@ -713,17 +713,14 @@ definitions:
       uniqueItems: true
     properties:
       runAsUser:
-        $ref: '#/definitions/runAsUser'
+        $ref: '#/definitions/linuxUserId'
       runAsNonRoot:
         description: Enforces that the container must run as non root. This implies that the UID must also be set with runAsUser.
         type: boolean
         default: true
       runAsGroup:
         description: The GID to run the entrypoint of the container process. Defaults to group specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
-        type: integer
-        minimum": 0
-        maximum": 65535
-        default: 1001
+        $ref: '#/definitions/linuxUserId'
   service:
     additionalProperties: false
     properties:
@@ -773,7 +770,7 @@ definitions:
                   securityContext:
                     properties:
                       runAsUser:
-                        $ref: '#/definitions/runAsUser'
+                        $ref: '#/definitions/linuxUserId'
                       readOnlyRootFilesystem:
                         description: Whether this container has a read-only root filesystem. Default is false.
                         type: boolean
@@ -2280,7 +2277,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  $ref: '#/definitions/runAsUserRange'
+                  $ref: '#/definitions/linuxUserIdRange'
           runAsGroup:
             type: object
             properties:
@@ -2290,7 +2287,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  $ref: '#/definitions/runAsUserRange'
+                  $ref: '#/definitions/linuxUserIdRange'
           supplementalGroups:
             type: object
             properties:
@@ -2300,7 +2297,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  $ref: '#/definitions/runAsUserRange'
+                  $ref: '#/definitions/linuxUserIdRange'
           fsGroup:
             type: object
             properties:
@@ -2310,7 +2307,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  $ref: '#/definitions/runAsUserRange'
+                  $ref: '#/definitions/linuxUserIdRange'
           enabled:
             type: boolean
             default: false
