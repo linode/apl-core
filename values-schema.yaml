@@ -1250,10 +1250,10 @@ properties:
             properties:
               secret:
                 type: string
-                x-secret: 'randAlpha 20'
+                x-secret: 'randAlphaNum 16'
               xsrfKey:
                 type: string
-                x-secret: 'randAlpha 40'
+                x-secret: 'randAlphaNum 32'
           enabled:
             type: boolean
             default: true
@@ -1261,7 +1261,7 @@ properties:
             properties:
               secret:
                 type: string
-                x-secret: 'randAlpha 20'
+                x-secret: 'randAlphaNum 16'
           persistence:
             additionalProperties: false
             properties:
@@ -1328,7 +1328,7 @@ properties:
             properties:
               secret:
                 type: string
-                x-secret: 'randAlpha 20'
+                x-secret: 'randAlpha 16'
               credentials:
                 properties:
                   htpasswd:
@@ -1545,7 +1545,7 @@ properties:
                 x-secret: '"otomi"'
               clientSecret:
                 type: string
-                x-secret: 'randAlpha 20'
+                x-secret: 'randAlphaNum 32'
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
@@ -1737,7 +1737,7 @@ properties:
                 description: Cookie secret must be 128 bit base64 encoded string.
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
-                x-secret: 'randAlpha 24'
+                x-secret: 'randAlphaNum 16'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
       otomi-api:
