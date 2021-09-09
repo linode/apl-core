@@ -3,7 +3,7 @@
 apiVersion: v1
 data:
   Corefile: |
-    {{ $v.cluster.domainSuffix }}:53 {
+    {{ $v.global.domain }}:53 {
         errors
         cache 30
         forward . {{ include "call-nested" (list . "k8s-gateway" "k8s-gateway.fullname") }}.{{.Release.Namespace}}.svc.cluster.local

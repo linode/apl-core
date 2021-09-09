@@ -5,7 +5,8 @@ image:
   pullPolicy: IfNotPresent
 
 # Delegated domain
-domain: ""
+global:
+  domain: ""
 
 # TTL for non-apex responses (in seconds)
 ttl: 300

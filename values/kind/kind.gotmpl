@@ -1,10 +1,11 @@
 {{- $v := .Values }}
 {{- $metalLBSubnet := requiredEnv "METALLB_SUBNET" }}
 
-configInline:
-  address-pools:
-  - name: kind
-    protocol: layer2
-    addresses:
-    - {{ $metalLBSubnet }}
-domain: {{ $v.cluster.domainSuffix }}
+global:
+  configInline:
+    address-pools:
+    - name: kind
+      protocol: layer2
+      addresses:
+      - {{ $metalLBSubnet }}
+  domain: {{ $v.cluster.domainSuffix }}

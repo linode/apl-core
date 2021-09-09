@@ -1,3 +1,4 @@
-configInline:
-  address-pools: {}
-domain: ""
+global:
+  configInline:
+    address-pools: []
+  domain: ""
