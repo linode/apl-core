@@ -41,11 +41,19 @@ const setup = (): void => {
 }
 
 const commitOnFirstRun = async () => {
-  cd(env.ENV_DIR)
-
   const values = await hfValues()
   const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-  if (giteaEnabled) {
+
+  if ((await nothrow($`kubectl -n otomi get cm otomi-status`)).exitCode === 0) {
+    debug.info('Already installed, skipping commit...')
+  }
+  if (!giteaEnabled) {
+    debug.log(
+      `Please cd to ${env.ENV_DIR} and commit the values with this command: "git add -A && git commit -m "first commit" --no-verify && git push"`,
+    )
+    await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
+  } else {
+    cd(env.ENV_DIR)
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
     debug.debug('healthUrl: ', healthUrl)
     const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
