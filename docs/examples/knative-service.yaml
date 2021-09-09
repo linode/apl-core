@@ -2,12 +2,11 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: hello
-  labels:
-    policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users
 spec:
   template:
     metadata:
       annotations:
+        policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users # <- don't remove this line as it is needed
         autoscaling.knative.dev/minScale: '1'
     spec:
       containers:
