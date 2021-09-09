@@ -6,7 +6,7 @@
 
 ## About Otomi
 
-Otomi is an open-source cloud-agnostic platform for Kubernetes to securely deploy, run and manage applications with a desktop-like user interface.
+Otomi is an open-source cloud-agnostic platform to run on top of Kubernetes to securely deploy, run and manage applications with a desktop-like user interface.
 
 Otomi is **free**, **easy to install**, comes with an **intuitive desktop-like UI** and ready to use **pre-configured built-in applications** to offer an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can log in and immediately start deploying and use all the built-in applications. Get started at [otomi.io](https://otomi.io/).
 
