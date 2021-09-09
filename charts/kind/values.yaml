@@ -1,4 +1,7 @@
 global:
-  configInline:
-    address-pools: []
+
+  # metallb 
+  configInline: {}
+
+  # k8s-external
   domain: ""

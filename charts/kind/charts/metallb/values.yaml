@@ -14,6 +14,8 @@ global:
   ##
   imagePullSecrets: []
 
+  configInline: {}
+
 ## @section Common parameters
 
 ## @param nameOverride String to partially override metallb.fullname include (will maintain the release name)
@@ -46,7 +48,7 @@ existingConfigMap: ""
 ## Refer to https://metallb.universe.tf/configuration/ for
 ## available options.
 ##
-configInline: {}
+
 ## RBAC creation for controller and speaker
 ##
 rbac:

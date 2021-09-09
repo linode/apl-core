@@ -47,6 +47,26 @@ jobs:
           [ -n "$KIND_EXPERIMENTAL_DOCKER_NETWORK" ] && \
             kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
 
+          #####
+          # Our stack doesn't need to be concerned with its k8s env,
+          # so we should patch the coredns configmap in this script.
+          # TODO https://stackoverflow.com/questions/49989943/kubectl-update-configmap
+          #####
+
+
+
+          export EX_DNS_IP=$(kubectl get services/external-dns -n kube-system -o go-template='{{(index.spec.clusterIP)}}');echo EX_DNS_IP=$EX_DNS_IP
+
+            apiVersion: v1
+            data:
+              Corefile: |
+                jq blabla:53 {
+                    errors
+                    cache 30
+                    forward . $EX_DNS_IP
+                }
+
+          #####
           chmod +r $KUBECONFIG
 
           export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
@@ -54,8 +74,8 @@ jobs:
           mkdir -p ./env/env
           cp -r ./kind/env/ ./env/
 
-          npm set-script prepare "" && \
-            npm i typescript@4.3.4 && \
-            npm run compile && \
-            /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
+          npm set-script prepare ""
+          npm i typescript@4.3.4
+          npm run compile
+          /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
       # - run: kind delete cluster --name kind
