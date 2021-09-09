@@ -43,15 +43,18 @@ const setup = (): void => {
 const commitOnFirstRun = async () => {
   cd(env.ENV_DIR)
 
-  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-  debug.debug('healthUrl: ', healthUrl)
-  const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
-  if (isCertStaging) {
-    process.env.GIT_SSL_NO_VERIFY = 'true'
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  const values = await hfValues()
+  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+  if (giteaEnabled) {
+    const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+    debug.debug('healthUrl: ', healthUrl)
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+    await waitTillAvailable(healthUrl)
   }
-  await waitTillAvailable(healthUrl)
-
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
   await commit()
   await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
