@@ -4,14 +4,15 @@
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
+{{- $keycloakUrl := printf "https://keycloak.%s" $v.cluster.domainSuffix }}
+{{- $keycloakIssuer := printf "%s/realms/%s" $keycloakUrl $realm }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
-clusterDomain: {{ $v.cluster.domainSuffix }}
+waitForUrl: {{ $keycloakUrl }}
 otomiVersion: {{ $v.otomi.version }}
 
 resources:
@@ -83,7 +84,7 @@ gitea:
 init:
   resources:
     limits:
-      cpu: 250m
+      cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m

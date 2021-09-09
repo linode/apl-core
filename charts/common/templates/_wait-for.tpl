@@ -1,6 +1,5 @@
 {{- define "waitForUrl.init" }}
 {{- if .url }}
-{{- $skiptls := .SKIP_TLS_VERIFY | default "false" -}}
 {{- $retries := .retries | default "10" -}}
 - name: wait-for-init
   image: {{ printf "otomi/core:%s" .otomiVersion }}
@@ -8,9 +7,9 @@
   command: ["sh"]
   env:
     - name: VERBOSITY
-      value: "2"
+      value: "1"
   args:
     - '-c'
-    - binzx/otomi wait-for {{ .url }} {{ printf "--skip-ssl=%t" $skiptls }} {{ printf "--retries=%s" $retries }}
+    - {{ if .skipTlsVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for {{ .url }}
 {{- end }}
 {{- end }}
