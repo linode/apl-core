@@ -21,6 +21,8 @@ import {
   terminal,
   rootDir,
   setParsedArgs,
+  otomiPasswordsSecretName,
+  getOtomiDeploymentStatus,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -35,7 +37,6 @@ export type Arguments = BasicArguments
 const cmdName = getFilename(import.meta.url)
 const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
-const k8sPasswordName = 'otomi-generated-passwords'
 
 const generateLooseSchema = () => {
   const devOnlyPath = `${rootDir}/.vscode/values-schema.yaml`
@@ -126,19 +127,25 @@ export const bootstrapValues = async (): Promise<void> => {
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
   let generatedSecrets = await generateSecrets(originalValues)
+
   if (isChart) {
-    const kubeSecretObject = await getKubeSecret(k8sPasswordName)
-    debug.info('Checking if passwords already exist on cluster')
-    if (isEmpty(kubeSecretObject)) {
-      debug.info('Creating secret on cluster as failover')
-      const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(([k, v]) => `--from-literal=${k}=${v}`)
-      const result = await $`kubectl create secret generic ${k8sPasswordName} ${secretLiterals}`
-      debug.info(`Created secrets in the cluster ${k8sPasswordName}`)
-      debug.debug(result.stdout)
-      debug.debug(chalk.redBright(result.stderr))
-    } else {
-      debug.info('Found secrets on cluster, recovering')
-      generatedSecrets = kubeSecretObject
+    const status = await getOtomiDeploymentStatus()
+    if (status !== 'deployed') {
+      const kubeSecretObject = await getKubeSecret(otomiPasswordsSecretName)
+      debug.info('Checking if passwords already exist on cluster')
+      if (isEmpty(kubeSecretObject)) {
+        debug.info('Creating secret on cluster as failover')
+        const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
+          ([k, v]) => `--from-literal=${k}=${v}`,
+        )
+        const result = await $`kubectl create secret generic ${otomiPasswordsSecretName} ${secretLiterals}`
+        debug.info(`Created secrets in the cluster ${otomiPasswordsSecretName}`)
+        debug.debug(result.stdout)
+        debug.debug(chalk.redBright(result.stderr))
+      } else {
+        debug.info('Found secrets on cluster, recovering')
+        generatedSecrets = kubeSecretObject
+      }
     }
   }
   await writeValues(generatedSecrets, false)

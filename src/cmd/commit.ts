@@ -1,17 +1,28 @@
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
+
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { getFilename, rootDir, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getOtomiDeploymentStatus,
+  OtomiDebugger,
+  otomiPasswordsSecretName,
+  rootDir,
+  setParsedArgs,
+  terminal,
+  waitTillAvailable,
+} from '../common/utils'
 import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { pull } from './pull'
+// import { pull } from './pull'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
+let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
@@ -42,6 +53,19 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
+  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+  const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+  if (isCertStaging) {
+    process.env.GIT_SSL_NO_VERIFY = 'true'
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  }
+
+  if (giteaEnabled && (!env.CI || isChart)) {
+    const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+    debug.debug('healthUrl: ', healthUrl)
+    await waitTillAvailable(healthUrl)
+  }
+
   cd(env.ENV_DIR)
   preCommit()
   await encrypt()
@@ -56,7 +80,7 @@ export const commit = async (): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
-  if (!env.CI && !isChart) await pull()
+  // if (!env.CI && !isChart) await pull()
   // previous command returned to rootDir, so go back to env:
   cd(env.ENV_DIR)
   let branch = 'main'
@@ -65,11 +89,6 @@ export const commit = async (): Promise<void> => {
   }
 
   try {
-    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
-    if (isCertStaging) {
-      process.env.GIT_SSL_NO_VERIFY = 'true'
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    }
     await $`git remote show origin`
     await gitPush(branch)
     d.log('Successfully pushed the updated values')
@@ -78,6 +97,13 @@ export const commit = async (): Promise<void> => {
     throw new Error('Pushing the values failed, please read the above error message and manually try again')
   } finally {
     cd(rootDir)
+  }
+  if (!env.CI || isChart) {
+    const status = await getOtomiDeploymentStatus()
+    if (status !== 'deployed') {
+      await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
+      await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='deployed'`)
+    }
   }
 }
 
@@ -88,6 +114,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
+    debug = terminal(cmdName)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await commit()
   },

@@ -1,23 +1,11 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
-import { $, cd, nothrow } from 'zx'
-import { env } from '../common/envalid'
-import { hf, hfValues } from '../common/hf'
+import { $ } from 'zx'
+import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  logLevelString,
-  OtomiDebugger,
-  rootDir,
-  setParsedArgs,
-  terminal,
-  waitTillAvailable,
-} from '../common/utils'
-import { isChart } from '../common/values'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit } from './commit'
 import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(import.meta.url)
@@ -38,28 +26,6 @@ const setup = (): void => {
   debug = terminal(cmdName)
 
   mkdirSync(dir, { recursive: true })
-}
-
-const commitOnFirstRun = async () => {
-  cd(env.ENV_DIR)
-
-  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-  debug.debug('healthUrl: ', healthUrl)
-  const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
-  if (isCertStaging) {
-    process.env.GIT_SSL_NO_VERIFY = 'true'
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  }
-  await waitTillAvailable(healthUrl)
-
-  if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) {
-    debug.info('Already data in the git repository, not first commit')
-    return
-  }
-  await commit()
-  await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
-  await nothrow($`kubectl delete secret otomi-generated-passwords`)
-  cd(rootDir)
 }
 
 const applyAll = async () => {
@@ -87,8 +53,6 @@ const applyAll = async () => {
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
-
-  if (!env.CI || isChart) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {

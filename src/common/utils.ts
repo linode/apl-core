@@ -22,7 +22,9 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
-
+// A kubernetes secret that contains generated passwords during at bootstrap stage. Used only during helm chart deployment of otomi.
+export const otomiPasswordsSecretName = 'otomi-generated-passwords'
+export const otomiStatusCmName = 'otomi-status'
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   nonInteractive: boolean
@@ -440,6 +442,11 @@ export const getKubeSecret = async (secretName: string, namespace?: string): Pro
   const loadedSecrets = {}
   decodedKVPair.forEach(([k, v]) => set(loadedSecrets, k, v))
   return loadedSecrets
+}
+
+export const getOtomiDeploymentStatus = async (): Promise<string> => {
+  const result = await nothrow($`kubectl get cm ${otomiStatusCmName} -o jsonpath='{.data.status}'`)
+  return result.stdout
 }
 
 export default { parser, asArray }
