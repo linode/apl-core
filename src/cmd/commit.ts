@@ -43,7 +43,7 @@ export const commit = async (): Promise<void> => {
   d.info('Preparing values')
   const values = await hfValues()
   cd(env.ENV_DIR)
-  preCommit()
+  await preCommit()
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
