@@ -51,51 +51,11 @@ jobs:
 
           export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
 
-
           mkdir -p ./env/env
           cp -r ./kind/env/ ./env/
 
-          npm set-script prepare ""
-          npm i typescript@4.3.4
-          npm run compile
-          /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply -l pkg=kind
-
-          export EX_DNS_IP=$(kubectl get services/ -n kube-system -o go-template='{{(index.spec.clusterIP)}}');echo EX_DNS_IP=$EX_DNS_IP
-
-          cat <<EOF | kubectl apply -f -
-            apiVersion: v1
-            data:
-              Corefile: |
-                kind.local:53 {
-                    errors
-                    cache 30
-                    forward . $EX_DNS_IP
-                }
-                .:53 {
-                    errors
-                    health {
-                      lameduck 5s
-                    }
-                    ready
-                    kubernetes cluster.local in-addr.arpa ip6.arpa {
-                      pods insecure
-                      fallthrough in-addr.arpa ip6.arpa
-                      ttl 30
-                    }
-                    prometheus :9153
-                    forward . /etc/resolv.conf {
-                      max_concurrent 1000
-                    }
-                    cache 30
-                    loop
-                    reload
-                    loadbalance
-                }
-            kind: ConfigMap
-            metadata:
-              name: coredns
-              namespace: kube-system
-          EOF
-
-          /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
+          npm set-script prepare "" && \
+            npm i typescript@4.3.4 && \
+            npm run compile && \
+            /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
       # - run: kind delete cluster --name kind
