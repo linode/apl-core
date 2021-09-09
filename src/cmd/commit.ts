@@ -59,14 +59,12 @@ export const commit = async (): Promise<void> => {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
-
+  cd(env.ENV_DIR)
   if (giteaEnabled && (!env.CI || isChart)) {
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
     debug.debug('healthUrl: ', healthUrl)
     await waitTillAvailable(healthUrl)
   }
-
-  cd(env.ENV_DIR)
   preCommit()
   await encrypt()
   d.info('Committing values')
@@ -76,7 +74,7 @@ export const commit = async (): Promise<void> => {
     await $`git commit -m 'otomi commit' --no-verify`
   } catch (e) {
     d.info(e.stdout)
-    d.error(e.stderr)
+    d.error(e)
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
