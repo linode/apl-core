@@ -18,7 +18,7 @@ import {
 import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-// import { pull } from './pull'
+import { pull } from './pull'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
@@ -78,7 +78,8 @@ export const commit = async (): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
-  // if (!env.CI && !isChart) await pull()
+  // Even if it is a chart deployment the values may already exist and shall be merged
+  if (!env.CI) await pull()
   // previous command returned to rootDir, so go back to env:
   cd(env.ENV_DIR)
   let branch = 'main'
