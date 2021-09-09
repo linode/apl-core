@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: hello
   labels:
-    # serving.knative.dev/visibility: cluster-local
+    policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users
 spec:
   template:
     metadata:
@@ -14,4 +14,4 @@ spec:
         - env:
             - name: TARGET
               value: Knative World
-          image: otomi/nodejs-helloworld:1.1.3
+          image: otomi/nodejs-helloworld:v1.2.12
