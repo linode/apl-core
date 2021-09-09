@@ -36,7 +36,7 @@ Otomi offers:
 - Build in support for Azure, Amazon Web Services and Google Cloud Platform
 - And much more..
 
-Chech this [video](https://www.youtube.com/watch?v=BtLOeTYSB10) for a first impression of Otomi.
+Check this [video](https://www.youtube.com/watch?v=BtLOeTYSB10) for a first impression of Otomi.
 
 Otomi aims to support the most common DevSecOps use-cases out-of-the-box and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated. Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
