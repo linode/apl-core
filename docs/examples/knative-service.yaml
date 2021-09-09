@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       annotations:
-        policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users # <- don't remove this line as it is needed
+        policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users
         autoscaling.knative.dev/minScale: '1'
     spec:
       containers:
@@ -14,3 +14,5 @@ spec:
             - name: TARGET
               value: Knative World
           image: otomi/nodejs-helloworld:v1.2.12
+          securityContext:
+            runAsUser: 1001
