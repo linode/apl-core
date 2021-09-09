@@ -39,7 +39,7 @@ spec:
         fsGroup: 1000
       initContainers: 
         {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 8 }}
-        {{- include "waitForUrl.init" (dict "otomiVersion" .Values.otomiVersion "url"  .Values.waitForUrl) "skipTlsVerify" .Values.gitea.config.server.SKIP_TLS_VERIFY | nindent 8 }}
+        {{- include "waitForUrl.init" (dict "otomiVersion" .Values.otomiVersion "url"  .Values.waitForUrl "skipTlsVerify" .Values.gitea.config.server.SKIP_TLS_VERIFY) | nindent 8 }}
         - name: init
           image: "{{ $image }}"
           command: ["/usr/sbin/init_gitea.sh"]
