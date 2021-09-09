@@ -25,6 +25,7 @@ export const getFilename = (path: string): string => fileURLToPath(path).split('
 // A kubernetes secret that contains generated passwords during at bootstrap stage. Used only during helm chart deployment of otomi.
 export const otomiPasswordsSecretName = 'otomi-generated-passwords'
 export const otomiStatusCmName = 'otomi-status'
+export const otomiNamespace = 'default'
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   nonInteractive: boolean
@@ -445,7 +446,7 @@ export const getKubeSecret = async (secretName: string, namespace?: string): Pro
 }
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
-  const result = await nothrow($`kubectl get cm ${otomiStatusCmName} -o jsonpath='{.data.status}'`)
+  const result = await nothrow($`kubectl get cm -n ${otomiNamespace} ${otomiStatusCmName} -o jsonpath='{.data.status}'`)
   return result.stdout
 }
 
