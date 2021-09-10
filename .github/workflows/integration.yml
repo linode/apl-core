@@ -47,7 +47,7 @@ jobs:
 
           export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
 
-          helmfile -f helmfile.d/helmfile-01.kind.yaml apply 
+          helmfile -f kind/helmfile.yaml apply 
 
           export EX_DNS_IP=$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}');echo EX_DNS_IP=$EX_DNS_IP
           export DOMAIN_SUFFIX=$(cat kind/env/cluster.yaml | grep domainSuffix | awk '{print $2}')

@@ -52,11 +52,11 @@ function kintoto() {
   # export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
   # echo $METALLB_SUBNET
      
-  binzx/otomi $@
+  binzx/otomi "$@"
 }
 
 function kinthdel() {
-  kintk --namespace $0 delete secret sh.helm.release.v1.$0.v1
+  kintk --namespace $1 delete secret sh.helm.release.v1.$1.v1
 }
 
 function kpo() {

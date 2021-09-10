@@ -1,5 +1,5 @@
 bases:
-  - snippets/env.gotmpl
+  - ../helmfile.d/snippets/env.gotmpl
 ---
 {{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
 {{- $v := .Environment.Values }}
