@@ -63,6 +63,12 @@ jobs:
           mkdir -p ./env/env
           cp -r ./kind/env/ ./env/
 
+          #####
+          # TODO
+          # cert-manager can send CA to kube-api: https://cert-manager.io/docs/configuration/ca/. 
+          # poc first
+          #####
+
           npm set-script prepare ""
           npm i typescript@4.3.4
           npm run compile
