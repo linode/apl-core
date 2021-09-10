@@ -16,9 +16,3 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper-operator.gotmpl
       - snippets/common.gotmpl
-  - name: kind
-    installed: {{ eq $v.cluster.provider "kind" }}
-    namespace: kind
-    labels:
-      pkg: kind
-    <<: *default

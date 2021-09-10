@@ -12,5 +12,5 @@ metadata:
   {{- end }}
 data:
   config: |
-{{ include "common.tplvalues.render" ( dict "value" .Values.configInline "context" $) | indent 4 }}
+{{ include "common.tplvalues.render" ( dict "value" .Values.global.configInline "context" $) | indent 4 }}
 {{- end -}}
