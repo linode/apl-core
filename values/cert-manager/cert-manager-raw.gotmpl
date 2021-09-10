@@ -8,7 +8,7 @@
 {{- $clusterIssuer := ternary "selfsigned-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind")}}
 
 resources:
-{{- if and (not (eq $clusterIssuer "selfsigned-cluster-issuer")) (or (hasKey $p "azure") (hasKey $p "google")) }}
+{{- if and (not (eq $clusterIssuer "selfsigned-cluster-issuer")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -20,7 +20,7 @@ resources:
       # TODO: is aadClientSecret  same as azureClientSecret ?
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
       {{- else if hasKey $p "aws" }}
-      # aws via service account access not yet implemented, expecting role to be on node
+      secret: "{{ $p.aws.secretAccessKey | b64enc }}"
       {{- end }}
 {{- end }}
   - apiVersion: cert-manager.io/v1
@@ -41,7 +41,16 @@ resources:
             dns01:
               {{- if hasKey $p "aws" }}
               route53:
+                {{- if and (hasKey $p.aws "accessKeyID") (hasKey $p.aws "secretAccessKey") }}
+                accessKeyID: {{ $p.aws.accessKeyID }}
+                secretAccessKeySecretRef:
+                  key: secret
+                  name: "dns-secret"
+                {{- end }}
                 region: {{ $p.aws.region }}
+                {{- if hasKey $p.aws "role" }}
+                role: {{ $p.aws.role }}
+                {{- end }}
               {{- else if hasKey $p "azure" }}
               azureDNS:
                 clientID: {{ $p.azure.aadClientId }}

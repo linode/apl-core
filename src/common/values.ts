@@ -2,7 +2,7 @@ import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { cloneDeep, isEmpty, merge, omit, pick } from 'lodash-es'
+import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash-es'
 import { env } from './envalid'
 import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
 
@@ -42,6 +42,10 @@ export const writeValuesToFile = async (
   const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
   const mergeResult = merge(cloneDeep(originalValues), nonEmptyValues, !overwrite ? originalValues : {})
+  if (isEqual(originalValues, mergeResult)) {
+    d.info(`No changes for ${targetPath}${suffix}, skipping...`)
+    return undefined
+  }
   d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
   const res = writeFile(`${targetPath}${suffix}`, objectToString(mergeResult))
   d.info(`Values were written to ${targetPath}${suffix}`)

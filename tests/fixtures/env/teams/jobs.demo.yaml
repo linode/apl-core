@@ -15,6 +15,11 @@ teamConfig:
                       runAsNonRoot: true
                       runAsUser: 1002
                       runAsGroup: 1002
+                      fsGroup: 1002
+                  securityContext:
+                      runAsNonRoot: true
+                      runAsUser: 1002
+                      runAsGroup: 1002
                   image:
                       repository: busybox
                       tag: latest

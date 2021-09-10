@@ -42,7 +42,8 @@ try {
     .completion('completion', false)
   await parser.parseAsync()
 } catch (error) {
-  if (`${error}`.includes('Unknown command')) parser.showHelp()
+  if (`${error}`.includes('Unknown command') || `${error}`.includes('Not enough non-option arguments: got 0'))
+    parser.showHelp()
   else debug.error(error)
   process.exit(1)
 } finally {

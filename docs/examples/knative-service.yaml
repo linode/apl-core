@@ -2,16 +2,17 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: hello
-  labels:
-    # serving.knative.dev/visibility: cluster-local
 spec:
   template:
     metadata:
       annotations:
+        policy.otomi.io/ignore-sidecar: container-limits,psp-allowed-users # <- do not remove this line when gatekeeper is enabled
         autoscaling.knative.dev/minScale: '1'
     spec:
       containers:
         - env:
             - name: TARGET
               value: Knative World
-          image: otomi/nodejs-helloworld:1.1.3
+          image: otomi/nodejs-helloworld:v1.2.12
+          securityContext:
+            runAsUser: 1001

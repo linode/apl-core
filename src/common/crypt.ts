@@ -26,6 +26,12 @@ const preCrypt = (): void => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
+  if (!env.CI) {
+    const secretPath = `${env.ENV_DIR}/.secrets`
+    if (!existsSync(secretPath)) {
+      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
+    }
+  }
 }
 
 const getAllSecretFiles = async () => {
@@ -61,6 +67,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<void> => {
   let files: string[] = filesArgs
+
   cd(env.ENV_DIR)
 
   if (files.length === 0) {
@@ -92,7 +99,10 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
 
 const matchTimestamps = (file: string) => {
   const absFilePath = `${env.ENV_DIR}/${file}`
-  if (!existsSync(`${absFilePath}.dec`)) return
+  if (!existsSync(`${absFilePath}.dec`)) {
+    debug.debug(`Missing ${file}.dec, skipping...`)
+    return
+  }
 
   const encTS = statSync(absFilePath)
   const decTS = statSync(`${absFilePath}.dec`)

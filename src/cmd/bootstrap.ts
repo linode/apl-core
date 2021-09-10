@@ -95,9 +95,19 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  // Done, write chart values if we got any
-  const originalValues = isChart ? getChartValues() : await hfValues(true)
-  if (isChart) await writeValues(originalValues)
+  let originalValues
+  if (isChart) {
+    // write chart values if we got any
+    originalValues = getChartValues()
+    await writeValues(originalValues)
+  } else {
+    // try to decrypt if we already have a sops file
+    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+      await decrypt()
+    }
+    // otherwise we can't read original values ;p
+    originalValues = await hfValues(true)
+  }
 
   // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
   // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
@@ -130,6 +140,7 @@ export const bootstrapValues = async (): Promise<void> => {
     // encryption related stuff
     const file = '.gitattributes'
     await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+    // just call encrypt and let it sort out what has changed and needs encrypting
     await encrypt()
   }
 
@@ -189,7 +200,7 @@ export const bootstrapGit = async (): Promise<void> => {
       const giteaUrl = `gitea.${clusterDomain}`
       const giteaOrg = 'otomi'
       const giteaRepo = 'values'
-      remote = `https://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+      remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
     }
     await $`git config --local user.name ${username}`
     await $`git config --local user.password ${password}`

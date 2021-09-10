@@ -279,9 +279,11 @@ fi
 mkdir -p /tmp/otomi
 container_name='otomi-core-dev-container'
 count=$(ps -a | grep $container_name | wc -l) >/dev/null
+count=$(($count))
 container_name="$container_name-$count"
 
 if [ -n "$IN_DOCKER" ]; then
+  silent echo $cmd
   $cmd
   status=$?
 elif [[ $calling_args == *'--get-yargs-completions'* ]]; then

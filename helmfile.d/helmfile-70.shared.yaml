@@ -23,7 +23,7 @@ releases:
       - ../values/drone/drone-admit-members.gotmpl
       - snippets/common.gotmpl
   - name: harbor
-    installed: {{ $c | get "harbor.enabled" "false" }}
+    installed: {{ $c | get "harbor.enabled" true }}
     namespace: harbor
     labels:
       pkg: harbor

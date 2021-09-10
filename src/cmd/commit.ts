@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
+import { $, cd } from 'zx'
 import { encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -16,21 +16,7 @@ const cmdName = getFilename(import.meta.url)
 interface Arguments extends HelmArgs, DroneArgs {}
 
 export const preCommit = async (): Promise<void> => {
-  const d = terminal('preCommit')
-  if (isChart) {
-    // skip git checks, just do the work
-    await genDrone()
-    return
-  }
-  d.info('Check for cluster diffs')
-  const settingsDiff = (await nothrow($`git diff env/settings.yaml`)).stdout.trim()
-  const secretDiff = (await nothrow($`git diff env/secrets.settings.yaml`)).stdout.trim()
-  const versionChanges = settingsDiff.includes('+    version:')
-  const secretSlackChanges = secretDiff.includes('+        url: https://hooks.slack.com/')
-  const secretMsTeamsLowPrioChanges = secretDiff.includes('+        lowPrio: https://')
-  const secretMsTeamsHighPrioChanges = secretDiff.includes('+        highPrio: https://')
-  if (versionChanges || secretSlackChanges || secretMsTeamsLowPrioChanges || secretMsTeamsHighPrioChanges)
-    await genDrone()
+  await genDrone()
 }
 
 export const gitPush = async (branch: string): Promise<boolean> => {
@@ -57,7 +43,7 @@ export const commit = async (): Promise<void> => {
   d.info('Preparing values')
   const values = await hfValues()
   cd(env.ENV_DIR)
-  preCommit()
+  await preCommit()
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
