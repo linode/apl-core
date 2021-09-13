@@ -9,7 +9,7 @@ import {
   getFilename,
   getOtomiDeploymentStatus,
   OtomiDebugger,
-  otomiNamespace,
+  otomiStatusNamespace,
   otomiPasswordsSecretName,
   otomiStatusCmName,
   rootDir,
@@ -103,7 +103,9 @@ export const commit = async (): Promise<void> => {
     const status = await getOtomiDeploymentStatus()
     if (status !== 'deployed') {
       await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
-      await nothrow($`kubectl -n ${otomiNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`)
+      await nothrow(
+        $`kubectl -n ${otomiStatusNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`,
+      )
     }
   }
 }
