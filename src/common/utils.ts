@@ -3,7 +3,7 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
-import { existsSync, readdirSync, readFileSync } from 'fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
@@ -430,19 +430,20 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   return res
 }
 
-export const getKubeSecret = async (secretName: string, namespace?: string): Promise<Record<string, any>> => {
-  const opts: string[] = []
-  if (namespace && namespace.length > 0) opts.push(`-n ${namespace}`)
-  const passwordSecret = await nothrow($`kubectl get secret ${opts} ${secretName} -o jsonpath='{.data}'`)
-  if (passwordSecret.exitCode !== 0) return {}
-  const jsonObj = JSON.parse(passwordSecret.stdout.trim())
-  const decodedKVPair = Object.entries(jsonObj).map(([k, v]) => [
-    k,
-    Buffer.from(v as string, 'base64').toString('utf-8'),
-  ])
-  const loadedSecrets = {}
-  decodedKVPair.forEach(([k, v]) => set(loadedSecrets, k, v))
-  return loadedSecrets
+export async function createK8sSecret(name: string, namespace: string, data: Record<string, any>): Promise<void> {
+  const debug: OtomiDebugger = terminal('createK8sSecret')
+  const rawString = JSON.stringify(data)
+  const path = `/tmp/otomi-secret-${namespace}-${name}`
+  writeFileSync(path, rawString)
+  const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
+  debug.info(result)
+}
+
+export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any>> {
+  const secretKeyName = `otomi-secret-${namespace}-${name}`
+  const result =
+    await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`
+  return JSON.parse(result.stdout)
 }
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {

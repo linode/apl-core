@@ -5,23 +5,23 @@ import { isEmpty } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
-import { $, cd, chalk, nothrow } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
-  flattenObject,
   generateSecrets,
   getFilename,
-  getKubeSecret,
   loadYaml,
   OtomiDebugger,
   terminal,
   rootDir,
   setParsedArgs,
   otomiPasswordsSecretName,
+  createK8sSecret,
+  getK8sSecret,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -129,15 +129,12 @@ export const bootstrapValues = async (): Promise<void> => {
 
   if (isChart) {
     // The chart job calls bootstrap only if the otomi-status config map does not exists
-    const kubeSecretObject = await getKubeSecret(otomiPasswordsSecretName)
+    const kubeSecretObject = await getK8sSecret(otomiPasswordsSecretName, 'default')
     debug.info('Checking if passwords already exist on cluster')
     if (isEmpty(kubeSecretObject)) {
       debug.info('Creating secret on cluster as failover')
-      const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(([k, v]) => `--from-literal=${k}=${v}`)
-      const result = await $`kubectl create secret generic ${otomiPasswordsSecretName} ${secretLiterals}`
+      createK8sSecret(otomiPasswordsSecretName, 'default', generatedSecrets)
       debug.info(`Created secrets in the cluster ${otomiPasswordsSecretName}`)
-      debug.debug(result.stdout)
-      debug.debug(chalk.redBright(result.stderr))
     } else {
       debug.info('Found secrets on cluster, recovering')
       generatedSecrets = kubeSecretObject
@@ -167,7 +164,7 @@ export const bootstrapValues = async (): Promise<void> => {
       $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
     )
     debug.log(
-      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
+      "An admin password has been stored in Secret resource. Access password by executing: `kubectl get secret otomi-password -ojsonpath='{.data.admin}'` command.",
     )
   }
 
