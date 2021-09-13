@@ -24,16 +24,16 @@ Otomi is built on top of the following open-source projects:
 
 Otomi offers:
 
-- Developer self-service, hiding the Kubernetes internals
+- Developer self-service: Members of a team can directly access all the tools they need and create Services, Jobs and Secrets using Otomi Console
 - Pre-configured and ready-to-use applications
-- Application configuration management for all integrated applications: Providing a base profile configuration to support the most common use-cases
-- Multi-tenancy: Create teams and provide SSO access to teams and shared applications
+- Application configuration management for all integrated applications, providing a base profile configuration to support the most common DevOps use-cases
+- Multi-tenancy: Create Teams and provide SSO access to shared applications
 - Implemented policies for better governance and security. Manifests are checked both statically and on the cluster at runtime for policy obedience
 - Single Sign On: Bring your own IDP
-- Automatic ingress configuration: Easily configure ingress for Team services or core apps, allowing access within minutes. Istio gateways and virtual services are automatically generated and configured for Team services, tying a generic ingress architecture to service endpoints in a predictable way
+- Automatic ingress configuration: Easily configure ingress for Team services, allowing public access to services within minutes. Istio gateways and virtual services are automatically generated and configured for Team services, tying a generic ingress architecture to service endpoints in a predictable way
 - Input/output validation: Configuration and output manifests are checked statically for validity and best practices
 - Automatic vulnerability scanning: Scan all configured Team service containers in Harbor
-- Build in support for Azure, Amazon Web Services and Google Cloud Platform
+- Built-in support for Azure, Amazon Web Services and Google Cloud Platform
 - And much more..
 
 Check this [video](https://www.youtube.com/watch?v=BtLOeTYSB10) for a first impression of Otomi.
