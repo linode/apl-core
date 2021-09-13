@@ -80,7 +80,7 @@ export const commit = async (): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
-  // Even if it is a chart deployment the values may already exist and shall be merged
+  // If the values are committed for the very first time then pull does not take an effect
   if (!env.CI) await pull()
   // previous command returned to rootDir, so go back to env:
   cd(env.ENV_DIR)
@@ -102,10 +102,11 @@ export const commit = async (): Promise<void> => {
   if (!env.CI || isChart) {
     const status = await getOtomiDeploymentStatus()
     if (status !== 'deployed') {
-      await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
       await nothrow(
         $`kubectl -n ${otomiStatusNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`,
       )
+      // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
+      await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
     }
   }
 }

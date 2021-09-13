@@ -22,7 +22,6 @@ import {
   rootDir,
   setParsedArgs,
   otomiPasswordsSecretName,
-  getOtomiDeploymentStatus,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -129,23 +128,19 @@ export const bootstrapValues = async (): Promise<void> => {
   let generatedSecrets = await generateSecrets(originalValues)
 
   if (isChart) {
-    const status = await getOtomiDeploymentStatus()
-    if (status !== 'deployed') {
-      const kubeSecretObject = await getKubeSecret(otomiPasswordsSecretName)
-      debug.info('Checking if passwords already exist on cluster')
-      if (isEmpty(kubeSecretObject)) {
-        debug.info('Creating secret on cluster as failover')
-        const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(
-          ([k, v]) => `--from-literal=${k}=${v}`,
-        )
-        const result = await $`kubectl create secret generic ${otomiPasswordsSecretName} ${secretLiterals}`
-        debug.info(`Created secrets in the cluster ${otomiPasswordsSecretName}`)
-        debug.debug(result.stdout)
-        debug.debug(chalk.redBright(result.stderr))
-      } else {
-        debug.info('Found secrets on cluster, recovering')
-        generatedSecrets = kubeSecretObject
-      }
+    // The chart job calls bootstrap only if the otomi-status config map does not exists
+    const kubeSecretObject = await getKubeSecret(otomiPasswordsSecretName)
+    debug.info('Checking if passwords already exist on cluster')
+    if (isEmpty(kubeSecretObject)) {
+      debug.info('Creating secret on cluster as failover')
+      const secretLiterals = Object.entries(flattenObject(generatedSecrets)).map(([k, v]) => `--from-literal=${k}=${v}`)
+      const result = await $`kubectl create secret generic ${otomiPasswordsSecretName} ${secretLiterals}`
+      debug.info(`Created secrets in the cluster ${otomiPasswordsSecretName}`)
+      debug.debug(result.stdout)
+      debug.debug(chalk.redBright(result.stderr))
+    } else {
+      debug.info('Found secrets on cluster, recovering')
+      generatedSecrets = kubeSecretObject
     }
   }
   await writeValues(generatedSecrets, false)
