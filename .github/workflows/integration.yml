@@ -47,6 +47,10 @@ jobs:
 
           export METALLB_SUBNET=$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)
 
+          chmod +r $KUBECONFIG
+          mkdir -p ./env/env
+          cp -r ./kind/env/ ./env/
+
           helmfile -f kind/helmfile.yaml apply 
 
           export EX_DNS_IP=$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}');echo EX_DNS_IP=$EX_DNS_IP
@@ -58,10 +62,6 @@ jobs:
                 cache 30 \n\
                 forward . $EX_DNS_IP \n\
               }/" | kubectl apply -f - >/dev/null
-
-          chmod +r $KUBECONFIG
-          mkdir -p ./env/env
-          cp -r ./kind/env/ ./env/
 
           #####
           # TODO
