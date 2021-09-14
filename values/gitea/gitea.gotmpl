@@ -57,7 +57,7 @@ gitea:
       {{- toYaml . | nindent 4}}
     {{- end }}
     service:
-      DISABLE_REGISTRATION: true
+      ALLOW_ONLY_EXTERNAL_REGISTRATION: true
     server:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
