@@ -2,7 +2,6 @@
 {{- $j := $v.charts | get "jaeger" dict }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
-{{- $hasStagingCerts := eq $stage "staging" }}
 
 jaeger:
   create: true

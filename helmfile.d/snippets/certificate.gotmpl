@@ -12,6 +12,11 @@ spec:
     kind: ClusterIssuer
     name: {{ .issuer }}
   usages:
+    {{- if eq .issuer "ca-cluster-issuer" }}
+    - server auth
+    - client auth
+    {{- else }}
     - digital signature
     - key encipherment
     - ocsp signing
+    {{- end }}

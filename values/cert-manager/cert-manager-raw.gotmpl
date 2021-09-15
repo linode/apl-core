@@ -5,10 +5,11 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $letsEncryptStage := printf "%s%s" "letsencrypt-" $cm.stage }}
-{{- $clusterIssuer := ternary "selfsigned-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind")}}
+{{- $clusterIssuer := ternary "ca-cluster-issuer" $letsEncryptStage (eq $v.cluster.provider "kind") }}
+{{- $caKeyPair := "kind-ca-key-pair" }}
 
 resources:
-{{- if and (not (eq $clusterIssuer "selfsigned-cluster-issuer")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
+{{- if and (not (eq $clusterIssuer "ca-cluster-issuer")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -28,8 +29,9 @@ resources:
     metadata:
       name: {{ $clusterIssuer }}
     spec:
-      {{ if eq $clusterIssuer "selfsigned-cluster-issuer" }}
-      selfSigned: {}
+      {{- if eq $clusterIssuer "ca-cluster-issuer" }}
+      ca:
+        secretName: {{ $caKeyPair }}
       {{- else }}
       acme:
         server: https://acme{{ (eq $cm.stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
@@ -71,6 +73,15 @@ resources:
                   name: "dns-secret"
               {{- end }}
       {{- end }}
+{{- if eq $clusterIssuer "ca-cluster-issuer" }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $caKeyPair }}
+    data:
+      tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURTekNDQWpPZ0F3SUJBZ0lVUU4rRVdPSkdldGUzTTlOUzRzeWpJV1k4RW9Nd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0ZqRVVNQklHQTFVRUF3d0xSV0Z6ZVMxU1UwRWdRMEV3SGhjTk1qRXdPVEUwTVRFeE16VTBXaGNOTXpFdwpPVEV5TVRFeE16VTBXakFXTVJRd0VnWURWUVFEREF0RllYTjVMVkpUUVNCRFFUQ0NBU0l3RFFZSktvWklodmNOCkFRRUJCUUFEZ2dFUEFEQ0NBUW9DZ2dFQkFNWWp5aUZQWk1sMktJenYrVTQ0dGpuWUJhc0t4YVd2NFhVdy9OdkUKNGNlMWw4Tnd2UnR1b3MycW10V1BZVVZFSEhqN2FYSWhiNnh0UTl1UmtkNUZQNmdHL05KeFJtcmQ2ZlVoRmpicQpseTM1STU0aVNoRmQzR05LWDR5SDN0THVTaGdDSWxJU0V3ZndaT0lZU2YxODdPdmZwZFB0SXpzSTNvd2traUgvClgraFdzOElCUUltZ2N6T1czQ3ltVFZwM3BBVUdqa2lKZlB3NXA1Q1JlZ1ZyYTU1dGhHa241bmJ6cDBHeUhad2UKL2N1a1hnRmdEZWdMSnQxRnpFUUR0MU1Cc2hTUVE1bjJ4U0ZNekRrNHNBU3lMOWRKVzdrN3lQVGl4UXZJb2ljTwpVSERzQkZXendBcGhBam1wdkJMd3FEN2ZKcG4wek5aL0c1Z0psNFZyRTZpem5GMENBd0VBQWFPQmtEQ0JqVEFkCkJnTlZIUTRFRmdRVVVBNW0rWFh5bGNxbFlSUzlPNXp0RHo4Q0ZYWXdVUVlEVlIwakJFb3dTSUFVVUE1bStYWHkKbGNxbFlSUzlPNXp0RHo4Q0ZYYWhHcVFZTUJZeEZEQVNCZ05WQkFNTUMwVmhjM2t0VWxOQklFTkJnaFJBMzRSWQo0a1o2MTdjejAxTGl6S01oWmp3U2d6QU1CZ05WSFJNRUJUQURBUUgvTUFzR0ExVWREd1FFQXdJQkJqQU5CZ2txCmhraUc5dzBCQVFzRkFBT0NBUUVBVnBnYVhFSXJoSWNGVlRka1lPQ3ZTanA1VHB1QitXdjU1WTcrUjJyaklGYU4KVWV5RXRzMUJPU0p5aEk4TFpDMTFmRDh0VVdRK0s0YkV4Rll0Sk8rLzdhOGxIVWUra05lMHMrbE5FWmo3bWFsNApHd1hJSEN2VlFTY1NaMm11SWg5ZDFJODBCVm43THZ4Y0xPZXJCTGpDTFFpWmlzSm1WL3V4cFZOdHdKam4rVmQrCm5Jdko5dzk0bGl2VkE3WktXZHBHVmxCaHdZU0djSStFWXlFcmhZSHk1d3oxYWdEQ2I5eFhickdvdGxRdm5uUzYKem1PVGhqUmFvMlRsOE9YTWdNR1A4WEM0N1Y4bHllMGRMVTFjYm03a0xBWVh1VFp1SVFPSCtqRnlRbXJYSGtRNwozRGt1aXM1ekljMFhRYlgzMFJNdk1aUDcvaFlmZTN2TVp2ZTZUVm1nMGc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+      tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBeGlQS0lVOWt5WFlvak8vNVRqaTJPZGdGcXdyRnBhL2hkVEQ4MjhUaHg3V1h3M0M5CkcyNml6YXFhMVk5aFJVUWNlUHRwY2lGdnJHMUQyNUdSM2tVL3FBYjgwbkZHYXQzcDlTRVdOdXFYTGZram5pSksKRVYzY1kwcGZqSWZlMHU1S0dBSWlVaElUQi9CazRoaEovWHpzNjkrbDArMGpPd2plakNTU0lmOWY2RmF6d2dGQQppYUJ6TTViY0xLWk5XbmVrQlFhT1NJbDgvRG1ua0pGNkJXdHJubTJFYVNmbWR2T25RYklkbkI3OXk2UmVBV0FOCjZBc20zVVhNUkFPM1V3R3lGSkJEbWZiRklVek1PVGl3QkxJdjEwbGJ1VHZJOU9MRkM4aWlKdzVRY093RVZiUEEKQ21FQ09hbThFdkNvUHQ4bW1mVE0xbjhibUFtWGhXc1RxTE9jWFFJREFRQUJBb0lCQUhzUHYzcncxS2hMdXVQTwpLQWx0TDhDOWFzZlE2UEQvVEFoOVpJOGF1U0JRcVBHNkU3bjEvU2Uvem1yVm9wUml1VXhxMmhNSXNWTm1pYjdWCnFzTmlQeWNkTCttRWNUZnVuR0NqTENqdml2WUN4eHh3TDVDWnUwZnY2V2hlK3dZRytmM3ZWV0dqMkM0V0lKSk0KZzZmczd6bVFybTN4MnUvUGttbDRUVXJRVWNEN0FMZytVTkt3dTRLdnJ6UUxmWVd2VHpxdDl3ZzBlQlhicHkwTgpMbGJ4bFZTSklMbWRzei9xQTB5ZHZyc05nSTVSMlFOS0VVWHJMZklNYlM5ZmdIb2VTamI2ZmhUSGo1YWE2S0N0Cmd3ZU5tT2hmb0tjZk9PSW13c3lleVJuemZid0FXRzBLd1orWkNiOHR6RHZwbGQwSGRwOTVISmdmaXlOZDk4ZEgKSkRSb3dBRUNnWUVBNlhydWVkTnZxblF3OWVYR1Q3WHA5b0U5OEFySmZ1ODFPOEM4WWZHcTNQWmM5WEF0T0Y0eQo3SFRnaFhINlFsOE9HMTRTKytuU2kzSGdzOW5mQk5SYXNreEl0Mk9iY0ZRU1BJTzgzSGNxc3ZtY2txcmh3OUFxCmM0WmFSN3FxTkdaRmlkT2VZQ21VcmF6Y3hqQk51SStqdFhsNk41aWRuWGM0R2VFS2FpVXkvN0VDZ1lFQTJVQTgKbExGWndGKzY2MGpyd1NoTDc2cHhYTEZtb2M5TzU3dGdtRUNpRnhJakpFbmxFSWJiclpOMEk2NStoVS9rZ09VWAp6eE1zbTZOaFJycjRIcHcrdUdjK1c5QjhHOXR6dVRJZjFBWXQ3TlFQdjFwdGlzVWY3Mk1CaVpBOGc1ZUsrcUFOCkI5MENBZUhJM1JITGVvTEZZWllkb0dkZFB1bzRYVFRqTk0vbUhtMENnWUE5NjhsMWE5cndwUEliTlA0OFE2MnkKSDZLeWw5bktuVnhMNVpqUWpReFluOG9WbWRPVVlIODI4T1JlMzlTVVo2dFJITWtDSUlnalRXZGZxNGVYTzA1MgpmUDdJREZXOEc3L2VacjNlNW9mZmdZM0I1Q29PQ1paSW56Z3dUOVEySTIyTDJTRG10Z0JsY3pQMkovZGszRXQ1CnBLY0NPYXFMaVlQS2NVR1cxeGpJY1FLQmdRRE5CTkRtNWNNMFIyTW5YVWFXbjBlaUlqQWU4STlSVGtsQmFOUU0KZXBvOHVYSU9jZW5Jd2V1WUQ1by9maEdLRDA0dDBZUzVkM2ZXWE1XVk1TYXNCSGt3SHNaN2NQRmVmS2ZsOG9hVQoyVXdIdmt3cUlkVlVheGpyR1h5KzdDNGZaU2pUd2F6cWFjZldMTlFZeEExSlRSV21OVHM2UDdHQWlScXQ0eFl6CnBhcWR0UUtCZ1FDTnZjdExueVhhcWRaWnc0SGxoM21RQzVCbHEyaFdQaFE1REI3bEFJS3NURXdEZmNZTHQzK2IKd2UxekJqelloUTUwTEdrZUhkcWlLQjM4enJFNmJ1QTBBY1BOcGhDNXBQcVVXRzdFc2RheGdwV3BhRUpZc3Y1Vwp4V0hZY2FXVitUcy8wcmdBVEliTXlzSkVKK2VTRU93NHRUdmxXNHdNc2o2dHhtL0JoeXRnZlE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+{{- end }}
 # generate all da certs
 {{- range $domInfo := $vars.domains }}
   {{- if not $domInfo.hasCert }}
