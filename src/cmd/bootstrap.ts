@@ -54,7 +54,7 @@ const generateLooseSchema = () => {
   }
 }
 
-const hfValuesOrEmpty = async ({ skipCache }: { skipCache?: boolean }): Promise<Record<string, any>> => {
+const hfValuesOrEmpty = async (skipCache?: boolean): Promise<Record<string, any>> => {
   // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
     return hfValues({ skipCache })
@@ -72,7 +72,7 @@ export const k8sRecreateOtomiAdminPassword = async (values: Record<string, any>)
   )
 }
 
-export const k8sGetOtomiSecretsOrGenerate = async (
+export const getOtomiSecrets = async (
   // The chart job calls bootstrap only if the otomi-status config map does not exists
   originalValues: Record<string, any>,
 ): Promise<Record<string, any>> => {
@@ -145,9 +145,9 @@ export const bootstrapValues = async (): Promise<void> => {
     originalValues = getInputValues() as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
-    generatedSecrets = k8sGetOtomiSecretsOrGenerate(originalValues)
+    generatedSecrets = getOtomiSecrets(originalValues)
   } else {
-    originalValues = await hfValuesOrEmpty({ skipCache: true })
+    originalValues = await hfValuesOrEmpty(true)
     generatedSecrets = await generateSecrets(originalValues)
   }
   // Ensure that .dec files are in place, because the writeValues() relies on them.
@@ -173,7 +173,7 @@ export const bootstrapValues = async (): Promise<void> => {
     )
   }
   if (isChart) {
-    const updatedValues = await hfValuesOrEmpty({ skipCache: true })
+    const updatedValues = await hfValuesOrEmpty(true)
     k8sRecreateOtomiAdminPassword(updatedValues)
   }
 
@@ -182,7 +182,6 @@ export const bootstrapValues = async (): Promise<void> => {
     const file = '.gitattributes'
     await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
     // just call encrypt and let it sort out what has changed and needs encrypting
-    debug.info('Encrypting values')
     await encrypt()
   }
 
@@ -201,7 +200,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await hfValuesOrEmpty({ skipCache: true })
+    const values = await hfValuesOrEmpty(true)
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
