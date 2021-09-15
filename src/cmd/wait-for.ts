@@ -9,11 +9,6 @@ import {
   terminal,
   waitTillAvailable,
 } from '../common/utils'
-/**
- * This file is a scripting playground to test basic code
- * it's basically the same as EXAMPLE.ts
- * but loaded into the application to run.
- */
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -21,12 +16,13 @@ const debug: OtomiDebugger = terminal(cmdName)
 export interface Arguments extends BasicArguments {
   url: string
   skipSsl: boolean
+  retries: number
 }
 
-export const playground = async (): Promise<void> => {
-  const { url, skipSsl } = getParsedArgs() as Arguments
+export const waitFor = async (): Promise<void> => {
+  const { url, skipSsl, retries } = getParsedArgs() as Arguments
   debug.info(`Waiting for ${url}`)
-  await waitTillAvailable(url, { retries: 0, skipSsl })
+  await waitTillAvailable(url, { retries, skipSsl })
   debug.info(`${url} is available now`)
 }
 
@@ -45,14 +41,14 @@ export const module = {
       },
       retries: {
         number: true,
-        default: 10,
+        default: 0,
       },
     }),
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    await playground()
+    await waitFor()
   },
 }
 
