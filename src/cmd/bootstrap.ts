@@ -139,27 +139,27 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  // FIXME: should be it the last step of bootstraping values?
-  await genSops()
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
-    await encrypt()
-    await decrypt()
-  }
   let originalValues: Record<string, any> = {}
   let generatedSecrets
   if (isChart) {
     originalValues = getInputValues() as Record<string, any>
-    // FIXME: why write values here?
+    // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
     generatedSecrets = k8sGetOtomiSecretsOrGenerate(originalValues)
   } else {
     originalValues = await hfValuesOrEmpty({ skipCache: true })
     generatedSecrets = await generateSecrets(originalValues)
   }
+  // Ensure that .dec files are in place, because the writeValues() relies on them.
+  await genSops()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
+    await encrypt()
+    await decrypt()
+  }
   await writeValues(generatedSecrets, false)
 
   try {
-    // FIXME: what if originalValues is empty?
+    // Do not validate if CLI just bootstraps originalValues with placeholders
     if (!isEmpty(originalValues)) await validateValues()
   } catch (error) {
     debug.error(error)
