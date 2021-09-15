@@ -22,12 +22,13 @@ import {
   otomiPasswordsSecretName,
   createK8sSecret,
   getK8sSecret,
+  otomiPasswordsNamespace,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
-export const getChartValues = (): Record<string, any> | undefined => {
+export const getInputValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
@@ -53,7 +54,7 @@ const generateLooseSchema = () => {
   }
 }
 
-const bootstrapHfValues = async ({ skipCache }: { skipCache?: boolean }): Promise<Record<string, any>> => {
+const hfValuesOrEmpty = async ({ skipCache }: { skipCache?: boolean }): Promise<Record<string, any>> => {
   // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
     return hfValues({ skipCache })
@@ -61,6 +62,36 @@ const bootstrapHfValues = async ({ skipCache }: { skipCache?: boolean }): Promis
   return {}
 }
 
+export const k8sRecreateOtomiAdminPassword = async (values: Record<string, any>): Promise<void> => {
+  // Write some output for the user about password access via a secret
+
+  await nothrow($`kubectl delete secret generic otomi-password &>/dev/null`)
+  await nothrow($`kubectl create secret generic otomi-password --from-literal='admin'='${values.otomi.adminPassword}'`)
+  debug.log(
+    "An admin password has been stored in Secret resource. Access password by executing: `kubectl get secret otomi-password -ojsonpath='{.data.admin}'` command.",
+  )
+}
+
+export const k8sGetOtomiSecretsOrGenerate = async (
+  // The chart job calls bootstrap only if the otomi-status config map does not exists
+  originalValues: Record<string, any>,
+): Promise<Record<string, any>> => {
+  let generatedSecrets
+  // The chart job calls bootstrap only if the otomi-status config map does not exists
+  const secretId = `secret/${otomiPasswordsNamespace}/${otomiPasswordsSecretName}`
+  debug.info(`Checking ${secretId} already exist on cluster`)
+  const kubeSecretObject = await getK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace)
+  if (isEmpty(kubeSecretObject)) {
+    debug.info(`Creating ${secretId}`)
+    generatedSecrets = await generateSecrets(originalValues)
+    createK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace, generatedSecrets)
+    debug.info(`Created ${secretId}`)
+  } else {
+    debug.info(`Found ${secretId} secrets on cluster, recovering`)
+    generatedSecrets = kubeSecretObject
+  }
+  return generatedSecrets
+}
 export const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
@@ -108,41 +139,27 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  let originalValues: Record<string, any> = {}
-  if (isChart) {
-    // write chart values if we got any
-    originalValues = getChartValues() as Record<string, any>
-    await writeValues(originalValues)
-  }
-
+  // FIXME: should be it the last step of bootstraping values?
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
     await encrypt()
     await decrypt()
   }
-
-  if (!isChart) originalValues = await bootstrapHfValues({ skipCache: true })
-
-  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
-  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  let generatedSecrets = await generateSecrets(originalValues)
-
+  let originalValues: Record<string, any> = {}
+  let generatedSecrets
   if (isChart) {
-    // The chart job calls bootstrap only if the otomi-status config map does not exists
-    const kubeSecretObject = await getK8sSecret(otomiPasswordsSecretName, 'default')
-    debug.info('Checking if passwords already exist on cluster')
-    if (isEmpty(kubeSecretObject)) {
-      debug.info('Creating secret on cluster as failover')
-      createK8sSecret(otomiPasswordsSecretName, 'default', generatedSecrets)
-      debug.info(`Created secrets in the cluster ${otomiPasswordsSecretName}`)
-    } else {
-      debug.info('Found secrets on cluster, recovering')
-      generatedSecrets = kubeSecretObject
-    }
+    originalValues = getInputValues() as Record<string, any>
+    // FIXME: why write values here?
+    await writeValues(originalValues)
+    generatedSecrets = k8sGetOtomiSecretsOrGenerate(originalValues)
+  } else {
+    originalValues = await hfValuesOrEmpty({ skipCache: true })
+    generatedSecrets = await generateSecrets(originalValues)
   }
   await writeValues(generatedSecrets, false)
 
   try {
+    // FIXME: what if originalValues is empty?
     if (!isEmpty(originalValues)) await validateValues()
   } catch (error) {
     debug.error(error)
@@ -156,16 +173,8 @@ export const bootstrapValues = async (): Promise<void> => {
     )
   }
   if (isChart) {
-    // Write some output for the user about password access via a secret
-    const updatedValues = await bootstrapHfValues({ skipCache: true })
-
-    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null`)
-    await nothrow(
-      $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
-    )
-    debug.log(
-      "An admin password has been stored in Secret resource. Access password by executing: `kubectl get secret otomi-password -ojsonpath='{.data.admin}'` command.",
-    )
+    const updatedValues = await hfValuesOrEmpty({ skipCache: true })
+    k8sRecreateOtomiAdminPassword(updatedValues)
   }
 
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
@@ -173,6 +182,7 @@ export const bootstrapValues = async (): Promise<void> => {
     const file = '.gitattributes'
     await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
     // just call encrypt and let it sort out what has changed and needs encrypting
+    debug.info('Encrypting values')
     await encrypt()
   }
 
@@ -191,7 +201,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await bootstrapHfValues({ skipCache: true })
+    const values = await hfValuesOrEmpty({ skipCache: true })
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)

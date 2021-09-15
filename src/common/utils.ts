@@ -24,6 +24,7 @@ export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 // A kubernetes secret that contains generated passwords during at bootstrap stage. Used only during helm chart deployment of otomi.
 export const otomiPasswordsSecretName = 'otomi-generated-passwords'
+export const otomiPasswordsNamespace = 'default'
 export const otomiStatusCmName = 'otomi-status'
 export const otomiStatusNamespace = 'default'
 export interface BasicArguments extends YargsArguments {
@@ -441,9 +442,11 @@ export async function createK8sSecret(name: string, namespace: string, data: Rec
 
 export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any>> {
   const secretKeyName = `otomi-secret-${namespace}-${name}`
-  const result =
-    await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`
-  return JSON.parse(result.stdout)
+  const result = await nothrow(
+    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
+  )
+  if (result.exitCode === 0) return JSON.parse(result.stdout)
+  return {}
 }
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
