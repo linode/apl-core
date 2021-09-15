@@ -232,12 +232,7 @@ if [ -n "$in_core" ]; then
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  # Use development distribution if exists
-  # if [ -f "${stack_dir}/dist/otomi.js" ]; then
-  #   executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-  # else
   executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
-  # fi
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 
