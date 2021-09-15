@@ -20,14 +20,12 @@ annotations:
   policy.otomi.io/ignore: "banned-image-tags"
 init:
   - image:
-      repository: badouralix/curl-http2
+      repository: otomi/core
+      tag: master
+      pullPolicy: Always
     script: |
-      {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
       echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
-      until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domainSuffix }}); do 
-        printf '.'
-        sleep 5
-      done
+      {{ if .skipTlsVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}"
       echo READY!
 image:
   repository: otomi/tasks
