@@ -50,11 +50,14 @@ gitea:
       LEVEL: trace
     openid:
       ENABLE_OPENID_SIGNIN: true
+      ENABLE_OPENID_SIGNUP: true
     repository:
       DEFAULT_BRANCH: main
     {{- with $g | get "config" nil }}
       {{- toYaml . | nindent 4}}
     {{- end }}
+    service:
+      ALLOW_ONLY_EXTERNAL_REGISTRATION: true
     server:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
