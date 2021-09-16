@@ -71,7 +71,7 @@ readonly script_full_path
 update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${OTOMI_TAG}/binzx/otomi"
 
 date_to_format() {
-  date=$1
+  date=${1:-'1970-01-01T00:00:00Z'}
   format=${2:-+%s}
   which_date=$(which date)
   if [[ $(uname -s) == "Darwin" ]] && [[ "$which_date" == "/bin/date" ]]; then
