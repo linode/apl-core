@@ -68,9 +68,11 @@ packageJsonPathPwd=$(findUp $(pwd) 'package.json')
 packageJsonPathBaseDir=$(findUp $base_dir 'package.json')
 
 if packageIsCore $packageJsonPathPwd; then
-  in_core=$packageJsonPathPwd
+  in_core=1
+  core_path=$packageJsonPathPwd
 elif packageIsCore $packageJsonPathBaseDir; then
-  in_core=$packageJsonPathBaseDir
+  in_core=1
+  core_path=$packageJsonPathBaseDir
 fi
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
@@ -255,7 +257,7 @@ stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
 if [ -n "$in_core" ]; then
-  stack_dir=$in_core
+  stack_dir=$core_path
 
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
