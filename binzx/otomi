@@ -49,9 +49,30 @@ function docker_tag_exists() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
-  in_core=1
+findUp() {
+  path=$1
+  while [[ "$path" != "" && ! -e "$path/$2" ]]; do
+    path=${path%/*}
+  done
+  echo "$path"
+}
+
+packageIsCore() {
+  path=$1
+  [ -z $path ] && return 1
+  packageName=$(grep name "$path/package.json" | sed 's/.*"name": "\(.*\)".*/\1/')
+  [[ $packageName == 'otomi-core' ]] && return 0 || return 1
+}
+
+packageJsonPathPwd=$(findUp $(pwd) 'package.json')
+packageJsonPathBaseDir=$(findUp $base_dir 'package.json')
+
+if packageIsCore $packageJsonPathPwd; then
+  in_core=$packageJsonPathPwd
+elif packageIsCore $packageJsonPathBaseDir; then
+  in_core=$packageJsonPathBaseDir
 fi
+
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
@@ -234,22 +255,12 @@ stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
 if [ -n "$in_core" ]; then
-  silent echo "Checking if in dev environment"
-  if [[ $base_dir == *"otomi-core"* ]]; then
-    stack_dir=$(cd "$base_dir/.." && pwd)
-  elif [[ $(pwd) == *"otomi-core"* ]]; then
-    stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
-  fi
+  stack_dir=$in_core
 
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  # Use development distribution if exists
-  if [ -f "${stack_dir}/dist/otomi.js" ]; then
-    executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-  else
-    executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
-  fi
+  executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 
