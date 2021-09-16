@@ -722,6 +722,15 @@ definitions:
             type: boolean
           workload:
             $ref: '#/definitions/labelsAnnotations'
+      certArn:
+        description: Only available on AWS when an external LB is configured. The cert ARN will be registered on the load balancer for SSL termination.
+        example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
+        pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
+        type: string
+      certName:
+        description: The name of a TLS secret known to exist in the team namespace.
+        example: www-example-com
+        type: string
       domain:
         description: A custom service domain name (max 64 bytes).
         maxLength: 64
@@ -729,6 +738,9 @@ definitions:
       forwardPath:
         default: false
         description: Whether to forward the path into the service, or 'terminate' it.
+        type: boolean
+      hasCert:
+        description: Select when a certificate exists and should not be generated.
         type: boolean
       hide:
         description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
