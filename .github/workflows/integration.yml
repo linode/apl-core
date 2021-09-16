@@ -53,7 +53,7 @@ jobs:
 
           helmfile -f kind/helmfile.yaml apply 
 
-          export EX_DNS_IP=$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}');echo EX_DNS_IP=$EX_DNS_IP
+          export EX_DNS_IP=$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}')
           export DOMAIN_SUFFIX=$(cat kind/env/cluster.yaml | grep domainSuffix | awk '{print $2}')
 
           kubectl get cm coredns -n kube-system -o yaml | \
@@ -62,16 +62,6 @@ jobs:
                 cache 30 \n\
                 forward . $EX_DNS_IP \n\
               }/" | kubectl apply -f - >/dev/null
-
-          #####
-          # TODO
-          # cert-manager can send CA to kube-api: https://cert-manager.io/docs/configuration/ca/. 
-          # poc first: add root ca to Gitea + Keycloak and see if connection is up, e.g. https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-a-certificate-authority-ca-on-ubuntu-20-04
-          # 
-          # 14-9-2019
-          # Now notice that the usage of the tls.crt is: Digital Signature, Key Encipherment. This indicates this certificate is the ca certificate and not a server certificate. Let's try to distribute an intermediate server certificate, so maybe we can resolve "TLSv1.3 (OUT), TLS alert, unsupported certificate (555):"
-          # ... since we created a csr for the client but not yet for a server.
-          #####
 
           npm set-script prepare ""
           npm i typescript@4.3.4

@@ -17,7 +17,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal,
+  terminal
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -54,7 +54,7 @@ export const bootstrapValues = async (): Promise<void> => {
   const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
   const otomiImage = `otomi/core:${getImageTag()}`
-  debug.info(`Intalling artifacts from ${otomiImage}`)
+  debug.info(`Installing artifacts from ${otomiImage}`)
 
   await Promise.allSettled([
     copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
