@@ -35,6 +35,7 @@ jobs:
           export KIND_EXPERIMENTAL_DOCKER_NETWORK=${{ job.container.network }}
           export AZURE_CLIENT_SECRET=bla
           export AZURE_CLIENT_ID=bla
+          export CI=1
 
           kind create cluster \
             --name kind \
