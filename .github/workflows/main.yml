@@ -118,12 +118,12 @@ jobs:
             --image kindest/node:"$KIND_TAG" \
             --config=./kind/config.yaml \
 
-          chmod +r "$KUBECONFIG"
+          chmod u+r "$KUBECONFIG"
 
           [ -n "$KIND_EXPERIMENTAL_DOCKER_NETWORK" ] && \
-            kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443 && \
-            export METALLB_SUBNET="$KIND_EXPERIMENTAL_DOCKER_NETWORK" || \
-            export METALLB_SUBNET="$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' kind)"
+            kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
+
+          export METALLB_SUBNET="$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' ${KIND_EXPERIMENTAL_DOCKER_NETWORK:-kind})"
 
           mkdir -p ./env/env
           cp -r ./kind/env/ ./env/
@@ -139,6 +139,11 @@ jobs:
                 cache 30 \n\
                 forward . $EX_DNS_IP \n\
               }/" | kubectl apply -f - >/dev/null
+
+          kubectl get cm coredns -n kube-system -o yaml
+          echo "EX_DNS_IP: $EX_DNS_IP"
+          echo "DOMAIN_SUFFIX: $DOMAIN_SUFFIX"
+
 
           npm set-script prepare "" && \
             npm i typescript && \
