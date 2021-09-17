@@ -14,7 +14,7 @@ import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, ProcessOutput, sleep } from 'zx'
-import { env } from './envalid'
+import { cleanEnvironment, env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -249,10 +249,15 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
     // The maximum number of milliseconds between two retries.
     maxTimeout: 30000,
   }
-  const rejectUnauthorized = !(options.skipSsl || !env.NODE_TLS_REJECT_UNAUTHORIZED)
-  debug.debug(`SkipSSL: ${options.skipSsl}`)
-  debug.debug(`NODE_TLS_RJ_UA: ${env.NODE_TLS_REJECT_UNAUTHORIZED}`)
-  debug.debug(`Reject Unauthorized: ${rejectUnauthorized}`)
+
+  // apply.ts:commitOnFirstRun can modify NODE_TLS_REJECT_UNAUTHORIZED
+  // So the process.env needs to be re-parsed
+  const clnEnv = cleanEnvironment()
+  // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
+  // It is false if needs to skip SSL, and that doesn't work with OR
+  // Then it needs to be negated again
+  const rejectUnauthorized = !(options.skipSsl || !clnEnv.NODE_TLS_REJECT_UNAUTHORIZED)
+
   const minimumSuccessful = 10
   let count = 0
   try {
@@ -261,9 +266,6 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
         try {
           const fetchOptions: RequestInit = {
             redirect: 'follow',
-            // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
-            // It is false if needs to skip SSL, and that doesn't work with OR
-            // Then it needs to be negated again
             agent: new Agent({ rejectUnauthorized }),
           }
           const res = await fetch(url, fetchOptions)

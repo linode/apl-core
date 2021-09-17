@@ -16,11 +16,16 @@ const cleanSpec = {
   TRACE: bool({ default: false }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
-let pEnv: any = process.env
-const path = `${pEnv.ENV_DIR}/.secrets`
-if (pEnv.ENV_DIR && existsSync(path)) {
-  const result = config({ path }) // this sets vars from .env onto process.env
-  if (result.error) console.error(result.error)
-  pEnv = { ...pEnv, ...result.parsed }
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const cleanEnvironment = () => {
+  let pEnv: any = process.env
+  const path = `${pEnv.ENV_DIR}/.secrets`
+  if (pEnv.ENV_DIR && existsSync(path)) {
+    const result = config({ path }) // this sets vars from .env onto process.env
+    if (result.error) console.error(result.error)
+    pEnv = { ...pEnv, ...result.parsed }
+  }
+  return cleanEnv(pEnv, cleanSpec)
 }
-export const env = cleanEnv(pEnv, cleanSpec)
+export const env = cleanEnvironment()
