@@ -249,6 +249,10 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
     // The maximum number of milliseconds between two retries.
     maxTimeout: 30000,
   }
+  const rejectUnauthorized = !(options.skipSsl || !env.NODE_TLS_REJECT_UNAUTHORIZED)
+  debug.debug(`SkipSSL: ${options.skipSsl}`)
+  debug.debug(`NODE_TLS_RJ_UA: ${env.NODE_TLS_REJECT_UNAUTHORIZED}`)
+  debug.debug(`Reject Unauthorized: ${rejectUnauthorized}`)
   const minimumSuccessful = 10
   let count = 0
   try {
@@ -257,7 +261,10 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
         try {
           const fetchOptions: RequestInit = {
             redirect: 'follow',
-            agent: new Agent({ rejectUnauthorized: !options.skipSsl }),
+            // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
+            // It is false if needs to skip SSL, and that doesn't work with OR
+            // Then it needs to be negated again
+            agent: new Agent({ rejectUnauthorized }),
           }
           const res = await fetch(url, fetchOptions)
           if (res.status !== options.status) {
