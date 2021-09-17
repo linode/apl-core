@@ -1,4 +1,5 @@
 import { Argv } from 'yargs'
+import { env } from '../common/envalid'
 import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
@@ -22,7 +23,7 @@ export interface Arguments extends BasicArguments {
 export const waitFor = async (): Promise<void> => {
   const { url, skipSsl, retries } = getParsedArgs() as Arguments
   debug.info(`Waiting for ${url}`)
-  await waitTillAvailable(url, { retries, skipSsl })
+  await waitTillAvailable(url, { retries, skipSsl: skipSsl || !env.NODE_TLS_REJECT_UNAUTHORIZED })
   debug.info(`${url} is available now`)
 }
 

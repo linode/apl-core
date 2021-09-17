@@ -43,7 +43,7 @@ spec:
         - name: init
           image: "{{ $image }}"
           command: ["/usr/sbin/init_gitea.sh"]
-          resources: {{- .Values.init.resources | toYaml | nindent 10 }}
+          resources: {{- .Values.init.resources | toYaml | nindent 12 }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini

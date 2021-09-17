@@ -16,11 +16,11 @@ annotations:
 init:
   - image:
       repository: otomi/core
-      tag: master
+      tag: waitFor
       pullPolicy: Always
     script: |
       echo "Waiting until gitea is accessible at https://gitea.{{ $v.cluster.domainSuffix }}"
-      {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}"
+      {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}
       echo READY!
 image:
   repository: otomi/tasks
