@@ -91,7 +91,7 @@ elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
 fi
 OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
-if ! docker_tag_exists otomi/core $OTOMI_TAG; then
+if [ -z $NOPULL ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
   [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
   echo "Docker doesn't have otomi/core:${OTOMI_TAG}."
   echo "Falling back to otomi/core:${otomi_version}"
