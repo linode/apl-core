@@ -16,7 +16,6 @@ import { basicOptions } from './common/yargs-opts'
 console.profile('otomi')
 const debug = terminal('global')
 const terminalScale = 0.75
-const isAutoCompletion = process.argv.includes('--get-yargs-completions')
 
 if (env.TESTING) {
   process.env.AZURE_CLIENT_ID = 'somevalue'
