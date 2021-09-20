@@ -235,6 +235,8 @@ type WaitTillAvailableOptions = {
   status?: number
   retries?: number
   skipSsl?: boolean
+  username?: string
+  password?: string
 }
 
 export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOptions): Promise<void> {
@@ -268,6 +270,9 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
           const fetchOptions: RequestInit = {
             redirect: 'follow',
             agent: new Agent({ rejectUnauthorized }),
+            headers: {
+              Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+            },
           }
           const res = await fetch(url, fetchOptions)
           if (res.status !== options.status) {
