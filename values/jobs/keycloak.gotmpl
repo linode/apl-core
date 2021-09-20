@@ -17,7 +17,9 @@ type: Job
 runPolicy: Always
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
 annotations:
+  {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
+  {{- end }}
 init:
   - image:
       repository: otomi/core

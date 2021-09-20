@@ -12,7 +12,9 @@ env:
 nativeSecrets:
   GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
 annotations:
+  {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
+  {{- end }}
 init:
   - image:
       repository: otomi/core
