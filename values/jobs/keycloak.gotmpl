@@ -21,8 +21,7 @@ annotations:
 init:
   - image:
       repository: otomi/core
-      tag: waitFor
-      pullPolicy: Always
+      tag: {{ $v.otomi.version }}
     script: |
       echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
       {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}

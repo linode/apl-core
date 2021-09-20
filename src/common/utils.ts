@@ -239,7 +239,8 @@ type WaitTillAvailableOptions = {
 
 export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOptions): Promise<void> {
   const debug = terminal('waitTillAvailable')
-  const options = { status: 200, retries: 10, skipSsl: false, ...opts }
+  const defaultOptions: WaitTillAvailableOptions = { status: 200, retries: 10, skipSsl: false }
+  const options: WaitTillAvailableOptions = { ...defaultOptions, ...opts }
   const retryOptions: Options = {
     retries: options.retries === 0 ? 10 : options.retries,
     forever: options.retries === 0,
