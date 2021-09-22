@@ -34,7 +34,7 @@ env:
   OIDC_GROUPS_CLAIM: groups
   OIDC_NAME: keycloak
   OIDC_SCOPE: openid
-  OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
+  OIDC_VERIFY_CERT: '{{ not $hasStagingCerts }}'
 {{ if $hasStagingCerts }}
 files:
   /tmp/node/certificates.crt: |

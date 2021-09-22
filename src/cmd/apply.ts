@@ -55,15 +55,10 @@ const commitOnFirstRun = async () => {
   } else {
     cd(env.ENV_DIR)
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-    let credentials = {}
-    if (!healthUrl.includes('@')) {
-      credentials = {
-        username: 'otomi-admin',
-        password:
-          values.charts.gitea.adminPassword?.length > 0
-            ? values.charts.gitea.adminPassword
-            : values.otomi.adminPassword,
-      }
+    const credentials = {
+      username: 'otomi-admin',
+      password:
+        values.charts.gitea.adminPassword?.length > 0 ? values.charts.gitea.adminPassword : values.otomi.adminPassword,
     }
     debug.debug('healthUrl: ', healthUrl)
     const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
@@ -71,7 +66,7 @@ const commitOnFirstRun = async () => {
       process.env.GIT_SSL_NO_VERIFY = 'true'
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     }
-    await waitTillAvailable(healthUrl, credentials)
+    await waitTillAvailable(healthUrl, { ...credentials, retries: 0 })
   }
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
   await commit()

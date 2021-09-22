@@ -24,7 +24,7 @@ annotations:
 init:
   - image:
       repository: otomi/core
-      tag: waitFor
+      tag: {{ $v.otomi.version }}
     {{ if $hasStagingCerts }}
     files:
       /tmp/node/certificates.crt: |
