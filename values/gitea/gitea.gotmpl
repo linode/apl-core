@@ -122,8 +122,8 @@ postgresql:
 
 {{- if $hasStagingCerts }}
 extraRootCA: |
-  {{- $v | get "customRootCa" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 2 }}
+  {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 securityContext:

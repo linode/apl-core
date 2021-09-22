@@ -7,9 +7,17 @@
   command: ["sh"]
   env:
     - name: VERBOSITY
-      value: "1"
+      value: "2"
+    {{- if ne .extraRootCA "" }}
+    - name: NODE_EXTRA_CA_CERTS
+      value: /etc/ssl/certs/ca-certificates.crt
+    {{- end }}
   args:
     - '-c'
-    - {{ if .skipTlsVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for {{ .url }}
+    - binzx/otomi wait-for {{ .url }}
+  volumeMounts:
+    {{- if ne .extraRootCA "" }}
+    {{- include "extraRootCA.volumeMounts" (dict "rootCA" .extraRootCA) | nindent 6 }}
+    {{- end }}
 {{- end }}
 {{- end }}
