@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
-{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
 {{- $giteaUrl := print "https://gitea." $v.cluster.domainSuffix }}
 
 type: Job
@@ -18,15 +19,26 @@ annotations:
 init:
   - image:
       repository: otomi/core
-      tag: {{ $v.otomi.version }}
+      tag: waitFor
+    {{ if $hasStagingCerts }}
+    files:
+      /tmp/node/certificates.crt: |
+        {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 8 }}
+        {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 8}}
+    {{ end }}
     script: |
       echo "Waiting until gitea is accessible at https://gitea.{{ $v.cluster.domainSuffix }}"
-      {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED='0'{{ end }} binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}
-      echo READY!
+      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt{{ end }} binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
   tag: v0.2.10
   # pullPolicy: Always
+{{ if $hasStagingCerts }}
+files:
+  /tmp/node/certificates.crt: |
+    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
+    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
+{{ end }}
 script: |
-  {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt{{ end }} npm run tasks:gitea
 runPolicy: OnSpecChange
