@@ -33,7 +33,7 @@ init:
     {{ end }}
     script: |
       echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
-      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt{{ end }} binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
+      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
   tag: v0.2.10
@@ -79,5 +79,5 @@ files:
     {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
 {{ end }}
 script: |
-  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt{{ end }} npm run tasks:keycloak
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange

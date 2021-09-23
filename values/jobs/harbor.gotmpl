@@ -42,5 +42,5 @@ files:
     {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
 {{ end }}
 script: |
-  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt{{ end }} npm run tasks:harbor
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:harbor
 runPolicy: OnSpecChange
