@@ -206,8 +206,6 @@ definitions:
         required:
           - clientId
           - clientSecret
-          - subscriptionId
-          - tenantId
       tenantId:
         title: Azure tenant id
         description: An Azure tenant id.
