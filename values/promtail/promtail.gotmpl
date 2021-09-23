@@ -25,7 +25,8 @@ securityContext:
 
 serviceMonitor:
   enabled: true
-
+  additionalLabels:
+    prometheus: system
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
