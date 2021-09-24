@@ -25,6 +25,13 @@ spec:
       nodePort: {{ $service.httpNodePort }}
     {{- end }}
       protocol: TCP
+    - name: http-management
+      port: {{ $service.httpManagementPort }}
+      targetPort: http-management
+    {{- if and (eq "NodePort" $service.type) $service.httpManagementNodePort }}
+      nodePort: {{ $service.httpManagementNodePort }}
+    {{- end }}
+      protocol: TCP
     - name: https
       port: {{ $service.httpsPort }}
       targetPort: https

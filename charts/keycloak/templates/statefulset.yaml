@@ -134,6 +134,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            - name: http-management
+              containerPort: 9990
+              protocol: TCP
             - name: https
               containerPort: 8443
               protocol: TCP
