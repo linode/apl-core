@@ -49,14 +49,6 @@ docker_tag_exists() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-findUp() {
-  path=$1
-  while [[ "$path" != "" && ! -e "$path/$2" ]]; do
-    path=${path%/*}
-  done
-  echo "$path"
-}
-
 packageIsCore() {
   path=$1
   [ -z $path ] && return 1
@@ -64,15 +56,9 @@ packageIsCore() {
   [[ $packageName == 'otomi-core' ]] && return 0 || return 1
 }
 
-packageJsonPathPwd=$(findUp $(pwd) 'package.json')
-packageJsonPathBaseDir=$(findUp $base_dir 'package.json')
-
-if packageIsCore $packageJsonPathPwd; then
+if packageIsCore $(pwd); then
   in_core=1
-  core_path=$packageJsonPathPwd
-elif packageIsCore $packageJsonPathBaseDir; then
-  in_core=1
-  core_path=$packageJsonPathBaseDir
+  core_path=$(pwd)
 fi
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
@@ -89,21 +75,30 @@ elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
   otomi_version=${otomi_version:-$fallback_otomi_version}
 fi
-OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
-if [ -z $NOPULL ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
-  [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
-  echo "Docker doesn't have otomi/core:${OTOMI_TAG}."
-  echo "Falling back to otomi/core:${otomi_version}"
-  OTOMI_TAG=$otomi_version
+if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
+  # OTOMI_TAG was explicitly given and doesn't exists, then error out
+  echo "The tag supplied '$OTOMI_TAG' does not exist as a docker image."
+  exit 1
 fi
-readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
+
+otomi_version_used=${OTOMI_TAG:-$otomi_version}
+
+if [ -z $NOPULL ] && ! docker_tag_exists otomi/core $otomi_version_used; then
+  # When working in new branch, docker image doesn't exist before first commit/push
+  # So need to fall back to working version
+  [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
+  echo "Docker doesn't have otomi/core:${otomi_version_used}."
+  echo "Falling back to otomi/core:${otomi_version}"
+  otomi_version_used=$otomi_version
+fi
+readonly otomi_tools_image="otomi/core:${otomi_version_used}"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
 fi
 readonly script_full_path
-otomi_branch=$(curl -s https://api.github.com/repos/redkubes/otomi-core/branches | grep $OTOMI_TAG | sed 's/.*"name": "\(.*\)".*/\1/')
+otomi_branch=$(curl -s https://api.github.com/repos/redkubes/otomi-core/branches | grep $otomi_version_used | sed 's/.*"name": "\(.*\)".*/\1/')
 update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch}/binzx/otomi"
 
 date_to_format() {
@@ -279,7 +274,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$otomi_version_used" = 'latest' ] || [ "$otomi_version_used" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
