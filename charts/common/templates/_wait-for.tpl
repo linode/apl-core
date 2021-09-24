@@ -4,6 +4,7 @@
 - name: wait-for-init
   image: {{ printf "otomi/core:%s" .otomiVersion }}
   {{- include "common.resources" . | nindent 2 }}
+  pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .otomiVersion) }} 
   command: ["bash"]
   env:
     - name: VERBOSITY
