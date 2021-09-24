@@ -35,8 +35,8 @@ resources:
 serviceMonitor:
   enabled: true
   interval: "10s"
-  namespace: monitoring
-  prometheus: po-prometheus
+  namespace: kube-system
+  prometheus: system
 
 extraArgs:
   expander: least-waste
