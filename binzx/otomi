@@ -74,6 +74,8 @@ if [ -n "$in_core" ]; then
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
   otomi_version=${otomi_version:-$fallback_otomi_version}
+else
+  otomi_version=$fallback_otomi_version
 fi
 
 if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
