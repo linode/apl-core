@@ -2448,6 +2448,4 @@ properties:
             $ref: '#/definitions/team'
 required:
   - cluster
-  - oidc
   - otomi
-  - teamConfig
