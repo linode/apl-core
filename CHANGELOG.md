@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.7](https://github.com/redkubes/otomi-core/compare/v0.14.6...v0.14.7) (2021-09-23)
+
+
+### Features
+
+* create wait-for command, and implement as init cntr ([#581](https://github.com/redkubes/otomi-core/issues/581)) ([3df6f7f](https://github.com/redkubes/otomi-core/commit/3df6f7f018ccebfb1955517c0c0059b5d6cc4c27))
+
+
+### Bug Fixes
+
+* await for file generation ([#588](https://github.com/redkubes/otomi-core/issues/588)) ([ade0c71](https://github.com/redkubes/otomi-core/commit/ade0c71e54229cad86974557ef57d288689c389c))
+* changes some secrets requirements. ([#579](https://github.com/redkubes/otomi-core/issues/579)) ([bc0dec5](https://github.com/redkubes/otomi-core/commit/bc0dec58061b87d9081355de5cd65b2750995897))
+* chart publication logic ([#583](https://github.com/redkubes/otomi-core/issues/583)) ([751b000](https://github.com/redkubes/otomi-core/commit/751b000d354522473a68c2e1fc7ee818fc0052ff))
+* commitOnFirstRun should only wait for gitea ([61249ce](https://github.com/redkubes/otomi-core/commit/61249ce7b2acde8b449a3b585c32ceb5158d6791))
+* drone resources ([#597](https://github.com/redkubes/otomi-core/issues/597)) ([bddcd6c](https://github.com/redkubes/otomi-core/commit/bddcd6c2f915e1993bb0b9ef5fbdf297a6080206))
+* initial cli commit cant happen as creds dont get mounted ([#589](https://github.com/redkubes/otomi-core/issues/589)) ([63d4326](https://github.com/redkubes/otomi-core/commit/63d4326dfa5c920c9ec7fad2f22c1e7332e8ed5c))
+* schema for azure monitor ([237db52](https://github.com/redkubes/otomi-core/commit/237db52d72270082b587822494ea68c73ada06f4))
+* show help when no command given (fixes: [#582](https://github.com/redkubes/otomi-core/issues/582)) ([14ec04b](https://github.com/redkubes/otomi-core/commit/14ec04b1b88e5adc9d26f22186d24381930d0aff))
+* upload limit nginx ([49b03ec](https://github.com/redkubes/otomi-core/commit/49b03ecfcf3a7e44045e3214a01e4e3db330f6fc))
+
+
+### Others
+
+* **deps:** updated console and api ([5cef127](https://github.com/redkubes/otomi-core/commit/5cef127cd64dc3e264e0f3f0730212f15ff15464))
+* Update README.md ([#584](https://github.com/redkubes/otomi-core/issues/584)) ([285d858](https://github.com/redkubes/otomi-core/commit/285d858db276f89044c7e70b6c2fd10df612513c))
+
 ### [0.14.6](https://github.com/redkubes/otomi-core/compare/v0.14.5...v0.14.6) (2021-09-03)
 
 
