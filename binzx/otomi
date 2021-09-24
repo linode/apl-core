@@ -51,7 +51,7 @@ readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 packageIsCore() {
   path=$1
-  [ -z $path ] && return 1
+  [ ! -f "$path/package.json" ] && return 1
   packageName=$(grep name "$path/package.json" | sed 's/.*"name": "\(.*\)".*/\1/')
   [[ $packageName == 'otomi-core' ]] && return 0 || return 1
 }
