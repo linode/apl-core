@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.8](https://github.com/redkubes/otomi-core/compare/v0.14.7...v0.14.8) (2021-09-24)
+
+
+### Bug Fixes
+
+* [#516](https://github.com/redkubes/otomi-core/issues/516) - CLI Updating fails ([#593](https://github.com/redkubes/otomi-core/issues/593)) ([57acffd](https://github.com/redkubes/otomi-core/commit/57acffdab471aa62dbf288275565836992b599e0))
+* add hasCert, certArn, certName to schema ([#599](https://github.com/redkubes/otomi-core/issues/599)) ([9044a44](https://github.com/redkubes/otomi-core/commit/9044a441f0b783f56548833b14f2c961e888305d))
+* image config for core ([0a586d9](https://github.com/redkubes/otomi-core/commit/0a586d9573ae7db5a46c09c974685ec3c4ba7d87))
+* imagePullPolicy..doh ([890af9f](https://github.com/redkubes/otomi-core/commit/890af9fa1351df70218912b3ae7fbe3b8ab250fb))
+* otomi core check ([c87360d](https://github.com/redkubes/otomi-core/commit/c87360d7a14dff30af09877367c2b9380a84c7c9))
+* pullpolicy always if non-semver for waitFor init ([3d47c0f](https://github.com/redkubes/otomi-core/commit/3d47c0f01955f2a6169211a7f299cb24a0e52ca7))
+* schema props unrequired ([6f6765f](https://github.com/redkubes/otomi-core/commit/6f6765ff08b2f1327c846692a746edca2803f0f1))
+* securityContext for waitForUrl ([6583375](https://github.com/redkubes/otomi-core/commit/658337545a928f7c45bb48fe976632630100f46a))
+* team alerts, prom monitors for core apps ([#598](https://github.com/redkubes/otomi-core/issues/598)) ([4313f99](https://github.com/redkubes/otomi-core/commit/4313f99ed9e327a77501311f34ef0184ae2c513a))
+
 ### [0.14.7](https://github.com/redkubes/otomi-core/compare/v0.14.6...v0.14.7) (2021-09-23)
 
 
