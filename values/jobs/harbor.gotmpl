@@ -4,7 +4,8 @@
 {{- $h := $c | get "harbor" dict }}
 {{- $k := $c | get "keycloak" dict }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
-{{- $skipVerify := eq ($v.charts | get "cert-manager.stage" "production") "staging" }}
+{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
@@ -33,6 +34,13 @@ env:
   OIDC_GROUPS_CLAIM: groups
   OIDC_NAME: keycloak
   OIDC_SCOPE: openid
-  OIDC_VERIFY_CERT: '{{ not $skipVerify }}'
-script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:harbor
+  OIDC_VERIFY_CERT: '{{ not $hasStagingCerts }}'
+{{ if $hasStagingCerts }}
+files:
+  /tmp/node/certificates.crt: |
+    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
+    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
+{{ end }}
+script: |
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:harbor
 runPolicy: OnSpecChange

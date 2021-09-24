@@ -240,6 +240,9 @@ keycloak:
     httpsPort: 8443
     httpsNodePort: ""
 
+    httpManagementPort: 9990
+    httpManagementNodePort: ""
+
     # Optional: jGroups port for high availability clustering
     jgroupsPort: 7600
 

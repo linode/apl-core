@@ -51,6 +51,9 @@ keycloak:
     install-theme.sh: |
       #!/bin/sh
       cp -Rv /themes/* /opt/jboss/keycloak/themes/
+  extraEnv:
+    - name: KEYCLOAK_STATISTICS
+      value: all      
   extraInitContainers:
     - name: keycloak-otomi-branding
       image: otomi/console:v0.4.53
@@ -117,7 +120,7 @@ postgresql:
     serviceMonitor:
       enabled: true
       additionalLabels:
-        prometheus: po-prometheus
+        prometheus: system
   resources:
     {{- with $k | get "resources.postgresql" nil }}
       {{- toYaml . | nindent 4 }}
@@ -139,10 +142,9 @@ prometheus:
     enabled: true
     serviceMonitor:
       namespace: keycloak
-      # selector:
-      #   prometheus: po-prometheus
-      #   release: prometheus-operator
-      path: /realms/master/metrics
+      selector:
+        prometheus: system
+      path: /metrics
       
 test:
   enabled: false
