@@ -67,7 +67,7 @@ export const commit = async (): Promise<void> => {
     debug.debug('healthUrl: ', healthUrl)
     await waitTillAvailable(healthUrl)
   }
-  preCommit()
+  await preCommit()
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
@@ -81,7 +81,7 @@ export const commit = async (): Promise<void> => {
   }
 
   // If the values are committed for the very first time then pull does not take an effect
-  if (!env.CI) await pull()
+  if (!env.CI && !isChart) await pull()
   // previous command returned to rootDir, so go back to env:
   cd(env.ENV_DIR)
   let branch = 'main'
