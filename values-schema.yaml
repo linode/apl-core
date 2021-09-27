@@ -362,7 +362,7 @@ definitions:
         $ref: '#/definitions/repository'
       tag:
         default: latest
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
     title: Container image
   imageSimple:
     additionalProperties: false
@@ -913,10 +913,6 @@ definitions:
         $ref: '#/definitions/alerts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
-      clusters:
-        items:
-          $ref: '#/definitions/wordCharacterPattern'
-        type: array
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -2143,7 +2139,7 @@ properties:
       tokenUrl:
         $ref: '#/definitions/url'
       usernameClaimMapper:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
         description: Claim name used by Keycloak to identify incoming users from identity provider
         default: '${CLAIM.email}'
       subClaimMapper:
@@ -2407,13 +2403,13 @@ properties:
               additionalProperties: false
               properties:
                 level:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 role:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 type:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 user:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
   smtp:
     additionalProperties: false
     properties:
