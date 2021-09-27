@@ -41,17 +41,33 @@ const setup = (): void => {
 }
 
 const commitOnFirstRun = async () => {
-  cd(env.ENV_DIR)
+  const values = await hfValues()
+  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
 
-  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-  debug.debug('healthUrl: ', healthUrl)
-  const isCertStaging = (await hfValues()).charts?.['cert-manager']?.stage === 'staging'
-  if (isCertStaging) {
-    process.env.GIT_SSL_NO_VERIFY = 'true'
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  if ((await nothrow($`kubectl -n otomi get cm otomi-status`)).exitCode === 0) {
+    debug.info('Already installed, skipping commit...')
   }
-  await waitTillAvailable(healthUrl)
-
+  if (!giteaEnabled) {
+    debug.log(
+      `Please cd to ${env.ENV_DIR} and commit the values with this command: "git add -A && git commit -m "first commit" --no-verify && git push"`,
+    )
+    await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
+  } else {
+    cd(env.ENV_DIR)
+    const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+    const credentials = {
+      username: 'otomi-admin',
+      password:
+        values.charts.gitea.adminPassword?.length > 0 ? values.charts.gitea.adminPassword : values.otomi.adminPassword,
+    }
+    debug.debug('healthUrl: ', healthUrl)
+    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
+    if (isCertStaging) {
+      process.env.GIT_SSL_NO_VERIFY = 'true'
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
+    await waitTillAvailable(healthUrl, { ...credentials, retries: 0 })
+  }
   if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
   await commit()
   await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)

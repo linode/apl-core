@@ -41,37 +41,71 @@ silent() {
     "$@" &>/dev/null
   fi
 }
+
+docker_tag_exists() {
+  curl -sflL https://index.docker.io/v1/repositories/$1/tags/$2 &>/dev/null
+}
+
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-if [[ $base_dir == *"otomi-core"* ]] || [[ $(pwd) == *"otomi-core"* ]]; then
+packageIsCore() {
+  path=$1
+  [ ! -f "$path/package.json" ] && return 1
+  packageName=$(grep name "$path/package.json" | sed 's/.*"name": "\(.*\)".*/\1/')
+  [[ $packageName == 'otomi-core' ]] && return 0 || return 1
+}
+
+if [ -z $CI ] && packageIsCore $(pwd); then
   in_core=1
+  core_path=$(pwd)
 fi
+has_docker=$(command -v docker &>/dev/null)
+
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
-otomi_version="latest"
+fallback_otomi_version='latest'
+fallback_otomi_dev_version='master'
 if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch=${current_branch##*/}
-  current_branch=${current_branch:-'master'}
+  current_branch=${current_branch:-$fallback_otomi_dev_version}
   otomi_version=$current_branch
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
+  otomi_version=${otomi_version:-$fallback_otomi_version}
+else
+  otomi_version=$fallback_otomi_version
 fi
-OTOMI_TAG=${OTOMI_TAG:-$otomi_version}
 
-readonly otomi_tools_image="otomi/core:${OTOMI_TAG}"
+if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
+  # OTOMI_TAG was explicitly given and doesn't exists, then error out
+  echo "The tag supplied '$OTOMI_TAG' does not exist as a docker image."
+  exit 1
+fi
+
+otomi_version_used=${OTOMI_TAG:-$otomi_version}
+
+if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version_used; then
+  # When working in new branch, docker image doesn't exist before first commit/push
+  # So need to fall back to working version
+  [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
+  echo "Docker doesn't have otomi/core:${otomi_version_used}."
+  echo "Falling back to otomi/core:${otomi_version}"
+  otomi_version_used=$otomi_version
+fi
+readonly otomi_tools_image="otomi/core:${otomi_version_used}"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
 fi
 readonly script_full_path
-
-update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${OTOMI_TAG}/binzx/otomi"
+otomi_branch=$(curl -s https://api.github.com/repos/redkubes/otomi-core/branches | grep $otomi_version_used | sed 's/.*"name": "\(.*\)".*/\1/')
+update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch}/binzx/otomi"
 
 date_to_format() {
-  date=$1
+  date=${1:-'1970-01-01T00:00:00Z'}
   format=${2:-+%s}
   which_date=$(which date)
   if [[ $(uname -s) == "Darwin" ]] && [[ "$which_date" == "/bin/date" ]]; then
@@ -135,8 +169,7 @@ check_update() {
     [[ $calling_args == *'-ni'* ]]; then
     return 0
   fi
-
-  last_commit_date=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${OTOMI_TAG}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
+  last_commit_date=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${otomi_branch}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
   last_file_change=$(date -u -r $script_full_path '+%Y-%m-%dT%H:%M:%SZ')
   last_commit_date_sec=$(date_to_format $last_commit_date)
   last_file_change_sec=$(date_to_format $last_file_change)
@@ -184,6 +217,7 @@ vars=(
   ENV_DIR
   GCLOUD_SERVICE_KEY
   KUBE_VERSION_OVERRIDE
+  NODE_TLS_REJECT_UNAUTHORIZED
   OTOMI_DRY_RUN
   OTOMI_IN_TERMINAL
   OTOMI_PASSWORD
@@ -221,22 +255,12 @@ stack_volume=""
 tmp_volume_dir=$(mktemp -d)
 tmp_volume=" -v $tmp_volume_dir:/tmp"
 if [ -n "$in_core" ]; then
-  silent echo "Checking if in dev environment"
-  if [[ $base_dir == *"otomi-core"* ]]; then
-    stack_dir=$(cd "$base_dir/.." && pwd)
-  elif [[ $(pwd) == *"otomi-core"* ]]; then
-    stack_dir=$(pwd | awk -F'otomi-core' '{print $1"otomi-core"}')
-  fi
+  stack_dir=$core_path
 
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  # Use development distribution if exists
-  if [ -f "${stack_dir}/dist/otomi.js" ]; then
-    executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
-  else
-    executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
-  fi
+  executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 
@@ -254,7 +278,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { { [ "$OTOMI_TAG" = 'latest' ] || [ "$OTOMI_TAG" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$otomi_version_used" = 'latest' ] || [ "$otomi_version_used" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
@@ -277,8 +301,8 @@ fi
 
 mkdir -p /tmp/otomi
 container_name='otomi-core-dev-container'
-count=$(ps -a | grep $container_name | wc -l) >/dev/null
-count=$(($count))
+count=0
+[ -n "$has_docker" ] && count=$(($(docker ps -a | grep -c $container_name))) >/dev/null
 container_name="$container_name-$count"
 
 if [ -n "$IN_DOCKER" ]; then

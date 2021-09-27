@@ -50,6 +50,7 @@ controller:
     disable-ipv6: "true"
     client-body-timeout: "5"
     client-header-timeout: "5"
+    client-max-body-size: "0"
     enable-modsecurity: {{ $n | get "modsecurity.enabled" "false" }}
     enable-owasp-modsecurity-crs: false # modsecurity-snippet only works when this is turned off
     http2-max-field-size: 64k
