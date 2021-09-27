@@ -303,9 +303,7 @@ fi
 mkdir -p /tmp/otomi
 container_name='otomi-core-dev-container'
 count=0
-if [ -n "$has_docker" ]; then
-  count=$(($(docker ps -a | grep -c $container_name))) >/dev/null
-fi
+[ -n "$has_docker" ] && count=$(($(docker ps -a | grep -c $container_name))) >/dev/null
 container_name="$container_name-$count"
 
 if [ -n "$IN_DOCKER" ]; then
