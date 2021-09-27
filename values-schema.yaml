@@ -259,7 +259,6 @@ definitions:
       - owner
       - provider
   containerSpecNoSec:
-    additionalProperties: false
     properties:
       image:
         $ref: '#/definitions/image'
@@ -380,18 +379,17 @@ definitions:
       a Job specification, which is meant for run-to-completion apps (e.g. batch
       Jobs).
     items:
-      items:
-        allOf:
-          - properties:
-              id:
-                type: string
-                readOnly: true
-            type: object
-          - $ref: '#/definitions/jobSpec'
-          - $ref: '#/definitions/podSpec'
+      type: object
+      allOf:
+        - properties:
+            id:
+              type: string
+              readOnly: true
+          type: object
+        - $ref: '#/definitions/jobSpec'
+        - $ref: '#/definitions/podSpec'
     type: array
   jobSpec:
-    additionalProperties: false
     properties:
       type:
         default: Job
@@ -514,7 +512,6 @@ definitions:
             title: Pod annotations
         type: object
       - $ref: '#/definitions/podSecurityContext'
-      - $ref: '#/definitions/securityContext'
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
