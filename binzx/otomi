@@ -60,6 +60,7 @@ if packageIsCore $(pwd); then
   in_core=1
   core_path=$(pwd)
 fi
+has_docker=$(command -v docker &>/dev/null)
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
@@ -78,7 +79,7 @@ else
   otomi_version=$fallback_otomi_version
 fi
 
-if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
+if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
   # OTOMI_TAG was explicitly given and doesn't exists, then error out
   echo "The tag supplied '$OTOMI_TAG' does not exist as a docker image."
   exit 1
@@ -86,7 +87,7 @@ fi
 
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
 
-if [ -z $NOPULL ] && ! docker_tag_exists otomi/core $otomi_version_used; then
+if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version_used; then
   # When working in new branch, docker image doesn't exist before first commit/push
   # So need to fall back to working version
   [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
@@ -300,8 +301,8 @@ fi
 
 mkdir -p /tmp/otomi
 container_name='otomi-core-dev-container'
-count=$(docker ps -a | grep $container_name | wc -l) >/dev/null
-count=$(($count))
+count=0
+[ -n "$has_docker" ] && count=$(($(docker ps -a | grep -c $container_name))) >/dev/null
 container_name="$container_name-$count"
 
 if [ -n "$IN_DOCKER" ]; then
