@@ -61,6 +61,7 @@ if packageIsCore $(pwd); then
   in_core=1
   core_path=$(pwd)
 fi
+has_docker=$(command -v docker &>/dev/null)
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
@@ -299,11 +300,14 @@ fi
 
 mkdir -p /tmp/otomi
 container_name='otomi-core-dev-container'
-count=$(docker ps -a | grep $container_name | wc -l) >/dev/null
-count=$(($count))
+count=0
+if [ -n "$has_docker" ]; then
+  count=$(docker ps -a | grep $container_name | wc -l) >/dev/null
+  count=$(($count))
+fi
 container_name="$container_name-$count"
 
-if [ -n "$IN_DOCKER" ]; then
+if [ -n "$IN_DOCKER" ] || [ -z $has_docker ]; then
   silent echo $cmd
   $cmd
   status=$?
