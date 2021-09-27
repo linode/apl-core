@@ -15,7 +15,6 @@ export const pull = async (): Promise<void> => {
   const allValues = await hfValues()
   const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
   debug.info('Pulling latest values')
-  cd(env.ENV_DIR)
   try {
     await $`git fetch`
     await $`if git log; then git merge origin/${branch}; fi`
@@ -24,8 +23,6 @@ export const pull = async (): Promise<void> => {
     debug.warn(
       `An error occured when trying to pull (maybe not problematic).\nIf you see merge conflicts then please resolve these and run \`otomi commit\` again.`,
     )
-  } finally {
-    cd(rootDir)
   }
 }
 

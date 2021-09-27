@@ -12,7 +12,6 @@ import {
   otomiStatusNamespace,
   otomiPasswordsSecretName,
   otomiStatusCmName,
-  rootDir,
   setParsedArgs,
   terminal,
   waitTillAvailable,
@@ -35,8 +34,6 @@ export const preCommit = async (): Promise<void> => {
 export const gitPush = async (branch: string): Promise<boolean> => {
   const d = terminal('gitPush')
   d.info('Starting git push.')
-
-  cd(env.ENV_DIR)
   try {
     await $`git push -u origin ${branch}`
     d.log('Otomi values have been pushed to git.')
@@ -45,32 +42,44 @@ export const gitPush = async (branch: string): Promise<boolean> => {
     d.info(e.stdout)
     d.error(e.stderr)
     return false
-  } finally {
-    cd(rootDir)
   }
 }
 
-export const commit = async (): Promise<void> => {
-  const d = terminal('commit')
-  await validateValues()
-  d.info('Preparing values')
-  const values = await hfValues()
-  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+const setDeplymentStatus = async (): Promise<void> => {
+  const status = await getOtomiDeploymentStatus()
+  if (status !== 'deployed') {
+    await nothrow($`kubectl -n ${otomiStatusNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`)
+    // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
+    await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
+  }
+}
+
+const setEnv = (values: any): void => {
   const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
   if (isCertStaging) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
-  cd(env.ENV_DIR)
+}
+const waitForGitea = async (values: any): Promise<void> => {
+  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
   if (giteaEnabled && (!env.CI || isChart)) {
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
     debug.debug('healthUrl: ', healthUrl)
     await waitTillAvailable(healthUrl)
   }
-  await preCommit()
-  await encrypt()
-  d.info('Committing values')
-  cd(env.ENV_DIR)
+}
+
+const getGitBranch = (values: any): string => {
+  let branch = 'main'
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? branch
+  }
+  return branch
+}
+
+const commitAndPush = async (branch, pullBeforePush = false): Promise<void> => {
+  const d = terminal('commitAndPush')
   await $`git add -A`
   try {
     await $`git commit -m 'otomi commit' --no-verify`
@@ -81,13 +90,7 @@ export const commit = async (): Promise<void> => {
   }
 
   // If the values are committed for the very first time then pull does not take an effect
-  if (!env.CI && !isChart) await pull()
-  // previous command returned to rootDir, so go back to env:
-  cd(env.ENV_DIR)
-  let branch = 'main'
-  if (values.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? branch
-  }
+  if (pullBeforePush) await pull()
 
   try {
     await $`git remote show origin`
@@ -96,18 +99,25 @@ export const commit = async (): Promise<void> => {
   } catch (error) {
     d.error(error.stderr)
     throw new Error('Pushing the values failed, please read the above error message and manually try again')
-  } finally {
-    cd(rootDir)
   }
+}
+
+export const commit = async (): Promise<void> => {
+  const d = terminal('commit')
+  cd(env.ENV_DIR)
+  await validateValues()
+  d.info('Preparing values')
+  const values = await hfValues()
+  setEnv(values)
+  await waitForGitea(values)
+  await preCommit()
+  await encrypt()
+  d.info('Committing values')
+  const branch = getGitBranch(values)
+  const pullBeforePush = !env.CI && !isChart
+  await commitAndPush(branch, pullBeforePush)
   if (!env.CI || isChart) {
-    const status = await getOtomiDeploymentStatus()
-    if (status !== 'deployed') {
-      await nothrow(
-        $`kubectl -n ${otomiStatusNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`,
-      )
-      // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
-      await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
-    }
+    await setDeplymentStatus()
   }
 }
 
