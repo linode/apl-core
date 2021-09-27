@@ -27,16 +27,16 @@ definitions:
       groupInterval:
         default: 5m
         description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/duration'
       msteams:
         additionalProperties: false
         properties:
           highPrio:
-            description: The low prio web hook.
+            description: The high prio web hook.
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
           lowPrio:
-            description: The high prio web hook.
+            description: The low prio web hook.
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
       receivers:
@@ -51,7 +51,7 @@ definitions:
       repeatInterval:
         default: 3h
         description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/duration'
       slack:
         additionalProperties: false
         properties:
@@ -307,6 +307,10 @@ definitions:
       clientSecretValue:
         type: string
         x-secret: ''
+  duration:
+    # See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file
+    pattern: '((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)'
+    type: string
   email:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
