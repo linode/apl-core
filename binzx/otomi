@@ -307,9 +307,6 @@ if [ -n "$has_docker" ]; then
 fi
 container_name="$container_name-$count"
 
-echo $has_docker
-set -x
-
 if [ -n "$IN_DOCKER" ]; then
   silent echo $cmd
   $cmd
