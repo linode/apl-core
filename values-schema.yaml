@@ -1762,11 +1762,6 @@ properties:
                 $ref: '#/definitions/resources'
               tools:
                 $ref: '#/definitions/resources'
-          tools:
-            additionalProperties: false
-            properties:
-              image:
-                $ref: '#/definitions/imageSimple'
       otomi-console:
         additionalProperties: false
         properties:

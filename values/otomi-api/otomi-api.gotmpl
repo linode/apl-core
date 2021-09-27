@@ -84,8 +84,8 @@ tools:
   {{- if $sopsEnabled }}
   image:
     repository: otomi/core
-    tag: {{ $o | get "tools.image.tag" $v.otomi.version }}
-    pullPolicy: {{ $o | get "tools.image.pullPolicy" "IfNotPresent" }}
+    tag: {{ $v.otomi.version }}
+    pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}

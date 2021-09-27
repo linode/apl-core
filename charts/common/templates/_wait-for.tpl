@@ -4,7 +4,8 @@
 - name: wait-for-init
   image: {{ printf "otomi/core:%s" .otomiVersion }}
   {{- include "common.resources" . | nindent 2 }}
-  command: ["sh"]
+  imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .otomiVersion) }} 
+  command: ["bash"]
   env:
     - name: VERBOSITY
       value: "2"
@@ -15,6 +16,8 @@
   args:
     - '-c'
     - binzx/otomi wait-for {{ .url }}
+  securityContext:
+    runAsUser: 1000
   volumeMounts:
     {{- if ne .extraRootCA "" }}
     {{- include "extraRootCA.volumeMounts" (dict "rootCA" .extraRootCA) | nindent 6 }}
