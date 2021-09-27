@@ -29,7 +29,7 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -ex
+              set -e
               [ $(kubectl -n otomi get cm otomi-status) ] && echo 'The initial Otomi deployment hes been performed succesfully! To modify the configuration please use either the Otomi CLI or Otomi console.' && exit 0
               binzx/otomi bootstrap 
               binzx/otomi apply
