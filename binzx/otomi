@@ -43,6 +43,7 @@ silent() {
 }
 
 docker_tag_exists() {
+  [ -n "$CI" ] && return 0
   curl -sflL https://index.docker.io/v1/repositories/$1/tags/$2 &>/dev/null
 }
 
