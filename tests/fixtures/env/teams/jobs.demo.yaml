@@ -16,6 +16,13 @@ teamConfig:
                       runAsUser: 1002
                       runAsGroup: 1002
                       fsGroup: 1002
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
                   securityContext:
                       runAsNonRoot: true
                       runAsUser: 1002
@@ -31,8 +38,14 @@ teamConfig:
                             repository: busybox
                             tag: latest
                             pullPolicy: IfNotPresent
-                        script: |
-                            echo "hello foo $foo"
+                        command: [echo, 'hello foo $foo']
+                        resources:
+                            limits:
+                                cpu: 50m
+                                memory: 64Mi
+                            requests:
+                                cpu: 50m
+                                memory: 64Mi
                         secrets:
                             - mysecret-generic
                             - hello-otomi
@@ -65,9 +78,23 @@ teamConfig:
                             repository: busybox
                             tag: latest
                             pullPolicy: IfNotPresent
+                        resources:
+                            limits:
+                                cpu: 50m
+                                memory: 64Mi
+                            requests:
+                                cpu: 50m
+                                memory: 64Mi
                         script: |
                             echo "hello $receiver"
                   name: also-contains-everything-and-cron
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
@@ -81,6 +108,13 @@ teamConfig:
                       tag: latest
                       pullPolicy: IfNotPresent
                   name: base
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
                   script: echo "hello $receiver"
                   type: Job
                 - enabled: true
@@ -90,6 +124,13 @@ teamConfig:
                       pullPolicy: IfNotPresent
                   name: base-cronjob
                   schedule: 0 1 * * *
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
                   script: echo "hello world"
                   type: CronJob
                 - enabled: true
@@ -104,8 +145,22 @@ teamConfig:
                             repository: busybox
                             tag: latest
                             pullPolicy: IfNotPresent
+                        resources:
+                            limits:
+                                cpu: 50m
+                                memory: 64Mi
+                            requests:
+                                cpu: 50m
+                                memory: 64Mi
                         script: echo "hello world"
                   name: init-cronjob
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
                   type: CronJob
