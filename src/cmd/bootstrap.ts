@@ -76,12 +76,12 @@ export const getOtomiSecrets = async (
   // The chart job calls bootstrap only if the otomi-status config map does not exists
   originalValues: Record<string, any>,
 ): Promise<Record<string, any>> => {
-  let generatedSecrets
+  let generatedSecrets: Record<string, any>
   // The chart job calls bootstrap only if the otomi-status config map does not exists
   const secretId = `secret/${otomiPasswordsNamespace}/${otomiPasswordsSecretName}`
   debug.info(`Checking ${secretId} already exist on cluster`)
   const kubeSecretObject = await getK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace)
-  if (isEmpty(kubeSecretObject)) {
+  if (!kubeSecretObject) {
     debug.info(`Creating ${secretId}`)
     generatedSecrets = await generateSecrets(originalValues)
     await createK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace, generatedSecrets)

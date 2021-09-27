@@ -437,16 +437,16 @@ export async function createK8sSecret(name: string, namespace: string, data: Rec
   const path = `/tmp/otomi-secret-${namespace}-${name}`
   writeFileSync(path, rawString)
   const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
-  debug.info(result)
+  debug.debug(result)
 }
 
-export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any>> {
+export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any> | undefined> {
   const secretKeyName = `otomi-secret-${namespace}-${name}`
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
   )
   if (result.exitCode === 0) return JSON.parse(result.stdout)
-  return {}
+  return undefined
 }
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
