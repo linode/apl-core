@@ -25,6 +25,7 @@ init:
   - image:
       repository: otomi/core
       tag: {{ $v.otomi.version }}
+      pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
     {{ if $hasStagingCerts }}
     files:
       /tmp/node/certificates.crt: |
