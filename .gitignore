@@ -4,7 +4,6 @@
 *.bak
 node_modules/
 /dist/
-/env/
 /ssl
 /*.json
 !.cspell.json
