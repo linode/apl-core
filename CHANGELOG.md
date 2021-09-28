@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.9](https://github.com/redkubes/otomi-core/compare/v0.14.8...v0.14.9) (2021-09-28)
+
+
+### Bug Fixes
+
+* 🐛 Add CI check on in_core check ([#602](https://github.com/redkubes/otomi-core/issues/602)) ([97e4124](https://github.com/redkubes/otomi-core/commit/97e4124b13660927976fd8fa9bf4bdfaba507f26))
+* 🐛 Docker if image exists check only on non-CI ([#600](https://github.com/redkubes/otomi-core/issues/600)) ([e091cd0](https://github.com/redkubes/otomi-core/commit/e091cd09173ee5d86c503e6730555dcf991319f6))
+* 🐛 Package is not core if /home/app/stack path is used ([#604](https://github.com/redkubes/otomi-core/issues/604)) ([f6368eb](https://github.com/redkubes/otomi-core/commit/f6368ebe7c31478d99b3d0b76e8fc5e480f9b48f))
+* gen-drone added to request to encrypt for now ([#603](https://github.com/redkubes/otomi-core/issues/603)) ([bc12643](https://github.com/redkubes/otomi-core/commit/bc1264392dc44aa19ed2003363851a32b9c19a6e))
+* prometheus retention default 1 day (fixes [#601](https://github.com/redkubes/otomi-core/issues/601)) ([#605](https://github.com/redkubes/otomi-core/issues/605)) ([1c2bab6](https://github.com/redkubes/otomi-core/commit/1c2bab61b756fdf951faa08c40b6c9ba3b9389b2))
+* retention size format, env vars for sops ([c1e9e8d](https://github.com/redkubes/otomi-core/commit/c1e9e8d84df93a6452025d1d7d32426ff5a0c128))
+
+
+### Others
+
+* **deps:** updated api [ci skip] ([a5e6b96](https://github.com/redkubes/otomi-core/commit/a5e6b960e24d2909ab1719d46f8cc4854f1d1bad))
+
 ### [0.14.8](https://github.com/redkubes/otomi-core/compare/v0.14.7...v0.14.8) (2021-09-24)
 
 
