@@ -87,68 +87,17 @@ jobs:
         if: always() # failure
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-test-push-release
-    container:
-      image: otomi/core:kind
-      options: --user root
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      HELM_PLUGINS: /home/app/.local/share/helm/plugins
+      KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
+      CI: 1
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          token: ${{ env.GIT_PASSWORD }}
-          fetch-depth: 2
-      - run: echo "/home/app/tools" >> $GITHUB_PATH
       - name: K8s in Docker
-        # continue-on-error: true
-        env:
-          HELM_PLUGINS: /home/app/.local/share/helm/plugins
-          KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
-          AZURE_CLIENT_SECRET: bla
-          AZURE_CLIENT_ID: bla
-          CI: 1
-          KIND_TAG: v1.19.0
-        run: |
-          export KUBECONFIG="$PWD/kind/kubeconfig"
-          kind create cluster \
-            --name kind \
-            --kubeconfig "$KUBECONFIG" \
-            --image kindest/node:"$KIND_TAG" \
-            --config=./kind/config.yaml \
-
-          chmod u+r "$KUBECONFIG"
-
-          [ -n "$KIND_EXPERIMENTAL_DOCKER_NETWORK" ] && \
-            kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
-
-          export METALLB_SUBNET="$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' ${KIND_EXPERIMENTAL_DOCKER_NETWORK:-kind})"
-
-          mkdir -p ./env/env
-          cp -r ./kind/env/ ./env/
-
-          helmfile -f kind/helmfile.yaml apply 
-
-          export EX_DNS_IP="$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}')"
-          export DOMAIN_SUFFIX="$(cat kind/env/cluster.yaml | grep domainSuffix | awk '{print $2}')"
-
-          kubectl get cm coredns -n kube-system -o yaml | \
-            sed -e "s/|/&\n\    $DOMAIN_SUFFIX:53 {\n\
-                errors \n\
-                cache 30 \n\
-                forward . $EX_DNS_IP \n\
-              }/" | kubectl apply -f - >/dev/null
-
-          kubectl get cm coredns -n kube-system -o yaml
-          echo "EX_DNS_IP: $EX_DNS_IP"
-          echo "DOMAIN_SUFFIX: $DOMAIN_SUFFIX"
-
-
-          npm set-script prepare "" && \
-            npm i typescript && \
-            npm run compile && \
-            /usr/bin/node --experimental-specifier-resolution=node ./dist/otomi.js -- apply
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/kind:v1
+      - name: Otomi apply
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/core:master apply
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
