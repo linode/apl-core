@@ -197,7 +197,7 @@ export const bootstrapGit = async (): Promise<void> => {
       const giteaUrl = `gitea.${clusterDomain}`
       const giteaOrg = 'otomi'
       const giteaRepo = 'values'
-      remote = `https://${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+      remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
     }
     await $`git config --local user.name ${username}`
     await $`git config --local user.password ${password}`
