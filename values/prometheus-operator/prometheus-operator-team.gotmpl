@@ -14,12 +14,12 @@ defaultRules:
     kubePrometheusNodeAlerting: false
     kubePrometheusNodeRecording: false
     kubernetesAbsent: false
-    kubernetesApps: false
+    kubernetesApps: true
     kubernetesResources: true
     kubernetesStorage: true
     kubernetesSystem: false
     kubeScheduler: false
-    kubeStateMetrics: false
+    kubeStateMetrics: true
     network: false
     node: false
     prometheus: true
@@ -36,7 +36,6 @@ prometheusOperator:
   enabled: false
   manageCrds: false
 prometheus:
-  resources: {}
   additionalServiceMonitors: null
   prometheusSpec:
     enableAdminAPI: false

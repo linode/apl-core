@@ -49,8 +49,6 @@ prometheusOperator:
     enabled: false
   createCustomResource: false # chart 8.2.0 version
   manageCrds: false # chart > 8.2.0
-  kubeletService:
-    enabled: true
   priorityClassName: "otomi-critical"
 commonLabels:
   prometheus: system
@@ -76,16 +74,18 @@ prometheus:
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     portName: http-web
+    retention: {{ $p | get "prometheus.retention" "1d" }}
+    retentionSize: {{ $p | get "prometheus.retentionSize" "4GB" }}
     storageSpec:
       volumeClaimTemplate:
         metadata:
           name: promdata
         spec:
           storageClassName: fast
-          accessModes: ["ReadWriteOnce"]
           resources:
             requests:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
+
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
   additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
@@ -196,6 +196,9 @@ grafana:
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $appsDomain }}/grafana
+
+kubeApiServer:
+  enabled: false
 
 kube-state-metrics:
   # image:

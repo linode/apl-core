@@ -27,17 +27,17 @@ definitions:
       groupInterval:
         default: 5m
         description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
-        type: string
+        $ref: '#/definitions/duration'
       msteams:
         additionalProperties: false
         properties:
           highPrio:
-            description: The low prio web hook.
-            type: string
+            description: The high prio web hook.
+            $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
           lowPrio:
-            description: The high prio web hook.
-            type: string
+            description: The low prio web hook.
+            $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
       receivers:
         description: Notification receivers.
@@ -51,18 +51,18 @@ definitions:
       repeatInterval:
         default: 3h
         description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
-        type: string
+        $ref: '#/definitions/duration'
       slack:
         additionalProperties: false
         properties:
           channel:
             default: dev-mon-otomi
             description: The Slack channel for non-critical notifications.
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           channelCrit:
             default: dev-mon-otomi
             description: The Slack channel for critical notifications.
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           url:
             $ref: '#/definitions/url'
             description: A Slack webhook URL.
@@ -128,7 +128,7 @@ definitions:
       accessKey:
         title: AWS access key
         description: An AWS access key ID.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
         x-secret: ''
       secretKey:
         title: AWS secret key
@@ -138,17 +138,17 @@ definitions:
       region:
         title: AWS region
         description: An AWS region.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       role:
         description: Role may be set explicitly if no metadata can be accessed.
         example: arn:aws:iam::YYYYYYYYYYYY:role/dns-manager
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
   azure:
     definitions:
       clientId:
         title: Azure client id
         description: An Azure client id.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
         x-secret: ''
       clientSecret:
         title: Azure client secret
@@ -206,8 +206,6 @@ definitions:
         required:
           - clientId
           - clientSecret
-          - subscriptionId
-          - tenantId
       tenantId:
         title: Azure tenant id
         description: An Azure tenant id.
@@ -221,7 +219,7 @@ definitions:
     properties:
       apiName:
         description: Only used for API/UI to show in app.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
@@ -236,7 +234,7 @@ definitions:
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
       name:
-        type: string
+        $ref: '#/definitions/clusterName'
       owner:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
@@ -248,10 +246,10 @@ definitions:
           - europe-west4
           - eu-central-1
           - westeurope
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       vpcID:
         description: AWS only. If provided will override autodiscovery from metadata.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
     required:
       - domainSuffix
       - k8sVersion
@@ -259,7 +257,6 @@ definitions:
       - owner
       - provider
   containerSpecNoSec:
-    additionalProperties: false
     properties:
       image:
         $ref: '#/definitions/image'
@@ -304,10 +301,14 @@ definitions:
   droneGit:
     properties:
       clientID:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       clientSecretValue:
         type: string
         x-secret: ''
+  duration:
+    description: 'Prometheus duration (See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file)'
+    pattern: '((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)'
+    type: string
   email:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
@@ -337,13 +338,16 @@ definitions:
         type: string
         x-secret: ''
       projectId:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
   hostPort:
     pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+    type: string
+  clusterName:
+    $ref: '#/definitions/wordCharacterPattern'
     type: string
   image:
     additionalProperties: false
@@ -358,7 +362,7 @@ definitions:
         $ref: '#/definitions/repository'
       tag:
         default: latest
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
     title: Container image
   imageSimple:
     additionalProperties: false
@@ -377,18 +381,17 @@ definitions:
       a Job specification, which is meant for run-to-completion apps (e.g. batch
       Jobs).
     items:
-      items:
-        allOf:
-          - properties:
-              id:
-                type: string
-                readOnly: true
-            type: object
-          - $ref: '#/definitions/jobSpec'
-          - $ref: '#/definitions/podSpec'
+      type: object
+      allOf:
+        - properties:
+            id:
+              type: string
+              readOnly: true
+          type: object
+        - $ref: '#/definitions/jobSpec'
+        - $ref: '#/definitions/podSpec'
     type: array
   jobSpec:
-    additionalProperties: false
     properties:
       type:
         default: Job
@@ -426,6 +429,7 @@ definitions:
       ttlSecondsAfterFinished:
         default: 86400
         description: Time To Live after job is finished in seconds. Will be removed afterwards.
+        minimum: 0
         title: TTL after finished
         type: integer
       init:
@@ -440,7 +444,7 @@ definitions:
     type: object
   k8sContext:
     description: The cluster k8s context as found in $KUBECONFIG.
-    type: string
+    $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
     description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
     enum:
@@ -489,9 +493,9 @@ definitions:
       - properties:
           fsGroup:
             description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
-            type: integer
+            $ref: '#/definitions/unixOwnerId'
           fsGroupChangePolicy:
-            description:
+            description: |
               'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
               This field has two possible values:
               - OnRootMismatch: Only change permissions and ownership if permission and ownership of root directory does not match with expected permissions of the volume. This could help shorten the time it takes to change ownership and permission of a volume.
@@ -510,13 +514,12 @@ definitions:
             title: Pod annotations
         type: object
       - $ref: '#/definitions/podSecurityContext'
-      - $ref: '#/definitions/securityContext'
       - $ref: '#/definitions/containerSpec'
     type: object
   portNumber:
     maximum: 32768
     minimum: 80
-    type: number
+    type: integer
   provider:
     type: string
     enum:
@@ -588,11 +591,24 @@ definitions:
         $ref: '#/definitions/resource'
         description: Requested resources (guaranteed).
     title: Pod resources
-  runAsUser:
+  unixOwnerIdRange:
+    type: object
+    additionalProperties: false
+    required: [min, max]
+    properties:
+      min:
+        type: integer
+        minimum: 0
+        maximum: 65535
+      max:
+        type: integer
+        minimum: 0
+        maximum: 65535
+  unixOwnerId:
     description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
-    minimum": 0
-    maximum": 65535
+    minimum: 0
+    maximum: 65535
     default: 1001
   scaling:
     additionalProperties: false
@@ -698,17 +714,14 @@ definitions:
       uniqueItems: true
     properties:
       runAsUser:
-        $ref: '#/definitions/runAsUser'
+        $ref: '#/definitions/unixOwnerId'
       runAsNonRoot:
         description: Enforces that the container must run as non root. This implies that the UID must also be set with runAsUser.
         type: boolean
         default: true
       runAsGroup:
         description: The GID to run the entrypoint of the container process. Defaults to group specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
-        type: integer
-        minimum": 0
-        maximum": 65535
-        default: 1001
+        $ref: '#/definitions/unixOwnerId'
   service:
     additionalProperties: false
     properties:
@@ -722,20 +735,32 @@ definitions:
             type: boolean
           workload:
             $ref: '#/definitions/labelsAnnotations'
+      certArn:
+        description: Only available on AWS when an external LB is configured. The cert ARN will be registered on the load balancer for SSL termination.
+        example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
+        pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
+        type: string
+      certName:
+        description: The name of a TLS secret known to exist in the team namespace.
+        example: www-example-com
+        type: string
       domain:
         description: A custom service domain name (max 64 bytes).
         maxLength: 64
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       forwardPath:
         default: false
         description: Whether to forward the path into the service, or 'terminate' it.
+        type: boolean
+      hasCert:
+        description: Select when a certificate exists and should not be generated.
         type: boolean
       hide:
         description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
         type: boolean
       host:
         description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       id:
         description: Unique identifier created by and used in API. Optional.
         type: string
@@ -758,7 +783,7 @@ definitions:
                   securityContext:
                     properties:
                       runAsUser:
-                        $ref: '#/definitions/runAsUser'
+                        $ref: '#/definitions/unixOwnerId'
                       readOnlyRootFilesystem:
                         description: Whether this container has a read-only root filesystem. Default is false.
                         type: boolean
@@ -796,12 +821,12 @@ definitions:
                             description: 'Use this filter if you want to make simple non-standard patterns. E.g.: "master-v1.*.*".'
                             example: master-v1.*.*
                             title: Glob string pattern
-                            type: string
+                            $ref: '#/definitions/wordCharacterPattern'
                           tagMatcher:
                             default: glob
                             enum:
                               - glob
-                            type: string
+                            $ref: '#/definitions/wordCharacterPattern'
                         required:
                           - glob
                         title: Glob pattern matching
@@ -840,13 +865,13 @@ definitions:
         type: boolean
       path:
         description: Used by otomi-console to render a path for the app. Only used by core services.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       paths:
         items:
           description: |
             Path mapping to only route certain paths to the service. This allows micro services to operate on the same domain and port.
             When left empty all paths will go to this service.
-          type: string
+          $ref: '#/definitions/wordCharacterPattern'
         # nullable: true
         type: array
       port:
@@ -888,10 +913,6 @@ definitions:
         $ref: '#/definitions/alerts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
-      clusters:
-        items:
-          type: string
-        type: array
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -913,7 +934,7 @@ definitions:
         properties:
           groupMapping:
             description: IDP group id to map onto this team.
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
       password:
         description: Will be used to separate team resources.
         type: string
@@ -957,12 +978,16 @@ definitions:
       properties:
         name:
           description: Name must match mount name.
-          type: string
+          $ref: '#/definitions/wordCharacterPattern'
         configMap:
           properties:
             name:
-              type: string
+              $ref: '#/definitions/wordCharacterPattern'
     type: array
+  wordCharacterPattern:
+    type: string
+    # At least one non whitespace character
+    pattern: ^[^\s]+$
 properties:
   alerts:
     $ref: '#/definitions/alerts'
@@ -987,7 +1012,7 @@ properties:
     additionalProperties: true
     properties:
       skipStorageClasses:
-        description:
+        description: |
           List of storage classes to exclude from deployment, to avoid k8s errors due to patching not allowed.
           This is a rather hacky way to circumvent the patching problem, going against idempotency, but we need it.
           Without it we can't add new storageclasses to a cluster upgrading otomi.
@@ -1052,9 +1077,9 @@ properties:
             type: boolean
             default: false
           adminUser:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           adminToken:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
           debug:
             default: false
@@ -1066,19 +1091,19 @@ properties:
             additionalProperties: false
             properties:
               org:
-                type: string
+                $ref: '#/definitions/wordCharacterPattern'
               team:
-                type: string
+                $ref: '#/definitions/wordCharacterPattern'
               token:
-                type: string
+                $ref: '#/definitions/wordCharacterPattern'
           orgsFilter:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           owner:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           repo:
             $ref: '#/definitions/idName'
           repoFilter:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           resources:
             additionalProperties: false
             properties:
@@ -1393,7 +1418,7 @@ properties:
                 type: string
               subscriptionId:
                 description: The Azure Subscription ID in which Application Gateway resides.
-                type: string
+                $ref: '#/definitions/wordCharacterPattern'
               usePrivateIP:
                 default: false
                 description: Whether a private ip range or not.
@@ -1523,7 +1548,7 @@ properties:
               alias:
                 type: string
               clientID:
-                type: string
+                $ref: '#/definitions/wordCharacterPattern'
                 x-secret: '"otomi"'
               clientSecret:
                 type: string
@@ -1661,7 +1686,8 @@ properties:
             type: string
             default: 1024m
           maxBodySizeBytes:
-            type: number
+            type: integer
+            minimum: 0
             default: 1073741824
             description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
           modsecurity:
@@ -1752,11 +1778,6 @@ properties:
                 $ref: '#/definitions/resources'
               tools:
                 $ref: '#/definitions/resources'
-          tools:
-            additionalProperties: false
-            properties:
-              image:
-                $ref: '#/definitions/imageSimple'
       otomi-console:
         additionalProperties: false
         properties:
@@ -1792,8 +1813,15 @@ properties:
           prometheus:
             additionalProperties: false
             properties:
+              retention:
+                $ref: '#/definitions/duration'
+              retentionSize:
+                description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
+                default: 4GB
+                pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
               storageSize:
-                type: string
+                $ref: '#/definitions/size'
+                default: 5Gi
           resources:
             additionalProperties: false
             properties:
@@ -1842,13 +1870,13 @@ properties:
                   gcpckms:
                     properties:
                       project:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       region:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       key_ring:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       kmsAccount:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                     required:
                       - project
                       - region
@@ -1861,7 +1889,7 @@ properties:
                   awskms:
                     properties:
                       region:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       access_key:
                         type: string
                       secret_key:
@@ -1881,11 +1909,11 @@ properties:
                   azurekeyvault:
                     properties:
                       vault_name:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       tenant_id:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       client_id:
-                        type: string
+                        $ref: '#/definitions/wordCharacterPattern'
                       client_secret:
                         type: string
                         x-secret: ''
@@ -1940,26 +1968,26 @@ properties:
                 properties:
                   cloud:
                     title: Cloud
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                     description: Azure Cloud
                   resourceGroup:
                     title: Resource group
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                     description: Azure resource group
                   hostedZoneName:
                     title: Hosted zone name
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                   tenantId:
                     title: Tenant ID
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                     description: Azure tenant ID
                   subscriptionId:
                     title: Subscription ID
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                     description: Azure subscription ID
                   aadClientId:
                     title: Client ID
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                     description: Azure Application Client ID
                   aadClientSecret:
                     title: Client secret
@@ -2007,7 +2035,7 @@ properties:
               aws:
                 properties:
                   keys:
-                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec.
+                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec. (You can specify a role by appending it to the ARN of the key with a + sign.)
                     title: AWS KMS keys
                     type: string
                   accessKey:
@@ -2019,7 +2047,6 @@ properties:
                 required:
                   - accessKey
                   - keys
-                  - region
                   - secretKey
             required:
               - aws
@@ -2043,7 +2070,6 @@ properties:
                   - clientId
                   - clientSecret
                   - keys
-                  - tenantId
             required:
               - azure
           - properties:
@@ -2093,7 +2119,7 @@ properties:
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
       adminGroupID:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       apiUrl:
         $ref: '#/definitions/url'
         description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
@@ -2101,7 +2127,7 @@ properties:
         $ref: '#/definitions/url'
         description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       clientID:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       clientSecret:
         type: string
         x-secret: ''
@@ -2112,13 +2138,13 @@ properties:
         default: openid email profile
         description: Default values are used by keycloak. May be overridden in case keycloak is disabled.
       teamAdminGroupID:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       tenantID:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       tokenUrl:
         $ref: '#/definitions/url'
       usernameClaimMapper:
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
         description: Claim name used by Keycloak to identify incoming users from identity provider
         default: '${CLAIM.email}'
       subClaimMapper:
@@ -2155,15 +2181,15 @@ properties:
         additionalProperties: false
         properties:
           username:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
           password:
             type: string
             x-secret: ''
           email:
-            type: string
+            $ref: '#/definitions/email'
             default: not@us.ed
           server:
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
             default: docker.io
         required:
           - username
@@ -2187,7 +2213,7 @@ properties:
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
     required:
       - adminPassword
   policies:
@@ -2203,7 +2229,7 @@ properties:
           tags:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/wordCharacterPattern'
           enabled:
             type: boolean
             default: false
@@ -2225,7 +2251,7 @@ properties:
           repos:
             type: array
             items:
-              type: string
+              $ref: '#/definitions/wordCharacterPattern'
           enabled:
             type: boolean
             default: false
@@ -2262,14 +2288,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/unixOwnerIdRange'
           runAsGroup:
             type: object
             properties:
@@ -2279,14 +2298,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/unixOwnerIdRange'
           supplementalGroups:
             type: object
             properties:
@@ -2296,14 +2308,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/unixOwnerIdRange'
           fsGroup:
             type: object
             properties:
@@ -2313,14 +2318,7 @@ properties:
               ranges:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: false
-                  required: [min, max]
-                  properties:
-                    min:
-                      type: integer
-                    max:
-                      type: integer
+                  $ref: '#/definitions/unixOwnerIdRange'
           enabled:
             type: boolean
             default: false
@@ -2410,13 +2408,13 @@ properties:
               additionalProperties: false
               properties:
                 level:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 role:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 type:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
                 user:
-                  type: string
+                  $ref: '#/definitions/wordCharacterPattern'
   smtp:
     additionalProperties: false
     properties:
@@ -2450,6 +2448,4 @@ properties:
             $ref: '#/definitions/team'
 required:
   - cluster
-  - oidc
   - otomi
-  - teamConfig

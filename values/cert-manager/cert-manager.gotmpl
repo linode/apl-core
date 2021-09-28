@@ -11,8 +11,7 @@ global:
 prometheus:
   servicemonitor:
     enabled: true
-    labels:
-      release: prometheus-operator
+    prometheusInstance: system
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  

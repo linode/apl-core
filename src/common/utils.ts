@@ -4,6 +4,7 @@ import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
+import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
@@ -13,7 +14,7 @@ import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
-import { env } from './envalid'
+import { cleanEnvironment, env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -234,40 +235,69 @@ export const logLevelString = (): string => {
   return logLevels[logLevel()].toString()
 }
 
-export async function waitTillAvailable(url: string, status = 200): Promise<void> {
+type WaitTillAvailableOptions = {
+  status?: number
+  retries?: number
+  skipSsl?: boolean
+  username?: string
+  password?: string
+}
+
+export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOptions): Promise<void> {
+  const debug = terminal('waitTillAvailable')
+  const defaultOptions: WaitTillAvailableOptions = { status: 200, retries: 10, skipSsl: false }
+  const options: WaitTillAvailableOptions = { ...defaultOptions, ...opts }
   const retryOptions: Options = {
-    retries: 10,
+    retries: options.retries === 0 ? 10 : options.retries,
+    forever: options.retries === 0,
     factor: 2,
     // minTimeout: The number of milliseconds before starting the first retry. Default is 1000.
     minTimeout: 1000,
     // The maximum number of milliseconds between two retries.
     maxTimeout: 30000,
   }
+
+  // apply.ts:commitOnFirstRun can modify NODE_TLS_REJECT_UNAUTHORIZED
+  // So the process.env needs to be re-parsed
+  const clnEnv = cleanEnvironment()
+  // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
+  // It is false if needs to skip SSL, and that doesn't work with OR
+  // Then it needs to be negated again
+  const rejectUnauthorized = !(options.skipSsl || !clnEnv.NODE_TLS_REJECT_UNAUTHORIZED)
+  const fetchOptions: RequestInit = {
+    redirect: 'follow',
+    agent: new Agent({ rejectUnauthorized }),
+  }
+  if (options.username && options.password) {
+    fetchOptions.headers = {
+      Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+    }
+  }
+
   const minimumSuccessful = 10
   let count = 0
   try {
     do {
       await retry(async (bail) => {
         try {
-          const fetchOptions: RequestInit = {
-            redirect: 'follow',
-          }
           const res = await fetch(url, fetchOptions)
-          if (res.status !== status) {
-            console.warn(`GET ${res.url} ${res.status}`)
+          if (res.status !== options.status) {
+            debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
             bail(new Error(`Retry`))
           } else {
             count += 1
+            debug.debug(`${count}/${minimumSuccessful} success`)
             await sleep(1000)
           }
         } catch (e) {
           // Print system errors like ECONNREFUSED
-          console.error(e.message)
+          debug.error(e.message)
           count = 0
           throw e
         }
       }, retryOptions)
     } while (count < minimumSuccessful)
+    debug.debug(`Waiting done, ${count}/${minimumSuccessful} found`)
   } catch (e) {
     throw new Error(`Max retries (${retryOptions.retries}) has been reached!`)
   }

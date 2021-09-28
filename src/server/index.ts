@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express'
 import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
 import { commit } from '../cmd/commit'
+import { genDrone } from '../cmd/gen-drone'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
 import { env } from '../common/envalid'
@@ -34,6 +35,7 @@ app.get('/encrypt', async (req: Request, res: Response) => {
   try {
     debug.log('Request to encrypt')
     await validateValues()
+    await genDrone()
     await encrypt()
     res.status(200).send('ok')
   } catch (error) {

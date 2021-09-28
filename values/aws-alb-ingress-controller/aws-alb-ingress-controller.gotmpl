@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $aaic := $v.charts | get "aws-alb-ingress-controller" dict }}
 clusterName: otomi-eks-{{ $v.cluster.name }}
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
@@ -13,7 +12,7 @@ resources:
     cpu: 1
     memory: 256Mi
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v.otomi | get "globalPullSecret" nil }}
 image:
   pullSecrets:
     - otomi-pullsecret-global
