@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.10](https://github.com/redkubes/otomi-core/compare/v0.14.9...v0.14.10) (2021-09-28)
+
+
+### Bug Fixes
+
+* restore gitea url with creds ([07d1611](https://github.com/redkubes/otomi-core/commit/07d161145a1209284c4552b03a8fe00f09907d5b))
+* versions ([32c1ab5](https://github.com/redkubes/otomi-core/commit/32c1ab56dc0129f144a5a86a222ac603633c6dd3))
+
+
+### Others
+
+* **deps:** updated console ([89e5813](https://github.com/redkubes/otomi-core/commit/89e5813b9890583504e446043823a6b56294174d))
+* **release:** 0.14.9 ([9c957ce](https://github.com/redkubes/otomi-core/commit/9c957ce9f0a9b44a0ea090dfab1ab182f4f999d3))
+
 ### [0.14.8](https://github.com/redkubes/otomi-core/compare/v0.14.7...v0.14.8) (2021-09-24)
 
 
