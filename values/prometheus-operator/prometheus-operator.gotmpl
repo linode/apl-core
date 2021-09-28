@@ -75,7 +75,7 @@ prometheus:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     portName: http-web
     retention: {{ $p | get "prometheus.retention" "1d" }}
-    retentionSize: {{ $p | get "prometheus.storageSize" "4Gi" }}
+    retentionSize: {{ $p | get "prometheus.retentionSize" "4GB" }}
     storageSpec:
       volumeClaimTemplate:
         metadata:

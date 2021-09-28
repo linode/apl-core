@@ -1815,8 +1815,13 @@ properties:
             properties:
               retention:
                 $ref: '#/definitions/duration'
+              retentionSize:
+                description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
+                default: 4GB
+                pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
               storageSize:
-                type: string
+                $ref: '#/definitions/size'
+                default: 5Gi
           resources:
             additionalProperties: false
             properties:
@@ -2030,7 +2035,7 @@ properties:
               aws:
                 properties:
                   keys:
-                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec.
+                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec. (You can specify a role by appending it to the ARN of the key with a + sign.)
                     title: AWS KMS keys
                     type: string
                   accessKey:
@@ -2042,7 +2047,6 @@ properties:
                 required:
                   - accessKey
                   - keys
-                  - region
                   - secretKey
             required:
               - aws
@@ -2066,7 +2070,6 @@ properties:
                   - clientId
                   - clientSecret
                   - keys
-                  - tenantId
             required:
               - azure
           - properties:

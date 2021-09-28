@@ -55,8 +55,8 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
   
 env:
-  DEBUG: '*'
-  VERBOSITY: '1'
+  # DEBUG: '*'
+  VERBOSITY: '2'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   {{- if hasKey $o "disableSync" }}

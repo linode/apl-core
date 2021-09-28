@@ -260,6 +260,15 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
   // It is false if needs to skip SSL, and that doesn't work with OR
   // Then it needs to be negated again
   const rejectUnauthorized = !(options.skipSsl || !clnEnv.NODE_TLS_REJECT_UNAUTHORIZED)
+  const fetchOptions: RequestInit = {
+    redirect: 'follow',
+    agent: new Agent({ rejectUnauthorized }),
+  }
+  if (options.username && options.password) {
+    fetchOptions.headers = {
+      Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+    }
+  }
 
   const minimumSuccessful = 10
   let count = 0
@@ -267,13 +276,6 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
     do {
       await retry(async (bail) => {
         try {
-          const fetchOptions: RequestInit = {
-            redirect: 'follow',
-            agent: new Agent({ rejectUnauthorized }),
-            headers: {
-              Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
-            },
-          }
           const res = await fetch(url, fetchOptions)
           if (res.status !== options.status) {
             debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
