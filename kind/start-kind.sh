@@ -2,12 +2,14 @@
 
 # setup k8s cluster
 export KUBECONFIG="${HOME}/.kube/config"
-export KIND_EXPERIMENTAL_DOCKER_NETWORK={KIND_EXPERIMENTAL_DOCKER_NETWORK:-kind}
+export KIND_EXPERIMENTAL_DOCKER_NETWORK="${KIND_EXPERIMENTAL_DOCKER_NETWORK:-kind}"
 if ! kind create cluster --config kind.yaml --image kindest/node:v1.19.0; then
   kind delete cluster && exec $(readlink -f "$0") && exit 1
 fi
-kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
-docker network connect kind $(cat /etc/hostname)
+
+# kubectl config set-cluster kind-kind --server=https://kind-control-plane:6443
+
+# docker network connect kind $(cat /etc/hostname)
 
 # configure metallb, k8s-external
 export METALLB_SUBNET="$(docker network inspect -f '{{ (index .IPAM.Config 0).Subnet }}' $KIND_EXPERIMENTAL_DOCKER_NETWORK)"

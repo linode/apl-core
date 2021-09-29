@@ -95,11 +95,13 @@ jobs:
       # CI: 1
     steps:
       - name: K8s in Docker
-        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/kind:v1
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host otomi/kind:v1
+          docker cp kind-control-plane:/etc/kubernetes/admin.conf .
       - name: Checkout
         uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
       - name: Otomi apply
-        run: TESTING=1 binzx/otomi apply
+        run: ENV_DIR=$PWD/tests/fixtures binzx/otomi apply
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
