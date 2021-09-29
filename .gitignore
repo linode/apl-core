@@ -9,6 +9,7 @@ node_modules/
 /*.json
 !.cspell.json
 !package*.json
+!.mocharc.json
 *.DS_Store
 .vscode/values-schema.yaml
 .env
