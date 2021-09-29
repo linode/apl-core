@@ -1,7 +1,3 @@
 charts:
     external-dns:
-        _rawValues: {}
-        domainFilters:
-            - otomi.cloud
-        zoneIdFilters:
-            - otomi
+        enabled: false

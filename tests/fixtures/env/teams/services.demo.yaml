@@ -27,8 +27,6 @@ teamConfig:
                   ownHost: true
                   auth: true
                   ksvc:
-                      securityContext:
-                          runAsUser: 1002
                       image:
                           repository: otomi/nodejs-helloworld
                           tag: v1.2.12
@@ -83,8 +81,6 @@ teamConfig:
                                   ssl_certificate_key /etc/nginx-server-certs/tls.key;
                                 }
                               }
-                      secretMounts:
-                          /etc/nginx-server-certs: mysecret-tls
                   type: public
                   tlsPass: true
                 - name: some-svc

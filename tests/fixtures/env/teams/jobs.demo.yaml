@@ -15,11 +15,6 @@ teamConfig:
                       runAsNonRoot: true
                       runAsUser: 1002
                       runAsGroup: 1002
-                      fsGroup: 1002
-                  securityContext:
-                      runAsNonRoot: true
-                      runAsUser: 1002
-                      runAsGroup: 1002
                   image:
                       repository: busybox
                       tag: latest
@@ -27,23 +22,25 @@ teamConfig:
                   init:
                       - env:
                             foo: bar
+                        nativeSecrets:
+                            foo: bar
                         image:
                             repository: busybox
                             tag: latest
                             pullPolicy: IfNotPresent
                         script: |
-                            echo "hello foo $foo"
+                            echo "hello $receiver and $SOME-KEY"
                         secrets:
                             - mysecret-generic
                             - hello-otomi
                   name: contains-everything
+                  nativeSecrets:
+                      foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
                   secrets:
                       - mysecret-generic
                       - hello-otomi
-                  secretMounts:
-                      /config/some-folder: someSecret
                   type: Job
                 - enabled: true
                   env:
