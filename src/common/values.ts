@@ -3,8 +3,8 @@ import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
 import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash-es'
-import { env } from './envalid'
-import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
+import { env } from './envalid.js'
+import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils.js'
 
 const objectToString = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj)

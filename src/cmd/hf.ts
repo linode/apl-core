@@ -1,8 +1,8 @@
 import { Argv } from 'yargs'
-import { hf as hfCommon } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { hf as hfCommon } from '../common/hf.js'
+import { prepareEnvironment } from '../common/setup.js'
+import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
+import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts.js'
 
 interface Arguments extends HelmArgs {
   args?: string[]

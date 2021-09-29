@@ -1,4 +1,5 @@
 {
   "extension": ["ts"],
-  "spec": "tests/**/*.test.ts"
+  "spec": "src/**/*.spec.ts",
+  "loader": "ts-node/esm"
 }

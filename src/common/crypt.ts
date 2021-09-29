@@ -2,8 +2,8 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash-es'
 import { $, cd, ProcessOutput } from 'zx'
-import { env } from './envalid'
-import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'
+import { env } from './envalid.js'
+import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils.js'
 
 export interface Arguments extends BasicArguments {
   files?: string[]

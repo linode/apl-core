@@ -2,12 +2,12 @@
 import express, { Request, Response } from 'express'
 import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
-import { commit } from '../cmd/commit'
-import { genDrone } from '../cmd/gen-drone'
-import { validateValues } from '../cmd/validate-values'
-import { decrypt, encrypt } from '../common/crypt'
-import { env } from '../common/envalid'
-import { rootDir, terminal } from '../common/utils'
+import { commit } from '../cmd/commit.js'
+import { genDrone } from '../cmd/gen-drone.js'
+import { validateValues } from '../cmd/validate-values.js'
+import { decrypt, encrypt } from '../common/crypt.js'
+import { env } from '../common/envalid.js'
+import { rootDir, terminal } from '../common/utils.js'
 
 const debug = terminal('server')
 const app = express()

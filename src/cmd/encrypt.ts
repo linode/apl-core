@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
-import { Arguments, encrypt as encryptFunc } from '../common/crypt'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { Arguments, encrypt as encryptFunc } from '../common/crypt.js'
+import { prepareEnvironment } from '../common/setup.js'
+import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

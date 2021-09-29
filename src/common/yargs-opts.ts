@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { Argv, Options } from 'yargs'
 import { chalk } from 'zx'
-import { BasicArguments, logLevels } from './utils'
+import { BasicArguments, LogLevels } from './utils.js'
 
 export interface Arguments extends BasicArguments {
   label?: string[]
@@ -49,10 +49,10 @@ Object.keys(helmOpts).map((k) => {
 
 export const basicOptions: { [key: string]: Options } = {
   'log-level': {
-    choices: Object.entries(logLevels)
+    choices: Object.entries(LogLevels)
       .filter((val) => Number.isNaN(Number(val[0])))
       .map((val) => val[0].toLowerCase()),
-    default: logLevels[logLevels.WARN].toLowerCase(),
+    default: LogLevels[LogLevels.WARN].toLowerCase(),
     coerce: (val) => val.toLowerCase(),
   },
   'skip-cleanup': {
@@ -69,7 +69,7 @@ export const basicOptions: { [key: string]: Options } = {
     alias: 'v',
     count: true,
     coerce: (val: number) => {
-      const ll = Object.keys(logLevels)
+      const ll = Object.keys(LogLevels)
         .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
         .map(Number)
         .reduce((prev, curr) => Math.max(prev, curr))

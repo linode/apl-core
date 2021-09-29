@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
-import { Arguments, decrypt } from '../common/crypt'
-import { hf } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { helmOptions } from '../common/yargs-opts'
-import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { Arguments, decrypt } from '../common/crypt.js'
+import { hf } from '../common/hf.js'
+import { prepareEnvironment } from '../common/setup.js'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
+import { helmOptions } from '../common/yargs-opts.js'
+import { ProcessOutputTrimmed } from '../common/zx-enhance.js'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

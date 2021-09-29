@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { prepareEnvironment } from '../common/setup.js'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts

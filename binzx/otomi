@@ -249,7 +249,7 @@ else
 fi
 
 stack_dir='/home/app/stack'
-executable="node --experimental-specifier-resolution=node ${stack_dir}/dist/otomi.js --"
+executable="node ${stack_dir}/dist/otomi.js --"
 
 stack_volume=""
 tmp_volume_dir=$(mktemp -d)
@@ -260,7 +260,7 @@ if [ -n "$in_core" ]; then
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  executable="node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
+  executable="node --no-warnings --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 

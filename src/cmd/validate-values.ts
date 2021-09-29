@@ -2,10 +2,18 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { unset } from 'lodash-es'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { hfValues } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { hfValues } from '../common/hf.js'
+import { prepareEnvironment } from '../common/setup.js'
+import {
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  OtomiDebugger,
+  rootDir,
+  setParsedArgs,
+  terminal,
+} from '../common/utils.js'
+import { Arguments, helmOptions } from '../common/yargs-opts.js'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

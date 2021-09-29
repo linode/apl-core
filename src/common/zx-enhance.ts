@@ -1,6 +1,6 @@
 import { chalk, ProcessOutput, ProcessPromise, question } from 'zx'
-import { env } from './envalid'
-import { DebugStream, getParsedArgs } from './utils'
+import { env } from './envalid.js'
+import { DebugStream, getParsedArgs } from './utils.js'
 
 const MAX_RETRIES_QUESTION = 3
 

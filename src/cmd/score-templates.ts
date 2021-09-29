@@ -1,10 +1,10 @@
 import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { hfTemplate } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { hfTemplate } from '../common/hf.js'
+import { cleanupHandler, prepareEnvironment } from '../common/setup.js'
+import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
+import { Arguments, helmOptions } from '../common/yargs-opts.js'
 
 const cmdName = getFilename(import.meta.url)
 const templatePath = '/tmp/template.yaml'

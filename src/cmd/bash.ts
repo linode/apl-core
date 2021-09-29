@@ -1,6 +1,6 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/setup'
+import { prepareEnvironment } from '../common/setup.js'
 import {
   BasicArguments,
   getFilename,
@@ -9,7 +9,7 @@ import {
   parser,
   setParsedArgs,
   terminal,
-} from '../common/utils'
+} from '../common/utils.js'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
