@@ -30,7 +30,7 @@ alias kp="k proxy &"
 #####
 function kint() {
   [ $(act --version | cut -d " " -f 3) = "0.2.24" ] && \
-    act -W ./.github/workflows/main.yml -j integration -P self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged "$@"
+    act -W ./.github/workflows/main.yml -j integration -P self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged -b "$@"
   # Some useful options (all can be parsed by appending it to this command, `kint`):
   # `--bind|-b`
   # see act -h for more info
