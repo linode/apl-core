@@ -1,5 +1,5 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
