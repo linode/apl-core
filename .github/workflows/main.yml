@@ -99,8 +99,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
       - name: Otomi apply
-        run: |
-          ENV_DIR=$PWD/kind binzx/otomi apply
+        run: TESTING=1 binzx/otomi apply
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
