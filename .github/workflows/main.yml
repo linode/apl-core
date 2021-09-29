@@ -90,14 +90,18 @@ jobs:
     runs-on: self-hosted
     needs: build-test-push-release
     env:
-      HELM_PLUGINS: /home/app/.local/share/helm/plugins
+      # HELM_PLUGINS: /home/app/.local/share/helm/plugins
       KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
-      CI: 1
+      # CI: 1
     steps:
-      - name: K8s in Docker
-        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/kind:v1
+      # - name: K8s in Docker
+      #   run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/kind:v1
+      - name: Checkout
+        uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
       - name: Otomi apply
-        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock otomi/core:master apply
+        run: |
+          ENV_DIR=$PWD/kind
+          binzx/otomi apply
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
