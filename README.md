@@ -61,7 +61,7 @@ Open the Console:
 open -a "Google Chrome" https://otomi.<your.domain>
 ```
 
-<p align="center"><img src="https://otomi.io/assets/images/console-apps-3704ab9d42f2f5e545fd5689bb91a974.png" width="100%" align="center" alt="Otomi console"></p>
+<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi console"></p>
 
 For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io).
 
