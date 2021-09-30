@@ -56,11 +56,11 @@ definitions:
         additionalProperties: false
         properties:
           channel:
-            default: dev-mon-otomi
+            default: mon-otomi
             description: The Slack channel for non-critical notifications.
             $ref: '#/definitions/wordCharacterPattern'
           channelCrit:
-            default: dev-mon-otomi
+            default: mon-otomi-crit
             description: The Slack channel for critical notifications.
             $ref: '#/definitions/wordCharacterPattern'
           url:
