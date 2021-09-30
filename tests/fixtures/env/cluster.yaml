@@ -1,6 +1,6 @@
 cluster:
     domainSuffix: kind.local
-    k8sContext: kind-kind
+    k8sContext: kubernetes-admin@kind
     k8sVersion: '1.19'
     name: kind
     owner: redkubes

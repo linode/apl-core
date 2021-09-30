@@ -30,17 +30,11 @@ teamConfig:
                             pullPolicy: IfNotPresent
                         script: |
                             echo "hello $receiver and $SOME-KEY"
-                        secrets:
-                            - mysecret-generic
-                            - hello-otomi
                   name: contains-everything
                   nativeSecrets:
                       foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
-                  secrets:
-                      - mysecret-generic
-                      - hello-otomi
                   type: Job
                 - enabled: true
                   env:
@@ -68,9 +62,6 @@ teamConfig:
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
-                  secrets:
-                      - generic-example
-                      - hello-otomi
                   type: CronJob
                 - enabled: true
                   image:

@@ -100,6 +100,7 @@ jobs:
           docker cp kind-control-plane:/etc/kubernetes/admin.conf kind/kubeconfig
           TESTING=1 binzx/otomi x kubectl config set-cluster kind --server=https://127.0.0.1:6443 --kubeconfig=$PWD/kind/kubeconfig
           TESTING=1 KUBECONFIG=$PWD/kind/kubeconfig binzx/otomi apply
+          chmod +x ./kind/kubeconfig
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
