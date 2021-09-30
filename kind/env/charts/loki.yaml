@@ -1,8 +1,0 @@
-charts:
-  loki:
-    persistence:
-      size: 20Gi
-    retention:
-      duration: 24h
-      period: 24h
-    storageType: filesystem
