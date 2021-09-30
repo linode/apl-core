@@ -1,7 +1,6 @@
 #!/bin/sh
 
 # setup k8s cluster
-export KUBECONFIG="${HOME}/.kube/config"
 export KIND_EXPERIMENTAL_DOCKER_NETWORK="${KIND_EXPERIMENTAL_DOCKER_NETWORK:-kind}"
 if ! kind create cluster --config kind.yaml --image kindest/node:v1.19.0; then
   kind delete cluster && exec $(readlink -f "$0") && exit 1

@@ -89,16 +89,17 @@ jobs:
   integration:
     runs-on: self-hosted
     needs: build-test-push-release
-    env:
-      KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
+    # env:
+    #   KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
     steps:
       - name: Checkout
         uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
       - name: K8s in Docker
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network host otomi/kind:v1
-          docker cp kind-control-plane:/etc/kubernetes/admin.conf . 
-          KUBECONFIG=$PWD/admin.conf ENV_DIR=$PWD/tests/fixtures binzx/otomi apply
+          docker cp kind-control-plane:/etc/kubernetes/admin.conf kind/kubeconfig
+          TESTING=1 binzx/otomi x kubectl config set-cluster kind --server=https://127.0.0.1:6443 --kubeconfig=$PWD/kind/kubeconfig
+          TESTING=1 KUBECONFIG=$PWD/kind/kubeconfig binzx/otomi apply
 
   chart-release:
     if: "contains(github.event.head_commit.message, 'chore(release)')"
