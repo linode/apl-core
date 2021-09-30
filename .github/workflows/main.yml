@@ -88,7 +88,7 @@ jobs:
 
   integration:
     runs-on: self-hosted
-    needs: build-test-push-release
+    # needs: build-test-push-release
     # env:
     #   KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ job.container.network }}
     steps:
