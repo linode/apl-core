@@ -65,12 +65,13 @@
     "eslint-plugin-prettier": "^3.4.0",
     "git-cz": "^4.7.6",
     "github-release-from-changelog": "^2.1.1",
-    "husky": "^6.0.0",
+    "husky": "^7.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "json2ts": "^0.0.7",
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.3.1",
+    "run-if-changed": "^0.0.9",
     "standard-version": "^9.3.0",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.4"
@@ -80,16 +81,6 @@
     "npm": ">=6.0.0"
   },
   "homepage": "https://github.com/redkubes/otomi-core#readme",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "post-checkout": "run-if-changed",
-      "post-commit": "run-if-changed",
-      "post-merge": "run-if-changed",
-      "post-rewrite": "run-if-changed",
-      "pre-commit": "npm run husky:pre-commit"
-    }
-  },
   "license": "Apache-2.0",
   "lint-staged": {
     "*.{json,yml,yaml}": [
@@ -114,13 +105,17 @@
     "compile": "tsc && chmod +x ./dist/otomi.js",
     "compile:watch": "npm run compile && tsc -w",
     "cz": "git-cz",
-    "cz:retry": "git-cz --retry",
+    "cz:retry": "git-cz -- --retry",
     "eslint": "eslint --ext ts .",
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
-    "husky:lint-staged": "lint-staged",
-    "husky:pre-push": "run-p husky:lint-staged spellcheck lint:hf -- -ni",
+    "lint-staged": "lint-staged",
+    "husky:pre-push": "run-p lint-staged spellcheck lint:hf -- -ni",
+    "husky:post-checkout": "run-if-changed",
+    "husky:post-commit": "run-if-changed",
+    "husky:post-merge": "run-if-changed",
+    "husky:post-rewrite": "run-if-changed",
     "lint:hf": "TESTING=1 binzx/otomi hf lint",
     "lint": "run-p spellcheck lint:hf lint:ts",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
