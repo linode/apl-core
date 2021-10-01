@@ -8,7 +8,7 @@
 {{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" ($v | get "oidc" dict) "stage" $stage "keycloak" ($k | get "idp")) | toString }}
 
 nameOverride: po
 fullnameOverride: po

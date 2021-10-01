@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $h := $c | get "harbor" dict }}
 {{- $k := $c | get "keycloak" dict }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
