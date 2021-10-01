@@ -86,7 +86,7 @@ jobs:
         if: always() # failure
 
   chart-release:
-    if: "contains(github.event.head_commit.message, 'chore(release)')"
+    if: "github.ref == 'refs/heads/master'"
     needs: build-test-push-release
     runs-on: ubuntu-latest
     container:
@@ -108,6 +108,11 @@ jobs:
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
+          # copy readme from repo into the charts and add tpl/chart-values.md
+          cp README.md chart/otomi/
+          printf "\n\n" >>chart/otomi/README.md
+          cat tpl/chart-values.md >>chart/otomi/README.md
+          # generate schema
           npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
           # and set the global id for git as it seems needed by the next step when a custom image is used
           git config --global user.email $GIT_USER@users.noreply.github.com
