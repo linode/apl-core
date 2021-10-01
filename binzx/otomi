@@ -27,6 +27,9 @@ elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
 [[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
+if [ -n "$CI" ]; then
+  calling_args="$calling_args --non-interactive"
+fi
 if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
   calling_args="x -- ${calling_args:2}"
 fi
@@ -213,7 +216,6 @@ vars=(
   DEBUG
   ENV_DIR
   GCLOUD_SERVICE_KEY
-  KUBECONFIG
   KUBE_VERSION_OVERRIDE
   NODE_TLS_REJECT_UNAUTHORIZED
   OTOMI_DRY_RUN
@@ -318,7 +320,7 @@ else
     $tmp_volume \
     -v /tmp/otomi:/tmp/otomi \
     $(check_volume_path $HOME/.kube "/home/app/.kube") \
-    $(check_volume_path $HOME/.ssh "/home/app/.ssh") \
+    $([ -n "$KUBECONFIG" ] && check_volume_path $KUBECONFIG "/home/app/.kube/config") \
     $(check_volume_path $helm_config "/home/app/.config/helm") \
     $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
     $(check_volume_path $HOME/.aws "/home/app/.aws") \

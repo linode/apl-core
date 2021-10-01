@@ -25,32 +25,11 @@ alias kcg="k config current-context"
 alias kcu="k config use-context"
 alias kp="k proxy &"
 
-#####
-# k8s in Docker
-#####
-function kint() {
-  [ $(act --version | cut -d " " -f 3) = "0.2.24" ] && \
-    act -W ./.github/workflows/main.yml -j integration -P self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged -b "$@"
-  # Some useful options (all can be parsed by appending it to this command, `kint`):
-  # `--bind|-b`
-  # see act -h for more info
-}
-
-alias kintd="EDITOR=vim k9s --kubeconfig ./kind/kubeconfig" 
-alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
-
-function kintnet() {
-  set -e 
-  ran=$RANDOM
-  kintk run --rm -i --tty netshoot-$ran --image=nicolaka/netshoot --restart=Never -- sh \
-    || kintk delete pod network-multitool-$ran
-}
-
 function kpo() {
   labels=$1
   shift
   pod=$(k get po -l "$labels" $@ -ojsonpath='{.items[0].metadata.name}')
-  k delete po $pod $@
+  k delete po "$pod" $@
 }
 function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }
@@ -65,3 +44,23 @@ function kkns() {
   k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize"; rm  "$0.json"'
   kk
 }
+
+#####
+# KinD integration test debugging tools
+#####
+
+alias kintd="EDITOR=vim k9s --kubeconfig ./kind/kubeconfig" 
+alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
+
+# Run KinD locally with nektos/act
+function kint() {
+  act -W ./.github/workflows/main.yml -j integration -P self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged -b "$@"
+}
+
+# Start a k8s network debugging tool
+function kintnet() {
+  ran=$RANDOM
+  kintk run --rm -i --tty netshoot-$ran --image=nicolaka/netshoot --restart=Never -- sh \
+    || kintk delete pod network-multitool-$ran
+}
+
