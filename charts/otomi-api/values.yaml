@@ -93,7 +93,6 @@ tools:
     repository: otomi/core
     tag: latest
     pullPolicy: IfNotPresent
-  podSecurityContext: {}
 
   securityContext:
     runAsNonRoot: true
@@ -106,6 +105,7 @@ tools:
     requests:
       cpu: 100m
       memory: 100Mi
+
   secrets:
     GCLOUD_SERVICE_KEY: ''
     AZURE_TENANT_ID: ''

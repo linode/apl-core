@@ -2,7 +2,7 @@
 
 # Otomi
 
-![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) ![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
+![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) ![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 ## About Otomi
 
@@ -49,7 +49,7 @@ helm repo add otomi https://otomi.io/otomi-core
 helm repo update
 ```
 
-Install the chart with the prepared `values.yaml` file.
+Install the chart with a prepared copy of the `values.yaml` file.
 
 ```bash
 helm install -f /path/to/values.yaml my-otomi-release otomi/otomi
@@ -61,9 +61,9 @@ Open the Console:
 open -a "Google Chrome" https://otomi.<your.domain>
 ```
 
-<p align="center"><img src="https://otomi.io/assets/images/console-apps-3704ab9d42f2f5e545fd5689bb91a974.png" width="100%" align="center" alt="Otomi console CE"></p>
+<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi console"></p>
 
-For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io/).
+For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io).
 
 ## Projects
 

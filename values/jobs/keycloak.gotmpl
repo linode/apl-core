@@ -11,24 +11,30 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" -}}
 {{- $k := $c | get "keycloak" dict }}
-{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
 
 type: Job
 runPolicy: Always
 description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
 annotations:
+  {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
+  {{- end }}
 init:
   - image:
-      repository: badouralix/curl-http2
+      repository: otomi/core
+      tag: {{ $v.otomi.version }}
+      pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
+    {{ if $hasStagingCerts }}
+    files:
+      /tmp/node/certificates.crt: |
+        {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 8 }}
+        {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 8}}
+    {{ end }}
     script: |
-      {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
       echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
-      until $(curl $INSECURE --output /dev/null --silent --head --fail -I https://keycloak.{{ $v.cluster.domainSuffix }}); do 
-        printf '.'
-        sleep 5
-      done
-      echo READY!
+      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
   tag: v0.2.10
@@ -67,5 +73,12 @@ nativeSecrets:
   TENANT_ID: {{ $v.oidc.tenantID }}
   TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
   TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
-script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:keycloak
+{{ if $hasStagingCerts }}
+files:
+  /tmp/node/certificates.crt: |
+    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
+    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
+{{ end }}
+script: |
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:keycloak
 runPolicy: OnSpecChange

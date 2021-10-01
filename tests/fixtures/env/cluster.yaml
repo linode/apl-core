@@ -5,7 +5,7 @@ cluster:
     name: kind
     owner: redkubes
     provider: kind
-    customRootCA: |
+    customRootCa: |
         -----BEGIN CERTIFICATE-----
         MIIDSzCCAjOgAwIBAgIUQN+EWOJGete3M9NS4syjIWY8EoMwDQYJKoZIhvcNAQEL
         BQAwFjEUMBIGA1UEAwwLRWFzeS1SU0EgQ0EwHhcNMjEwOTE0MTExMzU0WhcNMzEw
@@ -26,7 +26,7 @@ cluster:
         zmOThjRao2Tl8OXMgMGP8XC47V8lye0dLU1cbm7kLAYXuTZuIQOH+jFyQmrXHkQ7
         3Dkuis5zIc0XQbX30RMvMZP7/hYfe3vMZve6TVmg0g==
         -----END CERTIFICATE-----
-    customIntermediateCA: |
+    customIntermediateCa: |
         -----BEGIN CERTIFICATE-----
         MIIDpjCCAo6gAwIBAgIQfprfI2DRECwXoucxsd419jANBgkqhkiG9w0BAQsFADAW
         MRQwEgYDVQQDDAtFYXN5LVJTQSBDQTAeFw0yMTA5MTUwOTA0NDdaFw0yMzEyMTkw

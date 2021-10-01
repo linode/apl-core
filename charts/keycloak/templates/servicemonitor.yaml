@@ -16,7 +16,7 @@ spec:
     matchNames:
     - {{ .Release.Namespace }}
   endpoints:
-    - port: http
+    - port: http-management
       path: {{ .Values.prometheus.operator.serviceMonitor.path }}
       interval: {{ .Values.prometheus.operator.serviceMonitor.interval }}
       {{- with .Values.prometheus.operator.serviceMonitor.scrapeTimeout }}

@@ -164,9 +164,6 @@ export const bootstrapGit = async (): Promise<void> => {
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
-    // const stage = values?.charts?.['cert-manager']?.stage ?? 'production'
-    // if (stage === 'staging') process.env.GIT_SSL_NO_VERIFY = 'true'
-
     const giteaEnabled = values?.charts?.gitea?.enabled ?? true
     const clusterDomain = values?.cluster?.domainSuffix
     const byor = !!values?.charts?.['otomi-api']?.git

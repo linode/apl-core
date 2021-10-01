@@ -2,13 +2,20 @@
 {{- $c := $v.charts }}
 {{- $g := $c | get "gitea" dict }}
 {{- $cm := $c | get "cert-manager" }}
-{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
+{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $hasStagingCerts := eq $stage "staging" }}
 
 type: CronJob
 name: gitea-add-users
 env:
   GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   GITEA_REPO: values
+{{ if $hasStagingCerts }}
+files:
+  /tmp/node/certificates.crt: |
+    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
+    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
+{{ end }}
 nativeSecrets:
   GITEA_PASSWORD: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
 schedule: "0/3 * * * *" # every 5 minutes
@@ -16,5 +23,6 @@ image:
   repository: otomi/tasks
   tag: v0.2.10
   # pullPolicy: Always
-script: {{ if $skipVerify }}NODE_TLS_REJECT_UNAUTHORIZED=0 {{ end }}npm run tasks:gitea-add-users
+script: |
+  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:gitea-add-users
 runPolicy: Always

@@ -4,14 +4,16 @@
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
 {{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
+{{- $keycloakUrl := printf "https://keycloak.%s" $v.cluster.domainSuffix }}
+{{- $keycloakIssuer := printf "%s/realms/%s" $keycloakUrl $realm }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
-# clusterDomain: {{ $v.cluster.domainSuffix }}
+waitForUrl: {{ $keycloakUrl }}
+otomiVersion: {{ $v.otomi.version }}
 
 resources:
   limits:
@@ -73,7 +75,8 @@ gitea:
     enabled: true
     serviceMonitor:
       enabled: true
-      prometheusSelector: system
+      additionalLabels:
+        prometheus: system
   oauth:
     enabled: true
     name: {{ $hasKeycloak | ternary ($k | get "idp.alias" "otomi-idp") "otomi" }}
@@ -85,7 +88,7 @@ gitea:
 init:
   resources:
     limits:
-      cpu: 250m
+      cpu: 400m
       memory: 256Mi
     requests:
       cpu: 100m
@@ -120,22 +123,14 @@ postgresql:
 
 {{- if $hasStagingCerts }}
 extraRootCA: |
-  {{- $v.cluster | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v.cluster | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
+  {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
-
-initPreScript: |
-  echo "Waiting until keycloak service is accessible"
-  while ! nc -w2 -zv {{ printf "keycloak.%s" $v.cluster.domainSuffix }} 443; do
-    printf '.'
-    sleep 5
-  done
-  echo READY!
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
