@@ -5,8 +5,8 @@
   org_role: Admin
   allow_sign_up: true
   oauth_auto_login: true # false = so we can login with admin / bladibla
-  client_id: {{ .hasKeycloak | ternary .keycloak.clientID .oidc.clientID }}
-  client_secret: {{ .hasKeycloak | ternary .keycloak.clientSecret .oidc.clientSecret }}
+  client_id: {{ .hasKeycloak | ternary .keycloak.clientID (.oidc | getOrNil "clientID") }}
+  client_secret: {{ .hasKeycloak | ternary .keycloak.clientSecret (.oidc | getOrNil "clientSecret") }}
   scopes: openid
   auth_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" .keycloakBase) (.oidc | getOrNil "authUrl") }}
   token_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" .keycloakBase) (.oidc | getOrNil "tokenUrl") }}

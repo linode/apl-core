@@ -24,15 +24,6 @@ cluster:
 #   project: ''
 # vault:
 #   token: ''
-oidc:
-  clientID: ''
-  clientSecret: ''
-  issuer: ''
-  tenantID: ''
-  # IDP group id used to identify global admin
-  adminGroupID: ''
-  # IDP group id used to identify team admin
-  teamAdminGroupID: ''
 otomi:
   adminPassword: ''
   # release versions can be found here: https://github.com/redkubes/otomi-core/releases

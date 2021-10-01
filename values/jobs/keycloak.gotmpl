@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $oidc := $v | get "oidc" dict }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
@@ -52,12 +53,12 @@ nativeSecrets:
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
-  IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $oidc | get "usernameClaimMapper" "${CLAIM.upn}" }}
+  IDP_SUB_CLAIM_MAPPER: {{ $oidc | get "subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
-  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-  IDP_OIDC_URL: {{ $v.oidc.issuer }}
+  IDP_GROUP_OTOMI_ADMIN: {{ $oidc | getOrNil "adminGroupID" }}
+  IDP_GROUP_TEAM_ADMIN: {{ $oidc | getOrNil "teamAdminGroupID" }}
+  IDP_OIDC_URL: {{ $oidc | getOrNil "issuer" }}
   REDIRECT_URIS: '[
       "https://otomi.{{ $v.cluster.domainSuffix }}",
       "https://auth.{{ $v.cluster.domainSuffix }}/*",
@@ -70,9 +71,9 @@ nativeSecrets:
       "https://harbor.{{ $v.cluster.domainSuffix }}/*",
       "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
-  TENANT_ID: {{ $v.oidc.tenantID }}
-  TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
-  TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+  TENANT_ID: {{ $oidc | getOrNil "tenantID" }}
+  TENANT_CLIENT_ID: {{ $oidc | getOrNil "clientID" }}
+  TENANT_CLIENT_SECRET: {{ $oidc | getOrNil "clientSecret" }}
 {{ if $hasStagingCerts }}
 files:
   /tmp/node/certificates.crt: |
