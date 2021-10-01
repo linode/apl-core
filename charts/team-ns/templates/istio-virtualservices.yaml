@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $oidc := $v | get "oidc" dict }}
 {{- $k := $v.charts.keycloak | default dict }}
 {{- $hasKeycloak := $k.enabled | default true }}
 {{- $kkMaster := printf "https://keycloak.%s/realms/master" $v.cluster.domainSuffix }}
@@ -105,11 +104,11 @@ spec:
       audiences:
         - {{ $k.idp.clientID }}
           {{- else }}
-    - issuer: {{ $oidc | getOrNil "issuer" }}
-            {{- if hasKey $oidc "jwks" }}
-      jwks: {{ $oidc.jwks }}
-            {{- else if hasKey $oidc "jwksUri" }}
-      jwksUri: {{ $oidc.jwksUri }}
+    - issuer: {{ $v.oidc.issuer }}
+            {{- if hasKey $v.oidc "jwks" }}
+      jwks: {{ $v.oidc.jwks }}
+            {{- else if hasKey $v.oidc "jwksUri" }}
+      jwksUri: {{ $v.oidc.jwksUri }}
             {{- end }}
           {{- end }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
