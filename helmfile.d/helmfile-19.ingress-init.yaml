@@ -7,11 +7,7 @@ bases:
 
 releases:
   - name: job-keycloak
-    {{- if hasKey $v "oidc" }}
     installed: {{ $c | get "keycloak.enabled" true }}
-    {{- else }}
-    installed: false
-    {{- end }}
     labels:
       pkg: keycloak
       group: jobs
