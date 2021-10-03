@@ -148,7 +148,7 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/master
+              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi
               oidc_client_id: {{ $k.idp.clientID }}
               oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true

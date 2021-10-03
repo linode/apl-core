@@ -3,9 +3,8 @@
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
-{{- $realm := $k | get "realm" "master" }}
 {{- $keycloakUrl := printf "https://keycloak.%s" $v.cluster.domainSuffix }}
-{{- $keycloakIssuer := printf "%s/realms/%s" $keycloakUrl $realm }}
+{{- $keycloakIssuer := printf "%s/realms/otomi" $keycloakUrl }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $stage := $v.charts | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}

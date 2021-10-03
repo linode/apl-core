@@ -2,9 +2,11 @@
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
+{{- $teamIds := list }}
 {{- range $name, $team := $teams }}
+{{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames -}}
-{{- if ($team | get "oidc.groupMapping" false) }}
+{{- if ($team | get "oidc.groupMapping" nil) }}
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
 {{- end -}}
 {{- end -}}
@@ -37,9 +39,10 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.10
-  # tag: master
-  # pullPolicy: Always
+  # tag: v0.2.10
+  # TODO:
+  tag: keycloak-idp
+  pullPolicy: Always
 name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
@@ -52,12 +55,12 @@ nativeSecrets:
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.email}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
-  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-  IDP_OIDC_URL: {{ $v.oidc.issuer }}
+  IDP_GROUP_OTOMI_ADMIN: {{ $v | get "oidc.adminGroupID" nil }}
+  IDP_GROUP_TEAM_ADMIN: {{ $v | get "oidc.teamAdminGroupID" nil }}
+  IDP_OIDC_URL: {{ $v | get "oidc.issuer" nil }}
   REDIRECT_URIS: '[
       "https://otomi.{{ $v.cluster.domainSuffix }}",
       "https://auth.{{ $v.cluster.domainSuffix }}/*",
@@ -70,9 +73,10 @@ nativeSecrets:
       "https://harbor.{{ $v.cluster.domainSuffix }}/*",
       "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
-  TENANT_ID: {{ $v.oidc.tenantID }}
-  TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
-  TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+  TEAM_IDS: '{{ $teamIds | toJson }}'
+  TENANT_ID: {{ $v | get "oidc.tenantID" nil }}
+  TENANT_CLIENT_ID: {{ $v | get "oidc.clientID" nil }}
+  TENANT_CLIENT_SECRET: {{ $v | get "oidc.clientSecret" nil }}
 {{ if $hasStagingCerts }}
 files:
   /tmp/node/certificates.crt: |

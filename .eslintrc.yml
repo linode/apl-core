@@ -38,6 +38,8 @@ env:
 
 rules:
   '@typescript-eslint/ban-ts-comment': off
+  # disabled until https://github.com/typescript-eslint/typescript-eslint/issues/2077#issuecomment-634811363:
+  # '@typescript-eslint/camelcase': warn
   '@typescript-eslint/member-delimiter-style': off
   '@typescript-eslint/no-explicit-any': off
   '@typescript-eslint/explicit-function-return-type': off

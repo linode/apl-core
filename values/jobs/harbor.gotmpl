@@ -7,8 +7,7 @@
 {{- $stage := $c | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
-{{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $teams := keys $v.teamConfig.teams }}
 
