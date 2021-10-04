@@ -115,6 +115,7 @@ export const commit = async (): Promise<void> => {
   d.info('Committing values')
   const branch = getGitBranch(values)
   const pullBeforePush = !env.CI && !isChart
+  cd(env.ENV_DIR)
   await commitAndPush(branch, pullBeforePush)
   if (!env.CI || isChart) {
     await setDeplymentStatus()
