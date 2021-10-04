@@ -1,16 +1,16 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { env } from '../common/envalid.js'
-import { hf } from '../common/hf.js'
-import { cleanupHandler, prepareEnvironment } from '../common/setup.js'
-import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
-import { Arguments, helmOptions } from '../common/yargs-opts.js'
-import { ProcessOutputTrimmed } from '../common/zx-enhance.js'
-import { diff } from './diff.js'
-import { lint } from './lint.js'
-import { validateTemplates } from './validate-templates.js'
-import { validateValues } from './validate-values.js'
+import { env } from '../common/envalid'
+import { hf } from '../common/hf'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { diff } from './diff'
+import { lint } from './lint'
+import { validateTemplates } from './validate-templates'
+import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
 const tmpFile = '/tmp/otomi/test.yaml'
@@ -48,8 +48,8 @@ export const test = async (): Promise<void> => {
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
   const diffOutput = await diff()
-  debug.log(diffOutput.stdout.replaceAll('../env.js', env.ENV_DIR))
-  debug.error(diffOutput.stderr.replaceAll('../env.js', env.ENV_DIR))
+  debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
+  debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
 }
 
 export const module = {

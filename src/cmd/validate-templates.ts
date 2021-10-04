@@ -1,11 +1,11 @@
 import { readFileSync, rmSync } from 'fs'
+import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
-import { mkdir, writeFile } from 'fs/promises'
-import { hfTemplate } from '../common/hf.js'
-import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup.js'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getParsedArgs,
@@ -14,8 +14,8 @@ import {
   rootDir,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
-import { Arguments, helmOptions } from '../common/yargs-opts.js'
+} from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -66,7 +66,7 @@ const setup = async (argv: Arguments): Promise<void> => {
   await Promise.allSettled(prep)
 }
 
-type CrdSchema = {
+type crdSchema = {
   filename: string
   schema: {
     description: string
@@ -81,7 +81,7 @@ type CrdSchema = {
   }
 }
 
-const processCrd = (path: string): CrdSchema[] => {
+const processCrd = (path: string): crdSchema[] => {
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
     (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
@@ -124,7 +124,7 @@ const processCrdWrapper = async (argv: Arguments) => {
   cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
   const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
-  const results = await Promise.all(crdFiles.flatMap((crdFile: string): CrdSchema[] => processCrd(crdFile)))
+  const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
 
   const prep: Promise<any>[] = []
 

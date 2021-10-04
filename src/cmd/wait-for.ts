@@ -1,5 +1,5 @@
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/setup.js'
+import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
@@ -8,7 +8,7 @@ import {
   setParsedArgs,
   terminal,
   waitTillAvailable,
-} from '../common/utils.js'
+} from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

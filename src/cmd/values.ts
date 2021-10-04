@@ -1,8 +1,8 @@
 import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
-import { values as valuesFunc } from '../common/hf.js'
-import { prepareEnvironment } from '../common/setup.js'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
+import { values as valuesFunc } from '../common/hf'
+import { prepareEnvironment } from '../common/setup'
+import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

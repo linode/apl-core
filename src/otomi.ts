@@ -7,11 +7,11 @@
  */
 
 import { CommandModule } from 'yargs'
-import { commands, defaultCommand } from './cmd/index.js'
-import { env } from './common/envalid.js'
-import { scriptName } from './common/setup.js'
-import { parser, terminal } from './common/utils.js'
-import { basicOptions } from './common/yargs-opts.js'
+import { commands, defaultCommand } from './cmd'
+import { env } from './common/envalid'
+import { scriptName } from './common/setup'
+import { parser, terminal } from './common/utils'
+import { basicOptions } from './common/yargs-opts'
 
 console.profile('otomi')
 const debug = terminal('global')
@@ -36,7 +36,7 @@ try {
     .option(basicOptions)
     .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
     .fail((e) => {
-      throw new Error(e)
+      throw e
     })
     .env('OTOMI')
     .help('help')

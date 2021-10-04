@@ -2,11 +2,11 @@
 import { existsSync, symlinkSync } from 'fs'
 import { fileURLToPath } from 'url'
 import yargs, { Argv } from 'yargs'
-import { validateTemplates } from './cmd/validate-templates.js'
-import { validateValues } from './cmd/validate-values.js'
-import { x } from './cmd/x.js'
-import { hf } from './common/hf.js'
-import { prepareEnvironment } from './common/setup.js'
+import { validateTemplates } from './cmd/validate-templates'
+import { validateValues } from './cmd/validate-values'
+import { x } from './cmd/x'
+import { hf } from './common/hf'
+import { prepareEnvironment } from './common/setup'
 import {
   BasicArguments,
   getFilename,
@@ -16,8 +16,8 @@ import {
   rootDir,
   setParsedArgs,
   terminal,
-} from './common/utils.js'
-import { basicOptions } from './common/yargs-opts.js'
+} from './common/utils'
+import { basicOptions } from './common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)

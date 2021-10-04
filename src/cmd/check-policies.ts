@@ -1,20 +1,20 @@
 import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { env } from '../common/envalid.js'
-import { hfTemplate } from '../common/hf.js'
-import { cleanupHandler, prepareEnvironment } from '../common/setup.js'
+import { env } from '../common/envalid'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getParsedArgs,
   loadYaml,
   logLevel,
-  LogLevels,
+  logLevels,
   OtomiDebugger,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
-import { Arguments, helmOptions } from '../common/yargs-opts.js'
+} from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
 const outDir = '/tmp/otomi/conftest'
@@ -45,7 +45,7 @@ export const checkPolicies = async (): Promise<void> => {
   await hfTemplate(argv, outDir, { stdout: debug.stream.debug })
 
   const extraArgs: string[] = []
-  if (logLevel() === LogLevels.TRACE) extraArgs.push('--trace')
+  if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
   if (env.CI) extraArgs.push('--no-color')
 
   debug.info('Checking manifest against policies')

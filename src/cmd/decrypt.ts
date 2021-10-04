@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
-import { Arguments, decrypt } from '../common/crypt.js'
-import { prepareEnvironment } from '../common/setup.js'
-import { getFilename, setParsedArgs } from '../common/utils.js'
+import { Arguments, decrypt } from '../common/crypt'
+import { prepareEnvironment } from '../common/setup'
+import { getFilename, setParsedArgs } from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
 

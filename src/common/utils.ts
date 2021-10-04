@@ -1,3 +1,5 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-await-in-loop */
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
@@ -12,7 +14,7 @@ import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
-import { cleanEnvironment, env } from './envalid.js'
+import { cleanEnvironment, env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -131,13 +133,13 @@ export function terminal(namespace: string): OtomiDebugger {
   const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, ...args)
   const error = (...args: any[]) => createDebugger(`${namespace}:error`, console.error).call(undefined, ...args)
   const trace = (...args: any[]) =>
-    (logLevel() >= LogLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
+    (logLevel() >= logLevels.TRACE ? createDebugger(`${namespace}:trace`) : noop).call(undefined, ...args)
   const debug = (...args: any[]) =>
-    (logLevel() >= LogLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
+    (logLevel() >= logLevels.DEBUG ? createDebugger(`${namespace}:debug`) : noop).call(undefined, ...args)
   const info = (...args: any[]) =>
-    (logLevel() >= LogLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
+    (logLevel() >= logLevels.INFO ? createDebugger(`${namespace}:info`) : noop).call(undefined, ...args)
   const warn = (...args: any[]) =>
-    (logLevel() >= LogLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, ...args)
+    (logLevel() >= logLevels.WARN ? createDebugger(`${namespace}:warn`, console.warn) : noop).call(undefined, ...args)
 
   // setColor(error, xtermColors.red)
   // setColor(warn, xtermColors.orange)
@@ -194,7 +196,7 @@ export const loadYaml = (path: string, opts?: { noError: boolean }): Record<stri
   return load(readFileSync(path, 'utf-8')) as Record<string, any>
 }
 
-export enum LogLevels {
+export enum logLevels {
   FATAL = -2,
   ERROR = -1,
   WARN = 0,
@@ -213,16 +215,16 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  * @returns highest loglevel
  */
 export const logLevel = (): number => {
-  if (!getParsedArgs()) return LogLevels.ERROR
+  if (!getParsedArgs()) return logLevels.ERROR
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
 
-  let logLevelNum = Number(LogLevels[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
+  let logLevelNum = Number(logLevels[getParsedArgs().logLevel?.toUpperCase() ?? 'WARN'])
   const verbosity = Number(getParsedArgs().verbose ?? 0)
   const boolTrace = env.TRACE || getParsedArgs().trace
-  logLevelNum = boolTrace ? LogLevels.TRACE : logLevelNum
+  logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
 
   logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
-  if (logLevelVar === LogLevels.TRACE) {
+  if (logLevelVar === logLevels.TRACE) {
     $.verbose = true
     $.prefix = 'set -xeuo pipefail;'
   }
@@ -230,7 +232,7 @@ export const logLevel = (): number => {
 }
 
 export const logLevelString = (): string => {
-  return LogLevels[logLevel()].toString()
+  return logLevels[logLevel()].toString()
 }
 
 type WaitTillAvailableOptions = {
@@ -276,7 +278,6 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
   let count = 0
   try {
     do {
-      // eslint-disable-next-line @typescript-eslint/no-loop-func, no-await-in-loop
       await retry(async (bail) => {
         try {
           const res = await fetch(url, fetchOptions)

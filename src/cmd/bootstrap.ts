@@ -1,15 +1,15 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
+import { copyFile } from 'fs/promises'
 import { isEmpty } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
-import { copyFile } from 'fs/promises'
-import { decrypt, encrypt } from '../common/crypt.js'
-import { env } from '../common/envalid.js'
-import { hfValues } from '../common/hf.js'
-import { getImageTag, prepareEnvironment } from '../common/setup.js'
+import { decrypt, encrypt } from '../common/crypt'
+import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
+import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   generateSecrets,
@@ -23,10 +23,10 @@ import {
   createK8sSecret,
   getK8sSecret,
   otomiPasswordsNamespace,
-} from '../common/utils.js'
-import { isChart, writeValues } from '../common/values.js'
-import { genSops } from './gen-sops.js'
-import { validateValues } from './validate-values.js'
+} from '../common/utils'
+import { isChart, writeValues } from '../common/values'
+import { genSops } from './gen-sops'
+import { validateValues } from './validate-values'
 
 export const getInputValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)

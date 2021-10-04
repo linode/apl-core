@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
-import { env } from '../common/envalid.js'
-import { hfValues } from '../common/hf.js'
-import { prepareEnvironment } from '../common/setup.js'
+import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
+import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
@@ -13,7 +13,7 @@ import {
   rootDir,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
+} from '../common/utils'
 
 export interface Arguments extends BasicArguments {
   dryRun: boolean

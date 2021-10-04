@@ -13,7 +13,6 @@ extends:
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
   - airbnb-base
-  - airbnb-typescript/base
   - plugin:prettier/recommended
   - prettier
   - plugin:import/recommended
@@ -28,13 +27,9 @@ plugins:
   - '@typescript-eslint'
 
 settings:
-  import/parsers:
-    '@typescript-eslint/parser': ['.ts', '.tsx']
   import/resolver:
-    typescript:
     node:
       extensions: ['.js', '.ts']
-      moduleDirectory: ['node_modules', 'src/']
 
 env:
   es6: true

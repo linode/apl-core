@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 
-import { encrypt } from '../common/crypt.js'
-import { env } from '../common/envalid.js'
-import { hfValues } from '../common/hf.js'
-import { prepareEnvironment } from '../common/setup.js'
+import { encrypt } from '../common/crypt'
+import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
+import { prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getOtomiDeploymentStatus,
@@ -15,12 +15,12 @@ import {
   setParsedArgs,
   terminal,
   waitTillAvailable,
-} from '../common/utils.js'
-import { isChart } from '../common/values.js'
-import { Arguments as HelmArgs } from '../common/yargs-opts.js'
-import { Arguments as DroneArgs, genDrone } from './gen-drone.js'
-import { pull } from './pull.js'
-import { validateValues } from './validate-values.js'
+} from '../common/utils'
+import { isChart } from '../common/values'
+import { Arguments as HelmArgs } from '../common/yargs-opts'
+import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { pull } from './pull'
+import { validateValues } from './validate-values'
 
 const cmdName = getFilename(import.meta.url)
 let debug: OtomiDebugger
