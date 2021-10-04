@@ -63,7 +63,6 @@
     "eslint-plugin-chai-friendly": "^0.7.2",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-prettier": "^3.4.0",
-    "esm": "^3.2.25",
     "git-cz": "^4.7.6",
     "github-release-from-changelog": "^2.1.1",
     "husky": "^6.0.0",
@@ -136,7 +135,6 @@
     "test:bats": "TESTING=1 binzx/otomi x bats -- -T bin/tests",
     "test:ci": "TESTING=1 binzx/otomi x src/ci-tests.ts",
     "test:opa": "binzx/otomi x opa test policies -v",
-    "test:ts": "mocha",
     "un-release": "sh -c 'git tag -d $1 && git push origin :refs/tags/$1' sh",
     "validate-templates": "TESTING=1 binzx/otomi validate-templates",
     "validate-values": "TESTING=1 binzx/otomi validate-values"
