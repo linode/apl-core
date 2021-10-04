@@ -25,7 +25,7 @@ Otomi is built on top of the following open-source projects:
 - [Harbor](https://github.com/goharbor/harbor)
 - [Cert manager](https://github.com/jetstack/cert-manager)
 - [External DNS](https://github.com/kubernetes-sigs/external-dns)
-And more.
+- And more
 
 Otomi offers:
 
