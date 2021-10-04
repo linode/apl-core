@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $g := $v.charts | get "gitea" dict }}
 {{- $k := $v.charts | get "keycloak" dict }}
 {{- $hasKeycloak := $k | get "enabled" true }}
@@ -80,9 +80,9 @@ gitea:
     enabled: true
     name: {{ $hasKeycloak | ternary ($k | get "idp.alias" "otomi-idp") "otomi" }}
     provider: openidConnect
-    key: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
-    secret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
-    autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}/.well-known/openid-configuration'
+    key: {{ $hasKeycloak | ternary $k.idp.clientID ($o | get "clientID" nil) }}
+    secret: {{ $hasKeycloak | ternary $k.idp.clientSecret ($o | get "clientSecret" nil) }}
+    autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer ($o | get "issuer" nil) }}/.well-known/openid-configuration'
 
 init:
   resources:

@@ -7,7 +7,7 @@
 contextPath: ""
 persistence:
   dbVendor: {{ $dbVendor }}
-  dbHost: {{ $k | getOrNil "persistence.dbHost" }}
+  dbHost: {{ $k | get "persistence.dbHost" nil }}
   deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
 priorityClassName: "otomi-critical"
 proxyAddressForwarding: true

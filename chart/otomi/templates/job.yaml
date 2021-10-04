@@ -1,3 +1,4 @@
+{{- $kms := .Values.kms | default dict }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -45,9 +46,11 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
+          {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:
                 name: {{ include "otomi.fullname" . }}-sops-secrets
+          {{- end }}
           volumeMounts:
             - name: otomi-values
               mountPath: /home/app/stack/env
