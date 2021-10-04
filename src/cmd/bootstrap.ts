@@ -6,8 +6,9 @@ import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
-import { env } from '../common/envalid'
+import { env, isChart } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
@@ -19,12 +20,10 @@ import {
   terminal,
   rootDir,
   setParsedArgs,
-  DEPLOYMENT_PASSWORDS_SECRET_NAME,
   createK8sSecret,
   getK8sSecret,
-  DEPLOYMENT_PASSWORDS_SECRET_NAMESPACE,
 } from '../common/utils'
-import { isChart, writeValues } from '../common/values'
+import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
@@ -54,22 +53,12 @@ const generateLooseSchema = () => {
   }
 }
 
-const hfValuesOrEmpty = async (skipCache?: boolean): Promise<Record<string, any>> => {
+const valuesOrEmpty = async (skipCache?: boolean): Promise<Record<string, any>> => {
   // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues({ skipCache })
+    return hfValues(skipCache)
   // otherwise
   return {}
-}
-
-export const k8sRecreateOtomiAdminPassword = async (values: Record<string, any>): Promise<void> => {
-  // Write some output for the user about password access via a secret
-
-  await nothrow($`kubectl delete secret generic otomi-password &>/dev/null`)
-  await nothrow($`kubectl create secret generic otomi-password --from-literal='admin'='${values.otomi.adminPassword}'`)
-  debug.log(
-    "An admin password has been stored in Secret resource. Access password by executing: `kubectl get secret otomi-password -ojsonpath='{.data.admin}'` command.",
-  )
 }
 
 export const getOtomiSecrets = async (
@@ -78,13 +67,13 @@ export const getOtomiSecrets = async (
 ): Promise<Record<string, any>> => {
   let generatedSecrets: Record<string, any>
   // The chart job calls bootstrap only if the otomi-status config map does not exists
-  const secretId = `secret/${otomiPasswordsNamespace}/${otomiPasswordsSecretName}`
+  const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
   debug.info(`Checking ${secretId} already exist on cluster`)
-  const kubeSecretObject = await getK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace)
+  const kubeSecretObject = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
   if (!kubeSecretObject) {
     debug.info(`Creating ${secretId}`)
     generatedSecrets = await generateSecrets(originalValues)
-    await createK8sSecret(otomiPasswordsSecretName, otomiPasswordsNamespace, generatedSecrets)
+    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, generatedSecrets)
     debug.info(`Created ${secretId}`)
   } else {
     debug.info(`Found ${secretId} secrets on cluster, recovering`)
@@ -147,7 +136,7 @@ export const bootstrapValues = async (): Promise<void> => {
     await writeValues(originalValues)
     generatedSecrets = getOtomiSecrets(originalValues)
   } else {
-    originalValues = await hfValuesOrEmpty(true)
+    originalValues = await valuesOrEmpty(true)
     generatedSecrets = await generateSecrets(originalValues)
   }
   // Ensure that .dec files are in place, because the writeValues() relies on them.
@@ -171,10 +160,6 @@ export const bootstrapValues = async (): Promise<void> => {
     debug.log(
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
-  }
-  if (isChart) {
-    const updatedValues = await hfValuesOrEmpty(true)
-    k8sRecreateOtomiAdminPassword(updatedValues)
   }
 
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
@@ -200,7 +185,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await hfValuesOrEmpty(true)
+    const values = await valuesOrEmpty(true)
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)

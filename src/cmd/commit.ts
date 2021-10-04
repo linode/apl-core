@@ -1,22 +1,19 @@
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { DEPLOYMENT_STATUS_CONFIGMAP, DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 
 import { encrypt } from '../common/crypt'
-import { env } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getOtomiDeploymentStatus,
   OtomiDebugger,
-  DEPLOYMENT_PASSWORDS_SECRET_NAMESPACE,
-  DEPLOYMENT_PASSWORDS_SECRET_NAME,
-  DEPLOYMENT_STATUS_CONFIGMAP_NAME,
   setParsedArgs,
   terminal,
   waitTillAvailable,
 } from '../common/utils'
-import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
@@ -31,8 +28,9 @@ export const preCommit = async (): Promise<void> => {
   await genDrone()
 }
 
-export const gitPush = async (branch: string): Promise<boolean> => {
+export const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
+  const branch = getGitBranch()
   d.info('Starting git push.')
   try {
     await $`git push -u origin ${branch}`
@@ -45,56 +43,49 @@ export const gitPush = async (branch: string): Promise<boolean> => {
   }
 }
 
-const setDeplymentStatus = async (): Promise<void> => {
+const setDeploymentStatus = async (): Promise<void> => {
   const status = await getOtomiDeploymentStatus()
   if (status !== 'deployed') {
-    await nothrow($`kubectl -n ${otomiStatusNamespace} create cm ${otomiStatusCmName} --from-literal=status='deployed'`)
+    await nothrow(
+      $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
+    )
     // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
-    await nothrow($`kubectl delete secret ${otomiPasswordsSecretName}`)
+    await nothrow($`kubectl delete secret ${DEPLOYMENT_PASSWORDS_SECRET}`)
   }
 }
 
-const setEnv = (values: any): void => {
-  const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
-  if (isCertStaging) {
-    process.env.GIT_SSL_NO_VERIFY = 'true'
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  }
-}
-const waitForGitea = async (values: any): Promise<void> => {
-  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-  if (giteaEnabled && (!env.CI || isChart)) {
-    const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-    debug.debug('healthUrl: ', healthUrl)
-    await waitTillAvailable(healthUrl)
-  }
+const getGiteaHealthUrl = async (): Promise<string> => {
+  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+  debug.debug('gitea healthUrl: ', healthUrl)
+  return healthUrl
 }
 
-const getGitBranch = (values: any): string => {
+const getGitBranch = async (): Promise<string> => {
   let branch = 'main'
+  const values = await hfValues()
   if (values.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? branch
   }
   return branch
 }
 
-const commitAndPush = async (branch, pullBeforePush = false): Promise<void> => {
+const commitAndPush = async (): Promise<void> => {
   const d = terminal('commitAndPush')
   await $`git add -A`
   try {
     await $`git commit -m 'otomi commit' --no-verify`
   } catch (e) {
     d.info(e.stdout)
-    d.error(e)
+    d.error(e.stderr)
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
 
   // If the values are committed for the very first time then pull does not take an effect
-  if (pullBeforePush) await pull()
+  if (isCli) await pull()
 
   try {
     await $`git remote show origin`
-    await gitPush(branch)
+    await gitPush()
     d.log('Successfully pushed the updated values')
   } catch (error) {
     d.error(error.stderr)
@@ -108,18 +99,21 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  setEnv(values)
-  await waitForGitea(values)
+  const hasSelfSignedCerts = values.charts?.['cert-manager']?.stage === 'staging'
+  if (hasSelfSignedCerts) {
+    process.env.GIT_SSL_NO_VERIFY = 'true'
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  }
+  if (values?.charts?.gitea?.enabled) {
+    const url = await getGiteaHealthUrl()
+    await waitTillAvailable(url)
+  }
   await preCommit()
   await encrypt()
   d.info('Committing values')
-  const branch = getGitBranch(values)
-  const pullBeforePush = !env.CI && !isChart
   cd(env.ENV_DIR)
-  await commitAndPush(branch, pullBeforePush)
-  if (!env.CI || isChart) {
-    await setDeplymentStatus()
-  }
+  await commitAndPush()
+  await setDeploymentStatus()
 }
 
 export const module = {

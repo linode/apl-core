@@ -14,7 +14,8 @@ import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
-import { cleanEnvironment, env } from './envalid'
+import { DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { cleanEnvironment, env, isChart } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -23,11 +24,6 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
-// A kubernetes secret that contains generated passwords during at bootstrap stage. Used only during helm chart deployment of otomi.
-export const DEPLOYMENT_PASSWORDS_SECRET_NAME = 'otomi-generated-passwords'
-export const DEPLOYMENT_PASSWORDS_SECRET_NAMESPACE = 'default'
-export const DEPLOYMENT_STATUS_CONFIGMAP_NAME = 'otomi-status'
-export const DEPLOYMENT_STATUS_CONFIGMAP_NAMESPACE = 'default'
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   nonInteractive: boolean
@@ -274,7 +270,9 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
     }
   }
 
-  const minimumSuccessful = 10
+  // we don't trust dns in the cluster and want a lot of confirmations
+  // but we don't care about those when we call the cluster from outside
+  const minimumSuccessful = isChart ? 10 : 0
   let count = 0
   try {
     do {
@@ -481,7 +479,7 @@ export async function getK8sSecret(name: string, namespace: string): Promise<Rec
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${DEPLOYMENT_PASSWORDS_SECRET_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP_NAME} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
 }
