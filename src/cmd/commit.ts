@@ -63,7 +63,7 @@ const setEnv = (values: any): void => {
 }
 const waitForGitea = async (values: any): Promise<void> => {
   const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-  if (giteaEnabled && (!env.CI || isChart)) {
+  if (giteaEnabled) {
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
     debug.debug('healthUrl: ', healthUrl)
     await waitTillAvailable(healthUrl)
@@ -109,7 +109,7 @@ export const commit = async (): Promise<void> => {
   d.info('Preparing values')
   const values = await hfValues()
   setEnv(values)
-  await waitForGitea(values)
+  if (!env.CI || isChart) await waitForGitea(values)
   await preCommit()
   await encrypt()
   d.info('Committing values')
