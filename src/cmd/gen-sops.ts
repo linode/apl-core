@@ -77,7 +77,6 @@ export const genSops = async (): Promise<void> => {
     if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
       writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
-      writeFileSync(`${env.ENV_DIR}/.secrets`, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`, { flag: 'a' })
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }

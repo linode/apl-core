@@ -19,10 +19,10 @@ import {
   terminal,
   rootDir,
   setParsedArgs,
-  otomiPasswordsSecretName,
+  DEPLOYMENT_PASSWORDS_SECRET_NAME,
   createK8sSecret,
   getK8sSecret,
-  otomiPasswordsNamespace,
+  DEPLOYMENT_PASSWORDS_SECRET_NAMESPACE,
 } from '../common/utils'
 import { isChart, writeValues } from '../common/values'
 import { genSops } from './gen-sops'
