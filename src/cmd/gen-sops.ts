@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -31,6 +31,11 @@ const providerMap = {
 
 export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
+  const targetPath = `${env.ENV_DIR}/.sops.yaml`
+  if (existsSync(targetPath)) {
+    debug.debug('sops file already exists')
+    return
+  }
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile) as Record<string, any>
   // TODO: Use validate values to validate tree at this specific point
@@ -41,7 +46,6 @@ export const genSops = async (): Promise<void> => {
     return
   }
 
-  const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = providerMap[provider] as string
   const kmsKeys = settingsVals.kms.sops[provider].keys as string
@@ -51,13 +55,9 @@ export const genSops = async (): Promise<void> => {
     keys: kmsKeys,
   }
 
-  debug.debug('sops file already exists')
   debug.log(`Creating sops file for provider ${provider}`)
 
   const output = (await gucci(templatePath, obj)) as string
-
-  // TODO: Remove when validate-values can validate subpaths
-  if (!output) return
 
   if (argv.dryRun) {
     debug.log(output)
@@ -77,6 +77,7 @@ export const genSops = async (): Promise<void> => {
     if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
       writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+      writeFileSync(`${env.ENV_DIR}/.secrets`, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`, { flag: 'a' })
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }

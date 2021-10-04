@@ -61,7 +61,7 @@ rules:
   import/prefer-default-export: off
   eol-last: ['error', 'always']
   no-shadow: 'off'
-  no-unused-vars: error
+  no-unused-vars: 'off'
   prefer-destructuring: error
   no-use-before-define: 'off'
   no-console: 'off'

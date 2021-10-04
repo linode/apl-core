@@ -4,6 +4,7 @@ import { existsSync } from 'fs'
 
 const cleanSpec = {
   CI: bool({ default: false }),
+  DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
@@ -28,4 +29,8 @@ export const cleanEnvironment = () => {
   }
   return cleanEnv(pEnv, cleanSpec)
 }
+
 export const env = cleanEnvironment()
+
+export const isChart = !!env.VALUES_INPUT
+export const isCli = !env.CI && !isChart
