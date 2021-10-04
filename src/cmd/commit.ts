@@ -99,8 +99,7 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  const hasSelfSignedCerts = values.charts?.['cert-manager']?.stage === 'staging'
-  if (hasSelfSignedCerts) {
+  if (values.charts?.['cert-manager']?.stage === 'staging') {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
