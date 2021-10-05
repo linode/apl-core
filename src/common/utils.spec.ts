@@ -20,7 +20,6 @@ describe('Automatic password generation tests', () => {
   })
   afterEach(() => {
     sinon.reset()
-    // td.reset()
   })
   it(`Generated secrets object contains all expected generated secrets`, async () => {
     const generatedSecrets = await generateSecrets({})
