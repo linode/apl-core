@@ -4,15 +4,14 @@
 
 ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) ![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-## About Otomi
+<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi console"></p>
 
-Otomi is an open-source cloud-agnostic platform to run on top of Kubernetes to securely deploy, run and manage applications with a desktop-like user interface.
+Otomi is an open-source, cloud-agnostic and Kubernetes-based platform to securely deploy, run and manage applications with a desktop-like user interface.
 
-Otomi is **free**, **easy to install**, comes with an **intuitive desktop-like UI** and ready to use **pre-configured built-in applications** to offer an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can log in and immediately start deploying and use all the built-in applications. Get started at [otomi.io](https://otomi.io/).
+Otomi is **easy to install**, comes with an **intuitive desktop-like UI** and ready to use **pre-configured built-in applications** to offer an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can sign in and immediately start deploying your apps. Read more about Otomi at [otomi.io](https://otomi.io/).
 
 Otomi is built on top of the following open-source projects:
 
-- [Harbor](https://github.com/goharbor/harbor)
 - [Istio](https://github.com/istio/istio)
 - [Knative Serving](https://github.com/knative/serving)
 - [Nginx Ingress](https://github.com/kubernetes/ingress-nginx)
@@ -21,6 +20,12 @@ Otomi is built on top of the following open-source projects:
 - [HashiCorp Vault](https://github.com/hashicorp/vault)
 - [Gatekeeper](https://github.com/open-policy-agent/gatekeeper)
 - [Keycloak](https://github.com/keycloak/keycloak)
+- [Gitea](https://github.com/go-gitea/gitea)
+- [Drone](https://github.com/drone/drone)
+- [Harbor](https://github.com/goharbor/harbor)
+- [Cert manager](https://github.com/jetstack/cert-manager)
+- [External DNS](https://github.com/kubernetes-sigs/external-dns)
+- And more
 
 Otomi offers:
 
@@ -29,7 +34,7 @@ Otomi offers:
 - Application configuration management for all integrated applications, providing a base profile configuration to support the most common DevOps use-cases
 - Multi-tenancy: Create Teams and provide SSO access to shared applications
 - Implemented policies for better governance and security. Manifests are checked both statically and on the cluster at runtime for policy obedience
-- Single Sign On: Bring your own IDP
+- Single Sign On: Bring your own IDP or use Keycloak as IDP (default)
 - Automatic ingress configuration: Easily configure ingress for Team services, allowing public access to services within minutes. Istio gateways and virtual services are automatically generated and configured for Team services, tying a generic ingress architecture to service endpoints in a predictable way
 - Input/output validation: Configuration and output manifests are checked statically for validity and best practices
 - Automatic vulnerability scanning: Scan all configured Team service containers in Harbor
@@ -42,28 +47,8 @@ Otomi aims to support the most common DevSecOps use-cases out-of-the-box and str
 
 ## Get started
 
-Add the Otomi Helm repository:
+See [otomi.io](https://otomi.io) for detailed instructions on how to install and use Otomi.
 
-```bash
-helm repo add otomi https://otomi.io/otomi-core
-helm repo update
-```
-
-Install the chart with a prepared copy of the `values.yaml` file.
-
-```bash
-helm install -f /path/to/values.yaml my-otomi-release otomi/otomi
-```
-
-Open the Console:
-
-```bash
-open -a "Google Chrome" https://otomi.<your.domain>
-```
-
-<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi console"></p>
-
-For more detailed documentation on how to get started with Otomi, see [otomi.io](https://otomi.io).
 
 ## Projects
 
