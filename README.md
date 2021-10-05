@@ -20,7 +20,7 @@ Otomi is built on top of the following open-source projects:
 - [HashiCorp Vault](https://github.com/hashicorp/vault)
 - [Gatekeeper](https://github.com/open-policy-agent/gatekeeper)
 - [Keycloak](https://github.com/keycloak/keycloak)
-- [gitea](https://github.com/go-gitea/gitea)
+- [Gitea](https://github.com/go-gitea/gitea)
 - [Drone](https://github.com/drone/drone)
 - [Harbor](https://github.com/goharbor/harbor)
 - [Cert manager](https://github.com/jetstack/cert-manager)
