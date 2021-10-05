@@ -48,7 +48,7 @@ rules:
   '@typescript-eslint/no-explicit-any': off
   '@typescript-eslint/explicit-function-return-type': off
   '@typescript-eslint/no-unused-vars': warn
-  '@typescript-eslint/no-unused-expressions': off,
+  '@typescript-eslint/no-unused-expressions': off
   '@typescript-eslint/no-unsafe-assignment': off
   '@typescript-eslint/no-unsafe-member-access': off
   '@typescript-eslint/no-unsafe-return': off
@@ -66,7 +66,7 @@ rules:
   import/prefer-default-export: off
   eol-last: ['error', 'always']
   no-shadow: 'off'
-  no-unused-vars: error
+  no-unused-vars: 'off'
   prefer-destructuring: error
   no-use-before-define: 'off'
   no-console: 'off'

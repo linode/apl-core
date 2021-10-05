@@ -4,15 +4,7 @@ import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  loadYaml,
-  OtomiDebugger,
-  rootDir,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(__filename)

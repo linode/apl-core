@@ -1,8 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { isEmpty } from 'lodash'
-import { fileURLToPath } from 'url'
-// import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { copyFile } from 'fs/promises'

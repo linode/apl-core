@@ -1,5 +1,4 @@
 import { existsSync, readdirSync } from 'fs'
-import { fileURLToPath } from 'url'
 import { $, chalk } from 'zx'
 import { decrypt } from './crypt'
 import { env } from './envalid'
