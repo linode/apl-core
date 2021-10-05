@@ -49,8 +49,8 @@ function kkns() {
 # KinD integration test debugging tools
 #####
 
-alias kintd="EDITOR=vim k9s --kubeconfig ./kind/kubeconfig" 
-alias kintk="KUBECONFIG=$PWD/kind/kubeconfig k"
+alias kintd="docker run --network kind --rm -it -v $PWD/kind/kubeconfig:/root/.kube/config quay.io/derailed/k9s" 
+alias kintk="docker run -v $PWD/kind/kubeconfig:/.kube/config --rm --network kind bitnami/kubectl"
 
 # Run KinD locally with nektos/act
 function kint() {
