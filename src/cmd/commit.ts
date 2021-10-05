@@ -29,7 +29,11 @@ export const preCommit = async (): Promise<void> => {
 
 export const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
-  const branch = getGitBranch()
+  const values = await hfValues()
+  let branch = 'main'
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? branch
+  }
   d.info('Starting git push.')
   try {
     await $`git push -u origin ${branch}`
@@ -57,15 +61,6 @@ const getGiteaHealthUrl = async (): Promise<string> => {
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
   debug.debug('gitea healthUrl: ', healthUrl)
   return healthUrl
-}
-
-const getGitBranch = async (): Promise<string> => {
-  let branch = 'main'
-  const values = await hfValues()
-  if (values.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? branch
-  }
-  return branch
 }
 
 const commitAndPush = async (): Promise<void> => {
