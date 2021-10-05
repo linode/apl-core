@@ -102,7 +102,7 @@
   },
   "scripts": {
     "check-policies": "TESTING=1 binzx/otomi check-policies",
-    "compile": "tsc && chmod +x ./dist/otomi.js",
+    "compile": "tsc && chmod +x ./dist/src/otomi.js",
     "compile:watch": "npm run compile && tsc -w",
     "cz": "git-cz",
     "cz:retry": "git-cz -- --retry",

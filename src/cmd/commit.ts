@@ -1,9 +1,8 @@
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
-import { DEPLOYMENT_STATUS_CONFIGMAP, DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
-
+import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
-import { env, isCli } from '../common/envalid'
+import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -112,7 +111,7 @@ export const commit = async (): Promise<void> => {
   d.info('Committing values')
   cd(env.ENV_DIR)
   await commitAndPush()
-  await setDeploymentStatus()
+  if (isChart) await setDeploymentStatus()
 }
 
 export const module = {
