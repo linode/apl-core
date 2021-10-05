@@ -88,6 +88,7 @@ jobs:
 
   integration:
     runs-on: self-hosted
+    needs: build-test-push-release
     steps:
       - name: Checkout
         uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
