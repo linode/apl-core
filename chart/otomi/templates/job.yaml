@@ -49,7 +49,7 @@ spec:
             - name: VALUES_INPUT
               value: /secret/values.yaml
             - name: DEPLOYMENT_NAMESPACE
-              value: {{ .Namespace }}
+              value: {{ .Release.Namespace }}
           {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:

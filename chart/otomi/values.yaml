@@ -4,10 +4,11 @@ cluster:
   name: 'dev'
   owner: ''
   provider: '' # provider can be one of aws|azure|google
-  # otomi:
+otomi:
   adminPassword: ''
   # release versions can be found here: https://github.com/redkubes/otomi-core/releases
-  version: APP_VERSION_PLACEHOLDER
+  # by default the image tag is set to .Chart.AppVersion
+  # version: master
 dns:
   provider:
     # provide one of the following below: aws|azure|google
