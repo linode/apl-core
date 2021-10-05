@@ -25,7 +25,7 @@ releases:
     labels:
       group: jobs
   - name: job-gitea-add-users
-    installed: {{ and (not eq $v.cluster.provider "kind") ($c | get "gitea.enabled" false) }}
+    installed: {{ and (ne $v.cluster.provider "kind") ($c | get "gitea.enabled" false) }}
     labels:
       pkg: gitea
       group: jobs

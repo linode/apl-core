@@ -93,10 +93,10 @@ jobs:
         uses: actions/checkout@afe4af09a72596f47d806ee5f8b2674ec07fdc73
       - name: K8s in Docker
         run: |
-          docker run --rm --pull always -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:v1
-          docker cp kind-control-plane:/etc/kubernetes/admin.conf kind/kubeconfig
+          docker run --rm --pull always -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
+          docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
-          docker run --rm --pull always -v $PWD/kind/kubeconfig:/home/app/.kube/config --network kind -v $PWD/tests/fixtures:/home/app/stack/env otomi/core:kind-ga-runner-only apply
+          docker run --rm --pull always -v $PWD/kind/kubeconfig:/home/app/.kube/config --network kind -v $PWD/tests/fixtures:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
 
   chart-release:
     if: "github.ref == 'refs/heads/master'"
