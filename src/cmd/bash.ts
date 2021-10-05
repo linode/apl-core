@@ -1,6 +1,6 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/setup.js'
+import { prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
   getFilename,
@@ -9,9 +9,9 @@ import {
   parser,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
+} from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const bash = async (): Promise<void> => {

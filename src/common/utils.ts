@@ -5,14 +5,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
+import { cloneDeep, merge, omit, pick, set } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
-import { cleanEnvironment, env } from './envalid.js'
+import { cleanEnvironment, env } from './envalid'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -20,7 +20,7 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
-export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
+export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 // A kubernetes secret that contains generated passwords during at bootstrap stage. Used only during helm chart deployment of otomi.
 export const otomiPasswordsSecretName = 'otomi-generated-passwords'
 export const otomiPasswordsNamespace = 'default'

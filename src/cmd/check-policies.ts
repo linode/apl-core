@@ -1,9 +1,9 @@
 import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { env } from '../common/envalid.js'
-import { hfTemplate } from '../common/hf.js'
-import { cleanupHandler, prepareEnvironment } from '../common/setup.js'
+import { env } from '../common/envalid'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getParsedArgs,
@@ -13,10 +13,10 @@ import {
   OtomiDebugger,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
-import { Arguments, helmOptions } from '../common/yargs-opts.js'
+} from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
 const debug: OtomiDebugger = terminal(cmdName)
 

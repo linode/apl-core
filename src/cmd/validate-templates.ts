@@ -4,8 +4,8 @@ import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
 import { mkdir, writeFile } from 'fs/promises'
-import { hfTemplate } from '../common/hf.js'
-import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup.js'
+import { hfTemplate } from '../common/hf'
+import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
 import {
   getFilename,
   getParsedArgs,
@@ -14,10 +14,10 @@ import {
   rootDir,
   setParsedArgs,
   terminal,
-} from '../common/utils.js'
-import { Arguments, helmOptions } from '../common/yargs-opts.js'
+} from '../common/utils'
+import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'

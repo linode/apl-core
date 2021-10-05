@@ -1,14 +1,14 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { hf } from '../common/hf.js'
-import { cleanupHandler, prepareEnvironment } from '../common/setup.js'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts.js'
-import { ProcessOutputTrimmed } from '../common/zx-enhance.js'
-import { Arguments as DroneArgs } from './gen-drone.js'
+import { hf } from '../common/hf'
+import { cleanupHandler, prepareEnvironment } from '../common/setup'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { Arguments as DroneArgs } from './gen-drone'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger

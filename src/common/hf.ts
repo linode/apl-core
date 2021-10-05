@@ -1,10 +1,10 @@
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { env } from './envalid.js'
-import { asArray, getParsedArgs, LogLevels, rootDir, terminal } from './utils.js'
-import { Arguments } from './yargs-opts.js'
-import { ProcessOutputTrimmed, Streams } from './zx-enhance.js'
+import { env } from './envalid'
+import { asArray, getParsedArgs, LogLevels, rootDir, terminal } from './utils'
+import { Arguments } from './yargs-opts'
+import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 interface Value {
   clean?: any
@@ -16,7 +16,7 @@ const value: Value = {
 }
 
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
-const replaceHFPaths = (output: string): string => output.replaceAll('../env.js', env.ENV_DIR)
+const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 export type HFParams = {
   fileOpts?: string | string[] | null

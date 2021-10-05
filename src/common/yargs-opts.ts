@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { Argv, Options } from 'yargs'
 import { chalk } from 'zx'
-import { BasicArguments, LogLevels } from './utils.js'
+import { BasicArguments, LogLevels } from './utils'
 
 export interface Arguments extends BasicArguments {
   label?: string[]

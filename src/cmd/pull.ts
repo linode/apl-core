@@ -1,13 +1,13 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { hfValues } from '../common/hf.js'
-import { prepareEnvironment, scriptName } from '../common/setup.js'
-import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
-import { Arguments as HelmArgs } from '../common/yargs-opts.js'
+import { hfValues } from '../common/hf'
+import { prepareEnvironment, scriptName } from '../common/setup'
+import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { Arguments as HelmArgs } from '../common/yargs-opts'
 
 type Arguments = HelmArgs
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const pull = async (): Promise<void> => {

@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
-import { env } from '../common/envalid.js'
-import { prepareEnvironment } from '../common/setup.js'
-import { BasicArguments, getEnvFiles, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils.js'
+import { env } from '../common/envalid'
+import { prepareEnvironment } from '../common/setup'
+import { BasicArguments, getEnvFiles, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const files = async (): Promise<void> => {

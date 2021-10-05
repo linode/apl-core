@@ -43,7 +43,7 @@ silent() {
 }
 
 docker_tag_exists() {
-  curl -sflL https://index.docker.io/v1/repositories/$1/tags/$2 &>/dev/null
+  curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep $2 &>/dev/null
 }
 
 # shellcheck disable=SC2155
@@ -91,10 +91,11 @@ if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version
   # When working in new branch, docker image doesn't exist before first commit/push
   # So need to fall back to working version
   [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
-  echo "Docker doesn't have otomi/core:${otomi_version_used}."
+  echo "Docker doesn't have otomi/core:${otomi_version_used}"
   echo "Falling back to otomi/core:${otomi_version}"
   otomi_version_used=$otomi_version
 fi
+
 readonly otomi_tools_image="otomi/core:${otomi_version_used}"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
@@ -260,7 +261,7 @@ if [ -n "$in_core" ]; then
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
 
-  executable="node --no-warnings --loader ts-node/esm ${stack_dir}/src/otomi.ts --"
+  executable="node --no-warnings -r ts-node/register ${stack_dir}/src/otomi.ts --"
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 
