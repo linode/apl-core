@@ -16,6 +16,7 @@
 {{- $k := $c | get "keycloak" dict }}
 {{- $stage := $c | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
+{{- $hasExternalIDP := $v.otomi | get "hasExternalIDP" false }}
 
 type: Job
 runPolicy: Always
@@ -68,8 +69,8 @@ nativeSecrets:
       "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
-  FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
-  {{- if $v.otomi.hasExternalIDP }}
+  FEAT_EXTERNAL_IDP: '{{ $hasExternalIDP }}'
+  {{- if $hasExternalIDP }}
   IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" "${CLAIM.email}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" "sub" }}
