@@ -89,13 +89,13 @@ jobs:
   integration:
     runs-on: self-hosted
     needs: build-test-push-release
-    if: github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
+    if: ${{ env.ACT }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: K8s in Docker
         run: |
-          docker login -u otomi -p $DOCKER_PASSWORD
+          ${{ !env.ACT }} && docker login -u otomi -p $DOCKER_PASSWORD
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
