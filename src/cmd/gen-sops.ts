@@ -12,7 +12,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal,
+  terminal
 } from '../common/utils'
 
 export interface Arguments extends BasicArguments {
