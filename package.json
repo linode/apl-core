@@ -127,8 +127,6 @@
     "test:bats": "TESTING=1 binzx/otomi x bats -- -T bin/tests",
     "test:opa": "binzx/otomi x opa test policies -v",
     "test:ts": "mocha",
-    "test:cjs": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha",
-    "test:ts2": "npm run compile && mocha",
     "un-release": "sh -c 'git tag -d $1 && git push origin :refs/tags/$1' sh",
     "validate-templates": "TESTING=1 binzx/otomi validate-templates",
     "validate-values": "TESTING=1 binzx/otomi validate-values"

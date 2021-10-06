@@ -305,7 +305,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object') return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value)) return flattenObject(value, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
@@ -390,7 +390,7 @@ export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
 }
 
 export const stringContainsSome = (str: string, ...args: string[]): boolean => {
-  return args.some((arg) => str.includes(arg))
+  return !!str && !!args && args.some((arg) => str.includes(arg))
 }
 
 export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
