@@ -16,7 +16,6 @@ import {
   terminal,
   waitTillAvailable,
 } from '../common/utils'
-import { isChart } from '../common/values'
 import { Arguments as HelmArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
@@ -63,7 +62,7 @@ const setEnv = (values: any): void => {
 }
 const waitForGitea = async (values: any): Promise<void> => {
   const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-  if (giteaEnabled && (!env.CI || isChart)) {
+  if (giteaEnabled && (!env.CI || env.OTOMI_AS_CHART)) {
     const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
     debug.debug('healthUrl: ', healthUrl)
     await waitTillAvailable(healthUrl)
@@ -114,9 +113,9 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   d.info('Committing values')
   const branch = getGitBranch(values)
-  const pullBeforePush = !env.CI && !isChart
+  const pullBeforePush = !env.CI && !env.OTOMI_AS_CHART
   await commitAndPush(branch, pullBeforePush)
-  if (!env.CI || isChart) {
+  if (!env.CI || env.OTOMI_AS_CHART) {
     await setDeplymentStatus()
   }
 }

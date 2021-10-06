@@ -39,6 +39,8 @@ spec:
               value: '1'
             - name: VERBOSITY
               value: '1'
+            - name: OTOMI_AS_CHART
+              value: '1'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT

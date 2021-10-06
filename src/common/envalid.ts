@@ -9,6 +9,7 @@ const cleanSpec = {
   IN_DOCKER: bool({ default: false }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   NODE_TLS_REJECT_UNAUTHORIZED: bool({ default: true }),
+  OTOMI_AS_CHART: bool({ default: false }),
   OTOMI_DEV: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
   STATIC_COLORS: bool({ default: false }),

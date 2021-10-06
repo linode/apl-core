@@ -22,7 +22,7 @@ import {
   getK8sSecret,
   otomiPasswordsNamespace,
 } from '../common/utils'
-import { isChart, writeValues } from '../common/values'
+import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
@@ -139,7 +139,7 @@ export const bootstrapValues = async (): Promise<void> => {
 
   let originalValues: Record<string, any> = {}
   let generatedSecrets
-  if (isChart) {
+  if (env.OTOMI_AS_CHART) {
     originalValues = getInputValues() as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
@@ -170,7 +170,7 @@ export const bootstrapValues = async (): Promise<void> => {
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-  if (isChart) {
+  if (env.OTOMI_AS_CHART) {
     const updatedValues = await hfValuesOrEmpty(true)
     k8sRecreateOtomiAdminPassword(updatedValues)
   }
