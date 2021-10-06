@@ -1,7 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
-import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
@@ -28,8 +27,8 @@ export const getChartValues = (): any | undefined => {
 
 export type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
-const dirname = fileURLToPath(import.meta.url)
+const cmdName = getFilename(__filename)
+const dirname = __dirname
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = () => {
@@ -96,7 +95,7 @@ export const bootstrapValues = async (): Promise<void> => {
   )
 
   let originalValues
-  if (isChart) {
+  if (env.VALUES_INPUT) {
     // write chart values if we got any
     originalValues = getChartValues()
     await writeValues(originalValues)

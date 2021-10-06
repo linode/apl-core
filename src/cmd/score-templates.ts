@@ -6,7 +6,7 @@ import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const templatePath = '/tmp/template.yaml'
 const debug: OtomiDebugger = terminal(cmdName)
 

@@ -8,7 +8,7 @@ import { Arguments as HelmArgs } from '../common/yargs-opts'
 
 type Arguments = HelmArgs
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const pull = async (): Promise<void> => {

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
-import { chunk } from 'lodash-es'
+import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { env } from './envalid'
 import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'

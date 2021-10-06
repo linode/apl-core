@@ -4,7 +4,7 @@ import { values as valuesFunc } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const values = async (): Promise<void> => {

@@ -1,5 +1,5 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
-import { unset } from 'lodash-es'
+import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { hfValues } from '../common/hf'
@@ -7,7 +7,7 @@ import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']

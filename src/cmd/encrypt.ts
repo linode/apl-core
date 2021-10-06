@@ -3,7 +3,7 @@ import { Arguments, encrypt as encryptFunc } from '../common/crypt'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const encrypt = async (): Promise<void> => {

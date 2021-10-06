@@ -18,7 +18,7 @@ export interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const genDrone = async (): Promise<void> => {

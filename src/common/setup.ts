@@ -1,5 +1,4 @@
 import { existsSync, readdirSync } from 'fs'
-import { fileURLToPath } from 'url'
 import { $, chalk } from 'zx'
 import { decrypt } from './crypt'
 import { env } from './envalid'
@@ -8,7 +7,7 @@ import { BasicArguments, loadYaml, parser, terminal } from './utils'
 import { askYesNo } from './zx-enhance'
 
 chalk.level = 2
-const dirname = fileURLToPath(import.meta.url)
+const dirname = __dirname
 
 let otomiImageTag: string
 let otomiClusterOwner: string

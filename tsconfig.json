@@ -8,7 +8,8 @@
     "sourceMap": true,
     "strict": false,
     "allowJs": true,
-    "module": "ESNext",
+    "module": "CommonJS",
+    "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "node",
     "target": "ES2021",
@@ -17,7 +18,7 @@
     "lib": ["ES2021", "ESNext"]
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src"],
+  "include": ["src/**/*.ts"],
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module"

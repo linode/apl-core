@@ -7,11 +7,10 @@ import { existsSync, readdirSync, readFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
+import { cloneDeep, merge, omit, pick, set } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
-import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, ProcessOutput, sleep } from 'zx'
 import { cleanEnvironment, env } from './envalid'
@@ -22,7 +21,7 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
-export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
+export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 
 export interface BasicArguments extends YargsArguments {
   logLevel: string
@@ -303,7 +302,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object') return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value)) return flattenObject(value, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
@@ -388,7 +387,7 @@ export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
 }
 
 export const stringContainsSome = (str: string, ...args: string[]): boolean => {
-  return args.some((arg) => str.includes(arg))
+  return !!str && !!args && args.some((arg) => str.includes(arg))
 }
 
 export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {

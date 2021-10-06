@@ -27,29 +27,31 @@ if (env.TESTING) {
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
-try {
-  parser.scriptName(scriptName)
-  commands.map((cmd: CommandModule) =>
-    parser.command(cmd !== defaultCommand ? cmd : { ...cmd, command: [cmd.command as string, '$0'] }),
-  )
-  parser
-    .option(basicOptions)
-    .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
-    .fail((e) => {
-      throw e
-    })
-    .env('OTOMI')
-    .help('help')
-    .alias('h', 'help')
-    .strictCommands()
-    .demandCommand()
-    .completion('completion', false)
-  await parser.parseAsync()
-} catch (error) {
-  if (`${error}`.includes('Unknown command') || `${error}`.includes('Not enough non-option arguments: got 0'))
-    parser.showHelp()
-  else debug.error(error)
-  process.exit(1)
-} finally {
-  console.profileEnd('otomi')
-}
+;(async () => {
+  try {
+    parser.scriptName(scriptName)
+    commands.map((cmd: CommandModule) =>
+      parser.command(cmd !== defaultCommand ? cmd : { ...cmd, command: [cmd.command as string, '$0'] }),
+    )
+    parser
+      .option(basicOptions)
+      .wrap(Math.min(parser.terminalWidth() * terminalScale, 256 * terminalScale))
+      .fail((e) => {
+        throw e
+      })
+      .env('OTOMI')
+      .help('help')
+      .alias('h', 'help')
+      .strictCommands()
+      .demandCommand()
+      .completion('completion', false)
+    await parser.parseAsync()
+  } catch (error) {
+    if (`${error}`.includes('Unknown command') || `${error}`.includes('Not enough non-option arguments: got 0'))
+      parser.showHelp()
+    else debug.error(error)
+    process.exit(1)
+  } finally {
+    console.profileEnd('otomi')
+  }
+})()
