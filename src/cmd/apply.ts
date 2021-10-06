@@ -1,23 +1,11 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { Argv, CommandModule } from 'yargs'
-import { $, cd, nothrow } from 'zx'
-import { env } from '../common/envalid'
-import { hf, hfValues } from '../common/hf'
+import { $ } from 'zx'
+import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  logLevelString,
-  OtomiDebugger,
-  rootDir,
-  setParsedArgs,
-  terminal,
-  waitTillAvailable,
-} from '../common/utils'
-import { isChart } from '../common/values'
+import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit } from './commit'
 import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(import.meta.url)
@@ -38,40 +26,6 @@ const setup = (): void => {
   debug = terminal(cmdName)
 
   mkdirSync(dir, { recursive: true })
-}
-
-const commitOnFirstRun = async () => {
-  const values = await hfValues()
-  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-
-  if ((await nothrow($`kubectl -n otomi get cm otomi-status`)).exitCode === 0) {
-    debug.info('Already installed, skipping commit...')
-  }
-  if (!giteaEnabled) {
-    debug.log(
-      `Please cd to ${env.ENV_DIR} and commit the values with this command: "git add -A && git commit -m "first commit" --no-verify && git push"`,
-    )
-    await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
-  } else {
-    cd(env.ENV_DIR)
-    const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-    const credentials = {
-      username: 'otomi-admin',
-      password:
-        values.charts.gitea.adminPassword?.length > 0 ? values.charts.gitea.adminPassword : values.otomi.adminPassword,
-    }
-    debug.debug('healthUrl: ', healthUrl)
-    const isCertStaging = values.charts?.['cert-manager']?.stage === 'staging'
-    if (isCertStaging) {
-      process.env.GIT_SSL_NO_VERIFY = 'true'
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    }
-    await waitTillAvailable(healthUrl, { ...credentials, retries: 0 })
-  }
-  if ((await nothrow($`git ls-remote`)).stdout.trim().length !== 0) return
-  await commit()
-  await nothrow($`kubectl -n otomi create cm otomi-status --from-literal=status='Installed'`)
-  cd(rootDir)
 }
 
 const applyAll = async () => {
@@ -99,8 +53,6 @@ const applyAll = async () => {
     },
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
-
-  if (!isChart && !env.CI) await commitOnFirstRun()
 }
 
 export const apply = async (): Promise<void> => {

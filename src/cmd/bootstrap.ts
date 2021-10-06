@@ -1,12 +1,14 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
+import { isEmpty } from 'lodash-es'
 import { fileURLToPath } from 'url'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
-import { env } from '../common/envalid'
+import { env, isChart } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
@@ -15,14 +17,17 @@ import {
   getFilename,
   loadYaml,
   OtomiDebugger,
+  terminal,
   rootDir,
   setParsedArgs,
-  terminal,
+  createK8sSecret,
+  getK8sSecret,
 } from '../common/utils'
-import { isChart, writeValues } from '../common/values'
+import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
+import { validateValues } from './validate-values'
 
-export const getChartValues = (): any | undefined => {
+export const getInputValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
@@ -48,6 +53,34 @@ const generateLooseSchema = () => {
   }
 }
 
+const valuesOrEmpty = async (skipCache?: boolean): Promise<Record<string, any>> => {
+  // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
+  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
+    return hfValues(skipCache)
+  // otherwise
+  return {}
+}
+
+export const getOtomiSecrets = async (
+  // The chart job calls bootstrap only if the otomi-status config map does not exists
+  originalValues: Record<string, any>,
+): Promise<Record<string, any>> => {
+  let generatedSecrets: Record<string, any>
+  // The chart job calls bootstrap only if the otomi-status config map does not exists
+  const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+  debug.info(`Checking ${secretId} already exist on cluster`)
+  const kubeSecretObject = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
+  if (!kubeSecretObject) {
+    debug.info(`Creating ${secretId}`)
+    generatedSecrets = await generateSecrets(originalValues)
+    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, generatedSecrets)
+    debug.info(`Created ${secretId}`)
+  } else {
+    debug.info(`Found ${secretId} secrets on cluster, recovering`)
+    generatedSecrets = kubeSecretObject
+  }
+  return generatedSecrets
+}
 export const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
@@ -95,25 +128,32 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  let originalValues
+  let originalValues: Record<string, any> = {}
+  let generatedSecrets
   if (isChart) {
-    // write chart values if we got any
-    originalValues = getChartValues()
+    originalValues = getInputValues() as Record<string, any>
+    // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
+    generatedSecrets = getOtomiSecrets(originalValues)
   } else {
-    // try to decrypt if we already have a sops file
-    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-      await decrypt()
-    }
-    // otherwise we can't read original values ;p
-    originalValues = await hfValues(true)
+    originalValues = await valuesOrEmpty(true)
+    generatedSecrets = await generateSecrets(originalValues)
   }
-
-  // Generate passwords and merge with values and give the priority to the current existing passwords. (don't change passwords everytime)
-  // If schema changes and some new secrets are added, running bootstrap will generate those new secrets as well.
-  const generatedSecrets = await generateSecrets(originalValues)
+  // Ensure that .dec files are in place, because the writeValues() relies on them.
+  await genSops()
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
+    await encrypt()
+    await decrypt()
+  }
   await writeValues(generatedSecrets, false)
 
+  try {
+    // Do not validate if CLI just bootstraps originalValues with placeholders
+    if (!isEmpty(originalValues)) await validateValues()
+  } catch (error) {
+    debug.error(error)
+    throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
+  }
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it
   if (!originalValues?.otomi?.adminPassword) {
@@ -121,20 +161,6 @@ export const bootstrapValues = async (): Promise<void> => {
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-  if (isChart) {
-    // Write some output for the user about password access via a secret
-    const updatedValues = await hfValues(true)
-
-    await nothrow($`kubectl delete secret generic otomi-password &>/dev/null'`)
-    await nothrow(
-      $`kubectl create secret generic otomi-password --from-literal='admin'='${updatedValues.otomi.adminPassword}'`,
-    )
-    debug.log(
-      'A kubernetes secret has been created in the `default` namespace called `otomi-password` which contains the `otomi.adminPassword`. You should know what to do with it ;)',
-    )
-  }
-
-  await genSops()
 
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     // encryption related stuff
@@ -159,7 +185,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await hfValues(true)
+    const values = await valuesOrEmpty(true)
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
