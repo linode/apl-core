@@ -139,7 +139,7 @@ export const bootstrapValues = async (): Promise<void> => {
 
   let originalValues: Record<string, any> = {}
   let generatedSecrets
-  if (env.OTOMI_AS_CHART) {
+  if (env.VALUES_INPUT) {
     originalValues = getInputValues() as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
