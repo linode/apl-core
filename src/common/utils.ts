@@ -14,6 +14,7 @@ import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
+import pkg from '../../package.json'
 import { DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { cleanEnvironment, env, isChart } from './envalid'
 
@@ -393,7 +394,7 @@ export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
-export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
+export const generateSecrets = async (values: Record<string, unknown> = {}): Promise<Record<string, unknown>> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
@@ -465,6 +466,7 @@ export async function createK8sSecret(name: string, namespace: string, data: Rec
   const path = `/tmp/otomi-secret-${namespace}-${name}`
   writeFileSync(path, rawString)
   const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
+  if (result.stderr) debug.error(result.stderr)
   debug.debug(result)
 }
 
@@ -485,3 +487,10 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
 }
 
 export default { parser, asArray }
+
+const path = process.cwd()
+let packageIsCore = false
+if (!(path === '/home/app/stack' || !existsSync(`${path}/package.json`))) {
+  if (pkg.name === 'otomi-core') packageIsCore = true
+}
+export const isCore = packageIsCore

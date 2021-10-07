@@ -27,7 +27,7 @@ services:
     container_name: tools
     image: otomi/core:${TOOLS_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
-    command: npm run compile && node --no-warnings --experimental-specifier-resolution=node ./dist/otomi.js -- server
+    command: npm run compile && node --no-warnings --experimental-specifier-resolution=node ./dist/src/otomi.js -- server
     depends_on:
       - api
     expose:

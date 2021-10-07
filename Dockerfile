@@ -31,4 +31,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-CMD ["dist/otomi.js"]
+CMD ["dist/src/otomi.js"]

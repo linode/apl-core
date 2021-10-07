@@ -2,9 +2,6 @@
   "[docker]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[shell]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
   "[js]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
@@ -14,50 +11,55 @@
   "[md]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[shell]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+      "source.organizeImports": true
+    },
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.codeActionsOnSave": {
-      "source.fixAll": true,
-    }
-  },
+  "cSpell.enabled": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": true
   },
-  "cSpell.enabled": true,
   "editor.formatOnSave": true,
-  "prettier.enable": true,
   "eslint.format.enable": true,
   "eslint.validate": ["javascript", "typescript"],
   "files.associations": {
     "*.gotmpl": "helm",
     "*.tmpl": "nginx",
     "*.tpl": "yaml",
-    "_*.tpl": "helm",
     "*.yml": "yaml",
     ".secrets*": "shellscript",
+    "CODE_OF_CONDUCT": "markdown",
+    "CONTRIBUTING": "markdown",
+    "_*.tpl": "helm",
     "aliases": "shellscript",
+    "bin/hooks/*": "shellscript",
     "helmfile-*.yaml": "helm",
     "helmfile.yaml": "helm",
-    "otomi": "shellscript",
-    "bin/hooks/*": "shellscript",
-    "CODE_OF_CONDUCT": "markdown",
-    "CONTRIBUTING": "markdown"
+    "otomi": "shellscript"
   },
   "files.exclude": {
     "**/.history": true
   },
-  "yaml.schemas": {
-    "https://json-schema.org/draft-07/schema": "values-schema.yaml",
-    ".vscode/values-schema.yaml": "**/env/*.yaml"
-  },
+  "mochaExplorer.files": "tests/*.test.ts",
+  "mochaExplorer.require": "ts-node/register",
+  "opa.roots": ["${workspaceFolder}/policies"],
+  "prettier.enable": true,
+  "python.pythonPath": "/usr/local/bin/python3",
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci",
-  "opa.roots": ["${workspaceFolder}/policies"],
-  "python.pythonPath": "/usr/local/bin/python3",
   "sops.enabled": false,
-  "mochaExplorer.files": "tests/*.test.ts",
-  "mochaExplorer.require": "ts-node/register"
+  "standard.enable": false,
+  "yaml.schemas": {
+    ".vscode/values-schema.yaml": "**/env/*.yaml",
+    "https://json-schema.org/draft-07/schema": "values-schema.yaml"
+  }
 }

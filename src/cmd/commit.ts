@@ -1,9 +1,8 @@
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
-import { DEPLOYMENT_STATUS_CONFIGMAP, DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
-
+import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
-import { env, isCli } from '../common/envalid'
+import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -30,7 +29,11 @@ export const preCommit = async (): Promise<void> => {
 
 export const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
-  const branch = getGitBranch()
+  const values = await hfValues()
+  let branch = 'main'
+  if (values.charts?.gitea?.enabled === false) {
+    branch = values.charts!['otomi-api']!.git!.branch ?? branch
+  }
   d.info('Starting git push.')
   try {
     await $`git push -u origin ${branch}`
@@ -58,15 +61,6 @@ const getGiteaHealthUrl = async (): Promise<string> => {
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
   debug.debug('gitea healthUrl: ', healthUrl)
   return healthUrl
-}
-
-const getGitBranch = async (): Promise<string> => {
-  let branch = 'main'
-  const values = await hfValues()
-  if (values.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? branch
-  }
-  return branch
 }
 
 const commitAndPush = async (): Promise<void> => {
@@ -112,7 +106,7 @@ export const commit = async (): Promise<void> => {
   d.info('Committing values')
   cd(env.ENV_DIR)
   await commitAndPush()
-  await setDeploymentStatus()
+  if (isChart) await setDeploymentStatus()
 }
 
 export const module = {

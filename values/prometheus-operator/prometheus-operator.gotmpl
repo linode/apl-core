@@ -1,14 +1,14 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $k := $v.charts | get "keycloak" dict }}
+{{- $o := $v | get "oidc" dict }}
 {{- $p := $v.charts | get "prometheus-operator" dict }}
 {{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k | get "enabled" true }}
-{{- $realm := $k | get "realm" "master" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage" $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $o "stage" $stage "keycloak" ($k | get "idp")) | toString }}
 
 nameOverride: po
 fullnameOverride: po

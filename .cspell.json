@@ -1,9 +1,9 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
-  "ignorePaths": ["/CHANGELOG.md"],
+  "ignorePaths": ["/CHANGELOG.md", "*.json"],
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "anyuid",
@@ -11,6 +11,7 @@
     "auths",
     "azuredns",
     "bladibla",
+    "byor",
     "clouddns",
     "crypted",
     "descheduler",
@@ -58,13 +59,16 @@
     "autoscaler",
     "backoff",
     "basepath",
+    "binzx",
     "blackbox",
     "bootstrapper",
     "crds",
     "creds",
     "criticals",
     "devops",
+    "devs",
     "egressgateway",
+    "envalid",
     "esbenp",
     "foxundermoon",
     "gcloud",
@@ -115,6 +119,7 @@
     "sitespeed",
     "sysctls",
     "testmode",
+    "textconv",
     "untrusted"
   ]
 }
