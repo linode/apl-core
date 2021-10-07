@@ -223,6 +223,12 @@ definitions:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
+      customRootCa:
+        description: When set this CA is used by cert-manager to create self signed certs.
+        type: string
+      customIntermediateCa:
+        description: When set this intermediate CA is used by cert-manager to create self signed certs.
+        type: string
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
@@ -911,8 +917,9 @@ definitions:
     properties:
       alerts:
         $ref: '#/definitions/alerts'
-      azureMonitor:
-        $ref: '#/definitions/azure/definitions/monitor'
+      # disabled for now until we fix #
+      # azureMonitor:
+      #   $ref: '#/definitions/azure/definitions/monitor'
       secrets:
         items:
           $ref: '#/definitions/secret'
