@@ -120,7 +120,7 @@
     "release:github": "github-release-from-changelog",
     "score-templates": "TESTING=1 binzx/otomi score-templates",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
-    "test": "TESTING=1 run-p lint validate-templates",
+    "test": "TESTING=1 run-p lint validate-templates test:ts",
     "test:bats": "TESTING=1 binzx/otomi x bats -- -T bin/tests",
     "test:opa": "binzx/otomi x opa test policies -v",
     "test:ts": "mocha",
