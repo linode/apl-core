@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -32,10 +32,6 @@ const providerMap = {
 export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
-  if (existsSync(targetPath)) {
-    debug.debug('sops file already exists')
-    return
-  }
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile) as Record<string, any>
   // TODO: Use validate values to validate tree at this specific point

@@ -1,8 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
-import { isEmpty } from 'lodash-es'
-import { fileURLToPath } from 'url'
+import { dump } from 'js-yaml'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
@@ -13,15 +12,16 @@ import { hfValues } from '../common/hf'
 import { getImageTag, prepareEnvironment } from '../common/setup'
 import {
   BasicArguments,
+  createK8sSecret,
   generateSecrets,
   getFilename,
+  getK8sSecret,
+  isCore,
   loadYaml,
   OtomiDebugger,
-  terminal,
   rootDir,
   setParsedArgs,
-  createK8sSecret,
-  getK8sSecret,
+  terminal,
 } from '../common/utils'
 import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -34,7 +34,6 @@ export const getInputValues = (): Record<string, any> | undefined => {
 export type Arguments = BasicArguments
 
 const cmdName = getFilename(import.meta.url)
-const dirname = fileURLToPath(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = () => {
@@ -43,22 +42,21 @@ const generateLooseSchema = () => {
   const sourcePath = `${rootDir}/values-schema.yaml`
 
   const valuesSchema = loadYaml(sourcePath)
-  const trimmedVS = JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)
+  const trimmedVS = dump(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)))
+  console.debug('generated values-schema.yaml: ', trimmedVS)
   writeFileSync(targetPath, trimmedVS)
   debug.info(`Stored loose YAML schema at: ${targetPath}`)
-  if (dirname.includes('otomi-core')) {
+  if (isCore) {
     // for validation of .values/env/* files we also generate a loose schema here:
     writeFileSync(devOnlyPath, trimmedVS)
     debug.debug(`Stored loose YAML schema for otomi-core devs at: ${devOnlyPath}`)
   }
 }
 
-const valuesOrEmpty = async (skipCache?: boolean): Promise<Record<string, any>> => {
-  // ENV_DIR/env/cluster.yaml exitsts && contains cluster.provider
+const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues(skipCache)
-  // otherwise
-  return {}
+    return hfValues(true)
+  return undefined
 }
 
 export const getOtomiSecrets = async (
@@ -128,15 +126,15 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  let originalValues: Record<string, any> = {}
+  let originalValues: Record<string, any> | undefined
   let generatedSecrets
   if (isChart) {
     originalValues = getInputValues() as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
-    generatedSecrets = getOtomiSecrets(originalValues)
+    generatedSecrets = await getOtomiSecrets(originalValues)
   } else {
-    originalValues = await valuesOrEmpty(true)
+    originalValues = await valuesOrEmpty()
     generatedSecrets = await generateSecrets(originalValues)
   }
   // Ensure that .dec files are in place, because the writeValues() relies on them.
@@ -149,7 +147,7 @@ export const bootstrapValues = async (): Promise<void> => {
 
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (!isEmpty(originalValues)) await validateValues()
+    if (originalValues === undefined) await validateValues()
   } catch (error) {
     debug.error(error)
     throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
@@ -185,7 +183,7 @@ export const bootstrapGit = async (): Promise<void> => {
     debug.info('Initializing values repo.')
     cd(env.ENV_DIR)
 
-    const values = await valuesOrEmpty(true)
+    const values = await valuesOrEmpty()
 
     await $`git init ${env.ENV_DIR}`
     copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
