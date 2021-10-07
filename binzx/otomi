@@ -43,7 +43,7 @@ silent() {
 }
 
 docker_tag_exists() {
-  curl -sflL https://index.docker.io/v1/repositories/$1/tags/ | grep $2 &>/dev/null
+  curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep "\"name\": \"$2\"" &>/dev/null
 }
 
 # shellcheck disable=SC2155
