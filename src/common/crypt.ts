@@ -54,11 +54,10 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
     if (!crypt.condition || crypt.condition(file)) {
       debug.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
-      result.then((res) => {
+      return result.then((res) => {
         if (crypt.post) crypt.post(file)
         return res
       })
-      return result
     }
     return undefined
   })
