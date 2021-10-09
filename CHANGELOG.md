@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.11](https://github.com/redkubes/otomi-core/compare/v0.14.10...v0.14.11) (2021-10-09)
+
+
+### Features
+
+* allow keycloak to act as idp ([#613](https://github.com/redkubes/otomi-core/issues/613)) ([a996ab6](https://github.com/redkubes/otomi-core/commit/a996ab6079550b4d0de63b71d9fd2dd254117e52))
+
+
+### Bug Fixes
+
+* added customRootCa to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
+* missing await in destroy, lint issues ([3c35126](https://github.com/redkubes/otomi-core/commit/3c35126833a4b3393828501f1e271a44265498f9))
+* missing quotes around templated object ([#608](https://github.com/redkubes/otomi-core/issues/608)) ([37ca857](https://github.com/redkubes/otomi-core/commit/37ca857cc460d662db74ab2a521cbf53b7f6a971)), closes [#607](https://github.com/redkubes/otomi-core/issues/607)
+* removed unused tenant from oidc, added home alerts to drone, channel names ([2b16fc3](https://github.com/redkubes/otomi-core/commit/2b16fc3d72343fdeeb3f9da4ed4969cc1cb72ae9))
+
+
+### Build System
+
+* **chart:** allow chart bump on master instead of only upon release ([17a2068](https://github.com/redkubes/otomi-core/commit/17a20680ce1fed36bad5e74f22cfb081c9aa567b))
+* **commitizen:** updated commitizen and husky setup to start cz wizard upon invalid msg ([#609](https://github.com/redkubes/otomi-core/issues/609)) ([d821518](https://github.com/redkubes/otomi-core/commit/d821518dfdb5be22ab8771187d8a58c490f918a2))
+* **readme:** readme now inserted into chart with values.md appended, small schema fix ([#610](https://github.com/redkubes/otomi-core/issues/610)) ([3e85a3d](https://github.com/redkubes/otomi-core/commit/3e85a3d345720b266c2b452ec3fc0464b3f9ec92))
+* removing unused pkg [ci skip] ([a5baf37](https://github.com/redkubes/otomi-core/commit/a5baf3747eeca38c00d89b24209ebed11dd99383))
+
+
+### Others
+
+* **deps:** bumped tasks, api, console [ci skip] ([b0e31f8](https://github.com/redkubes/otomi-core/commit/b0e31f8e1206620a175caf51e8b40158ce32f1d2))
+
 ### [0.14.10](https://github.com/redkubes/otomi-core/compare/v0.14.9...v0.14.10) (2021-09-28)
 
 
