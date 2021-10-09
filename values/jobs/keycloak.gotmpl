@@ -41,7 +41,7 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.12
+  tag: v0.2.13
   # tag: master
 name: keycloak
 env:

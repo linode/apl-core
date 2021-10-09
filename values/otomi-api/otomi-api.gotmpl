@@ -80,8 +80,6 @@ core:
   teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
-  enabled: {{ $sopsEnabled }}
-  {{- if $sopsEnabled }}
   image:
     repository: otomi/core
     tag: {{ $v.otomi.version }}
@@ -90,7 +88,6 @@ tools:
     resources:
       {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- end }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
