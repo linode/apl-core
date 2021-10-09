@@ -6,8 +6,8 @@ import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash-es'
 import { env } from './envalid'
 import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
 
-const objectToString = (obj: Record<string, any>): string => {
-  return isEmpty(obj) ? '' : dump(obj)
+const objectToYaml = (obj: Record<string, any>): string => {
+  return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
 export function removeBlankAttributes(obj: Record<string, unknown>): Record<string, unknown> {
@@ -34,7 +34,7 @@ export const writeValuesToFile = async (
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
   if (!existsSync(targetPath)) {
-    return writeFile(targetPath, objectToString(nonEmptyValues))
+    return writeFile(targetPath, objectToYaml(nonEmptyValues))
   }
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
   const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
@@ -45,7 +45,7 @@ export const writeValuesToFile = async (
     return undefined
   }
   d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
-  const res = writeFile(`${targetPath}${suffix}`, objectToString(mergeResult))
+  const res = writeFile(`${targetPath}${suffix}`, objectToYaml(mergeResult))
   d.info(`Values were written to ${targetPath}${suffix}`)
   return res
 }

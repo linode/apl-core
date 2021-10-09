@@ -126,7 +126,7 @@ export const bootstrapValues = async (): Promise<void> => {
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
 
-  let originalValues: Record<string, any> | undefined
+  let originalValues: Record<string, any>
   let generatedSecrets
   if (isChart) {
     originalValues = getInputValues() as Record<string, any>
@@ -134,7 +134,7 @@ export const bootstrapValues = async (): Promise<void> => {
     await writeValues(originalValues)
     generatedSecrets = await getOtomiSecrets(originalValues)
   } else {
-    originalValues = await valuesOrEmpty()
+    originalValues = (await valuesOrEmpty()) as Record<string, any>
     generatedSecrets = await generateSecrets(originalValues)
   }
   // Ensure that .dec files are in place, because the writeValues() relies on them.
