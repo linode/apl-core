@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.12](https://github.com/redkubes/otomi-core/compare/v0.14.11...v0.14.12) (2021-10-09)
+
+
+### Bug Fixes
+
+* tools server always running [ci skip] ([bf3dbc1](https://github.com/redkubes/otomi-core/commit/bf3dbc12a8b99bdf8822d4a7c8dafe6405171fe3))
+
+
+### Others
+
+* **chart:** bump ([a305375](https://github.com/redkubes/otomi-core/commit/a3053753008cd443aa333f3aaaad89bdbd3a4186))
+
 ### [0.14.11](https://github.com/redkubes/otomi-core/compare/v0.14.10...v0.14.11) (2021-10-09)
 
 
