@@ -917,9 +917,8 @@ definitions:
     properties:
       alerts:
         $ref: '#/definitions/alerts'
-      # disabled for now until we fix #
-      # azureMonitor:
-      #   $ref: '#/definitions/azure/definitions/monitor'
+      azureMonitor:
+        $ref: '#/definitions/azure/definitions/monitor'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -2006,6 +2005,11 @@ properties:
                     type: boolean
                     description: If you use Azure MSI, this should be set to true
                     default: false
+                  userAssignedIdentityID:
+                    title: MSI id
+                    type: string
+                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity (optional, system-assigned managed identity is used if empty)
+                    x-secret: ''
                 required:
                   - resourceGroup
                   - aadClientId
@@ -2125,31 +2129,17 @@ properties:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
-      adminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
-      apiUrl:
+      issuer:
         $ref: '#/definitions/url'
-        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
-      authUrl:
-        $ref: '#/definitions/url'
-        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       clientID:
         $ref: '#/definitions/wordCharacterPattern'
       clientSecret:
         type: string
         x-secret: ''
-      issuer:
-        $ref: '#/definitions/url'
-      scope:
-        type: string
-        default: openid email profile
-        description: Default values are used by keycloak. May be overridden in case keycloak is disabled.
+      adminGroupID:
+        $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
-      tenantID:
-        $ref: '#/definitions/wordCharacterPattern'
-      tokenUrl:
-        $ref: '#/definitions/url'
       usernameClaimMapper:
         $ref: '#/definitions/wordCharacterPattern'
         description: Claim name used by Keycloak to identify incoming users from identity provider

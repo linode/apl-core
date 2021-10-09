@@ -41,7 +41,7 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.11
+  tag: v0.2.12
   # tag: master
 name: keycloak
 env:
@@ -76,9 +76,8 @@ nativeSecrets:
   IDP_GROUP_OTOMI_ADMIN: {{ $o | get "adminGroupID" nil }}
   IDP_GROUP_TEAM_ADMIN: {{ $o | get "teamAdminGroupID" nil }}
   IDP_OIDC_URL: {{ $o | get "issuer" nil }}
-  TENANT_ID: {{ $o | get "tenantID" nil }}
-  TENANT_CLIENT_ID: {{ $o | get "clientID" nil }}
-  TENANT_CLIENT_SECRET: {{ $o | get "clientSecret" nil }}
+  IDP_CLIENT_ID: {{ $o | get "clientID" nil }}
+  IDP_CLIENT_SECRET: {{ $o | get "clientSecret" nil }}
   {{- end }}
 {{ if $hasStagingCerts }}
 files:
