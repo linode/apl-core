@@ -1,9 +1,13 @@
+// eslint-disable-next-line import/no-unresolved
+import { lookup } from 'dns/promises'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { isIP } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { hf } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { writeValues } from '../common/values'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { Arguments as DroneArgs } from './gen-drone'
@@ -28,6 +32,31 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
+export const prepareValues = async (): Promise<void> => {
+  const d = terminal('apply:prepareValues')
+  // const ingressIP = (
+  //   await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.spec.clusterIP}"`
+  // ).stdout.trim()
+  d.info("Create a fallback cluster.domainSuffix when it doesn't exist")
+  let ingressIP = (
+    await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*]['ip','hostname']}"`
+  ).stdout.trim()
+  if (isIP(ingressIP) === 0) {
+    d.info('Found ingress hostname, looking up the ip address')
+    ingressIP = (await lookup(ingressIP)).address
+  }
+  const newSuffix = `${ingressIP}.nip.io`
+  d.info(`cluster.domainSuffix is ${newSuffix} if it is not yet set.`)
+  await writeValues(
+    {
+      cluster: {
+        domainSuffix: newSuffix,
+      },
+    },
+    false,
+  )
+}
+
 const applyAll = async () => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start apply all')
@@ -44,10 +73,21 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
+
   await hf(
     {
       fileOpts: argv.file,
-      labelOpts: argv.label,
+      labelOpts: [...(argv.label || []), 'stage=prep'],
+      logLevel: logLevelString(),
+      args: ['apply', '--skip-deps'],
+    },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+  )
+  await prepareValues()
+  await hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },

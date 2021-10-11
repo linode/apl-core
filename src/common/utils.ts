@@ -112,7 +112,7 @@ export type OtomiDebugger = {
  * Must be function to be able to export overrides.
  */
 /* eslint-disable no-redeclare */
-export function terminal(namespace: string): OtomiDebugger {
+export const terminal = (namespace: string): OtomiDebugger => {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     const signature = namespace + baseNamespace
     if (env.OTOMI_IN_TERMINAL) {
@@ -460,7 +460,7 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   return res
 }
 
-export async function createK8sSecret(name: string, namespace: string, data: Record<string, any>): Promise<void> {
+export const createK8sSecret = async (name: string, namespace: string, data: Record<string, any>): Promise<void> => {
   const debug: OtomiDebugger = terminal('createK8sSecret')
   const rawString = JSON.stringify(data)
   const path = `/tmp/otomi-secret-${namespace}-${name}`
@@ -470,7 +470,7 @@ export async function createK8sSecret(name: string, namespace: string, data: Rec
   debug.debug(result)
 }
 
-export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any> | undefined> {
+export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
   const secretKeyName = `otomi-secret-${namespace}-${name}`
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
