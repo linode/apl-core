@@ -126,7 +126,7 @@ jobs:
           charts_repo_url: https://otomi.io/charts/
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - if: 'failure() || ${{ steps.prereq.outputs.has_changes }}'
+      - if: '${{ steps.prereq.outputs.has_changes }}'
         name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
