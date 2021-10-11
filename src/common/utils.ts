@@ -18,6 +18,8 @@ import pkg from '../../package.json'
 import { DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { cleanEnvironment, env, isChart } from './envalid'
 
+const packagePath = process.cwd()
+
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
 
@@ -488,9 +490,8 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
 
 export default { parser, asArray }
 
-const path = process.cwd()
 let packageIsCore = false
-if (!(path === '/home/app/stack' || !existsSync(`${path}/package.json`))) {
+if (!(packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`))) {
   if (pkg.name === 'otomi-core') packageIsCore = true
 }
 export const isCore = packageIsCore
