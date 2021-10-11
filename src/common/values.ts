@@ -10,7 +10,7 @@ const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
-export function removeBlankAttributes(obj: Record<string, unknown>): Record<string, unknown> {
+export const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
   const options: CleanOptions = {
     emptyArrays: false,
     emptyObjects: true,

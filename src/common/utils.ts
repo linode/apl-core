@@ -240,7 +240,7 @@ type WaitTillAvailableOptions = {
   password?: string
 }
 
-export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOptions): Promise<void> {
+export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
   const debug = terminal('waitTillAvailable')
   const defaultOptions: WaitTillAvailableOptions = { status: 200, retries: 10, skipSsl: false }
   const options: WaitTillAvailableOptions = { ...defaultOptions, ...opts }
