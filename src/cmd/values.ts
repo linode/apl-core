@@ -7,7 +7,7 @@ import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } f
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const values = async (): Promise<void> => {
+const values = async (): Promise<void> => {
   debug.info('Get values')
   const hfVal = await hfValues()
 
@@ -26,5 +26,3 @@ export const module = {
     await values()
   },
 }
-
-export default module

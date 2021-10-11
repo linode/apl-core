@@ -23,11 +23,11 @@ let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-export const preCommit = async (): Promise<void> => {
+const preCommit = async (): Promise<void> => {
   await genDrone()
 }
 
-export const gitPush = async (): Promise<boolean> => {
+const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
   const values = await hfValues()
   let branch = 'main'
@@ -121,5 +121,3 @@ export const module = {
     await commit()
   },
 }
-
-export default module

@@ -10,7 +10,7 @@ const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
-export const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
+const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
   const options: CleanOptions = {
     emptyArrays: false,
     emptyObjects: true,
@@ -25,11 +25,7 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValuesToFile = async (
-  targetPath: string,
-  values: Record<string, any>,
-  overwrite = true,
-): Promise<void> => {
+const writeValuesToFile = async (targetPath: string, values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))

@@ -26,7 +26,7 @@ const setup = (argv: Arguments): void => {
   debug = terminal(cmdName)
 }
 
-export const test = async (): Promise<void> => {
+const test = async (): Promise<void> => {
   setup(getParsedArgs())
   await validateValues()
   await lint()
@@ -63,5 +63,3 @@ export const module = {
     await test()
   },
 }
-
-export default module

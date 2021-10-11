@@ -32,7 +32,7 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-export const prepareValues = async (): Promise<void> => {
+const prepareValues = async (): Promise<void> => {
   const d = terminal('apply:prepareValues')
   // const ingressIP = (
   //   await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.spec.clusterIP}"`
@@ -95,7 +95,7 @@ const applyAll = async () => {
   )
 }
 
-export const apply = async (): Promise<void> => {
+const apply = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
@@ -126,5 +126,3 @@ export const module: CommandModule = {
     await apply()
   },
 }
-
-export default module

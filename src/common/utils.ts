@@ -34,16 +34,16 @@ export interface BasicArguments extends YargsArguments {
   debug: boolean
 }
 
-export const defaultBasicArguments: BasicArguments = {
-  _: [],
-  $0: 'defaultBasicArgs',
-  logLevel: 'WARN',
-  nonInteractive: true,
-  skipCleanup: false,
-  trace: false,
-  verbose: 0,
-  debug: false,
-}
+// export const defaultBasicArguments: BasicArguments = {
+//   _: [],
+//   $0: 'defaultBasicArgs',
+//   logLevel: 'WARN',
+//   nonInteractive: true,
+//   skipCleanup: false,
+//   trace: false,
+//   verbose: 0,
+//   debug: false,
+// }
 
 let parsedArgs: BasicArguments
 
@@ -60,7 +60,7 @@ export const getParsedArgs = (): BasicArguments => {
 
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
-export type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)
+type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)
 export class DebugStream extends Writable {
   output: DebuggerType
 
@@ -77,7 +77,7 @@ export class DebugStream extends Writable {
   }
 }
 
-export type OtomiStreamDebugger = {
+type OtomiStreamDebugger = {
   log: DebugStream
   trace: DebugStream
   debug: DebugStream
@@ -313,7 +313,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
       return { ...acc, ...base }
     }, {})
 }
-export interface GucciOptions {
+interface GucciOptions {
   asObject?: boolean
 }
 export const gucci = async (
@@ -390,7 +390,7 @@ export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
   return valuesSchema
 }
 
-export const stringContainsSome = (str: string, ...args: string[]): boolean => {
+const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
@@ -485,8 +485,6 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
   )
   return result.stdout
 }
-
-export default { parser, asArray }
 
 const path = process.cwd()
 let packageIsCore = false

@@ -75,7 +75,7 @@ const destroyAll = async () => {
   debug.log('Uninstalled otomi!')
 }
 
-export const destroy = async (): Promise<void> => {
+const destroy = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
@@ -105,5 +105,3 @@ export const module = {
     await destroy()
   },
 }
-
-export default module
