@@ -12,7 +12,7 @@
     {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
       {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
       {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
-      {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.cluster.domainSuffix }}
+      {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
       {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
         {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
@@ -71,7 +71,7 @@ spec:
           {{- if hasKey $s "ksvc" }}
       route:
         - destination:
-            host: istio-ingressgateway.istio-system.svc.cluster.local
+            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
           {{- else }}
       route:
         - destination:
