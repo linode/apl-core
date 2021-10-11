@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
+import { isEmpty } from 'lodash'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
@@ -147,7 +148,7 @@ const bootstrapValues = async (): Promise<void> => {
 
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues === undefined) await validateValues()
+    if (!isEmpty(originalValues)) await validateValues()
   } catch (error) {
     debug.error(error)
     throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
