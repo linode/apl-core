@@ -102,7 +102,7 @@ jobs:
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
           this_version=v$(cat chart/otomi/Chart.yaml | yq r - 'version')
-          chart_version=$(helm search repo otomi | -o json | jq -r 'sort_by(.version) | .[-1].version')
+          chart_version=$(helm search repo otomi -o json | jq -r 'sort_by(.version) | .[-1].version')
           [ "$this_version" = "$chart_version" ] && echo "The current version ($this_version) is the same as the last released version ($chart_version). Skipping chart release." && exit
           echo ::set-output name=has_changes::true
           release_tag=v$(cat package.json | jq -r '.version')
