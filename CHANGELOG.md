@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.14](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.14) (2021-10-11)
+
+
+### Bug Fixes
+
+* ksvc virtual service mapping, otomi has docker check ([e094134](https://github.com/redkubes/otomi-core/commit/e094134de6a2aa65120d0787041a81c96cc2ee61))
+* sonar issue [ci skip] ([4054e95](https://github.com/redkubes/otomi-core/commit/4054e95730dfc0a81548905fa4f9a0b933f8e5e3))
+* validate-templates fix ([0fad7f2](https://github.com/redkubes/otomi-core/commit/0fad7f2404ca1f53a6de87a36f930c9d78463dc4))
+* yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
+
+
+### Others
+
+* **release:** 0.14.13 ([5c699a6](https://github.com/redkubes/otomi-core/commit/5c699a65d8dbd9b7bc913256fbf07f4c5b474e4c))
+
+
+### Build System
+
+* **chart:** fix slack logic [ci skip] ([2b2bca0](https://github.com/redkubes/otomi-core/commit/2b2bca0bf91cab8f64be3ca29b5d8e9eb59cd916))
+* **chart:** fix version detection ([35784ca](https://github.com/redkubes/otomi-core/commit/35784ca26373ffa1f543dcdd149be2e72377b6cd))
+* **chart:** version detection ([a82d432](https://github.com/redkubes/otomi-core/commit/a82d432aaa3a120b4cca934f3f10632f00cef91b))
+
 ### [0.14.13](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.13) (2021-10-09)
 
 
