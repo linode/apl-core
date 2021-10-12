@@ -29,7 +29,7 @@ const preCrypt = (): void => {
   if (!env.CI) {
     const secretPath = `${env.ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
-      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
+      debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
     }
   }
 }
