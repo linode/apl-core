@@ -69,15 +69,16 @@ fallback_otomi_version='latest'
 fallback_otomi_dev_version='master'
 if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
-  current_branch=${current_branch##*/}
-  current_branch=${current_branch:-$fallback_otomi_dev_version}
-  otomi_version=$current_branch
+  current_branch_img=${current_branch##*/}
+  current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
+  otomi_version=$current_branch_img
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
   otomi_version=${otomi_version:-$fallback_otomi_version}
 else
   otomi_version=$fallback_otomi_version
 fi
+otomi_branch=${current_branch:-$otomi_version}
 
 if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
   # OTOMI_TAG was explicitly given and doesn't exists, then error out
@@ -101,7 +102,6 @@ if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
 fi
 readonly script_full_path
-otomi_branch=$(curl -s https://api.github.com/repos/redkubes/otomi-core/branches | grep $otomi_version_used | sed 's/.*"name": "\(.*\)".*/\1/')
 update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch}/binzx/otomi"
 
 date_to_format() {
