@@ -32,7 +32,7 @@ charts:
   cert-manager:
     email: ''
     # stage defaults to 'production' when commented out
-    stage: staging
+    # stage: staging
 
   external-dns:
     domainFilters:
