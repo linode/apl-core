@@ -89,7 +89,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
     return
   } catch (error) {
     debug.error(error)
-    return
+    throw error
   } finally {
     cd(rootDir)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
