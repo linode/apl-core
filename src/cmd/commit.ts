@@ -97,9 +97,8 @@ export const commit = async (): Promise<void> => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
 
-  process.env.GIT_SSL_NO_VERIFY = 'true'
-
   if (values?.charts?.gitea?.enabled) {
+    process.env.GIT_SSL_NO_VERIFY = 'true'
     const url = await getGiteaHealthUrl()
     await waitTillAvailable(url)
   }
