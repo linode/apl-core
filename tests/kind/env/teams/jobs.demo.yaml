@@ -15,18 +15,6 @@ teamConfig:
                       runAsNonRoot: true
                       runAsUser: 1002
                       runAsGroup: 1002
-                      fsGroup: 1002
-                  resources:
-                      limits:
-                          cpu: 50m
-                          memory: 64Mi
-                      requests:
-                          cpu: 50m
-                          memory: 64Mi
-                  securityContext:
-                      runAsNonRoot: true
-                      runAsUser: 1002
-                      runAsGroup: 1002
                   image:
                       repository: busybox
                       tag: latest
@@ -34,29 +22,19 @@ teamConfig:
                   init:
                       - env:
                             foo: bar
+                        nativeSecrets:
+                            foo: bar
                         image:
                             repository: busybox
                             tag: latest
                             pullPolicy: IfNotPresent
-                        command: [echo, 'hello foo $foo']
-                        resources:
-                            limits:
-                                cpu: 50m
-                                memory: 64Mi
-                            requests:
-                                cpu: 50m
-                                memory: 64Mi
-                        secrets:
-                            - mysecret-generic
-                            - hello-otomi
+                        script: |
+                            echo "hello $receiver and $SOME-KEY"
                   name: contains-everything
+                  nativeSecrets:
+                      foo: bar
                   runPolicy: Always
                   script: echo "hello $receiver"
-                  secrets:
-                      - mysecret-generic
-                      - hello-otomi
-                  secretMounts:
-                      /config/some-folder: someSecret
                   type: Job
                 - enabled: true
                   env:
@@ -98,9 +76,6 @@ teamConfig:
                   runPolicy: Always
                   schedule: 0 1 * * *
                   script: echo "hello $receiver"
-                  secrets:
-                      - generic-example
-                      - hello-otomi
                   type: CronJob
                 - enabled: true
                   image:

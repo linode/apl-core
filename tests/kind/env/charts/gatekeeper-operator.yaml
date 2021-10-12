@@ -1,0 +1,33 @@
+charts:
+    gatekeeper-operator:
+        _rawValues: {}
+        enabled: false
+        replicas: 1
+        disableValidatingWebhook: false
+        auditFromCache: false
+        emitAuditEvents: false
+        emitAdmissionEvents: false
+        constraintViolationsLimit: 20
+        auditInterval: 60
+        logLevel: INFO
+        excludedNamespaces:
+            - 'sandbox'
+        dataSync:
+            - group: ''
+              version: 'v1'
+              kind: 'CronJob'
+            - group: ''
+              version: 'v1'
+              kind: 'DaemonSet'
+            - group: ''
+              version: 'v1'
+              kind: 'Deployment'
+            - group: ''
+              version: 'v1'
+              kind: 'Job'
+            - group: ''
+              version: 'v1'
+              kind: 'Pod'
+            - group: ''
+              version: 'v1'
+              kind: 'StatefulSet'

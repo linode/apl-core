@@ -10,7 +10,7 @@ charts:
                 cpu: 100m
                 memory: 192Mi
         private:
-            enabled: true
+            enabled: false
             resources:
                 limits:
                     cpu: 200m

@@ -22,15 +22,13 @@ charts:
         enabled: true
 dns:
     zones: []
-    provider:
-        aws:
-            region: eu-central-1
+    provider: {}
 home:
     receivers:
         - slack
     slack:
-        channel: mon-otomi
-        channelCrit: mon-otomi-crit
+        channel: dev-mon-otomi
+        channelCrit: dev-mon-otomi-crit
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
@@ -45,6 +43,7 @@ otomi:
         - domainSuffix: demo.eks.otomi.cloud
           name: demo
           provider: aws
+    adminPassword: somePassword
     hasCloudLB: false
     isHomeMonitored: true
     isManaged: true
