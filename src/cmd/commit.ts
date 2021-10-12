@@ -94,9 +94,11 @@ export const commit = async (): Promise<void> => {
   d.info('Preparing values')
   const values = await hfValues()
   if (values.charts?.['cert-manager']?.stage === 'staging') {
-    process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
+
+  process.env.GIT_SSL_NO_VERIFY = 'true'
+
   if (values?.charts?.gitea?.enabled) {
     const url = await getGiteaHealthUrl()
     await waitTillAvailable(url)
