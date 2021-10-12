@@ -43,7 +43,7 @@ const generateLooseSchema = () => {
 
   const valuesSchema = loadYaml(sourcePath)
   const trimmedVS = dump(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)))
-  console.debug('generated values-schema.yaml: ', trimmedVS)
+  debug.debug('generated values-schema.yaml: ', trimmedVS)
   writeFileSync(targetPath, trimmedVS)
   debug.info(`Stored loose YAML schema at: ${targetPath}`)
   if (isCore) {
