@@ -1,12 +1,20 @@
-// eslint-disable-next-line import/no-unresolved
-import { lookup } from 'dns/promises'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { isIP } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { hf } from '../common/hf'
+import { DEPLOYMENT_INFO_SECRET } from '../common/constants'
+import { env } from '../common/envalid'
+import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  getFilename,
+  getOtomiLoadBalancerIP,
+  getParsedArgs,
+  logLevelString,
+  OtomiDebugger,
+  patchK8sSecret,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 import { writeValues } from '../common/values'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
@@ -32,29 +40,31 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-const prepareValues = async (): Promise<void> => {
+const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('apply:prepareValues')
-  // const ingressIP = (
-  //   await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.spec.clusterIP}"`
-  // ).stdout.trim()
   d.info("Create a fallback cluster.domainSuffix when it doesn't exist")
-  let ingressIP = (
-    await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*]['ip','hostname']}"`
-  ).stdout.trim()
-  if (isIP(ingressIP) === 0) {
-    d.info('Found ingress hostname, looking up the ip address')
-    ingressIP = (await lookup(ingressIP)).address
-  }
+  const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   const newSuffix = `${ingressIP}.nip.io`
   d.info(`cluster.domainSuffix is ${newSuffix} if it is not yet set.`)
-  await writeValues(
-    {
-      cluster: {
-        domainSuffix: newSuffix,
-      },
+
+  await writeValues({
+    cluster: {
+      domainSuffix: newSuffix,
     },
-    false,
-  )
+  })
+  await patchK8sSecret(DEPLOYMENT_INFO_SECRET, env.DEPLOYMENT_NAMESPACE, {
+    field: 'cluster_domainSuffix',
+    data: newSuffix,
+  })
+}
+
+const prepareValues = async (): Promise<void> => {
+  const d = terminal('apply:prepareValues')
+
+  const values = await hfValues()
+  if (!values.cluster.domainSuffix) {
+    await setDomainSuffix(values)
+  }
 }
 
 const applyAll = async () => {

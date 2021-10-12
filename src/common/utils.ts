@@ -3,11 +3,14 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
+import { AnyAaaaRecord, AnyARecord } from 'dns'
+// eslint-disable-next-line import/no-unresolved
+import { resolveAny } from 'dns/promises'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
+import { cloneDeep, isEmpty, merge, omit, pick, set } from 'lodash-es'
 import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
@@ -460,18 +463,28 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   return res
 }
 
-export const createK8sSecret = async (name: string, namespace: string, data: Record<string, any>): Promise<void> => {
+interface SecretData {
+  field?: string
+  data: Record<string, any> | string
+}
+
+export const createK8sSecret = async (name: string, namespace: string, data: SecretData): Promise<void> => {
   const debug: OtomiDebugger = terminal('createK8sSecret')
-  const rawString = JSON.stringify(data)
-  const path = `/tmp/otomi-secret-${namespace}-${name}`
+  const rawString = JSON.stringify(data.data)
+  const secretKeyName = data.field ?? `otomi-secret-${namespace}-${name}`
+  const path = `/tmp/${secretKeyName}`
   writeFileSync(path, rawString)
   const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
   if (result.stderr) debug.error(result.stderr)
   debug.debug(result)
 }
 
-export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
-  const secretKeyName = `otomi-secret-${namespace}-${name}`
+export const getK8sSecret = async (
+  name: string,
+  namespace: string,
+  dataField?: string,
+): Promise<Record<string, any> | undefined> => {
+  const secretKeyName = dataField ?? `otomi-secret-${namespace}-${name}`
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
   )
@@ -479,11 +492,63 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
+export const patchK8sSecret = async (name: string, namespace: string, data: SecretData): Promise<void> => {
+  if (!(await getK8sSecret(name, namespace, data.field))) {
+    await createK8sSecret(name, namespace, data)
+  } else {
+    const b64Data = Buffer.from(JSON.stringify(data.data)).toString('base64')
+    await $`kubectl patch secret ${name} -n ${namespace} --type='json' -p='[{"op":"replace","path":"/data/${data.field}","value":"${b64Data}"}]'`
+  }
+}
+
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
     $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
+}
+
+const fetchLoadBalancerIngressData = async (): Promise<string> => {
+  const d = terminal('fetchLoadBalancerIngressData')
+  let ingressDataString: string = (
+    await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
+  ).stdout.trim()
+  let count = 1
+  while (isEmpty(ingressDataString)) {
+    await sleep(250)
+    ingressDataString = (
+      await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
+    ).stdout.trim()
+    count += 1
+    d.debug(`Trying to get LoadBalancer ingress information, trial ${count}`)
+  }
+  return ingressDataString
+}
+
+export const getOtomiLoadBalancerIP = async (): Promise<string> => {
+  const d = terminal('getOtomiLoadBalancerIP')
+  d.debug('Find LoadBalancer IP or Hostname')
+
+  const ingressDataString = await fetchLoadBalancerIngressData()
+  const ingressDataList = JSON.parse(ingressDataString) as Record<string, any>[]
+
+  d.debug(ingressDataList)
+  if (ingressDataList.length === 0) throw new Error('No LoadBalancer Ingress definitions found')
+  const firstIngressData = ingressDataList[0]
+
+  if (firstIngressData.ip) return firstIngressData.ip as string
+  if (firstIngressData.hostname) {
+    const resolveData = await resolveAny(firstIngressData.hostname)
+    const resolveDataFiltered = resolveData
+      .filter((val) => val.type === 'A' || val.type === 'AAAA')
+      .sort((a, b) => (a > b ? 1 : -1)) as (AnyARecord | AnyAaaaRecord)[]
+
+    if (isEmpty(resolveDataFiltered))
+      throw new Error(`No A or AAAA records found for ${firstIngressData.hostname} - could not determine IP`)
+    const firstIP = resolveDataFiltered[0].address
+    return firstIP
+  }
+  throw new Error('LoadBalancer Ingress data did not container ip or hostname')
 }
 
 const path = process.cwd()

@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { isEmpty } from 'lodash'
+import { isEmpty } from 'lodash-es'
 // import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
@@ -72,7 +72,7 @@ const getOtomiSecrets = async (
   if (!kubeSecretObject) {
     debug.info(`Creating ${secretId}`)
     generatedSecrets = await generateSecrets(originalValues)
-    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, generatedSecrets)
+    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, { data: generatedSecrets })
     debug.info(`Created ${secretId}`)
   } else {
     debug.info(`Found ${secretId} secrets on cluster, recovering`)
