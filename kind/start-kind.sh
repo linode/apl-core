@@ -17,7 +17,7 @@ helmfile -f helmfile.yaml apply
 export EX_DNS_IP="$(kubectl get services/external-dns -n kind -o go-template='{{(.spec.clusterIP)}}')"
 export DOMAIN_SUFFIX="kind.local"
 
-# Append  kind.local:53 DNS configuration to Corefile
+# Append kind.local:53 DNS configuration to Corefile
 kubectl get cm coredns -n kube-system -o yaml | \
   sed -e "s/|/&\n\    $DOMAIN_SUFFIX:53 {\n\
       errors \n\
