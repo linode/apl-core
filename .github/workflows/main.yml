@@ -89,19 +89,17 @@ jobs:
   integration:
     runs-on: self-hosted
     needs: build-test-push-release
-    if: ${{ env.ACT }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
+    if: ${{ env.ACT }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]') || ((contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master') || !contains(github.event.head_commit.message, 'chore(release)')) && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: K8s in Docker
         run: |
-          ${{ !env.ACT }} && docker login -u otomi -p $DOCKER_PASSWORD
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
-          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/fixtures:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
-        env:
-          CI: 1
+          docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
+          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
 
   chart-release:
     if: "github.ref == 'refs/heads/master'"
