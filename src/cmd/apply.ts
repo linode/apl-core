@@ -1,4 +1,5 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { DEPLOYMENT_INFO_SECRET } from '../common/constants'
@@ -44,7 +45,7 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('apply:prepareValues')
   d.info("Create a fallback cluster.domainSuffix when it doesn't exist")
   const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
-  const newSuffix = `${ingressIP}.nip.io`
+  const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
   d.info(`cluster.domainSuffix is ${newSuffix} if it is not yet set.`)
 
   await writeValues({
