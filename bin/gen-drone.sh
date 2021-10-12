@@ -25,7 +25,7 @@ target=$target_path
 if [ "$provider" != '' ]; then
   if [ "$provider" = 'slack' ]; then
     key="url"
-    channel=$(yqr alerts.$provider.channel | echo dev-mon)
+    channel=$(yqr alerts.$provider.channel | echo mon-otomi)
   else
     key="lowPrio"
   fi

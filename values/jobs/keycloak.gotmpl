@@ -1,10 +1,13 @@
 {{- $v := .Values }}
+{{- $o := $v | get "oidc" dict }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
+{{- $teamIds := list }}
 {{- range $name, $team := $teams }}
+{{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames -}}
-{{- if ($team | get "oidc.groupMapping" false) }}
+{{- if ($team | get "oidc.groupMapping" nil) }}
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
 {{- end -}}
 {{- end -}}
@@ -13,6 +16,7 @@
 {{- $k := $c | get "keycloak" dict }}
 {{- $stage := $c | get "cert-manager.stage" "production" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
+{{- $hasExternalIDP := $v.otomi | get "hasExternalIDP" false }}
 
 type: Job
 runPolicy: Always
@@ -37,9 +41,8 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.10
+  tag: v0.2.13
   # tag: master
-  # pullPolicy: Always
 name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
@@ -51,13 +54,6 @@ nativeSecrets:
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-  IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ $v | get "oidc.usernameClaimMapper" "${CLAIM.upn}" }}
-  IDP_SUB_CLAIM_MAPPER: {{ $v | get "oidc.subClaimMapper" "sub" }}
-  IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-  IDP_GROUP_OTOMI_ADMIN: {{ $v.oidc.adminGroupID }}
-  IDP_GROUP_TEAM_ADMIN: {{ $v.oidc.teamAdminGroupID }}
-  IDP_OIDC_URL: {{ $v.oidc.issuer }}
   REDIRECT_URIS: '[
       "https://otomi.{{ $v.cluster.domainSuffix }}",
       "https://auth.{{ $v.cluster.domainSuffix }}/*",
@@ -70,9 +66,19 @@ nativeSecrets:
       "https://harbor.{{ $v.cluster.domainSuffix }}/*",
       "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
-  TENANT_ID: {{ $v.oidc.tenantID }}
-  TENANT_CLIENT_ID: {{ $v.oidc.clientID }}
-  TENANT_CLIENT_SECRET: {{ $v.oidc.clientSecret }}
+  TEAM_IDS: '{{ $teamIds | toJson }}'
+  FEAT_EXTERNAL_IDP: '{{ $hasExternalIDP }}'
+  {{- if $hasExternalIDP }}
+  IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" "${CLAIM.email}" }}
+  IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" "sub" }}
+  IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
+  IDP_GROUP_OTOMI_ADMIN: {{ $o | get "adminGroupID" nil }}
+  IDP_GROUP_TEAM_ADMIN: {{ $o | get "teamAdminGroupID" nil }}
+  IDP_OIDC_URL: {{ $o | get "issuer" nil }}
+  IDP_CLIENT_ID: {{ $o | get "clientID" nil }}
+  IDP_CLIENT_SECRET: {{ $o | get "clientSecret" nil }}
+  {{- end }}
 {{ if $hasStagingCerts }}
 files:
   /tmp/node/certificates.crt: |

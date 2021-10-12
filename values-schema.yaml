@@ -223,6 +223,12 @@ definitions:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
+      customRootCa:
+        description: When set this CA is used by cert-manager to create self signed certs.
+        type: string
+      customIntermediateCa:
+        description: When set this intermediate CA is used by cert-manager to create self signed certs.
+        type: string
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
@@ -1744,10 +1750,10 @@ properties:
           config:
             properties:
               cookieSecret:
-                description: Cookie secret must be 128 bit base64 encoded string.
+                description: Cookie secret must be 32 byte base64 encoded string.
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
-                x-secret: 'randAlphaNum 16'
+                x-secret: 'randAlphaNum 32 | b64enc'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
       otomi-api:
@@ -2001,6 +2007,11 @@ properties:
                     type: boolean
                     description: If you use Azure MSI, this should be set to true
                     default: false
+                  userAssignedIdentityID:
+                    title: MSI id
+                    type: string
+                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity (optional, system-assigned managed identity is used if empty)
+                    x-secret: ''
                 required:
                   - resourceGroup
                   - aadClientId
@@ -2112,39 +2123,21 @@ properties:
                   - token
             required:
               - vault
-  letsencryptCA:
-    type: string
-  letsencryptRootCA:
-    type: string
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
-      adminGroupID:
-        $ref: '#/definitions/wordCharacterPattern'
-      apiUrl:
+      issuer:
         $ref: '#/definitions/url'
-        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
-      authUrl:
-        $ref: '#/definitions/url'
-        description: Only used for grafana when Keycloak is disabled. (Not recommended because that disables authorization.)
       clientID:
         $ref: '#/definitions/wordCharacterPattern'
       clientSecret:
         type: string
         x-secret: ''
-      issuer:
-        $ref: '#/definitions/url'
-      scope:
-        type: string
-        default: openid email profile
-        description: Default values are used by keycloak. May be overridden in case keycloak is disabled.
+      adminGroupID:
+        $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
-      tenantID:
-        $ref: '#/definitions/wordCharacterPattern'
-      tokenUrl:
-        $ref: '#/definitions/url'
       usernameClaimMapper:
         $ref: '#/definitions/wordCharacterPattern'
         description: Claim name used by Keycloak to identify incoming users from identity provider
@@ -2199,6 +2192,10 @@ properties:
       hasCloudLB:
         default: false
         description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
+        type: boolean
+      hasExternalIDP:
+        default: false
+        description: 'Set this to true when bringing your own external IDP such as Azure AD.'
         type: boolean
       isHomeMonitored:
         default: false

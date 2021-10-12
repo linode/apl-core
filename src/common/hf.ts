@@ -1,7 +1,7 @@
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { env } from './envalid'
+import { env, isCli } from './envalid'
 import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
@@ -91,14 +91,9 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export type ValuesOptions = {
-  replacePath?: boolean
-  skipCache?: boolean
-}
-
-export const values = async (opts?: ValuesOptions): Promise<Record<string, any>> => {
-  if (!opts?.skipCache) {
-    if (opts?.replacePath && value.rp) {
+export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
+  if (!skipCache) {
+    if (isCli && value.rp) {
       return value.rp
     }
     if (value.clean) {
@@ -108,11 +103,7 @@ export const values = async (opts?: ValuesOptions): Promise<Record<string, any>>
   const output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
   value.clean = (load(output.stdout) as any).renderedvalues
   value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  return opts?.replacePath ? value.rp : value.clean
-}
-
-export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
-  return values({ replacePath: true, skipCache })
+  return isCli ? value.rp : value.clean
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

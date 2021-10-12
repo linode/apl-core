@@ -66,7 +66,7 @@ const destroyAll = async () => {
     .filter((crd) => ourCRDS.filter((ourCRD) => ourCRD.includes(crd)).length > 0)
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
-  Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
+  await Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
   debug.info('Removing problematic api service: v1.packages.operators.coreos.com...')
   await stream(
     nothrow($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`),
@@ -79,7 +79,7 @@ export const destroy = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
-    destroyAll()
+    await destroyAll()
   } else {
     await hf(
       {
