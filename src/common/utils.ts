@@ -469,7 +469,7 @@ export async function createK8sSecret(name: string, namespace: string, data: Rec
   writeFileSync(path, rawString)
   const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
   if (result.stderr) debug.error(result.stderr)
-  debug.debug(result)
+  debug.debug(result.stdout)
 }
 
 export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any> | undefined> {

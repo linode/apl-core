@@ -43,7 +43,7 @@ const generateLooseSchema = () => {
 
   const valuesSchema = loadYaml(sourcePath)
   const trimmedVS = dump(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)))
-  console.debug('generated values-schema.yaml: ', trimmedVS)
+  debug.debug('generated values-schema.yaml: ', trimmedVS)
   writeFileSync(targetPath, trimmedVS)
   debug.info(`Stored loose YAML schema at: ${targetPath}`)
   if (isCore) {
@@ -137,14 +137,13 @@ export const bootstrapValues = async (): Promise<void> => {
     originalValues = (await valuesOrEmpty()) as Record<string, any>
     generatedSecrets = await generateSecrets(originalValues)
   }
-  // Ensure that .dec files are in place, because the writeValues() relies on them.
+  await writeValues(generatedSecrets, false)
+
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
     await encrypt()
     await decrypt()
   }
-  await writeValues(generatedSecrets, false)
-
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
     if (originalValues === undefined) await validateValues()

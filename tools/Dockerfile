@@ -3,33 +3,33 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.20.6
+ARG KUBECTL_VERSION=1.21.5
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.6.3
+ARG HELM_VERSION=3.7.0
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.1.3
-# https://github.com/jkroepke/helm-secrets
-ARG HELM_SECRETS_VERSION=3.7.0
-# https://github.com/mozilla/sops/releases:
+# https://github.com/jkroepke/helm-secrets/releases
+ARG HELM_SECRETS_VERSION=3.9.1
+# https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.1
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.5.0
 # https://github.com/roboll/helmfile/releases
-ARG HELMFILE_VERSION=0.138.7
+ARG HELMFILE_VERSION=0.141.0
 # https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.28.0
+ARG OPA_VERSION=0.33.1
 # https://github.com/zegl/kube-score/releases
-ARG KUBESCORE_VERSION=1.11.0
+ARG KUBESCORE_VERSION=1.12.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.25.0
+ARG CONFTEST_VERSION=0.28.1
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.12.1
+ARG KONSTRAINT_VERSION=0.15.0
 
 ARG NODE_VERSION=16
 
-#https://github.com/homeport/dyff
+# https://github.com/homeport/dyff/releases
 ARG DYFF_VERSION=1.4.3
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz

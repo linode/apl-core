@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.15](https://github.com/redkubes/otomi-core/compare/v0.14.14...v0.14.15) (2021-10-12)
+
+
+### Bug Fixes
+
+* chart default version ([ba17214](https://github.com/redkubes/otomi-core/commit/ba172148520c0fc6623f053aa17d983c2a8f7516))
+* letsencrypt expired intermediate, upgraded tools [ci skip] ([ea1ea07](https://github.com/redkubes/otomi-core/commit/ea1ea0735295f2cf53c04663d4363e56e36619a1))
+* perform cryptography after all values in place ([#620](https://github.com/redkubes/otomi-core/issues/620)) ([d450255](https://github.com/redkubes/otomi-core/commit/d4502555b30c64a23046f6fc4ca1bfc5b6c56f45)), closes [#617](https://github.com/redkubes/otomi-core/issues/617)
+* removed console output [ci skip] ([0340a63](https://github.com/redkubes/otomi-core/commit/0340a63a6b33d7f3474947d71c94779bde609e49))
+* removed unneeded enforcement of .secrets file ([4cdc32b](https://github.com/redkubes/otomi-core/commit/4cdc32b7abb395ed3d350d6b42ad261859c43867))
+
+
+### Others
+
+* **chart:** bumped otomi version ([c7aaba5](https://github.com/redkubes/otomi-core/commit/c7aaba5f078913d63b57a27cbe4bf6b305681dd4))
+
 ### [0.14.14](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.14) (2021-10-11)
 
 
