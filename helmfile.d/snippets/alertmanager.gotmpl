@@ -1,7 +1,7 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
 {{- $homeReceivers := .root | get "home.receivers" (list "slack") }}
-{{- $isHomeMonitored:= .root | get "otomi.isHomeMonitored" false }}
+{{- $isHomeMonitored:= .root | get "otomi.isHomeMonitored" }}
 global:
 {{- if or (has "slack" $receivers ) (and $isHomeMonitored (has "slack" $homeReceivers)) }}
   slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}

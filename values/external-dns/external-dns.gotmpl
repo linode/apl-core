@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $externalDns := $v | get "charts.external-dns" }}
+{{- $externalDns := $v.charts | get "external-dns" }}
 {{- $dns := $v.dns }}
 sources:
 - ingress

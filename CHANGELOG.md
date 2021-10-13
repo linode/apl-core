@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.18](https://github.com/redkubes/otomi-core/compare/v0.14.17...v0.14.18) (2021-10-13)
+
+
+### Bug Fixes
+
+* defaults for charts and some other config, round 1 ([db41125](https://github.com/redkubes/otomi-core/commit/db41125add1197f6d9338994644e2ce133c52a18))
+
+
+### Tests
+
+* **values:** removed unused values [ci skip] ([0dd2505](https://github.com/redkubes/otomi-core/commit/0dd2505e05597c373e1f47ac8b073d226d3dd699))
+
 ### [0.14.17](https://github.com/redkubes/otomi-core/compare/v0.14.16...v0.14.17) (2021-10-13)
 
 

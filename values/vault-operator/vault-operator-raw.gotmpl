@@ -1,9 +1,8 @@
 {{- $v := .Values }}
-{{- $k := $v | get "charts.keycloak" dict }}
+{{- $k := $v.charts.keycloak }}
 {{- $tc := $v.teamConfig }}
-{{- $vault := $v | get "charts.vault" dict }}
+{{- $vault := $v.charts.vault }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
-{{- $kms := $v | get "kms" dict }}
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -222,7 +221,7 @@ resources:
               data:
                 HELLO: "Welcome admin team"
 
-      {{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
+      {{- if and (hasKey $seal "kmsKeyId") (hasKey $v.kms "gcpckms")  }}
       credentialsConfig:
         env: GOOGLE_APPLICATION_CREDENTIALS
         path: /etc/gcp/service-account.json
@@ -242,14 +241,14 @@ resources:
         requests:
           storage: 1Gi
 
-{{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
+{{- if and (hasKey $seal "kmsKeyId") (hasKey $v.kms "gcpckms")  }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: service-account-key
     type: Opaque
     data:
-      service-account.json: "{{ $kms.gcpckms.kmsAccount | b64enc }}"
+      service-account.json: "{{ $v.kms.gcpckms.kmsAccount | b64enc }}"
 {{- end }}
 
 # RBAC

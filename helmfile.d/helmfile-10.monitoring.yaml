@@ -37,10 +37,10 @@ releases:
     namespace: monitoring
     <<: *default
   - name: sitespeed
-    installed: {{ $c | get "sitespeed.enabled" false }}
+    installed: {{ $c | get "sitespeed.enabled" }}
     namespace: monitoring
     <<: *default
   - name: weave-scope
-    installed: {{ $c | get "weave-scope.enabled" false }}
+    installed: {{ $c | get "weave-scope.enabled" }}
     namespace: monitoring
     <<: *default

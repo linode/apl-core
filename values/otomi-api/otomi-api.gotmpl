@@ -1,13 +1,16 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
-{{- $o := $v.charts | get "otomi-api" dict }}
-{{- $g := $v.charts | get "gitea" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $hasGitea := $g | get "enabled" true }}
+{{- $o := $v.charts | get "otomi-api" }}
+{{- $g := $v.charts.gitea }}
+{{- $k := $v.charts.keycloak }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
-{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
-{{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $v.kms.sops }}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $sopsEnabled := ne ($v.kms.sops | get "provider" "") "" }}
+{{- $tag := $o.image.tag }}
+{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 {{/* START: set the enabled flags on core services based on the chart enabled flags */}}
 {{- $core := readFile "../../core.yaml" | fromYaml }}
 {{- $apps := list }}
@@ -39,8 +42,8 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-api
-  tag: {{ $o | get "image.tag" "v0.4.76" }}
-  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
+  tag: {{ $tag }}
+  pullPolicy: {{ $pullPolicy }}
 
 secrets:
   {{- if $hasGitea }}
@@ -64,7 +67,7 @@ env:
   {{- end }}
   USE_SOPS: {{ $sopsEnabled }}
   CORE_VERSION: '{{ $v.otomi.version }}'
-  {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
+  {{- if (not $k.enabled) }}
   NO_AUTHZ: true
   {{- end }}
   {{- if $skipVerify }}
@@ -83,7 +86,7 @@ tools:
   image:
     repository: otomi/core
     tag: {{ $v.otomi.version }}
-    pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
+    pullPolicy: {{ $v.derived.otomiPullPolicy }} 
     {{- with $o | get "resources.tools" nil }}
     resources:
       {{- toYaml . | nindent 4 }}
