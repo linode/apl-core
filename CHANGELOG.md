@@ -8,165 +8,145 @@ All notable changes to this project will be documented in this file. See [standa
 ### Others
 
 * **deps:** bumped api and console ([f2e3abe](https://github.com/redkubes/otomi-core/commit/f2e3abe0a8f82edbb959e5f5515a65dc61144c7a))
+* **release:** 0.14.17 ([20c93c2](https://github.com/redkubes/otomi-core/commit/20c93c24211911a8502d8e98e55d4e1ec83748f0))
 
 ### [0.14.16](https://github.com/redkubes/otomi-core/compare/v0.14.15...v0.14.16) (2021-10-13)
 
-
 ### Bug Fixes
 
-* downgraded helm to avoid false lint errors ([a3718b2](https://github.com/redkubes/otomi-core/commit/a3718b27de362822cbd4f834c45e93c9a2dd215f))
+- downgraded helm to avoid false lint errors ([a3718b2](https://github.com/redkubes/otomi-core/commit/a3718b27de362822cbd4f834c45e93c9a2dd215f))
 
 ### [0.14.15](https://github.com/redkubes/otomi-core/compare/v0.14.14...v0.14.15) (2021-10-12)
 
-
 ### Bug Fixes
 
-* chart default version ([ba17214](https://github.com/redkubes/otomi-core/commit/ba172148520c0fc6623f053aa17d983c2a8f7516))
-* letsencrypt expired intermediate, upgraded tools [ci skip] ([ea1ea07](https://github.com/redkubes/otomi-core/commit/ea1ea0735295f2cf53c04663d4363e56e36619a1))
-* perform cryptography after all values in place ([#620](https://github.com/redkubes/otomi-core/issues/620)) ([d450255](https://github.com/redkubes/otomi-core/commit/d4502555b30c64a23046f6fc4ca1bfc5b6c56f45)), closes [#617](https://github.com/redkubes/otomi-core/issues/617)
-* removed console output [ci skip] ([0340a63](https://github.com/redkubes/otomi-core/commit/0340a63a6b33d7f3474947d71c94779bde609e49))
-* removed unneeded enforcement of .secrets file ([4cdc32b](https://github.com/redkubes/otomi-core/commit/4cdc32b7abb395ed3d350d6b42ad261859c43867))
-
+- chart default version ([ba17214](https://github.com/redkubes/otomi-core/commit/ba172148520c0fc6623f053aa17d983c2a8f7516))
+- letsencrypt expired intermediate, upgraded tools [ci skip] ([ea1ea07](https://github.com/redkubes/otomi-core/commit/ea1ea0735295f2cf53c04663d4363e56e36619a1))
+- perform cryptography after all values in place ([#620](https://github.com/redkubes/otomi-core/issues/620)) ([d450255](https://github.com/redkubes/otomi-core/commit/d4502555b30c64a23046f6fc4ca1bfc5b6c56f45)), closes [#617](https://github.com/redkubes/otomi-core/issues/617)
+- removed console output [ci skip] ([0340a63](https://github.com/redkubes/otomi-core/commit/0340a63a6b33d7f3474947d71c94779bde609e49))
+- removed unneeded enforcement of .secrets file ([4cdc32b](https://github.com/redkubes/otomi-core/commit/4cdc32b7abb395ed3d350d6b42ad261859c43867))
 
 ### Others
 
-* **chart:** bumped otomi version ([c7aaba5](https://github.com/redkubes/otomi-core/commit/c7aaba5f078913d63b57a27cbe4bf6b305681dd4))
+- **chart:** bumped otomi version ([c7aaba5](https://github.com/redkubes/otomi-core/commit/c7aaba5f078913d63b57a27cbe4bf6b305681dd4))
 
 ### [0.14.14](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.14) (2021-10-11)
 
-
 ### Bug Fixes
 
-* ksvc virtual service mapping, otomi has docker check ([e094134](https://github.com/redkubes/otomi-core/commit/e094134de6a2aa65120d0787041a81c96cc2ee61))
-* sonar issue [ci skip] ([4054e95](https://github.com/redkubes/otomi-core/commit/4054e95730dfc0a81548905fa4f9a0b933f8e5e3))
-* validate-templates fix ([0fad7f2](https://github.com/redkubes/otomi-core/commit/0fad7f2404ca1f53a6de87a36f930c9d78463dc4))
-* yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
-
+- ksvc virtual service mapping, otomi has docker check ([e094134](https://github.com/redkubes/otomi-core/commit/e094134de6a2aa65120d0787041a81c96cc2ee61))
+- sonar issue [ci skip] ([4054e95](https://github.com/redkubes/otomi-core/commit/4054e95730dfc0a81548905fa4f9a0b933f8e5e3))
+- validate-templates fix ([0fad7f2](https://github.com/redkubes/otomi-core/commit/0fad7f2404ca1f53a6de87a36f930c9d78463dc4))
+- yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
 
 ### Others
 
-* **release:** 0.14.13 ([5c699a6](https://github.com/redkubes/otomi-core/commit/5c699a65d8dbd9b7bc913256fbf07f4c5b474e4c))
-
+- **release:** 0.14.13 ([5c699a6](https://github.com/redkubes/otomi-core/commit/5c699a65d8dbd9b7bc913256fbf07f4c5b474e4c))
 
 ### Build System
 
-* **chart:** fix slack logic [ci skip] ([2b2bca0](https://github.com/redkubes/otomi-core/commit/2b2bca0bf91cab8f64be3ca29b5d8e9eb59cd916))
-* **chart:** fix version detection ([35784ca](https://github.com/redkubes/otomi-core/commit/35784ca26373ffa1f543dcdd149be2e72377b6cd))
-* **chart:** version detection ([a82d432](https://github.com/redkubes/otomi-core/commit/a82d432aaa3a120b4cca934f3f10632f00cef91b))
+- **chart:** fix slack logic [ci skip] ([2b2bca0](https://github.com/redkubes/otomi-core/commit/2b2bca0bf91cab8f64be3ca29b5d8e9eb59cd916))
+- **chart:** fix version detection ([35784ca](https://github.com/redkubes/otomi-core/commit/35784ca26373ffa1f543dcdd149be2e72377b6cd))
+- **chart:** version detection ([a82d432](https://github.com/redkubes/otomi-core/commit/a82d432aaa3a120b4cca934f3f10632f00cef91b))
 
 ### [0.14.13](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.13) (2021-10-09)
 
-
 ### Bug Fixes
 
-* yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
+- yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
 
 ### [0.14.12](https://github.com/redkubes/otomi-core/compare/v0.14.11...v0.14.12) (2021-10-09)
 
-
 ### Bug Fixes
 
-* tools server always running [ci skip] ([bf3dbc1](https://github.com/redkubes/otomi-core/commit/bf3dbc12a8b99bdf8822d4a7c8dafe6405171fe3))
-
+- tools server always running [ci skip] ([bf3dbc1](https://github.com/redkubes/otomi-core/commit/bf3dbc12a8b99bdf8822d4a7c8dafe6405171fe3))
 
 ### Others
 
-* **chart:** bump ([a305375](https://github.com/redkubes/otomi-core/commit/a3053753008cd443aa333f3aaaad89bdbd3a4186))
+- **chart:** bump ([a305375](https://github.com/redkubes/otomi-core/commit/a3053753008cd443aa333f3aaaad89bdbd3a4186))
 
 ### [0.14.11](https://github.com/redkubes/otomi-core/compare/v0.14.10...v0.14.11) (2021-10-09)
 
-
 ### Features
 
-* allow keycloak to act as idp ([#613](https://github.com/redkubes/otomi-core/issues/613)) ([a996ab6](https://github.com/redkubes/otomi-core/commit/a996ab6079550b4d0de63b71d9fd2dd254117e52))
-
+- allow keycloak to act as idp ([#613](https://github.com/redkubes/otomi-core/issues/613)) ([a996ab6](https://github.com/redkubes/otomi-core/commit/a996ab6079550b4d0de63b71d9fd2dd254117e52))
 
 ### Bug Fixes
 
-* added customRootCa to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
-* missing await in destroy, lint issues ([3c35126](https://github.com/redkubes/otomi-core/commit/3c35126833a4b3393828501f1e271a44265498f9))
-* missing quotes around templated object ([#608](https://github.com/redkubes/otomi-core/issues/608)) ([37ca857](https://github.com/redkubes/otomi-core/commit/37ca857cc460d662db74ab2a521cbf53b7f6a971)), closes [#607](https://github.com/redkubes/otomi-core/issues/607)
-* removed unused tenant from oidc, added home alerts to drone, channel names ([2b16fc3](https://github.com/redkubes/otomi-core/commit/2b16fc3d72343fdeeb3f9da4ed4969cc1cb72ae9))
-
+- added customRootCa to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
+- missing await in destroy, lint issues ([3c35126](https://github.com/redkubes/otomi-core/commit/3c35126833a4b3393828501f1e271a44265498f9))
+- missing quotes around templated object ([#608](https://github.com/redkubes/otomi-core/issues/608)) ([37ca857](https://github.com/redkubes/otomi-core/commit/37ca857cc460d662db74ab2a521cbf53b7f6a971)), closes [#607](https://github.com/redkubes/otomi-core/issues/607)
+- removed unused tenant from oidc, added home alerts to drone, channel names ([2b16fc3](https://github.com/redkubes/otomi-core/commit/2b16fc3d72343fdeeb3f9da4ed4969cc1cb72ae9))
 
 ### Build System
 
-* **chart:** allow chart bump on master instead of only upon release ([17a2068](https://github.com/redkubes/otomi-core/commit/17a20680ce1fed36bad5e74f22cfb081c9aa567b))
-* **commitizen:** updated commitizen and husky setup to start cz wizard upon invalid msg ([#609](https://github.com/redkubes/otomi-core/issues/609)) ([d821518](https://github.com/redkubes/otomi-core/commit/d821518dfdb5be22ab8771187d8a58c490f918a2))
-* **readme:** readme now inserted into chart with values.md appended, small schema fix ([#610](https://github.com/redkubes/otomi-core/issues/610)) ([3e85a3d](https://github.com/redkubes/otomi-core/commit/3e85a3d345720b266c2b452ec3fc0464b3f9ec92))
-* removing unused pkg [ci skip] ([a5baf37](https://github.com/redkubes/otomi-core/commit/a5baf3747eeca38c00d89b24209ebed11dd99383))
-
+- **chart:** allow chart bump on master instead of only upon release ([17a2068](https://github.com/redkubes/otomi-core/commit/17a20680ce1fed36bad5e74f22cfb081c9aa567b))
+- **commitizen:** updated commitizen and husky setup to start cz wizard upon invalid msg ([#609](https://github.com/redkubes/otomi-core/issues/609)) ([d821518](https://github.com/redkubes/otomi-core/commit/d821518dfdb5be22ab8771187d8a58c490f918a2))
+- **readme:** readme now inserted into chart with values.md appended, small schema fix ([#610](https://github.com/redkubes/otomi-core/issues/610)) ([3e85a3d](https://github.com/redkubes/otomi-core/commit/3e85a3d345720b266c2b452ec3fc0464b3f9ec92))
+- removing unused pkg [ci skip] ([a5baf37](https://github.com/redkubes/otomi-core/commit/a5baf3747eeca38c00d89b24209ebed11dd99383))
 
 ### Others
 
-* **deps:** bumped tasks, api, console [ci skip] ([b0e31f8](https://github.com/redkubes/otomi-core/commit/b0e31f8e1206620a175caf51e8b40158ce32f1d2))
+- **deps:** bumped tasks, api, console [ci skip] ([b0e31f8](https://github.com/redkubes/otomi-core/commit/b0e31f8e1206620a175caf51e8b40158ce32f1d2))
 
 ### [0.14.10](https://github.com/redkubes/otomi-core/compare/v0.14.9...v0.14.10) (2021-09-28)
 
-
 ### Bug Fixes
 
-* restore gitea url with creds ([07d1611](https://github.com/redkubes/otomi-core/commit/07d161145a1209284c4552b03a8fe00f09907d5b))
-* versions ([32c1ab5](https://github.com/redkubes/otomi-core/commit/32c1ab56dc0129f144a5a86a222ac603633c6dd3))
-
+- restore gitea url with creds ([07d1611](https://github.com/redkubes/otomi-core/commit/07d161145a1209284c4552b03a8fe00f09907d5b))
+- versions ([32c1ab5](https://github.com/redkubes/otomi-core/commit/32c1ab56dc0129f144a5a86a222ac603633c6dd3))
 
 ### Others
 
-* **deps:** updated console ([89e5813](https://github.com/redkubes/otomi-core/commit/89e5813b9890583504e446043823a6b56294174d))
-* **release:** 0.14.9 ([9c957ce](https://github.com/redkubes/otomi-core/commit/9c957ce9f0a9b44a0ea090dfab1ab182f4f999d3))
+- **deps:** updated console ([89e5813](https://github.com/redkubes/otomi-core/commit/89e5813b9890583504e446043823a6b56294174d))
+- **release:** 0.14.9 ([9c957ce](https://github.com/redkubes/otomi-core/commit/9c957ce9f0a9b44a0ea090dfab1ab182f4f999d3))
 
 ### [0.14.8](https://github.com/redkubes/otomi-core/compare/v0.14.7...v0.14.8) (2021-09-24)
 
-
 ### Bug Fixes
 
-* [#516](https://github.com/redkubes/otomi-core/issues/516) - CLI Updating fails ([#593](https://github.com/redkubes/otomi-core/issues/593)) ([57acffd](https://github.com/redkubes/otomi-core/commit/57acffdab471aa62dbf288275565836992b599e0))
-* add hasCert, certArn, certName to schema ([#599](https://github.com/redkubes/otomi-core/issues/599)) ([9044a44](https://github.com/redkubes/otomi-core/commit/9044a441f0b783f56548833b14f2c961e888305d))
-* image config for core ([0a586d9](https://github.com/redkubes/otomi-core/commit/0a586d9573ae7db5a46c09c974685ec3c4ba7d87))
-* imagePullPolicy..doh ([890af9f](https://github.com/redkubes/otomi-core/commit/890af9fa1351df70218912b3ae7fbe3b8ab250fb))
-* otomi core check ([c87360d](https://github.com/redkubes/otomi-core/commit/c87360d7a14dff30af09877367c2b9380a84c7c9))
-* pullpolicy always if non-semver for waitFor init ([3d47c0f](https://github.com/redkubes/otomi-core/commit/3d47c0f01955f2a6169211a7f299cb24a0e52ca7))
-* schema props unrequired ([6f6765f](https://github.com/redkubes/otomi-core/commit/6f6765ff08b2f1327c846692a746edca2803f0f1))
-* securityContext for waitForUrl ([6583375](https://github.com/redkubes/otomi-core/commit/658337545a928f7c45bb48fe976632630100f46a))
-* team alerts, prom monitors for core apps ([#598](https://github.com/redkubes/otomi-core/issues/598)) ([4313f99](https://github.com/redkubes/otomi-core/commit/4313f99ed9e327a77501311f34ef0184ae2c513a))
+- [#516](https://github.com/redkubes/otomi-core/issues/516) - CLI Updating fails ([#593](https://github.com/redkubes/otomi-core/issues/593)) ([57acffd](https://github.com/redkubes/otomi-core/commit/57acffdab471aa62dbf288275565836992b599e0))
+- add hasCert, certArn, certName to schema ([#599](https://github.com/redkubes/otomi-core/issues/599)) ([9044a44](https://github.com/redkubes/otomi-core/commit/9044a441f0b783f56548833b14f2c961e888305d))
+- image config for core ([0a586d9](https://github.com/redkubes/otomi-core/commit/0a586d9573ae7db5a46c09c974685ec3c4ba7d87))
+- imagePullPolicy..doh ([890af9f](https://github.com/redkubes/otomi-core/commit/890af9fa1351df70218912b3ae7fbe3b8ab250fb))
+- otomi core check ([c87360d](https://github.com/redkubes/otomi-core/commit/c87360d7a14dff30af09877367c2b9380a84c7c9))
+- pullpolicy always if non-semver for waitFor init ([3d47c0f](https://github.com/redkubes/otomi-core/commit/3d47c0f01955f2a6169211a7f299cb24a0e52ca7))
+- schema props unrequired ([6f6765f](https://github.com/redkubes/otomi-core/commit/6f6765ff08b2f1327c846692a746edca2803f0f1))
+- securityContext for waitForUrl ([6583375](https://github.com/redkubes/otomi-core/commit/658337545a928f7c45bb48fe976632630100f46a))
+- team alerts, prom monitors for core apps ([#598](https://github.com/redkubes/otomi-core/issues/598)) ([4313f99](https://github.com/redkubes/otomi-core/commit/4313f99ed9e327a77501311f34ef0184ae2c513a))
 
 ### [0.14.7](https://github.com/redkubes/otomi-core/compare/v0.14.6...v0.14.7) (2021-09-23)
 
-
 ### Features
 
-* create wait-for command, and implement as init cntr ([#581](https://github.com/redkubes/otomi-core/issues/581)) ([3df6f7f](https://github.com/redkubes/otomi-core/commit/3df6f7f018ccebfb1955517c0c0059b5d6cc4c27))
-
+- create wait-for command, and implement as init cntr ([#581](https://github.com/redkubes/otomi-core/issues/581)) ([3df6f7f](https://github.com/redkubes/otomi-core/commit/3df6f7f018ccebfb1955517c0c0059b5d6cc4c27))
 
 ### Bug Fixes
 
-* await for file generation ([#588](https://github.com/redkubes/otomi-core/issues/588)) ([ade0c71](https://github.com/redkubes/otomi-core/commit/ade0c71e54229cad86974557ef57d288689c389c))
-* changes some secrets requirements. ([#579](https://github.com/redkubes/otomi-core/issues/579)) ([bc0dec5](https://github.com/redkubes/otomi-core/commit/bc0dec58061b87d9081355de5cd65b2750995897))
-* chart publication logic ([#583](https://github.com/redkubes/otomi-core/issues/583)) ([751b000](https://github.com/redkubes/otomi-core/commit/751b000d354522473a68c2e1fc7ee818fc0052ff))
-* commitOnFirstRun should only wait for gitea ([61249ce](https://github.com/redkubes/otomi-core/commit/61249ce7b2acde8b449a3b585c32ceb5158d6791))
-* drone resources ([#597](https://github.com/redkubes/otomi-core/issues/597)) ([bddcd6c](https://github.com/redkubes/otomi-core/commit/bddcd6c2f915e1993bb0b9ef5fbdf297a6080206))
-* initial cli commit cant happen as creds dont get mounted ([#589](https://github.com/redkubes/otomi-core/issues/589)) ([63d4326](https://github.com/redkubes/otomi-core/commit/63d4326dfa5c920c9ec7fad2f22c1e7332e8ed5c))
-* schema for azure monitor ([237db52](https://github.com/redkubes/otomi-core/commit/237db52d72270082b587822494ea68c73ada06f4))
-* show help when no command given (fixes: [#582](https://github.com/redkubes/otomi-core/issues/582)) ([14ec04b](https://github.com/redkubes/otomi-core/commit/14ec04b1b88e5adc9d26f22186d24381930d0aff))
-* upload limit nginx ([49b03ec](https://github.com/redkubes/otomi-core/commit/49b03ecfcf3a7e44045e3214a01e4e3db330f6fc))
-
+- await for file generation ([#588](https://github.com/redkubes/otomi-core/issues/588)) ([ade0c71](https://github.com/redkubes/otomi-core/commit/ade0c71e54229cad86974557ef57d288689c389c))
+- changes some secrets requirements. ([#579](https://github.com/redkubes/otomi-core/issues/579)) ([bc0dec5](https://github.com/redkubes/otomi-core/commit/bc0dec58061b87d9081355de5cd65b2750995897))
+- chart publication logic ([#583](https://github.com/redkubes/otomi-core/issues/583)) ([751b000](https://github.com/redkubes/otomi-core/commit/751b000d354522473a68c2e1fc7ee818fc0052ff))
+- commitOnFirstRun should only wait for gitea ([61249ce](https://github.com/redkubes/otomi-core/commit/61249ce7b2acde8b449a3b585c32ceb5158d6791))
+- drone resources ([#597](https://github.com/redkubes/otomi-core/issues/597)) ([bddcd6c](https://github.com/redkubes/otomi-core/commit/bddcd6c2f915e1993bb0b9ef5fbdf297a6080206))
+- initial cli commit cant happen as creds dont get mounted ([#589](https://github.com/redkubes/otomi-core/issues/589)) ([63d4326](https://github.com/redkubes/otomi-core/commit/63d4326dfa5c920c9ec7fad2f22c1e7332e8ed5c))
+- schema for azure monitor ([237db52](https://github.com/redkubes/otomi-core/commit/237db52d72270082b587822494ea68c73ada06f4))
+- show help when no command given (fixes: [#582](https://github.com/redkubes/otomi-core/issues/582)) ([14ec04b](https://github.com/redkubes/otomi-core/commit/14ec04b1b88e5adc9d26f22186d24381930d0aff))
+- upload limit nginx ([49b03ec](https://github.com/redkubes/otomi-core/commit/49b03ecfcf3a7e44045e3214a01e4e3db330f6fc))
 
 ### Others
 
-* **deps:** updated console and api ([5cef127](https://github.com/redkubes/otomi-core/commit/5cef127cd64dc3e264e0f3f0730212f15ff15464))
-* Update README.md ([#584](https://github.com/redkubes/otomi-core/issues/584)) ([285d858](https://github.com/redkubes/otomi-core/commit/285d858db276f89044c7e70b6c2fd10df612513c))
+- **deps:** updated console and api ([5cef127](https://github.com/redkubes/otomi-core/commit/5cef127cd64dc3e264e0f3f0730212f15ff15464))
+- Update README.md ([#584](https://github.com/redkubes/otomi-core/issues/584)) ([285d858](https://github.com/redkubes/otomi-core/commit/285d858db276f89044c7e70b6c2fd10df612513c))
 
 ### [0.14.6](https://github.com/redkubes/otomi-core/compare/v0.14.5...v0.14.6) (2021-09-03)
 
-
 ### Bug Fixes
 
-* harbor enabled by default [ci skip] ([8b57522](https://github.com/redkubes/otomi-core/commit/8b57522be69dede420c107b4adb3dadb1938f8d8))
-
+- harbor enabled by default [ci skip] ([8b57522](https://github.com/redkubes/otomi-core/commit/8b57522be69dede420c107b4adb3dadb1938f8d8))
 
 ### Others
 
-* **release:** 0.14.5 ([3f121bf](https://github.com/redkubes/otomi-core/commit/3f121bf64eaad564d76c658aa40a74160b9ddac7))
+- **release:** 0.14.5 ([3f121bf](https://github.com/redkubes/otomi-core/commit/3f121bf64eaad564d76c658aa40a74160b9ddac7))
 
 ### [0.14.4](https://github.com/redkubes/otomi-core/compare/v0.14.2...v0.14.4) (2021-09-02)
 
