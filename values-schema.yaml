@@ -252,7 +252,6 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
     required:
       - domainSuffix
-      - k8sContext
       - k8sVersion
       - name
       - owner

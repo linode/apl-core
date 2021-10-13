@@ -58,5 +58,3 @@ function kint() {
   act --version >/dev/null || brew install act
   act -W ./.github/workflows/main.yml -j integration -P self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged -b "$@"
 }
-
-

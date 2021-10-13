@@ -31,4 +31,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-ENTRYPOINT ["node", "--experimental-specifier-resolution=node", "./dist/otomi.js", "--"]
+CMD ["dist/src/otomi.js"]
