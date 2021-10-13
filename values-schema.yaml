@@ -2121,10 +2121,6 @@ properties:
                   - token
             required:
               - vault
-  letsencryptCA:
-    type: string
-  letsencryptRootCA:
-    type: string
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'

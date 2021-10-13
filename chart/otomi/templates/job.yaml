@@ -1,4 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
+{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -18,8 +19,8 @@ spec:
         runAsGroup: 999
       containers:
         - name: otomi-install
-          image: otomi/core:{{ .Values.otomi.version | default .Chart.AppVersion }}
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .Values.otomi.version) }} 
+          image: otomi/core:{{ $version }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           resources:
             limits:
               memory: 2Gi
