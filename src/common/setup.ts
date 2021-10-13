@@ -86,16 +86,7 @@ export const getImageTag = (): string => {
   otomiImageTag = settingsFile?.otomi?.version ?? 'master'
   return otomiImageTag
 }
-// /**
-//  * Find the customer name that is defined in configuration for otomi
-//  * @returns string
-//  */
-// export const getClusterOwner = (): string => {
-//   if (otomiClusterOwner) return otomiClusterOwner
-//   const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-//   otomiClusterOwner = clusterFile.cluster?.owner
-//   return otomiClusterOwner
-// }
+
 /**
  * Prepare environment when running an otomi command
  */

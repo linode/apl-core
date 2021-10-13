@@ -525,27 +525,51 @@ const fetchLoadBalancerIngressData = async (): Promise<string> => {
   return ingressDataString
 }
 
+interface IngressRecord {
+  ip?: string
+  hostname?: string
+}
 export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   const d = terminal('getOtomiLoadBalancerIP')
   d.debug('Find LoadBalancer IP or Hostname')
 
   const ingressDataString = await fetchLoadBalancerIngressData()
-  const ingressDataList = JSON.parse(ingressDataString) as Record<string, any>[]
+  const ingressDataList = JSON.parse(ingressDataString) as IngressRecord[]
+  // We sort by IP first, and order those, and then hostname and order them as well
+  const ingressDataListSorted = [
+    ...ingressDataList.filter((val) => !!val.ip).sort((a, b) => a.ip!.localeCompare(b.ip!)),
+    ...ingressDataList.filter((val) => !!val.hostname).sort((a, b) => a.hostname!.localeCompare(b.hostname!)),
+  ]
 
-  d.debug(ingressDataList)
-  if (ingressDataList.length === 0) throw new Error('No LoadBalancer Ingress definitions found')
-  const firstIngressData = ingressDataList[0]
+  d.debug(ingressDataListSorted)
+  if (ingressDataListSorted.length === 0) throw new Error('No LoadBalancer Ingress definitions found')
+  /* A load balancer can have a hostname, ip or any list of those items. We select the first item, as we only need one.
+   * And we prefer IP over hostname, as it reduces the fact that we need to resolve & select an ip.
+   */
+  const firstIngressData = ingressDataListSorted[0]
 
-  if (firstIngressData.ip) return firstIngressData.ip as string
+  if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {
     const resolveData = await resolveAny(firstIngressData.hostname)
-    const resolveDataFiltered = resolveData
-      .filter((val) => val.type === 'A' || val.type === 'AAAA')
-      .sort((a, b) => (a > b ? 1 : -1)) as (AnyARecord | AnyAaaaRecord)[]
+    const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
+      | AnyARecord
+      | AnyAaaaRecord
+    )[]
+    /* Sorting the filtered list
+     * Prefer IPv4 over IPv6; then sort by lowest address (basic string compare)
+     * This way we get always the same first IP back on a cluster
+     */
+    const resolveDataSorted = resolveDataFiltered.sort((a, b) => {
+      const typeCompare = a.type.localeCompare(b.type)
+      return !typeCompare ? typeCompare : a.address.localeCompare(b.address)
+    })
 
-    if (isEmpty(resolveDataFiltered))
+    if (isEmpty(resolveDataSorted))
       throw new Error(`No A or AAAA records found for ${firstIngressData.hostname} - could not determine IP`)
-    const firstIP = resolveDataFiltered[0].address
+    /* For consistency reasons, after sorting (and preferring the lowest numbered IPv4 address) we pick the first one
+     * As there can be multiple A or AAAA records, and we only need one
+     */
+    const firstIP = resolveDataSorted[0].address
     return firstIP
   }
   throw new Error('LoadBalancer Ingress data did not container ip or hostname')

@@ -42,11 +42,10 @@ const setup = (): void => {
 }
 
 const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('apply:prepareValues')
-  d.info("Create a fallback cluster.domainSuffix when it doesn't exist")
+  const d = terminal('apply:setDomainSuffix')
+  d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
   const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
-  d.info(`cluster.domainSuffix is ${newSuffix} if it is not yet set.`)
 
   await writeValues({
     cluster: {
@@ -57,6 +56,7 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
     field: 'cluster_domainSuffix',
     data: newSuffix,
   })
+  d.info(`Succesfully set the cluster.domainSuffix to ${newSuffix}`)
 }
 
 const prepareValues = async (): Promise<void> => {
