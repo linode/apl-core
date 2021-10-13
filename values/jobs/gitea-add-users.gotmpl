@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $g := $c | get "gitea" dict }}
+{{- $g := $c.gitea }}
 {{- $cm := $c | get "cert-manager" }}
-{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
 type: CronJob

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $w := $v.charts | get "weaveScope" dict }}
+{{- $w := $v.charts.weaveScope }}
   
 global:
   image:

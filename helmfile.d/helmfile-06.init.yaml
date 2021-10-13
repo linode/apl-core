@@ -16,7 +16,7 @@ releases:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/common.gotmpl
   - name: kubernetes-external-secrets
-    installed: {{ $c | get "vault.enabled" true }}
+    installed: {{ $c | get "vault.enabled" }}
     namespace: vault
     labels:
       pkg: vault

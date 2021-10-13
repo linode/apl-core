@@ -1052,7 +1052,6 @@ properties:
             type: string
         required:
           - email
-          - stage
       cluster-overprovisioner:
         additionalProperties: false
         properties:

@@ -6,36 +6,36 @@ bases:
 {{- $c := $v.charts }}
 releases:
   - name: aws-alb-ingress-controller
-    installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
+    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
   - name: aws-alb-ingress-controller-artifacts
-    installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
+    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *raw
   - name: cert-manager-artifacts
-    installed: {{ $c | get "cert-manager.enabled" true }}
+    installed: true
     namespace: cert-manager
     labels:
       pkg: cert-manager
     <<: *raw
   - name: external-dns
-    installed: {{ $c | get "external-dns.enabled" true }}
+    installed: {{ $c | get "external-dns.enabled" }}
     namespace: external-dns
     <<: *default
   - name: ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v | get "azure.appgw.isManaged" true)) }}
+    installed: {{ $c | get "ingress-azure.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
       pkg: ingress-azure
     <<: *default
   - name: ingress-merge
-    installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
+    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
@@ -47,7 +47,7 @@ releases:
       tag: ingress
     <<: *default
   - name: nginx-ingress-private
-    installed: {{ $c | get "nginx-ingress.private.enabled" false }}
+    installed: {{ $c | get "nginx-ingress.private.enabled" }}
     namespace: ingress
     labels:
       tag: ingress

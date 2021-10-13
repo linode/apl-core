@@ -1,12 +1,12 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $o := $v | get "oidc" dict }}
-{{- $h := $c | get "harbor" dict }}
-{{- $k := $c | get "keycloak" dict }}
+{{- $o := $v.oidc }}
+{{- $h := $c.harbor }}
+{{- $k := $c.keycloak }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
-{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
-{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $hasKeycloak := $k | get "enabled" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $teams := keys $v.teamConfig.teams }}
