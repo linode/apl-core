@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.16](https://github.com/redkubes/otomi-core/compare/v0.14.15...v0.14.16) (2021-10-13)
+
+
+### Bug Fixes
+
+* downgraded helm to avoid false lint errors ([a3718b2](https://github.com/redkubes/otomi-core/commit/a3718b27de362822cbd4f834c45e93c9a2dd215f))
+
 ### [0.14.15](https://github.com/redkubes/otomi-core/compare/v0.14.14...v0.14.15) (2021-10-12)
 
 

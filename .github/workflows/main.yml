@@ -90,7 +90,7 @@ jobs:
     needs: build-test-push-release
     runs-on: ubuntu-latest
     container:
-      image: otomi/tools:v1.4.19
+      image: otomi/tools:v1.4.20
       options: --user 0
     steps:
       - name: Checkout
