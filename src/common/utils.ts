@@ -3,7 +3,7 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
-import { existsSync, readdirSync, readFileSync } from 'fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -13,8 +13,12 @@ import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
-import { $, ProcessOutput, sleep } from 'zx'
-import { cleanEnvironment, env } from './envalid'
+import { $, nothrow, ProcessOutput, sleep } from 'zx'
+import pkg from '../../package.json'
+import { DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { cleanEnvironment, env, isChart } from './envalid'
+
+const packagePath = process.cwd()
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103
@@ -23,7 +27,6 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
-
 export interface BasicArguments extends YargsArguments {
   logLevel: string
   nonInteractive: boolean
@@ -270,7 +273,9 @@ export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOpt
     }
   }
 
-  const minimumSuccessful = 10
+  // we don't trust dns in the cluster and want a lot of confirmations
+  // but we don't care about those when we call the cluster from outside
+  const minimumSuccessful = isChart ? 10 : 0
   let count = 0
   try {
     do {
@@ -391,7 +396,7 @@ export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
-export const generateSecrets = async (values: Record<string, unknown>): Promise<Record<string, unknown>> => {
+export const generateSecrets = async (values: Record<string, unknown> = {}): Promise<Record<string, unknown>> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
@@ -457,4 +462,36 @@ export const generateSecrets = async (values: Record<string, unknown>): Promise<
   return res
 }
 
+export async function createK8sSecret(name: string, namespace: string, data: Record<string, any>): Promise<void> {
+  const debug: OtomiDebugger = terminal('createK8sSecret')
+  const rawString = JSON.stringify(data)
+  const path = `/tmp/otomi-secret-${namespace}-${name}`
+  writeFileSync(path, rawString)
+  const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
+  if (result.stderr) debug.error(result.stderr)
+  debug.debug(result)
+}
+
+export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any> | undefined> {
+  const secretKeyName = `otomi-secret-${namespace}-${name}`
+  const result = await nothrow(
+    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
+  )
+  if (result.exitCode === 0) return JSON.parse(result.stdout)
+  return undefined
+}
+
+export const getOtomiDeploymentStatus = async (): Promise<string> => {
+  const result = await nothrow(
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+  )
+  return result.stdout
+}
+
 export default { parser, asArray }
+
+let packageIsCore = false
+if (!(packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`))) {
+  if (pkg.name === 'otomi-core') packageIsCore = true
+}
+export const isCore = packageIsCore

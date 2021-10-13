@@ -4,39 +4,11 @@ cluster:
   name: 'dev'
   owner: ''
   provider: '' # provider can be one of aws|azure|google
-# kms:
-#   sops:
-# provider can be one of aws|azure|google|vault
-# provider: ''
-# aws:
-#   keys: ''
-#   accessKey: ''
-#   secretKey: ''
-#   region: ''
-# azure:
-#   keys: ''
-#   tenantID: ''
-#   clientID: ''
-#   clientSecret: ''
-# google:
-#   keys: ''
-#   accountJson: ''
-#   project: ''
-# vault:
-#   token: ''
-oidc:
-  clientID: ''
-  clientSecret: ''
-  issuer: ''
-  tenantID: ''
-  # IDP group id used to identify global admin
-  adminGroupID: ''
-  # IDP group id used to identify team admin
-  teamAdminGroupID: ''
 otomi:
   adminPassword: ''
   # release versions can be found here: https://github.com/redkubes/otomi-core/releases
-  version: APP_VERSION_PLACEHOLDER
+  # by default the image tag is set to .Chart.AppVersion
+  # version: master
 dns:
   provider:
     # provide one of the following below: aws|azure|google
@@ -59,10 +31,41 @@ dns:
 charts:
   cert-manager:
     email: ''
-    # stage defaults to 'production'
+    # stage defaults to 'production' when commented out
     stage: staging
 
   external-dns:
     domainFilters:
       - ''
     # zoneIdFilters: []
+# KMS for encrypting values (optional)
+# kms:
+#   sops:
+#   # provider can be one of aws|azure|google|vault
+#     provider: ''
+#     aws:
+#       keys: ''
+#       accessKey: ''
+#       secretKey: ''
+#       region: ''
+#     azure:
+#       keys: ''
+#       tenantID: ''
+#       clientID: ''
+#       clientSecret: ''
+#     google:
+#       keys: ''
+#       accountJson: ''
+#       project: ''
+#     vault:
+#       token: ''
+# Bring your own IDP, or leave commented out to use keycloak as IDP
+# oidc:
+#   clientID: ''
+#   clientSecret: ''
+#   issuer: ''
+#   tenantID: ''
+#   # IDP group id used to identify global admin
+#   adminGroupID: ''
+#   # IDP group id used to identify team admin
+#   teamAdminGroupID: ''

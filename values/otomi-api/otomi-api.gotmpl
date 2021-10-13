@@ -39,7 +39,7 @@ resources:
 image:
   registry: eu.gcr.io
   repository: otomi-cloud/otomi-api
-  tag: {{ $o | get "image.tag" "v0.4.72" }}
+  tag: {{ $o | get "image.tag" "v0.4.75" }}
   pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
 
 secrets:
@@ -80,8 +80,6 @@ core:
   teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
-  enabled: {{ $sopsEnabled }}
-  {{- if $sopsEnabled }}
   image:
     repository: otomi/core
     tag: {{ $v.otomi.version }}
@@ -90,7 +88,6 @@ tools:
     resources:
       {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- end }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users

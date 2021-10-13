@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.14](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.14) (2021-10-11)
+
+
+### Bug Fixes
+
+* ksvc virtual service mapping, otomi has docker check ([e094134](https://github.com/redkubes/otomi-core/commit/e094134de6a2aa65120d0787041a81c96cc2ee61))
+* sonar issue [ci skip] ([4054e95](https://github.com/redkubes/otomi-core/commit/4054e95730dfc0a81548905fa4f9a0b933f8e5e3))
+* validate-templates fix ([0fad7f2](https://github.com/redkubes/otomi-core/commit/0fad7f2404ca1f53a6de87a36f930c9d78463dc4))
+* yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
+
+
+### Others
+
+* **release:** 0.14.13 ([5c699a6](https://github.com/redkubes/otomi-core/commit/5c699a65d8dbd9b7bc913256fbf07f4c5b474e4c))
+
+
+### Build System
+
+* **chart:** fix slack logic [ci skip] ([2b2bca0](https://github.com/redkubes/otomi-core/commit/2b2bca0bf91cab8f64be3ca29b5d8e9eb59cd916))
+* **chart:** fix version detection ([35784ca](https://github.com/redkubes/otomi-core/commit/35784ca26373ffa1f543dcdd149be2e72377b6cd))
+* **chart:** version detection ([a82d432](https://github.com/redkubes/otomi-core/commit/a82d432aaa3a120b4cca934f3f10632f00cef91b))
+
+### [0.14.13](https://github.com/redkubes/otomi-core/compare/v0.14.12...v0.14.13) (2021-10-09)
+
+
+### Bug Fixes
+
+* yaml dump indent 4, bump api [ci skip] ([64c501e](https://github.com/redkubes/otomi-core/commit/64c501ef56511aa4e0caa97ae4c8ef68c5523039))
+
+### [0.14.12](https://github.com/redkubes/otomi-core/compare/v0.14.11...v0.14.12) (2021-10-09)
+
+
+### Bug Fixes
+
+* tools server always running [ci skip] ([bf3dbc1](https://github.com/redkubes/otomi-core/commit/bf3dbc12a8b99bdf8822d4a7c8dafe6405171fe3))
+
+
+### Others
+
+* **chart:** bump ([a305375](https://github.com/redkubes/otomi-core/commit/a3053753008cd443aa333f3aaaad89bdbd3a4186))
+
+### [0.14.11](https://github.com/redkubes/otomi-core/compare/v0.14.10...v0.14.11) (2021-10-09)
+
+
+### Features
+
+* allow keycloak to act as idp ([#613](https://github.com/redkubes/otomi-core/issues/613)) ([a996ab6](https://github.com/redkubes/otomi-core/commit/a996ab6079550b4d0de63b71d9fd2dd254117e52))
+
+
+### Bug Fixes
+
+* added customRootCa to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
+* missing await in destroy, lint issues ([3c35126](https://github.com/redkubes/otomi-core/commit/3c35126833a4b3393828501f1e271a44265498f9))
+* missing quotes around templated object ([#608](https://github.com/redkubes/otomi-core/issues/608)) ([37ca857](https://github.com/redkubes/otomi-core/commit/37ca857cc460d662db74ab2a521cbf53b7f6a971)), closes [#607](https://github.com/redkubes/otomi-core/issues/607)
+* removed unused tenant from oidc, added home alerts to drone, channel names ([2b16fc3](https://github.com/redkubes/otomi-core/commit/2b16fc3d72343fdeeb3f9da4ed4969cc1cb72ae9))
+
+
+### Build System
+
+* **chart:** allow chart bump on master instead of only upon release ([17a2068](https://github.com/redkubes/otomi-core/commit/17a20680ce1fed36bad5e74f22cfb081c9aa567b))
+* **commitizen:** updated commitizen and husky setup to start cz wizard upon invalid msg ([#609](https://github.com/redkubes/otomi-core/issues/609)) ([d821518](https://github.com/redkubes/otomi-core/commit/d821518dfdb5be22ab8771187d8a58c490f918a2))
+* **readme:** readme now inserted into chart with values.md appended, small schema fix ([#610](https://github.com/redkubes/otomi-core/issues/610)) ([3e85a3d](https://github.com/redkubes/otomi-core/commit/3e85a3d345720b266c2b452ec3fc0464b3f9ec92))
+* removing unused pkg [ci skip] ([a5baf37](https://github.com/redkubes/otomi-core/commit/a5baf3747eeca38c00d89b24209ebed11dd99383))
+
+
+### Others
+
+* **deps:** bumped tasks, api, console [ci skip] ([b0e31f8](https://github.com/redkubes/otomi-core/commit/b0e31f8e1206620a175caf51e8b40158ce32f1d2))
+
 ### [0.14.10](https://github.com/redkubes/otomi-core/compare/v0.14.9...v0.14.10) (2021-09-28)
 
 

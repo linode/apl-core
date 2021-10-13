@@ -38,6 +38,8 @@ env:
 
 rules:
   '@typescript-eslint/ban-ts-comment': off
+  # disabled until https://github.com/typescript-eslint/typescript-eslint/issues/2077#issuecomment-634811363:
+  # '@typescript-eslint/camelcase': warn
   '@typescript-eslint/member-delimiter-style': off
   '@typescript-eslint/no-explicit-any': off
   '@typescript-eslint/explicit-function-return-type': off
@@ -51,7 +53,7 @@ rules:
   '@typescript-eslint/restrict-template-expressions': off
   '@typescript-eslint/no-unsafe-call': off
   '@typescript-eslint/no-non-null-assertion': off
-  '@typescript-eslint/no-floating-promises': off
+  '@typescript-eslint/no-floating-promises': warn
   '@typescript-eslint/no-shadow': error
   func-names: 'off'
   import/no-extraneous-dependencies: off
@@ -59,7 +61,7 @@ rules:
   import/prefer-default-export: off
   eol-last: ['error', 'always']
   no-shadow: 'off'
-  no-unused-vars: error
+  no-unused-vars: 'off'
   prefer-destructuring: error
   no-use-before-define: 'off'
   no-console: 'off'
