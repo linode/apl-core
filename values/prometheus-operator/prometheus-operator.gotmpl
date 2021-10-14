@@ -96,7 +96,8 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
-  enabled: {{ or ($v | get "alerts" nil) ($v | get "home" nil) }}
+  {{ if or ($v | get "alerts" false) ($v | get "home" false) }}
+  enabled: true
   alertmanagerSpec:
     image:
       tag: v0.22.2
@@ -111,6 +112,9 @@ alertmanager:
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
+  {{- else }}
+  enabled: false
+  {{- end }}
 grafana:
   downloadDashboards:
     resources:
