@@ -71,10 +71,12 @@ fallback_otomi_dev_version='master'
 if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch_img=${current_branch##*/}
+  # If the git branch command fails to get the img, then we use the fallback of master
   current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
   otomi_version=$current_branch_img
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
+  # If the settings.yaml doesn't contain otomi.version, we fall back to latest
   otomi_version=${otomi_version:-$fallback_otomi_version}
 else
   otomi_version=$fallback_otomi_version

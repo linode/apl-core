@@ -512,16 +512,15 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {
   const d = terminal('fetchLoadBalancerIngressData')
-  let ingressDataString: string = (
-    await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
-  ).stdout.trim()
-  let count = 1
-  while (isEmpty(ingressDataString)) {
-    await sleep(250)
+  let ingressDataString = ''
+  let count = 0
+  for (;;) {
     ingressDataString = (
       await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
     ).stdout.trim()
     count += 1
+    if (isEmpty(ingressDataString)) break
+    await sleep(250)
     d.debug(`Trying to get LoadBalancer ingress information, trial ${count}`)
   }
   return ingressDataString
