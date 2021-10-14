@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
@@ -48,7 +48,7 @@ env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
 nativeSecrets:
-  # DEBUG: '*'
+  DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}

@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $k := $v.charts.keycloak }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $p := $v.charts | get "prometheus-operator" }}
 {{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasKeycloak := $k.enabled }}
@@ -96,7 +96,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
-  enabled: {{ or (not (empty ($v | get "alerts"))) (not (empty ($v | get "home"))) }}
+  enabled: {{ or ($v | get "alerts" nil) ($v | get "home" nil) }}
   alertmanagerSpec:
     image:
       tag: v0.22.2
