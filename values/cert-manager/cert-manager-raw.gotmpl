@@ -1,10 +1,9 @@
 {{- $v := .Values }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $dns := $v.dns }}
-{{- $p := $dns.provider }}
+{{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
-
 resources:
 {{- if or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil) }}
   - apiVersion: v1

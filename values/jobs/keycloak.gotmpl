@@ -16,7 +16,7 @@
 {{- $k := $c.keycloak }}
 {{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
-{{- $tag := "v0.2.13" }}
+{{- $tag := "v0.2.14" }}
 {{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 type: Job
 runPolicy: Always
