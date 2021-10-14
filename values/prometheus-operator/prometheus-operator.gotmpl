@@ -55,7 +55,7 @@ commonLabels:
 prometheus:
   prometheusSpec:
     image:
-      tag: v2.27.1
+      tag: v2.30.3
     serviceMonitorSelector:
       matchLabels:
         prometheus: system
@@ -100,7 +100,7 @@ alertmanager:
   enabled: true
   alertmanagerSpec:
     image:
-      tag: v0.22.2
+      tag: v0.23.0
     priorityClassName: "otomi-critical"
     resources:
       requests:
