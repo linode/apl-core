@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.20](https://github.com/redkubes/otomi-core/compare/v0.14.19...v0.14.20) (2021-10-14)
+
+
+### Bug Fixes
+
+* alertmanager disabled ([73ea345](https://github.com/redkubes/otomi-core/commit/73ea3455f5d9301ea419c20c0a56d7ed457c37ec))
+* empty checks, bumped tasks ([625bbb7](https://github.com/redkubes/otomi-core/commit/625bbb7041d427aa2bfe31284225fe9bfa6c6698))
+* node flag [ci skip] ([853f49b](https://github.com/redkubes/otomi-core/commit/853f49b871251e90e6b511f504e79adc1e718d04))
+* parenthesis ([02c4f73](https://github.com/redkubes/otomi-core/commit/02c4f73082ca0ca8f306c906c5d5f1a3d934286c))
+* reverted some defaults to avoid false validation errors ([905d78e](https://github.com/redkubes/otomi-core/commit/905d78e150236d9e44a9af232158f581ffdd8148))
+* schema enabled flags ([f0d75d6](https://github.com/redkubes/otomi-core/commit/f0d75d62d4ac96307169161848817d0c736d2e1b))
+
 ### [0.14.19](https://github.com/redkubes/otomi-core/compare/v0.14.18...v0.14.19) (2021-10-13)
 
 
