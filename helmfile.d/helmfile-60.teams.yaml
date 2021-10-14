@@ -60,7 +60,7 @@ releases:
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
-        {{- if or (not (empty $v.alerts)) (not (empty ($v.home)) ($team | get "alerts" nil) }}
+        {{- if or (not (empty $v.alerts)) (not (empty $v.home)) ($team | get "alerts" nil) }}
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
