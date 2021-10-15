@@ -4,11 +4,12 @@
 {{- $g := $v.charts.gitea }}
 {{- $k := $v.charts.keycloak }}
 {{- $cm := $v.charts | get "cert-manager" }}
+{{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $v.kms.sops }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
-{{- $sopsEnabled := ne ($v.kms.sops | get "provider" "") "" }}
+{{- $sopsEnabled := ne ($sops | get "provider" "") "" }}
 {{- $tag := $o.image.tag }}
 {{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 {{/* START: set the enabled flags on core services based on the chart enabled flags */}}

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $g := $v.charts.gitea }}
 {{- $k := $v.charts.keycloak }}
 {{- $hasKeycloak := $k.enabled }}

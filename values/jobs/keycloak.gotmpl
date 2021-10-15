@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $o := $v.oidc }}
+{{- $o := $v | get "oidc" dict }}
 {{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
@@ -16,7 +16,7 @@
 {{- $k := $c.keycloak }}
 {{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
-{{- $tag := "v0.2.13" }}
+{{- $tag := "v0.2.14" }}
 {{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 type: Job
 runPolicy: Always
@@ -48,7 +48,7 @@ env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
 nativeSecrets:
-  # DEBUG: '*'
+  DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}

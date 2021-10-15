@@ -3,6 +3,7 @@
 {{- $oa := $v.charts | get "otomi-api" }}
 {{- $cm := $v.charts | get "cert-manager" }}
 {{- $g := $v.charts | get "gitea" }}
+{{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" ($hasGitea | ternary "gitea" nil) }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
@@ -10,7 +11,7 @@
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v.kms.sops) }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
