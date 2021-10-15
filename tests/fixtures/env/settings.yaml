@@ -36,9 +36,7 @@ oidc:
     clientID: someClientID
     clientSecret: someClientSecret
     issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    scope: openid email profile
     teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    tenantID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     subClaimMapper: oid
 otomi:
     additionalClusters:
@@ -46,6 +44,7 @@ otomi:
           name: demo
           provider: aws
     hasCloudLB: false
+    hasExternalIDP: false
     isHomeMonitored: true
     isManaged: true
     isMultitenant: true

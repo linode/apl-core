@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v | get "charts.kubeapps" dict }}
+{{- $k := $v | get "charts.kubeapps" }}
 assetsvc:
   resources:
     limits:

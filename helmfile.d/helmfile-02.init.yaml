@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: gatekeeper-operator
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
+    installed: {{ $c | get "gatekeeper-operator.enabled" }}
     namespace: default
     chart: ../charts/gatekeeper-operator
     disableValidationOnInstall: true

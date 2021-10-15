@@ -1,7 +1,7 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "kiali" dict }}
+{{- $k := $v.charts.kiali }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
 podAnnotations:

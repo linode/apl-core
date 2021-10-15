@@ -6,21 +6,21 @@
 {{- $teamIds := list }}
 {{- range $name, $team := $teams }}
 {{- $teamIds = append $teamIds $name }}
-{{- $teamNames = print "team-" $name | append $teamNames -}}
+{{- $teamNames = print "team-" $name | append $teamNames }}
 {{- if ($team | get "oidc.groupMapping" nil) }}
-{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping -}}
-{{- end -}}
-{{- end -}}
+{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping }}
+{{- end }}
+{{- end }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" -}}
-{{- $k := $c | get "keycloak" dict }}
-{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $k := $c.keycloak }}
+{{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
-{{- $hasExternalIDP := $v.otomi | get "hasExternalIDP" false }}
-
+{{- $tag := "v0.2.14" }}
+{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 type: Job
 runPolicy: Always
-description: Configure OIDC as a primary auhentication method and populate teams to harbor projects
+description: Configure OIDC as a primary authentication method and populate teams to harbor projects
 annotations:
   {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
@@ -29,7 +29,7 @@ init:
   - image:
       repository: otomi/core
       tag: {{ $v.otomi.version }}
-      pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
+      pullPolicy: {{ $v.derived.otomiPullPolicy }} 
     {{ if $hasStagingCerts }}
     files:
       /tmp/node/certificates.crt: |
@@ -41,14 +41,14 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.13
-  # tag: master
+  tag: {{ $tag }}
+  pullPolicy: {{ $pullPolicy }}
 name: keycloak
 env:
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
 nativeSecrets:
-  # DEBUG: '*'
+  DEBUG: '*'
   KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
   KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}
@@ -67,8 +67,8 @@ nativeSecrets:
       "https://vault.{{ $v.cluster.domainSuffix }}/*"
   ]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
-  FEAT_EXTERNAL_IDP: '{{ $hasExternalIDP }}'
-  {{- if $hasExternalIDP }}
+  FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
+  {{- if $v.otomi.hasExternalIDP }}
   IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
   IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" "${CLAIM.email}" }}
   IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" "sub" }}

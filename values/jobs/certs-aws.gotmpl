@@ -1,7 +1,7 @@
-{{- $v := .Values -}}
-{{- $c := $v.charts -}}
-{{- $cm := $c | get "cert-manager" -}}
-{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml -}}
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 
 type: Job
 description: Import certs into ACM

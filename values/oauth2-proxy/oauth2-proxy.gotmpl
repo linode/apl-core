@@ -1,10 +1,10 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "keycloak" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $oauth2 := $v.charts | get "oauth2-proxy" dict }}
-{{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
+{{- $k := $v.charts.keycloak }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $oauth2 := $v.charts | get "oauth2-proxy" }}
+{{- $r := $v.charts | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
-{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $hasKeycloak := $k.enabled }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:

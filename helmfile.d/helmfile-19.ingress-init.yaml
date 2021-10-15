@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: job-keycloak
-    installed: {{ $c | get "keycloak.enabled" true }}
+    installed: {{ $c | get "keycloak.enabled" }}
     labels:
       pkg: keycloak
       group: jobs

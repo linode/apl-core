@@ -7,13 +7,13 @@ bases:
 
 releases:
   - name: cert-manager
-    installed: {{ $c | get "cert-manager.enabled" true }}
+    installed: true
     namespace: cert-manager
     labels:
       pkg: cert-manager
     <<: *default
   - name: cluster-autoscaler
-    installed: {{ eq $v.cluster.provider "aws" }}
+    installed: {{ $c | get "cluster-autoscaler.enabled" }}
     namespace: kube-system
     <<: *default
   - name: knative-serving

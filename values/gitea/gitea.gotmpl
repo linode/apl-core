@@ -1,12 +1,12 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
-{{- $g := $v.charts | get "gitea" dict }}
-{{- $k := $v.charts | get "keycloak" dict }}
-{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $g := $v.charts.gitea }}
+{{- $k := $v.charts.keycloak }}
+{{- $hasKeycloak := $k.enabled }}
 {{- $keycloakUrl := printf "https://keycloak.%s" $v.cluster.domainSuffix }}
 {{- $keycloakIssuer := printf "%s/realms/otomi" $keycloakUrl }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
-{{- $stage := $v.charts | get "cert-manager.stage" "production" }}
+{{- $stage := $v.charts | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 
 nameOverride: gitea

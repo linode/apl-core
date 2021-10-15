@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $promtail := $v.charts | get "promtail" dict }}
+{{- $promtail := $v.charts.promtail }}
 {{- $t := $v.teamConfig }}
 
 loki:
