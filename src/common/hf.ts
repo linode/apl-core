@@ -91,7 +91,13 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
+export type ValuesArgs = {
+  skipCache?: boolean
+  filesOnly?: boolean
+}
+export const hfValues = async ({ skipCache = false, filesOnly = false }: ValuesArgs = {}): Promise<
+  Record<string, any>
+> => {
   if (!skipCache) {
     if (isCli && value.rp) {
       return value.rp
@@ -100,7 +106,9 @@ export const hfValues = async (skipCache = false): Promise<Record<string, any>> 
       return value.clean
     }
   }
-  const output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
+  let output
+  if (filesOnly) output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' })
+  else output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' })
   value.clean = (load(output.stdout) as any).renderedvalues
   value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
   return isCli ? value.rp : value.clean

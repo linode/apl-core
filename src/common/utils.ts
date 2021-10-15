@@ -31,12 +31,12 @@ export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stac
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
 export interface BasicArguments extends YargsArguments {
-  logLevel: string
-  nonInteractive: boolean
-  skipCleanup: boolean
-  trace: boolean
-  verbose: number
-  debug: boolean
+  logLevel?: string
+  nonInteractive?: boolean
+  skipCleanup?: boolean
+  trace?: boolean
+  verbose?: number
+  debug?: boolean
 }
 
 let parsedArgs: BasicArguments

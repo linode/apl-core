@@ -1,8 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-console" }}
-{{- $tag := $o.image.tag }}
-{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 
 replicaCount: 1
 resources:
@@ -17,11 +15,7 @@ resources:
     memory: 256Mi
   {{- end }}
 
-image:
-  registry: docker.io
-  repository: otomi/console
-  tag: {{ $tag }}
-  pullPolicy: {{ $pullPolicy }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipCA" true) }}
 
 env:
   API_BASE_URL: /api

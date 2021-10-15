@@ -1,0 +1,75 @@
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+{{- $versions := (readFile "../versions.yaml" | fromYaml) }}
+{{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
+{{- $otomiVersion := $v.otomi | get "version" }}
+{{- $otomiTag := $otomiVersion }}
+{{- if $otomiVersion }}
+  {{- if regexMatch "^v\\d" $otomiVersion }}
+    {{- $otomiVersion = $otomiVersion | substr 0 -1 }}
+  {{- end }}
+{{- else }}
+  {{- $otomiVersion = $pkgVersion }}
+  {{- $otomiTag = print "v" $otomiVersion }}
+{{- end }}
+{{- $versions = $versions | merge (dict "core" $otomiVersion) }}
+{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $provider := $v.cluster.provider }}
+{{- $droneProvider := $c.drone.sourceControl.provider }}
+{{- $hasSops := hasKey $v "kms.sops.provider" }}
+{{- $isManaged := has $provider (list "aws" "azure" "google") }}
+{{/* TODO: inject these two from kind into proper values location: */}}
+{{- $customRootCA := exec "bash" (list "-c" "cat ../../root-ca.pem &>/dev/null || true") }}
+{{- $customIntermediateCA := exec "bash" (list "-c" "cat ../../intermediate-ca.pem &>/dev/null || true") }}
+{{- if or $v.otomi.hasExternalDNS (and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil)) }}
+  {{- if and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil) }}
+    {{- $customRootCA = $v.cluster.customRootCA }}
+    {{- $customIntermediateCA = $v.cluster.customIntermediateCA }}
+  {{- else }}
+    {{/* TODO: generate CA and intermediate */}}
+  {{- end }}
+{{- end }}
+environments:
+  default:
+    values:
+      - charts:
+          aws-alb-ingress-controller:
+            enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
+          cluster-autoscaler:
+            enabled: {{ eq $provider "aws" }}
+          cluster-overprovisioner:
+            enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") }}
+          drone:
+            sourceControl:
+              {{- if eq $droneProvider "gitea" }}
+              gitea:
+                server: {{ $c | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
+              secret: {{ $c | get "drone.sourceControl.secret" "drone-source-control" }}
+              {{- end }}
+          drone-admit-members:
+            enabled: {{ and ($c | get "drone.enabled") (eq $droneProvider "github") }}
+          external-dns:
+            enabled: {{ $v.otomi.hasExternalDNS }}
+          gitea:
+            adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+          ingress-azure:
+            enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
+          keycloak:
+            address: https://keycloak.{{ $v.cluster.domainSuffix }}
+            adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+          kured:
+            enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
+          metrics-server:
+            enabled: {{ list "onprem" "aws" | has $provider }}
+          prometheus-msteams:
+            enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+        {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
+        cluster:
+          customRootCA: |
+            {{- $customRootCA | nindent 10 }}
+          customIntermediateCA: |
+            {{- $customIntermediateCA | nindent 10 }}
+        {{- end }}
+        otomi:
+          version: {{ $otomiTag }}
+        versions: {{- $versions | toYaml | nindent 10 }} 

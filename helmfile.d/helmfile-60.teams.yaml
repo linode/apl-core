@@ -1,7 +1,13 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
-{{- $v := .Environment.Values }}
+bases:
+  - snippets/derived.gotmpl
+---
+{{- $v := .Values }}
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}

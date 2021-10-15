@@ -55,7 +55,7 @@ const generateLooseSchema = () => {
 
 const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues(true)
+    return hfValues({ skipCache: true, filesOnly: true })
   return undefined
 }
 
@@ -84,7 +84,8 @@ const bootstrapValues = async (): Promise<void> => {
 
   const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
-  const otomiImage = `otomi/core:${getImageTag()}`
+  const imageTag = await getImageTag()
+  const otomiImage = `otomi/core:${imageTag}`
   debug.info(`Intalling artifacts from ${otomiImage}`)
 
   await Promise.allSettled([

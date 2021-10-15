@@ -303,10 +303,7 @@ if [[ $calling_args == 'server'* ]]; then
 fi
 
 mkdir -p /tmp/otomi
-container_name='otomi-core-dev-container'
-count=0
-[ -n "$has_docker" ] && count=$(($(docker ps -a | grep -c $container_name))) >/dev/null
-container_name="$container_name-$count"
+container_name="otomi-core-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
 
 if [ -n "$IN_DOCKER" ]; then
   silent echo $cmd

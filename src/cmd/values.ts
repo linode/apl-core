@@ -2,14 +2,19 @@ import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
+export interface Arguments extends BasicArguments {
+  filesOnly?: boolean
+}
+
 const values = async (): Promise<void> => {
   debug.info('Get values')
-  const hfVal = await hfValues()
+  const argv: Arguments = getParsedArgs()
+  const hfVal = await hfValues({ filesOnly: argv.filesOnly })
 
   debug.info('Print values')
   console.log(dump(hfVal))
@@ -17,10 +22,16 @@ const values = async (): Promise<void> => {
 
 export const module = {
   command: cmdName,
-  describe: 'Show helmfile values for target cluster',
-  builder: (parser: Argv): Argv => parser,
+  describe: 'Show helmfile values for target cluster (--files-only: only values stored on disk)',
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      filesOnly: {
+        boolean: true,
+        default: false,
+      },
+    }),
 
-  handler: async (argv: BasicArguments): Promise<void> => {
+  handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await values()
