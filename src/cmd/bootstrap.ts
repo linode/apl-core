@@ -21,7 +21,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal
+  terminal,
 } from '../common/utils'
 import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
