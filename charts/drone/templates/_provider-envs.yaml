@@ -32,13 +32,9 @@
       key: clientId
   {{- end }}
 - name: DRONE_GITEA_SERVER
-  {{- if .Values.sourceControl.gitea.server }}
   value: {{ .Values.sourceControl.gitea.server }}
-  {{- else }}
-  value: https://gitea.{{ .Values.clusterDomainSuffix }}
-  {{- end }}
 - name: DRONE_GIT_USERNAME
-  value: {{ .Values.sourceControl.username | default "otomi-admin" }}
+  value: {{ .Values.sourceControl.username }}
 - name: DRONE_GIT_PASSWORD
   value: {{ .Values.sourceControl.password | default .Values.server.adminToken }}
 - name: DRONE_GITEA_CLIENT_SECRET

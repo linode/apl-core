@@ -1,9 +1,11 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" -}}
-{{- $stage := $c | get "cert-manager.stage" "production" }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $stage := $c | get "cert-manager.stage" }}
 {{- $hasStagingCerts := eq $stage "staging" }}
 {{- $giteaUrl := print "https://gitea." $v.cluster.domainSuffix }}
+{{- $tag := "v0.2.10" }}
+{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 
 type: Job
 name: gitea-prepare
@@ -20,7 +22,7 @@ init:
   - image:
       repository: otomi/core
       tag: {{ $v.otomi.version }}
-      pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
+      pullPolicy: {{ $v.derived.otomiPullPolicy }} 
     {{ if $hasStagingCerts }}
     files:
       /tmp/node/certificates.crt: |
@@ -32,8 +34,8 @@ init:
       {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}
 image:
   repository: otomi/tasks
-  tag: v0.2.10
-  # pullPolicy: Always
+  tag: {{ $tag }}
+  pullPolicy: {{ $pullPolicy }}
 {{ if $hasStagingCerts }}
 files:
   /tmp/node/certificates.crt: |

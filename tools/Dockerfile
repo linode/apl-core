@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.21.5
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.7.0
+ARG HELM_VERSION=3.6.3
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.1.3
 # https://github.com/jkroepke/helm-secrets/releases
@@ -33,12 +33,6 @@ ARG NODE_VERSION=16
 ARG DYFF_VERSION=1.4.3
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
-
-# https://github.com/ztombol/bats-assert/releases https://github.com/ztombol/bats-support
-ARG BATS_VERSION=1.2.1
-ARG BATS_ASSERT_VERSION=0.3.0
-ARG BATS_SUPPORT_VERSION=0.3.0
-ARG BATS_FILE_VERSION=0.2.0
 
 WORKDIR /
 
@@ -145,20 +139,6 @@ RUN tar -zxvf /tmp/dyff_${DYFF_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/dy
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
-
-# bats
-ADD https://codeload.github.com/bats-core/bats-core/tar.gz/v${BATS_VERSION} /tmp
-RUN tar -zxvf /tmp/v${BATS_VERSION} -C /tmp && /tmp/bats-core-${BATS_VERSION}/install.sh /usr/local
-
-# bats libs
-ADD https://codeload.github.com/ztombol/bats-assert/tar.gz/v${BATS_ASSERT_VERSION} /tmp
-RUN tar -zxvf /tmp/v${BATS_ASSERT_VERSION} -C /tmp && mv /tmp/bats-assert-${BATS_ASSERT_VERSION} /usr/local/lib/bats-assert
-
-ADD https://codeload.github.com/ztombol/bats-support/tar.gz/v${BATS_SUPPORT_VERSION} /tmp
-RUN tar -zxvf /tmp/v${BATS_SUPPORT_VERSION} -C /tmp && mv /tmp/bats-support-${BATS_SUPPORT_VERSION} /usr/local/lib/bats-support
-
-ADD https://codeload.github.com/ztombol/bats-file/tar.gz/v${BATS_FILE_VERSION} /tmp
-RUN tar -zxvf /tmp/v${BATS_FILE_VERSION} -C /tmp && mv /tmp/bats-file-${BATS_FILE_VERSION} /usr/local/lib/bats-file
 
 RUN chown -R app:app /home/app
 USER app

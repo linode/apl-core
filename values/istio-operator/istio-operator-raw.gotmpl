@@ -1,11 +1,11 @@
 {{- $v := .Values }}
-{{- $i := $v.charts | get "istio" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $k := $v.charts | get "keycloak" dict }}
+{{- $i := $v.charts | get "istio" }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $k := $v.charts.keycloak }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
 {{- $stage := $v.charts | get "cert-manager.stage" }}
-{{- $hasKeycloak := $k | get "enabled" true }}
+{{- $hasKeycloak := $k | get "enabled" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $o := $v | get "oidc" dict }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}

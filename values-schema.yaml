@@ -1053,7 +1053,6 @@ properties:
             type: string
         required:
           - email
-          - stage
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -1197,6 +1196,8 @@ properties:
             items:
               type: string
             type: array
+          enabled:
+            type: boolean
           zoneIdFilters:
             items:
               type: string
@@ -1601,6 +1602,8 @@ properties:
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
           logLevel:
             $ref: '#/definitions/logLevel'
       kube-descheduler:

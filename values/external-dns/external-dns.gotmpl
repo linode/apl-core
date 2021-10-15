@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $externalDns := $v | get "charts.external-dns" }}
-{{- $dns := $v.dns }}
+{{- $externalDns := $v.charts | get "external-dns" }}
+{{- $dns := $v | get "dns" dict }}
 sources:
 - ingress
 - istio-gateway

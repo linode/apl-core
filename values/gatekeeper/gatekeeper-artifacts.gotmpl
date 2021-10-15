@@ -1,6 +1,6 @@
 
 {{- $v := .Values }}
-{{- $gk := $v.charts | get "gatekeeper-operator" dict }}
+{{- $gk := $v.charts | get "gatekeeper-operator" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 ### Render Constraint Templates (CRs)
