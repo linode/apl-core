@@ -71,7 +71,7 @@ const getOtomiSecrets = async (
   if (!kubeSecretObject) {
     debug.info(`Creating ${secretId}`)
     generatedSecrets = await generateSecrets(originalValues)
-    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, { data: generatedSecrets })
+    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, generatedSecrets)
     debug.info(`Created ${secretId}`)
   } else {
     debug.info(`Found ${secretId} secrets on cluster, recovering`)
