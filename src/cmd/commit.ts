@@ -105,7 +105,9 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
-  await commitAndPush()
+  if (values?.charts?.gitea?.enabled) await commitAndPush()
+  else d.log('The files have prepared, but you have to run `git commit` and `git push` manually')
+
   if (isChart) await setDeploymentStatus()
 }
 
