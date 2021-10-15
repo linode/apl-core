@@ -39,17 +39,6 @@ export interface BasicArguments extends YargsArguments {
   debug: boolean
 }
 
-// export const defaultBasicArguments: BasicArguments = {
-//   _: [],
-//   $0: 'defaultBasicArgs',
-//   logLevel: 'WARN',
-//   nonInteractive: true,
-//   skipCleanup: false,
-//   trace: false,
-//   verbose: 0,
-//   debug: false,
-// }
-
 let parsedArgs: BasicArguments
 
 const debuggers = {}
