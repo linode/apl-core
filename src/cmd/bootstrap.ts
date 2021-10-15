@@ -21,7 +21,7 @@ import {
   OtomiDebugger,
   rootDir,
   setParsedArgs,
-  terminal,
+  terminal
 } from '../common/utils'
 import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
@@ -146,7 +146,7 @@ const bootstrapValues = async (): Promise<void> => {
   }
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues === undefined) await validateValues()
+    if (originalValues !== undefined) await validateValues()
   } catch (error) {
     debug.error(error)
     throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
