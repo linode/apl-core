@@ -99,12 +99,3 @@ export const basicOptions: { [key: string]: Options } = {
 }
 
 export const helmOptions = (parser: Argv): Argv => parser.options(helmOpts)
-
-export const valuesOpts: { [key: string]: Options } = {
-  filesOnly: {
-    boolean: true,
-    default: false,
-  },
-}
-
-export const valuesOptions = (parser: Argv): Argv => parser.options({ ...helmOpts, ...valuesOpts })

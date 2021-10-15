@@ -78,8 +78,8 @@ tools:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   env:
-    DEBUG: '*'
-    VERBOSITY: '3'
+    # DEBUG: '*'
+    VERBOSITY: '1'
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users

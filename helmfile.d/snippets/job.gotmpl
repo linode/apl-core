@@ -25,7 +25,7 @@ files:
 {{- if $wait }}
 {{- $waitUrl := printf "https://%s.%s" $wait $v.cluster.domainSuffix }}
 script: |
-  echo "Waiting until gitea is accessible at {{ $waitUrl }}"
+  echo "Waiting until {{ $wait }} is accessible at {{ $waitUrl }}"
   {{ if $hasCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for {{ $waitUrl }}
 {{- else if $task }} 
 script: |

@@ -2,7 +2,7 @@ import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { env, isCli } from './envalid'
-import { asArray, BasicArguments, getParsedArgs, logLevels, rootDir, terminal } from './utils'
+import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -91,13 +91,11 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export type ValuesArgs =
-  | Omit<BasicArguments, '_' | '$0'>
-  | {
-      skipCache?: boolean
-      filesOnly?: boolean
-    }
-export const hfValues = async ({ skipCache = true, filesOnly = false }: ValuesArgs = {}): Promise<
+export type ValuesArgs = {
+  skipCache?: boolean
+  filesOnly?: boolean
+}
+export const hfValues = async ({ skipCache = false, filesOnly = false }: ValuesArgs = {}): Promise<
   Record<string, any>
 > => {
   if (!skipCache) {
