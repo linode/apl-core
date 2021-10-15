@@ -1,13 +1,12 @@
 {{- $v := .Values }}
 {{- $cm := index $v.charts "cert-manager" }}
-{{- $dns := $v.dns }}
-{{- $p := $dns.provider }}
+{{- $dns := $v | get "dns" dict }}
+{{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $letsEncryptStage := printf "letsencrypt-%s" $cm.stage }}
 {{- $clusterIssuer := ternary "selfsigned-issuer" $letsEncryptStage (eq $v.cluster.provider "kind") }}
 {{- $caKeyPair := "kind-ca-key-pair" }}
-
 resources:
 {{- if and (not (eq $clusterIssuer "selfsigned-issuer")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1

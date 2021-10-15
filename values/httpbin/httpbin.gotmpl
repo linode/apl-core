@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $httpbin := $v.charts | get "httpbin" dict }}
 
 nameOverride: httpbin
 fullnameOverride: httpbin
@@ -14,7 +13,7 @@ resources:
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,banned-image-tags
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

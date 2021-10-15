@@ -7,7 +7,7 @@ bases:
 
 releases:
   - name: gatekeeper-constraints
-    installed: {{ $c | get "gatekeeper-operator.enabled" false }}
+    installed: {{ $c | get "gatekeeper-operator.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-constraints
     labels:
@@ -16,7 +16,7 @@ releases:
       - ../values/gatekeeper/gatekeeper-constraints.gotmpl
       - snippets/common.gotmpl
   - name: job-gitea-prepare
-    installed: {{ $c | get "gitea.enabled" false }}
+    installed: {{ $c | get "gitea.enabled" }}
     labels:
       pkg: gitea
       group: jobs

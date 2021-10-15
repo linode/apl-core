@@ -7,23 +7,23 @@ bases:
 
 releases:
   - name: demo-tlspass
-    installed: false #{{ $c | get "demo-tlspass.enabled" false }}
+    installed: {{ $c | get "demo-tlspass.enabled" }}
     namespace: team-otomi
     <<: *default
   - name: hello
-    installed: {{ $c | get "hello.enabled" false }}
+    installed: {{ $c | get "hello.enabled" }}
     namespace: team-otomi
     <<: *default
   - name: httpbin
-    installed: {{ $c | get "httpbin.enabled" true }}
+    installed: {{ $c | get "httpbin.enabled" }}
     namespace: shared
     <<: *default
   - name: kubeapps
-    installed: {{ $c | get "kubeapps.enabled" "false" }}
+    installed: {{ $c | get "kubeapps.enabled" }}
     namespace: kubeapps
     <<: *default
   - name: gitea
-    installed: {{ $c | get "gitea.enabled" true }}
+    installed: {{ $c | get "gitea.enabled" }}
     namespace: gitea
     chart: ../charts/gitea
     labels:

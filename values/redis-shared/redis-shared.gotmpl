@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $r := $v.charts | get "redis-shared" dict }}
+{{- $r := $v.charts | get "redis-shared" }}
 
 architecture: {{ $r | get "architecture" "standalone" }}
 auth:

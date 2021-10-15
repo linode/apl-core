@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "keycloak" dict }}
+{{- $k := $v.charts.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 
 # image:
@@ -99,7 +99,8 @@ postgresql:
     enabled: true
     fsGroup: 1001
     runAsUser: 1001
-  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
+  postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
+  postgresqlPassword: {{ $k.postgresqlPassword }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
