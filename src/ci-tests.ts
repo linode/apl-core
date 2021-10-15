@@ -25,14 +25,14 @@ const debug: OtomiDebugger = terminal(cmdName)
 process.env.CI = '1'
 process.env.IN_DOCKER = '1'
 
-export type Arguments = BasicArguments
+type Arguments = BasicArguments
 
 const setup = (): void => {
   process.env.AZURE_CLIENT_ID = 'somevalue'
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
-export const ciTests = async (): Promise<void> => {
+const ciTests = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (!existsSync(`${rootDir}/env`)) symlinkSync(`${rootDir}/tests/fixtures`, `${rootDir}/env`)
   debug.log(`Running CI tests with values from ${`${rootDir}/tests/fixtures/`}`)
@@ -63,7 +63,7 @@ export const ciTests = async (): Promise<void> => {
   // await checkPolicies(argv)
 }
 
-export const module = {
+const module = {
   command: cmdName,
   describe: 'CI tests',
   builder: (parser: Argv): Argv => parser,

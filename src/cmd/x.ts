@@ -26,5 +26,3 @@ export const module = {
     process.exit(exitCode)
   },
 }
-
-export default module

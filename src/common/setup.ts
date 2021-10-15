@@ -11,7 +11,6 @@ chalk.level = 2
 const dirname = fileURLToPath(import.meta.url)
 
 let otomiImageTag: string
-let otomiClusterOwner: string
 let otomiK8sVersion: string
 
 /**
@@ -57,7 +56,7 @@ const checkEnvDir = (): boolean => {
   return readdirSync(env.ENV_DIR).length > 0
 }
 
-export type PrepareEnvironmentOptions = {
+type PrepareEnvironmentOptions = {
   skipEnvDirCheck?: boolean
   skipKubeContextCheck?: boolean
   skipDecrypt?: boolean
@@ -87,16 +86,7 @@ export const getImageTag = (): string => {
   otomiImageTag = settingsFile?.otomi?.version ?? 'master'
   return otomiImageTag
 }
-/**
- * Find the customer name that is defined in configuration for otomi
- * @returns string
- */
-export const getClusterOwner = (): string => {
-  if (otomiClusterOwner) return otomiClusterOwner
-  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  otomiClusterOwner = clusterFile.cluster?.owner
-  return otomiClusterOwner
-}
+
 /**
  * Prepare environment when running an otomi command
  */
@@ -107,15 +97,6 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
     if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
-  }
-}
-/**
- * If ran within otomi-core, stop execution as it should not be ran within that folder.
- * @param command that is executed
- */
-export const exitIfInCore = (command: string): void => {
-  if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core')) {
-    throw new Error(`'otomi ${command}' should not be ran from otomi-core`)
   }
 }
 

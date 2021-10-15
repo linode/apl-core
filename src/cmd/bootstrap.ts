@@ -27,11 +27,11 @@ import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
-export const getInputValues = (): Record<string, any> | undefined => {
+const getInputValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
-export type Arguments = BasicArguments
+type Arguments = BasicArguments
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -59,7 +59,7 @@ const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   return undefined
 }
 
-export const getOtomiSecrets = async (
+const getOtomiSecrets = async (
   // The chart job calls bootstrap only if the otomi-status config map does not exists
   originalValues: Record<string, any>,
 ): Promise<Record<string, any>> => {
@@ -79,7 +79,7 @@ export const getOtomiSecrets = async (
   }
   return generatedSecrets
 }
-export const bootstrapValues = async (): Promise<void> => {
+const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const binPath = `${env.ENV_DIR}/bin`
@@ -146,7 +146,7 @@ export const bootstrapValues = async (): Promise<void> => {
   }
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues === undefined) await validateValues()
+    if (originalValues !== undefined) await validateValues()
   } catch (error) {
     debug.error(error)
     throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
@@ -173,7 +173,7 @@ export const bootstrapValues = async (): Promise<void> => {
   debug.log(`Done bootstrapping values`)
 }
 
-export const bootstrapGit = async (): Promise<void> => {
+const bootstrapGit = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     // scenario 3: pull > bootstrap values
     debug.info('Values repo already git initialized.')
@@ -335,4 +335,3 @@ export const module = {
     await bootstrapGit()
   },
 }
-export default module

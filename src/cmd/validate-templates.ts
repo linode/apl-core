@@ -206,5 +206,3 @@ export const module = {
     await validateTemplates()
   },
 }
-
-export default module

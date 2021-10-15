@@ -70,15 +70,18 @@ fallback_otomi_version='latest'
 fallback_otomi_dev_version='master'
 if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
-  current_branch=${current_branch##*/}
-  current_branch=${current_branch:-$fallback_otomi_dev_version}
-  otomi_version=$current_branch
+  current_branch_img=${current_branch##*/}
+  # If the git branch command fails to get the img, then we use the fallback of master
+  current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
+  otomi_version=$current_branch_img
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
+  # If the settings.yaml doesn't contain otomi.version, we fall back to latest
   otomi_version=${otomi_version:-$fallback_otomi_version}
 else
   otomi_version=$fallback_otomi_version
 fi
+otomi_branch_or_tag=${current_branch:-$otomi_version}
 
 if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
   # OTOMI_TAG was explicitly given and doesn't exists, then error out
@@ -102,8 +105,7 @@ if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
 fi
 readonly script_full_path
-otomi_branch=$(curl -s https://api.github.com/repos/redkubes/otomi-core/branches | grep $otomi_version_used | sed 's/.*"name": "\(.*\)".*/\1/')
-update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch}/binzx/otomi"
+update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch_or_tag}/binzx/otomi"
 
 date_to_format() {
   date=${1:-'1970-01-01T00:00:00Z'}
@@ -170,7 +172,7 @@ check_update() {
     [[ $calling_args == *'-ni'* ]]; then
     return 0
   fi
-  last_commit_date=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${otomi_branch}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
+  last_commit_date=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${otomi_branch_or_tag}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
   last_file_change=$(date -u -r $script_full_path '+%Y-%m-%dT%H:%M:%SZ')
   last_commit_date_sec=$(date_to_format $last_commit_date)
   last_file_change_sec=$(date_to_format $last_file_change)
