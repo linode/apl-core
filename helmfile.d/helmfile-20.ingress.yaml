@@ -47,19 +47,3 @@ releases:
     labels:
       tag: ingress
     <<: *default
-  - name: nginx-ingress
-    installed: true
-    namespace: ingress
-    labels:
-      tag: ingress
-    <<: *default
-  - name: nginx-ingress-private
-    installed: {{ $c | get "nginx-ingress.private.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-    chart: ../charts/nginx-ingress
-    values:
-      - ../values/nginx-ingress/nginx-ingress.gotmpl
-      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
-
