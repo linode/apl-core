@@ -10,8 +10,6 @@
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $skipVerify := eq ($cm | get "stage") "staging" }}
 {{- $sopsEnabled := ne ($sops | get "provider" "") "" }}
-{{- $tag := $o.image.tag }}
-{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 {{/* START: set the enabled flags on core services based on the chart enabled flags */}}
 {{- $core := readFile "../../core.yaml" | fromYaml }}
 {{- $apps := list }}
@@ -40,11 +38,7 @@ resources:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 
-image:
-  registry: eu.gcr.io
-  repository: otomi-cloud/otomi-api
-  tag: {{ $tag }}
-  pullPolicy: {{ $pullPolicy }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipCA" true) }}
 
 secrets:
   {{- if $hasGitea }}
@@ -60,17 +54,11 @@ secrets:
   
 env:
   # DEBUG: '*'
-  VERBOSITY: '2'
+  VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
-  {{- if hasKey $o "disableSync" }}
-  DISABLE_SYNC: true
-  {{- end }}
+  CORE_VERSION: {{ $v.otomi.version }}
   USE_SOPS: {{ $sopsEnabled }}
-  CORE_VERSION: '{{ $v.otomi.version }}'
-  {{- if (not $k.enabled) }}
-  NO_AUTHZ: true
-  {{- end }}
   {{- if $skipVerify }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
@@ -84,14 +72,14 @@ core:
   teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
-  image:
-    repository: otomi/core
-    tag: {{ $v.otomi.version }}
-    pullPolicy: {{ $v.derived.otomiPullPolicy }} 
-    {{- with $o | get "resources.tools" nil }}
-    resources:
-      {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipCA" true) | nindent 2 }}
+  {{- with $o | get "resources.tools" nil }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  env:
+    DEBUG: '*'
+    VERBOSITY: '3'
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users

@@ -29,7 +29,7 @@ export const preCommit = async (): Promise<void> => {
 
 export const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
-  const values = await hfValues()
+  const values = await hfValues({ skipCache: true })
   let branch = 'main'
   if (values.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? branch

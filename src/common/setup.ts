@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'fs'
+import { readdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { $, chalk } from 'zx'
 import { decrypt } from './crypt'
@@ -10,7 +10,6 @@ import { askYesNo } from './zx-enhance'
 chalk.level = 2
 const dirname = fileURLToPath(import.meta.url)
 
-let otomiImageTag: string
 let otomiClusterOwner: string
 let otomiK8sVersion: string
 
@@ -79,13 +78,10 @@ export const getK8sVersion = (): string => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = (): string => {
-  if (otomiImageTag) return otomiImageTag
-  const file = `${env.ENV_DIR}/env/settings.yaml`
-  if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
-  const settingsFile = loadYaml(file)
-  otomiImageTag = settingsFile?.otomi?.version ?? 'master'
-  return otomiImageTag
+export const getImageTag = async (): Promise<string> => {
+  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
+  const values = await hfValues({ skipCache: false })
+  return values.otomi!.version
 }
 /**
  * Find the customer name that is defined in configuration for otomi

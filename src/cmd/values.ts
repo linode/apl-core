@@ -1,15 +1,17 @@
 import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
-import { hfValues } from '../common/hf'
+import { hfValues, ValuesArgs } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { valuesOptions } from '../common/yargs-opts'
 
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const values = async (): Promise<void> => {
   debug.info('Get values')
-  const hfVal = await hfValues()
+  const argv: ValuesArgs = getParsedArgs()
+  const hfVal = await hfValues(argv)
 
   debug.info('Print values')
   console.log(dump(hfVal))
@@ -17,8 +19,8 @@ export const values = async (): Promise<void> => {
 
 export const module = {
   command: cmdName,
-  describe: 'Show helmfile values for target cluster',
-  builder: (parser: Argv): Argv => parser,
+  describe: 'Show helmfile values for target cluster (--filesOnly: only values stored on disk)',
+  builder: (parser: Argv): Argv => valuesOptions(parser),
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)

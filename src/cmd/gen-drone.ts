@@ -43,9 +43,9 @@ export const genDrone = async (): Promise<void> => {
   }
   if (homeReceiver) {
     const key = homeReceiver === 'slack' ? 'url' : 'lowPrio'
-    channelHome = receiver === 'slack' ? allValues.home?.[receiver]?.channel ?? 'mon-otomi' : undefined
-    webhookHome = allValues.home?.[receiver]?.[key]
-    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${receiver}.${key}'`)
+    channelHome = receiver === 'slack' ? allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi' : undefined
+    webhookHome = allValues.home?.[homeReceiver]?.[key]
+    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${homeReceiver}.${key}'`)
   }
 
   const cluster = allValues.cluster?.name
@@ -54,7 +54,7 @@ export const genDrone = async (): Promise<void> => {
   const globalPullSecret = allValues.otomi?.globalPullSecret
   const provider = allValues.alerts?.drone
   const providerHome = allValues.home?.drone
-  const imageTag = getImageTag()
+  const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
 
   const obj = {

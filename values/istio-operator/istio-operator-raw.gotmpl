@@ -4,7 +4,8 @@
 {{- $k := $v.charts.keycloak }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
-{{- $stage := $v.charts | get "cert-manager.stage" }}
+{{- $stage := $cm | get "stage" }}
+{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
 {{- $hasKeycloak := $k | get "enabled" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $o := $v | get "oidc" dict }}
@@ -212,9 +213,9 @@ resources:
           {{- end }}
           enableAutoMtls: true
         pilot:
-          {{- if eq $cm.stage "staging" }}
+          {{- if $hasCA }}
           jwksResolverExtraRootCA: |
-            {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 12 }}
+            {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 12 }}
           {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
