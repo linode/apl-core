@@ -16,5 +16,3 @@ export const module = {
     await decrypt(...(argv.files ?? []))
   },
 }
-
-export default module

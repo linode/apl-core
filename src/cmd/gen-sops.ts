@@ -15,7 +15,7 @@ import {
   terminal,
 } from '../common/utils'
 
-export interface Arguments extends BasicArguments {
+interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
@@ -99,5 +99,3 @@ export const module = {
     await genSops()
   },
 }
-
-export default module

@@ -36,5 +36,3 @@ export const module = {
     await pull()
   },
 }
-
-export default module

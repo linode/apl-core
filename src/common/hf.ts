@@ -18,7 +18,7 @@ const value: iValue = {
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
-export type HFParams = {
+type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
   logLevel?: string | null
@@ -65,7 +65,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-export type HFOptions = {
+type HFOptions = {
   streams?: Streams
 }
 

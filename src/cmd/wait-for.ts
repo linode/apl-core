@@ -13,13 +13,13 @@ import {
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export interface Arguments extends BasicArguments {
+interface Arguments extends BasicArguments {
   url: string
   skipSsl: boolean
   retries: number
 }
 
-export const waitFor = async (): Promise<void> => {
+const waitFor = async (): Promise<void> => {
   const { url, skipSsl, retries } = getParsedArgs() as Arguments
   debug.info(`Waiting for ${url}`)
   await waitTillAvailable(url, { retries, skipSsl })
@@ -51,5 +51,3 @@ export const module = {
     await waitFor()
   },
 }
-
-export default module

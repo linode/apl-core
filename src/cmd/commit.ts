@@ -23,11 +23,11 @@ let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-export const preCommit = async (): Promise<void> => {
+const preCommit = async (): Promise<void> => {
   await genDrone()
 }
 
-export const gitPush = async (): Promise<boolean> => {
+const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
   const values = await hfValues({ skipCache: true })
   let branch = 'main'
@@ -105,7 +105,9 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
-  await commitAndPush()
+  if (values?.charts?.gitea?.enabled) await commitAndPush()
+  else d.log('The files have prepared, but you have to run `git commit` and `git push` manually')
+
   if (isChart) await setDeploymentStatus()
 }
 
@@ -121,5 +123,3 @@ export const module = {
     await commit()
   },
 }
-
-export default module

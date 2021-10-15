@@ -71,5 +71,3 @@ export const module = {
     await validateValues()
   },
 }
-
-export default module

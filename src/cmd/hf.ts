@@ -30,5 +30,3 @@ export const module = {
     )
   },
 }
-
-export default module

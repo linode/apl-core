@@ -14,7 +14,7 @@ import {
 const cmdName = getFilename(import.meta.url)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const bash = async (): Promise<void> => {
+const bash = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   if (argv._[0] === 'bash') parser.showHelp()
   else {
@@ -45,5 +45,3 @@ export const module: CommandModule = {
     await bash()
   },
 }
-
-export default module

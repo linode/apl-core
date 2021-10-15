@@ -110,5 +110,3 @@ export const module = {
     await genDrone()
   },
 }
-
-export default module

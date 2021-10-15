@@ -3,7 +3,8 @@ root: true
 
 parser: '@typescript-eslint/parser'
 parserOptions:
-  project: ['./tsconfig.json']
+  project:
+    - ./tsconfig.json
   ecmaVersion: 2021
   sourceType: 'module'
 
@@ -29,7 +30,9 @@ plugins:
 settings:
   import/resolver:
     node:
-      extensions: ['.js', '.ts']
+      extensions:
+        - .js
+        - .ts
 
 env:
   es6: true
@@ -56,10 +59,16 @@ rules:
   '@typescript-eslint/no-floating-promises': warn
   '@typescript-eslint/no-shadow': error
   func-names: 'off'
+  import/no-commonjs: error
   import/no-extraneous-dependencies: off
   import/extensions: off
   import/prefer-default-export: off
-  eol-last: ['error', 'always']
+  eol-last:
+    - error
+    - always
+  func-style:
+    - error
+    - expression
   no-shadow: 'off'
   no-unused-vars: 'off'
   prefer-destructuring: error
@@ -70,7 +79,8 @@ rules:
   no-param-reassign:
     - error
     - props: true
-      ignorePropertyModificationsFor: [memo]
+      ignorePropertyModificationsFor:
+        - memo
   no-plusplus:
     - 2
     - allowForLoopAfterthoughts: true

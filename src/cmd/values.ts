@@ -11,7 +11,7 @@ export interface Arguments extends BasicArguments {
   filesOnly?: boolean
 }
 
-export const values = async (): Promise<void> => {
+const values = async (): Promise<void> => {
   debug.info('Get values')
   const argv: Arguments = getParsedArgs()
   const hfVal = await hfValues({ filesOnly: argv.filesOnly })
@@ -37,5 +37,3 @@ export const module = {
     await values()
   },
 }
-
-export default module
