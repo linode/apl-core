@@ -454,42 +454,27 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   return res
 }
 
-interface SecretData {
-  field?: string
-  data: Record<string, any> | string
-}
-
-export const createK8sSecret = async (name: string, namespace: string, data: SecretData): Promise<void> => {
-  const debug: OtomiDebugger = terminal('createK8sSecret')
-  const rawString = JSON.stringify(data.data)
-  const secretKeyName = data.field ?? `otomi-secret-${namespace}-${name}`
-  const path = `/tmp/${secretKeyName}`
-  writeFileSync(path, rawString)
-  const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
-  if (result.stderr) debug.error(result.stderr)
-  debug.debug(result.stdout)
-}
-
-export const getK8sSecret = async (
+export const createK8sSecret = async (
   name: string,
   namespace: string,
-  dataField?: string,
-): Promise<Record<string, any> | undefined> => {
-  const secretKeyName = dataField ?? `otomi-secret-${namespace}-${name}`
-  const result = await nothrow(
-    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
-  )
-  if (result.exitCode === 0) return JSON.parse(result.stdout)
-  return undefined
+  data: Record<string, any> | string,
+): Promise<void> => {
+  const debug: OtomiDebugger = terminal('createK8sSecret')
+  const rawString = dump(data)
+  const path = `/tmp/${name}`
+  writeFileSync(path, rawString)
+  const result =
+    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path} --dry-run=client -o yaml | kubectl apply -f -`
+  if (result.stderr) debug.error(result.stderr)
+  debug.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
 
-export const patchK8sSecret = async (name: string, namespace: string, data: SecretData): Promise<void> => {
-  if (!(await getK8sSecret(name, namespace, data.field))) {
-    await createK8sSecret(name, namespace, data)
-  } else {
-    const b64Data = Buffer.from(JSON.stringify(data.data)).toString('base64')
-    await $`kubectl patch secret ${name} -n ${namespace} --type='json' -p='[{"op":"replace","path":"/data/${data.field}","value":"${b64Data}"}]'`
-  }
+export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
+  const result = await nothrow(
+    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`,
+  )
+  if (result.exitCode === 0) return load(result.stdout) as Record<string, any>
+  return undefined
 }
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {

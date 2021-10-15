@@ -2,17 +2,16 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { DEPLOYMENT_INFO_SECRET } from '../common/constants'
 import { env } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
+  createK8sSecret,
   getFilename,
   getOtomiLoadBalancerIP,
   getParsedArgs,
   logLevelString,
   OtomiDebugger,
-  patchK8sSecret,
   setParsedArgs,
   terminal,
 } from '../common/utils'
@@ -45,6 +44,7 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('apply:setDomainSuffix')
   d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
   const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+  // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
   const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
 
   await writeValues({
@@ -52,10 +52,7 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
       domainSuffix: newSuffix,
     },
   })
-  await patchK8sSecret(DEPLOYMENT_INFO_SECRET, env.DEPLOYMENT_NAMESPACE, {
-    field: 'cluster_domainSuffix',
-    data: newSuffix,
-  })
+  await createK8sSecret('otomi-cluster-domainSuffix', env.DEPLOYMENT_NAMESPACE, newSuffix)
   d.info(`Succesfully set the cluster.domainSuffix to ${newSuffix}`)
 }
 
