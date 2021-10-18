@@ -29,6 +29,10 @@
     {{/* TODO: generate CA and intermediate */}}
   {{- end }}
 {{- end }}
+helmDefaults:
+{{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+  kubeContext: {{ $v.cluster.k8sContext }}
+{{- end }}
 environments:
   default:
     values:
