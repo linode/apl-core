@@ -4,7 +4,7 @@ nameOverride: nginx-ingress
 controller:
   scope:
     enabled: true
-    namespace: istio-system
+    namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
   containerPort:
     http: 80
     https: 443
