@@ -89,12 +89,13 @@ jobs:
   integration:
     runs-on: self-hosted
     needs: build-test-push-release
-    if: ${{ env.ACT }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
+    if: ${{ github.event.act }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set globalPullSecret if not running locally
-        run: ${{ !env.ACT }} || docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
+        if: ${{ !github.event.act }}
+        run: docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
       - name: K8s in Docker
         run: |
           docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
