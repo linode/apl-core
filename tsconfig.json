@@ -9,7 +9,6 @@
     "strict": false,
     "allowJs": true,
     "module": "CommonJS",
-    "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "node",
     "target": "ES2021",
