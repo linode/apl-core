@@ -1,8 +1,10 @@
 {{- $v := .Values }}
-{{- $n := $v.charts | get "nginx-ingress" dict }}
-{{- $domain := printf "team-%s.%s" "admin" $v.cluster.domainSuffix }}
+{{- $n := $v.charts | get "nginx-ingress" }}
 nameOverride: nginx-ingress
 controller:
+  scope:
+    enabled: true
+    namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
   containerPort:
     http: 80
     https: 443

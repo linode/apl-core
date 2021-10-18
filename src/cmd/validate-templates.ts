@@ -173,30 +173,26 @@ export const validateTemplates = async (): Promise<void> => {
       ',',
     )} -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}`,
   )
-  const output = kubevalOutput.stdout
-    .split('\n')
-    .map((x) => {
-      const [k, v] = x.split(' - ')
-      const obj: any = {}
-      obj[k] = [v]
-      return obj
-    })
-    .reduce((prev, curr) => {
-      const prevObj = { ...prev }
-      Object.entries(curr).map(([key, value]: [string, any[]]) => {
-        const prevArr: any[] = prevObj[key] ?? []
-        const currArr: any[] = value ?? []
-        prevObj[key] = [...new Set([...prevArr, ...currArr])]
-        return key
-      })
-      return prevObj
-    })
-  output.PASS?.map((_val: string) => debug.debug(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, _val))
-  output.WARN?.map((_val: string) => debug.warn(`${chalk.yellowBright('WARN: ')} %s`, _val))
+  ;`${kubevalOutput.stdout}\n${kubevalOutput.stderr}`.split('\n').forEach((x) => {
+    if (x === '') return
+    const [k, v] = x.split(' - ')
+    switch (k) {
+      case 'PASS':
+        debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, v)
+        break
+      case 'WARN':
+        debug.warn(`${chalk.yellowBright('WARN: ')} %s`, v)
+        break
+      case 'ERR ':
+        debug.error(`${chalk.redBright('ERR: ')} %s`, v)
+        break
+      default:
+        break
+    }
+  })
   if (kubevalOutput.exitCode !== 0) {
-    output.ERR?.map((_val: string) => debug.error(`${chalk.redBright('ERR: ')} %s`, _val))
-    throw new Error('Templating FAILED')
-  } else debug.log('Templating SUCCESS')
+    throw new Error('Template validation FAILED')
+  } else debug.log('Template validation SUCCESS')
 }
 
 export const module = {
@@ -210,5 +206,3 @@ export const module = {
     await validateTemplates()
   },
 }
-
-export default module

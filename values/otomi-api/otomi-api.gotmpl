@@ -1,13 +1,15 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
-{{- $o := $v.charts | get "otomi-api" dict }}
-{{- $g := $v.charts | get "gitea" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $hasGitea := $g | get "enabled" true }}
+{{- $o := $v.charts | get "otomi-api" }}
+{{- $g := $v.charts.gitea }}
+{{- $k := $v.charts.keycloak }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $sops := $v | get "kms.sops" dict }}
+{{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
-{{- $skipVerify := eq ($cm | get "stage" "production") "staging" }}
-{{- $sopsEnabled := ne ($v | get "kms.sops.provider" "") "" }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
+{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $sopsEnabled := ne ($sops | get "provider" "") "" }}
 {{/* START: set the enabled flags on core services based on the chart enabled flags */}}
 {{- $core := readFile "../../core.yaml" | fromYaml }}
 {{- $apps := list }}
@@ -36,11 +38,7 @@ resources:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 
-image:
-  registry: eu.gcr.io
-  repository: otomi-cloud/otomi-api
-  tag: {{ $o | get "image.tag" "v0.4.72" }}
-  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipCA" true) }}
 
 secrets:
   {{- if $hasGitea }}
@@ -56,17 +54,11 @@ secrets:
   
 env:
   # DEBUG: '*'
-  VERBOSITY: '2'
+  VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
-  {{- if hasKey $o "disableSync" }}
-  DISABLE_SYNC: true
-  {{- end }}
+  CORE_VERSION: {{ $v.otomi.version }}
   USE_SOPS: {{ $sopsEnabled }}
-  CORE_VERSION: '{{ $v.otomi.version }}'
-  {{- if (not ($v.charts.keycloak | get "enabled" true)) }}
-  NO_AUTHZ: true
-  {{- end }}
   {{- if $skipVerify }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
@@ -80,17 +72,14 @@ core:
   teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
-  enabled: {{ $sopsEnabled }}
-  {{- if $sopsEnabled }}
-  image:
-    repository: otomi/core
-    tag: {{ $v.otomi.version }}
-    pullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $v.otomi.version) }} 
-    {{- with $o | get "resources.tools" nil }}
-    resources:
-      {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipCA" true) | nindent 2 }}
+  {{- with $o | get "resources.tools" nil }}
+  resources:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
+  env:
+    # DEBUG: '*'
+    VERBOSITY: '1'
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users

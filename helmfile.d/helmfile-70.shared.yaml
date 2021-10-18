@@ -1,20 +1,25 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
-
+---
+bases:
+  - snippets/derived.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
   - name: drone
-    installed: {{ $c | get "drone.enabled" "false" }}
+    installed: {{ $c | get "drone.enabled" }}
     namespace: team-admin
     labels:
       pkg: drone
     <<: *default
   - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled" false) (eq ($c | get "drone.sourceControl.provider" "gitea") "github") }}
+    installed: {{ $c | get "drone-admit-members.enabled" }}
     namespace: team-admin
     labels:
       pkg: drone
@@ -23,7 +28,7 @@ releases:
       - ../values/drone/drone-admit-members.gotmpl
       - snippets/common.gotmpl
   - name: harbor
-    installed: {{ $c | get "harbor.enabled" true }}
+    installed: {{ $c | get "harbor.enabled" }}
     namespace: harbor
     labels:
       pkg: harbor
@@ -51,7 +56,7 @@ releases:
     namespace: otomi
     <<: *default
   - name: redis-shared
-    installed: {{ $c | get "redis-shared.enabled" false }}
+    installed: {{ $c | get "redis-shared.enabled" }}
     namespace: shared
     <<: *default
     chart: ../charts/redis

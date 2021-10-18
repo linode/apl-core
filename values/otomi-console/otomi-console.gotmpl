@@ -1,11 +1,8 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
-{{- $o := $v.charts | get "otomi-console" dict }}
-{{/* fromJson does not yet exist in helmfile: https://github.com/roboll/helmfile/issues/1557*/}}
-{{/* so we get package.json version in two regexFind steps:*/}}
-{{- $version := (readFile "../../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
-replicaCount: 1
+{{- $o := $v.charts | get "otomi-console" }}
 
+replicaCount: 1
 resources:
   {{- if (hasKey $o "resources") }}
     {{- $o.resources | toYaml | nindent 2 }}
@@ -18,11 +15,7 @@ resources:
     memory: 256Mi
   {{- end }}
 
-image:
-  registry: docker.io
-  repository: otomi/console
-  tag: {{ $o | get "image.tag" "v0.4.56" }}
-  pullPolicy: {{ $o | get "image.pullPolicy" "IfNotPresent" }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipCA" true) }}
 
 env:
   API_BASE_URL: /api

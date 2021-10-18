@@ -1,16 +1,17 @@
 {{- $v := .Values }}
-{{- $d := $v.charts | get "drone" dict }}
-{{- $oa := $v.charts | get "otomi-api" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $g := $v.charts | get "gitea" dict }}
-{{- $hasGitea := $g | get "enabled" true }}
+{{- $d := $v.charts.drone }}
+{{- $oa := $v.charts | get "otomi-api" }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $g := $v.charts | get "gitea" }}
+{{- $sops := $v | get "kms.sops" dict }}
+{{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" ($hasGitea | ternary "gitea" nil) }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $hasStagingCerts := eq ($cm | get "stage" "production") "staging" }}
+{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
-{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") ($v | get "kms.sops" dict) }}
+{{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
@@ -23,13 +24,10 @@ images:
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: {{ $d | get "sharedSecret" "zumsecreetz" }}
+sharedSecret: {{ $d | get "sharedSecret" }}
 sourceControl:
 {{- with $d | get "sourceControl" nil }}
 {{- . | toYaml | nindent 2 }}
-{{- else }}
-  secret: drone-source-control
-  provider: gitea
 {{- end }}
 server:
   annotations:
@@ -66,7 +64,7 @@ server:
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
-    {{- if and $hasGitea $hasStagingCerts }}
+    {{- if and $hasGitea $hasCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -86,12 +84,12 @@ kubernetes:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
-    {{- if and $hasGitea $hasStagingCerts }}
+    {{- if and $hasGitea $hasCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
   envFile: |
     {{- $sopsEnv | nindent 4 }}
-    {{- if and $hasGitea $hasStagingCerts }}
+    {{- if and $hasGitea $hasCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
@@ -105,10 +103,10 @@ metrics:
   prometheus:
     enabled: true
 
-{{- if $hasStagingCerts }}
+{{- if $hasCA }}
 extraRootCA: |
-  {{- $v | get "customRootCa" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 2 }}
+  {{- $v | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

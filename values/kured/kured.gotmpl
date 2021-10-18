@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "kured" dict }}
+{{- $k := $v.charts | get "kured" }}
 
 # Using --annotation-ttl=30m will allow other nodes to take over if TTL has expired (in this case 30min) and continue reboot process.
 

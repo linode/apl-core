@@ -1,16 +1,16 @@
 {{- $v := .Values }}
-{{- $i := $v.charts | get "istio" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $k := $v.charts | get "keycloak" dict }}
+{{- $i := $v.charts | get "istio" }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $k := $v.charts.keycloak }}
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
-{{- $stage := $v.charts | get "cert-manager.stage" }}
-{{- $hasKeycloak := $k | get "enabled" true }}
-{{- $realm := $k | get "realm" "master" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
-{{- $o := $v.oidc }}
+{{- $stage := $cm | get "stage" }}
+{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
+{{- $hasKeycloak := $k | get "enabled" }}
+{{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
+{{- $o := $v | get "oidc" dict }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $v.oidc "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $o "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
@@ -213,9 +213,9 @@ resources:
           {{- end }}
           enableAutoMtls: true
         pilot:
-          {{- if eq $cm.stage "staging" }}
+          {{- if $hasCA }}
           jwksResolverExtraRootCA: |
-            {{- $v | get "customIntermediateCa" $v.letsencryptCA | nindent 12 }}
+            {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 12 }}
           {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false

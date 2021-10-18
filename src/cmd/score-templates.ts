@@ -19,7 +19,7 @@ const setup = (argv: Arguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
-export const scoreTemplate = async (): Promise<void> => {
+const scoreTemplate = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Scoring STARTED')
   await hfTemplate(argv, templatePath)
@@ -41,5 +41,3 @@ export const module = {
     await scoreTemplate()
   },
 }
-
-export default module

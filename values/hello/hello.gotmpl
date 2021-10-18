@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $httpbin := $v | get "charts.hello" dict }}
 
 nameOverride: hello
 fullnameOverride: hello
@@ -21,7 +20,7 @@ podAnnotations:
 podSecurityContext:
   runAsUser: 1000
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

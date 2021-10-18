@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $m := $v.charts | get "metrics-server" dict }}
+{{- $m := $v.charts | get "metrics-server" }}
 
 extraArgs:
   kubelet-insecure-tls: true

@@ -1,31 +1,36 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
   - name: job-ingress-azure
-    installed: {{ and (eq $v.cluster.provider "azure") $v.otomi.hasCloudLB (not ($v | get "azure.appgw.isManaged" true)) }}
+    installed: {{ $c | get "ingress-azure.enabled" }}
     <<: *jobs
     labels:
       pkg: ingress-azure
       group: jobs
   - name: job-harbor
-    installed: {{ $c | get "harbor.enabled" true }}
+    installed: {{ $c | get "harbor.enabled" }}
     labels:
       pkg: harbor
       group: jobs
     <<: *jobs
   - name: job-certs-aws
-    installed: {{ and (eq $v.cluster.provider "aws") $v.otomi.hasCloudLB }}
+    installed:  {{ $c | get "aws-alb-ingress-controller.enabled" }}
     <<: *jobs
     labels:
       group: jobs
   - name: job-gitea-add-users
-    installed: {{ $c | get "gitea.enabled" false }}
+    installed: {{ $c | get "gitea.enabled" }}
     labels:
       pkg: gitea
       group: jobs

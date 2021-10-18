@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'fs'
+import { readdirSync } from 'fs'
 import { $, chalk } from 'zx'
 import { decrypt } from './crypt'
 import { env } from './envalid'
@@ -9,8 +9,6 @@ import { askYesNo } from './zx-enhance'
 chalk.level = 2
 const dirname = __dirname
 
-let otomiImageTag: string
-let otomiClusterOwner: string
 let otomiK8sVersion: string
 
 /**
@@ -56,7 +54,7 @@ const checkEnvDir = (): boolean => {
   return readdirSync(env.ENV_DIR).length > 0
 }
 
-export type PrepareEnvironmentOptions = {
+type PrepareEnvironmentOptions = {
   skipEnvDirCheck?: boolean
   skipKubeContextCheck?: boolean
   skipDecrypt?: boolean
@@ -78,24 +76,12 @@ export const getK8sVersion = (): string => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = (): string => {
-  if (otomiImageTag) return otomiImageTag
-  const file = `${env.ENV_DIR}/env/settings.yaml`
-  if (!existsSync(file)) return process.env.OTOMI_TAG ?? 'master'
-  const settingsFile = loadYaml(file)
-  otomiImageTag = settingsFile?.otomi?.version ?? 'master'
-  return otomiImageTag
+export const getImageTag = async (): Promise<string> => {
+  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
+  const values = await hfValues({ skipCache: false })
+  return values.otomi!.version
 }
-/**
- * Find the customer name that is defined in configuration for otomi
- * @returns string
- */
-export const getClusterOwner = (): string => {
-  if (otomiClusterOwner) return otomiClusterOwner
-  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  otomiClusterOwner = clusterFile.cluster?.owner
-  return otomiClusterOwner
-}
+
 /**
  * Prepare environment when running an otomi command
  */
@@ -106,15 +92,6 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
     if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
-  }
-}
-/**
- * If ran within otomi-core, stop execution as it should not be ran within that folder.
- * @param command that is executed
- */
-export const exitIfInCore = (command: string): void => {
-  if (dirname.includes('otomi-core') || env.ENV_DIR.includes('otomi-core')) {
-    throw new Error(`'otomi ${command}' should not be ran from otomi-core`)
   }
 }
 

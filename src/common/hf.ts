@@ -1,7 +1,7 @@
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { env } from './envalid'
+import { env, isCli } from './envalid'
 import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
@@ -18,7 +18,7 @@ const value: iValue = {
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
-export type HFParams = {
+type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
   logLevel?: string | null
@@ -65,7 +65,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-export type HFOptions = {
+type HFOptions = {
   streams?: Streams
 }
 
@@ -91,28 +91,27 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export type ValuesOptions = {
-  replacePath?: boolean
+export type ValuesArgs = {
   skipCache?: boolean
+  filesOnly?: boolean
 }
-
-export const values = async (opts?: ValuesOptions): Promise<Record<string, any>> => {
-  if (!opts?.skipCache) {
-    if (opts?.replacePath && value.rp) {
+export const hfValues = async ({ skipCache = false, filesOnly = false }: ValuesArgs = {}): Promise<
+  Record<string, any>
+> => {
+  if (!skipCache) {
+    if (isCli && value.rp) {
       return value.rp
     }
     if (value.clean) {
       return value.clean
     }
   }
-  const output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
+  let output
+  if (filesOnly) output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' })
+  else output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' })
   value.clean = (load(output.stdout) as any).renderedvalues
   value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  return opts?.replacePath ? value.rp : value.clean
-}
-
-export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
-  return values({ replacePath: true, skipCache })
+  return isCli ? value.rp : value.clean
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

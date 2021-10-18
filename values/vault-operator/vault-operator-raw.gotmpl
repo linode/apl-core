@@ -1,7 +1,7 @@
 {{- $v := .Values }}
-{{- $k := $v | get "charts.keycloak" dict }}
+{{- $k := $v.charts.keycloak }}
 {{- $tc := $v.teamConfig }}
-{{- $vault := $v | get "charts.vault" dict }}
+{{- $vault := $v.charts.vault }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 resources:
@@ -148,7 +148,7 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/master
+              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi
               oidc_client_id: {{ $k.idp.clientID }}
               oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true

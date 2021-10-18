@@ -37,5 +37,3 @@ export const module = {
     await lint()
   },
 }
-
-export default module

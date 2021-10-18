@@ -28,15 +28,24 @@ export const genDrone = async (): Promise<void> => {
     return
   }
   const receiver = allValues.alerts?.drone
+  const homeReceiver = allValues.home?.drone
   const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
 
   let webhook
+  let webhookHome
   let channel
+  let channelHome
   if (receiver) {
     const key = receiver === 'slack' ? 'url' : 'lowPrio'
-    channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'dev-mon' : undefined
+    channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'mon-otomi' : undefined
     webhook = allValues.alerts?.[receiver]?.[key]
     if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
+  }
+  if (homeReceiver) {
+    const key = homeReceiver === 'slack' ? 'url' : 'lowPrio'
+    channelHome = receiver === 'slack' ? allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi' : undefined
+    webhookHome = allValues.home?.[homeReceiver]?.[key]
+    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${homeReceiver}.${key}'`)
   }
 
   const cluster = allValues.cluster?.name
@@ -44,7 +53,8 @@ export const genDrone = async (): Promise<void> => {
   const cloudProvider = allValues.cluster?.provider
   const globalPullSecret = allValues.otomi?.globalPullSecret
   const provider = allValues.alerts?.drone
-  const imageTag = getImageTag()
+  const providerHome = allValues.home?.drone
+  const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
 
   const obj = {
@@ -53,10 +63,13 @@ export const genDrone = async (): Promise<void> => {
     cluster,
     cloudProvider,
     channel,
+    channelHome,
     owner,
     globalPullSecret,
     provider,
+    providerHome,
     webhook,
+    webhookHome,
     pullPolicy,
   }
 
@@ -97,5 +110,3 @@ export const module = {
     await genDrone()
   },
 }
-
-export default module

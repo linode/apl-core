@@ -1,20 +1,19 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "keycloak" dict }}
-{{- $cm := $v.charts | get "cert-manager" dict }}
-{{- $oauth2 := $v.charts | get "oauth2-proxy" dict }}
-{{- $r := $v.charts | get "oauth2-proxy-redis" dict }}
-{{- $o := $v.oidc }}
-{{- $hasKeycloak := $k | get "enabled" true }}
-{{- $realm := $k | get "realm" "master" }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/%s" $v.cluster.domainSuffix $realm }}
+{{- $k := $v.charts.keycloak }}
+{{- $cm := $v.charts | get "cert-manager" }}
+{{- $oauth2 := $v.charts | get "oauth2-proxy" }}
+{{- $r := $v.charts | get "oauth2-proxy-redis" }}
+{{- $o := $v | get "oidc" dict }}
+{{- $hasKeycloak := $k.enabled }}
+{{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 image:
   tag: "v7.1.3"
   repository: quay.io/oauth2-proxy/oauth2-proxy
 
 config:
-  clientID: {{ $hasKeycloak | ternary $k.idp.clientID $o.clientID }}
-  clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret $o.clientSecret }}
+  clientID: {{ $hasKeycloak | ternary $k.idp.clientID ($o | get "clientID" nil) }}
+  clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret ($o | get "clientSecret" nil) }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
 replicas: 2
@@ -80,7 +79,7 @@ extraArgs:
   # exclude-logging-paths: /ping
   set-authorization-header: true
   # set-xauthrequest: true
-  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}
+  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer ($o | get "issuer" nil) }}
   insecure-oidc-allow-unverified-email: true
   show-debug-on-error: true
 

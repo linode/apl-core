@@ -6,13 +6,11 @@ import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash'
 import { env } from './envalid'
 import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
 
-const objectToString = (obj: Record<string, any>): string => {
-  return isEmpty(obj) ? '' : dump(obj)
+const objectToYaml = (obj: Record<string, any>): string => {
+  return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
-export const isChart = !!env.VALUES_INPUT
-
-export function removeBlankAttributes(obj: Record<string, unknown>): Record<string, unknown> {
+const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
   const options: CleanOptions = {
     emptyArrays: false,
     emptyObjects: true,
@@ -27,16 +25,12 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValuesToFile = async (
-  targetPath: string,
-  values: Record<string, any>,
-  overwrite = true,
-): Promise<void> => {
+const writeValuesToFile = async (targetPath: string, values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
   if (!existsSync(targetPath)) {
-    return writeFile(targetPath, objectToString(nonEmptyValues))
+    return writeFile(targetPath, objectToYaml(nonEmptyValues))
   }
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
   const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
@@ -47,7 +41,7 @@ export const writeValuesToFile = async (
     return undefined
   }
   d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
-  const res = writeFile(`${targetPath}${suffix}`, objectToString(mergeResult))
+  const res = writeFile(`${targetPath}${suffix}`, objectToYaml(mergeResult))
   d.info(`Values were written to ${targetPath}${suffix}`)
   return res
 }

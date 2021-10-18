@@ -3,7 +3,7 @@
  * https://nodejs.org/api/esm.html#esm_mandatory_file_extensions
  * https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
  * Run as:
- *  node --experimental-specifier-resolution=node ./dist/otomi.js -- <args>
+ *  node --experimental-specifier-resolution=node ./dist/src/otomi.js -- <args>
  */
 
 import { CommandModule } from 'yargs'

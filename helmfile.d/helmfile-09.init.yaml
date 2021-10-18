@@ -1,19 +1,25 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
   - name: cert-manager
-    installed: {{ $c | get "cert-manager.enabled" true }}
+    installed: true
     namespace: cert-manager
     labels:
       pkg: cert-manager
     <<: *default
   - name: cluster-autoscaler
-    installed: {{ eq $v.cluster.provider "aws" }}
+    installed: {{ $c | get "cluster-autoscaler.enabled" }}
     namespace: kube-system
     <<: *default
   - name: knative-serving
@@ -29,11 +35,9 @@ releases:
     installed: true
     namespace: istio-system
     chart: ../charts/redis
+    labels:
+      pkg: oauth2-proxy
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl
-  - name: redis # made obsolete by oauth2-proxy-redis, keeping here to erase on next deploy
-    installed: false
-    namespace: istio-system
-    <<: *default
 

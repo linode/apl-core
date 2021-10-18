@@ -1,3 +1,4 @@
+{{- $o := .oidc }}
 "auth.generic_oauth":
   tls_skip_verify_insecure: {{ eq .stage "staging" }}
   enabled: true
@@ -5,12 +6,12 @@
   org_role: Admin
   allow_sign_up: true
   oauth_auto_login: true # false = so we can login with admin / bladibla
-  client_id: {{ .hasKeycloak | ternary .keycloak.clientID .oidc.clientID }}
-  client_secret: {{ .hasKeycloak | ternary .keycloak.clientSecret .oidc.clientSecret }}
+  client_id: {{ .hasKeycloak | ternary .keycloak.clientID ($o | get "clientID" nil) }}
+  client_secret: {{ .hasKeycloak | ternary .keycloak.clientSecret ($o | get "clientSecret" nil) }}
   scopes: openid
-  auth_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" .keycloakBase) (.oidc | getOrNil "authUrl") }}
-  token_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" .keycloakBase) (.oidc | getOrNil "tokenUrl") }}
-  api_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" .keycloakBase) (.oidc | get "apiUrl" (.oidc | getOrNil "tokenUrl")) }}
+  auth_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/auth" .keycloakBase) ($o | get "authUrl" nil) }}
+  token_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/token" .keycloakBase) ($o | get "tokenUrl" nil) }}
+  api_url: {{ .hasKeycloak | ternary (printf "%s/protocol/openid-connect/userinfo" .keycloakBase) ($o | get "apiUrl" ($o | get "tokenUrl" nil)) }}
   {{- if .hasKeycloak }}
   role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
   {{- else }}

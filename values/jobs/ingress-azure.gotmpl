@@ -1,11 +1,6 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
 
 type: CronJob
-image:
-  repository: otomi/tools
-  tag: v1.4.15
-  pullPolicy: IfNotPresent
 env:
   LABELS: "app=ingress-azure"
   NS: ingress

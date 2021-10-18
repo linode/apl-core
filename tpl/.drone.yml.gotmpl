@@ -53,6 +53,40 @@ steps:
         text: Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         themeColor: 009EEA
 {{- end }}
+{{- if eq .providerHome "slack" }}
+  - name: slack-start-home
+    image: plugins/slack
+    resources:
+      limits:
+        cpu: 200
+        memory: 200Mi
+      requests:
+        cpu: 100
+        memory: 100Mi
+    settings:
+      webhook: {{ .webhookHome }}
+      channel: {{ .channelHome }}
+      username: Drone
+      template: >
+        Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
+        Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+{{- else if eq .providerHome "msteams" }}
+  - name: notify-start-home
+    image: diyfr/drone_plugin_teams
+    resources:
+      limits:
+        cpu: 200
+        memory: 200Mi
+      requests:
+        cpu: 100
+        memory: 100Mi
+    settings:
+      webhook: {{ .webhookHome }}
+      content:
+        title: Started syncing cluster
+        text: Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
+        themeColor: 009EEA
+{{- end }}
   - name: prepare-env
     image: ubuntu:20.04
     commands:
@@ -153,6 +187,78 @@ steps:
         memory: 100Mi
     settings:
       webhook: {{ .webhook }}
+      content:
+        title: Failed syncing cluster
+        text: Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' ;( Please take a look.
+        themeColor: EA4300
+    when:
+      status:
+        - failure
+{{- end }}
+{{- if eq .providerHome "slack" }}
+  - name: slack-result-home
+    image: plugins/slack
+    depends_on:
+      - apply
+    resources:
+      limits:
+        cpu: 200
+        memory: 200Mi
+      requests:
+        cpu: 100
+        memory: 100Mi
+    settings:
+      webhook: {{ .webhookHome }}
+      channel: {{ .channelHome }}
+      username: Drone
+      template: >
+        {{ print "{" "{" }}#success build.status{{ print "}" "}" }}
+        Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' :)
+        {{ print "{" "{" }}else{{ print "}" "}" }}
+        Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' ;( Please take a look.
+        {{ print "{" "{" }}/success{{ print "}" "}" }}
+
+        Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+    when:
+      status:
+        - success
+        - failure
+
+{{- else if eq .providerHome "msteams" }}
+  - name: notify-success-home
+    image: diyfr/drone_plugin_teams
+    depends_on:
+      - apply
+    resources:
+      limits:
+        cpu: 200
+        memory: 200Mi
+      requests:
+        cpu: 100
+        memory: 100Mi
+    settings:
+      webhook: {{ .webhookHome }}
+      content:
+        title: Completed syncing cluster
+        text: Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' :)
+        themeColor: 228B22
+    when:
+      status:
+        - success
+
+  - name: notify-error
+    image: diyfr/drone_plugin_teams
+    depends_on:
+      - apply
+    resources:
+      limits:
+        cpu: 200
+        memory: 200Mi
+      requests:
+        cpu: 100
+        memory: 100Mi
+    settings:
+      webhook: {{ .webhookHome }}
       content:
         title: Failed syncing cluster
         text: Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}' ;( Please take a look.

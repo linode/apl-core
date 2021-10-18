@@ -1,8 +1,14 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
@@ -11,7 +17,7 @@ releases:
     namespace: team-admin
     <<: *default
   - name: operator-lifecycle-manager
-    installed: {{ $c | get "kubeapps.enabled" false }}
+    installed: {{ $c | get "kubeapps.enabled" }}
     disableValidationOnInstall: true
     namespace: operator-lifecycle-manager
     <<: *default

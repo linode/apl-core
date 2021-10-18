@@ -1,8 +1,14 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
@@ -33,14 +39,14 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+    installed: {{ $c | get "prometheus-msteams.enabled" }}
     namespace: monitoring
     <<: *default
   - name: sitespeed
-    installed: {{ $c | get "sitespeed.enabled" false }}
+    installed: {{ $c | get "sitespeed.enabled" }}
     namespace: monitoring
     <<: *default
   - name: weave-scope
-    installed: {{ $c | get "weave-scope.enabled" false }}
+    installed: {{ $c | get "weave-scope.enabled" }}
     namespace: monitoring
     <<: *default

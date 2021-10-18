@@ -1,7 +1,13 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
-{{- $v := .Environment.Values }}
+bases:
+  - snippets/derived.gotmpl
+---
+{{- $v := .Values }}
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
@@ -26,7 +32,7 @@ releases:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         charts: {{- $v.charts | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        oidc: {{- $v.oidc | toYaml | nindent 10 }}
+        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
         certStage: {{ $cm.stage }}
       - {{- $team | toYaml | nindent 8 }}

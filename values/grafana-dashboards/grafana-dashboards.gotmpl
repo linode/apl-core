@@ -3,9 +3,9 @@
 folders:
   # - k8s
   - istio-admin
-  {{- if and (eq $v.cluster.provider "azure") ($v | getOrNil "azure.monitor") }}
+  {{- if and (eq $v.cluster.provider "azure") ($v | get "azure.monitor" nil) }}
   - azure
   {{- end }}
-  {{- if $c | get "sitespeed.enabled" false }}
+  {{- if $c | get "sitespeed.enabled" }}
   - sitespeed
   {{- end }}

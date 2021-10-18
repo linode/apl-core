@@ -24,7 +24,7 @@ export const validateValues = async (): Promise<void> => {
     throw new Error(`Cannot pass option '${labelOpts}'`)
   }
 
-  const values = await hfValues()
+  const values = await hfValues({ filesOnly: true })
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
@@ -71,5 +71,3 @@ export const module = {
     await validateValues()
   },
 }
-
-export default module

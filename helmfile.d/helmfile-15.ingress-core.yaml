@@ -1,11 +1,18 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $c := $v.charts }}
 {{- $cm := index $v.charts "cert-manager" }}
+
 releases:
   - name: team-ns-admin
     installed: true
@@ -19,7 +26,7 @@ releases:
       - name: admin
         teamId: admin
         charts: {{- $v.charts | toYaml | nindent 10 }}
-        oidc: {{- $v.oidc | toYaml | nindent 10 }}
+        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $v.cluster.domainSuffix  }}

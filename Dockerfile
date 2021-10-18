@@ -1,4 +1,4 @@
-FROM otomi/tools:v1.4.19 as test
+FROM otomi/tools:v1.4.20 as test
 
 ENV APP_HOME=/home/app/stack
 
@@ -18,10 +18,11 @@ RUN npm ci && npm run compile
 RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm $APP_HOME/env; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.19 as prod
+FROM otomi/tools:v1.4.20 as prod
 
 ENV APP_HOME=/home/app/stack
 ENV IN_DOCKER='1'
+ENV NODE_NO_WARNINGS='1'
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
@@ -31,4 +32,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-CMD ["dist/otomi.js"]
+CMD ["dist/src/otomi.js"]

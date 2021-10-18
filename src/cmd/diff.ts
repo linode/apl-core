@@ -36,5 +36,3 @@ export const module = {
     await diff()
   },
 }
-
-export default module

@@ -1,8 +1,15 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
+{{- $c := $v.charts }}
 
 releases:
   - name: prometheus-operator
@@ -12,19 +19,19 @@ releases:
       pkg: prometheus-operator
     <<: *default
   - name: metrics-server
-    installed: {{ list "onprem" "aws" | has $v.cluster.provider }}
+    installed: {{ $c | get "metrics-server.enabled" }}
     namespace: kube-system
     <<: *default
   - name: kured
-    installed: {{ list "onprem" "azure" | has $v.cluster.provider }}
+    installed: {{ $c | get "kured.enabled" }}
     namespace: kube-system
     <<: *default
   - name: kube-descheduler
-    installed: {{ $v | get "charts.kube-descheduler.enabled" true }}
+    installed: {{ $c | get "kube-descheduler.enabled" }}
     namespace: kube-system
     <<: *default
   - name: cluster-overprovisioner
-    installed: {{ eq $v.cluster.provider "onprem" | ternary false ($v | get "charts.cluster-overprovisioner.enabled" true) }}
+    installed: {{ $c | get "cluster-overprovisioner.enabled" }}
     namespace: overprovisioner
     <<: *default
 

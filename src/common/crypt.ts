@@ -29,7 +29,7 @@ const preCrypt = (): void => {
   if (!env.CI) {
     const secretPath = `${env.ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
-      throw new Error(`Expecting ${secretPath} to exist and hold credentials for SOPS!`)
+      debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
     }
   }
 }
@@ -54,11 +54,10 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
     if (!crypt.condition || crypt.condition(file)) {
       debug.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
-      result.then((res) => {
+      return result.then((res) => {
         if (crypt.post) crypt.post(file)
         return res
       })
-      return result
     }
     return undefined
   })
@@ -90,7 +89,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
     return
   } catch (error) {
     debug.error(error)
-    return
+    throw error
   } finally {
     cd(rootDir)
     EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
