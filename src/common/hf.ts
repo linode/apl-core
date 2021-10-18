@@ -1,3 +1,4 @@
+import { existsSync } from 'fs'
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
@@ -96,8 +97,9 @@ export type ValuesArgs = {
   filesOnly?: boolean
 }
 export const hfValues = async ({ skipCache = false, filesOnly = false }: ValuesArgs = {}): Promise<
-  Record<string, any>
+  Record<string, any> | undefined
 > => {
+  if (!(existsSync(`${env.ENV_DIR}/teams.yaml`) && existsSync(`${env.ENV_DIR}/settings.yaml`))) return undefined
   if (!skipCache) {
     if (isCli && value.rp) {
       return value.rp

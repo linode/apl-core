@@ -1,6 +1,7 @@
 import { readdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { $, chalk } from 'zx'
+import pkg from '../../package.json'
 import { decrypt } from './crypt'
 import { env } from './envalid'
 import { hfValues } from './hf'
@@ -80,6 +81,7 @@ export const getK8sVersion = (): string => {
 export const getImageTag = async (): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
   const values = await hfValues({ skipCache: false })
+  if (!values) return pkg.version
   return values.otomi!.version
 }
 

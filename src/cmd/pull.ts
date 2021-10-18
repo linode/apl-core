@@ -12,7 +12,7 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 export const pull = async (): Promise<void> => {
   const allValues = await hfValues()
-  const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues!.charts?.['otomi-api']?.git?.branch ?? 'main'
   debug.info('Pulling latest values')
   try {
     await $`git fetch`

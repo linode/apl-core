@@ -12,18 +12,6 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: job-ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
-    <<: *jobs
-    labels:
-      pkg: ingress-azure
-      group: jobs
-  - name: job-harbor
-    installed: {{ $c | get "harbor.enabled" }}
-    labels:
-      pkg: harbor
-      group: jobs
-    <<: *jobs
   - name: job-certs-aws
     installed:  {{ $c | get "aws-alb-ingress-controller.enabled" }}
     <<: *jobs
@@ -34,4 +22,16 @@ releases:
     labels:
       pkg: gitea
       group: jobs
-    <<: *jobs 
+    <<: *jobs
+  - name: job-harbor
+    installed: {{ $c | get "harbor.enabled" }}
+    labels:
+      pkg: harbor
+      group: jobs
+    <<: *jobs
+  - name: job-ingress-azure
+    installed: {{ $c | get "ingress-azure.enabled" }}
+    <<: *jobs
+    labels:
+      pkg: ingress-azure
+      group: jobs

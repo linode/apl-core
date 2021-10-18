@@ -60,7 +60,7 @@ const prepareValues = async (): Promise<void> => {
   const d = terminal('apply:prepareValues')
 
   const values = await hfValues()
-  if (!values.cluster.domainSuffix) {
+  if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not foud, creating fallback')
     await setDomainSuffix(values)
   }

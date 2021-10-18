@@ -47,3 +47,9 @@ releases:
     labels:
       tag: ingress
     <<: *default
+  - name: job-ingress-azure
+    installed: {{ $c | get "ingress-azure.enabled" }}
+    <<: *jobs
+    labels:
+      pkg: ingress-azure
+      group: jobs

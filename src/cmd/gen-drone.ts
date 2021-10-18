@@ -24,7 +24,7 @@ const debug: OtomiDebugger = terminal(cmdName)
 export const genDrone = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   const allValues = await hfValues()
-  if (!allValues.charts?.drone?.enabled) {
+  if (!allValues || !allValues.charts?.drone?.enabled) {
     return
   }
   const receiver = allValues.alerts?.drone
