@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.22](https://github.com/redkubes/otomi-core/compare/v0.14.21...v0.14.22) (2021-10-18)
+
+
+### Features
+
+* **cli:** sets kubecontext when known ([03a074f](https://github.com/redkubes/otomi-core/commit/03a074f203951865c9ce379d9022a77e3c42d619)), closes [#624](https://github.com/redkubes/otomi-core/issues/624)
+* **defaults:** defaults and derivatives are now separated from file based values ([#627](https://github.com/redkubes/otomi-core/issues/627)) ([1fae313](https://github.com/redkubes/otomi-core/commit/1fae313b2a8611e7f63dcf9581318e796e45dca2))
+* DNS Suffix fallback in CLI code ([#623](https://github.com/redkubes/otomi-core/issues/623)) ([59841eb](https://github.com/redkubes/otomi-core/commit/59841eb34b36d4e1c973c591b2235c64b25312e5))
+* scan only istio-system namespace for Ingress configuration ([#619](https://github.com/redkubes/otomi-core/issues/619)) ([77fea30](https://github.com/redkubes/otomi-core/commit/77fea3093b7b838eb9a94f5207d73748a099a536))
+
+
+### Bug Fixes
+
+* caching issues, fixes [#559](https://github.com/redkubes/otomi-core/issues/559) ([967ae4e](https://github.com/redkubes/otomi-core/commit/967ae4eaf6b8d61cf3ab87c343dbe9779bf6b153))
+* chart install, job-keycloak order (fixes [#559](https://github.com/redkubes/otomi-core/issues/559)) ([9d1065d](https://github.com/redkubes/otomi-core/commit/9d1065d11a14b21261f1a4f424c853e94c887250))
+* nginx moved up, got label stage=prep ([6a968da](https://github.com/redkubes/otomi-core/commit/6a968da5258afa0d97c46c38e9e63375506daaf4))
+
+
+### Others
+
+* **deps:** bumped console to v0.4.61 ([6b3af3d](https://github.com/redkubes/otomi-core/commit/6b3af3d50d29ca3f5fa62e2a69ef666a3b8cdbe5))
+
+
+### Docs
+
+* **adr:** added adr concerning defaults and derived values [ci skip] ([f98b8cb](https://github.com/redkubes/otomi-core/commit/f98b8cb702064149331111ed5d2015a9b5f6ba9f))
+
 ### [0.14.21](https://github.com/redkubes/otomi-core/compare/v0.14.20...v0.14.21) (2021-10-15)
 
 
