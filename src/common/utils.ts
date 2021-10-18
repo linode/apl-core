@@ -307,7 +307,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
       return { ...acc, ...base }
     }, {})
 }
-interface GucciOptions {
+export interface GucciOptions {
   asObject?: boolean
 }
 export const gucci = async (

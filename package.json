@@ -125,6 +125,7 @@
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "test": "TESTING=1 run-p lint validate-templates test:ts",
     "test:opa": "binzx/otomi x opa test policies -v",
+    "test:ts": "mocha",
     "validate-templates": "TESTING=1 binzx/otomi validate-templates",
     "validate-values": "TESTING=1 binzx/otomi validate-values"
   },

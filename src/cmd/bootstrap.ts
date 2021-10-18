@@ -33,7 +33,6 @@ const getInputValues = (): Record<string, any> | undefined => {
 type Arguments = BasicArguments
 
 const cmdName = getFilename(__filename)
-const dirname = __dirname
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = () => {

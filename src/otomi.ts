@@ -27,7 +27,7 @@ if (env.TESTING) {
   process.env.AZURE_CLIENT_SECRET = 'somesecret'
 }
 
-;(async () => {
+const startup = async (): Promise<void> => {
   try {
     parser.scriptName(scriptName)
     commands.map((cmd: CommandModule) =>
@@ -54,4 +54,9 @@ if (env.TESTING) {
   } finally {
     console.profileEnd('otomi')
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+;(async () => {
+  await startup()
 })()
