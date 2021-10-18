@@ -81,6 +81,9 @@ releases:
           prometheus: team-{{ $teamId }}
         prometheus:
           prometheusSpec:
+            podMonitorSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
             serviceMonitorSelector:
               matchLabels:
                 prometheus: team-{{ $teamId }}

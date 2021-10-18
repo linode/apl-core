@@ -31,7 +31,7 @@ const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
   const values = await hfValues({ skipCache: true })
   let branch = 'main'
-  if (values.charts?.gitea?.enabled === false) {
+  if (values?.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? branch
   }
   d.info('Starting git push.')
@@ -93,7 +93,7 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  if (values.charts?.['cert-manager']?.stage === 'staging') {
+  if (values?.charts?.['cert-manager']?.stage === 'staging') {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
