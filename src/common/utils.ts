@@ -550,8 +550,9 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   throw new Error('LoadBalancer Ingress data did not container ip or hostname')
 }
 
-let packageIsCore = false
-if (!(packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`))) {
-  if (pkg.name === 'otomi-core') packageIsCore = true
+const isCoreCheck = (): boolean => {
+  if (packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`)) return false
+  return pkg.name === 'otomi-core'
 }
-export const isCore = packageIsCore
+
+export const isCore = isCoreCheck()

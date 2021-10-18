@@ -1,11 +1,3 @@
-/**
- * Note that running this script requires "--experimental-specifier-resolution=node" due to this being an ESM module
- * https://nodejs.org/api/esm.html#esm_mandatory_file_extensions
- * https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
- * Run as:
- *  node --experimental-specifier-resolution=node ./dist/src/otomi.js -- <args>
- */
-
 import { CommandModule } from 'yargs'
 import { commands, defaultCommand } from './cmd'
 import { env } from './common/envalid'
