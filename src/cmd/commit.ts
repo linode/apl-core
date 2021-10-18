@@ -29,7 +29,7 @@ const preCommit = async (): Promise<void> => {
 
 const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
-  const values = await hfValues({ skipCache: true })
+  const values = await hfValues()
   let branch = 'main'
   if (values?.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? branch
@@ -106,7 +106,7 @@ export const commit = async (): Promise<void> => {
   d.info('Committing values')
   cd(env.ENV_DIR)
   if (values?.charts?.gitea?.enabled) await commitAndPush()
-  else d.log('The files have prepared, but you have to run `git commit` and `git push` manually')
+  else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) await setDeploymentStatus()
 }
