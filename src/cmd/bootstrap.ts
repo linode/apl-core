@@ -54,7 +54,7 @@ const generateLooseSchema = () => {
 
 const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues({ skipCache: true, filesOnly: true })
+    return hfValues({ filesOnly: true })
   return undefined
 }
 
