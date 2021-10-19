@@ -1,31 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { expect } from 'chai'
-import * as sinon from 'sinon'
 import * as utils from './utils'
-import { generateSecrets, GucciOptions } from './utils'
-
-describe('Automatic password generation tests', () => {
-  beforeEach(() => {
-    sinon
-      .stub(utils, 'gucci')
-      .callsFake(
-        async (
-          tmpl: string | unknown,
-          _args: { [key: string]: any },
-          _opts?: GucciOptions,
-        ): Promise<string | Record<string, unknown>> => {
-          return Promise.resolve(tmpl as string | Record<string, unknown>)
-        },
-      )
-  })
-  afterEach(() => {
-    sinon.reset()
-  })
-  it(`Generated secrets object contains all expected generated secrets`, async () => {
-    const generatedSecrets = await generateSecrets({})
-    expect(generatedSecrets).to.have.nested.property('otomi.adminPassword', '{{ randAlphaNum 20 }}')
-  })
-})
 
 describe('Flatten objects', () => {
   it('should be flattened', () => {

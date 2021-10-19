@@ -385,7 +385,7 @@ export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
 }
 
 export const stringContainsSome = (str: string, ...args: string[]): boolean => {
-  return !!str && !!args && args.some((arg) => str.includes(arg))
+  return args.some((arg) => str.includes(arg))
 }
 
 export const generateSecrets = async (values: Record<string, unknown> = {}): Promise<Record<string, unknown>> => {
