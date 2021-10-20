@@ -103,6 +103,7 @@ jobs:
           docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
+          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} validate-values
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
 
   chart-release:

@@ -1,6 +1,5 @@
 charts:
-    cert-manager:
-        _rawValues: {}
-        email: admins@redkubes.com
-        enabled: true
-        stage: staging
+  cert-manager:
+    _rawValues: {}
+    email: admins@redkubes.com
+    stage: staging

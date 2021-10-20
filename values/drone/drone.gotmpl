@@ -105,8 +105,8 @@ metrics:
 
 {{- if $hasCA }}
 extraRootCA: |
-  {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 2 }}
+  {{- $v.cluster | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.cluster | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
