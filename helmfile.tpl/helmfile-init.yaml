@@ -20,7 +20,7 @@ releases:
       init: true
     <<: *skeleton
   - name: cloud
-    installed: {{ ne $v.cluster.provider "kind" }}
+    installed: true
     namespace: kube-system
     labels:
       init: true
