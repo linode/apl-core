@@ -38,4 +38,3 @@ releases:
     values:
       - ../values/nginx-ingress/nginx-ingress.gotmpl
       - ../values/nginx-ingress/nginx-ingress-private.gotmpl
-

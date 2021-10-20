@@ -1,0 +1,30 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: aws-ebs-csi-driver
+    installed: {{ $c | get "aws-ebs-csi-driver.enabled" }}
+    namespace: kube-system
+    labels:
+      init: true
+      pkg: csi
+      provider: aws 
+    <<: *default
+  - name: csi-snapshotter
+    installed: {{ $c | get "csi-snapshotter.enabled" }}
+    namespace: kube-system
+    labels:
+      init: true
+      pkg: csi
+      provider: aws 
+    <<: *skeleton
