@@ -12,19 +12,11 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: aws-ebs-csi-driver
-    installed: {{ $c | get "aws-ebs-csi-driver.enabled" }}
+  - name: snapshot-controller
+    installed: {{ $c | get "snapshot-controller.enabled" }}
     namespace: kube-system
     labels:
       init: true
       pkg: csi
       provider: aws 
     <<: *default
-  - name: csi-snapshotter
-    installed: {{ $c | get "csi-snapshotter.enabled" }}
-    namespace: kube-system
-    labels:
-      init: true
-      pkg: csi
-      provider: aws 
-    <<: *skeleton

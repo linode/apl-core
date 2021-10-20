@@ -2,20 +2,74 @@
 {{- $v := .Values }}
 {{- $d := $v | get "charts.aws-ebs-csi-driver" }}
 
-resources:
-{{- with $d | get "resources" nil }}
-  {{- . | toYaml | nindent 2 }}
-{{- else }}  
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-{{- end }}
+podAnnotations:
+  policy.otomi.io/ignore.ebs-csi-node: "psp-privileged"
+  policy.otomi.io/ignore.ebs-plugin: "psp-privileged"
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
-image:
-  pullSecrets:
-    - otomi-pullsecret-global
-{{- end }}
+controller:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+node:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+sidecars:
+  provisioner:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  attacher:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  snapshotter:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  livenessProbe:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  resizer:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  nodeDriverRegistrar:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi

@@ -12,6 +12,14 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
+  - name: aws-ebs-csi-driver
+    installed: {{ $c | get "aws-ebs-csi-driver.enabled" }}
+    namespace: kube-system
+    labels:
+      init: true
+      pkg: csi
+      provider: aws 
+    <<: *default
   - name: gatekeeper-operator
     installed: {{ $c | get "gatekeeper-operator.enabled" }}
     namespace: default

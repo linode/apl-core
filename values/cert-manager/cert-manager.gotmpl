@@ -17,6 +17,19 @@ podAnnotations:
   sidecar.istio.io/inject: "false"  
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
 
+startupapicheck:
+  jobAnnotations:
+    sidecar.istio.io/inject: "false"  
+    policy.otomi.io/ignore: containerlimits
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 384Mi
+
+
 installCRDs: true
 
 resources:

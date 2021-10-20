@@ -45,8 +45,6 @@ environments:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
             enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") }}
-          csi-snapshotter:
-            enabled: {{ eq $provider "aws" }}
           drone:
             sourceControl:
               {{- if eq $droneProvider "gitea" }}
@@ -71,6 +69,8 @@ environments:
             enabled: {{ list "onprem" "aws" | has $provider }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+          snapshot-controller:
+            enabled: {{ eq $provider "aws" }}
         {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
         cluster:
           customRootCA: |
