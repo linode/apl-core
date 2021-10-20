@@ -14,8 +14,3 @@ resources:
     memory: 128Mi
 {{- end }}
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
-image:
-  pullSecrets:
-    - otomi-pullsecret-global
-{{- end }}
