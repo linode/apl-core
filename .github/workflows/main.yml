@@ -98,7 +98,10 @@ jobs:
         run: |
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.username otomi
-      - name: Validate values
+      - name: Pull image
+        run: |
+          docker pull otomi/core:${GITHUB_REF##*/}
+      - name: Validate KIND values
         run: |
           docker run --rm -e CI=${CI:-1} -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} validate-values
       - name: K8s in Docker
