@@ -3,8 +3,6 @@
   metadata:
     namespace: kube-system
     name: fast
-    annotations:
-      storageclass.kubernetes.io/is-default-class: "true"
   provisioner: rancher.io/local-path
   volumeBindingMode: WaitForFirstConsumer
   reclaimPolicy: Delete
