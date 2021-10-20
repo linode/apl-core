@@ -11,7 +11,7 @@ import {
   terminal,
 } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const bash = async (): Promise<void> => {

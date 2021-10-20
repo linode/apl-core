@@ -18,7 +18,7 @@ import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}

@@ -16,7 +16,7 @@ import {
 } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
 const debug: OtomiDebugger = terminal(cmdName)
 

@@ -18,13 +18,13 @@ export interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const genDrone = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   const allValues = await hfValues()
-  if (!allValues || !allValues.charts?.drone?.enabled) {
+  if (!allValues?.charts?.drone?.enabled) {
     return
   }
   const receiver = allValues.alerts?.drone

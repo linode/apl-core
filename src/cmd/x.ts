@@ -4,7 +4,7 @@ import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { stream } from '../common/zx-enhance'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const x = async (inArgv?: Arguments): Promise<number> => {

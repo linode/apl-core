@@ -10,11 +10,10 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { cloneDeep, isEmpty, merge, omit, pick, set } from 'lodash-es'
+import { cloneDeep, isEmpty, merge, omit, pick, set } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
-import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
 import pkg from '../../package.json'
@@ -29,7 +28,8 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
-export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
+export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
+
 export interface BasicArguments extends YargsArguments {
   logLevel?: string
   nonInteractive?: boolean
@@ -300,14 +300,14 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object') return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value)) return flattenObject(value, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
       return { ...acc, ...base }
     }, {})
 }
-interface GucciOptions {
+export interface GucciOptions {
   asObject?: boolean
 }
 export const gucci = async (
@@ -384,7 +384,7 @@ export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
   return valuesSchema
 }
 
-const stringContainsSome = (str: string, ...args: string[]): boolean => {
+export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
@@ -550,8 +550,9 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   throw new Error('LoadBalancer Ingress data did not container ip or hostname')
 }
 
-let packageIsCore = false
-if (!(packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`))) {
-  if (pkg.name === 'otomi-core') packageIsCore = true
+const isCoreCheck = (): boolean => {
+  if (packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`)) return false
+  return pkg.name === 'otomi-core'
 }
-export const isCore = packageIsCore
+
+export const isCore = isCoreCheck()

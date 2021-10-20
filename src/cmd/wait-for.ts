@@ -10,7 +10,7 @@ import {
   waitTillAvailable,
 } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends BasicArguments {

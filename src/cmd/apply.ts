@@ -20,7 +20,7 @@ import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { Arguments as DroneArgs } from './gen-drone'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger

@@ -8,7 +8,7 @@
     "sourceMap": true,
     "strict": false,
     "allowJs": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "outDir": "dist",
     "moduleResolution": "node",
     "target": "ES2021",
