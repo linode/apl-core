@@ -19,6 +19,8 @@ home:
 otomi:
   adminPassword: somePassword
   hasCloudLB: false
+  hasExternalIDP: false
+  hasExternalDNS: false
   isHomeMonitored: true
   isManaged: true
   isMultitenant: true
