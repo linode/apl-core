@@ -12,7 +12,7 @@ import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
 import { validateValues } from './validate-values'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger
 
@@ -26,7 +26,7 @@ const setup = (argv: Arguments): void => {
   debug = terminal(cmdName)
 }
 
-export const test = async (): Promise<void> => {
+const test = async (): Promise<void> => {
   setup(getParsedArgs())
   await validateValues()
   await lint()
@@ -63,5 +63,3 @@ export const module = {
     await test()
   },
 }
-
-export default module

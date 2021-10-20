@@ -7,12 +7,12 @@ import { Arguments as HelmArgs } from '../common/yargs-opts'
 
 type Arguments = HelmArgs
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const pull = async (): Promise<void> => {
   const allValues = await hfValues()
-  const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues!.charts?.['otomi-api']?.git?.branch ?? 'main'
   debug.info('Pulling latest values')
   try {
     await $`git fetch`
@@ -36,5 +36,3 @@ export const module = {
     await pull()
   },
 }
-
-export default module

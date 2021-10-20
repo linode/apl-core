@@ -4,10 +4,10 @@ import { prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const sync = async (): Promise<void> => {
+const sync = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
@@ -33,5 +33,3 @@ export const module = {
     await sync()
   },
 }
-
-export default module

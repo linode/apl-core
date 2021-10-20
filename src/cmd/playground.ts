@@ -7,10 +7,10 @@ import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } f
  * but loaded into the application to run.
  */
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const playground = async (): Promise<void> => {
+const playground = async (): Promise<void> => {
   debug.log(cmdName)
 
   await Promise.resolve()
@@ -28,5 +28,3 @@ export const module = {
     await playground()
   },
 }
-
-export default module

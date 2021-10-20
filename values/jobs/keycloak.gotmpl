@@ -14,44 +14,21 @@
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $k := $c.keycloak }}
-{{- $stage := $c | get "cert-manager.stage" }}
-{{- $hasStagingCerts := eq $stage "staging" }}
-{{- $tag := "v0.2.14" }}
-{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
 type: Job
-runPolicy: Always
+name: keycloak
 description: Configure OIDC as a primary authentication method and populate teams to harbor projects
+runPolicy: OnSpecChange
 annotations:
   {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
   {{- end }}
-init:
-  - image:
-      repository: otomi/core
-      tag: {{ $v.otomi.version }}
-      pullPolicy: {{ $v.derived.otomiPullPolicy }} 
-    {{ if $hasStagingCerts }}
-    files:
-      /tmp/node/certificates.crt: |
-        {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 8 }}
-        {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 8}}
-    {{ end }}
-    script: |
-      echo "Waiting until keycloak is accessible at https://keycloak.{{ $v.cluster.domainSuffix }}"
-      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://keycloak.{{ $v.cluster.domainSuffix }}
-image:
-  repository: otomi/tasks
-  tag: {{ $tag }}
-  pullPolicy: {{ $pullPolicy }}
-name: keycloak
 env:
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
-  KEYCLOAK_THEME_LOGIN: {{ $k | get "theme" "otomi" }}
+  KEYCLOAK_ADDRESS: {{ $k.address }}
+  KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
 nativeSecrets:
-  DEBUG: '*'
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
-  KEYCLOAK_ADMIN: {{ $k | get "admin.username" "admin" }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k | get "adminPassword" $v.otomi.adminPassword }}
+  # DEBUG: '*'
+  KEYCLOAK_ADMIN: {{ $k.adminUsername }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   REDIRECT_URIS: '[
@@ -79,12 +56,6 @@ nativeSecrets:
   IDP_CLIENT_ID: {{ $o | get "clientID" nil }}
   IDP_CLIENT_SECRET: {{ $o | get "clientSecret" nil }}
   {{- end }}
-{{ if $hasStagingCerts }}
-files:
-  /tmp/node/certificates.crt: |
-    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
-    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
-{{ end }}
-script: |
-  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:keycloak
-runPolicy: OnSpecChange
+init:
+  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "keycloak") | nindent 4 }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}

@@ -1,9 +1,14 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
-
+---
+bases:
+  - snippets/derived.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
@@ -14,7 +19,7 @@ releases:
       pkg: drone
     <<: *default
   - name: drone-admit-members
-    installed: {{ and ($c | get "drone.enabled") (eq ($c | get "drone.sourceControl.provider") "github") }}
+    installed: {{ $c | get "drone-admit-members.enabled" }}
     namespace: team-admin
     labels:
       pkg: drone

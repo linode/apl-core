@@ -7,7 +7,7 @@ import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArg
 import { Arguments, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
 const debug: OtomiDebugger = terminal(cmdName)
 
@@ -75,7 +75,7 @@ const destroyAll = async () => {
   debug.log('Uninstalled otomi!')
 }
 
-export const destroy = async (): Promise<void> => {
+const destroy = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
@@ -105,5 +105,3 @@ export const module = {
     await destroy()
   },
 }
-
-export default module

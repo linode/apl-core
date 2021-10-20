@@ -3,7 +3,7 @@ import { Arguments, decrypt } from '../common/crypt'
 import { prepareEnvironment } from '../common/setup'
 import { getFilename, setParsedArgs } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 
 export const module = {
   command: `${cmdName} [files..]`,
@@ -16,5 +16,3 @@ export const module = {
     await decrypt(...(argv.files ?? []))
   },
 }
-
-export default module

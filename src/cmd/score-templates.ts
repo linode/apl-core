@@ -6,7 +6,7 @@ import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const templatePath = '/tmp/template.yaml'
 const debug: OtomiDebugger = terminal(cmdName)
 
@@ -19,7 +19,7 @@ const setup = (argv: Arguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
-export const scoreTemplate = async (): Promise<void> => {
+const scoreTemplate = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   debug.info('Scoring STARTED')
   await hfTemplate(argv, templatePath)
@@ -41,5 +41,3 @@ export const module = {
     await scoreTemplate()
   },
 }
-
-export default module

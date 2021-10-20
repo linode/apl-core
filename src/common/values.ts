@@ -2,7 +2,7 @@ import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash-es'
+import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash'
 import { env } from './envalid'
 import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
 
@@ -10,7 +10,7 @@ const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
-export function removeBlankAttributes(obj: Record<string, unknown>): Record<string, unknown> {
+const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
   const options: CleanOptions = {
     emptyArrays: false,
     emptyObjects: true,
@@ -25,11 +25,7 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValuesToFile = async (
-  targetPath: string,
-  values: Record<string, any>,
-  overwrite = true,
-): Promise<void> => {
+const writeValuesToFile = async (targetPath: string, values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))

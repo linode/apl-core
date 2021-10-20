@@ -1,16 +1,20 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { startServer } from '../server/index'
+import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const server = (): void => {
+const server = (): void => {
   debug.info('Starting server')
-  startServer()
+  try {
+    startServer()
+  } finally {
+    stopServer()
+  }
 }
 
 export const module = {
@@ -24,5 +28,3 @@ export const module = {
     server()
   },
 }
-
-export default module

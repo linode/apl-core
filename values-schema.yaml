@@ -223,10 +223,10 @@ definitions:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
-      customRootCa:
+      customRootCA:
         description: When set this CA is used by cert-manager to create self signed certs.
         type: string
-      customIntermediateCa:
+      customIntermediateCA:
         description: When set this intermediate CA is used by cert-manager to create self signed certs.
         type: string
       domainSuffix:
@@ -1011,7 +1011,7 @@ properties:
         properties:
           isManaged:
             default: true
-            description: Is this appgw installed as AKS addon?
+            description: Was the AKS cluster installed with appgw addon?
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
@@ -1387,15 +1387,15 @@ properties:
             type: string
             x-secret: 'randAlpha 16'
       hello:
+        description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
           enabled:
-            description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
             type: boolean
             default: false
       httpbin:
+        description: The famous httpbin application.
         properties:
           enabled:
-            description: The famous httpbin application.
             type: boolean
             default: false
       ingress-azure:
@@ -1404,8 +1404,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
           appgw:
             additionalProperties: false
             description: Application Gateway.
@@ -1565,6 +1563,12 @@ properties:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: 'randAlphaNum 20'
+          adminUsername:
+            type: string
+            default: admin
+          adminPassword:
+            type: string
+            x-secret: ''
           resources:
             additionalProperties: false
             properties:
@@ -2197,7 +2201,7 @@ properties:
         type: boolean
       hasExternalIDP:
         default: false
-        description: 'Set this to true when bringing your own external IDP such as Azure AD.'
+        description: Set this to true when bringing your own external IDP such as Azure AD.
         type: boolean
       isHomeMonitored:
         default: false

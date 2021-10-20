@@ -1,47 +1,19 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" }}
-{{- $stage := $c | get "cert-manager.stage" }}
-{{- $hasStagingCerts := eq $stage "staging" }}
-{{- $giteaUrl := print "https://gitea." $v.cluster.domainSuffix }}
-{{- $tag := "v0.2.10" }}
-{{- $pullPolicy := ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }}
+{{- $g := $c.gitea }}
 
 type: Job
 name: gitea-prepare
+runPolicy: OnSpecChange
 env:
-  GITEA_URL: {{ $giteaUrl }}
+  GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
   DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
 nativeSecrets:
-  GITEA_PASSWORD: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+  GITEA_PASSWORD: {{ $g.adminPassword }}
 annotations:
   {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"
   {{- end }}
 init:
-  - image:
-      repository: otomi/core
-      tag: {{ $v.otomi.version }}
-      pullPolicy: {{ $v.derived.otomiPullPolicy }} 
-    {{ if $hasStagingCerts }}
-    files:
-      /tmp/node/certificates.crt: |
-        {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 8 }}
-        {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 8}}
-    {{ end }}
-    script: |
-      echo "Waiting until gitea is accessible at https://gitea.{{ $v.cluster.domainSuffix }}"
-      {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for https://gitea.{{ $v.cluster.domainSuffix }}
-image:
-  repository: otomi/tasks
-  tag: {{ $tag }}
-  pullPolicy: {{ $pullPolicy }}
-{{ if $hasStagingCerts }}
-files:
-  /tmp/node/certificates.crt: |
-    {{- $v.cluster | get "customRootCa" $v.letsencryptRootCA | nindent 4 }}
-    {{- $v.cluster | get "customIntermediateCa" $v.letsencryptCA | nindent 4}}
-{{ end }}
-script: |
-  {{ if $hasStagingCerts }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:gitea
-runPolicy: OnSpecChange
+  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "gitea") | nindent 4 }}
+{{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "gitea") }}

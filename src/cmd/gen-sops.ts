@@ -15,11 +15,11 @@ import {
   terminal,
 } from '../common/utils'
 
-export interface Arguments extends BasicArguments {
+interface Arguments extends BasicArguments {
   dryRun: boolean
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const providerMap = {
@@ -99,5 +99,3 @@ export const module = {
     await genSops()
   },
 }
-
-export default module

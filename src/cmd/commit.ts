@@ -18,20 +18,20 @@ import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArgs, DroneArgs {}
 
-export const preCommit = async (): Promise<void> => {
+const preCommit = async (): Promise<void> => {
   await genDrone()
 }
 
-export const gitPush = async (): Promise<boolean> => {
+const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
   const values = await hfValues()
   let branch = 'main'
-  if (values.charts?.gitea?.enabled === false) {
+  if (values?.charts?.gitea?.enabled === false) {
     branch = values.charts!['otomi-api']!.git!.branch ?? branch
   }
   d.info('Starting git push.')
@@ -93,7 +93,7 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  if (values.charts?.['cert-manager']?.stage === 'staging') {
+  if (values?.charts?.['cert-manager']?.stage === 'staging') {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
@@ -105,7 +105,9 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   d.info('Committing values')
   cd(env.ENV_DIR)
-  await commitAndPush()
+  if (values?.charts?.gitea?.enabled) await commitAndPush()
+  else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
+
   if (isChart) await setDeploymentStatus()
 }
 
@@ -121,5 +123,3 @@ export const module = {
     await commit()
   },
 }
-
-export default module

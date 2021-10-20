@@ -8,7 +8,7 @@ interface Arguments extends HelmArgs {
   args?: string[]
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const module = {
@@ -30,5 +30,3 @@ export const module = {
     )
   },
 }
-
-export default module

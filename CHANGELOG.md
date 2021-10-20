@@ -2,24 +2,56 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.14.20](https://github.com/redkubes/otomi-core/compare/v0.14.19...v0.14.20) (2021-10-14)
+### [0.14.22](https://github.com/redkubes/otomi-core/compare/v0.14.21...v0.14.22) (2021-10-18)
+
+
+### Features
+
+* **cli:** sets kubecontext when known ([03a074f](https://github.com/redkubes/otomi-core/commit/03a074f203951865c9ce379d9022a77e3c42d619)), closes [#624](https://github.com/redkubes/otomi-core/issues/624)
+* **defaults:** defaults and derivatives are now separated from file based values ([#627](https://github.com/redkubes/otomi-core/issues/627)) ([1fae313](https://github.com/redkubes/otomi-core/commit/1fae313b2a8611e7f63dcf9581318e796e45dca2))
+* DNS Suffix fallback in CLI code ([#623](https://github.com/redkubes/otomi-core/issues/623)) ([59841eb](https://github.com/redkubes/otomi-core/commit/59841eb34b36d4e1c973c591b2235c64b25312e5))
+* scan only istio-system namespace for Ingress configuration ([#619](https://github.com/redkubes/otomi-core/issues/619)) ([77fea30](https://github.com/redkubes/otomi-core/commit/77fea3093b7b838eb9a94f5207d73748a099a536))
 
 
 ### Bug Fixes
 
-* alertmanager disabled ([73ea345](https://github.com/redkubes/otomi-core/commit/73ea3455f5d9301ea419c20c0a56d7ed457c37ec))
-* empty checks, bumped tasks ([625bbb7](https://github.com/redkubes/otomi-core/commit/625bbb7041d427aa2bfe31284225fe9bfa6c6698))
-* node flag [ci skip] ([853f49b](https://github.com/redkubes/otomi-core/commit/853f49b871251e90e6b511f504e79adc1e718d04))
-* parenthesis ([02c4f73](https://github.com/redkubes/otomi-core/commit/02c4f73082ca0ca8f306c906c5d5f1a3d934286c))
-* revert versions [ci skip] ([47fa587](https://github.com/redkubes/otomi-core/commit/47fa587be75fefe4eca0bc4ff4e9bdb172ece153))
-* reverted some defaults to avoid false validation errors ([905d78e](https://github.com/redkubes/otomi-core/commit/905d78e150236d9e44a9af232158f581ffdd8148))
-* schema enabled flags ([f0d75d6](https://github.com/redkubes/otomi-core/commit/f0d75d62d4ac96307169161848817d0c736d2e1b))
+* caching issues, fixes [#559](https://github.com/redkubes/otomi-core/issues/559) ([967ae4e](https://github.com/redkubes/otomi-core/commit/967ae4eaf6b8d61cf3ab87c343dbe9779bf6b153))
+* chart install, job-keycloak order (fixes [#559](https://github.com/redkubes/otomi-core/issues/559)) ([9d1065d](https://github.com/redkubes/otomi-core/commit/9d1065d11a14b21261f1a4f424c853e94c887250))
+* nginx moved up, got label stage=prep ([6a968da](https://github.com/redkubes/otomi-core/commit/6a968da5258afa0d97c46c38e9e63375506daaf4))
 
 
 ### Others
 
-* **deps:** bumped prom, alertmanager [ci skip] ([4d965c1](https://github.com/redkubes/otomi-core/commit/4d965c1830d89ff6672c88738b046e3c77af3fcf))
-* **release:** 0.14.20 ([588f42a](https://github.com/redkubes/otomi-core/commit/588f42af6e418a7eb0e729199a066744f6beeb0a))
+* **deps:** bumped console to v0.4.61 ([6b3af3d](https://github.com/redkubes/otomi-core/commit/6b3af3d50d29ca3f5fa62e2a69ef666a3b8cdbe5))
+
+
+### Docs
+
+* **adr:** added adr concerning defaults and derived values [ci skip] ([f98b8cb](https://github.com/redkubes/otomi-core/commit/f98b8cb702064149331111ed5d2015a9b5f6ba9f))
+
+### [0.14.21](https://github.com/redkubes/otomi-core/compare/v0.14.20...v0.14.21) (2021-10-15)
+
+
+### Bug Fixes
+
+* blocking default value [ci skip] ([700514d](https://github.com/redkubes/otomi-core/commit/700514d9e248ca3824ec9ca7c0797303323d1292))
+
+### [0.14.20](https://github.com/redkubes/otomi-core/compare/v0.14.19...v0.14.20) (2021-10-14)
+
+### Bug Fixes
+
+- alertmanager disabled ([73ea345](https://github.com/redkubes/otomi-core/commit/73ea3455f5d9301ea419c20c0a56d7ed457c37ec))
+- empty checks, bumped tasks ([625bbb7](https://github.com/redkubes/otomi-core/commit/625bbb7041d427aa2bfe31284225fe9bfa6c6698))
+- node flag [ci skip] ([853f49b](https://github.com/redkubes/otomi-core/commit/853f49b871251e90e6b511f504e79adc1e718d04))
+- parenthesis ([02c4f73](https://github.com/redkubes/otomi-core/commit/02c4f73082ca0ca8f306c906c5d5f1a3d934286c))
+- revert versions [ci skip] ([47fa587](https://github.com/redkubes/otomi-core/commit/47fa587be75fefe4eca0bc4ff4e9bdb172ece153))
+- reverted some defaults to avoid false validation errors ([905d78e](https://github.com/redkubes/otomi-core/commit/905d78e150236d9e44a9af232158f581ffdd8148))
+- schema enabled flags ([f0d75d6](https://github.com/redkubes/otomi-core/commit/f0d75d62d4ac96307169161848817d0c736d2e1b))
+
+### Others
+
+- **deps:** bumped prom, alertmanager [ci skip] ([4d965c1](https://github.com/redkubes/otomi-core/commit/4d965c1830d89ff6672c88738b046e3c77af3fcf))
+- **release:** 0.14.20 ([588f42a](https://github.com/redkubes/otomi-core/commit/588f42af6e418a7eb0e729199a066744f6beeb0a))
 
 ### [0.14.19](https://github.com/redkubes/otomi-core/compare/v0.14.18...v0.14.19) (2021-10-13)
 
@@ -107,7 +139,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-- added customRootCa to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
+- added customRootCA to schema ([a45fd9b](https://github.com/redkubes/otomi-core/commit/a45fd9b4fbc574aaeab84b6f4eb566578d303e66))
 - missing await in destroy, lint issues ([3c35126](https://github.com/redkubes/otomi-core/commit/3c35126833a4b3393828501f1e271a44265498f9))
 - missing quotes around templated object ([#608](https://github.com/redkubes/otomi-core/issues/608)) ([37ca857](https://github.com/redkubes/otomi-core/commit/37ca857cc460d662db74ab2a521cbf53b7f6a971)), closes [#607](https://github.com/redkubes/otomi-core/issues/607)
 - removed unused tenant from oidc, added home alerts to drone, channel names ([2b16fc3](https://github.com/redkubes/otomi-core/commit/2b16fc3d72343fdeeb3f9da4ed4969cc1cb72ae9))

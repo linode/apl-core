@@ -1,24 +1,16 @@
+import { existsSync } from 'fs'
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
-import { env, isCli } from './envalid'
+import { env } from './envalid'
 import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
 import { Arguments } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-interface iValue {
-  clean?: any
-  rp?: any
-}
-const value: iValue = {
-  clean: undefined,
-  rp: undefined,
-}
-
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
-export type HFParams = {
+type HFParams = {
   fileOpts?: string | string[] | null
   labelOpts?: string | string[] | null
   logLevel?: string | null
@@ -65,7 +57,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   return proc
 }
 
-export type HFOptions = {
+type HFOptions = {
   streams?: Streams
 }
 
@@ -91,19 +83,21 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await output.proc)
 }
 
-export const hfValues = async (skipCache = false): Promise<Record<string, any>> => {
-  if (!skipCache) {
-    if (isCli && value.rp) {
-      return value.rp
-    }
-    if (value.clean) {
-      return value.clean
-    }
+export type ValuesArgs = {
+  filesOnly?: boolean
+}
+export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<Record<string, any> | undefined> => {
+  const d = terminal('hfValues')
+  if (!(existsSync(`${env.ENV_DIR}/env/teams.yaml`) && existsSync(`${env.ENV_DIR}/env/settings.yaml`))) {
+    // teams and settings file are the minimum needed files to run env.gotmpl and get the values
+    d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
+    return undefined
   }
-  const output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump.yaml`, args: 'build' })
-  value.clean = (load(output.stdout) as any).renderedvalues
-  value.rp = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
-  return isCli ? value.rp : value.clean
+  let output
+  if (filesOnly) output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' })
+  else output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' })
+  const res = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
+  return res
 }
 
 export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {

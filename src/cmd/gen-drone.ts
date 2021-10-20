@@ -18,13 +18,13 @@ export interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const genDrone = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   const allValues = await hfValues()
-  if (!allValues.charts?.drone?.enabled) {
+  if (!allValues?.charts?.drone?.enabled) {
     return
   }
   const receiver = allValues.alerts?.drone
@@ -43,9 +43,9 @@ export const genDrone = async (): Promise<void> => {
   }
   if (homeReceiver) {
     const key = homeReceiver === 'slack' ? 'url' : 'lowPrio'
-    channelHome = receiver === 'slack' ? allValues.home?.[receiver]?.channel ?? 'mon-otomi' : undefined
-    webhookHome = allValues.home?.[receiver]?.[key]
-    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${receiver}.${key}'`)
+    channelHome = receiver === 'slack' ? allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi' : undefined
+    webhookHome = allValues.home?.[homeReceiver]?.[key]
+    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${homeReceiver}.${key}'`)
   }
 
   const cluster = allValues.cluster?.name
@@ -54,7 +54,7 @@ export const genDrone = async (): Promise<void> => {
   const globalPullSecret = allValues.otomi?.globalPullSecret
   const provider = allValues.alerts?.drone
   const providerHome = allValues.home?.drone
-  const imageTag = getImageTag()
+  const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
 
   const obj = {
@@ -87,7 +87,7 @@ export const genDrone = async (): Promise<void> => {
     const file = `${env.ENV_DIR}/.drone.yml`
     writeFileSync(file, output)
     debug.debug('.drone.yml: ', output)
-    debug.log(`gen-drone is done and the configuration is written to: ${file}`)
+    debug.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)
   }
 }
 
@@ -110,5 +110,3 @@ export const module = {
     await genDrone()
   },
 }
-
-export default module

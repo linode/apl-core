@@ -1,9 +1,16 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
+
 releases:
   - name: aws-alb-ingress-controller
     installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
@@ -40,19 +47,16 @@ releases:
     labels:
       tag: ingress
     <<: *default
-  - name: nginx-ingress
-    installed: true
-    namespace: ingress
+  - name: job-ingress-azure
+    installed: {{ $c | get "ingress-azure.enabled" }}
+    <<: *jobs
     labels:
-      tag: ingress
-    <<: *default
-  - name: nginx-ingress-private
-    installed: {{ $c | get "nginx-ingress.private.enabled" }}
-    namespace: ingress
+      pkg: ingress-azure
+      group: jobs
+  - name: job-keycloak
+    installed: {{ $c | get "keycloak.enabled" }}
     labels:
-      tag: ingress
-    chart: ../charts/nginx-ingress
-    values:
-      - ../values/nginx-ingress/nginx-ingress.gotmpl
-      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
+      pkg: keycloak
+      group: jobs
+    <<: *jobs
 

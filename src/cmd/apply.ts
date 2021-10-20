@@ -1,14 +1,26 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { hf } from '../common/hf'
+import { env } from '../common/envalid'
+import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import {
+  createK8sSecret,
+  getFilename,
+  getOtomiLoadBalancerIP,
+  getParsedArgs,
+  logLevelString,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
+import { writeValues } from '../common/values'
 import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { Arguments as DroneArgs } from './gen-drone'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger
@@ -28,6 +40,32 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
+const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
+  const d = terminal('apply:setDomainSuffix')
+  d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
+  const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+  // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
+  const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
+
+  await writeValues({
+    cluster: {
+      domainSuffix: newSuffix,
+    },
+  })
+  await createK8sSecret('otomi-cluster-domainSuffix', env.DEPLOYMENT_NAMESPACE, newSuffix)
+  d.info(`Succesfully set the cluster.domainSuffix to ${newSuffix}`)
+}
+
+const prepareValues = async (): Promise<void> => {
+  const d = terminal('apply:prepareValues')
+
+  const values = await hfValues()
+  if (values && !values.cluster.domainSuffix) {
+    d.info('cluster.domainSuffix was not foud, creating fallback')
+    await setDomainSuffix(values)
+  }
+}
+
 const applyAll = async () => {
   const argv: Arguments = getParsedArgs()
   debug.info('Start apply all')
@@ -44,10 +82,21 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
+
   await hf(
     {
       fileOpts: argv.file,
-      labelOpts: argv.label,
+      labelOpts: [...(argv.label || []), 'stage=prep'],
+      logLevel: logLevelString(),
+      args: ['apply', '--skip-deps'],
+    },
+    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+  )
+  await prepareValues()
+  await hf(
+    {
+      fileOpts: argv.file,
+      labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
@@ -55,7 +104,7 @@ const applyAll = async () => {
   )
 }
 
-export const apply = async (): Promise<void> => {
+const apply = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
@@ -86,5 +135,3 @@ export const module: CommandModule = {
     await apply()
   },
 }
-
-export default module

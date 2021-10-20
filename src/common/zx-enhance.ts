@@ -4,7 +4,7 @@ import { DebugStream, getParsedArgs } from './utils'
 
 const MAX_RETRIES_QUESTION = 3
 
-export type AskType = {
+type AskType = {
   choices?: string[]
   matching?: string[]
   matchingFn?: (answer: string) => boolean | Promise<boolean>

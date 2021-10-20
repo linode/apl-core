@@ -3,15 +3,17 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import retry, { Options } from 'async-retry'
 import Debug, { Debugger as DebugDebugger } from 'debug'
+import { AnyAaaaRecord, AnyARecord } from 'dns'
+// eslint-disable-next-line import/no-unresolved
+import { resolveAny } from 'dns/promises'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { cloneDeep, merge, omit, pick, set } from 'lodash-es'
+import { cloneDeep, isEmpty, merge, omit, pick, set } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
-import { fileURLToPath } from 'url'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
 import pkg from '../../package.json'
@@ -26,25 +28,15 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
-export const getFilename = (path: string): string => fileURLToPath(path).split('/').pop()?.split('.')[0] as string
-export interface BasicArguments extends YargsArguments {
-  logLevel: string
-  nonInteractive: boolean
-  skipCleanup: boolean
-  trace: boolean
-  verbose: number
-  debug: boolean
-}
+export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 
-export const defaultBasicArguments: BasicArguments = {
-  _: [],
-  $0: 'defaultBasicArgs',
-  logLevel: 'WARN',
-  nonInteractive: true,
-  skipCleanup: false,
-  trace: false,
-  verbose: 0,
-  debug: false,
+export interface BasicArguments extends YargsArguments {
+  logLevel?: string
+  nonInteractive?: boolean
+  skipCleanup?: boolean
+  trace?: boolean
+  verbose?: number
+  debug?: boolean
 }
 
 let parsedArgs: BasicArguments
@@ -62,7 +54,7 @@ export const getParsedArgs = (): BasicArguments => {
 
 const commonDebug: DebugDebugger = Debug('otomi')
 commonDebug.enabled = true
-export type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)
+type DebuggerType = DebugDebugger | ((message?: any, ...optionalParams: any[]) => void)
 export class DebugStream extends Writable {
   output: DebuggerType
 
@@ -79,7 +71,7 @@ export class DebugStream extends Writable {
   }
 }
 
-export type OtomiStreamDebugger = {
+type OtomiStreamDebugger = {
   log: DebugStream
   trace: DebugStream
   debug: DebugStream
@@ -114,7 +106,7 @@ export type OtomiDebugger = {
  * Must be function to be able to export overrides.
  */
 /* eslint-disable no-redeclare */
-export function terminal(namespace: string): OtomiDebugger {
+export const terminal = (namespace: string): OtomiDebugger => {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     const signature = namespace + baseNamespace
     if (env.OTOMI_IN_TERMINAL) {
@@ -242,7 +234,7 @@ type WaitTillAvailableOptions = {
   password?: string
 }
 
-export async function waitTillAvailable(url: string, opts?: WaitTillAvailableOptions): Promise<void> {
+export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
   const debug = terminal('waitTillAvailable')
   const defaultOptions: WaitTillAvailableOptions = { status: 200, retries: 10, skipSsl: false }
   const options: WaitTillAvailableOptions = { ...defaultOptions, ...opts }
@@ -308,7 +300,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object') return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value)) return flattenObject(value, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
@@ -462,22 +454,26 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   return res
 }
 
-export async function createK8sSecret(name: string, namespace: string, data: Record<string, any>): Promise<void> {
+export const createK8sSecret = async (
+  name: string,
+  namespace: string,
+  data: Record<string, any> | string,
+): Promise<void> => {
   const debug: OtomiDebugger = terminal('createK8sSecret')
-  const rawString = JSON.stringify(data)
-  const path = `/tmp/otomi-secret-${namespace}-${name}`
+  const rawString = dump(data)
+  const path = `/tmp/${name}`
   writeFileSync(path, rawString)
-  const result = await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path}`
+  const result =
+    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path} --dry-run=client -o yaml | kubectl apply -f -`
   if (result.stderr) debug.error(result.stderr)
-  debug.debug(result.stdout)
+  debug.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
 
-export async function getK8sSecret(name: string, namespace: string): Promise<Record<string, any> | undefined> {
-  const secretKeyName = `otomi-secret-${namespace}-${name}`
+export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
   const result = await nothrow(
-    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${secretKeyName}}' | base64 --decode`,
+    $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`,
   )
-  if (result.exitCode === 0) return JSON.parse(result.stdout)
+  if (result.exitCode === 0) return load(result.stdout) as Record<string, any>
   return undefined
 }
 
@@ -488,10 +484,75 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
   return result.stdout
 }
 
-export default { parser, asArray }
-
-let packageIsCore = false
-if (!(packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`))) {
-  if (pkg.name === 'otomi-core') packageIsCore = true
+const fetchLoadBalancerIngressData = async (): Promise<string> => {
+  const d = terminal('fetchLoadBalancerIngressData')
+  let ingressDataString = ''
+  let count = 0
+  for (;;) {
+    ingressDataString = (
+      await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
+    ).stdout.trim()
+    count += 1
+    if (isEmpty(ingressDataString)) break
+    await sleep(250)
+    d.debug(`Trying to get LoadBalancer ingress information, trial ${count}`)
+  }
+  return ingressDataString
 }
-export const isCore = packageIsCore
+
+interface IngressRecord {
+  ip?: string
+  hostname?: string
+}
+export const getOtomiLoadBalancerIP = async (): Promise<string> => {
+  const d = terminal('getOtomiLoadBalancerIP')
+  d.debug('Find LoadBalancer IP or Hostname')
+
+  const ingressDataString = await fetchLoadBalancerIngressData()
+  const ingressDataList = JSON.parse(ingressDataString) as IngressRecord[]
+  // We sort by IP first, and order those, and then hostname and order them as well
+  const ingressDataListSorted = [
+    ...ingressDataList.filter((val) => !!val.ip).sort((a, b) => a.ip!.localeCompare(b.ip!)),
+    ...ingressDataList.filter((val) => !!val.hostname).sort((a, b) => a.hostname!.localeCompare(b.hostname!)),
+  ]
+
+  d.debug(ingressDataListSorted)
+  if (ingressDataListSorted.length === 0) throw new Error('No LoadBalancer Ingress definitions found')
+  /* A load balancer can have a hostname, ip or any list of those items. We select the first item, as we only need one.
+   * And we prefer IP over hostname, as it reduces the fact that we need to resolve & select an ip.
+   */
+  const firstIngressData = ingressDataListSorted[0]
+
+  if (firstIngressData.ip) return firstIngressData.ip
+  if (firstIngressData.hostname) {
+    const resolveData = await resolveAny(firstIngressData.hostname)
+    const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
+      | AnyARecord
+      | AnyAaaaRecord
+    )[]
+    /* Sorting the filtered list
+     * Prefer IPv4 over IPv6; then sort by lowest address (basic string compare)
+     * This way we get always the same first IP back on a cluster
+     */
+    const resolveDataSorted = resolveDataFiltered.sort((a, b) => {
+      const typeCompare = a.type.localeCompare(b.type)
+      return !typeCompare ? typeCompare : a.address.localeCompare(b.address)
+    })
+
+    if (isEmpty(resolveDataSorted))
+      throw new Error(`No A or AAAA records found for ${firstIngressData.hostname} - could not determine IP`)
+    /* For consistency reasons, after sorting (and preferring the lowest numbered IPv4 address) we pick the first one
+     * As there can be multiple A or AAAA records, and we only need one
+     */
+    const firstIP = resolveDataSorted[0].address
+    return firstIP
+  }
+  throw new Error('LoadBalancer Ingress data did not container ip or hostname')
+}
+
+const isCoreCheck = (): boolean => {
+  if (packagePath === '/home/app/stack' || !existsSync(`${packagePath}/package.json`)) return false
+  return pkg.name === 'otomi-core'
+}
+
+export const isCore = isCoreCheck()

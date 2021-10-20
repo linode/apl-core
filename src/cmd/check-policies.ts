@@ -16,7 +16,7 @@ import {
 } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
 const debug: OtomiDebugger = terminal(cmdName)
 
@@ -29,7 +29,7 @@ const setup = (argv: Arguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
-export const checkPolicies = async (): Promise<void> => {
+const checkPolicies = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   setup(argv)
   debug.info('Policy checking STARTED')
@@ -74,5 +74,3 @@ export const module = {
     await checkPolicies()
   },
 }
-
-export default module

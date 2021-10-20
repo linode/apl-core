@@ -3,10 +3,10 @@ import { env } from '../common/envalid'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getEnvFiles, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const files = async (): Promise<void> => {
+const files = async (): Promise<void> => {
   debug.info(`Listing files in ${env.ENV_DIR}`)
   const list = await getEnvFiles()
   console.log(list.join('\n'))
@@ -23,5 +23,3 @@ export const module = {
     await files()
   },
 }
-
-export default module

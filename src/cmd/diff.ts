@@ -6,7 +6,7 @@ import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArg
 import { helmOptions } from '../common/yargs-opts'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const diff = async (): Promise<ProcessOutputTrimmed> => {
@@ -36,5 +36,3 @@ export const module = {
     await diff()
   },
 }
-
-export default module

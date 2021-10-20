@@ -1,11 +1,16 @@
-# Use this release file to show all environment values that are pupulated to charts
-# Running: hf_ -f helmfile.d/dump.yaml build
-
+# this release file is used to generate manifests that are deployed uncharted
+# see otomi apply for more details
+bases:
+  - ../helmfile.d/snippets/defaults.yaml
+---
 bases:
   - ../helmfile.d/snippets/env.gotmpl
 ---
+bases:
+  - ../helmfile.d/snippets/derived.gotmpl
+---
 {{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 
 releases:
   - name: base

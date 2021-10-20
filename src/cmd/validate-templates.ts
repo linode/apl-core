@@ -17,7 +17,7 @@ import {
 } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
@@ -191,8 +191,8 @@ export const validateTemplates = async (): Promise<void> => {
     }
   })
   if (kubevalOutput.exitCode !== 0) {
-    throw new Error('Templating FAILED')
-  } else debug.log('Templating SUCCESS')
+    throw new Error('Template validation FAILED')
+  } else debug.log('Template validation SUCCESS')
 }
 
 export const module = {
@@ -206,5 +206,3 @@ export const module = {
     await validateTemplates()
   },
 }
-
-export default module

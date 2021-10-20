@@ -2,7 +2,6 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-// import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
@@ -27,13 +26,13 @@ import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
-export const getInputValues = (): Record<string, any> | undefined => {
+const getInputValues = (): Record<string, any> | undefined => {
   return loadYaml(env.VALUES_INPUT)
 }
 
-export type Arguments = BasicArguments
+type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = () => {
@@ -55,11 +54,11 @@ const generateLooseSchema = () => {
 
 const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues(true)
+    return hfValues({ filesOnly: true })
   return undefined
 }
 
-export const getOtomiSecrets = async (
+const getOtomiSecrets = async (
   // The chart job calls bootstrap only if the otomi-status config map does not exists
   originalValues: Record<string, any>,
 ): Promise<Record<string, any>> => {
@@ -79,13 +78,14 @@ export const getOtomiSecrets = async (
   }
   return generatedSecrets
 }
-export const bootstrapValues = async (): Promise<void> => {
+const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
-  const otomiImage = `otomi/core:${getImageTag()}`
-  debug.info(`Installing artifacts from ${otomiImage}`)
+  const imageTag = await getImageTag()
+  const otomiImage = `otomi/core:${imageTag}`
+  debug.info(`Intalling artifacts from ${otomiImage}`)
 
   await Promise.allSettled([
     copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
@@ -146,7 +146,7 @@ export const bootstrapValues = async (): Promise<void> => {
   }
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues === undefined) await validateValues()
+    if (originalValues !== undefined) await validateValues()
   } catch (error) {
     debug.error(error)
     throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
@@ -173,7 +173,7 @@ export const bootstrapValues = async (): Promise<void> => {
   debug.log(`Done bootstrapping values`)
 }
 
-export const bootstrapGit = async (): Promise<void> => {
+const bootstrapGit = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.git`)) {
     // scenario 3: pull > bootstrap values
     debug.info('Values repo already git initialized.')
@@ -335,4 +335,3 @@ export const module = {
     await bootstrapGit()
   },
 }
-export default module

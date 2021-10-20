@@ -5,9 +5,9 @@ import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
 
 type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 
-export const status = async (): Promise<void> => {
+const status = async (): Promise<void> => {
   const output = await $`helm list -A -a`
   console.log(output.stdout)
 }
@@ -23,5 +23,3 @@ export const module = {
     await status()
   },
 }
-
-export default module

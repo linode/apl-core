@@ -56,6 +56,9 @@ prometheus:
   prometheusSpec:
     image:
       tag: v2.30.3
+    podMonitorSelector:
+      matchLabels:
+        prometheus: system
     serviceMonitorSelector:
       matchLabels:
         prometheus: system

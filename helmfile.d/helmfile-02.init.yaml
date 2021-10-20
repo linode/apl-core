@@ -1,8 +1,14 @@
 bases:
+  - snippets/defaults.yaml
+---
+bases:
   - snippets/env.gotmpl
 ---
+bases:
+  - snippets/derived.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Environment.Values }}
+{{- $v := .Values }}
 {{- $c := $v.charts }}
 
 releases:
@@ -16,3 +22,20 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper-operator.gotmpl
       - snippets/common.gotmpl
+  - name: nginx-ingress
+    installed: true
+    namespace: ingress
+    labels:
+      tag: ingress
+      stage: prep
+    <<: *default
+  - name: nginx-ingress-private
+    installed: {{ $c | get "nginx-ingress.private.enabled" }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    chart: ../charts/nginx-ingress
+    values:
+      - ../values/nginx-ingress/nginx-ingress.gotmpl
+      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
+

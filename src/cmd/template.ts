@@ -8,10 +8,10 @@ interface Arguments extends HelmArgs {
   outDir: string
 }
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const template = async (): Promise<void> => {
+const template = async (): Promise<void> => {
   const argv = getParsedArgs() as Arguments
   debug.info('Templating STARTED')
   await hfTemplate(argv, argv.outDir, { stdout: debug.stream.log, stderr: debug.stream.error })
@@ -29,5 +29,3 @@ export const module = {
     await template()
   },
 }
-
-export default module
