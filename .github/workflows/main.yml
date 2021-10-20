@@ -98,12 +98,14 @@ jobs:
         run: |
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.username otomi
+      - name: Validate values
+        run: |
+          docker run --rm -e CI=${CI:-1} -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} validate-values
       - name: K8s in Docker
         run: |
           docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
-          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} validate-values
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=${CI:-1} --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
 
   chart-release:
