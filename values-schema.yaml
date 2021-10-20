@@ -74,6 +74,9 @@ definitions:
                 - receivers
           - properties:
               receivers:
+                equals: []
+          - properties:
+              receivers:
                 contains:
                   enum:
                     - email
