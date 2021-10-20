@@ -84,7 +84,7 @@ prometheus:
         metadata:
           name: promdata
         spec:
-          storageClassName: {{ ternary "standard" "fast" (eq $v.cluster.provider "kind") }}
+          storageClassName: fast
           resources:
             requests:
               storage: {{ $p | get "prometheus.storageSize" "5Gi" }}

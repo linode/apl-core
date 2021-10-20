@@ -11,10 +11,6 @@ azure:
   resourceGroup: somevalue
   subscriptionId: somevalue
   tenantId: somevalue
-cloud:
-  skipStorageClasses:
-    - std
-    - std-immediate
 charts:
   hello:
     enabled: true
