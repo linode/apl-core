@@ -29,8 +29,8 @@
     {{/* TODO: generate CA and intermediate */}}
   {{- end }}
 {{- end }}
-helmDefaults:
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
 {{- end }}
 environments:
@@ -70,9 +70,9 @@ environments:
         {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
         cluster:
           customRootCA: |
-            {{- $customRootCA | nindent 10 }}
+            {{- $customRootCA | nindent 12 }}
           customIntermediateCA: |
-            {{- $customIntermediateCA | nindent 10 }}
+            {{- $customIntermediateCA | nindent 12 }}
         {{- end }}
         otomi:
           version: {{ $otomiTag }}
