@@ -1,32 +1,14 @@
-alerts:
-  drone: slack
-  groupInterval: 5m
-  receivers:
-    - slack
-    - email
-  repeatInterval: 3h
 charts:
   hello:
     enabled: true
   httpbin:
     enabled: true
-home:
-  receivers:
-    - slack
-  slack:
-    channel: dev-mon-otomi
-    channelCrit: dev-mon-otomi-crit
 otomi:
   adminPassword: somePassword
   hasCloudLB: false
   hasExternalIDP: false
   hasExternalDNS: false
-  isHomeMonitored: true
-  isManaged: true
+  isHomeMonitored: false
+  isManaged: false
   isMultitenant: true
   version: master
-smtp:
-  auth_username: no-reply@doma.in
-  from: no-reply@doma.in
-  hello: doma.in
-  smarthost: smtp-relay.gmail.com:587

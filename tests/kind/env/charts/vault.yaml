@@ -1,6 +1,0 @@
-charts:
-    vault:
-        # seal:
-        #   type: no-kms
-        logLevel: warn
-        enabled: true
