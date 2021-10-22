@@ -3,7 +3,7 @@ import { env } from '../common/envalid'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getEnvFiles, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const files = async (): Promise<void> => {

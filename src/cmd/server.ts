@@ -5,7 +5,7 @@ import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const server = (): void => {

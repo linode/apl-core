@@ -17,7 +17,7 @@ import {
 } from '../common/utils'
 import { Arguments, helmOptions } from '../common/yargs-opts'
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'

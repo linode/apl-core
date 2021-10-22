@@ -2,7 +2,6 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-// import isURL from 'validator/es/lib/isURL'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
@@ -33,7 +32,7 @@ const getInputValues = (): Record<string, any> | undefined => {
 
 type Arguments = BasicArguments
 
-const cmdName = getFilename(import.meta.url)
+const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const generateLooseSchema = () => {
