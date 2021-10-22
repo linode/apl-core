@@ -26,7 +26,7 @@ const preCrypt = (): void => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
-  if (!isCli) {
+  if (isCli) {
     const secretPath = `${env.ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
       debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
