@@ -138,6 +138,7 @@ const bootstrapValues = async (): Promise<void> => {
     generatedSecrets = await generateSecrets(originalValues)
   }
   await writeValues(generatedSecrets, false)
+  // TODO bootstrap customCA based on otomi.hasCustomCA flag
 
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
@@ -222,6 +223,7 @@ const bootstrapGit = async (): Promise<void> => {
       const giteaRepo = 'values'
       remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
     }
+
     await $`git config --local user.name ${username}`
     await $`git config --local user.password ${password}`
     await $`git config --local user.email ${email}`

@@ -10,9 +10,12 @@ spec:
   - '{{ .domain }}'
   issuerRef:
     kind: ClusterIssuer
-    name: letsencrypt-{{ .stage }}
+    name: {{ .issuer }}
   usages:
+    {{- if .otomi.hasCustomCA }}
+    - server auth
+    {{- else }}
     - digital signature
     - key encipherment
     - ocsp signing
-      
+    {{- end }}

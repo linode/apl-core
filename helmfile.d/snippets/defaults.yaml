@@ -60,6 +60,7 @@ environments:
             enabled: false
         otomi:
           hasCloudLB: false
+          hasCustomCA: false
           hasExternalDNS: true
           hasExternalIDP: false
           isHomeMonitored: false

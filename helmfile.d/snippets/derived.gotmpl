@@ -18,17 +18,8 @@
 {{- $droneProvider := $c.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
-{{/* TODO: inject these two from kind into proper values location: */}}
-{{- $customRootCA := exec "bash" (list "-c" "cat ../../root-ca.pem &>/dev/null || true") }}
-{{- $customIntermediateCA := exec "bash" (list "-c" "cat ../../intermediate-ca.pem &>/dev/null || true") }}
-{{- if or $v.otomi.hasExternalDNS (and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil)) }}
-  {{- if and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil) }}
-    {{- $customRootCA = $v.cluster.customRootCA }}
-    {{- $customIntermediateCA = $v.cluster.customIntermediateCA }}
-  {{- else }}
-    {{/* TODO: generate CA and intermediate */}}
-  {{- end }}
-{{- end }}
+
+
 helmDefaults:
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
   kubeContext: {{ $v.cluster.k8sContext }}
@@ -71,13 +62,6 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: {{ eq $provider "aws" }}
-        {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
-        cluster:
-          customRootCA: |
-            {{- $customRootCA | nindent 10 }}
-          customIntermediateCA: |
-            {{- $customIntermediateCA | nindent 10 }}
-        {{- end }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }} 

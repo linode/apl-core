@@ -229,6 +229,9 @@ definitions:
       customRootCA:
         description: When set this CA is used by cert-manager to create self signed certs.
         type: string
+      customRootCAKey:
+        description: Private key used for signing issued certificates
+        type: string
       customIntermediateCA:
         description: When set this intermediate CA is used by cert-manager to create self signed certs.
         type: string
@@ -2201,9 +2204,16 @@ properties:
         default: false
         description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
         type: boolean
+      hasExternalDNS:
+        default: true
+        type: boolean
       hasExternalIDP:
         default: false
         description: Set this to true when bringing your own external IDP such as Azure AD.
+        type: boolean
+      hasCustomCA:
+        default: false
+        description: Set this to true when bringing your own Certificate Authority.
         type: boolean
       isHomeMonitored:
         default: false

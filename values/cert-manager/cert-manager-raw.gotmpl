@@ -4,8 +4,10 @@
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $letsEncryptStage := printf "letsencrypt-%s" $cm.stage }}
+
 resources:
-{{- if or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil) }}
+{{- if {{ not $v.otomi.hasExternalDNS }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -20,17 +22,18 @@ resources:
       secret: "{{ $p.aws.secretAccessKey | b64enc }}"
       {{- end }}
 {{- end }}
-{{- range $stage := (list "staging" "production") }}
+
+{{- if not $v.otomi.hasCustomCA }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
-      name: letsencrypt-{{ $stage }}
+      name: {{ $$letsEncryptStage }}
     spec:
       acme:
-        server: https://acme{{ (eq $stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
+        server: https://acme{{ (eq $cm.stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
         privateKeySecretRef:
-          name: letsencrypt-{{ $stage }}
+          name: {{ $letsEncryptStage }}
         solvers:
           - selector: {}
             dns01:
@@ -65,13 +68,28 @@ resources:
                   key: secret
                   name: "dns-secret"
               {{- end }}
-
-
+{{- else }}
+{{- $caKeyPair := "customCA" }}
+  - apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: customCA
+    spec:
+      ca:
+        secretName: {{ $caKeyPair }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $caKeyPair }}
+    data:
+      tls.crt: {{ $v.cluster.customRootCA | b64enc }}
+      tls.key: {{ $v.cluster.customRootCAKey | b64enc}}
 {{- end }}
+
 # generate all da certs
 {{- range $domInfo := $vars.domains }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "stage" $cm.stage) $v) | nindent 4 }}
+  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName) $v) | nindent 4 }}
   {{- end }}
 {{- end }}
