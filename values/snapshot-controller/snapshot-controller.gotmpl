@@ -1,0 +1,12 @@
+
+{{- $v := .Values }}
+{{- $d := $v | get "charts.aws-ebs-csi-driver" }}
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+

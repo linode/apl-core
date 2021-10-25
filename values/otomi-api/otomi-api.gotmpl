@@ -82,9 +82,10 @@ tools:
     VERBOSITY: '1'
 
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
-  policy.otomi.io/ignore-sidecar: psp-allowed-users
-  policy.otomi.io/ignore.istio-init: psp-allowed-users
+  policy.otomi.io/ignore.wget: "banned-image-tags,container-limits"
+  # policy.otomi.io/ignore: psp-allowed-users
+  # policy.otomi.io/ignore-sidecar: psp-allowed-users
+  # policy.otomi.io/ignore.istio-init: psp-allowed-users
 
 podSecurityContext:
   runAsUser: 1000
