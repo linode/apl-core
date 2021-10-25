@@ -10,7 +10,7 @@ spec:
   - '{{ .domain }}'
   issuerRef:
     kind: ClusterIssuer
-    name: {{ .issuer }}
+    name: {{ .clusterIssuerName }}
   usages:
     {{- if .otomi.hasCustomCA }}
     - server auth

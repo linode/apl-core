@@ -232,6 +232,7 @@ definitions:
       customRootCAKey:
         description: Private key used for signing issued certificates
         type: string
+        x-secret: ''
       customIntermediateCA:
         description: When set this intermediate CA is used by cert-manager to create self signed certs.
         type: string
