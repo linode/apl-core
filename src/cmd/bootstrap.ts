@@ -78,15 +78,10 @@ const getOtomiSecrets = async (
   }
   return generatedSecrets
 }
-const bootstrapValues = async (): Promise<void> => {
-  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
+const copyBasicFiles = async (): Promise<void> => {
   const binPath = `${env.ENV_DIR}/bin`
   mkdirSync(binPath, { recursive: true })
-  const imageTag = await getImageTag()
-  const otomiImage = `otomi/core:${imageTag}`
-  debug.info(`Intalling artifacts from ${otomiImage}`)
-
   await Promise.allSettled([
     copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
     copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
@@ -125,26 +120,31 @@ const bootstrapValues = async (): Promise<void> => {
   await Promise.allSettled(
     ['core.yaml', 'docker-compose.yml'].map((val) => copyFile(`${rootDir}/${val}`, `${env.ENV_DIR}/${val}`)),
   )
+}
 
+const genSecrets = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
-  let generatedSecrets
   if (isChart) {
     originalValues = getInputValues() as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
-    generatedSecrets = await getOtomiSecrets(originalValues)
   } else {
     originalValues = (await valuesOrEmpty()) as Record<string, any>
-    generatedSecrets = await generateSecrets(originalValues)
   }
+  const generatedSecrets = await getOtomiSecrets(originalValues)
   await writeValues(generatedSecrets, false)
-  // TODO bootstrap customCA based on otomi.hasCustomCA flag
+  return originalValues
+}
 
+const prepSops = async (): Promise<void> => {
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
     await encrypt()
     await decrypt()
   }
+}
+
+const validateBootstrapProcess = async (originalValues: Record<string, any>): Promise<void> => {
   try {
     // Do not validate if CLI just bootstraps originalValues with placeholders
     if (originalValues !== undefined) await validateValues()
@@ -159,7 +159,9 @@ const bootstrapValues = async (): Promise<void> => {
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
+}
 
+const postSops = async (): Promise<void> => {
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     // encryption related stuff
     const file = '.gitattributes'
@@ -167,6 +169,23 @@ const bootstrapValues = async (): Promise<void> => {
     // just call encrypt and let it sort out what has changed and needs encrypting
     await encrypt()
   }
+}
+
+const bootstrapValues = async (): Promise<void> => {
+  const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
+
+  const imageTag = await getImageTag()
+  const otomiImage = `otomi/core:${imageTag}`
+  debug.info(`Intalling artifacts from ${otomiImage}`)
+  await copyBasicFiles()
+
+  const originalValues = await genSecrets()
+  // TODO bootstrap customCA based on otomi.hasCustomCA flag
+
+  await prepSops()
+  await validateBootstrapProcess(originalValues)
+
+  await postSops()
 
   if (!hasOtomi) {
     debug.log('You can now use the otomi CLI')
