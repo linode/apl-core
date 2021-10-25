@@ -42,7 +42,7 @@ environments:
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") }}
+            enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") || (ne $provider "kind")  }}
           drone:
             sourceControl:
               {{- if eq $droneProvider "gitea" }}
