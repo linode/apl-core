@@ -2,7 +2,7 @@ import { readdirSync } from 'fs'
 import { $, chalk } from 'zx'
 import pkg from '../../package.json'
 import { decrypt } from './crypt'
-import { env } from './envalid'
+import { env, isCli } from './envalid'
 import { hfValues } from './hf'
 import { BasicArguments, loadYaml, parser, terminal } from './utils'
 import { askYesNo } from './zx-enhance'
@@ -17,7 +17,7 @@ let otomiK8sVersion: string
  * @returns
  */
 const checkKubeContext = async (): Promise<void> => {
-  if (env.CI) return
+  if (!isCli) return
   const d = terminal('checkKubeContext')
   d.info('Validating kube context')
 
@@ -92,7 +92,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   const d = terminal('prepareEnvironment')
   d.info('Checking environment')
   if (!options?.skipEnvDirCheck && checkEnvDir()) {
-    if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
+    if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
   }
 }
