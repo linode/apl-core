@@ -74,6 +74,9 @@ definitions:
                 - receivers
           - properties:
               receivers:
+                equals: []
+          - properties:
+              receivers:
                 contains:
                   enum:
                     - email
@@ -2221,7 +2224,7 @@ properties:
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
-        $ref: '#/definitions/wordCharacterPattern'
+        pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
     required:
       - adminPassword
   policies:
