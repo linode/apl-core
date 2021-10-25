@@ -10,7 +10,7 @@ const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
-const removeBlankAttributes = (obj: Record<string, unknown>): Record<string, unknown> => {
+const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
   const options: CleanOptions = {
     emptyArrays: false,
     emptyObjects: true,
@@ -46,6 +46,23 @@ const writeValuesToFile = async (targetPath: string, values: Record<string, any>
   return res
 }
 
+const writeValueToPlainAndSecret = (
+  plain: Record<string, any>,
+  secrets: Record<string, any>,
+  file: string,
+  overwrite: boolean,
+): Promise<void>[] => {
+  const promises: Promise<void>[] = []
+
+  if (secrets[file])
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.${file}.yaml`, secrets[file], overwrite))
+  // creating non secret files
+  if (plain[file])
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/${file}.yaml`, { cluster: plain[file] }, overwrite))
+
+  return promises
+}
+
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
@@ -65,20 +82,18 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // removing secrets
   const plainValues = removeBlankAttributes(omit(values, secretsJsonPath)) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts']
+  const customFiles = ['cluster', 'policies', 'teamConfig']
+  const fieldsToOmit = [...customFiles, 'charts']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
 
   const promises: Promise<void>[] = []
 
-  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
-  if (secretSettings)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
-  // creating non secret files
-  if (plainValues.cluster)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
-  if (plainValues.policies)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
+  promises.push(...writeValueToPlainAndSecret({ settings }, { settings: secretSettings }, 'settings', overwrite))
+  customFiles.map((file) => {
+    promises.push(...writeValueToPlainAndSecret(plainValues, secrets, file, overwrite))
+    return file
+  })
 
   const plainChartPromises = Object.keys(plainValues.charts || {}).map((chart) => {
     const valueObject = {

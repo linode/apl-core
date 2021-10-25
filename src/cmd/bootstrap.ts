@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
+import { pki } from 'node-forge'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
@@ -171,6 +172,49 @@ const postSops = async (): Promise<void> => {
   }
 }
 
+export const customCA = async (originalValues: Record<string, any>): Promise<void> => {
+  const d = terminal('customCA')
+  if (!originalValues?.otomi?.hasCustomCA) return
+  if (originalValues?.cluster?.customRootCA && originalValues?.cluster?.customRootCAKey) return
+  d.info('Need to generate custom RootCA')
+
+  // Code example from: https://www.npmjs.com/package/node-forge#x509
+  const keys = pki.rsa.generateKeyPair(2048)
+  const cert = pki.createCertificate()
+  cert.publicKey = keys.publicKey
+  cert.serialNumber = '01'
+  cert.validity.notBefore = new Date()
+  cert.validity.notAfter = new Date()
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10)
+  const attrs = [
+    { name: 'commonName', value: 'redkubes.com' },
+    { name: 'countryName', value: 'NL' },
+    { shortName: 'ST', value: 'Utrecht' },
+    { name: 'localityName', value: 'Utrecht' },
+    { name: 'organizationName', value: 'Otomi' },
+    { shortName: 'OU', value: 'Self-Signed' },
+  ]
+  cert.setSubject(attrs)
+  cert.setIssuer(attrs)
+  cert.sign(keys.privateKey)
+
+  d.info('Generated CA key pair')
+  const rootCrt = pki.certificateToPem(cert)
+  const rootKey = pki.privateKeyToPem(keys.privateKey)
+
+  const rootCrtB64 = Buffer.from(rootCrt).toString('base64')
+  const rootKeyB64 = Buffer.from(rootKey).toString('base64')
+
+  const value = {
+    cluster: {
+      customRootCA: rootCrtB64,
+      customRootCAKey: rootKeyB64,
+    },
+  }
+  await writeValues(value, true)
+  d.info('Written RootCA key pair to values')
+}
+
 const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
@@ -180,8 +224,8 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await genSecrets()
-  // TODO bootstrap customCA based on otomi.hasCustomCA flag
 
+  await customCA(originalValues)
   await prepSops()
   await validateBootstrapProcess(originalValues)
 
