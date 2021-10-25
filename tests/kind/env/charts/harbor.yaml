@@ -1,0 +1,3 @@
+charts:
+    harbor:
+        enabled: false
