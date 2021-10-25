@@ -22,7 +22,7 @@ env:
   CONTEXT_PATH: ''
 
 podAnnotations:
-  policy.otomi.io/ignore.wget: "container-limits"
+  policy.otomi.io/ignore.wget: "banned-image-tags,container-limits"
 
 podSecurityContext:
   runAsUser: 100

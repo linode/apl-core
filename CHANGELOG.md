@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.24](https://github.com/redkubes/otomi-core/compare/v0.14.23...v0.14.24) (2021-10-22)
+
+### [0.14.23](https://github.com/redkubes/otomi-core/compare/v0.14.22...v0.14.23) (2021-10-22)
+
+
+### Bug Fixes
+
+*  Bug where tr can't parse /dev/urandom force UTF-8 chars ([#631](https://github.com/redkubes/otomi-core/issues/631)) ([bcf675e](https://github.com/redkubes/otomi-core/commit/bcf675e3e9b2c43e993b0abd74c79b72494a84e0))
+* **schema:** allows empty array for alerts.receivers next to null ([#630](https://github.com/redkubes/otomi-core/issues/630)) ([4dc169d](https://github.com/redkubes/otomi-core/commit/4dc169d9be21e9a8d1542922b5f07a39d891e96a))
+
 ### [0.14.22](https://github.com/redkubes/otomi-core/compare/v0.14.21...v0.14.22) (2021-10-18)
 
 
