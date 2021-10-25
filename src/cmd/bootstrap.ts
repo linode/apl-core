@@ -172,7 +172,7 @@ const postSops = async (): Promise<void> => {
   }
 }
 
-export const customCA = async (originalValues: Record<string, any>): Promise<void> => {
+const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const d = terminal('customCA')
   if (!originalValues?.otomi?.hasCustomCA) return
   if (originalValues?.cluster?.customRootCA && originalValues?.cluster?.customRootCAKey) return
