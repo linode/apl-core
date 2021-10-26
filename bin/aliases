@@ -52,6 +52,7 @@ function kkns() {
 alias kintd="docker run --network kind --rm -it -v $PWD/kind/kubeconfig:/root/.kube/config quay.io/derailed/k9s"
 alias kintk="docker run -v $PWD/kind/kubeconfig:/.kube/config --rm --network kind bitnami/kubectl"
 alias kintnet="docker run --rm -it --network kind nicolaka/netshoot bash"
+alias kintapply="docker run --rm -it --network kind -v $PWD/kind/kubeconfig:/home/app/.kube/config -v $PWD/tests/kind:/home/app/stack/env otomi/core:kind-ga-runner-only apply"
 
 # Run KinD locally with nektos/act
 function kint() {
