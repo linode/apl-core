@@ -199,8 +199,8 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   cert.sign(keys.privateKey)
 
   d.info('Generated CA key pair')
-  const rootCrt = pki.certificateToPem(cert)
-  const rootKey = pki.privateKeyToPem(keys.privateKey)
+  const rootCrt = pki.certificateToPem(cert).replaceAll('\r', '')
+  const rootKey = pki.privateKeyToPem(keys.privateKey).replaceAll('\r', '')
 
   const value = {
     cluster: {
