@@ -13,7 +13,7 @@
   {{- $otomiTag = print "v" $otomiVersion }}
 {{- end }}
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
-{{- $domainSuffix := $v.cluster.domainSuffix }}
+{{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $c.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
@@ -52,7 +52,7 @@ environments:
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
-            address: https://keycloak.{{ $v.cluster.domainSuffix }}
+            address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}

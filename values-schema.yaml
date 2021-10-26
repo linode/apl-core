@@ -264,7 +264,6 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         $ref: '#/definitions/wordCharacterPattern'
     required:
-      - domainSuffix
       - k8sVersion
       - name
       - owner
