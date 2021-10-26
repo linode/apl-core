@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Set env
         run: |
+          tag=$(echo $(basename $GITHUB_REF))
+          echo "Creating tag: $tag"
+          echo "TAG=$tag" >> $GITHUB_ENV
           git config --global user.email $GIT_USER@users.noreply.github.com
           git config --global user.name $GIT_USER
       - name: Checkout
@@ -41,8 +44,8 @@ jobs:
       - name: Retag from cache and push
         run: |
           docker login -u otomi -p $DOCKER_PASSWORD
-          docker tag $CACHE_REGISTRY/$CACHE_REPO:${GITHUB_REF##*/} $REPO:${GITHUB_REF##*/}
-          docker push $REPO:${GITHUB_REF##*/}
+          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
+          docker push $REPO:$TAG
 
   integration:
     needs: build-test-push
