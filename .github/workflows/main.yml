@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-test-push:
-    if: "(!contains(github.event.head_commit.message, 'chore(release)')) && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/')"
+    if: ${{ !github.event.act }} && (!contains(github.event.head_commit.message, 'chore(release)')) && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -74,7 +74,7 @@ jobs:
 
   release:
     needs: integration
-    if: "contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master'"
+    if: ${{ !github.event.act }} && contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -115,7 +115,7 @@ jobs:
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
   chart-release:
-    if: "github.ref == 'refs/heads/master'"
+    if: ${{ !github.event.act }} && github.ref == 'refs/heads/master'
     needs: release
     runs-on: ubuntu-latest
     container:
