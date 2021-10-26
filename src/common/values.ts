@@ -21,7 +21,7 @@ const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> =>
   return cleanDeep(obj, options)
 }
 
-let hasSops = false
+const hasSops = (): boolean => existsSync(`${env.ENV_DIR}/.sops.yaml`)
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
@@ -32,7 +32,7 @@ const writeValuesToFile = async (targetPath: string, values: Record<string, any>
   if (!existsSync(targetPath)) {
     return writeFile(targetPath, objectToYaml(nonEmptyValues))
   }
-  const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
+  const suffix = targetPath.includes('/secrets.') && hasSops() ? '.dec' : ''
   const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
   const mergeResult = merge(cloneDeep(originalValues), nonEmptyValues, !overwrite ? originalValues : {})
@@ -68,7 +68,6 @@ const writeValueToPlainAndSecret = (
  */
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValues')
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
 
   // creating secret files
   const schema = await getValuesSchema()
