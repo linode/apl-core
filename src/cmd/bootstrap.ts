@@ -202,13 +202,10 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const rootCrt = pki.certificateToPem(cert)
   const rootKey = pki.privateKeyToPem(keys.privateKey)
 
-  const rootCrtB64 = Buffer.from(rootCrt).toString('base64')
-  const rootKeyB64 = Buffer.from(rootKey).toString('base64')
-
   const value = {
     cluster: {
-      customRootCA: rootCrtB64,
-      customRootCAKey: rootKeyB64,
+      customRootCA: rootCrt,
+      customRootCAKey: rootKey,
     },
   }
   await writeValues(value, true)
