@@ -199,8 +199,9 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   cert.sign(keys.privateKey)
 
   d.info('Generated CA key pair')
-  const rootCrt = pki.certificateToPem(cert).replaceAll('\r', '')
-  const rootKey = pki.privateKeyToPem(keys.privateKey).replaceAll('\r', '')
+  // The yaml.dump funciton does not create multiline value on \r\n. Only on \n
+  const rootCrt = pki.certificateToPem(cert).replaceAll('\r\n', '\n')
+  const rootKey = pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
   const value = {
     cluster: {

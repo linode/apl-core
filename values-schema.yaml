@@ -2043,8 +2043,6 @@ properties:
                   - project
             required:
               - google
-    required:
-      - provider
   home:
     $ref: '#/definitions/alerts'
   kms:
