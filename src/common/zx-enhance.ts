@@ -1,5 +1,5 @@
 import { chalk, ProcessOutput, ProcessPromise, question } from 'zx'
-import { env } from './envalid'
+import { env, isCli } from './envalid'
 import { DebugStream, getParsedArgs } from './utils'
 
 const MAX_RETRIES_QUESTION = 3
@@ -33,7 +33,7 @@ export const ask = async (query: string, options?: AskType): Promise<string> => 
     [...new Set(matching.map((val) => val.toLowerCase()))].includes(answer.toLowerCase())
   const matchingFn = options?.matchingFn ?? defaultMatchingFn
 
-  if (env.CI) return defaultAnswer
+  if (!isCli) return defaultAnswer
   let answer = ''
   let tries = 0
   let matches = false

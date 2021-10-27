@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
-import { env } from './envalid'
+import { env, isCli } from './envalid'
 import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'
 
 export interface Arguments extends BasicArguments {
@@ -26,7 +26,7 @@ const preCrypt = (): void => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
-  if (!env.CI) {
+  if (isCli) {
     const secretPath = `${env.ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
       debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)

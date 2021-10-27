@@ -1,0 +1,25 @@
+Volume Snapshot Controller installed.
+
+{{- if and (not (.Capabilities.APIVersions.Has "snapshot.storage.k8s.io/v1")) (not (.Capabilities.APIVersions.Has "snapshot.storage.k8s.io/v1beta") ) }}
+Please install the snapshot CRDs, otherwise the controller will not run.
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+{{- else if .Release.IsUpgrade }}
+It looks like you are upgrading from a previous release. Helm currently does not support upgrading CRDs, so to ensure
+you have the latest CRDs applied, you can run the following commands:
+
+kubectl replace -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+kubectl replace -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+kubectl replace -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ .Chart.AppVersion }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+{{- end }}
+
+If you already have volume snapshots deployed using a CRDs before v1, you should
+verify that the existing snapshots are upgradable to v1 CRDs. The snapshot controller (>= v3.0.0)
+will label any invalid snapshots it can find. Use the following commands to find any invalid snapshot
+
+kubectl get volumesnapshots --selector=snapshot.storage.kubernetes.io/invalid-snapshot-resource="" --all-namespaces
+kubectl get volumesnapshotcontents --selector=snapshot.storage.kubernetes.io/invalid-snapshot-resource="" --all-namespaces
+
+If the above commands return any items, you need to remove them before upgrading to the newer v1 CRDs.

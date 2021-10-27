@@ -39,6 +39,8 @@ environments:
       - charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
+          aws-ebs-csi-driver:
+            enabled: {{ eq $provider "aws" }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
@@ -67,6 +69,8 @@ environments:
             enabled: {{ list "onprem" "aws" | has $provider }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+          snapshot-controller:
+            enabled: {{ eq $provider "aws" }}
         {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
         cluster:
           customRootCA: |
