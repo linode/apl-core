@@ -57,8 +57,7 @@ const writeValueToPlainAndSecret = (
   if (secrets[file])
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.${file}.yaml`, secrets[file], overwrite))
   // creating non secret files
-  if (plain[file])
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/${file}.yaml`, { cluster: plain[file] }, overwrite))
+  if (plain[file]) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/${file}.yaml`, plain[file], overwrite))
 
   return promises
 }
