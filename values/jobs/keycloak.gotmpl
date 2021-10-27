@@ -46,9 +46,9 @@ nativeSecrets:
   TEAM_IDS: '{{ $teamIds | toJson }}'
   FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
   {{- if $v.otomi.hasExternalIDP }}
-  IDP_ALIAS: {{ $k | get "idp.alias" "otomi-idp" }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" "${CLAIM.email}" }}
-  IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" "sub" }}
+  IDP_ALIAS: {{ $k | get "idp.alias" nil }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" nil }}
+  IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" nil }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
   IDP_GROUP_OTOMI_ADMIN: {{ $o | get "adminGroupID" nil }}
   IDP_GROUP_TEAM_ADMIN: {{ $o | get "teamAdminGroupID" nil }}
