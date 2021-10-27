@@ -6,7 +6,7 @@ environments:
             isManaged: true
         charts:
           cert-manager:
-            stage: production
+            issuer: letsEncrypt
           demo-tlspass:
             enabled: false
           drone:
@@ -60,7 +60,6 @@ environments:
             enabled: false
         otomi:
           hasCloudLB: false
-          hasCustomCA: false
           hasExternalDNS: true
           hasExternalIDP: false
           isHomeMonitored: false
@@ -133,3 +132,4 @@ environments:
           xx2ml43DO/Ya/tVZVok0mO0TUjzJIfPqyvr455IsIut4RlCR9Iq0EDTve2/ZwCuG
           hSjpTUFGSiQrR2JK2Evp+o6AETUkBCO1aw0PpQBPDQ==
           -----END CERTIFICATE-----
+

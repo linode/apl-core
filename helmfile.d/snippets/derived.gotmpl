@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
+{{- $cm := index $v.charts "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
 {{- $otomiVersion := $v.otomi | get "version" nil }}
@@ -32,6 +33,17 @@ environments:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
+          cert-manager:
+          {{- if eq $cm.issuer "letsEncrypt"}}
+            {{- if not (has $cm (list "stage")) }}
+            stage: production
+            {{- end }}
+          {{- else }}
+            issuer: customCA
+            {{- if not (has $cm (list "generateAutomatically")) }}
+            generateAutomatically: true
+            {{- end }}
+          {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:

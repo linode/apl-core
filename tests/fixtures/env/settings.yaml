@@ -44,7 +44,6 @@ otomi:
           name: demo
           provider: aws
     hasCloudLB: false
-    hasCustomCA: true
     hasExternalIDP: false
     isHomeMonitored: true
     isManaged: true

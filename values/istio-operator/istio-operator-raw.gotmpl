@@ -5,7 +5,7 @@
 {{- $ig := $i | get "global" dict }}
 {{- $iga := $i | get "gateways" dict }}
 {{- $stage := $cm | get "stage" }}
-{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
+{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq $cm.stage "staging")) }}
 {{- $hasKeycloak := $k | get "enabled" }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $o := $v | get "oidc" dict }}
@@ -212,11 +212,15 @@ resources:
               sampling: 0.1
           {{- end }}
           enableAutoMtls: true
+        {{- if $untrustedCA }}
         pilot:
-          {{- if $hasCA }}
           jwksResolverExtraRootCA: |
-            {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 12 }}
+          {{- if eq $cm.issuer "customCA" }}
+            {{- $cm.customRootCA | nindent 12 }}
+          {{- else }}
+            {{- $v.letsencryptCA | nindent 12 }}
           {{- end }}
+        {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
           injectedAnnotations: 
