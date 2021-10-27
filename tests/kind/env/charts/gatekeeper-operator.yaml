@@ -1,2 +1,3 @@
 charts:
-  gatekeeper-operator: {}
+  gatekeeper-operator:
+    enabled: false
