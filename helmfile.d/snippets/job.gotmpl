@@ -1,6 +1,6 @@
 {{- $v := .v }}
 {{- $version := $v.versions | get .item }}
-{{- $isSemver := regexMatch "[0-9.]+" $version }}
+{{- $isSemver := regexMatch "^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]" $version }}
 {{- $cm := $v.charts | get "cert-manager" }}
 {{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
 {{- $skipCA := . | get "skipCA" false }}
