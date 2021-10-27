@@ -34,7 +34,6 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
-        certStage: {{ $cm.stage }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}
