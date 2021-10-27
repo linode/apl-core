@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.26](https://github.com/redkubes/otomi-core/compare/v0.14.25...v0.14.26) (2021-10-27)
+
+
+### Bug Fixes
+
+* faulty drone provider defaults [ci skip] ([dcb001c](https://github.com/redkubes/otomi-core/commit/dcb001c705994c1eb1fe0e7a2a161a54d7db315a))
+
 ### [0.14.25](https://github.com/redkubes/otomi-core/compare/v0.14.24...v0.14.25) (2021-10-27)
 
 
