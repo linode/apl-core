@@ -57,8 +57,9 @@ jobs:
       - name: Set globalPullSecret if not running locally
         if: (!github.event.act)
         run: |
-          docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
-          docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.username otomi
+          cmd="docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml"
+          $cmd otomi.globalPullSecret.password $DOCKER_PASSWORD
+          $cmd otomi.globalPullSecret.username otomi
       - name: Pull the image that was built for this branch
         run: |
           docker pull otomi/core:${GITHUB_REF##*/}
