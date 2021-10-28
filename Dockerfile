@@ -23,7 +23,7 @@ FROM otomi/tools:v1.4.20 as prod
 ENV APP_HOME=/home/app/stack
 ENV IN_DOCKER='1'
 ENV NODE_NO_WARNINGS='1'
-ENV HUSKY_SKIP_INSTALL='1'
+ENV HUSKY='0'
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
@@ -33,4 +33,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-CMD ["dist/src/otomi.js"]
+ENTRYPOINT ["binzx/otomi"]
