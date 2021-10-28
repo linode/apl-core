@@ -2156,11 +2156,9 @@ properties:
         description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
     required:
-      - adminGroupID
       - clientID
       - clientSecret
       - issuer
-      - teamAdminGroupID
   otomi:
     additionalProperties: false
     properties:
