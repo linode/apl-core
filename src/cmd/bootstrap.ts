@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
+import { get } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
@@ -174,8 +175,10 @@ const postSops = async (): Promise<void> => {
 
 const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const d = terminal('customCA')
-  if (!originalValues?.otomi?.hasCustomCA) return
-  if (originalValues?.cluster?.customRootCA && originalValues?.cluster?.customRootCAKey) return
+  const cm = get(originalValues, 'charts.cert-manager', {})
+
+  // If generateAutomatically is false, or if both customRootCA AND customRootCAKey exists, we skip
+  if (!cm?.generateAutomatically || (cm?.customRootCA && cm?.customRootCAKey)) return
   d.info('Need to generate custom RootCA')
 
   // Code example from: https://www.npmjs.com/package/node-forge#x509
@@ -204,13 +207,17 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const rootKey = pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
   const value = {
-    cluster: {
-      customRootCA: rootCrt,
-      customRootCAKey: rootKey,
+    charts: {
+      'cert-manager': {
+        customRootCA: rootCrt,
+        customRootCAKey: rootKey,
+      },
     },
   }
+  // We need to overwrite in case only one of the two values was filled in
+  // We need both, so we use the generated values.
   await writeValues(value, true)
-  d.info('Written RootCA key pair to values')
+  d.info('Generated RootCA are stored in charts.cert-manager values')
 }
 
 const bootstrapValues = async (): Promise<void> => {
