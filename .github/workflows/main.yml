@@ -12,7 +12,7 @@ env:
   GIT_USER: redkubesbot
 
 jobs:
-  build-test-push:
+  build-test-cache:
     if: (!github.event.act && !contains(github.event.head_commit.message, 'chore(release)') && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/'))
     runs-on: ubuntu-latest
     env:
@@ -69,6 +69,16 @@ jobs:
           chmod +r ./kind/kubeconfig
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image apply
 
+  push-to-docker:
+    needs: [build-test-push, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to docker hub
+        run: |
+          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
+          docker push $REPO:$TAG
+
   release:
     needs: integration
     if: (!github.event.act && contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master')
@@ -84,12 +94,9 @@ jobs:
         id: git_tag
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-          # get image from cache and retag
-          docker pull $CACHE_REGISTRY/$CACHE_REPO:$TAG
-          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
-          docker tag $REPO:$TAG $REPO:latest
           docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker pull $REPO:$TAG
+          docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
           release_tag=v${COMMIT_MSG#* }
           echo ::set-output name=tag::$release_tag
@@ -129,11 +136,13 @@ jobs:
           # Release new chart only if its version changes
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
-          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version')
           chart_version=$(helm search repo otomi -o json | jq -r 'sort_by(.version) | .[-1].version')
-          new_patch_version=$((${chart_version##*.}+1)) 
-          [ "$this_version" = "$chart_version" ] && echo "The current version ($this_version) is the same as the last released version ($chart_version). Skipping chart release." && exit
+          chart_patch_version=${chart_version##*.}
+          # check if major or minor part of version changed (patch number is automated so left out of equation)
+          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/CHART_PATCH_PLACEHOLDER/chart_patch_version")
+          [ -z "${{ jobs.release.steps.git_tag.outputs.tag }}" ] && [ "$this_version" = "$chart_version" ] && echo "The current version ($this_version) is the same as the last released version ($chart_version). Skipping chart release." && exit
           echo ::set-output name=has_changes::true
+          new_patch_version=$(($chart_patch_version+1)) 
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/$new_patch_version/g" chart/otomi/Chart.yaml
