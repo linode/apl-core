@@ -1,0 +1,8 @@
+charts:
+    keycloak:
+        _rawValues: {}
+        enabled: true
+        theme: otomi
+        idp:
+            clientID: otomi
+            alias: redkubes-azure

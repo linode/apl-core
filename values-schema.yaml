@@ -536,6 +536,7 @@ definitions:
       - azure
       - google
       - onprem
+      - kind
   redisChart:
     properties:
       _rawValues:
@@ -2200,6 +2201,9 @@ properties:
       hasCloudLB:
         default: false
         description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
+        type: boolean
+      hasExternalDNS:
+        default: true
         type: boolean
       hasExternalIDP:
         default: false

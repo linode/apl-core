@@ -73,11 +73,11 @@ kubernetes:
       {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
-      memory: 32Mi
-      cpu: 40m
+      memory: 1Gi
+      cpu: 1.5
     limits:
       memory: 2Gi
-      cpu: 1
+      cpu: 2
     {{- end }}
   env:
     DRONE_TRACE: {{ $trace }}
@@ -103,8 +103,8 @@ metrics:
 
 {{- if $hasCA }}
 extraRootCA: |
-  {{- $v | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
+  {{- $v.cluster | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.cluster | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
