@@ -54,25 +54,20 @@ jobs:
           cmd="docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml"
           $cmd otomi.globalPullSecret.password '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
           $cmd otomi.globalPullSecret.username otomi
-      - name: Pull the image that was built for this branch
-        run: |
-          TAG=${GITHUB_REF##*/}
-          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-          docker pull $CACHE_REGISTRY/$CACHE_REPO:$TAG
-          # tag the cached image as if it was already published in docker hub:
-          docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
-      - name: Execute otomi validate-values on the kind test folder
-        run: |
-          docker run --rm -e CI=1 -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} validate-values
-      - name: Run kind
+      - name: Validate input values and deploy otomi on kind cluster
         env:
           KIND_CA_CERT: ${{ secrets.KIND_CA_CERT }}
           KIND_CA_KEY: ${{ secrets.KIND_CA_KEY }}
         run: |
+          TAG=${GITHUB_REF##*/}
+          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
+          docker pull $image
+          docker run --rm -e CI=1 -v $PWD/tests/kind:/home/app/stack/env $image validate-values
           docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
-          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env otomi/core:${GITHUB_REF##*/} apply
+          docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image apply
 
   release:
     needs: integration
