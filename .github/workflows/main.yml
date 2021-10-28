@@ -41,7 +41,7 @@ jobs:
           pull_image_and_stages: false
 
   integration:
-    needs: build-test-push
+    needs: build-test-cache
     # skip integration check for releases, as the master they are derived from have already been integration tested:
     if: ((github.event.act || contains(github.event.head_commit.message, '[kind]') || github.ref == 'refs/heads/master') && !contains(github.event.head_commit.message, 'chore(release)'))
     runs-on: self-hosted
@@ -70,7 +70,7 @@ jobs:
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image apply
 
   push-to-docker:
-    needs: [build-test-push, integration]
+    needs: [build-test-cache, integration]
     runs-on: ubuntu-latest
     steps:
       - name: Push to docker hub
@@ -166,7 +166,7 @@ jobs:
 
   notification:
     runs-on: ubuntu-latest
-    needs: [build-test-push, integration, release, chart-release]
+    needs: [build-test-cache, integration, release, chart-release]
     if: always()
     steps:
       - name: Slack Notification
