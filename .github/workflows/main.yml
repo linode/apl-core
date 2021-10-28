@@ -80,7 +80,7 @@ jobs:
           docker push $REPO:$TAG
 
   release:
-    needs: integration
+    needs: push-to-docker
     if: (!github.event.act && contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     env:
