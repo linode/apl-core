@@ -45,13 +45,13 @@ environments:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
             enabled: {{ $c | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
+          {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
-              {{- if eq $droneProvider "gitea" }}
               gitea:
                 server: {{ $c | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
               secret: {{ $c | get "drone.sourceControl.secret" "drone-source-control" }}
-              {{- end }}
+          {{- end }}
           drone-admit-members:
             enabled: {{ and ($c | get "drone.enabled") (eq $droneProvider "github") }}
           external-dns:

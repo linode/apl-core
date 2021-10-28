@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.26](https://github.com/redkubes/otomi-core/compare/v0.14.25...v0.14.26) (2021-10-27)
+
+
+### Bug Fixes
+
+* faulty drone provider defaults [ci skip] ([dcb001c](https://github.com/redkubes/otomi-core/commit/dcb001c705994c1eb1fe0e7a2a161a54d7db315a))
+
+### [0.14.25](https://github.com/redkubes/otomi-core/compare/v0.14.24...v0.14.25) (2021-10-27)
+
+
+### Features
+
+* **system:** enables snapshots on aws ([#629](https://github.com/redkubes/otomi-core/issues/629)) ([7054947](https://github.com/redkubes/otomi-core/commit/705494746caac1222f4553a56e6b584c7b4ba02f))
+
+
+### Others
+
+* **chart:** bump version ([dfeb45e](https://github.com/redkubes/otomi-core/commit/dfeb45ec70681f233d014f075008812d06666d93))
+
+
+### Code Refactoring
+
+* **env:** abstracting away CI ([#633](https://github.com/redkubes/otomi-core/issues/633)) ([a2a46cf](https://github.com/redkubes/otomi-core/commit/a2a46cf711350d2bc8fe35f0491211c2f251bb55))
+
 ### [0.14.24](https://github.com/redkubes/otomi-core/compare/v0.14.23...v0.14.24) (2021-10-22)
 
 ### [0.14.23](https://github.com/redkubes/otomi-core/compare/v0.14.22...v0.14.23) (2021-10-22)
