@@ -2,7 +2,7 @@
 {{- $cm := $v.charts | get "cert-manager" }}
 {{- $i := $v.charts | get "istio" }}
 {{- $ig := $i | get "global" dict }}
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
@@ -207,8 +207,8 @@ resources:
         {{- if $untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
-          {{- if eq $cm.issuer "customCA" }}
-            {{- $cm.customRootCA | nindent 12 }}
+          {{- if eq $cm.issuer "custom-ca" }}
+            {{- ($cm | get "customRootCA" "") | nindent 12 }}
           {{- else }}
             {{- $v.letsencryptCA | nindent 12 }}
           {{- end }}

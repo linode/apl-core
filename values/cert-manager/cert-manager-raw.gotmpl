@@ -5,7 +5,7 @@
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 
-{{- $clusterIssuerName := ternary (printf "%s-%s" $cm.issuer $cm.stage) $cm.issuer (eq $cm.issuer "letsEncrypt") }}
+{{- $clusterIssuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 
 
 resources:
@@ -25,14 +25,14 @@ resources:
       {{- end }}
 {{- end }}
 
-{{- if eq $cm.issuer "letsEncrypt" }}
+{{- if eq $cm.issuer "letsencrypt" }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
       name: {{ $clusterIssuerName }}
     spec:
       acme:
-        server: https://acme{{ (eq $cm.stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
+        server: https://acme{{ (eq ($cm | get "stage" "") "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
         privateKeySecretRef:
           name: {{ $clusterIssuerName }}
@@ -84,8 +84,8 @@ resources:
       name: {{ $clusterIssuerName }}
     type: kubernetes.io/tls
     data:
-      tls.crt: {{ $cm.customRootCA | b64enc }}
-      tls.key: {{ $cm.customRootCAKey | b64enc}}
+      tls.crt: {{ ($cm | get "customRootCA" "")| b64enc }}
+      tls.key: {{ ($cm | get "customRootCAKey" "") | b64enc}}
 {{- end }}
 
 # generate all da certs

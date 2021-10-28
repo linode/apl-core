@@ -1,4 +1,4 @@
 charts:
     cert-manager:
-        issuer: letsEncrypt
+        issuer: letsencrypt
         stage: production

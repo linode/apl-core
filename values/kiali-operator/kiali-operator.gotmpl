@@ -1,8 +1,6 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.kiali }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $stage := $v.charts | get "cert-manager.stage" }}
-{{- $hasStagingCerts := eq $stage "staging" }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
@@ -32,7 +30,7 @@ cr:
     external_services:
       grafana:
         auth:
-          insecure_skip_verify: {{ $hasStagingCerts }}
+          insecure_skip_verify: {{ $untrustedCA }}
           password: {{ $v.otomi.adminPassword }}
           type: basic
           username: admin
@@ -65,7 +63,7 @@ cr:
         # url_service_version: http://istiod.istio-system:15014/version
       prometheus:
         auth:
-          insecure_skip_verify: {{ $hasStagingCerts }}
+          insecure_skip_verify: {{ $untrustedCA }}
           type: none
         cache_duration: 10
         cache_enabled: true
@@ -75,7 +73,7 @@ cr:
         url: https://{{ $appsDomain }}/prometheus/
       tracing:
         auth:
-          insecure_skip_verify: {{ $hasStagingCerts }}
+          insecure_skip_verify: {{ $untrustedCA }}
           type: none
         enabled: true
         in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686

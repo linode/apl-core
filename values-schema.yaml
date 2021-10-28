@@ -1039,8 +1039,8 @@ properties:
               issuer:
                 type: string
                 enum:
-                  - letsEncrypt
-                default: letsEncrypt
+                  - letsencrypt
+                default: letsencrypt
               stage:
                 type: string
                 enum:
@@ -1056,10 +1056,9 @@ properties:
             properties:
               issuer:
                 type: string
-                const: customCA
                 enum:
-                  - customCA
-                default: customCA
+                  - custom-ca
+                default: custom-ca
               generateAutomatically:
                 type: boolean
                 default: true
@@ -2169,6 +2168,14 @@ properties:
         type: string
         description: Select OIDC claim to be passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
+  internal:
+    additionalProperties: true
+    description: INTERNAL USE ONLY - we store configuration here that is shared across multiple charts
+    type: object
+    properties:
+      untrustedCA:
+        type: boolean
+        default: false
   otomi:
     additionalProperties: false
     properties:

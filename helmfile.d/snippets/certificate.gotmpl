@@ -12,7 +12,7 @@ spec:
     kind: ClusterIssuer
     name: {{ .clusterIssuerName }}
   usages:
-    {{- if eq .issuer "customCA" }}
+    {{- if eq .issuer "custom-ca" }}
     - server auth
     {{- else }}
     - digital signature

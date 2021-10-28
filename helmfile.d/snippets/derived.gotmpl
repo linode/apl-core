@@ -34,12 +34,12 @@ environments:
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
           cert-manager:
-          {{- if eq $cm.issuer "letsEncrypt"}}
-            {{- if not (has $cm (list "stage")) }}
+          {{- if eq $cm.issuer "letsencrypt"}}
+            {{- if not (has $cm (list "stage")) }}\
             stage: production
             {{- end }}
           {{- else }}
-            issuer: customCA
+            issuer: custom-ca
             {{- if not (has $cm (list "generateAutomatically")) }}
             generateAutomatically: true
             {{- end }}
@@ -74,6 +74,8 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: {{ eq $provider "aws" }}
+        internal:
+          untrustedCA: {{ or (eq $cm.issuer "custom-ca") (and (eq $cm.issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }} 

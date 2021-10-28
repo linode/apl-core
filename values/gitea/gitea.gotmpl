@@ -7,7 +7,8 @@
 {{- $keycloakIssuer := printf "%s/realms/otomi" $keycloakUrl }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
+
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -122,8 +123,8 @@ postgresql:
 
 {{- if $untrustedCA}}
 extraRootCA: |
-{{- if eq $cm.issuer "customCA" }}
-  {{- $cm.customRootCA | nindent 2 }}
+{{- if eq $cm.issuer "custom-ca" }}
+  {{- ($cm | get "customRootCA" "") | nindent 2 }}
 {{- else }}
   {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}

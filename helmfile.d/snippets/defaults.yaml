@@ -6,7 +6,7 @@ environments:
             isManaged: true
         charts:
           cert-manager:
-            issuer: letsEncrypt
+            issuer: letsencrypt
           demo-tlspass:
             enabled: false
           drone:

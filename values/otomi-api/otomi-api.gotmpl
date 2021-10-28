@@ -8,7 +8,8 @@
 {{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
-{{- $skipVerify := eq ($cm | get "stage") "staging" }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
+
 {{- $sopsEnabled := ne ($sops | get "provider" "") "" }}
 {{/* START: set the enabled flags on core services based on the chart enabled flags */}}
 {{- $core := readFile "../../core.yaml" | fromYaml }}
@@ -59,7 +60,7 @@ env:
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
   CORE_VERSION: {{ $v.otomi.version }}
   USE_SOPS: {{ $sopsEnabled }}
-  {{- if $skipVerify }}
+  {{- if $untrustedCA }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   {{- end }}

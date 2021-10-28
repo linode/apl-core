@@ -1,6 +1,6 @@
 charts:
     cert-manager:
         _rawValues: {}
-        # issuer: letsEncrypt
+        # issuer: letsencrypt
         # email: jeho@test.io
-        issuer: customCA
+        issuer: custom-ca

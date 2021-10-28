@@ -2,7 +2,7 @@
 {{- $version := $v.versions | get .item }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
 {{- $skipCA := . | get "skipCA" false }}
 {{- $wait := . | get "wait" nil }}
 {{- $task := . | get "task" nil }}
@@ -19,8 +19,8 @@ image:
 {{ if and (not $skipCA) $untrustedCA }}
 files:
   /tmp/node/certificates.crt: |
-  {{- if eq $cm.issuer "customCA" }}
-    {{- $cm.customRootCA | nindent 4 }}
+  {{- if eq $cm.issuer "custom-ca" }}
+    {{- ($cm | get "customRootCA" "") | nindent 4 }}
   {{- else }}
     {{- $v.letsencryptRootCA | nindent 4 }}
     {{- $v.letsencryptCA | nindent 4 }}

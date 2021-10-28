@@ -7,7 +7,7 @@
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
+{{- $untrustedCA := $v.internal.untrustedCA }}
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
@@ -103,8 +103,8 @@ metrics:
 
 {{- if $untrustedCA}}
 extraRootCA: |
-{{- if eq $cm.issuer "customCA" }}
-  {{- $cm.customRootCA | nindent 2 }}
+{{- if eq $cm.issuer "custom-ca" }}
+  {{- ($cm | get "customRootCA" "") | nindent 2 }}
 {{- else }}
   {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}
