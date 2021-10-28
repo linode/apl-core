@@ -2,7 +2,7 @@
 {{- $version := $v.versions | get .item }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq $cm.stage "staging")) }}
+{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
 {{- $skipCA := . | get "skipCA" false }}
 {{- $wait := . | get "wait" nil }}
 {{- $task := . | get "task" nil }}

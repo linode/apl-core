@@ -1,4 +1,4 @@
-{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq $cm.stage "staging")) }}
+{{- $untrustedCA := or (eq $cm.issuer "customCA") (and (eq $cm.issuer "letsEncrypt") (eq ($cm | get "stage") "staging")) }}
 
 {{- $hookUrl := print "https://gatekeeper-webhook-service.gatekeeper-system:443" }}
 apiVersion: batch/v1
