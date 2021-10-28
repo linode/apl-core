@@ -56,7 +56,7 @@ const generateLooseSchema = () => {
 
 const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
-    return hfValues({ filesOnly: true })
+    return hfValues()
   return undefined
 }
 
@@ -178,7 +178,10 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const cm = get(originalValues, 'charts.cert-manager', {})
 
   // If generateAutomatically is false, or if both customRootCA AND customRootCAKey exists, we skip
-  if (!cm?.generateAutomatically || (cm?.customRootCA && cm?.customRootCAKey)) return
+  if (!cm?.generateAutomatically || (cm?.customRootCA && cm?.customRootCAKey)) {
+    d.info('Skipping custom RootCA generation')
+    return
+  }
   d.info('Need to generate custom RootCA')
 
   // Code example from: https://www.npmjs.com/package/node-forge#x509

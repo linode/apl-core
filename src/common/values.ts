@@ -80,7 +80,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   if (plainValues.policies)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
 
-  const plainChartPromises = Object.keys(plainValues.charts || {}).map((chart) => {
+  const plainChartPromises = Object.keys((plainValues.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
       charts: {
         [chart]: plainValues.charts[chart],
@@ -88,10 +88,10 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
     }
     return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
   })
-  const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, unknown>).map((chart) => {
+  const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
       charts: {
-        [chart]: values.charts[chart],
+        [chart]: secrets.charts[chart],
       },
     }
     return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)

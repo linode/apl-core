@@ -32,7 +32,7 @@ export const validateValues = async (): Promise<void> => {
   }
 
   debug.info('Loading values-schema.yaml')
-  const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, unknown>
+  const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, any>
   debug.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
   debug.debug('Compiling Ajv validation')
