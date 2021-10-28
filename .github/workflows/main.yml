@@ -132,10 +132,12 @@ jobs:
           helm repo update
           this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version')
           chart_version=$(helm search repo otomi -o json | jq -r 'sort_by(.version) | .[-1].version')
+          new_patch_version=$((${chart_version##*.}+1)) 
           [ "$this_version" = "$chart_version" ] && echo "The current version ($this_version) is the same as the last released version ($chart_version). Skipping chart release." && exit
           echo ::set-output name=has_changes::true
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CHART_PATCH_PLACEHOLDER/$new_patch_version/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
           # copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
