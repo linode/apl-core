@@ -75,6 +75,7 @@ jobs:
     steps:
       - name: Push to docker hub
         run: |
+          TAG=${GITHUB_REF##*/}
           docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
           docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
           docker push $REPO:$TAG
@@ -166,7 +167,7 @@ jobs:
 
   notification:
     runs-on: ubuntu-latest
-    needs: [build-test-cache, integration, release, chart-release]
+    needs: [build-test-cache, integration, push-to-docker, release, chart-release]
     if: always()
     steps:
       - name: Slack Notification
