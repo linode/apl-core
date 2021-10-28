@@ -6,7 +6,7 @@
 # Binary not on your host? -- `brew install ...`
 #####
 
-alias kint="act --workflows ./.github/workflows/main.yml --job integration --platform self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged --bind --eventpath kind/act.json"
+alias kint="act --workflows ./.github/workflows/main.yml --job release --platform self-hosted=ghcr.io/catthehacker/ubuntu:act-20.04 --privileged --bind --eventpath kind/act.json"
 alias kintd="docker run --network kind --rm -it -v $PWD/kind/kubeconfig:/root/.kube/config quay.io/derailed/k9s"
 alias kintk="docker run -v $PWD/kind/kubeconfig:/.kube/config --rm --network kind bitnami/kubectl"
 alias kintnet="docker run --rm -it --network kind nicolaka/netshoot bash"

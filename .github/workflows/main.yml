@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-test-push:
-    if: ${{ !github.event.act }} && (!contains(github.event.head_commit.message, 'chore(release)')) && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/')
+    if: (!github.event.act && !contains(github.event.head_commit.message, 'chore(release)') && !contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/'))
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -49,13 +49,13 @@ jobs:
 
   integration:
     needs: build-test-push
-    if: ${{ github.event.act }} || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]')
+    if: (github.event.act || github.event.review.state == 'approved' || contains(github.event.head_commit.message, '[kind]'))
     runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set globalPullSecret if not running locally
-        if: ${{ !github.event.act }}
+        if: (!github.event.act)
         run: |
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.password $DOCKER_PASSWORD
           docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml otomi.globalPullSecret.username otomi
@@ -74,7 +74,7 @@ jobs:
 
   release:
     needs: integration
-    if: ${{ !github.event.act }} && contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master'
+    if: (!github.event.act && contains(github.event.head_commit.message, 'chore(release)') && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -102,8 +102,7 @@ jobs:
           changelog="${changelog//$'\n'/'%0A'}"
           changelog="${changelog//$'\r'/'%0D'}"
           echo ::set-output name=changes::$changelog
-      - if: "contains(github.event.head_commit.message, 'chore(release)')"
-        name: Create GitHub release
+      - name: Create GitHub release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -111,8 +110,9 @@ jobs:
           tag_name: ${{ steps.git_tag.outputs.tag }}
           release_name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
+
   chart-release:
-    if: ${{ !github.event.act }} && github.ref == 'refs/heads/master'
+    if: (!github.event.act && github.ref == 'refs/heads/master')
     needs: release
     runs-on: ubuntu-latest
     container:
