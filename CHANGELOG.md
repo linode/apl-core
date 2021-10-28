@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.27](https://github.com/redkubes/otomi-core/compare/v0.14.26...v0.14.27) (2021-10-28)
+
+
+### Features
+
+* automated integration tests [#195](https://github.com/redkubes/otomi-core/issues/195) ([#595](https://github.com/redkubes/otomi-core/issues/595)) ([cc2482b](https://github.com/redkubes/otomi-core/commit/cc2482bc19bf0a822789363d2727b59255c616d5))
+
+
+### Bug Fixes
+
+* github registry credentials ([2694145](https://github.com/redkubes/otomi-core/commit/269414545e4accb681e575aef015c522b8b5d276))
+* github registry credentials, part 2 ([c9319c9](https://github.com/redkubes/otomi-core/commit/c9319c9b925320cdf79d8b6107b475f11ba3ee7a))
+* github registry credentials, part 3 ([4999da7](https://github.com/redkubes/otomi-core/commit/4999da755b6a5ab40a1275eecb1cf05271ac9b7c))
+* **integration:** old image from public repo was used instead of newly built ([7673fd7](https://github.com/redkubes/otomi-core/commit/7673fd75350e378c2b412743f2a99ee31697117a))
+* **integration:** workflow now pushes image after succesful build and no integration is needed ([51d62a1](https://github.com/redkubes/otomi-core/commit/51d62a1957a921650b99343318329c3ed1f6490e))
+* job name ([75eb7e4](https://github.com/redkubes/otomi-core/commit/75eb7e4920667be22e7bb85efba95b52daf24216))
+* pipeline job ordering ([e6ae49c](https://github.com/redkubes/otomi-core/commit/e6ae49c127a7b4373e063248b321df9e5d2c58d0))
+* pull before push ([eeb983a](https://github.com/redkubes/otomi-core/commit/eeb983a428f74e6b5dc52d1d13a1b002b33eea59))
+* simplified chart release logic as it always needs to happen after release ([07439d8](https://github.com/redkubes/otomi-core/commit/07439d86a8ee00ddc26f651e22d627bfc25d5719))
+* tag for push ([ffc7039](https://github.com/redkubes/otomi-core/commit/ffc7039b5d428f05e80d279a36ca252e9397c85e))
+
 ### [0.14.26](https://github.com/redkubes/otomi-core/compare/v0.14.25...v0.14.26) (2021-10-27)
 
 
