@@ -57,7 +57,7 @@ jobs:
       - name: Pull the image that was built for this branch
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}'
+          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
           docker pull $CACHE_REGISTRY/$CACHE_REPO:$TAG
           # tag the cached image as if it was already published in docker hub:
           docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
@@ -89,7 +89,7 @@ jobs:
         id: git_tag
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}'
+          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
           # get image from cache and retag
           docker pull $CACHE_REGISTRY/$CACHE_REPO:$TAG
           docker tag $CACHE_REGISTRY/$CACHE_REPO:$TAG $REPO:$TAG
