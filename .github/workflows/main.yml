@@ -39,8 +39,6 @@ jobs:
           image_name: ${{ env.CACHE_REPO }}
           image_tag: ${{ env.TAG }}
           pull_image_and_stages: false
-      - run: |
-          echo "PUBLISH=1" >> $GITHUB_ENV
 
   integration:
     needs: build-test-cache
@@ -70,12 +68,10 @@ jobs:
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image apply
-      - run: |
-          echo "PUBLISH=1" >> $GITHUB_ENV
 
   push-to-docker:
-    needs: [integration, build-test-cache]
-    if: env.PUBLISH == '1'
+    needs: [build-test-cache, integration]
+    if: always() && contains(needs.*.result, 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Push to docker hub
