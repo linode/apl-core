@@ -13,6 +13,7 @@ ENV VERBOSITY='1'
 
 COPY --chown=app . .
 
+RUN npm config set update-notifier false
 RUN npm ci && npm run compile
 
 RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm $APP_HOME/env; fi
@@ -33,4 +34,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-ENTRYPOINT ["binzx/otomi"]
+CMD ["dist/src/otomi.js"]

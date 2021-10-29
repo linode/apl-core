@@ -3,7 +3,7 @@
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
-{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $letsEncryptStage := printf "letsencrypt-%s" $cm.stage }}
 {{- $clusterIssuer := ternary "selfsigned-issuer" $letsEncryptStage (eq $v.cluster.provider "kind") }}
 {{- $caKeyPair := "kind-ca-key-pair" }}
@@ -82,7 +82,7 @@ resources:
       tls.key: {{ requiredEnv "KIND_CA_KEY" | b64enc }}
 {{- end }}
 # generate all da certs
-{{- range $domInfo := $vars.domains }}
+{{- range $domInfo := $doms.domInfo }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
   - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "issuer" $clusterIssuer) $v) | nindent 4 }}

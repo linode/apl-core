@@ -68,16 +68,17 @@ server:
 kubernetes:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
+    sidecar.istio.io/inject: "false"
   resources:
     {{- with $d | get "resources.runner" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
-      memory: 1Gi
-      cpu: 1.5
+      memory: 32Mi
+      cpu: 40m
     limits:
-      memory: 2Gi
-      cpu: 2
+      memory: 256Mi
+      cpu: 200m
     {{- end }}
   env:
     DRONE_TRACE: {{ $trace }}
