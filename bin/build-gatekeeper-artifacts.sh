@@ -64,10 +64,11 @@ function decorate() {
     local policy_json_path="properties.policies.properties[${key}]"
     local properties=$(yq -j r $compiled_schema_path $policy_json_path | yq d - '**.required.' | yq d - '**.default.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$map_properties_expr")
     local ctemplates_file=$(ls $constraints_path/template_* | grep -i "$filename.yaml")
+    local output_file=${ctemplates_file/$constraints_path/$templates_path}
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
-    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
+    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$output_file
   done
-  mv -f $constraints_path/template_* $templates_path
+  # mv -f $constraints_path/template_* $templates_path
 }
 
 build && decorate
