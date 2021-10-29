@@ -31,7 +31,7 @@ env:
   KEYCLOAK_ADDRESS: {{ $k.address }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
-  REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" $doms.domains "sep" "/*\",\"https://") }}"]'
+  REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" $doms.domains "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
 {{- if $v.otomi.hasExternalIDP }}
   {{- with $k | get "idp.alias" nil }}
