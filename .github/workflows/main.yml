@@ -89,7 +89,7 @@ jobs:
 
   release:
     needs: push-to-docker
-    if: github.ref == 'refs/heads/master' && contains(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && github.ref == 'refs/heads/master' && contains(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -130,7 +130,7 @@ jobs:
 
   chart-release:
     needs: release
-    if: (!github.event.act)
+    if: always() && !github.event.act
     runs-on: ubuntu-latest
     container:
       image: otomi/tools:v1.4.20
