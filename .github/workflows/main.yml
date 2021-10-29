@@ -70,7 +70,7 @@ jobs:
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image apply
 
   push-to-docker:
-    needs: [build-test-cache, integration]
+    needs: [integration, build-test-cache]
     runs-on: ubuntu-latest
     steps:
       - name: Push to docker hub
