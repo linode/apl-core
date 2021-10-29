@@ -132,7 +132,7 @@ jobs:
 
   chart-release:
     needs: release
-    if: always() && !github.event.act
+    if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     container:
       image: otomi/tools:v1.4.20
