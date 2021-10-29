@@ -2,11 +2,19 @@
 
 There are some tools available in kind/aliases suited for various development purposes. See the file for an accurate list, but here follows a description.
 
-Usage: `. kind/aliases`. E.g.: `echo '. kind/aliases' >> ~/.zshrc`.
+## Prerequisites
 
-Some binaries may undoubtedly not be present on your host OS. `brew install <bin>` is the preferred way of installing those, and the tools used are verified to be present in `brew`.
+Copy kind/.secrets.sample and insert a custom CA and key pair (for .env and .secrets file you have to remove line breaks...).
+
+## Usage
+
+`. kind/aliases`. E.g.: `echo '. kind/aliases' >> ~/.zshrc`.
+
+[See below](#commands) for commands.
 
 # Tools used with relevant documentation
+Some binaries may undoubtedly not be present on your host OS. `brew install <bin>` is the preferred way of installing those, and the tools used are verified to be present in `brew`.
+
 - https://kind.sigs.k8s.io/
 - https://coredns.io/plugins/k8s_external/
 - https://metallb.universe.tf/configuration/
@@ -23,6 +31,7 @@ We've added the following to `.gitignore`:
 ```
 workflow/
 kind/kubeconfig
+kind/.secrets
 ```
 
 In the `kint` command we bind the CWD (`-b|--bind`). This has some obvious advantages, among which for instance one can debug the values repository `tests/kind` on the fly. It is also necessary for 3-way Docker in docker. 
@@ -55,8 +64,8 @@ The job should be self-explanatory for the most part, but here are some quirks:
 This script is the entrypoint for the otomi/kind image. It creates a cluster, configures MetalLB and the CoreDNS k8s_external dependency for intra cluster host name resolution. 
 
 These environment variables are open for modification:
-- KIND_EXPERIMENTAL_DOCKER_NETWORK (default: kind): connect KinD to a Docker network. The use case does become clear when you have to dynamically assign a Docker network, such as in the official Github Actions runner, where you only have access to GITHUB_NETWORK. E.g., you can set `KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ env.GITHUB_NETWORK }}. Locally it also makes sense to provide network isolation.
-- DOMAIN_SUFFIX (default: kind.local): Can change it later if you want to set a custom domain suffix.
+- `KIND_EXPERIMENTAL_DOCKER_NETWORK` (default: kind): connect KinD to a Docker network. The use case does become clear when you have to dynamically assign a Docker network, such as in the official Github Actions runner, where you only have access to `GITHUB_NETWORK`. E.g., you can set `KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ env.GITHUB_NETWORK }}`. Locally it also makes sense to provide network isolation.
+- `DOMAIN_SUFFIX` (default: kind.local): Can change it later if you want to set a custom domain suffix.
 
 ## `kind/kind.yaml`
 
@@ -93,7 +102,13 @@ Sometimes it is useful to lint the Github Actions file instead of committing and
 
 Run otomi commands against the cluster.
 
-# False negatives
+## `kintprep`
+
+Prepares an otomi/core image locally for your feature branch to use for locally running Github Actions with `kint`. For more info, see [Building an otomi/core image](#building-an-otomicore-image).
+
+# Caveats
+
+## False negatives in the `integration` step
 
 As observed from our logs/direct observation, there are occurrences of false negatives in running a stack against KinD. We observed the following errors that have occurred randomly:
 
@@ -101,3 +116,11 @@ As observed from our logs/direct observation, there are occurrences of false neg
 - ...
 
 It will throw an error that the build has failed, while it might be a perfectly fine configuration. The most common solution is to try again after restarting or after a period. 
+
+## Building an otomi/core image
+
+Running `kint` locally assumes you have an image on your machine named `otomi/core:$NAME_OF_YOUR_BRANCH` available. Either build the most recent one or pull it from Dockerhub (if is already pushed). 
+
+Consequently, you could potentially be running an outdated image, so please be aware. This can happen if you just checked out a new branch and an image with the branch name does not exist.
+
+It's useful this way because if you compare build times, obviously the following holds true if you compare Docker time: building > pulling > exists. So you don't have to wait for anything to start debugging the integration test locally.
