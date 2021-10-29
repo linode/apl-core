@@ -16,7 +16,7 @@ readonly copy_path="/tmp/otomi/policies"
 readonly constraints_path="$PWD/charts/gatekeeper-constraints/templates"
 readonly compiled_schema_path="/tmp/otomi/compiled-schema.json"
 readonly templates_path="$PWD/charts/gatekeeper-artifacts/templates"
-readonly output_path="/tmp/otomi/gatekeeper-artifacts/"
+readonly output_path=$(mktemp -u)
 readonly script_message="Building constraints"
 
 # hardcoded workaround for Disallowed data.X References
