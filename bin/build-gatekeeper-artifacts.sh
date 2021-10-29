@@ -68,7 +68,7 @@ function decorate() {
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
     jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$output_file
   done
-  # mv -f $constraints_path/template_* $templates_path
+  rm -rf $constraints_path/template_*
 }
 
 build && decorate
