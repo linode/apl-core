@@ -2,11 +2,19 @@
 
 There are some tools available in kind/aliases suited for various development purposes. See the file for an accurate list, but here follows a description.
 
-Usage: `. kind/aliases`. E.g.: `echo '. kind/aliases' >> ~/.zshrc`.
+## Prerequisites
 
-Some binaries may undoubtedly not be present on your host OS. `brew install <bin>` is the preferred way of installing those, and the tools used are verified to be present in `brew`.
+Copy kind/.secrets.sample and insert a custom CA and key pair (for .env and .secrets file you have to remove line breaks...).
+
+## Usage
+
+`. kind/aliases`. E.g.: `echo '. kind/aliases' >> ~/.zshrc`.
+
+[See below](#commands) for commands.
 
 # Tools used with relevant documentation
+Some binaries may undoubtedly not be present on your host OS. `brew install <bin>` is the preferred way of installing those, and the tools used are verified to be present in `brew`.
+
 - https://kind.sigs.k8s.io/
 - https://coredns.io/plugins/k8s_external/
 - https://metallb.universe.tf/configuration/
