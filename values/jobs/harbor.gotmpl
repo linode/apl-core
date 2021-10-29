@@ -19,9 +19,11 @@ nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
   HARBOR_USER: admin
   {{- if $hasKeycloak }}
+  OIDC_ENDPOINT: '{{ $keycloakIssuer }}'
   OIDC_CLIENT_ID: {{ $k.idp.clientID }}
   OIDC_CLIENT_SECRET: {{ $k.idp.clientSecret }}
   {{- else }}
+  OIDC_ENDPOINT: '{{ $o.issuer }}'
   OIDC_CLIENT_ID: {{ $o.clientID }}
   OIDC_CLIENT_SECRET: {{ $o.clientSecret }}
   {{- end }}
@@ -30,7 +32,6 @@ env:
   HARBOR_BASE_URL: http://harbor-core.harbor
   HARBOR_BASE_REPO_URL: {{ $harborRepo }}
   TEAM_IDS: '{{ $teams | sortAlpha | toJson }}'
-  OIDC_ENDPOINT: '{{ $hasKeycloak | ternary $keycloakIssuer $o.issuer }}'
   OIDC_GROUPS_CLAIM: groups
   OIDC_NAME: keycloak
   OIDC_SCOPE: openid
