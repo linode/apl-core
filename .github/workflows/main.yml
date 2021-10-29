@@ -44,7 +44,7 @@ jobs:
     needs: build-test-cache
     # skip integration check for releases, as the master they are derived from have already been integration tested:
     #contains(github.event.head_commit.message, '[kind]') || (github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, 'chore(release)')) || github.event.act
-    if: never()
+    if: (false)
     outputs:
       started: 'true'
     runs-on: self-hosted
