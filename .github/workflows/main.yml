@@ -147,7 +147,7 @@ jobs:
           chart_patch_version=${chart_version##*.}
           new_patch_version=$(($chart_patch_version+1))
           # check if major or minor part of version changed (patch number is automated so left out of equation)
-          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/CHART_PATCH_PLACEHOLDER/chart_patch_version")
+          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/CHART_PATCH_PLACEHOLDER/$chart_patch_version/g")
           # if any of those changed then reset the patch version
           [ "$this_version" != "$chart_version" ] && new_patch_version=1
           release_tag=v$(cat package.json | jq -r '.version')
