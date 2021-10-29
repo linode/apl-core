@@ -71,7 +71,7 @@ jobs:
 
   push-to-docker:
     needs: [build-test-cache, integration]
-    if: contains(needs.*.result, 'success') && !github.event.act
+    if: always() && contains(needs.*.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     steps:
       - name: Push to docker hub
