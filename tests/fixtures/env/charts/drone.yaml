@@ -2,7 +2,7 @@ charts:
     drone:
         _rawValues: {}
         debug: false
-        enabled: false
+        enabled: true
         githubAdmins:
             org: redkubes
             team: admins
