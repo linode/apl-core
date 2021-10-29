@@ -101,7 +101,13 @@ Sometimes it is useful to lint the Github Actions file instead of committing and
 
 Run otomi commands against the cluster.
 
-# False negatives
+## `kintprep`
+
+Prepares an otomi/core image locally for your feature branch to use for locally running Github Actions with `kint`. For more info, see [Building an otomi/core image](#building-an-otomicore-image).
+
+# Caveats
+
+## False negatives in the `integration` step
 
 As observed from our logs/direct observation, there are occurrences of false negatives in running a stack against KinD. We observed the following errors that have occurred randomly:
 
@@ -109,3 +115,11 @@ As observed from our logs/direct observation, there are occurrences of false neg
 - ...
 
 It will throw an error that the build has failed, while it might be a perfectly fine configuration. The most common solution is to try again after restarting or after a period. 
+
+## Building an otomi/core image
+
+Running `kint` locally assumes you have an image on your machine named `otomi/core:$NAME_OF_YOUR_BRANCH` available. Either build the most recent one or pull it from Dockerhub (if is already pushed). 
+
+Consequently, you could potentially be running an outdated image, so please be aware. This can happen if you just checked out a new branch and an image with the branch name does not exist.
+
+It's useful this way because if you compare build times, obviously the following holds true if you compare Docker time: building > pulling > exists. So you don't have to wait for anything to start debugging the integration test locally.
