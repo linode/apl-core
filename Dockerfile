@@ -34,4 +34,4 @@ COPY --chown=app . .
 
 RUN npm install --production --ignore-scripts
 
-ENTRYPOINT ["binzx/otomi"]
+ENTRYPOINT ['dist/src/otomi.js']
