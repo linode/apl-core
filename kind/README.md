@@ -31,6 +31,7 @@ We've added the following to `.gitignore`:
 ```
 workflow/
 kind/kubeconfig
+kind/.secrets
 ```
 
 In the `kint` command we bind the CWD (`-b|--bind`). This has some obvious advantages, among which for instance one can debug the values repository `tests/kind` on the fly. It is also necessary for 3-way Docker in docker. 
@@ -63,8 +64,8 @@ The job should be self-explanatory for the most part, but here are some quirks:
 This script is the entrypoint for the otomi/kind image. It creates a cluster, configures MetalLB and the CoreDNS k8s_external dependency for intra cluster host name resolution. 
 
 These environment variables are open for modification:
-- KIND_EXPERIMENTAL_DOCKER_NETWORK (default: kind): connect KinD to a Docker network. The use case does become clear when you have to dynamically assign a Docker network, such as in the official Github Actions runner, where you only have access to GITHUB_NETWORK. E.g., you can set `KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ env.GITHUB_NETWORK }}. Locally it also makes sense to provide network isolation.
-- DOMAIN_SUFFIX (default: kind.local): Can change it later if you want to set a custom domain suffix.
+- `KIND_EXPERIMENTAL_DOCKER_NETWORK` (default: kind): connect KinD to a Docker network. The use case does become clear when you have to dynamically assign a Docker network, such as in the official Github Actions runner, where you only have access to `GITHUB_NETWORK`. E.g., you can set `KIND_EXPERIMENTAL_DOCKER_NETWORK: ${{ env.GITHUB_NETWORK }}`. Locally it also makes sense to provide network isolation.
+- `DOMAIN_SUFFIX` (default: kind.local): Can change it later if you want to set a custom domain suffix.
 
 ## `kind/kind.yaml`
 
