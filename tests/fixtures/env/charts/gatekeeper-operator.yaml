@@ -1,7 +1,7 @@
 charts:
     gatekeeper-operator:
         _rawValues: {}
-        enabled: false
+        enabled: true
         replicas: 1
         disableValidatingWebhook: false
         auditFromCache: false
