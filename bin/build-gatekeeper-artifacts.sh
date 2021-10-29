@@ -13,9 +13,9 @@ run_from_hook=$1
 readonly policies_path="./policies"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly copy_path="/tmp/otomi/policies"
-readonly constraints_path="/tmp/otomi/constraints"
+readonly constraints_path="$PWD/charts/gatekeeper-constraints/templates"
 readonly compiled_schema_path="/tmp/otomi/compiled-schema.json"
-readonly templates_path="/tmp/otomi/constraint-templates"
+readonly templates_path="$PWD/charts/gatekeeper-artifacts/templates"
 readonly script_message="Building constraints"
 
 # hardcoded workaround for Disallowed data.X References
@@ -30,8 +30,8 @@ function clear_disallowed_refs() {
 # build yaml resources from policy files
 function build() {
   echo "Building constraints artifacts from policies."
-  mkdir -p $constraints_path $templates_path $copy_path
-  rm -rf $constraints_path/* $copy_path/*
+  mkdir -p $copy_path
+  rm -rf $copy_path/*
   echo "Copying policies temporarily to $copy_path"
   cp -rf $policies_path/* $copy_path/
   clear_disallowed_refs
