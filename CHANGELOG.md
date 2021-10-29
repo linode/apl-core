@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.28](https://github.com/redkubes/otomi-core/compare/v0.14.27...v0.14.28) (2021-10-29)
+
+
+### Bug Fixes
+
+* chart release logic ([d8e3f72](https://github.com/redkubes/otomi-core/commit/d8e3f72e81e45c98a17c9221ecfe401631a0cf6d))
+* dockerfile entrypoint, harbor job regression ([5abf9e5](https://github.com/redkubes/otomi-core/commit/5abf9e50da437a2ed8f8b85b15a33dbbc9dada6c))
+* dockerfile entrypoint, harbor job regression, part 2 ([e25b39d](https://github.com/redkubes/otomi-core/commit/e25b39d09e6f4165ec09dddb3ac3f76b62edd2c8))
+* entrypoint back to cmd ([6e296c5](https://github.com/redkubes/otomi-core/commit/6e296c56434ebd5b5f36a5f5718be8a2287d3ec1))
+* integration apply ([e20f1a6](https://github.com/redkubes/otomi-core/commit/e20f1a64b6690f7a254ac7fe0fcc16a90c297ee1))
+* integration job disabled logic ([9dd5979](https://github.com/redkubes/otomi-core/commit/9dd597993b93b0dc6ef242f87eb6812faf3fc0eb))
+* integration validate-values invocation ([b99a02c](https://github.com/redkubes/otomi-core/commit/b99a02c56c2976e1cbb119231f6ff33e1e416a23))
+* integration validate-values invocation, [#2](https://github.com/redkubes/otomi-core/issues/2) ([4d11b8b](https://github.com/redkubes/otomi-core/commit/4d11b8be37faecb69db112429dc7a33f142b22a9))
+* keycloak callback urls ([533836f](https://github.com/redkubes/otomi-core/commit/533836fa2edd9f5ddc685e01960e927ab62f6b89))
+* keycloak callback urls now for all services ([5cb1087](https://github.com/redkubes/otomi-core/commit/5cb1087b8ce7acad6c20d2b0246cd275245414a3))
+* local `kint` after refactor ([#640](https://github.com/redkubes/otomi-core/issues/640)) ([fb598a8](https://github.com/redkubes/otomi-core/commit/fb598a821d0abce84e47083fce346b51c44b4458))
+
+
+### Others
+
+* **release:** 0.14.27 ([e26af2e](https://github.com/redkubes/otomi-core/commit/e26af2e86023082898c781a173e1e290085a0e18))
+
 ### [0.14.27](https://github.com/redkubes/otomi-core/compare/v0.14.26...v0.14.27) (2021-10-28)
 
 
