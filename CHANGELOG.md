@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.29](https://github.com/redkubes/otomi-core/compare/v0.14.28...v0.14.29) (2021-10-29)
+
+
+### Bug Fixes
+
+* missing trailing 'fi' ([1dc7611](https://github.com/redkubes/otomi-core/commit/1dc76119b23fff495f3dace03b2323d368d34a05))
+
+
+### Others
+
+* **deps:** upgrade harbor ([#639](https://github.com/redkubes/otomi-core/issues/639)) ([71d4d4f](https://github.com/redkubes/otomi-core/commit/71d4d4f1772d4640e7a8e67e3aeb7a75c33e1d3c))
+
 ### [0.14.28](https://github.com/redkubes/otomi-core/compare/v0.14.27...v0.14.28) (2021-10-29)
 
 
