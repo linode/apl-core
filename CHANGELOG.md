@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.32](https://github.com/redkubes/otomi-core/compare/v0.14.31...v0.14.32) (2021-10-31)
+
+
+### Bug Fixes
+
+* harbor pull secret ([903d6ba](https://github.com/redkubes/otomi-core/commit/903d6ba622d433b9033864316f677e928e74c460))
+
 ### [0.14.31](https://github.com/redkubes/otomi-core/compare/v0.14.30...v0.14.31) (2021-10-31)
 
 
