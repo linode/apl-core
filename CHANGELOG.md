@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.31](https://github.com/redkubes/otomi-core/compare/v0.14.30...v0.14.31) (2021-10-31)
+
+
+### Others
+
+* **deps:** bumped tasks [ci skip] ([7731a2c](https://github.com/redkubes/otomi-core/commit/7731a2cf5ddf26d0afe6a6c32343c668678710f6))
+
 ### [0.14.30](https://github.com/redkubes/otomi-core/compare/v0.14.29...v0.14.30) (2021-10-31)
 
 
