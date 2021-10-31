@@ -1,6 +1,7 @@
 # alias oldtomi="bin/otomi"
 # alias otomi="binzx/otomi"
 alias d="docker"
+alias h="helm"
 alias oaws="otomi x aws"
 alias oaz="otomi x az"
 alias og="otomi x gcloud"
@@ -44,5 +45,3 @@ function kkns() {
   k get ns | grep Terminating | awk '{print $1}' | xargs -n1 -- bash -c 'kubectl get ns "$0" -o json | jq "del(.spec.finalizers[0])" > "$0.json"; curl -k -H "Content-Type: application/json" -X PUT --data-binary @"$0.json" "http://127.0.0.1:8001/api/v1/namespaces/$0/finalize"; rm  "$0.json"'
   kk
 }
-
-

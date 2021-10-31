@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.30](https://github.com/redkubes/otomi-core/compare/v0.14.29...v0.14.30) (2021-10-31)
+
+
+### Bug Fixes
+
+* extracted all gen files to tmp ([#642](https://github.com/redkubes/otomi-core/issues/642)) ([b829410](https://github.com/redkubes/otomi-core/commit/b829410b77ce3f785afa837a7db9868c50e4a753))
+* gatekeeper artifacts ([4180b82](https://github.com/redkubes/otomi-core/commit/4180b82c47092e37264917a239644cc268e4af1b))
+* gatekeeper artifacts ([488b21d](https://github.com/redkubes/otomi-core/commit/488b21d8ec75a7faf3fb5f6649458b8621e90303))
+* missing files, cleaned templates ([f6334cc](https://github.com/redkubes/otomi-core/commit/f6334cc2be8f65064abbfeedd8a1f7e4c3691efb))
+* re-enable integration ([bfac911](https://github.com/redkubes/otomi-core/commit/bfac911e82386dc667f003254cc7e44c4f0e9b7b))
+
+
+### Others
+
+* **deps:** bumped api [ci skip] ([61de1e1](https://github.com/redkubes/otomi-core/commit/61de1e1909565f14b066ce5d2dcf96e9c0451be6))
+
 ### [0.14.29](https://github.com/redkubes/otomi-core/compare/v0.14.28...v0.14.29) (2021-10-29)
 
 
