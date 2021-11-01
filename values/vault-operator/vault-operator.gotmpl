@@ -5,3 +5,14 @@ global:
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 1337
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
