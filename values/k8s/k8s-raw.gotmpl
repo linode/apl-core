@@ -56,9 +56,14 @@ resources:
     metadata:
       name: default
       namespace: {{ $ns }}
-    {{- if $v.otomi | get "globalPullSecret" nil }}
+    {{- if or ($v.otomi | get "globalPullSecret" nil) $v.charts.harbor.enabled }}
     imagePullSecrets:
+    {{- if $v.otomi | get "globalPullSecret" nil }}
       - name: otomi-pullsecret-global
+    {{- end }}
+    {{- if $v.charts.harbor.enabled }}
+      - name: harbor-pullsecret
+    {{- end }}
     {{- end }}
   {{- end }}
   - apiVersion: rbac.authorization.k8s.io/v1

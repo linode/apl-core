@@ -19,7 +19,6 @@ releases:
     labels:
       pkg: gatekeeper
     values:
-      - ../values/gatekeeper/gatekeeper-constraints.gotmpl
       - snippets/common.gotmpl
   - name: job-gitea-prepare
     installed: {{ $c | get "gitea.enabled" }}

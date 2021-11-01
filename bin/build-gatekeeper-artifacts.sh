@@ -13,9 +13,10 @@ run_from_hook=$1
 readonly policies_path="./policies"
 readonly policies_file="$ENV_DIR/env/policies.yaml"
 readonly copy_path="/tmp/otomi/policies"
-readonly constraints_path="/tmp/otomi/constraints"
+readonly constraints_path="$PWD/charts/gatekeeper-constraints/templates"
 readonly compiled_schema_path="/tmp/otomi/compiled-schema.json"
-readonly templates_path="/tmp/otomi/constraint-templates"
+readonly templates_path="$PWD/charts/gatekeeper-artifacts/templates"
+readonly tmp_path=$(mktemp -u)
 readonly script_message="Building constraints"
 
 # hardcoded workaround for Disallowed data.X References
@@ -30,13 +31,13 @@ function clear_disallowed_refs() {
 # build yaml resources from policy files
 function build() {
   echo "Building constraints artifacts from policies."
-  mkdir -p $constraints_path $templates_path $copy_path
-  rm -rf $constraints_path/* $copy_path/*
+  mkdir -p $copy_path
+  rm -rf tmp_path/* $copy_path/*
   echo "Copying policies temporarily to $copy_path"
   cp -rf $policies_path/* $copy_path/
   clear_disallowed_refs
   echo "Generating konstrait files to $constraints_path"
-  konstraint create $copy_path -o $constraints_path
+  konstraint create $copy_path -o $tmp_path
   json-dereference -s values-schema.yaml -o $compiled_schema_path
 }
 
@@ -55,20 +56,22 @@ function decorate() {
     # Policy names can be defined using dashes, so we need to strip dashes from filenames expression
     local filename=$(sed s/-//g <<<$key)
     # decorate constraints with parameters
-    local constraints_file=$(ls $constraints_path/constraint_* | grep -i "$filename.yaml")
-    local parameters=$(echo $constraint | jq --raw-output -c "{"spec":{"parameters": {\"${key}\"} }}")
+    local constraints_file=$(ls $tmp_path/constraint_* | grep -i "$filename.yaml")
+    local parameters=$(echo $constraint | jq --raw-output -c "{\"spec\":{\"parameters\": {\"$key\"} }}")
     local constraints=$(yq r -P -j $constraints_file | jq --raw-output -c '.')
-    jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >$constraints_file
+    jq -n --argjson constraints $constraints --argjson parameters $parameters '$constraints * $parameters | .' | yq r -P - >"$constraints_file"
     # decorate constraint templates with openAPI schema properties
     local map_properties_expr='. as $properties | {"spec":{"crd":{"spec":{"validation": {"openAPIV3Schema": $properties }}}}} | .'
     local policy_json_path="properties.policies.properties[${key}]"
     local properties=$(yq -j r $compiled_schema_path $policy_json_path | yq d - '**.required.' | yq d - '**.default.' | yq d - '**.additionalProperties.' | jq -c --raw-output "$map_properties_expr")
-    local ctemplates_file=$(ls $constraints_path/template_* | grep -i "$filename.yaml")
+    local ctemplates_file=$(ls $tmp_path/template_* | grep -i "$filename.yaml")
+    local template_file=${ctemplates_file/$tmp_path/$templates_path}
     local template=$(yq r -P -j $ctemplates_file | jq --raw-output -c '.')
-    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >$ctemplates_file
+    jq -n --argjson template "$template" --argjson properties "$properties" '$template * $properties | .' | yq r -P - >"$template_file"
   done
-  mv -f $constraints_path/template_* $templates_path
 }
 
 build && decorate
+mv $tmp_path/constraint_* $constraints_path
+mv $tmp_path/template_* $templates_path
 echo "Done"

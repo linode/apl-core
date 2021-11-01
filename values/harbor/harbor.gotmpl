@@ -6,6 +6,7 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
+{{- $tag := "v2.4.0" }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -17,6 +18,8 @@ secretKey: {{ $h | get "secretKey" nil }}
 
 clair:
   adapter:
+    image:
+      tag: {{ $tag }}
     resources:
       {{- with $h | get "resources.adapter" nil }}
       {{- toYaml . | nindent 6 }}
@@ -29,6 +32,8 @@ clair:
         memory: 256Mi
       {{- end }}
   clair:
+    image:
+      tag: {{ $tag }}
     resources:
       {{- with $h | get "resources.clair" nil }}
       {{- toYaml . | nindent 6 }}
@@ -44,6 +49,8 @@ clair:
     policy.otomi.io/ignore: psp-allowed-users
 
 chartmuseum:
+  image:
+    tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   resources:
@@ -59,6 +66,8 @@ chartmuseum:
     {{- end }}
 
 core:
+  image:
+    tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   resources:
@@ -78,6 +87,8 @@ core:
 
 database:
   internal:
+    image:
+      tag: {{ $tag }}
     initContainer:
       migrator:
         resources:
@@ -112,6 +123,10 @@ database:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
   type: internal
 
+exporter:
+  image:
+    tag: {{ $tag }}
+
 expose:
   tls:
     enabled: false
@@ -122,6 +137,8 @@ internalTLS:
   enabled: false
 
 jobservice:
+  image:
+    tag: {{ $tag }}
   jobLoggers:
     - stdout
   podAnnotations:
@@ -144,6 +161,12 @@ metrics:
     enabled: true
 
 notary:
+  server:
+    image:
+      tag: {{ $tag }}
+  signer:
+    image:
+      tag: {{ $tag }}
   enabled: false
   secretName: {{ $notarySecretName }}
   
@@ -213,6 +236,8 @@ postgresql:
     enabled: true
 
 portal:
+  image:
+    tag: {{ $tag }}
   resources:
     {{- with $h | get "resources.portal" nil }}
       {{- toYaml . | nindent 4 }}
@@ -228,6 +253,9 @@ portal:
     policy.otomi.io/ignore: psp-allowed-users
 
 redis:
+  internal:
+    image:
+      tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   internal:
@@ -249,6 +277,8 @@ registry:
     policy.otomi.io/ignore: psp-allowed-users
 
   registry:
+    image:
+      tag: {{ $tag }}
     resources:
       {{- with $h | get "resources.registry" nil }}
         {{- toYaml . | nindent 6 }}
@@ -261,6 +291,8 @@ registry:
         cpu: 100m
       {{- end }}
   controller:
+    image:
+      tag: {{ $tag }}
     resources:
       {{- with $h | get "resources.registry-controller" nil }}
         {{- toYaml . | nindent 6 }}
@@ -279,6 +311,8 @@ registry:
     htpasswd: {{ $h | get "registry.credentials.htpasswd" nil }}
 
 trivy:
+  image:
+    tag: {{ $tag }}
   automountServiceAccountToken: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

@@ -5,7 +5,7 @@
 {{- $g := $v.charts | get "gitea" }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g | get "enabled" }}
-{{- $provider := $d | get "sourceControl.provider" ($hasGitea | ternary "gitea" nil) }}
+{{- $provider := $d | get "sourceControl.provider" }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
 {{- $debug := $d | get "debug" false }}
@@ -26,9 +26,7 @@ nameOverride: drone
 fullnameOverride: drone
 sharedSecret: {{ $d | get "sharedSecret" }}
 sourceControl:
-{{- with $d | get "sourceControl" nil }}
-{{- . | toYaml | nindent 2 }}
-{{- end }}
+{{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users
@@ -70,6 +68,7 @@ server:
 kubernetes:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
+    sidecar.istio.io/inject: "false"
   resources:
     {{- with $d | get "resources.runner" nil }}
       {{- toYaml . | nindent 4 }}
@@ -78,8 +77,8 @@ kubernetes:
       memory: 32Mi
       cpu: 40m
     limits:
-      memory: 2Gi
-      cpu: 1
+      memory: 256Mi
+      cpu: 200m
     {{- end }}
   env:
     DRONE_TRACE: {{ $trace }}
@@ -105,8 +104,8 @@ metrics:
 
 {{- if $hasCA }}
 extraRootCA: |
-  {{- $v | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
+  {{- $v.cluster | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.cluster | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
