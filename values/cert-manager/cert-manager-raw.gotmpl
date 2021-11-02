@@ -7,7 +7,7 @@
 {{- $clusterIssuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if not $v.otomi.hasExternalDNS }}
+{{- if and (not (eq $clusterIssuerName "custom-ca")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:

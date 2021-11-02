@@ -4,6 +4,7 @@ environments:
       - azure:
           appgw:
             isManaged: true
+        charts:
           demo-tlspass:
             enabled: false
           drone:
