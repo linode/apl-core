@@ -30,6 +30,6 @@ releases:
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         # Domain suffix may not be present during initial deplyment stage
-        domain: {{ $v | get "cluster.domainSuffix" }}
+        domain: {{ $v | get "cluster.domainSuffix" nil }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null

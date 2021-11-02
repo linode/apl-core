@@ -1,4 +1,3 @@
 charts:
     cert-manager:
-        issuer: letsencrypt
-        stage: production
+        issuer: custom-ca
