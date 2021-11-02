@@ -41,7 +41,6 @@ environments:
             stage: production
             {{- else }}
             issuer: custom-ca
-            generateAutomatically: true
             {{- end }}
           {{- else if eq $cm.issuer "letsencrypt"}}
             {{- if not (has $cm (list "stage")) }}\
