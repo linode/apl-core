@@ -23,6 +23,7 @@
 
 helmDefaults:
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
 {{- end }}
 environments:
@@ -47,7 +48,7 @@ environments:
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") }}
+            enabled: {{ $c | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
@@ -73,7 +74,7 @@ environments:
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
-            enabled: {{ eq $provider "aws" }}
+            enabled: false #{{ eq $provider "aws" }}
         internal:
           untrustedCA: {{ or (eq $cm.issuer "custom-ca") (and (eq $cm.issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
         otomi:

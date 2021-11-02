@@ -529,6 +529,7 @@ definitions:
       - azure
       - google
       - onprem
+      - kind
   redisChart:
     properties:
       _rawValues:
@@ -2162,12 +2163,16 @@ properties:
         $ref: '#/definitions/wordCharacterPattern'
       usernameClaimMapper:
         $ref: '#/definitions/wordCharacterPattern'
-        description: Claim name used by Keycloak to identify incoming users from identity provider
-        default: '${CLAIM.email}'
+        description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
+        default: '${CLAIM.upn}'
       subClaimMapper:
         type: string
-        description: Select OIDC claim to be passed by Keycloak as a unique user identifier. Best to not change this from the default.
+        description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
+    required:
+      - clientID
+      - clientSecret
+      - issuer
   internal:
     additionalProperties: true
     description: INTERNAL USE ONLY - we store configuration here that is shared across multiple charts

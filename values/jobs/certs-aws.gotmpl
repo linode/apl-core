@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 
 type: Job
 name: certs-aws
@@ -13,5 +14,5 @@ env:
   REGION: {{ $v.cluster.region }}
   # DOMAINS: '{{ $vars.domains }}'
   # TODO: check why toJson does not work on $vars.domains, so we can remove this workaround
-  DOMAINS: '[{{ $f := true }}{{ range $domInfo := $vars.domains }}{{ if not $f }},{{ end }}{"domain":"{{ $domInfo.domain }}","certName":"{{ $domInfo.certName }}","certArn":"{{ $domInfo.certArn }}","hasCert":{{ $domInfo.hasCert }}}{{ $f = false }}{{ end }}]'
+  DOMAINS: '[{{ $f := true }}{{ range $domInfo := $doms.domInfo }}{{ if not $f }},{{ end }}{"domain":"{{ $domInfo.domain }}","certName":"{{ $domInfo.certName }}","certArn":"{{ $domInfo.certArn }}","hasCert":{{ $domInfo.hasCert }}}{{ $f = false }}{{ end }}]'
 {{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "certs-aws") }}

@@ -1,6 +1,7 @@
 # alias oldtomi="bin/otomi"
 # alias otomi="binzx/otomi"
 alias d="docker"
+alias h="helm"
 alias oaws="otomi x aws"
 alias oaz="otomi x az"
 alias og="otomi x gcloud"
@@ -29,7 +30,7 @@ function kpo() {
   labels=$1
   shift
   pod=$(k get po -l "$labels" $@ -ojsonpath='{.items[0].metadata.name}')
-  k delete po $pod $@
+  k delete po "$pod" $@
 }
 function kpk() { ps aux | grep "$@" | awk '{print $2}' | xargs kill; }
 function kad() { k delete "$@" --all; }

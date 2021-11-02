@@ -1,0 +1,6 @@
+charts:
+    redis-shared:
+        _rawValues: {}
+        enabled: false
+        sizes:
+            master: 1Gi

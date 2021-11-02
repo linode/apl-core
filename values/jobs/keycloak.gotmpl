@@ -11,6 +11,8 @@
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping }}
 {{- end }}
 {{- end }}
+{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 {{- $c := $v.charts }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $k := $c.keycloak }}
@@ -23,39 +25,35 @@ annotations:
   policy.otomi.io/ignore: "banned-image-tags"
   {{- end }}
 env:
-  KEYCLOAK_ADDRESS: {{ $k.address }}
-  KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
-nativeSecrets:
   # DEBUG: '*'
   KEYCLOAK_ADMIN: {{ $k.adminUsername }}
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
-  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
-  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-  REDIRECT_URIS: '[
-      "https://otomi.{{ $v.cluster.domainSuffix }}",
-      "https://auth.{{ $v.cluster.domainSuffix }}/*",
-      "https://apps.{{ $v.cluster.domainSuffix }}/*",
-      "https://otomi.{{ $v.cluster.domainSuffix }}/*",
-      "https://gitea.{{ $v.cluster.domainSuffix }}/*",
-      {{- range $name, $team := $teams }}
-      "https://apps.team-{{ $name }}.{{ $v.cluster.domainSuffix }}/*",
-      {{- end }}
-      "https://harbor.{{ $v.cluster.domainSuffix }}/*",
-      "https://vault.{{ $v.cluster.domainSuffix }}/*"
-  ]'
-  TEAM_IDS: '{{ $teamIds | toJson }}'
   FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
-  {{- if $v.otomi.hasExternalIDP }}
-  IDP_ALIAS: {{ $k | get "idp.alias" nil }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ $o | get "usernameClaimMapper" nil }}
-  IDP_SUB_CLAIM_MAPPER: {{ $o | get "subClaimMapper" nil }}
+  KEYCLOAK_ADDRESS: {{ $k.address }}
+  KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+  KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
+  REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" $doms.domains "sep" "/*\",\"https://") }}/*"]'
+  TEAM_IDS: '{{ $teamIds | toJson }}'
+{{- if $v.otomi.hasExternalIDP }}
+  {{- with $k | get "idp.alias" nil }}
+  IDP_ALIAS: {{ . }}{{ end }}
+  {{- with $o | get "usernameClaimMapper" nil }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
+  {{- with $o | get "subClaimMapper" nil }}
+  IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-  IDP_GROUP_OTOMI_ADMIN: {{ $o | get "adminGroupID" nil }}
-  IDP_GROUP_TEAM_ADMIN: {{ $o | get "teamAdminGroupID" nil }}
-  IDP_OIDC_URL: {{ $o | get "issuer" nil }}
-  IDP_CLIENT_ID: {{ $o | get "clientID" nil }}
-  IDP_CLIENT_SECRET: {{ $o | get "clientSecret" nil }}
-  {{- end }}
+  {{- with $o | get "adminGroupID" nil }}
+  IDP_GROUP_OTOMI_ADMIN: {{ . }}{{ end }}
+  {{- with $o | get "teamAdminGroupID" nil }}
+  IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
+  IDP_OIDC_URL: {{ $o.issuer }}
+{{- end }}
+nativeSecrets:
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
+  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+{{- if $v.otomi.hasExternalIDP }}
+  IDP_CLIENT_ID: {{ $o.clientID }}
+  IDP_CLIENT_SECRET: {{ $o.clientSecret }}
+{{- end }}
 init:
   - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "keycloak") | nindent 4 }}
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}

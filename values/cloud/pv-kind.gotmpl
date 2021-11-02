@@ -1,0 +1,8 @@
+- apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    namespace: kube-system
+    name: fast
+  provisioner: rancher.io/local-path
+  volumeBindingMode: WaitForFirstConsumer
+  reclaimPolicy: Delete

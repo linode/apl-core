@@ -163,7 +163,7 @@ template:
             readOnly: true
       {{- end }}
       {{- range $location, $secret := $c.secretMounts }}
-          - name: {{ print $.Release.Name $initSuffix | trunc 63 | trimSuffix "-"}}
+          - name: {{ print $.Release.Name (include "flatten-name" $location) $initSuffix | trunc 63 }}
             mountPath: {{ $location | dir }}
             subPath: {{ $location | base }}
             readOnly: true
