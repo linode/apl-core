@@ -1060,16 +1060,13 @@ properties:
                 enum:
                   - custom-ca
                 default: custom-ca
-              generateAutomatically:
-                type: boolean
-                default: true
               customRootCA:
                 type: string
-                description: CA that is used to verify self-signed certificates. Leave it empty if generateAutomatically is set.
+                description: CA that is used to verify self-signed certificates. Leave it empty to generate automatically.
               customRootCAKey:
                 x-secret: ''
                 type: string
-                description: CA private key that is used to issue certificates. Leave it empty if generateAutomatically is set.
+                description: CA private key that is used to issue certificates. Leave it empty to generate automatically.
             required:
               - issuer
       cluster-overprovisioner:

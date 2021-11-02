@@ -21,7 +21,6 @@
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 
 
-helmDefaults:
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
@@ -41,9 +40,6 @@ environments:
             {{- end }}
           {{- else }}
             issuer: custom-ca
-            {{- if not (has $cm (list "generateAutomatically")) }}
-            generateAutomatically: true
-            {{- end }}
           {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}

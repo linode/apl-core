@@ -177,8 +177,7 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   const d = terminal('customCA')
   const cm = get(originalValues, 'charts.cert-manager', {})
 
-  // If generateAutomatically is false, or if both customRootCA AND customRootCAKey exists, we skip
-  if (!cm?.generateAutomatically || (cm?.customRootCA && cm?.customRootCAKey)) {
+  if (cm?.customRootCA && cm?.customRootCAKey) {
     d.info('Skipping custom RootCA generation')
     return
   }
