@@ -6,6 +6,7 @@ cluster:
   provider: '' # provider can be one of aws|azure|google
 otomi:
   adminPassword: ''
+  hasExternalDNS: false
   # Set this to true, when you bring your own IDP such as Azure AD. (Then you must also fill in the 'oidc:' settings below.)
   # hasExternalIDP: true
   # release versions can be found here: https://github.com/redkubes/otomi-core/releases
@@ -32,7 +33,8 @@ otomi:
 #   project: ''
 charts:
   cert-manager:
-    email: ''
+    issuer: custom-ca
+    # email: ''
     # stage defaults to 'production' when commented out
     # stage: staging
 
