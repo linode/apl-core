@@ -34,7 +34,16 @@ environments:
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
           cert-manager:
-          {{- if eq $cm.issuer "letsencrypt"}}
+
+          {{- if (not (has $cm (list "issuer")) }}
+            {{- if $v.otomi.hasExternalDNS }}
+            issuer: letsencrypt
+            stage: production
+            {{- else }}
+            issuer: custom-ca
+            generateAutomatically: true
+            {{- end }}
+          {{- else if eq $cm.issuer "letsencrypt"}}
             {{- if not (has $cm (list "stage")) }}\
             stage: production
             {{- end }}

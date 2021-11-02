@@ -4,9 +4,6 @@ environments:
       - azure:
           appgw:
             isManaged: true
-        charts:
-          cert-manager:
-            issuer: letsencrypt
           demo-tlspass:
             enabled: false
           drone:
@@ -60,7 +57,7 @@ environments:
             enabled: false
         otomi:
           hasCloudLB: false
-          hasExternalDNS: true
+          hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
           isManaged: true
