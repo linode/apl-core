@@ -61,9 +61,11 @@ jobs:
           KIND_CA_CERT: ${{ secrets.KIND_CA_CERT }}
           KIND_CA_KEY: ${{ secrets.KIND_CA_KEY }}
         run: |
+          ACT=${{ github.event.act }}
+          ACT=${ACT:-false}
           TAG=${GITHUB_REF##*/}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-          if ${{ github.event.act }}; then 
+          if $ACT; then 
             image=$REPO:$TAG
           else
             docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
