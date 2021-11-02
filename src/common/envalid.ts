@@ -33,4 +33,4 @@ export const cleanEnvironment = () => {
 export const env = cleanEnvironment()
 
 export const isChart = env.CI && !!env.VALUES_INPUT
-export const isCli = !isChart
+export const isCli = !env.CI && !isChart
