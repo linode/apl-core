@@ -134,12 +134,16 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $appsDomain }}/grafana
+          sidecar:
+            datasources:
+              defaultDatasourceEnabled: false
           additionalDataSources:
-            - name: Prometheus-admin
+            - name: Prometheus
               editable: false
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
+              isDefault: true
             - name: Loki
               editable: false
               type: loki
@@ -190,7 +194,7 @@ releases:
         team: {{ $teamId }}
         folders:
           - k8s
-          - istio-teams
+          # - istio-teams
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
           {{- if $team | get "stack.sitespeed" false }}
