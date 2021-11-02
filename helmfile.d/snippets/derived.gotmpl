@@ -71,6 +71,8 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
+          vault:
+            enabled: true
         internal:
           untrustedCA: {{ or (eq $cm.issuer "custom-ca") (and (eq $cm.issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
         otomi:
