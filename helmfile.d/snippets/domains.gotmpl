@@ -28,7 +28,11 @@
 {{- end }}
 {{- $authDomain := print "auth." $v.cluster.domainSuffix }}
 {{- $domains = concat $domains (list (dict "domain" $authDomain "hasCert" false "certArn" "" "certName" "")) }}
-domains:
+domInfo:
   {{- range $domInfo := $domains }}
   - {{- $domInfo | toYaml | nindent 4 }}
+  {{- end }}
+domains:  
+  {{- range $domInfo := $domains }}
+  - {{ $domInfo.domain }}
   {{- end }}

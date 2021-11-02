@@ -1,0 +1,7 @@
+global:
+
+  # metallb 
+  configInline: {}
+
+  # k8s-external
+  domain: ""

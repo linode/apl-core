@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.cluster }}
-{{- $o := $v.charts | get "otomi-console" }}
+{{- $o := $v.charts | get "otomi-console" dict }}
 
 replicaCount: 1
 resources:

@@ -3,14 +3,6 @@
 {{- $gk := $v.charts | get "gatekeeper-operator" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
-### Render Constraint Templates (CRs)
-{{- $constraintTemplates := (exec "bash" (list "-c" "find /tmp/otomi/constraint-templates -name 'template_*.yaml'")) | splitList "\n" }}
-constraintTemplateFiles:
-{{- range $constraintTemplate := $constraintTemplates }}{{ if ne $constraintTemplate "" }}{{/* < the splitList above results in empty lines in the array, so skipping them here */}}
-  - {{ tpl (readFile $constraintTemplate) . | nindent 4  }}
-{{- end }}{{ end }}
-
-
 ### Config Resources for OPA Gatekeeper
 config:  
   # Data Replication  

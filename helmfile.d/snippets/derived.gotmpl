@@ -29,8 +29,8 @@
     {{/* TODO: generate CA and intermediate */}}
   {{- end }}
 {{- end }}
-helmDefaults:
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
 {{- end }}
 environments:
@@ -40,18 +40,18 @@ environments:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
-            enabled: {{ eq $provider "aws" }}
+            enabled: false #{{ eq $provider "aws" }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $c | get "cluster-overprovisioner.enabled" (ne $provider "onprem") }}
+            enabled: {{ $c | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
+          {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
-              {{- if eq $droneProvider "gitea" }}
               gitea:
                 server: {{ $c | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
               secret: {{ $c | get "drone.sourceControl.secret" "drone-source-control" }}
-              {{- end }}
+          {{- end }}
           drone-admit-members:
             enabled: {{ and ($c | get "drone.enabled") (eq $droneProvider "github") }}
           external-dns:
@@ -70,13 +70,13 @@ environments:
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
-            enabled: {{ eq $provider "aws" }}
+            enabled: false #{{ eq $provider "aws" }}
         {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
         cluster:
           customRootCA: |
-            {{- $customRootCA | nindent 10 }}
+            {{- $customRootCA | nindent 12 }}
           customIntermediateCA: |
-            {{- $customIntermediateCA | nindent 10 }}
+            {{- $customIntermediateCA | nindent 12 }}
         {{- end }}
         otomi:
           version: {{ $otomiTag }}
