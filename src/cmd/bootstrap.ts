@@ -186,6 +186,20 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   // Code example from: https://www.npmjs.com/package/node-forge#x509
   const keys = pki.rsa.generateKeyPair(2048)
   const cert = pki.createCertificate()
+  cert.setExtensions([
+    {
+      name: 'basicConstraints',
+      cA: true,
+    },
+    {
+      name: 'keyUsage',
+      keyCertSign: true,
+      digitalSignature: true,
+      nonRepudiation: true,
+      keyEncipherment: true,
+      dataEncipherment: true,
+    },
+  ])
   cert.publicKey = keys.publicKey
   cert.serialNumber = '01'
   cert.validity.notBefore = new Date()
