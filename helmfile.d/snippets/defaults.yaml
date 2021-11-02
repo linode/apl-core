@@ -18,6 +18,14 @@ environments:
             domainFilters: []
           gatekeeper-operator:
             enabled: true
+            auditFromCache: false
+            auditInterval: 60
+            constraintViolationsLimit: 20
+            disableValidatingWebhook: true
+            emitAdmissionEvents: false
+            emitAuditEvents: false
+            logLevel: "INFO"
+            replicas: 1
           gitea:
             enabled: true
             adminUsername: otomi-admin
