@@ -1,3 +1,4 @@
 charts:
   gatekeeper-operator:
-    enabled: true
+    # Not enough resources to turn it on:
+    enabled: false
