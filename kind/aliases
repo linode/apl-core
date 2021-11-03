@@ -11,7 +11,7 @@ alias kintd="docker run --network kind --rm -it -v $PWD/kind/kubeconfig:/root/.k
 alias kintk="docker run -v $PWD/kind/kubeconfig:/.kube/config --rm --network kind bitnami/kubectl"
 alias kintnet="docker run --rm -it --network kind nicolaka/netshoot bash"
 alias klint="actionlint .github/workflows/main.yml"
-# TODO: doesn't work with /bin/bash:
+# TODO: the `kintprep` alias doesn't work with /bin/bash
 alias kintprep="docker build -t otomi/core:$(echo ${$(git rev-parse --abbrev-ref HEAD)##*/}) ."
 
 kintoto() {
