@@ -10,6 +10,12 @@ RUN apt update && \
   chmod +x /usr/bin/kind
 
 USER app
-COPY . .
+
+# Copy only necessary files
+RUN mkdir -p kind/chart
+WORKDIR kind
+# Can't copy directory as is (workaround: https://stackoverflow.com/questions/37789984/how-to-copy-folders-to-docker-image-from-dockerfile)
+COPY chart chart/
+COPY helmfile.yaml kind.gotmpl kind.yaml start-kind.sh ./
 
 CMD "./start-kind.sh"

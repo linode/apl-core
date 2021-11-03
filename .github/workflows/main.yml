@@ -61,9 +61,11 @@ jobs:
           KIND_CA_CERT: ${{ secrets.KIND_CA_CERT }}
           KIND_CA_KEY: ${{ secrets.KIND_CA_KEY }}
         run: |
+          ACT=${{ github.event.act }}
+          ACT=${ACT:-false}
           TAG=${GITHUB_REF##*/}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-          if ${{ github.event.act }} = true; then 
+          if $ACT; then 
             image=$REPO:$TAG
           else
             docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
@@ -72,7 +74,7 @@ jobs:
           fi
 
           docker run --rm -e CI=1 -v $PWD/tests/kind:/home/app/stack/env $image node dist/src/otomi.js -- validate-values
-          docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind otomi/kind:latest
+          docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind --pull always --user root otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e KIND_CA_KEY="$KIND_CA_KEY" -e KIND_CA_CERT="$KIND_CA_CERT" --network kind -v $PWD/tests/kind:/home/app/stack/env $image node dist/src/otomi.js -- apply -v
