@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.34](https://github.com/redkubes/otomi-core/compare/v0.14.33...v0.14.34) (2021-11-03)
+
+
+### Features
+
+* added owasp and gatekeeper as apps for console, fixed dashboard links ([#645](https://github.com/redkubes/otomi-core/issues/645)) ([d9a0928](https://github.com/redkubes/otomi-core/commit/d9a0928982ec84d3e643ed1bd6661e04f110ef2c))
+* upgrade vault-operator ([#644](https://github.com/redkubes/otomi-core/issues/644)) ([86ee9ab](https://github.com/redkubes/otomi-core/commit/86ee9aba657d1ced7faf6e6599f05dd3f0a191fa))
+
+
+### Bug Fixes
+
+* integration test is flaky and times out most of the time ([#647](https://github.com/redkubes/otomi-core/issues/647)) ([ca6cc47](https://github.com/redkubes/otomi-core/commit/ca6cc47b73671cbfe1e75359c04b57b2af92d59f))
+
+
+### Others
+
+* **deps:** bumped api [ci skip] ([6cb341a](https://github.com/redkubes/otomi-core/commit/6cb341a669d25a333ac5b5817eeef8c745825741))
+
+
+### Code Refactoring
+
+* **gatekeeper:** gatekeeper now by default nonblocking ([#646](https://github.com/redkubes/otomi-core/issues/646)) ([98e158a](https://github.com/redkubes/otomi-core/commit/98e158a915e720fd15900612698a877a70222a32))
+
 ### [0.14.33](https://github.com/redkubes/otomi-core/compare/v0.14.32...v0.14.33) (2021-11-01)
 
 
