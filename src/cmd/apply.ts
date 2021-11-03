@@ -2,11 +2,9 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { env } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
-  createK8sSecret,
   getFilename,
   getOtomiLoadBalancerIP,
   getParsedArgs,
@@ -52,8 +50,6 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
       domainSuffix: newSuffix,
     },
   })
-  await createK8sSecret('otomi-cluster-domainSuffix', env.DEPLOYMENT_NAMESPACE, newSuffix)
-  d.info(`Succesfully set the cluster.domainSuffix to ${newSuffix}`)
 }
 
 const prepareValues = async (): Promise<void> => {
