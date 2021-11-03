@@ -34,7 +34,7 @@ environments:
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
           cert-manager:
-          {{- if eq $cm.issuer "letsencrypt"}}
+          {{- if eq $cm.issuer "letsencrypt" }}
             {{- if not (has $cm (list "stage")) }}\
             stage: production
             {{- end }}
