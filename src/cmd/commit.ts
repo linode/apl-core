@@ -1,3 +1,4 @@
+import { copyFileSync, existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
@@ -87,16 +88,62 @@ const commitAndPush = async (): Promise<void> => {
   }
 }
 
+const bootstrapGit = async (values): Promise<void> => {
+  debug.info('Initializing values git repo.')
+  await $`git init ${env.ENV_DIR}`
+  copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+
+  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+  const clusterDomain = values?.cluster?.domainSuffix
+  const byor = !!values?.charts?.['otomi-api']?.git
+
+  if (!giteaEnabled && !byor) {
+    throw new Error('Gitea is disabled but no charts.otomi-api.git config was given.')
+  }
+  let username = 'Otomi Admin'
+  let email: string
+  let password: string
+  let remote: string
+  const branch = 'main'
+  if (!giteaEnabled) {
+    const otomiApiGit = values?.charts?.['otomi-api']?.git
+    username = otomiApiGit?.user
+    password = otomiApiGit?.password
+    remote = otomiApiGit?.repoUrl
+    email = otomiApiGit?.email
+  } else {
+    username = 'otomi-admin'
+    password = values?.charts?.gitea?.adminPassword ?? values?.otomi?.adminPassword
+    email = `otomi-admin@${clusterDomain}`
+    const giteaUrl = `gitea.${clusterDomain}`
+    const giteaOrg = 'otomi'
+    const giteaRepo = 'values'
+    remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+  }
+
+  await $`git config --local user.name ${username}`
+  await $`git config --local user.password ${password}`
+  await $`git config --local user.email ${email}`
+  await $`git checkout -b ${branch}`
+  await $`git remote add origin ${remote}`
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+
+  debug.log(`Done bootstrapping git`)
+}
+
 export const commit = async (): Promise<void> => {
   const d = terminal('commit')
   cd(env.ENV_DIR)
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  if (values?.charts?.['cert-manager']?.stage === 'staging') {
+  if (values?.internal?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
+  cd(env.ENV_DIR)
+  if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
+
   if (values?.charts?.gitea?.enabled) {
     const url = await getGiteaHealthUrl()
     await waitTillAvailable(url)
@@ -104,7 +151,6 @@ export const commit = async (): Promise<void> => {
   await preCommit()
   await encrypt()
   d.info('Committing values')
-  cd(env.ENV_DIR)
   if (values?.charts?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 

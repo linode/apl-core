@@ -1,11 +1,10 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
 import { get } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
 import { env, isChart } from '../common/envalid'
@@ -258,68 +257,6 @@ const bootstrapValues = async (): Promise<void> => {
   debug.log(`Done bootstrapping values`)
 }
 
-const bootstrapGit = async (): Promise<void> => {
-  if (existsSync(`${env.ENV_DIR}/.git`)) {
-    // scenario 3: pull > bootstrap values
-    debug.info('Values repo already git initialized.')
-  } else {
-    // scenario 1 or 2 or 4(2 will only be called upon first otomi commit)
-    debug.info('Initializing values repo.')
-    cd(env.ENV_DIR)
-
-    const values = await valuesOrEmpty()
-
-    await $`git init ${env.ENV_DIR}`
-    copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
-
-    const giteaEnabled = values?.charts?.gitea?.enabled ?? true
-    const clusterDomain = values?.cluster?.domainSuffix
-    const byor = !!values?.charts?.['otomi-api']?.git
-
-    if (!byor && !clusterDomain) {
-      debug.info('Skipping git repo configuration')
-      return
-    }
-
-    if (!giteaEnabled && !byor) {
-      throw new Error('Gitea was disabled but no charts.otomi-api.git config was given.')
-    } else if (!clusterDomain) {
-      debug.info('No values defined for git. Skipping git repository configuration')
-      return
-    }
-    let username = 'Otomi Admin'
-    let email: string
-    let password: string
-    let remote: string
-    const branch = 'main'
-    if (!giteaEnabled) {
-      const otomiApiGit = values?.charts?.['otomi-api']?.git
-      username = otomiApiGit?.user
-      password = otomiApiGit?.password
-      remote = otomiApiGit?.repoUrl
-      email = otomiApiGit?.email
-    } else {
-      username = 'otomi-admin'
-      password = values?.charts?.gitea?.adminPassword ?? values?.otomi?.adminPassword
-      email = `otomi-admin@${clusterDomain}`
-      const giteaUrl = `gitea.${clusterDomain}`
-      const giteaOrg = 'otomi'
-      const giteaRepo = 'values'
-      remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
-    }
-
-    await $`git config --local user.name ${username}`
-    await $`git config --local user.password ${password}`
-    await $`git config --local user.email ${email}`
-    await $`git checkout -b ${branch}`
-    await $`git remote add origin ${remote}`
-    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
-
-    cd(rootDir)
-    debug.log(`Done bootstrapping git`)
-  }
-}
-
 // const notEmpty = (answer: string): boolean => answer?.trim().length > 0
 
 // export const askBasicQuestions = async (): Promise<void> => {
@@ -418,6 +355,5 @@ export const module = {
     */
     await bootstrapValues()
     await decrypt()
-    await bootstrapGit()
   },
 }
