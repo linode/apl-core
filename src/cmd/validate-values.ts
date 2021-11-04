@@ -10,7 +10,7 @@ import { Arguments, helmOptions } from '../common/yargs-opts'
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-const internalPaths: string[] = ['apps', 'k8s', 'services', 'sops', 'teamConfig.services']
+const internalPaths: string[] = ['apps', 'k8s', 'services', 'teamConfig.services']
 
 // TODO: Accept json path to validate - on empty, validate all
 export const validateValues = async (): Promise<void> => {

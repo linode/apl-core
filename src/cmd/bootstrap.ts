@@ -50,8 +50,10 @@ const generateLooseSchema = () => {
 }
 
 const getCurrentValues = async (): Promise<Record<string, any> | undefined> => {
-  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
+  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
+    await validateValues()
     return hfValues()
+  }
   return undefined
 }
 
@@ -177,7 +179,7 @@ const createCustomCA = async (originalValues: Record<string, any>): Promise<void
   cert.sign(keys.privateKey)
 
   d.info('Generated CA key pair')
-  // The yaml.dump funciton does not create multiline value on \r\n. Only on \n
+  // The yaml.dump function does not create multiline value on \r\n. Only on \n
   const rootCrt = pki.certificateToPem(cert).replaceAll('\r\n', '\n')
   const rootKey = pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
@@ -189,10 +191,8 @@ const createCustomCA = async (originalValues: Record<string, any>): Promise<void
       },
     },
   }
-  // We need to overwrite in case only one of the two values was filled in
-  // We need both, so we use the generated values.
   await writeValues(value, true)
-  d.info('Generated root CA are stored in charts.cert-manager values')
+  d.info('Generated root CA and key are stored in charts.cert-manager values')
 }
 
 const bootstrapValues = async (): Promise<void> => {
@@ -214,14 +214,6 @@ const bootstrapValues = async (): Promise<void> => {
     // now do a round of encryption and decryption to make sure we have all the files in place for validation
     await encrypt()
     await decrypt()
-  }
-
-  try {
-    // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues !== undefined) await validateValues()
-  } catch (error) {
-    debug.error(error)
-    throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
   }
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it

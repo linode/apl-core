@@ -49,7 +49,7 @@ docker_tag_exists() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-if [ "$ENV_DIR" != '/home/app/stack/env' ]; then
+if [ -f "$PWD/package.json" ] && [ -d "$PWD/.git" ]; then
   in_core=1
   core_path=$(pwd)
 fi

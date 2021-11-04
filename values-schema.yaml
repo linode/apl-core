@@ -1035,41 +1035,43 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          customRootCA:
+            type: string
+            description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
+          customRootCAKey:
+            x-secret: ''
+            type: string
+            description: CA private key that is used to issue certificates. Leave it empty to generate one automatically.
+          email:
+            $ref: '#/definitions/email'
+          issuer:
+            type: string
+            enum:
+              - custom-ca
+              - letsencrypt
+            default: custom-ca
+          stage:
+            type: string
+            enum:
+              - production
+              - staging
+            default: production
         oneOf:
-          - title: Let's Encrypt
-            properties:
+          - properties:
               issuer:
-                type: string
-                enum:
-                  - letsencrypt
-                default: letsencrypt
-              stage:
-                type: string
-                enum:
-                  - production
-                  - staging
-                default: production
-              email:
-                $ref: '#/definitions/email'
+                const: letsencrypt
             required:
               - email
-              - issuer
-          - title: Custom Certificate Authority
-            properties:
-              issuer:
-                type: string
-                enum:
-                  - custom-ca
-                default: custom-ca
-              customRootCA:
-                type: string
-                description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one
-              customRootCAKey:
-                x-secret: ''
-                type: string
-                description: CA private key that is used to issue certificates. Leave it empty to generate one automatically
-            required:
-              - issuer
+          # we need both or none at all:
+          - required:
+              - customRootCA
+              - customRootCAKey
+          - not:
+              anyOf:
+                - required:
+                    - customRootCAKey
+                - required:
+                    - customRootCA
       cluster-overprovisioner:
         additionalProperties: false
         properties:
