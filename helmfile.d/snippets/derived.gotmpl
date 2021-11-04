@@ -20,7 +20,7 @@
 {{- $droneProvider := $c.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
-
+{{- $issuer := $cm | get "issuer" "" }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -29,18 +29,19 @@ helmDefaults:
 environments:
   default:
     values:
-      - charts:
+      - _derived:
+          untrustedCA: {{ or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+        charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
           cert-manager:
-          {{- if eq $cm.issuer "letsencrypt" }}
+          {{- if not (hasKey $cm "issuer") }}
+            issuer: letsencrypt
             {{- if not (has $cm (list "stage")) }}\
             stage: production
             {{- end }}
-          {{- else }}
-            issuer: custom-ca
           {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
@@ -72,8 +73,6 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
-        internal:
-          untrustedCA: {{ or (eq $cm.issuer "custom-ca") (and (eq $cm.issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }} 

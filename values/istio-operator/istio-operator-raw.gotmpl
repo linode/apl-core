@@ -203,7 +203,7 @@ resources:
               sampling: 0.1
           {{- end }}
           enableAutoMtls: true
-        {{- if $v.internal.untrustedCA }}
+        {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
           {{- if eq $cm.issuer "custom-ca" }}

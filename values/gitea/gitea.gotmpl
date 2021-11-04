@@ -63,7 +63,7 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-  {{- if $v.internal.untrustedCA}}
+  {{- if $v._derived.untrustedCA}}
       SKIP_TLS_VERIFY: true
     webhook:
       SKIP_TLS_VERIFY: true
@@ -120,7 +120,7 @@ postgresql:
       memory: 256Mi
       cpu: 250m
 
-{{- if $v.internal.untrustedCA}}
+{{- if $v._derived.untrustedCA}}
 extraRootCA: |
 {{- if eq $cm.issuer "custom-ca" }}
   {{- $cm.customRootCA | nindent 2 }}

@@ -137,7 +137,7 @@ export const commit = async (): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
-  if (values?.internal?.untrustedCA) {
+  if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }

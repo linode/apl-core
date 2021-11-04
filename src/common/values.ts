@@ -65,7 +65,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // removing secrets
   const plainValues = removeBlankAttributes(omit(values, secretsJsonPath)) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts', 'internal']
+  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts', '_derived']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
 

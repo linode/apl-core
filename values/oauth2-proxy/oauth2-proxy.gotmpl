@@ -57,7 +57,7 @@ podAnnotations:
   sidecar.istio.io/inject: "false"
   policy.otomi.io/ignore: psp-allowed-users
 extraArgs:
-  ssl-insecure-skip-verify: {{ $v.internal.untrustedCA }}
+  ssl-insecure-skip-verify: {{ $v._derived.untrustedCA }}
   # supported: oidc, google, azure, github
   provider: oidc
   whitelist-domain: {{ $domainList }}

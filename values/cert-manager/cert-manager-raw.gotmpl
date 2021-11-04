@@ -4,10 +4,10 @@
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
-{{- $clusterIssuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
+{{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if and (not (eq $clusterIssuerName "custom-ca")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
+{{- if and (not (eq $issuerName "custom-ca")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -23,17 +23,17 @@ resources:
       {{- end }}
 {{- end }}
 
-{{- if eq $cm.issuer "letsencrypt" }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
-      name: {{ $clusterIssuerName }}
+      name: {{ $issuerName }}
     spec:
+{{- if not $v._derived.untrustedCA }}
       acme:
         server: https://acme{{ (eq ($cm | get "stage" "") "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
         privateKeySecretRef:
-          name: {{ $clusterIssuerName }}
+          name: {{ $issuerName }}
         solvers:
           - selector: {}
             dns01:
@@ -69,36 +69,25 @@ resources:
                   name: "dns-secret"
               {{- end }}
 {{- else }}
-  - apiVersion: cert-manager.io/v1
-    kind: ClusterIssuer
-    metadata:
-      name: {{ $clusterIssuerName }}
-    spec:
       ca:
-        secretName: {{ $clusterIssuerName }}
-  {{- if eq $v.cluster.provider "kind" }}
+        secretName: {{ $issuerName }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: {{ $clusterIssuerName }}
+      name: {{ $issuerName }}
     data:
+  {{- if eq $v.cluster.provider "kind" }}
       tls.crt: {{ requiredEnv "KIND_CA_CERT" | b64enc }}
       tls.key: {{ requiredEnv "KIND_CA_KEY" | b64enc }}
   {{- else }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: {{ $clusterIssuerName }}
-    type: kubernetes.io/tls
-    data:
       tls.crt: {{ $cm.customRootCA| b64enc }}
-      tls.key: {{ ($cm | get "customRootCAKey" "") | b64enc}}
+      tls.key: {{ $cm.customRootCAKey | b64enc}}
   {{- end }}
 {{- end }}
 # generate all da certs
 {{- range $domInfo := $doms.domInfo }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl (dict "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $clusterIssuerName "hasCloudLB" $v.otomi.hasCloudLB ) | nindent 4 }}
+  - {{ tpl $certTpl ("otomi" $v.otomi dict "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
   {{- end }}
 {{- end }}

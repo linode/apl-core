@@ -61,7 +61,7 @@ server:
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
-    {{- if and $hasGitea $v.internal.untrustedCA}}
+    {{- if and $hasGitea $v._derived.untrustedCA}}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -82,12 +82,12 @@ kubernetes:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
-    {{- if and $hasGitea $v.internal.untrustedCA}}
+    {{- if and $hasGitea $v._derived.untrustedCA}}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
   envFile: |
     {{- $sopsEnv | nindent 4 }}
-    {{- if and $hasGitea $v.internal.untrustedCA}}
+    {{- if and $hasGitea $v._derived.untrustedCA}}
     DRONE_GITEA_SKIP_VERIFY: true
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
@@ -101,7 +101,7 @@ metrics:
   prometheus:
     enabled: true
 
-{{- if $v.internal.untrustedCA}}
+{{- if $v._derived.untrustedCA}}
 extraRootCA: |
 {{- if eq $cm.issuer "custom-ca" }}
   {{- $cm.customRootCA | nindent 2 }}

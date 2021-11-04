@@ -15,7 +15,7 @@ image:
   {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
-{{ if and (not $skipCA) $v.internal.untrustedCA }}
+{{ if and (not $skipCA) $v._derived.untrustedCA }}
 files:
   /tmp/node/certificates.crt: |
   {{- if eq $cm.issuer "custom-ca" }}
@@ -26,11 +26,11 @@ files:
   {{- end }}
 {{ end }}
 {{- if $wait }}
-{{- $waitUrl := printf "https://%s.%s" $wait $v.cluster.domainSuffix }}
+  {{- $waitUrl := printf "https://%s.%s" $wait $v.cluster.domainSuffix }}
 script: |
   echo "Waiting until {{ $wait }} is accessible at {{ $waitUrl }}"
-  {{ if $v.internal.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for {{ $waitUrl }}
+  {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for {{ $waitUrl }}
 {{- else if $task }} 
 script: |
-  {{ if $v.internal.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:{{ $task }}
+  {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:{{ $task }}
 {{- end }}
