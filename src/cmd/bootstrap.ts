@@ -27,10 +27,6 @@ import { writeValues } from '../common/values'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
-const getInputValues = (): Record<string, any> | undefined => {
-  return loadYaml(env.VALUES_INPUT)
-}
-
 type Arguments = BasicArguments
 
 const cmdName = getFilename(__filename)
@@ -53,7 +49,7 @@ const generateLooseSchema = () => {
   }
 }
 
-const valuesOrEmpty = async (): Promise<Record<string, any> | undefined> => {
+const getCurrentValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider)
     return hfValues()
   return undefined
@@ -123,14 +119,14 @@ const copyBasicFiles = async (): Promise<void> => {
   )
 }
 
-const genSecrets = async (): Promise<Record<string, any>> => {
+const processValues = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
   if (isChart) {
-    originalValues = getInputValues() as Record<string, any>
+    originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
   } else {
-    originalValues = (await valuesOrEmpty()) as Record<string, any>
+    originalValues = (await getCurrentValues()) as Record<string, any>
   }
   const generatedSecrets = await getOtomiSecrets(originalValues)
   await writeValues(generatedSecrets, false)
@@ -207,11 +203,11 @@ const bootstrapValues = async (): Promise<void> => {
   debug.info(`Intalling artifacts from ${otomiImage}`)
   await copyBasicFiles()
 
-  const originalValues = await genSecrets()
+  const originalValues = await processValues()
   await createCustomCA(originalValues)
   await genSops()
-
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    debug.info('Copying sops related files')
     // add sops related files
     const file = '.gitattributes'
     await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
