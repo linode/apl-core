@@ -210,7 +210,7 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
     { shortName: 'ST', value: 'Utrecht' },
     { name: 'localityName', value: 'Utrecht' },
     { name: 'organizationName', value: 'Otomi' },
-    { shortName: 'OU', value: 'Self-Signed' },
+    { shortName: 'OU', value: 'Development' },
   ]
   cert.setSubject(attrs)
   cert.setIssuer(attrs)
