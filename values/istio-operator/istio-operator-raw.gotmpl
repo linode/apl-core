@@ -1,8 +1,7 @@
 {{- $v := .Values }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $i := $v.charts | get "istio" }}
+{{- $i := $v.charts.istio }}
 {{- $ig := $i | get "global" dict }}
-{{- $untrustedCA := $v.internal.untrustedCA }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
@@ -204,11 +203,11 @@ resources:
               sampling: 0.1
           {{- end }}
           enableAutoMtls: true
-        {{- if $untrustedCA }}
+        {{- if $v.internal.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
           {{- if eq $cm.issuer "custom-ca" }}
-            {{- ($cm | get "customRootCA" "") | nindent 12 }}
+            {{- $cm.customRootCA | nindent 12 }}
           {{- else }}
             {{- $v.letsencryptCA | nindent 12 }}
           {{- end }}

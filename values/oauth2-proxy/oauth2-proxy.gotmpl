@@ -7,7 +7,6 @@
 {{- $hasKeycloak := $k.enabled }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $untrustedCA := $v.internal.untrustedCA }}
 
 image:
   tag: "v7.1.3"
@@ -58,7 +57,7 @@ podAnnotations:
   sidecar.istio.io/inject: "false"
   policy.otomi.io/ignore: psp-allowed-users
 extraArgs:
-  ssl-insecure-skip-verify: {{ $untrustedCA }}
+  ssl-insecure-skip-verify: {{ $v.internal.untrustedCA }}
   # supported: oidc, google, azure, github
   provider: oidc
   whitelist-domain: {{ $domainList }}

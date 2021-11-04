@@ -29,7 +29,6 @@ releases:
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        # Domain suffix may not be present during initial deplyment stage
         domain: {{ $v | get "cluster.domainSuffix" nil }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null

@@ -14,6 +14,7 @@
   {{- $otomiTag = print "v" $otomiVersion }}
 {{- end }}
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
+# Domain suffix may not be present during initial deplyment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $c.drone.sourceControl.provider }}

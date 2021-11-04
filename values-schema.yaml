@@ -1062,11 +1062,11 @@ properties:
                 default: custom-ca
               customRootCA:
                 type: string
-                description: CA that is used to verify self-signed certificates. Leave it empty to generate automatically.
+                description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one
               customRootCAKey:
                 x-secret: ''
                 type: string
-                description: CA private key that is used to issue certificates. Leave it empty to generate automatically.
+                description: CA private key that is used to issue certificates. Leave it empty to generate one automatically
             required:
               - issuer
       cluster-overprovisioner:

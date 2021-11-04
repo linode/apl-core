@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $untrustedCA := $v.internal.untrustedCA }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
@@ -30,7 +29,7 @@ cr:
     external_services:
       grafana:
         auth:
-          insecure_skip_verify: {{ $untrustedCA }}
+          insecure_skip_verify: {{ $v.internal.untrustedCA }}
           password: {{ $v.otomi.adminPassword }}
           type: basic
           username: admin
@@ -63,7 +62,7 @@ cr:
         # url_service_version: http://istiod.istio-system:15014/version
       prometheus:
         auth:
-          insecure_skip_verify: {{ $untrustedCA }}
+          insecure_skip_verify: {{ $v.internal.untrustedCA }}
           type: none
         cache_duration: 10
         cache_enabled: true
@@ -73,7 +72,7 @@ cr:
         url: https://{{ $appsDomain }}/prometheus/
       tracing:
         auth:
-          insecure_skip_verify: {{ $untrustedCA }}
+          insecure_skip_verify: {{ $v.internal.untrustedCA }}
           type: none
         enabled: true
         in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686

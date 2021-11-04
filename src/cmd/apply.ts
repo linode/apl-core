@@ -56,7 +56,7 @@ const prepareValues = async (): Promise<void> => {
   const d = terminal('apply:prepareValues')
 
   const values = await hfValues()
-  d.info('Checking if domainSuffix needs a fallback')
+  d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not foud, creating fallback')
     await setDomainSuffix(values)
@@ -79,7 +79,7 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-  debug.info('Deploying charts with label stage=prep')
+  debug.info('Deploying charts containig label stage=prep')
   await hf(
     {
       fileOpts: argv.file,
@@ -90,7 +90,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   await prepareValues()
-  debug.info('Deploying charts with label stage!=prep')
+  debug.info('Deploying charts containing label stage!=prep')
   await hf(
     {
       fileOpts: argv.file,

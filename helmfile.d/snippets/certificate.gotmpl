@@ -10,7 +10,7 @@ spec:
   - '{{ .domain }}'
   issuerRef:
     kind: ClusterIssuer
-    name: {{ .clusterIssuerName }}
+    name: {{ .issuerName }}
   usages:
     {{- if eq .issuer "custom-ca" }}
     - server auth

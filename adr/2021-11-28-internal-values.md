@@ -8,4 +8,4 @@ But `<tag>` can also be defined in the schema, so developers know what is access
 Right now one tag is introduced: `untrustedCA` which is a combination of letsEncrypt staging or customCA
 We can add other tags as necessary to reduce the number of duplicate calculations that can potentially introduce errors
 
-To fill these `internal.<tag>`s we template them in `helmfile.d/snippets/derived.gotmpl`
+To fill these `internal.<property>`s we template them in `helmfile.d/snippets/derived.gotmpl`

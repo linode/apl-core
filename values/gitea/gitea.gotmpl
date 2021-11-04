@@ -7,7 +7,6 @@
 {{- $keycloakIssuer := printf "%s/realms/otomi" $keycloakUrl }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $untrustedCA := $v.internal.untrustedCA }}
 
 
 nameOverride: gitea
@@ -64,7 +63,7 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-  {{- if $untrustedCA}}
+  {{- if $v.internal.untrustedCA}}
       SKIP_TLS_VERIFY: true
     webhook:
       SKIP_TLS_VERIFY: true
@@ -121,10 +120,10 @@ postgresql:
       memory: 256Mi
       cpu: 250m
 
-{{- if $untrustedCA}}
+{{- if $v.internal.untrustedCA}}
 extraRootCA: |
 {{- if eq $cm.issuer "custom-ca" }}
-  {{- ($cm | get "customRootCA" "") | nindent 2 }}
+  {{- $cm.customRootCA | nindent 2 }}
 {{- else }}
   {{- $v.letsencryptRootCA | nindent 2 }}
   {{- $v.letsencryptCA | nindent 2 }}

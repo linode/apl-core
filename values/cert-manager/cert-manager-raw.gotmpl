@@ -91,7 +91,7 @@ resources:
       name: {{ $clusterIssuerName }}
     type: kubernetes.io/tls
     data:
-      tls.crt: {{ ($cm | get "customRootCA" "")| b64enc }}
+      tls.crt: {{ $cm.customRootCA| b64enc }}
       tls.key: {{ ($cm | get "customRootCAKey" "") | b64enc}}
   {{- end }}
 {{- end }}
@@ -99,6 +99,6 @@ resources:
 {{- range $domInfo := $doms.domInfo }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl (dict "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "clusterIssuerName" $clusterIssuerName "hasCloudLB" $v.otomi.hasCloudLB ) | nindent 4 }}
+  - {{ tpl $certTpl (dict "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $clusterIssuerName "hasCloudLB" $v.otomi.hasCloudLB ) | nindent 4 }}
   {{- end }}
 {{- end }}
