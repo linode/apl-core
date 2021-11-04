@@ -14,7 +14,6 @@ node_modules/
 .env
 .secrets
 chart/otomi/values.schema.json
-chart/otomi/README.md
 workflow/
 kind/kubeconfig
 kind/.secrets

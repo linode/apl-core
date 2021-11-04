@@ -1,3 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
-exec < /dev/tty && npx cz --hook || true
+. "$(dirname "$0")/_/husky.sh"
+. .env
+
+if [ "${ENABLE_CZ:-true}" = "true" ]; then 
+   exec < /dev/tty && npx cz --hook || true
+fi

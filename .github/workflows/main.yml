@@ -165,7 +165,8 @@ jobs:
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/$new_patch_version/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
           # copy readme from repo into the charts and add tpl/chart-values.md
-          cp README.md chart/otomi/
+          printf "\n\n" >>chart/otomi/README.md
+          cat README.md >>chart/otomi/README.md
           printf "\n\n" >>chart/otomi/README.md
           cat tpl/chart-values.md >>chart/otomi/README.md
           # generate schema
