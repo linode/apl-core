@@ -2,10 +2,10 @@ apiVersion: v1
 entries:
   otomi:
   - apiVersion: v2
-    appVersion: v0.14.35
-    created: "2021-11-03T19:30:15.106033718Z"
+    appVersion: v0.14.36
+    created: "2021-11-04T18:27:16.365234998Z"
     description: A Helm chart for installing otomi in Kubernetes
-    digest: 1a8320a624fa9b07a4f74849883135d1f4249a7e1f55594e1642882596fd0ced
+    digest: 9836f293b3486d3d29e6c4ea93420acade2fdf9d34881d9e6efcccffb7deedf7
     home: https://otomi.io/
     icon: https://otomi.io/img/otomi-logo.svg
     keywords:
@@ -25,6 +25,6 @@ entries:
     - https://github.com/redkubes/otomi-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.3.16/otomi-0.3.16.tgz
-    version: 0.3.16
-generated: "2021-11-03T19:30:15.106046019Z"
+    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.3.17/otomi-0.3.17.tgz
+    version: 0.3.17
+generated: "2021-11-04T18:27:16.365248998Z"
