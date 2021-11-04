@@ -139,7 +139,7 @@ const createCustomCA = async (originalValues: Record<string, any>): Promise<void
   const d = terminal('createCustomCA')
   const cm = get(originalValues, 'charts.cert-manager', {})
 
-  if (cm?.customRootCA && cm?.customRootCAKey) {
+  if (cm.customRootCA && cm.customRootCAKey) {
     d.info('Skipping custom RootCA generation')
     return
   }
@@ -204,7 +204,7 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
-  await createCustomCA(originalValues)
+  if (originalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     debug.info('Copying sops related files')

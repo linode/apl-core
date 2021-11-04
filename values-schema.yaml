@@ -1059,9 +1059,12 @@ properties:
         oneOf:
           - properties:
               issuer:
-                const: letsencrypt
+                enum:
+                  - letsencrypt
+                default: letsencrypt
             required:
               - email
+              - issuer
           # we need both or none at all:
           - required:
               - customRootCA
