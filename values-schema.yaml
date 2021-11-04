@@ -2232,10 +2232,6 @@ properties:
         default: true
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
-      version:
-        default: latest
-        description: 'Best pin this to a valid release version found in the repo.'
-        pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
     required:
       - adminPassword
   policies:
