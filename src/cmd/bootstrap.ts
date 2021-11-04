@@ -205,7 +205,6 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   cert.validity.notAfter = new Date()
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10)
   const attrs = [
-    { name: 'commonName', value: 'redkubes.com' },
     { name: 'countryName', value: 'NL' },
     { shortName: 'ST', value: 'Utrecht' },
     { name: 'localityName', value: 'Utrecht' },
