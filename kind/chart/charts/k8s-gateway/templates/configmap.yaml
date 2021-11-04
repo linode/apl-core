@@ -31,6 +31,7 @@ data:
           {{- end }}
         }
         prometheus 0.0.0.0:9153
+        forward . 8.8.8.8
         loop
         reload
         loadbalance

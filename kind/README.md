@@ -50,7 +50,9 @@ Is used to mimic the Github Actions `github` context.
 
 ## `kind/Dockerfile`
 
-The decision has been made to provide the k8s environment stand-alone, to mimic that the k8s environment is separated/isolated from that which is run as integration test against it. The consideration has been made to insert the KinD dependencies as charts in the rest of our repo, but by not having a separate development process, one cannot always assume that the build is ran against an agnostic environment. With public cloud deployments, for instance, we also don't concern ourselves about the provided k8s environment. 
+The decision has been made to provide the k8s environment stand-alone, to mimic that the k8s environment is separated/isolated from that which is run as integration test against it. The consideration has been made to insert the KinD dependencies as charts in the rest of our repo, but by not having a separate development process, one cannot always assume that the build is ran against an agnostic environment. With public cloud deployments, for instance, we also don't concern ourselves about the provided k8s environment.
+
+This image should be pushed to `otomi/kind`.
 
 ## `.github/workflows/main.yml#.integration`
 

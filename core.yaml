@@ -4,6 +4,7 @@
 apps:
   alertmanager: {}
   drone: {}
+  gatekeeper: {}
   gitea: {}
   # gilab: {}
   grafana: {}
@@ -14,6 +15,7 @@ apps:
   kiali: {}
   kubeapps: {}
   loki: {}
+  owasp: {}
   prometheus: {}
   sitespeed: {}
   jaeger: {}
@@ -76,6 +78,14 @@ services:
     svc: httpbin
     ownHost: true
     isShared: true
+    type: public
+    auth: true
+  - name: gatekeeper
+    svc: po-grafana
+    ownHost: true
+    host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
+    namespace: monitoring
+    path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
     type: public
     auth: true
   - name: harbor
@@ -145,10 +155,19 @@ services:
     auth: true
   - name: loki
     svc: po-grafana
+    ownHost: true
     host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
     namespace: monitoring
     path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
     type: public
+    auth: true
+  - name: owasp
+    svc: po-grafana
+    ownHost: true
+    host: grafana
+    path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D"%7D%5D
+    type: public
+    isShared: true
     auth: true
   # - name: weave-scope
   #   svc: weave-scope
@@ -157,6 +176,7 @@ services:
   #   auth: true
   - name: grafana
     svc: po-grafana
+    ownHost: true
     namespace: monitoring
     # specifying authz will strip the bearer token by default, unless forwardOriginalToken=true
     # this mechanism allows us to not bother services that need the same "Bearer" header for their own oidc
@@ -166,6 +186,7 @@ services:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: po-grafana
     type: public
+    isShared: true
     auth: true
   - name: prometheus
     svc: po-prometheus
@@ -265,9 +286,23 @@ teamConfig:
       auth: true
     - name: loki
       svc: po-grafana
-      host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
+      host: grafana
       path: explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
       type: public
+      auth: true
+    - name: gatekeeper
+      svc: po-grafana
+      host: grafana
+      path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"%5C%5C%5C"resource_namespace%5C%5C%5C":%5C%5C%5C"#NS#%5C%5C%5C"%5C""%7D%5D
+      type: public
+      isShared: true
+      auth: true
+    - name: owasp
+      svc: po-grafana
+      host: grafana
+      path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
+      type: public
+      isShared: true
       auth: true
     - name: grafana
       svc: po-grafana
