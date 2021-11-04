@@ -2,11 +2,9 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { env } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/setup'
 import {
-  createK8sSecret,
   getFilename,
   getOtomiLoadBalancerIP,
   getParsedArgs,
@@ -52,14 +50,13 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
       domainSuffix: newSuffix,
     },
   })
-  await createK8sSecret('otomi-cluster-domainSuffix', env.DEPLOYMENT_NAMESPACE, newSuffix)
-  d.info(`Succesfully set the cluster.domainSuffix to ${newSuffix}`)
 }
 
 const prepareValues = async (): Promise<void> => {
   const d = terminal('apply:prepareValues')
 
   const values = await hfValues()
+  d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not foud, creating fallback')
     await setDomainSuffix(values)
@@ -82,7 +79,7 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-
+  debug.info('Deploying charts containig label stage=prep')
   await hf(
     {
       fileOpts: argv.file,
@@ -93,6 +90,7 @@ const applyAll = async () => {
     { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
   )
   await prepareValues()
+  debug.info('Deploying charts containing label stage!=prep')
   await hf(
     {
       fileOpts: argv.file,

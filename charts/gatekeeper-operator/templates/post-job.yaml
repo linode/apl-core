@@ -1,4 +1,3 @@
-{{- $skipVerify := .Values.certStage | default "production" }}
 {{- $hookUrl := print "https://gatekeeper-webhook-service.gatekeeper-system:443" }}
 apiVersion: batch/v1
 kind: Job
@@ -29,7 +28,7 @@ spec:
             - -c
           args:
             - |
-              {{ if $skipVerify }}export INSECURE='--insecure'{{ end }}
+              {{ if .Values.untrustedCA }}export INSECURE='--insecure'{{ end }}
               echo "Waiting until admission webhook service is accessible"
               until $(curl $INSECURE --output /dev/null --silent --head -I {{ $hookUrl }}); do 
                 printf '.'

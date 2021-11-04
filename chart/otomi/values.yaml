@@ -1,38 +1,41 @@
 cluster:
-  domainSuffix: ''
+  # domainSuffix: ''
   k8sVersion: '1.20'
   name: 'dev'
   owner: ''
   provider: '' # provider can be one of aws|azure|google
 otomi:
   adminPassword: ''
+  hasExternalDNS: false
   # Set this to true, when you bring your own IDP such as Azure AD. (Then you must also fill in the 'oidc:' settings below.)
+  # (When set to false Keycloak will become the IDP.)
   # hasExternalIDP: true
-  # release versions can be found here: https://github.com/redkubes/otomi-core/releases
   # by default the image tag is set to .Chart.AppVersion
   # version: master
-dns:
-  provider:
-    # provide one of the following below: aws|azure|google
-    # aws:
-    #   # next two keys are optional for explicit access with an iam role
-    #   # (if no metadata exists with implicit role access to manage dns)
-    #   accessKeySecret: ''
-    #   secretAccessKey: ''
-    #   # region is always needed
-    #   region: eu-central-1
-    #   role: '' # optional ARN, may be set explicitly if no metadata can be accessed
-    # azure:
-    #   aadClientId: ''
-    #   aadClientSecret: ''
-    #   tenantId: '' # optional
-    #   subscriptionId: '' # optional
-    # google:
-    #   serviceAccountKey: ''
-    #   project: ''
+# External dns zone configuration (leave empty to get assigned a '*.nip.io' domain):
+# dns:
+#   provider:
+#   # provide one of the following below: aws|azure|google
+#   aws:
+#     # next two keys are optional for explicit access with an iam role
+#     # (if no metadata exists with implicit role access to manage dns)
+#     accessKeySecret: ''
+#     secretAccessKey: ''
+#     # region is always needed
+#     region: eu-central-1
+#     role: '' # optional ARN, may be set explicitly if no metadata can be accessed
+#   azure:
+#     aadClientId: ''
+#     aadClientSecret: ''
+#     tenantId: '' # optional
+#     subscriptionId: '' # optional
+#   google:
+#     serviceAccountKey: ''
+#     project: ''
 charts:
   cert-manager:
-    email: ''
+    issuer: custom-ca
+    # email: ''
     # stage defaults to 'production' when commented out
     # stage: staging
 

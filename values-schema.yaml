@@ -226,12 +226,6 @@ definitions:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
-      customRootCA:
-        description: When set this CA is used by cert-manager to create self signed certs.
-        type: string
-      customIntermediateCA:
-        description: When set this intermediate CA is used by cert-manager to create self signed certs.
-        type: string
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
@@ -260,7 +254,6 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         $ref: '#/definitions/wordCharacterPattern'
     required:
-      - domainSuffix
       - k8sVersion
       - name
       - owner
@@ -455,11 +448,12 @@ definitions:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
-    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
+    description: The cluster k8s version. Otomi has compatibility with at least 2 minor versions back from the suggested default.
     enum:
       - '1.18'
       - '1.19'
       - '1.20'
+      - '1.21'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1038,24 +1032,44 @@ properties:
     additionalProperties: true
     properties:
       cert-manager:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          email:
-            $ref: '#/definitions/email'
-          stage:
-            default: production
-            description: |
-              The Let's Encrypt environment that is used for issuing certificates.
-              The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
-              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/.
-            enum:
-              - staging
-              - production
-            type: string
-        required:
-          - email
+        oneOf:
+          - title: Let's Encrypt
+            properties:
+              issuer:
+                type: string
+                enum:
+                  - letsencrypt
+                default: letsencrypt
+              stage:
+                type: string
+                enum:
+                  - production
+                  - staging
+                default: production
+              email:
+                $ref: '#/definitions/email'
+            required:
+              - email
+              - issuer
+          - title: Custom Certificate Authority
+            properties:
+              issuer:
+                type: string
+                enum:
+                  - custom-ca
+                default: custom-ca
+              customRootCA:
+                type: string
+                description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one
+              customRootCAKey:
+                x-secret: ''
+                type: string
+                description: CA private key that is used to issue certificates. Leave it empty to generate one automatically
+            required:
+              - issuer
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -2048,8 +2062,6 @@ properties:
                   - project
             required:
               - google
-    required:
-      - provider
   home:
     $ref: '#/definitions/alerts'
   kms:
@@ -2166,6 +2178,14 @@ properties:
       - clientID
       - clientSecret
       - issuer
+  internal:
+    additionalProperties: true
+    description: INTERNAL USE ONLY - we store configuration here that is shared across multiple charts
+    type: object
+    properties:
+      untrustedCA:
+        type: boolean
+        default: false
   otomi:
     additionalProperties: false
     properties:

@@ -3,12 +3,11 @@
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
+{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
-{{- $letsEncryptStage := printf "letsencrypt-%s" $cm.stage }}
-{{- $clusterIssuer := ternary "selfsigned-issuer" $letsEncryptStage (eq $v.cluster.provider "kind") }}
-{{- $caKeyPair := "kind-ca-key-pair" }}
 resources:
-{{- if and (not (eq $clusterIssuer "selfsigned-issuer")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
+{{- if and (not (eq $issuerName "custom-ca")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -23,20 +22,18 @@ resources:
       secret: "{{ $p.aws.secretAccessKey | b64enc }}"
       {{- end }}
 {{- end }}
+
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
-      name: {{ $clusterIssuer }}
+      name: {{ $issuerName }}
     spec:
-      {{- if eq $clusterIssuer "selfsigned-issuer" }}
-      ca:
-        secretName: {{ $caKeyPair }}
-      {{- else }}
+{{- if not $v._derived.untrustedCA }}
       acme:
-        server: https://acme{{ (eq $cm.stage "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
+        server: https://acme{{ (eq ($cm | get "stage" "") "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
         privateKeySecretRef:
-          name: {{ $letsEncryptStage }}
+          name: {{ $issuerName }}
         solvers:
           - selector: {}
             dns01:
@@ -71,20 +68,26 @@ resources:
                   key: secret
                   name: "dns-secret"
               {{- end }}
-      {{- end }}
-{{- if eq $clusterIssuer "selfsigned-issuer" }}
+{{- else }}
+      ca:
+        secretName: {{ $issuerName }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: {{ $caKeyPair }}
+      name: {{ $issuerName }}
     data:
+  {{- if eq $v.cluster.provider "kind" }}
       tls.crt: {{ requiredEnv "KIND_CA_CERT" | b64enc }}
       tls.key: {{ requiredEnv "KIND_CA_KEY" | b64enc }}
+  {{- else }}
+      tls.crt: {{ $cm.customRootCA| b64enc }}
+      tls.key: {{ $cm.customRootCAKey | b64enc}}
+  {{- end }}
 {{- end }}
 # generate all da certs
 {{- range $domInfo := $doms.domInfo }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl (merge (dict "domain" $domInfo.domain "name" $certName "issuer" $clusterIssuer) $v) | nindent 4 }}
+  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
   {{- end }}
 {{- end }}

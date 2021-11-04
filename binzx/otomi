@@ -49,19 +49,10 @@ docker_tag_exists() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-package_is_core() {
-  path=$1
-  { [ "$path" = "/home/app/stack" ] || [ ! -f "$path/package.json" ]; } && return 1
-  packageName=$(grep name "$path/package.json" | sed 's/.*"name": "\(.*\)".*/\1/')
-  [ $packageName = 'otomi-core' ] && return 0 || return 1
-}
-
-if { [ -z $CI ] || [ -n "$TESTING" ]; } && package_is_core $(pwd); then
+if [ "$ENV_DIR" != '/home/app/stack/env' ]; then
   in_core=1
   core_path=$(pwd)
 fi
-
-has_docker=$(command -v docker) &>/dev/null
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"

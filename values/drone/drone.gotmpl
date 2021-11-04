@@ -7,7 +7,6 @@
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
 {{- $debug := $d | get "debug" false }}
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
@@ -62,7 +61,7 @@ server:
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
-    {{- if and $hasGitea $hasCA }}
+    {{- if and $hasGitea $v._derived.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -83,12 +82,12 @@ kubernetes:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
-    {{- if and $hasGitea $hasCA }}
+    {{- if and $hasGitea $v._derived.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
   envFile: |
     {{- $sopsEnv | nindent 4 }}
-    {{- if and $hasGitea $hasCA }}
+    {{- if and $hasGitea $v._derived.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
@@ -102,10 +101,14 @@ metrics:
   prometheus:
     enabled: true
 
-{{- if $hasCA }}
+{{- if $v._derived.untrustedCA}}
 extraRootCA: |
-  {{- $v.cluster | get "customRootCA" $v.letsencryptRootCA | nindent 2 }}
-  {{- $v.cluster | get "customIntermediateCA" $v.letsencryptCA | nindent 2 }}
+{{- if eq $cm.issuer "custom-ca" }}
+  {{- $cm.customRootCA | nindent 2 }}
+{{- else }}
+  {{- $v.letsencryptRootCA | nindent 2 }}
+  {{- $v.letsencryptCA | nindent 2 }}
+{{- end }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

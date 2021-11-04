@@ -4,8 +4,6 @@
 {{- $h := $c.harbor }}
 {{- $k := $c.keycloak }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
-{{- $stage := $c | get "cert-manager.stage" }}
-{{- $hasStagingCerts := eq $stage "staging" }}
 {{- $hasKeycloak := $k | get "enabled" }}
 {{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
@@ -35,5 +33,5 @@ env:
   OIDC_GROUPS_CLAIM: groups
   OIDC_NAME: keycloak
   OIDC_SCOPE: openid
-  OIDC_VERIFY_CERT: '{{ not $hasStagingCerts }}'
+  OIDC_VERIFY_CERT: '{{ not $v._derived.untrustedCA }}'
 {{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "harbor") }}

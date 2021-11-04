@@ -314,7 +314,7 @@ export const gucci = async (
   tmpl: string | unknown,
   args: { [key: string]: any },
   opts?: GucciOptions,
-): Promise<string | Record<string, unknown>> => {
+): Promise<string | Record<string, any>> => {
   const kv = flattenObject(args)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
@@ -336,7 +336,7 @@ export const gucci = async (
     }
     // Defaults to returning string, unless stated otherwise
     if (!opts?.asObject) return processOutput.stdout.trim()
-    return load(processOutput.stdout.trim()) as Record<string, unknown>
+    return load(processOutput.stdout.trim()) as Record<string, any>
   } finally {
     $.quote = quoteBackup
   }
@@ -374,8 +374,8 @@ export const extract = (schema: Record<string, any>, leaf: string, mapValue = (v
     }, {})
 }
 
-let valuesSchema: Record<string, unknown>
-export const getValuesSchema = async (): Promise<Record<string, unknown>> => {
+let valuesSchema: Record<string, any>
+export const getValuesSchema = async (): Promise<Record<string, any>> => {
   if (valuesSchema) return valuesSchema
   const schema = loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
@@ -388,7 +388,7 @@ export const stringContainsSome = (str: string, ...args: string[]): boolean => {
   return args.some((arg) => str.includes(arg))
 }
 
-export const generateSecrets = async (values: Record<string, unknown> = {}): Promise<Record<string, unknown>> => {
+export const generateSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
   const debug: OtomiDebugger = terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
@@ -405,7 +405,7 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   })
   debug.debug('secrets: ', secrets)
   debug.info('First round of templating')
-  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, unknown>
+  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, any>
   const firstTemplateFlattend = flattenObject(firstTemplateRound)
 
   debug.info('Parsing values for second round of templating')
@@ -445,7 +445,7 @@ export const generateSecrets = async (values: Record<string, unknown> = {}): Pro
   debug.info('Second round of templating')
   const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
     asObject: true,
-  })) as Record<string, unknown>
+  })) as Record<string, any>
   debug.debug('secondTemplateRound: ', secondTemplateRound)
 
   debug.info('Generated all secrets')
@@ -493,11 +493,10 @@ const fetchLoadBalancerIngressData = async (): Promise<string> => {
       await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
     ).stdout.trim()
     count += 1
-    if (isEmpty(ingressDataString)) break
-    await sleep(250)
-    d.debug(`Trying to get LoadBalancer ingress information, trial ${count}`)
+    if (ingressDataString) return ingressDataString
+    await sleep(1000)
+    d.debug(`Querying LoadBalancer IP information, trial #${count}`)
   }
-  return ingressDataString
 }
 
 interface IngressRecord {

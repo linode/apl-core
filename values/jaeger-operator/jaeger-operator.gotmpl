@@ -1,6 +1,4 @@
 {{- $v := .Values }}
-{{- $j := $v.charts | get "jaeger" }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 
 jaeger:
   create: true
@@ -77,7 +75,7 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 1000
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

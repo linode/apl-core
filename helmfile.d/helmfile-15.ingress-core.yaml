@@ -29,7 +29,6 @@ releases:
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $v.cluster.domainSuffix  }}
-        certStage: {{ $cm.stage }}
+        domain: {{ $v | get "cluster.domainSuffix" nil }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null

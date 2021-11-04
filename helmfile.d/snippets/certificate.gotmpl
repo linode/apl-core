@@ -10,9 +10,9 @@ spec:
   - '{{ .domain }}'
   issuerRef:
     kind: ClusterIssuer
-    name: {{ .issuer }}
+    name: {{ .issuerName }}
   usages:
-    {{- if eq .issuer "selfsigned-issuer" }}
+    {{- if eq .issuer "custom-ca" }}
     - server auth
     {{- else }}
     - digital signature

@@ -6,7 +6,7 @@ environments:
             isManaged: true
         charts:
           cert-manager:
-            stage: production
+            issuer: custom-ca
           demo-tlspass:
             enabled: false
           drone:
@@ -68,7 +68,7 @@ environments:
             enabled: false
         otomi:
           hasCloudLB: false
-          hasExternalDNS: true
+          hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
           isManaged: true
@@ -140,3 +140,4 @@ environments:
           xx2ml43DO/Ya/tVZVok0mO0TUjzJIfPqyvr455IsIut4RlCR9Iq0EDTve2/ZwCuG
           hSjpTUFGSiQrR2JK2Evp+o6AETUkBCO1aw0PpQBPDQ==
           -----END CERTIFICATE-----
+
