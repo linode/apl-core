@@ -11,7 +11,7 @@ image:
     - name: otomi-pullsecret-global
   {{- end }}
 
-replicas: {{ $gk | get "replicas" 1 }} 
+replicas: {{ $gk | get "replicas" }} 
 
 emitAuditEvents:  {{ $gk | get "emitAuditEvents" false }} 
 emitAdmissionEvents: {{ $gk | get "emitAdmissionEvents" false }}  
@@ -36,10 +36,7 @@ controllerManager:
     requests:
       cpu: 200m
       memory: 256Mi
-customResourceDefinitions:
-  create: false
-
 
 # enable data sync
-auditFromCache: {{ $gk | get "auditFromCache" false }}
-disableValidatingWebhook: {{ $gk | get "disableValidatingWebhook" false }}
+auditFromCache: {{ $gk | get "auditFromCache" }}
+disableValidatingWebhook: {{ $gk | get "disableValidatingWebhook" }}

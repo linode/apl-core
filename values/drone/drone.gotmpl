@@ -61,7 +61,7 @@ server:
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
-    {{- if and $hasGitea $v._derived.untrustedCA}}
+    {{- if and $hasGitea $v.internal.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
 kubernetes:
@@ -82,12 +82,24 @@ kubernetes:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
+<<<<<<< HEAD
     {{- if and $hasGitea $v._derived.untrustedCA}}
+||||||| 37a7c649
+    {{- if and $hasGitea $v.internal.untrustedCA}}
+=======
+    {{- if and $hasGitea $v.internal.untrustedCA }}
+>>>>>>> 0951707d6fe8d88cda79b89bb6152e213df50b4e
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
   envFile: |
     {{- $sopsEnv | nindent 4 }}
+<<<<<<< HEAD
     {{- if and $hasGitea $v._derived.untrustedCA}}
+||||||| 37a7c649
+    {{- if and $hasGitea $v.internal.untrustedCA}}
+=======
+    {{- if and $hasGitea $v.internal.untrustedCA }}
+>>>>>>> 0951707d6fe8d88cda79b89bb6152e213df50b4e
     DRONE_GITEA_SKIP_VERIFY: true
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true

@@ -30,21 +30,9 @@ spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
-      {{- with .Values.securityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      initContainers:
-      {{- if index .Values "etcd-operator" "enabled" }}
-      - name: check-etcd-crd
-        image: lachlanevenson/k8s-kubectl
-        command: ['kubectl', 'get', 'customresourcedefinitions', 'etcdclusters.etcd.database.coreos.com']
-        resources:
-{{ toYaml .Values.resources | indent 10 }}
-      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ include "vault-operator.bank-vaults.version" . }}"
+          image: "{{ .Values.image.repository }}:{{ include "vault-operator.vault-operator.version" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - vault-operator
@@ -66,6 +54,10 @@ spec:
           ports:
           - containerPort: {{ .Values.service.internalPort }}
           - containerPort: 8383
+          {{- if .Values.securityContext }}
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: "/"
@@ -92,6 +84,10 @@ spec:
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
 {{- end }}
       serviceAccountName: {{ include "vault-operator.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}

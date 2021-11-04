@@ -6,6 +6,7 @@
 {{- $hasKeycloak := $k.enabled }}
 {{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
+{{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $o "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 
@@ -201,7 +202,7 @@ grafana:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
-      root_url: https://{{ $appsDomain }}/grafana
+      root_url: https://{{ $grafanaDomain }}
 
 kubeApiServer:
   enabled: false

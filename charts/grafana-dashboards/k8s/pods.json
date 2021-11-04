@@ -1,11 +1,9 @@
 {
-  "__inputs": [],
-  "__requires": [],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": "$datasource",
+        "datasource": "-- Grafana --",
         "enable": true,
         "expr": "time() == BOOL timestamp(rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[2m]) > 0)",
         "hide": false,
