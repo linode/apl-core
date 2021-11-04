@@ -71,15 +71,12 @@ resources:
 {{- else }}
       ca:
         secretName: {{ $issuerName }}
+  {{- if eq $cm.issuer "custom-ca" }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: {{ $issuerName }}
     data:
-  {{- if eq $v.cluster.provider "kind" }}
-      tls.crt: {{ requiredEnv "KIND_CA_CERT" | b64enc }}
-      tls.key: {{ requiredEnv "KIND_CA_KEY" | b64enc }}
-  {{- else }}
       tls.crt: {{ $cm.customRootCA| b64enc }}
       tls.key: {{ $cm.customRootCAKey | b64enc}}
   {{- end }}

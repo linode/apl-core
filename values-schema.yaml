@@ -1062,16 +1062,38 @@ properties:
                 const: letsencrypt
             required:
               - email
-          # we need both or none at all:
-          - required:
-              - customRootCA
-              - customRootCAKey
-          - not:
+              - issuer
+            not:
               anyOf:
                 - required:
+                    - customRootCA
                     - customRootCAKey
                 - required:
                     - customRootCA
+                - required:
+                    - customRootCAKey
+          - allOf:
+              - oneOf:
+                  - not:
+                      required:
+                        - issuer
+                  - properties:
+                      issuer:
+                        const: custom-ca
+                    required:
+                      - issuer
+              - oneOf:
+                  # we need both or none at all:
+                  - required:
+                      - customRootCA
+                      - customRootCAKey
+                  - not:
+                      anyOf:
+                        - required:
+                            - customRootCA
+                        - required:
+                            - customRootCAKey
+
       cluster-overprovisioner:
         additionalProperties: false
         properties:
