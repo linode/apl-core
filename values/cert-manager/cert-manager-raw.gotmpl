@@ -88,6 +88,6 @@ resources:
 {{- range $domInfo := $doms.domInfo }}
   {{- if not $domInfo.hasCert }}
     {{- $certName := ($domInfo.domain | replace "." "-") }}
-  - {{ tpl $certTpl ("otomi" $v.otomi dict "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
+  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domInfo.domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
   {{- end }}
 {{- end }}

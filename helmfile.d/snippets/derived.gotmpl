@@ -36,12 +36,9 @@ environments:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
             enabled: {{ eq $provider "aws" }}
+          {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
           cert-manager:
-          {{- if not (hasKey $cm "issuer") }}
-            issuer: letsencrypt
-            {{- if not (has $cm (list "stage")) }}\
             stage: production
-            {{- end }}
           {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}

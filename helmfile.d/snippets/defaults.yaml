@@ -5,6 +5,8 @@ environments:
           appgw:
             isManaged: true
         charts:
+          cert-manager:
+            issuer: custom-ca
           demo-tlspass:
             enabled: false
           drone:
