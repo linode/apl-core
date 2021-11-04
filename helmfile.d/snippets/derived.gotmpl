@@ -29,7 +29,7 @@ helmDefaults:
 environments:
   default:
     values:
-      - _derived:
+      - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
           untrustedCA: {{ or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
         charts:
           aws-alb-ingress-controller:

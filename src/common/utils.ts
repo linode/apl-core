@@ -493,7 +493,7 @@ const fetchLoadBalancerIngressData = async (): Promise<string> => {
       await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
     ).stdout.trim()
     count += 1
-    if (!ingressDataString) break
+    if (ingressDataString === '') break
     await sleep(250)
     d.debug(`Querying LoadBalancer IP information, trial #${count}`)
   }

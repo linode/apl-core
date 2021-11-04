@@ -137,43 +137,8 @@ const genSecrets = async (): Promise<Record<string, any>> => {
   return originalValues
 }
 
-const prepSops = async (): Promise<void> => {
-  await genSops()
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`) && existsSync(`${env.ENV_DIR}/.secrets`)) {
-    await encrypt()
-    await decrypt()
-  }
-}
-
-const validateBootstrapProcess = async (originalValues: Record<string, any>): Promise<void> => {
-  try {
-    // Do not validate if CLI just bootstraps originalValues with placeholders
-    if (originalValues !== undefined) await validateValues()
-  } catch (error) {
-    debug.error(error)
-    throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
-  }
-  // if we did not have the admin password before we know we have generated it for the first time
-  // so tell the user about it
-  if (!originalValues?.otomi?.adminPassword) {
-    debug.log(
-      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
-    )
-  }
-}
-
-const postSops = async (): Promise<void> => {
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    // encryption related stuff
-    const file = '.gitattributes'
-    await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
-    // just call encrypt and let it sort out what has changed and needs encrypting
-    await encrypt()
-  }
-}
-
-const customCA = async (originalValues: Record<string, any>): Promise<void> => {
-  const d = terminal('customCA')
+const createCustomCA = async (originalValues: Record<string, any>): Promise<void> => {
+  const d = terminal('createCustomCA')
   const cm = get(originalValues, 'charts.cert-manager', {})
 
   if (cm?.customRootCA && cm?.customRootCAKey) {
@@ -205,7 +170,6 @@ const customCA = async (originalValues: Record<string, any>): Promise<void> => {
   cert.validity.notAfter = new Date()
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10)
   const attrs = [
-    { name: 'commonName', value: 'redkubes.com' },
     { name: 'countryName', value: 'NL' },
     { shortName: 'ST', value: 'Utrecht' },
     { name: 'localityName', value: 'Utrecht' },
@@ -244,98 +208,38 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await genSecrets()
+  await createCustomCA(originalValues)
+  await genSops()
 
-  await customCA(originalValues)
-  await prepSops()
-  await validateBootstrapProcess(originalValues)
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+    // add sops related files
+    const file = '.gitattributes'
+    await copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+    // now do a round of encryption and decryption to make sure we have all the files in place for validation
+    await encrypt()
+    await decrypt()
+  }
 
-  await postSops()
+  try {
+    // Do not validate if CLI just bootstraps originalValues with placeholders
+    if (originalValues !== undefined) await validateValues()
+  } catch (error) {
+    debug.error(error)
+    throw new Error('Tried to bootstrap with invalid values. Please update your values and try again.')
+  }
+  // if we did not have the admin password before we know we have generated it for the first time
+  // so tell the user about it
+  if (!originalValues?.otomi?.adminPassword) {
+    debug.log(
+      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
+    )
+  }
 
   if (!hasOtomi) {
     debug.log('You can now use the otomi CLI')
   }
   debug.log(`Done bootstrapping values`)
 }
-
-// const notEmpty = (answer: string): boolean => answer?.trim().length > 0
-
-// export const askBasicQuestions = async (): Promise<void> => {
-//   // TODO: If running this function later (when values exists) then skip questions for which the value exists
-//   // TODO: Parse the value schema and get defaults!
-//   const bootstrapWithMinimalValues = await askYesNo(
-//     'To get the full otomi experience we need to get some cluster information to bootstrap the minimal viable values, do you wish to continue?',
-//     { defaultYes: true },
-//   )
-//   if (!bootstrapWithMinimalValues) return
-//   const values: any = {}
-
-//   console.log('First few questions will be about the cluster')
-//   values.cluster = {}
-//   values.cluster.owner = await ask('Who is the owner of this cluster?', { matchingFn: notEmpty })
-//   values.cluster.name = await ask('What is the name of this cluster?', { matchingFn: notEmpty })
-//   values.cluster.domainSuffix = await ask('What is the domain suffix of this cluster?', {
-//     matchingFn: (a: string) => notEmpty(a) && isURL(a),
-//   })
-//   values.cluster.k8sVersion = await ask('What is the kubernetes version of this cluster?', {
-//     matchingFn: notEmpty,
-//     defaultAnswer: '1.19',
-//   })
-//   values.cluster.apiServer = await ask('What is the api server of this cluster?', {
-//     matchingFn: (a: string) => notEmpty(a) && isURL(a),
-//   })
-//   console.log('What provider is this cluster running on?')
-//   values.cluster.provider = await cliSelect({
-//     values: ['aws', 'azure', 'google'],
-//     valueRenderer: (value, selected) => {
-//       return selected ? chalk.underline(value) : value
-//     },
-//   })
-//   values.cluster.region = await ask('What is the region of the provider where this cluster is running?', {
-//     matchingFn: notEmpty,
-//   })
-
-//   console.log('='.repeat(15))
-//   console.log('Next a few questions about otomi')
-//   values.otomi = {}
-//   values.otomi.version = await ask('What version of otomi do you want to run?', {
-//     matchingFn: notEmpty,
-//     defaultAnswer: 'master',
-//   })
-//   // values.otomi.adminPassword = await ask('What is the admin password for otomi (leave blank to generate)', {defaultAnswer: })
-
-//   // const useGitea = await askYesNo('Do you want to store the values on the cluster?', { defaultYes: true })
-//   // if (useGitea) {
-//   //   // Write to env/chart/gitea.yaml: enabled = true
-//   // } else {
-//   //   console.log('We need to get credentials where to store the values')
-//   //   const repo = await ask('What is the repository url', {
-//   //     matchingFn: async (answer: string) => {
-//   //       const res = (await nothrow($`git ls-remote ${answer}`)).exitCode === 0
-//   //       if (!res) console.log("It's an invalid repository, please try again.")
-//   //       return res
-//   //     },
-//   //   })
-//   //   const username = await ask('What is the repository username', {
-//   //     matchingFn: notEmpty,
-//   //   })
-//   //   const password = await ask('What is the repository password', {
-//   //     matchingFn: notEmpty,
-//   //   })
-//   //   const email = await ask('What is the repository email', {
-//   //     matchingFn: (answer: string) => isEmail(answer),
-//   //   })
-//   // }
-//   // console.log(
-//   //   'Please select your KMS provider for encryption. Select "none" to disable encryption. (We strongly suggest you only skip encryption for testing purposes.)',
-//   // )
-//   // const sopsProvider = await cliSelect({ values: ['none', 'aws', 'azure', 'google', 'vault'], defaultValue: 'none' })
-//   // const clusterName = await ask('What is the cluster name?', {
-//   //   matchingFn: notEmpty,
-//   // })
-//   // const clusterDomain = await ask('What is the cluster domain?', {
-//   //   matchingFn: (answer: string) => notEmpty(answer) && isURL(answer.trim()),
-//   // })
-// }
 
 export const module = {
   command: cmdName,
