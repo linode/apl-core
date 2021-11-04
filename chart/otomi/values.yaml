@@ -17,12 +17,15 @@ charts:
 
 # -- Tell otomi your cluster metadata.
 cluster:
+  # -- Optional.
+  domainSuffix: cloud
+
   # -- Tell otomi your k8s version in advance.
   k8sVersion: '1.20'
   name: 'dev'
 
   # -- Enter the k8s provider: aws|azure|google.
-  provider: aws
+  provider: ''
 
 # -- Enter the (cloud) provider where you use its name server services for k8s? (optional).
 dns: {}
@@ -46,8 +49,8 @@ dns: {}
 
 # -- Enter the KMS provider for encrypting your secrets in your repo.
 kms:
-  sops:
-    provider: ''
+  sops: {}
+  # provider: ''
 
   # aws:
   #   keys: ''
@@ -75,11 +78,11 @@ oidc: {}
 #   clientSecret: ''
 #   issuer: ''
 
-  # -- IDP group id used to identify global admin.
-  # adminGroupID: ''
+# -- IDP group id used to identify global admin.
+# adminGroupID: ''
 
-  # -- IDP group id used to identify team admin.
-  # teamAdminGroupID: ''
+# -- IDP group id used to identify team admin.
+# teamAdminGroupID: ''
 
 # -- Contains useful metadata about your environment.
 otomi:
@@ -88,6 +91,5 @@ otomi:
   hasExternalIDP: false
 
   # -- Login to a public container registry.
-  globalPullSecret:
-    username: dockerHubUser
+  globalPullSecret: {}
   #   password: ''
