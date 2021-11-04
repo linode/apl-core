@@ -20,7 +20,9 @@ resources:
 env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
-
+  {{- if $v.internal.untrustedCA }}
+  CUSTOM_ROOT_CA: | {{ $v | get "charts.cert-manager.customRootCA" | nindent 4 }}
+  {{- end }}
 podAnnotations:
   policy.otomi.io/ignore.wget: "banned-image-tags,container-limits"
 
