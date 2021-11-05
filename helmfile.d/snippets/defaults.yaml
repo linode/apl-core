@@ -55,6 +55,8 @@ environments:
               enabled: false
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
+          otomi-api: {}
+          otomi-console: {}
           promtail: {}
           prometheus-blackbox-exporter: {}
           prometheus-operator: {}
