@@ -7,7 +7,6 @@ cluster:
     disableHttp2: false
 otomi:    
   hasCloudLB: false
-certStage: staging
 namespace: ""
 resourceQuota:
   pods: "50"

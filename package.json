@@ -23,8 +23,9 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
+    "node-forge": "^0.10.0",
     "tar": "^6.1.0",
-    "validator": "^13.6.0",
+    "validator": "^13.7.0",
     "yargs": "^17.0.1",
     "zx": "^4.2.0"
   },
@@ -43,6 +44,7 @@
     "@types/lodash": "^4.14.175",
     "@types/mocha": "^7.0.2",
     "@types/node": "^16.7.1",
+    "@types/node-forge": "^0.10.8",
     "@types/sinon": "^9.0.11",
     "@types/sinon-chai": "^3.2.5",
     "@types/supertest": "^2.0.11",
@@ -135,5 +137,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.14.35"
+  "version": "0.14.37"
 }

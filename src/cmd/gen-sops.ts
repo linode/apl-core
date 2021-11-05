@@ -34,8 +34,6 @@ export const genSops = async (): Promise<void> => {
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile) as Record<string, any>
-  // TODO: Use validate values to validate tree at this specific point
-  // validateValues('kms.sops.provider')
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     debug.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')

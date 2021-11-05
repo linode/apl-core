@@ -226,12 +226,6 @@ definitions:
       apiServer:
         description: Used by kubectl for local deployment to target cluster.
         $ref: '#/definitions/url'
-      customRootCA:
-        description: When set this CA is used by cert-manager to create self signed certs.
-        type: string
-      customIntermediateCA:
-        description: When set this intermediate CA is used by cert-manager to create self signed certs.
-        type: string
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
@@ -260,7 +254,6 @@ definitions:
         description: AWS only. If provided will override autodiscovery from metadata.
         $ref: '#/definitions/wordCharacterPattern'
     required:
-      - domainSuffix
       - k8sVersion
       - name
       - owner
@@ -455,11 +448,12 @@ definitions:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
-    description: The cluster k8s version. Otomi supports 2 minor versions backwards compatibility from the suggested default.
+    description: The cluster k8s version. Otomi has compatibility with at least 2 minor versions back from the suggested default.
     enum:
       - '1.18'
       - '1.19'
       - '1.20'
+      - '1.21'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1038,24 +1032,68 @@ properties:
     additionalProperties: true
     properties:
       cert-manager:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          customRootCA:
+            type: string
+            description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
+          customRootCAKey:
+            x-secret: ''
+            type: string
+            description: CA private key that is used to issue certificates. Leave it empty to generate one automatically.
           email:
             $ref: '#/definitions/email'
-          stage:
-            default: production
-            description: |
-              The Let's Encrypt environment that is used for issuing certificates.
-              The 'production' environment issues trusted certificates but has narrow rate limits, whereas the 'staging' environment issues untrusted certificates but provides broader rate limits.
-              Read more about rate limits: https://letsencrypt.org/docs/rate-limits/.
-            enum:
-              - staging
-              - production
+          issuer:
             type: string
-        required:
-          - email
+            enum:
+              - custom-ca
+              - letsencrypt
+            default: custom-ca
+          stage:
+            type: string
+            enum:
+              - production
+              - staging
+            default: production
+        oneOf:
+          - properties:
+              issuer:
+                const: letsencrypt
+            required:
+              - email
+              - issuer
+            not:
+              anyOf:
+                - required:
+                    - customRootCA
+                    - customRootCAKey
+                - required:
+                    - customRootCA
+                - required:
+                    - customRootCAKey
+          - allOf:
+              - oneOf:
+                  - not:
+                      required:
+                        - issuer
+                  - properties:
+                      issuer:
+                        const: custom-ca
+                    required:
+                      - issuer
+              - oneOf:
+                  # we need both or none at all:
+                  - required:
+                      - customRootCA
+                      - customRootCAKey
+                  - not:
+                      anyOf:
+                        - required:
+                            - customRootCA
+                        - required:
+                            - customRootCAKey
+
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -2048,8 +2086,6 @@ properties:
                   - project
             required:
               - google
-    required:
-      - provider
   home:
     $ref: '#/definitions/alerts'
   kms:
@@ -2166,6 +2202,14 @@ properties:
       - clientID
       - clientSecret
       - issuer
+  internal:
+    additionalProperties: true
+    description: INTERNAL USE ONLY - we store configuration here that is shared across multiple charts
+    type: object
+    properties:
+      untrustedCA:
+        type: boolean
+        default: false
   otomi:
     additionalProperties: false
     properties:

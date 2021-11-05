@@ -28,7 +28,8 @@ cluster:
   provider: ''
 
 # -- Enter the (cloud) provider where you use its name server services for k8s? (optional).
-dns: {}
+dns:
+  {}
   # provider: aws|azure|google
 
   # aws:

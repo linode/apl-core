@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.37](https://github.com/redkubes/otomi-core/compare/v0.14.36...v0.14.37) (2021-11-05)
+
+
+### Bug Fixes
+
+* kind invocation ([419dd72](https://github.com/redkubes/otomi-core/commit/419dd720d2ed92f504a260a55de875ade3053f39))
+* moved ca data to api, bumped console, api [ci skip] ([8992ac6](https://github.com/redkubes/otomi-core/commit/8992ac60084f2b589e472bc01ca41f7411234144))
+* validation, core detection ([e357dba](https://github.com/redkubes/otomi-core/commit/e357dba688bf039e190e51e48fa16ee3fae09d52))
+
+
+### Others
+
+* **deps:** bump validator from 13.6.0 to 13.7.0 ([#651](https://github.com/redkubes/otomi-core/issues/651)) ([e49842a](https://github.com/redkubes/otomi-core/commit/e49842ac0d8fe88dd39db144ba400dabc24ad9d5))
+
+### [0.14.36](https://github.com/redkubes/otomi-core/compare/v0.14.35...v0.14.36) (2021-11-04)
+
+
+### Features
+
+* custom ca ([#648](https://github.com/redkubes/otomi-core/issues/648)) ([c04bb1d](https://github.com/redkubes/otomi-core/commit/c04bb1da1d01af6be516f65ff2f31b83c4d4e3fb))
+
+
+### Others
+
+* **deps:** bumped console [ci skip] ([afa071b](https://github.com/redkubes/otomi-core/commit/afa071be5f50dd9062f1f47f291e55868bc8d04d))
+
 ### [0.14.35](https://github.com/redkubes/otomi-core/compare/v0.14.34...v0.14.35) (2021-11-03)
 
 

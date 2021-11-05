@@ -1,16 +1,7 @@
 {{- $v := .Values }}
-{{- $i := $v.charts | get "istio" }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $k := $v.charts.keycloak }}
+{{- $i := $v.charts.istio }}
 {{- $ig := $i | get "global" dict }}
-{{- $iga := $i | get "gateways" dict }}
-{{- $stage := $cm | get "stage" }}
-{{- $hasCA := or (eq ($cm | get "stage") "staging") ($v.cluster | get "customRootCA" false) ($v.cluster | get "customIntermediateCA" false) }}
-{{- $hasKeycloak := $k | get "enabled" }}
-{{- $keycloakBase := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
-{{- $o := $v | get "oidc" dict }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $keycloakBase "hasKeycloak" $hasKeycloak "oidc" $o "stage"  $stage "keycloak" ($k | get "idp")) | toString }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
@@ -212,11 +203,15 @@ resources:
               sampling: 0.1
           {{- end }}
           enableAutoMtls: true
+        {{- if $v._derived.untrustedCA }}
         pilot:
-          {{- if $hasCA }}
           jwksResolverExtraRootCA: |
-            {{- $v | get "customIntermediateCA" $v.letsencryptCA | nindent 12 }}
+          {{- if eq $cm.issuer "custom-ca" }}
+            {{- $cm.customRootCA | nindent 12 }}
+          {{- else }}
+            {{- $v.letsencryptCA | nindent 12 }}
           {{- end }}
+        {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
           injectedAnnotations: 

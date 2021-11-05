@@ -1,6 +1,6 @@
 {{- $o := .oidc }}
 "auth.generic_oauth":
-  tls_skip_verify_insecure: {{ eq .stage "staging" }}
+  tls_skip_verify_insecure: {{ .untrustedCA }}
   enabled: true
   name: OAuth
   org_role: Admin

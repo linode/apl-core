@@ -13,11 +13,12 @@ image:
 
 replicas: {{ $gk | get "replicas" }} 
 
-emitAuditEvents:  {{ $gk | get "emitAuditEvents" }} 
-emitAdmissionEvents: {{ $gk | get "emitAdmissionEvents" }}  
-constraintViolationsLimit: {{ $gk | get "constraintViolationsLimit" }}  
-auditInterval: {{ $gk | get "auditInterval" }}  
-logLevel: {{ $gk | get "logLevel" }}  
+emitAuditEvents:  {{ $gk | get "emitAuditEvents" false }} 
+emitAdmissionEvents: {{ $gk | get "emitAdmissionEvents" false }}  
+constraintViolationsLimit: {{ $gk | get "constraintViolationsLimit" 20 }}  
+auditInterval: {{ $gk | get "auditInterval" 60 }}  
+logLevel: {{ $gk | get "logLevel" "INFO" }}  
+untrustedCA: {{ $v._derived.untrustedCA }}
 
 audit:
   resources:

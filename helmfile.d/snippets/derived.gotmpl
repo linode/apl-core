@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
+{{- $cm := index $v.charts "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
 {{- $otomiVersion := $v.otomi | get "version" nil }}
@@ -13,22 +14,14 @@
   {{- $otomiTag = print "v" $otomiVersion }}
 {{- end }}
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
-{{- $domainSuffix := $v.cluster.domainSuffix }}
+# Domain suffix may not be present during initial deplyment stage
+{{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $c.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
-{{/* TODO: inject these two from kind into proper values location: */}}
-{{- $customRootCA := exec "bash" (list "-c" "cat ../../root-ca.pem &>/dev/null || true") }}
-{{- $customIntermediateCA := exec "bash" (list "-c" "cat ../../intermediate-ca.pem &>/dev/null || true") }}
-{{- if or $v.otomi.hasExternalDNS (and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil)) }}
-  {{- if and ($v.cluster | get "customRootCA" nil) ($v.cluster | get "customIntermediateCA" nil) }}
-    {{- $customRootCA = $v.cluster.customRootCA }}
-    {{- $customIntermediateCA = $v.cluster.customIntermediateCA }}
-  {{- else }}
-    {{/* TODO: generate CA and intermediate */}}
-  {{- end }}
-{{- end }}
+{{- $issuer := $cm | get "issuer" "" }}
+
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
@@ -36,11 +29,17 @@ helmDefaults:
 environments:
   default:
     values:
-      - charts:
+      - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
+          untrustedCA: {{ or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+        charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
-            enabled: false #{{ eq $provider "aws" }}
+            enabled: false # {{ eq $provider "aws" }}
+          {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
+          cert-manager:
+            stage: production
+          {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
@@ -61,7 +60,7 @@ environments:
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
-            address: https://keycloak.{{ $v.cluster.domainSuffix }}
+            address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
@@ -71,13 +70,6 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
-        {{- if and (ne $customRootCA "") (ne $customIntermediateCA "") }}
-        cluster:
-          customRootCA: |
-            {{- $customRootCA | nindent 12 }}
-          customIntermediateCA: |
-            {{- $customIntermediateCA | nindent 12 }}
-        {{- end }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }} 
