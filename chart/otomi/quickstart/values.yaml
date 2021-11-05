@@ -1,0 +1,18 @@
+charts:
+  cert-manager:
+    issuer: custom-ca
+    email: ''
+    stage: production
+
+  external-dns:
+    enabled: false
+    domainFilters: []
+    zoneIdFilters: []
+
+cluster:
+  k8sVersion: '1.20'
+  name: local-install
+  provider: ''
+
+otomi:
+  adminPassword: 5!sMw
