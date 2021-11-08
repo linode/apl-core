@@ -124,10 +124,12 @@ const copyBasicFiles = async (): Promise<void> => {
 const processValues = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
   if (isChart) {
+    console.debug(`Loading values from ${env.VALUES_INPUT}`)
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
   } else {
+    console.debug(`Loading values from ${env.ENV_DIR}`)
     originalValues = (await getCurrentValues()) as Record<string, any>
   }
   const generatedSecrets = await getOtomiSecrets(originalValues)
