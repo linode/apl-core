@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.39](https://github.com/redkubes/otomi-core/compare/v0.14.38...v0.14.39) (2021-11-08)
+
+
+### Features
+
+* add final message ([#653](https://github.com/redkubes/otomi-core/issues/653)) ([0bfed99](https://github.com/redkubes/otomi-core/commit/0bfed9976b696c3f400f86b4d3983a6fdd677b94))
+
+
+### Bug Fixes
+
+* ambiguous error on bootstrap ([#654](https://github.com/redkubes/otomi-core/issues/654)) ([2f223f6](https://github.com/redkubes/otomi-core/commit/2f223f60184945d785c4b971c8222ed5ceb75c3d))
+
+
+### Build System
+
+* fix integration uid ([da38726](https://github.com/redkubes/otomi-core/commit/da387261f3517c7f8e82fb7b78fb763c2b13fc53))
+
 ### [0.14.38](https://github.com/redkubes/otomi-core/compare/v0.14.37...v0.14.38) (2021-11-05)
 
 
