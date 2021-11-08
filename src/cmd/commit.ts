@@ -154,7 +154,20 @@ export const commit = async (): Promise<void> => {
   if (values?.charts?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
-  if (isChart) await setDeploymentStatus()
+  if (isChart) {
+    await setDeploymentStatus()
+    const credentails = values!.charts.keycloak
+    const message = `
+    ########################################################################################################################################
+    #
+    #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/ 
+    #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
+    #  When Keycloak is used as IDP, the URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
+    #  The password of the Keycloak ${credentails.adminUsername} user is: ${credentails.adminPassword}
+    #
+    ########################################################################################################################################`
+    d.info(message)
+  }
 }
 
 export const module = {
