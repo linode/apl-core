@@ -14,7 +14,6 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
-
 if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
@@ -320,6 +319,7 @@ else
     $(check_volume_path $ENV_DIR "$stack_dir/env") \
     $(check_volume_path $ENV_DIR "$ENV_DIR") \
     $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
+    $DOCKER_EXTRA_ARGS \
     --env-file "$tmp_env" \
     -w "$stack_dir" \
     "$otomi_tools_image" \
