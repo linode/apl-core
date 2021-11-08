@@ -156,14 +156,15 @@ export const commit = async (): Promise<void> => {
 
   if (isChart) {
     await setDeploymentStatus()
-    const credentails = values!.charts.keycloak
+    const credentials = values!.charts.keycloak
     const message = `
     ########################################################################################################################################
     #
     #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/ 
     #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
-    #  When Keycloak is used as IDP, the URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
-    #  The password of the Keycloak ${credentails.adminUsername} user is: ${credentails.adminPassword}
+    #  The URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
+    #  When no external IDP was configured, please log into Keycloak first to create one or more users and add them either to the 'team-admin' or 'admin' group.
+    #  The password of the Keycloak ${credentials.adminUsername} user is: ${credentials.adminPassword}
     #
     ########################################################################################################################################`
     d.info(message)
