@@ -49,9 +49,8 @@ const generateLooseSchema = () => {
   }
 }
 
-const getCurrentValues = async (): Promise<Record<string, any> | undefined> => {
+const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
-    await validateValues()
     return hfValues()
   }
   return undefined
@@ -130,7 +129,9 @@ const processValues = async (): Promise<Record<string, any>> => {
     await writeValues(originalValues)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
-    originalValues = (await getCurrentValues()) as Record<string, any>
+    originalValues = (await getEnvDirValues()) as Record<string, any>
+    // when we are bootstrapping from a non empty values repo, validate the input
+    if (originalValues) await validateValues()
   }
   const generatedSecrets = await getOtomiSecrets(originalValues)
   await writeValues(generatedSecrets, false)
@@ -206,7 +207,8 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
-  if (originalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
+  const finalValues = (await getEnvDirValues()) as Record<string, any>
+  if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     debug.info('Copying sops related files')
