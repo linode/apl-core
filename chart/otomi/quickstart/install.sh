@@ -8,16 +8,15 @@ set -e
 export VALUES_INPUT=./chart/otomi/quickstart/values.yaml
 export VERBOSITY=2
 export ENV_DIR=/tmp/otomi/values
-export CI=1
-export NOPULL=1
+export OTOMI_TAG=master
 
-# rm -rf $ENV_DIR
-# binzx/otomi bootstrap
+rm -rf $ENV_DIR
+binzx/otomi bootstrap
 
-KUBECONFIG_MINIKUBE=~/.kube/minikube-flattened-config
-kubectl config set-cluster minikube --server=https://minikube:8443 
-kubectl config view --flatten=true > $KUBECONFIG_MINIKUBE
-export KUBECONFIG=$KUBECONFIG_MINIKUBE
+# KUBECONFIG_MINIKUBE=~/.kube/minikube-flattened-config
+# kubectl config set-cluster minikube --server=https://localhost:52905
+# kubectl config view --flatten=true > $KUBECONFIG_MINIKUBE
+# export KUBECONFIG=$KUBECONFIG_MINIKUBE
 
 # export CUSTOM_NETWORK='--network minikube'
-binzx/otomi apply
+# binzx/otomi apply
