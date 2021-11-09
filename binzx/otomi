@@ -207,6 +207,7 @@ vars=(
   AZURE_CLIENT_SECRET
   AZURE_TENANT_ID
   CI
+  CUSTOM_NETWORK
   DEBUG
   ENV_DIR
   GCLOUD_SERVICE_KEY
@@ -288,7 +289,7 @@ if [[ $calling_args == *'-non-interactive'* ]] ||
   it=''
 fi
 
-network='--network host'
+network=${CUSTOM_NETWORK:-'--network host'}
 if [[ $calling_args == 'server'* ]]; then
   network="-p $OTOMI_PORT:$OTOMI_PORT"
 fi
@@ -305,6 +306,7 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
+  set -x
   docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
