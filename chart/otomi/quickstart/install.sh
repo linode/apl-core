@@ -5,9 +5,8 @@ set -e
 #####
 # recommended options to start minikube
 #####
-# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0
+# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0 --listen-address=0.0.0.0 --ports=80 --addons=ingress
 # docker network inspect minikube
-minikube addons enable ingress
 
 #####
 # env
