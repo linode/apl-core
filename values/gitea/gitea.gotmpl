@@ -1,17 +1,13 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
 {{- $g := $v.charts.gitea }}
-{{- $k := $v.charts.keycloak }}
-{{- $hasKeycloak := $k.enabled }}
-{{- $keycloakUrl := printf "https://keycloak.%s" $v.cluster.domainSuffix }}
-{{- $keycloakIssuer := printf "%s/realms/otomi" $keycloakUrl }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.charts | get "cert-manager" }}
 
 
 nameOverride: gitea
 fullnameOverride: gitea
-waitForUrl: {{ $keycloakUrl }}
+waitForUrl: {{ $v._derived.openIdWellKnownUrl }}
 otomiVersion: {{ $v.otomi.version }}
 
 resources:
@@ -78,11 +74,11 @@ gitea:
         prometheus: system
   oauth:
     enabled: true
-    name: {{ $hasKeycloak | ternary ($k | get "idp.alias" "otomi-idp") "otomi" }}
+    name: {{ $v._derived.openidName }}
     provider: openidConnect
-    key: {{ $hasKeycloak | ternary $k.idp.clientID ($o | get "clientID" nil) }}
-    secret: {{ $hasKeycloak | ternary $k.idp.clientSecret ($o | get "clientSecret" nil) }}
-    autoDiscoverUrl: '{{ $hasKeycloak | ternary $keycloakIssuer ($o | get "issuer" nil) }}/.well-known/openid-configuration'
+    key: {{ $v._derived.openIdClientId }}
+    secret: {{ $v._derived.openIdClientSecret }}
+    autoDiscoverUrl: {{ $v._derived.openIdWellKnownUrl }}
 
 init:
   resources:
