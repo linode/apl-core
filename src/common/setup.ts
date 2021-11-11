@@ -4,11 +4,10 @@ import pkg from '../../package.json'
 import { decrypt } from './crypt'
 import { env, isCli } from './envalid'
 import { hfValues } from './hf'
-import { BasicArguments, loadYaml, parser, terminal } from './utils'
+import { BasicArguments, isCore, loadYaml, parser, terminal } from './utils'
 import { askYesNo } from './zx-enhance'
 
 chalk.level = 2
-const dirname = __dirname
 
 let otomiK8sVersion: string
 
@@ -17,7 +16,6 @@ let otomiK8sVersion: string
  * @returns
  */
 const checkKubeContext = async (): Promise<void> => {
-  if (!isCli) return
   const d = terminal('checkKubeContext')
   d.info('Validating kube context')
 
@@ -29,8 +27,7 @@ const checkKubeContext = async (): Promise<void> => {
 
   d.info(`Current kube context: ${currentContext}`)
   if (!k8sContext) {
-    d.warn('Skipping kube context validation (cluster.k8sContext is empty)')
-    return
+    throw new Error('No value for cluster.k8sContext set!')
   }
   if (k8sContext !== currentContext) {
     let fixContext = false
@@ -49,9 +46,9 @@ const checkKubeContext = async (): Promise<void> => {
  * Check the ENV_DIR parameter and whether or not the folder is populated
  * @returns
  */
-const checkEnvDir = (): boolean => {
+const isReadyEnvDir = (): boolean => {
   const d = terminal('checkEnvDir')
-  if (dirname.includes('otomi-core') && !env.ENV_DIR) {
+  if (isCore && !env.ENV_DIR) {
     throw new Error('The ENV_DIR environment variable is not set')
   }
   d.debug(`ENV_DIR: ${env.ENV_DIR}`)
@@ -94,8 +91,8 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   if (options?.skipAllPreChecks) return
   const d = terminal('prepareEnvironment')
   d.info('Checking environment')
-  if (!options?.skipEnvDirCheck && checkEnvDir()) {
-    if (!env.CI && !options?.skipKubeContextCheck) await checkKubeContext()
+  if (!options?.skipEnvDirCheck && isReadyEnvDir()) {
+    if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
   }
 }
