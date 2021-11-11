@@ -53,7 +53,6 @@ controller:
     disable-ipv6: true
     enable-modsecurity: {{ $n | get "modsecurity.enabled" "false" }}
     enable-owasp-modsecurity-crs: false # modsecurity-snippet only works when this is turned off
-    enable-real-ip: true
     hsts: true
     http2-max-field-size: 64k
     http2-max-header-size: 128k
