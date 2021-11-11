@@ -19,6 +19,7 @@ import {
   isCore,
   loadYaml,
   OtomiDebugger,
+  providerMap,
   rootDir,
   setParsedArgs,
   terminal,
@@ -209,6 +210,11 @@ const bootstrapValues = async (): Promise<void> => {
   const originalValues = await processValues()
   const finalValues = (await getEnvDirValues()) as Record<string, any>
   if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
+  if (!finalValues.cluster.k8sContext) {
+    const k8sContext = `otomi-${providerMap(finalValues.cluster.provider)}-${finalValues.cluster.name}`
+    debug.info(`No value for cluster.k8sContext found, providing default one: ${k8sContext}`)
+    await writeValues({ cluster: { k8sContext } }, true)
+  }
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     debug.info('Copying sops related files')
