@@ -526,7 +526,7 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {
     // Wait until DNS records are propagated to the cluster DNS
-    await waitTillAvailable(`https://${firstIngressData.hostname}`, { skipSsl: true })
+    await waitTillAvailable(`https://${firstIngressData.hostname}`, { skipSsl: true, status: 404 })
     const resolveData = await resolveAny(firstIngressData.hostname)
     const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
       | AnyARecord
