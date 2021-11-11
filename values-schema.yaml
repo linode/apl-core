@@ -971,7 +971,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota]
+          enum: [alerts, oidc, resourceQuota, downloadKubeConfig]
         uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'

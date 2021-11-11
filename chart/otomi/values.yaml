@@ -1,18 +1,33 @@
 cluster:
-  # domainSuffix: ''
+  # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
   k8sVersion: '1.20'
   name: 'dev'
   owner: ''
-  provider: '' # provider can be one of aws|azure|google
+  provider: '' # provider can be one of aws|azure|google|onprem
 otomi:
-  adminPassword: ''
+  adminPassword: '' # Will be automatically generated if not filled-in
+  # Set to true when using an external DNS zone. Use default (false) to get assigned a '*.nip.io' domain.
   hasExternalDNS: false
-  # Set this to true, when you bring your own IDP such as Azure AD. (Then you must also fill in the 'oidc:' settings below.)
-  # (When set to false Keycloak will become the IDP.)
-  # hasExternalIDP: true
+  # Set this to true, when you bring your own IDP such as Azure AD. Then you must also fill in the 'oidc:' settings below. When set to false Keycloak will become the IDP.
+  # hasExternalIDP: false
   # by default the image tag is set to .Chart.AppVersion
   # version: master
-# External dns zone configuration (leave empty to get assigned a '*.nip.io' domain):
+charts:
+  cert-manager:
+    # Use a custom CA (BYO or auto-generated) or use LetsEncrypt. When using LetsEncrypt, also fill in dns.
+    issuer: custom-ca 
+    # Fill in when using BYO CA. If not filled in, a CA will be auto generated
+    # customRootCA:
+    # customRootCAKey:
+    # Fill in when issuer is LetsEncrypt
+    # email: '' # Required when issuer is set to LetsEncrypt
+    # stage: staging # defaults to 'production' when commented out. Required when issuer is set to Letsencrypt
+  external-dns:
+    domainFilters:
+      - ''
+    # zoneIdFilters: []
+# Optional configuration
+# External dns zone configuration
 # dns:
 #   provider:
 #   # provide one of the following below: aws|azure|google
@@ -32,18 +47,7 @@ otomi:
 #   google:
 #     serviceAccountKey: ''
 #     project: ''
-charts:
-  cert-manager:
-    issuer: custom-ca
-    # email: ''
-    # stage defaults to 'production' when commented out
-    # stage: staging
-
-  external-dns:
-    domainFilters:
-      - ''
-    # zoneIdFilters: []
-# KMS for encrypting values (optional)
+# KMS for encrypting values
 # kms:
 #   sops:
 #   # provider can be one of aws|azure|google|vault
