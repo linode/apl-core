@@ -18,8 +18,9 @@ if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
-  AZURE_CLIENT_ID=somevalue
-  AZURE_CLIENT_SECRET=somesecret
+  OTOMI_TAG="master"
+  AZURE_CLIENT_ID="somevalue"
+  AZURE_CLIENT_SECRET="somesecret"
 elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
   ENV_DIR="$PWD/env"
 elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then

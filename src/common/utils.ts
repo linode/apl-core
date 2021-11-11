@@ -556,3 +556,12 @@ const isCoreCheck = (): boolean => {
 }
 
 export const isCore = isCoreCheck()
+
+export const providerMap = (provider) => {
+  const map = {
+    aws: 'eks',
+    azure: 'aks',
+    google: 'gke',
+  }
+  return map[provider] ?? provider
+}
