@@ -27,8 +27,11 @@ const checkKubeContext = async (): Promise<void> => {
   d.debug('currentContext: ', currentContext)
   d.debug('k8sContext: ', k8sContext)
 
-  d.info(`Using kube context: ${currentContext}`)
-
+  d.info(`Current kube context: ${currentContext}`)
+  if (!k8sContext) {
+    d.warn('Skipping kube context validation (cluster.k8sContext is empty)')
+    return
+  }
   if (k8sContext !== currentContext) {
     let fixContext = false
     if (!(parser.argv as BasicArguments).setContext) {
