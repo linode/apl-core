@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak }}
+{{- $cm := index $v.charts "cert-manager" }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v.charts.vault }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
@@ -62,18 +63,17 @@ resources:
           runAsNonRoot: true
           runAsUser: 65534
           runAsGroup: 65534
-      {{- $v.internal.untrustedCA }}
+        {{- if $v._derived.untrustedCA }}
         containers:
-          items:
-          - name:
+          - name: bank-vaults
             volumeMounts:
-              mountPath: '/etc/ssl/certs'
+            - mountPath: '/etc/ssl/certs'
               name: 'root-ca'
         volumes:
-          - name: root-ca
-            secret:
-              secretName: root-ca
-      {{- end }}
+        - name: root-ca
+          secret:
+            secretName: root-ca
+        {{- end }}
 
 
       vaultLabels: {}
@@ -322,12 +322,12 @@ resources:
       - kind: ServiceAccount
         name: vault
         namespace: vault
-{{- $v.internal.untrustedCA }}
+{{- if $v._derived.untrustedCA }}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: {{ "root-ca" }}
-    type: kubernetes.io/tls
+    type: Opaque
     data:
       tls.crt: {{ ($cm | get "customRootCA")| b64enc }}
 {{- end }}
