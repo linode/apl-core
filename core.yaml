@@ -39,6 +39,7 @@ k8s:
     - name: istio-system
       disableIstioInjection: true
     - name: ingress
+      disableIstioInjection: true
     - name: jaeger
     - name: jaeger-operator
       disableIstioInjection: true
