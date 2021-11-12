@@ -213,7 +213,7 @@ server:
 
 ## Configures drone to use kubernetes to run pipelines using drone-kube-runner agent
 ## Each drone pipeline build will create its own pod to run in
-kubernetes:
+agent:
   ## Drone kube-runner configuration.
   ## Values in here get injected as environment variables to the kube-runner
   ## Ref: https://kube-runner.docs.drone.io/installation/reference/

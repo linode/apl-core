@@ -1154,7 +1154,18 @@ properties:
           resources:
             additionalProperties: false
             properties:
+              agent:
+                $ref: '#/definitions/resources'
               runner:
+                properties:
+                  requests:
+                    properties:
+                      cpu:
+                        description: Requested compute resources for all the containers started by the runner (guaranteed), expressed in millicores.
+                        type: integer
+                      memory:
+                        $ref: '#/definitions/memoryQuantity'
+                        description: Requested memory resources for all the containers started by the runner (guaranteed).
                 $ref: '#/definitions/resources'
               server:
                 $ref: '#/definitions/resources'
