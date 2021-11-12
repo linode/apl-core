@@ -1166,7 +1166,6 @@ properties:
                       memory:
                         $ref: '#/definitions/memoryQuantity'
                         description: Requested memory resources for all the containers started by the runner (guaranteed).
-                $ref: '#/definitions/resources'
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
