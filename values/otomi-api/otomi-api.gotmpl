@@ -2,7 +2,6 @@
 {{- $c := $v.cluster }}
 {{- $o := $v.charts | get "otomi-api" }}
 {{- $g := $v.charts.gitea }}
-{{- $k := $v.charts.keycloak }}
 {{- $cm := $v.charts | get "cert-manager" }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g.enabled }}

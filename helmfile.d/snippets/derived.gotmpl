@@ -1,5 +1,8 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
+{{- $k := $c | get "keycloak" dict }}
+{{- $o := $v | get "oidc" dict }}
+
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
@@ -31,6 +34,19 @@ environments:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
           untrustedCA: {{ or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+          {{- if $c.keycloak.enabled }}
+          openidName: {{ $k | get "idp.alias" "otomi-idp" }}
+          openidBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
+          openIdWellKnownUrl: {{ printf "https://keycloak.%s/realms/otomi/.well-known/openid-configuration" $domainSuffix }}
+          openIdClientId: {{ $k.idp.clientID  }}
+          openIdClientSecret: {{ $k.idp.clientSecret }}
+          {{- else }}
+          openidName: "otomi"
+          openidBaseUrl: {{ $o | get "issuer" nil }}
+          openIdWellKnownUrl: {{ printf "%s/.well-known/openid-configuration" ($o | get "issuer" nil) }}
+          openIdClientId: {{ $o | get "clientID" nil }}
+          openIdClientSecret: {{ $o | get "clientSecret" nil }}
+          {{- end }}
         charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
