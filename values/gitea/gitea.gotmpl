@@ -119,12 +119,7 @@ postgresql:
 
 {{- if $v._derived.untrustedCA}}
 extraRootCA: |
-{{- if eq $cm.issuer "custom-ca" }}
-  {{- $cm.customRootCA | nindent 2 }}
-{{- else }}
-  {{- $v.letsencryptRootCA | nindent 2 }}
-  {{- $v.letsencryptCA | nindent 2 }}
-{{- end }}
+  {{- $v._derived.caCert | nindent 2 }}
 {{- end }}
 
 securityContext:
