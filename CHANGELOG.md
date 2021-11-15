@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.44](https://github.com/redkubes/otomi-core/compare/v0.14.43...v0.14.44) (2021-11-12)
+
+
+### Features
+
+* kube context check ([#656](https://github.com/redkubes/otomi-core/issues/656)) ([d19288e](https://github.com/redkubes/otomi-core/commit/d19288e6f20a471ecf92d6cf28f863eca271adfa))
+
+
+### Bug Fixes
+
+* drone runner resources ([59a7501](https://github.com/redkubes/otomi-core/commit/59a7501b72ad41db96180c31b73fa282e0a54fe2))
+
+
+### Others
+
+* add PR checklist ([#655](https://github.com/redkubes/otomi-core/issues/655)) ([73745bd](https://github.com/redkubes/otomi-core/commit/73745bdf0acb45c53abfb276df9de77918c005ea))
+
 ### [0.14.43](https://github.com/redkubes/otomi-core/compare/v0.14.42...v0.14.43) (2021-11-10)
 
 

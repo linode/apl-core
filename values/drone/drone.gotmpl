@@ -64,12 +64,12 @@ server:
     {{- if and $hasGitea $v._derived.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
-kubernetes:
+agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
     sidecar.istio.io/inject: "false"
   resources:
-    {{- with $d | get "resources.runner" nil }}
+    {{- with $d | get "resources.agent" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:

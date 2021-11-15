@@ -15,13 +15,13 @@ spec:
       app: {{ template "drone.name" . }}
       release: "{{ .Release.Name }}"
       component: agent
-  replicas: {{ .Values.kubernetes.replicas }}
+  replicas: {{ .Values.agent.replicas }}
   template:
     metadata:
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-{{- if .Values.kubernetes.annotations }}
-{{ toYaml .Values.kubernetes.annotations | indent 8 }}
+{{- if .Values.agent.annotations }}
+{{ toYaml .Values.agent.annotations | indent 8 }}
 {{- end }}
       labels:
         app: {{ template "drone.name" . }}
@@ -31,22 +31,22 @@ spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- if .Values.kubernetes.securityContext }}
+{{- if .Values.agent.securityContext }}
       securityContext: 
-        {{- toYaml .Values.kubernetes.securityContext | nindent 8 }}
+        {{- toYaml .Values.agent.securityContext | nindent 8 }}
 {{- end }}
-{{- if .Values.kubernetes.schedulerName }}
-      schedulerName: "{{ .Values.kubernetes.schedulerName }}"
+{{- if .Values.agent.schedulerName }}
+      schedulerName: "{{ .Values.agent.schedulerName }}"
 {{- end }}
-{{- if .Values.kubernetes.affinity }}
+{{- if .Values.agent.affinity }}
       affinity:
-{{ toYaml .Values.kubernetes.affinity | indent 8 }}
+{{ toYaml .Values.agent.affinity | indent 8 }}
 {{- end }}
-{{- if .Values.kubernetes.nodeSelector }}
+{{- if .Values.agent.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.kubernetes.nodeSelector | indent 8 }}
+{{ toYaml .Values.agent.nodeSelector | indent 8 }}
 {{- end }}
-{{- with .Values.kubernetes.tolerations }}
+{{- with .Values.agent.tolerations }}
       tolerations:
         {{- toYaml . | nindent 6 }}
 {{- end }}
@@ -72,13 +72,13 @@ spec:
           - name: DRONE_RUNNER_ENV_FILE
             value: /etc/drone/env      
           - name: DRONE_NAMESPACE_DEFAULT
-            value: {{ .Values.kubernetes.namespace }}
-          {{- range $key, $value := .Values.kubernetes.env }}
+            value: {{ .Values.agent.namespace }}
+          {{- range $key, $value := .Values.agent.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}
           {{- end }}
         resources:
-{{ toYaml .Values.kubernetes.resources | indent 10 }}
+{{ toYaml .Values.agent.resources | indent 10 }}
 {{- if not .Values.dind.enabled }}
         securityContext:
           privileged: true  
@@ -87,7 +87,7 @@ spec:
             name: docker-socket
           - name: envfile
             mountPath: /etc/drone
-      {{- with .Values.kubernetes.volumeMounts }}
+      {{- with .Values.agent.volumeMounts }}
           {{- toYaml . | nindent 10 }}
       {{- end }}
       volumes:
@@ -98,7 +98,7 @@ spec:
           secret:
             secretName: {{ template "drone.fullname" . }}-envfile
 {{- else }}
-      {{- with .Values.kubernetes.volumeMounts }}
+      {{- with .Values.agent.volumeMounts }}
         volumeMounts:
           {{- toYaml . | nindent 10 }}
       {{- end }}
@@ -132,6 +132,6 @@ spec:
         - name: docker-graph-storage
           emptyDir: {}
 {{- end }}
-      {{- with .Values.kubernetes.volumes }}
+      {{- with .Values.agent.volumes }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
