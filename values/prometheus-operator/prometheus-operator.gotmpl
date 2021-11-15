@@ -7,7 +7,7 @@
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.openidBaseUrl "hasKeycloak" $hasKeycloak "oidc" $o "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 
 nameOverride: po
 fullnameOverride: po

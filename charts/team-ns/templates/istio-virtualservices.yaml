@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak | default dict }}
-{{- $hasKeycloak := $k.enabled | default true }}
 {{- $kkMaster := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
   {{- $ := . }}
@@ -98,23 +97,13 @@ spec:
   selector:
     matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
-          {{- if $hasKeycloak }}
     - issuer: {{ $kkMaster }}
       jwksUri: {{ $kkMaster }}/protocol/openid-connect/certs
       audiences:
         - {{ $k.idp.clientID }}
-          {{- else }}
-    - issuer: {{ $v.oidc.issuer }}
-            {{- if hasKey $v.oidc "jwks" }}
-      jwks: {{ $v.oidc.jwks }}
-            {{- else if hasKey $v.oidc "jwksUri" }}
-      jwksUri: {{ $v.oidc.jwksUri }}
-            {{- end }}
-          {{- end }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
-        {{- if $hasKeycloak }}
-          {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
+        {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -128,28 +117,27 @@ spec:
     - from: 
         - source:
             requestPrincipals: [{{ $principal }}]
-            {{- if not $s.isShared }}
+          {{- if not $s.isShared }}
       when:
         - key: request.auth.claims[groups]
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
-            {{- end }}
+          {{- end }}
       to:
         - operation:
-            {{- with $s.authz.paths }}
+          {{- with $s.authz.paths }}
             paths:
               {{- range $path := . }}
               - {{ $path }}
               {{- end }}
-            {{- end }}
+          {{- end }}
             hosts: [{{ $domain }}]
-            {{- if $s.authz.excludePaths }}
+          {{- if $s.authz.excludePaths }}
             notPaths: [{{ include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.authz.excludePaths "sep" ",") }}]
-            {{- end }}
+          {{- end }}
     - from:
         - source:
             notRequestPrincipals: [{{ $principal }}]
 ---
-          {{- end }}
         {{- end }}
       {{- end }}
     {{- end }}

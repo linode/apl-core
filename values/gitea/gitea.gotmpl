@@ -1,13 +1,14 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
 {{- $g := $v.charts.gitea }}
+{{- $k := $v.charts.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
+{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $v._derived.oidcBaseUrl }}
 {{- $cm := $v.charts | get "cert-manager" }}
-
 
 nameOverride: gitea
 fullnameOverride: gitea
-waitForUrl: {{ $v._derived.openIdWellKnownUrl }}
+waitForUrl: {{ $oidcWellKnownUrl }}
 otomiVersion: {{ $v.otomi.version }}
 
 resources:
@@ -74,11 +75,11 @@ gitea:
         prometheus: system
   oauth:
     enabled: true
-    name: {{ $v._derived.openidName }}
+    name: {{ $k.idp.alias }}
     provider: openidConnect
-    key: {{ $v._derived.openIdClientId }}
-    secret: {{ $v._derived.openIdClientSecret }}
-    autoDiscoverUrl: {{ $v._derived.openIdWellKnownUrl }}
+    key: {{ $k.idp.clientID  }}
+    secret: {{ $k.idp.clientSecret }}
+    autoDiscoverUrl: {{ $oidcWellKnownUrl }}
 
 init:
   resources:

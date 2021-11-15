@@ -2,6 +2,7 @@
 {{- $c := $v.charts }}
 {{- $o := $v | get "oidc" dict }}
 {{- $h := $c.harbor }}
+{{- $k := $c.keycloak }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $teams := keys $v.teamConfig.teams }}
@@ -13,9 +14,9 @@ runPolicy: OnSpecChange
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
   HARBOR_USER: admin
-  OIDC_ENDPOINT: '{{ $v._derived.openidBaseUrl }}'
-  OIDC_CLIENT_ID: {{ $v._derived.openIdClientId }}
-  OIDC_CLIENT_SECRET: {{ $v._derived.openIdClientSecret }}
+  OIDC_ENDPOINT: '{{ $v._derived.oidcBaseUrl }}'
+  OIDC_CLIENT_ID: {{ $k.idp.clientID  }}
+  OIDC_CLIENT_SECRET: {{ $k.idp.clientSecret }}
 
 env:
   DEBUG: '*'

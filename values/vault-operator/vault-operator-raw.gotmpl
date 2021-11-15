@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v.charts.vault }}
+{{- $k := $v.charts.keycloak }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 resources:
@@ -147,9 +148,9 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: {{ $v._derived.openidBaseUrl }}
-              oidc_client_id: {{ $v._derived.openIdClientId }}
-              oidc_client_secret: {{ $v._derived.openIdClientSecret }}
+              oidc_discovery_url: {{ $v._derived.oidcBaseUrl }}
+              oidc_client_id: {{ $k.idp.clientID  }}
+              oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true
               default_role: team
             roles:
