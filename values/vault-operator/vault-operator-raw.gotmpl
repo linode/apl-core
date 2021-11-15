@@ -328,5 +328,5 @@ resources:
       name: {{ "root-ca" }}
     type: Opaque
     data:
-      tls.crt: {{ ($cm | get "customRootCA")| b64enc }}
+      tls.crt: {{ $v._derived.caCert | b64enc }}
 {{- end }}
