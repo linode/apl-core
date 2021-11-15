@@ -24,6 +24,7 @@
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
+{{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -33,20 +34,17 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
-          untrustedCA: {{ or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
-          {{- if $c.keycloak.enabled }}
-          openidName: {{ $k | get "idp.alias" "otomi-idp" }}
-          openidBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
-          openIdWellKnownUrl: {{ printf "https://keycloak.%s/realms/otomi/.well-known/openid-configuration" $domainSuffix }}
-          openIdClientId: {{ $k.idp.clientID  }}
-          openIdClientSecret: {{ $k.idp.clientSecret }}
-          {{- else }}
-          openidName: "otomi"
-          openidBaseUrl: {{ $o | get "issuer" nil }}
-          openIdWellKnownUrl: {{ printf "%s/.well-known/openid-configuration" ($o | get "issuer" nil) }}
-          openIdClientId: {{ $o | get "clientID" nil }}
-          openIdClientSecret: {{ $o | get "clientSecret" nil }}
+          {{- if $untrustedCA }}
+          caCert: |
+            {{- if eq $issuer "custom-ca" }}
+              {{- $cm.customRootCA | nindent 12 }}
+            {{- else }}
+              {{- $v.letsencryptRootCA | nindent 12 }}
+              {{- $v.letsencryptCA | nindent 12 }}
+            {{- end }}
           {{- end }}
+          untrustedCA: {{ $untrustedCA }}
+          oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
         charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
@@ -76,6 +74,7 @@ environments:
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
+            enabled: true
             address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:

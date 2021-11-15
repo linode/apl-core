@@ -1,7 +1,6 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak | default dict }}
-{{- $hasKeycloak := $k.enabled | default true }}
 {{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
 # split list of services into separate ingress types:
 # - core apps that need path forwarding (apps.*/appName stuff)
