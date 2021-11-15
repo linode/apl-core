@@ -90,7 +90,8 @@ resources:
           mountPath: /vault/file
       {{- if $v._derived.untrustedCA }}
         - name: 'root-ca'
-          mountPath: '/etc/ssl/certs'
+          mountPath: '/etc/ssl/certs/tls.crt'
+          subPath: tls.crt
       {{- end }}
 
       # Support for distributing the generated CA certificate Secret to other namespaces.
