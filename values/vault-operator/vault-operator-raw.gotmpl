@@ -202,6 +202,8 @@ resources:
             type: external
             policies: 
             - allow-team-{{ $teamId }}
+            # A group must be able to list all paths as a prerequesite to access its own secrets. 
+            - allow-list-all-secrets
             metadata: {}
           {{- end }}
           - name: team-admin
