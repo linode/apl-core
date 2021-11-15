@@ -39,7 +39,6 @@ resources:
           runAsNonRoot: false
           runAsUser: 0
           runAsGroup: 0
-
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
       vaultEnvsConfig:
@@ -63,17 +62,6 @@ resources:
           runAsNonRoot: true
           runAsUser: 65534
           runAsGroup: 65534
-        {{- if $v._derived.untrustedCA }}
-        containers:
-          - name: bank-vaults
-            volumeMounts:
-            - mountPath: '/etc/ssl/certs'
-              name: 'root-ca'
-        volumes:
-        - name: root-ca
-          secret:
-            secretName: root-ca
-        {{- end }}
 
 
       vaultLabels: {}
@@ -93,10 +81,19 @@ resources:
         - name: vault-file
           persistentVolumeClaim:
             claimName: vault-file
-
+        {{- if $v._derived.untrustedCA }}
+        - name: root-ca
+          secret:
+            secretName: root-ca
+        {{- end }}
       volumeMounts:
         - name: vault-file
           mountPath: /vault/file
+      {{- if $v._derived.untrustedCA }}
+        - name: 'root-ca'
+          mountPath: '/etc/ssl/certs'
+      {{- end }}
+
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
       caNamespaces: []
