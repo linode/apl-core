@@ -1,8 +1,6 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $k := $v.charts.keycloak }}
-{{- $hasKeycloak := $k.enabled }}
 {{- $name := $domain | replace "." "-" }}
 resources:
   - apiVersion: networking.k8s.io/v1beta1
@@ -18,7 +16,7 @@ resources:
         {{- end }}
         kubernetes.io/ingress.class: nginx
         ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
-        {{- if $hasKeycloak }}
+        {{- if $v.charts.keycloak.enabled }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         {{- end }}
         nginx.ingress.kubernetes.io/configuration-snippet: |

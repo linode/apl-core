@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v.charts.vault }}
@@ -164,9 +163,9 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi
-              oidc_client_id: {{ $k.idp.clientID }}
-              oidc_client_secret: {{ $k.idp.clientSecret }}
+              oidc_discovery_url: {{ $v._derived.openidBaseUrl }}
+              oidc_client_id: {{ $v._derived.openIdClientId }}
+              oidc_client_secret: {{ $v._derived.openIdClientSecret }}
               namespace_in_state: true
               default_role: team
             roles:
