@@ -37,7 +37,7 @@ environments:
           {{- if $untrustedCA }}
           caCert: |
             {{- if eq $issuer "custom-ca" }}
-              {{- $cm.customRootCA | nindent 12 }}
+              {{- $cm | get "customRootCA" "" | nindent 12 }}
             {{- else }}
               {{- $v.letsencryptRootCA | nindent 12 }}
               {{- $v.letsencryptCA | nindent 12 }}
