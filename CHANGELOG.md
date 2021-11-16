@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.45](https://github.com/redkubes/otomi-core/compare/v0.14.43...v0.14.45) (2021-11-16)
+
+
+### Features
+
+* kube context check ([#656](https://github.com/redkubes/otomi-core/issues/656)) ([d19288e](https://github.com/redkubes/otomi-core/commit/d19288e6f20a471ecf92d6cf28f863eca271adfa))
+
+
+### Bug Fixes
+
+* drone runner resources ([59a7501](https://github.com/redkubes/otomi-core/commit/59a7501b72ad41db96180c31b73fa282e0a54fe2))
+* non existing ca is allowed ([5f2b4a0](https://github.com/redkubes/otomi-core/commit/5f2b4a013255befbf8a5df0801d4376d82093b71))
+* now preserving source ip with external traffic policy local ([#657](https://github.com/redkubes/otomi-core/issues/657)) ([7ece91f](https://github.com/redkubes/otomi-core/commit/7ece91ff5070f407e4ab60253f4b32a178022e0b))
+* vault selfsigned cert ([#659](https://github.com/redkubes/otomi-core/issues/659)) ([08af144](https://github.com/redkubes/otomi-core/commit/08af14460046aadb8fda4a5d7c326141870a1e80))
+* wait for keycloak ([#658](https://github.com/redkubes/otomi-core/issues/658)) ([84988f4](https://github.com/redkubes/otomi-core/commit/84988f4e868734d4f6cbff8e4f8abe987caa5118))
+
+
+### Code Refactoring
+
+* **keycloak:** removed leftover logic related to disabling keycloak ([bd5a106](https://github.com/redkubes/otomi-core/commit/bd5a10672b27dfba3f118cd9049a3f21af42804f))
+
+
+### Others
+
+* add PR checklist ([#655](https://github.com/redkubes/otomi-core/issues/655)) ([73745bd](https://github.com/redkubes/otomi-core/commit/73745bdf0acb45c53abfb276df9de77918c005ea))
+* **deps:** bumped api [ci skip] ([5aa2da1](https://github.com/redkubes/otomi-core/commit/5aa2da14e2163b3a9884564ca4655954f3c18414))
+* **release:** 0.14.44 ([d153fe1](https://github.com/redkubes/otomi-core/commit/d153fe1c14500f5f8f1a2403db33e7682f310d10))
+
 ### [0.14.44](https://github.com/redkubes/otomi-core/compare/v0.14.43...v0.14.44) (2021-11-12)
 
 
