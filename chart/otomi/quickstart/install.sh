@@ -5,7 +5,7 @@ set -e
 #####
 # recommended options to start minikube
 #####
-# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0 --listen-address=0.0.0.0 --ports=80 --addons=ingress
+# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0 --ports=443 --cpus=max --memory=max
 # docker network inspect minikube
 
 #####
@@ -27,5 +27,6 @@ export CUSTOM_NETWORK='--network minikube'
 #####
 # apply 
 #####
-binzx/otomi apply -l name=otomi-api
-binzx/otomi apply -l name=otomi-console
+binzx/otomi apply
+
+# minikube service --url nginx-ingress-controller -n ingress
