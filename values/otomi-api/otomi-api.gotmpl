@@ -59,12 +59,7 @@ env:
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
   CUSTOM_ROOT_CA: |
-    {{- if eq $cm.issuer "custom-ca" }}
-      {{- $cm.customRootCA | nindent 4 }}
-    {{- else }}
-      {{- $v.letsencryptRootCA | nindent 4 }}
-      {{- $v.letsencryptCA | nindent 4 }}
-    {{- end }}
+    {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
   CI: '1'
   IN_DOCKER: '1'
