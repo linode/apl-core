@@ -19,6 +19,7 @@ import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
 import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
+import { module as taskModule } from './task'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
 import { module as validateTemplatesModule } from './validate-templates'
@@ -46,6 +47,7 @@ export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
 export { module as status } from './status'
 export { module as sync } from './sync'
+export { module as task } from './task'
 export { module as template } from './template'
 export { module as test } from './test'
 export { module as validateTemplates } from './validate-templates'
@@ -76,6 +78,7 @@ export const commands: CommandModule[] = [
   statusModule,
   syncModule,
   templateModule,
+  taskModule,
   testModule,
   validateTemplatesModule,
   validateValuesModule,

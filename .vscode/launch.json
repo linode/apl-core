@@ -5,18 +5,22 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "task:copyCerts",
       "type": "pwa-node",
       "request": "launch",
-      "name": "bootstrap",
       "runtimeExecutable": "node",
-      // "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["--loader", "ts-node/esm", "src/otomi.ts", "bootstrap"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "task", "-n", "copyCerts"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
       "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
+        "IN_DOCKER": "1",
+        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "protocol": "inspector"
     }
   ]
 }

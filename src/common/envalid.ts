@@ -13,6 +13,7 @@ const cleanSpec = {
   OTOMI_DEV: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
   STATIC_COLORS: bool({ default: false }),
+  TEAM_IDS: json({ desc: 'A list of team ids in JSON format' }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
@@ -21,9 +22,16 @@ const cleanSpec = {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const cleanEnvironment = () => {
   let pEnv: any = process.env
-  const path = `${pEnv.ENV_DIR}/.secrets`
+  // load local .env if we have it, for devs
+  let path = `${process.cwd()}/.env`
+  if (existsSync(path)) {
+    const result = config({ path })
+    if (result.error) console.error(result.error)
+    pEnv = { ...pEnv, ...result.parsed }
+  }
+  path = `${pEnv.ENV_DIR}/.secrets`
   if (pEnv.ENV_DIR && existsSync(path)) {
-    const result = config({ path }) // this sets vars from .env onto process.env
+    const result = config({ path })
     if (result.error) console.error(result.error)
     pEnv = { ...pEnv, ...result.parsed }
   }

@@ -2,8 +2,7 @@
 {{- $tc := .teamConfig }}
 {{- $coreAdminServices := list }}{{- range $s := .services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
 {{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $domains := list }}
-{{- $domainNames := list }}
+{{- $domains := dict }}
 {{- $teams := set $tc.teams "admin" dict }}
 {{- range $teamId, $team := $tc.teams }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domainSuffix }}
@@ -18,21 +17,21 @@
       {{- else if hasKey $s "ownHost" }}
         {{- $domain = printf "%s.%s" $s.name $baseDomain }}
       {{- end }}
-      {{- if not (has $domain $domainNames) }}
-        {{- $domInfo := dict "domain" $domain "hasCert" (hasKey $s "hasCert") "certName" ($s |get "certName" "") "certArn" ($s | get "certArn" "") }}
-        {{- $domains = append $domains $domInfo }}
-        {{- $domainNames = append $domainNames $domain }}
+      {{- if not (hasKey $domains $domain) }}
+        {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert") "certName" ($domain | replace "." "-")) }}
+      {{- end }}
+      {{- $domInfo := index $domains $domain }}
+      {{- if hasKey $s "hasCert" }}
+        {{- if ne ($s | get "certName" "") "" }}
+          {{- $_ := set $domInfo "certName" $s.certName }}
+        {{- end }}
+        {{- if ne ($s | get "certArn" "") "" }}
+          {{- $_ := set $domInfo "certArn" $s.certArn }}
+        {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- $authDomain := print "auth." $v.cluster.domainSuffix }}
-{{- $domains = concat $domains (list (dict "domain" $authDomain "hasCert" false "certArn" "" "certName" "")) }}
-domInfo:
-  {{- range $domInfo := $domains }}
-  - {{- $domInfo | toYaml | nindent 4 }}
-  {{- end }}
-domains:  
-  {{- range $domInfo := $domains }}
-  - {{ $domInfo.domain }}
-  {{- end }}
+{{- $_ := set $domains $authDomain (dict "hasCert" false "certArn" "" "certName" "") }}
+{{ $domains | toYaml }}
