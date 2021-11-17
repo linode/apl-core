@@ -1406,7 +1406,7 @@ properties:
                 properties:
                   htpasswd:
                     type: string
-                    x-secret: 'htpasswd .dot.username (.dot.password | default .o.adminPassword)'
+                    x-secret: 'htpasswd -nbBC10 .dot.username (.dot.password | default .o.adminPassword)'
                   username:
                     type: string
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
