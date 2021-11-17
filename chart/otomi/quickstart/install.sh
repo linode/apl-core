@@ -5,14 +5,14 @@ set -e
 #####
 # recommended options to start minikube
 #####
-# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0 --ports=443 --cpus=max --memory=max
+# minikube start --driver docker --network minikube --kubernetes-version=v1.19.0 --cpus=max --memory=max
 # docker network inspect minikube
 
 #####
 # env
 #####
 export VERBOSITY=2
-export ENV_DIR=/tmp/otomi/values
+# export ENV_DIR=/tmp/otomi/values
 export OTOMI_TAG=quickstart-values
 
 #####
