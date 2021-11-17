@@ -325,7 +325,7 @@ else
     "$otomi_tools_image" \
     bash -c "$cmd"
   status=$?
-  rmdir $PWD/env >/dev/null
+  rm -rf $PWD/env &>/dev/null
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then
