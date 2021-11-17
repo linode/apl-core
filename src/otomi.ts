@@ -10,10 +10,6 @@ import { basicOptions } from './common/yargs-opts'
 console.profile('otomi')
 const debug = terminal('global')
 const terminalScale = 0.75
-if (env.TESTING) {
-  process.env.AZURE_CLIENT_ID = 'somevalue'
-  process.env.AZURE_CLIENT_SECRET = 'somesecret'
-}
 
 const startup = async (): Promise<void> => {
   const link = `${process.cwd()}/env`
