@@ -559,7 +559,7 @@ const isCoreCheck = (): boolean => {
 
 export const isCore = isCoreCheck()
 
-export const providerMap = (provider) => {
+export const providerMap = (provider: string): string => {
   const map = {
     aws: 'eks',
     azure: 'aks',

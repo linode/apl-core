@@ -84,6 +84,7 @@ resources:
 # generate all da certs
 {{- range $domain, $domInfo := $doms }}
   {{- if not $domInfo.hasCert }}
-  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $domInfo.certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
+    {{- $certName := ($domain | replace "." "-") }}
+  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
   {{- end }}
 {{- end }}

@@ -18,7 +18,7 @@
         {{- $domain = printf "%s.%s" $s.name $baseDomain }}
       {{- end }}
       {{- if not (hasKey $domains $domain) }}
-        {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert") "certName" ($domain | replace "." "-")) }}
+        {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert")) }}
       {{- end }}
       {{- $domInfo := index $domains $domain }}
       {{- if hasKey $s "hasCert" }}

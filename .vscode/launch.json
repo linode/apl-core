@@ -19,8 +19,24 @@
         "IN_DOCKER": "1",
         "ENV_DIR": "${workspaceRoot}/tests/fixtures"
       },
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
-      "protocol": "inspector"
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "validate-templates",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "validate-templates"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     }
   ]
 }
