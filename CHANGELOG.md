@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.46](https://github.com/redkubes/otomi-core/compare/v0.14.45...v0.14.46) (2021-11-18)
+
+
+### Bug Fixes
+
+* kube system ns excluded from patching as it is not allowed by some managed k8s providers ([c1f20f2](https://github.com/redkubes/otomi-core/commit/c1f20f260528f0f964ccb16e1a141aa31437c9f3))
+* kube system ns excluded from patching as it is not allowed by some managed k8s providers ([adb50dc](https://github.com/redkubes/otomi-core/commit/adb50dcd95e4b168ac13ff995382ae8637adc51b))
+
 ### [0.14.45](https://github.com/redkubes/otomi-core/compare/v0.14.43...v0.14.45) (2021-11-16)
 
 
