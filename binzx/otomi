@@ -183,6 +183,9 @@ silent echo "Checking for updates"
 
 tmp_env=$(mktemp)
 
+# load local env for devs
+[ -f "$PWD/.env" ] && silent echo "Loading local .env" && cat "$PWD/.env" >>$tmp_env
+
 function dump_vars() {
   for var in "$@"; do
     val="${!var}"
