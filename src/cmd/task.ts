@@ -1,6 +1,5 @@
 /* eslint-disable import/namespace */
 import { Argv, Options } from 'yargs'
-import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 import * as tasks from '../tasks'
@@ -27,18 +26,18 @@ interface Arguments extends BasicArguments {
   task: string
 }
 
-export const runTask = async (): Promise<void> => {
+export const runTask = async (inName?: string): Promise<void> => {
   const args = getParsedArgs() as Arguments
-  const name = args.name as string
+  const name = inName ?? (args.name as string)
   debug.info(`Starting task: ${name}`)
-  if (!tasks[name]) throw new Error(`No such task exists: ${name}`)
-  const values = (await hfValues()) as Record<string, any>
-  return tasks[name](values)
+  const task = tasks[name]
+  if (!task) throw new Error(`No such task exists: ${name}`)
+  await task()
 }
 
 export const module = {
   command: cmdName,
-  describe: 'Uses helmfile lint to lint the target manifests',
+  describe: 'Runs a task from the tasks folder',
   builder: (parser: Argv): Argv => taskOptions(parser),
 
   handler: async (argv: Arguments): Promise<void> => {

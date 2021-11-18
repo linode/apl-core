@@ -250,7 +250,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
 
   // apply.ts:commitOnFirstRun can modify NODE_TLS_REJECT_UNAUTHORIZED
   // So the process.env needs to be re-parsed
-  const clnEnv = cleanEnvironment()
+  const clnEnv = cleanEnvironment() as Record<string, any>
   // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
   // It is false if needs to skip SSL, and that doesn't work with OR
   // Then it needs to be negated again

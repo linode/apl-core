@@ -1,7 +1,12 @@
 import { V1Secret, V1SecretList } from '@kubernetes/client-node'
-import { env } from '../common/envalid'
+import { cleanEnvironment, taskEnvSpec } from '../common/envalid'
 import { getApiClient } from '../common/k8s'
 import { getFilename, OtomiDebugger, terminal } from '../common/utils'
+
+// select what we want from env
+const { OTOMI_FLAGS, TEAM_IDS } = taskEnvSpec
+// get a function that validates input requirements and does transformation on the selected env vars
+const parseEnv = cleanEnvironment({ OTOMI_FLAGS, TEAM_IDS }, true) as CallableFunction
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -67,8 +72,9 @@ const copyTeamTlsSecrets = async (teamId, istioTlsSecretNames): Promise<void> =>
   }
 }
 
-export default async (values: Record<string, any>): Promise<void> => {
-  if (values.otomi.hasCloudLB) targetNamespace = 'ingress'
+export default async (): Promise<void> => {
+  const env = parseEnv()
+  if (env.OTOMI_FLAGS.hasCloudLB) targetNamespace = 'ingress'
   const istioTlsSecretNames = await getIstioTlsSecretNames()
   await Promise.all(
     env.TEAM_IDS.map((teamId) => {
