@@ -15,7 +15,7 @@ controller:
         memory: 512Mi
     {{- end }}
   autoscaling:
-    minReplicas: {{ $n | get "private.autoscaling.minReplicas" 1 }}
+    minReplicas: {{ $n | get "private.autoscaling.minReplicas" 2 }}
     maxReplicas: {{ $n | get "private.autoscaling.maxReplicas" 6 }}
   service:
     loadBalancerIP: {{ $n | get "private.loadBalancerIP" nil }}
