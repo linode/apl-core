@@ -8,7 +8,9 @@ resources:
     spec:
       version: 0.23.0
       high-availability:
-        replicas: 5 #minimum 5 (temporary?!) See issue: https://github.com/knative/operator/issues/376
+        # Temporary variable #replicas, related to issue: https://github.com/knative/operator/issues/376 
+        # if replicas <5 then pods cannot be evicted (due to pdb) which is a major issue when kured is installed (nodes remain cordoned if pods cannot be evicted!)
+        replicas: {{ $v.charts | get "kured.enabled" "false" | ternary 5 1 }}
       config:
         defaults:
           revision-timeout-seconds: "300"  # 5 minutes
