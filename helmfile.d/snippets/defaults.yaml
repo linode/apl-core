@@ -11,6 +11,11 @@ environments:
             enabled: false
           drone:
             enabled: true
+            resources:
+              runner:
+                requests:
+                  cpu: 1000
+                  memory: 1Gi
             sourceControl:
               provider: gitea
               username: otomi-admin

@@ -2,7 +2,7 @@
 {{- $cm := $v.charts | get "cert-manager" }}
 {{- $i := $v.charts.istio }}
 {{- $ig := $i | get "global" dict }}
-{{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
+{{- $excludedNamespaces := list "kube-system" }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
   - apiVersion: install.istio.io/v1alpha1

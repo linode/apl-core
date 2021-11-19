@@ -4,51 +4,73 @@
 
 ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) ![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi console"></p>
+<p align="center"><img src="https://otomi.io/assets/images/architecture-732f4ad360d0de9d24f9045e9ad3dfc2.png" width="100%" align="center" alt="Otomi Architecture"></p>
 
-Otomi is an open-source, cloud-agnostic and Kubernetes-based platform to securely deploy, run and manage applications with a desktop-like user interface.
+Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated. 
 
-Otomi is **easy to install**, comes with an **intuitive desktop-like UI** and ready to use **pre-configured built-in applications** to offer an **out-of-the-box experience**. Just like you would expect from your favorite Linux distribution. After installing Otomi on Kubernetes, you can sign in and immediately start deploying your apps. Read more about Otomi at [otomi.io](https://otomi.io/).
+Otomi is a single deployable package for Kubernetes and offers:
 
-Otomi is built on top of the following open-source projects:
-
-- [Istio](https://github.com/istio/istio)
-- [Knative Serving](https://github.com/knative/serving)
-- [Nginx Ingress](https://github.com/kubernetes/ingress-nginx)
-- [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator)
-- [Grafana Loki](https://github.com/grafana/loki)
-- [HashiCorp Vault](https://github.com/hashicorp/vault)
-- [Gatekeeper](https://github.com/open-policy-agent/gatekeeper)
-- [Keycloak](https://github.com/keycloak/keycloak)
-- [Gitea](https://github.com/go-gitea/gitea)
-- [Drone](https://github.com/drone/drone)
-- [Harbor](https://github.com/goharbor/harbor)
-- [Cert manager](https://github.com/jetstack/cert-manager)
-- [External DNS](https://github.com/kubernetes-sigs/external-dns)
-- And more
-
-Otomi offers:
-
-- Developer self-service: Members of a team can directly access all the tools they need and create Services, Jobs and Secrets using Otomi Console
+- Developer self-service
 - Pre-configured and ready-to-use applications
-- Application configuration management for all integrated applications, providing a base profile configuration to support the most common DevOps use-cases
-- Multi-tenancy: Create Teams and provide SSO access to shared applications
-- Implemented policies for better governance and security. Manifests are checked both statically and on the cluster at runtime for policy obedience
-- Single Sign On: Bring your own IDP or use Keycloak as IDP (default)
-- Automatic ingress configuration: Easily configure ingress for Team services, allowing public access to services within minutes. Istio gateways and virtual services are automatically generated and configured for Team services, tying a generic ingress architecture to service endpoints in a predictable way
-- Input/output validation: Configuration and output manifests are checked statically for validity and best practices
-- Automatic vulnerability scanning: Scan all configured Team service containers in Harbor
-- Built-in support for Azure, Amazon Web Services and Google Cloud Platform
-- And much more..
+- Application configuration management
+- Multi-tenancy
+- Implemented security policies
+- Single Sign On
+- Automatic ingress configuration
+- Input/output validation
+- Automatic image vulnerability scanning
+- Secrets management
+- Full observability
+- Kubernetes best-practices
 
-Check this [video](https://www.youtube.com/watch?v=BtLOeTYSB10) for a first impression of Otomi.
-
-Otomi aims to support the most common DevSecOps use-cases out-of-the-box and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated. Learn more about Otomi at [otomi.io](https://otomi.io/about).
+Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
 ## Get started
 
-See [otomi.io](https://otomi.io) for detailed instructions on how to install and use Otomi.
+### Quickstart
 
+For experimentation and evaluation purposes, use the quickstart for Azure, GCP and AWS. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
+
+### Install with chart
+
+To install Otomi with minimal values:
+
+Create a `values.yaml` file with the following values
+
+```yaml
+cluster:
+  k8sVersion: "1.20" # 1.18, 1.19, 1.20 and 1.21 are supported
+  name: # the name of your cluster
+  owner: # the owner of the cluster
+  provider: # choose between aws, azure, google or onprem
+```
+
+Add the repository
+
+```bash
+helm repo add otomi https://otomi.io/otomi-core
+helm repo update
+```
+
+Install the chart
+
+```bash
+helm install -f values.yaml otomi otomi/otomi
+```
+
+and follow the progress of the installer
+
+```
+kubectl logs jobs/otomi -n default -f
+```
+
+When the installer has finished, copy the URL and the generated password from the bottom of the logs. Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
+
+See [otomi.io](https://otomi.io) for detailed instructions on how to install Otomi with more advanced configuration options.
+
+After installing Otomi, you can use Otomi Console to access all integrated applications and use the self-service features to create Knative services, publicly expose services, create secrets and create jobs.
+
+<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
 
 ## Projects
 

@@ -19,6 +19,7 @@ import {
   isCore,
   loadYaml,
   OtomiDebugger,
+  providerMap,
   rootDir,
   setParsedArgs,
   terminal,
@@ -49,9 +50,8 @@ const generateLooseSchema = () => {
   }
 }
 
-const getCurrentValues = async (): Promise<Record<string, any> | undefined> => {
+const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
-    await validateValues()
     return hfValues()
   }
   return undefined
@@ -124,11 +124,15 @@ const copyBasicFiles = async (): Promise<void> => {
 const processValues = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
   if (isChart) {
+    console.debug(`Loading chart values from ${env.VALUES_INPUT}`)
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     // store chart input values, so they can be merged with gerenerated passwords
     await writeValues(originalValues)
   } else {
-    originalValues = (await getCurrentValues()) as Record<string, any>
+    console.debug(`Loading repo values from ${env.ENV_DIR}`)
+    originalValues = (await getEnvDirValues()) as Record<string, any>
+    // when we are bootstrapping from a non empty values repo, validate the input
+    if (originalValues) await validateValues()
   }
   const generatedSecrets = await getOtomiSecrets(originalValues)
   await writeValues(generatedSecrets, false)
@@ -204,7 +208,13 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
-  if (originalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
+  const finalValues = (await getEnvDirValues()) as Record<string, any>
+  if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
+  if (!finalValues.cluster.k8sContext) {
+    const k8sContext = `otomi-${providerMap(finalValues.cluster.provider)}-${finalValues.cluster.name}`
+    debug.info(`No value for cluster.k8sContext found, providing default one: ${k8sContext}`)
+    await writeValues({ cluster: { k8sContext } }, true)
+  }
   await genSops()
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     debug.info('Copying sops related files')

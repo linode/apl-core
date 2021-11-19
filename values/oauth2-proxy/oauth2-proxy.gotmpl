@@ -4,8 +4,6 @@
 {{- $oauth2 := $v.charts | get "oauth2-proxy" }}
 {{- $r := $v.charts | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
-{{- $hasKeycloak := $k.enabled }}
-{{- $keycloakIssuer := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 image:
@@ -13,8 +11,8 @@ image:
   repository: quay.io/oauth2-proxy/oauth2-proxy
 
 config:
-  clientID: {{ $hasKeycloak | ternary $k.idp.clientID ($o | get "clientID" nil) }}
-  clientSecret: {{ $hasKeycloak | ternary $k.idp.clientSecret ($o | get "clientSecret" nil) }}
+  clientID: {{ $k.idp.clientID  }}
+  clientSecret: {{ $k.idp.clientSecret }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
 replicas: 2
@@ -80,7 +78,7 @@ extraArgs:
   # exclude-logging-paths: /ping
   set-authorization-header: true
   # set-xauthrequest: true
-  oidc-issuer-url: {{ $hasKeycloak | ternary $keycloakIssuer ($o | get "issuer" nil) }}
+  oidc-issuer-url: {{ $v._derived.oidcBaseUrl }}
   insecure-oidc-allow-unverified-email: true
   show-debug-on-error: true
 
