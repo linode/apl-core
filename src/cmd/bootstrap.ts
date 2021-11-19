@@ -126,7 +126,7 @@ const processValues = async (): Promise<Record<string, any>> => {
   if (isChart) {
     console.debug(`Loading chart values from ${env.VALUES_INPUT}`)
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
-    // store chart input values, so they can be merged with gerenerated passwords
+    // store chart input values, so they can be merged with generated passwords
     await writeValues(originalValues)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)

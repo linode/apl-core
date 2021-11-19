@@ -9,13 +9,6 @@ set -e
 # docker network inspect minikube
 
 #####
-# env
-#####
-export VERBOSITY=2
-# export ENV_DIR=/tmp/otomi/values
-export OTOMI_TAG=quickstart-values
-
-#####
 # configure minikube to connect from otomi
 #####
 KUBECONFIG_MINIKUBE=~/.kube/minikube-flattened-config
@@ -29,4 +22,4 @@ export CUSTOM_NETWORK='--network minikube'
 #####
 binzx/otomi apply
 
-# minikube service --url nginx-ingress-controller -n ingress
+# minikube tunnel
