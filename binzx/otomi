@@ -306,7 +306,6 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  set -x
   docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
