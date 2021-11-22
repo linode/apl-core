@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.47](https://github.com/redkubes/otomi-core/compare/v0.14.46...v0.14.47) (2021-11-22)
+
+
+### Bug Fixes
+
+* gatekeeper post job ([#664](https://github.com/redkubes/otomi-core/issues/664)) ([61a145b](https://github.com/redkubes/otomi-core/commit/61a145b0ec7eb194f6ab71b5eac3718a9cd3c427))
+* harbor login ([#661](https://github.com/redkubes/otomi-core/issues/661)) ([d2af293](https://github.com/redkubes/otomi-core/commit/d2af293ba179964e45ac77aa158608aee1e2b977))
+* revert harbor login ([#661](https://github.com/redkubes/otomi-core/issues/661)) ([#665](https://github.com/redkubes/otomi-core/issues/665)) ([1732fab](https://github.com/redkubes/otomi-core/commit/1732fabecf162e2e1762897f95352c1c8c7d4523))
+
 ### [0.14.46](https://github.com/redkubes/otomi-core/compare/v0.14.45...v0.14.46) (2021-11-18)
 
 
