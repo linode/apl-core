@@ -27,9 +27,7 @@ Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
 ## Get started (experimentation and evaluation purposes only)
 
-:::info
-When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry. Go to [otomi.io](https://otomi.io) for full installation instructions.
-:::
+! When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry. Go to [otomi.io](https://otomi.io) for full installation instructions.
 
 ### Quickstart
 
