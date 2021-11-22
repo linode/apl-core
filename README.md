@@ -28,9 +28,9 @@ Learn more about Otomi at [otomi.io](https://otomi.io/about).
 ## Get started (experimentation and evaluation purposes only)
 
 ---
-**NOTE**
+**NOTE:**
 
-When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry. Go to [otomi.io](https://otomi.io) for full installation instructions.
+When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
 
 ---
 
