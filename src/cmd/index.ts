@@ -19,13 +19,11 @@ import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
 import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
-import { module as taskModule } from './task'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
 import { module as validateTemplatesModule } from './validate-templates'
 import { module as validateValuesModule } from './validate-values'
 import { module as valuesModule } from './values'
-import { module as waitForModule } from './wait-for'
 import { module as xModule } from './x'
 
 export { module as apply } from './apply'
@@ -47,13 +45,11 @@ export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
 export { module as status } from './status'
 export { module as sync } from './sync'
-export { module as task } from './task'
 export { module as template } from './template'
 export { module as test } from './test'
 export { module as validateTemplates } from './validate-templates'
 export { module as validateValues } from './validate-values'
 export { module as values } from './values'
-export { module as waitFor } from './wait-for'
 export { module as x } from './x'
 
 export const commands: CommandModule[] = [
@@ -78,12 +74,10 @@ export const commands: CommandModule[] = [
   statusModule,
   syncModule,
   templateModule,
-  taskModule,
   testModule,
   validateTemplatesModule,
   validateValuesModule,
   valuesModule,
-  waitForModule,
   xModule,
 ]
 export const defaultCommand: CommandModule | null = null // bootstrapModule

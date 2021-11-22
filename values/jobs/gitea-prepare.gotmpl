@@ -15,5 +15,5 @@ annotations:
   policy.otomi.io/ignore: "banned-image-tags"
   {{- end }}
 init:
-  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "gitea") | nindent 4 }}
+  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "wait" "gitea") | nindent 4 }}
 {{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "gitea") }}
