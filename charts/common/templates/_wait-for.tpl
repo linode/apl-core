@@ -1,11 +1,13 @@
 {{- define "waitForUrl.init" }}
 {{- if .url }}
 {{- $retries := .retries | default "10" }}
+{{- $isSemver := regexMatch "^[0-9.]+" .tasksVersion }}
+{{- $tag := printf "%s%s" ($isSemver | ternary "v" "") .tasksVersion }}
 - name: wait-for-init
-  image: {{ printf "otomi/tasks:%s" .otomiVersion }}
+  image: {{ printf "otomi/tasks:%s" $tag }}
   {{- include "common.resources" . | nindent 2 }}
-  imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" .otomiVersion) }} 
-  command: ["bash"]
+  imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }} 
+  command: ["sh"]
   env:
     - name: WAIT_URL
       value: '{{ .url }}'
