@@ -25,15 +25,19 @@ Otomi is a single deployable package for Kubernetes and offers:
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
-## Get started
+## Get started (experimentation and evaluation purposes only)
+
+:::info
+When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry. Go to [otomi.io](https://otomi.io) for full installation instructions.
+:::
 
 ### Quickstart
 
-For experimentation and evaluation purposes, use the quickstart for Azure, GCP and AWS. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
+Use the quickstart for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
 ### Install with chart
 
-To install Otomi with minimal values:
+To install Otomi with minimal values using the Helm chart:
 
 Create a `values.yaml` file with the following values
 
@@ -58,13 +62,7 @@ Install the chart
 helm install -f values.yaml otomi otomi/otomi
 ```
 
-and follow the progress of the installer
-
-```
-kubectl logs jobs/otomi -n default -f
-```
-
-When the installer has finished, copy the URL and the generated password from the bottom of the logs. Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
+When the installer has finished, copy the URL and the generated password from the bottom of the logs of the installer job (in the default namespace). Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
 
 See [otomi.io](https://otomi.io) for detailed instructions on how to install Otomi with more advanced configuration options.
 
