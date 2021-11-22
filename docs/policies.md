@@ -4,7 +4,7 @@ The Otomi platform enforces Kubernetes security best practices through `Security
 
 **Security in-depth**
 
-OPA policies are a replacement for the native `PodSecurityPolicies` and all defined policies are modeled after the most common `psp` setups.
+OPA policies are foremost a replacement for the native `PodSecurityPolicies` and all defined policies are modeled after the most common `psp` setups.
 The values repository holds a `policies.yaml` file with sane default presets. YAML Resources are verified against defined `.rego` policy rules, using the defined preset parameters as their constraint value.
 
 **Statical analysis**

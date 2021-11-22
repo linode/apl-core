@@ -24,6 +24,7 @@ FROM otomi/tools:v1.4.20 as prod
 ENV APP_HOME=/home/app/stack
 ENV IN_DOCKER='1'
 ENV NODE_NO_WARNINGS='1'
+ENV NO_UPDATE_NOTIFIER='1'
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME

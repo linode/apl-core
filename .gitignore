@@ -12,7 +12,7 @@ node_modules/
 *.DS_Store
 .vscode/values-schema.yaml
 .env
-.secrets
+/.secrets
 chart/otomi/values.schema.json
 chart/otomi/README.md
 workflow/

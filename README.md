@@ -6,7 +6,7 @@
 
 <p align="center"><img src="https://otomi.io/assets/images/architecture-732f4ad360d0de9d24f9045e9ad3dfc2.png" width="100%" align="center" alt="Otomi Architecture"></p>
 
-Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated. 
+Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated.
 
 Otomi is a single deployable package for Kubernetes and offers:
 
@@ -46,7 +46,7 @@ Create a `values.yaml` file with the following values
 
 ```yaml
 cluster:
-  k8sVersion: "1.20" # 1.18, 1.19, 1.20 and 1.21 are supported
+  k8sVersion: '1.20' # 1.18, 1.19, 1.20 and 1.21 are supported
   name: # the name of your cluster
   owner: # the owner of the cluster
   provider: # choose between aws, azure, google or onprem
@@ -82,6 +82,10 @@ Otomi consists out of multiple projects:
 - [Otomi API](https://github.com/redkubes/otomi-api): The brain of Otomi, handling console input and talking to Otomi Core
 - [Otomi Console](https://github.com/redkubes/otomi-console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
+
+## Developer documentation
+
+Check out the [dev docs index](./docs/index.md)
 
 ## Contribution
 

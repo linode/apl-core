@@ -9,6 +9,5 @@ env:
   GITEA_REPO: values
 nativeSecrets:
   GITEA_PASSWORD: {{ $g.adminPassword }}
-schedule: "0/3 * * * *" # every 5 minutes
-runPolicy: Always
+schedule: "0/3 * * * *" # every 3 minutes
 {{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "gitea-add-users") }}
