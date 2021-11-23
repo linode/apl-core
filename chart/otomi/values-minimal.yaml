@@ -3,3 +3,4 @@
 cluster:
   provider: onprem
   domainSuffix: 127.0.0.1.nip.io
+  # k8sContext: minikube # if using minikube
