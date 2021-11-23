@@ -12,6 +12,10 @@ import {
 
 interface Arguments extends BasicArguments {
   file?: string
+  valuesFilePath?: string
+  applyDeletions?: boolean
+  applyLocations?: boolean
+  applyMutations?: boolean
 }
 
 const cmdName = getFilename(__filename)
@@ -34,6 +38,26 @@ export const module = {
     parser.options({
       file: {
         alias: ['f'],
+        string: true,
+      },
+      'values-file-path': {
+        alias: ['S'],
+        string: true,
+      },
+      'apply-deletions': {
+        alias: ['d'],
+        boolean: true,
+        default: true,
+      },
+      'apply-locations': {
+        alias: ['l'],
+        boolean: true,
+        default: true,
+      },
+      'apply-mutations': {
+        alias: ['m'],
+        boolean: true,
+        default: true,
       },
     }),
 
