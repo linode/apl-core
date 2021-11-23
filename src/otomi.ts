@@ -1,3 +1,5 @@
+#!/usr/bin/env node --nolazy -r ts-node/register
+import { existsSync, symlinkSync, unlinkSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { commands, defaultCommand } from './cmd'
 import { env } from './common/envalid'
@@ -8,18 +10,13 @@ import { basicOptions } from './common/yargs-opts'
 console.profile('otomi')
 const debug = terminal('global')
 const terminalScale = 0.75
-const isAutoCompletion = process.argv.includes('--get-yargs-completions')
-if (!env.IN_DOCKER && !isAutoCompletion) {
-  debug.error(process.argv)
-  debug.error('Please run this script using the `otomi` entry script')
-  process.exit(1)
-}
-if (env.TESTING) {
-  process.env.AZURE_CLIENT_ID = 'somevalue'
-  process.env.AZURE_CLIENT_SECRET = 'somesecret'
-}
 
 const startup = async (): Promise<void> => {
+  const link = `${process.cwd()}/env`
+  if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) {
+    if (existsSync(link)) unlinkSync(link)
+    symlinkSync(env.ENV_DIR, link)
+  }
   try {
     parser.scriptName(scriptName)
     commands.map((cmd: CommandModule) =>
@@ -44,6 +41,7 @@ const startup = async (): Promise<void> => {
     else debug.error(error)
     process.exit(1)
   } finally {
+    if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) unlinkSync(`${process.cwd()}/env`)
     console.profileEnd('otomi')
   }
 }

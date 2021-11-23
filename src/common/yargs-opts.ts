@@ -43,7 +43,7 @@ const helmOpts: { [key: string]: Options } = {
   },
 }
 Object.keys(helmOpts).map((k) => {
-  helmOpts[k].group = 'Helmfile Options'
+  helmOpts[k].group = 'Helmfile options'
   return k
 })
 

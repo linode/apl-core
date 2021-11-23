@@ -38,7 +38,7 @@
 {{- $secrets := dict }}
 {{- range $s := .services }}
   {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
-  {{- if $s.hasCert }}{{ $_ := set $secrets $domain ($s.certName | default "") }}{{ end }}
+  {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
   {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = merge $routes (dict $domain $paths) }}
@@ -152,7 +152,7 @@ spec:
         - {{ $domain }}
       {{- if hasKey $secrets $domain }}
         {{- if ne (index $secrets $domain) "" }}
-      secretName: {{ index $secrets $domain }}
+      secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
         {{- end }}
       {{- else }}
       secretName: {{ $domain | replace "." "-" }}

@@ -19,8 +19,6 @@ if [ -n "$TESTING" ]; then
   ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
   OTOMI_TAG="master"
-  AZURE_CLIENT_ID="somevalue"
-  AZURE_CLIENT_SECRET="somesecret"
 elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
   ENV_DIR="$PWD/env"
 elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
@@ -185,6 +183,9 @@ silent echo "Checking for updates"
 
 tmp_env=$(mktemp)
 
+# load local env for devs
+[ -f "$PWD/.env" ] && silent echo "Loading local .env" && cat "$PWD/.env" >>$tmp_env
+
 function dump_vars() {
   for var in "$@"; do
     val="${!var}"
@@ -222,6 +223,7 @@ vars=(
   PROFILE
   STATIC_COLORS
   SHELL
+  TEAM_IDS
   TESTING
   TRACE
   VERBOSITY
@@ -326,6 +328,7 @@ else
     "$otomi_tools_image" \
     bash -c "$cmd"
   status=$?
+  [ -n "$in_core" ] && rm -rf $PWD/env &>/dev/null
 fi
 
 if [[ $calling_args == *'-skip-cleanup'* ]] || [[ $calling_args == *'-s'* ]]; then

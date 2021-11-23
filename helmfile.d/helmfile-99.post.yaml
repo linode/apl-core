@@ -17,6 +17,11 @@ releases:
     <<: *jobs
     labels:
       group: jobs
+  - name: job-copy-certs
+    installed:  {{ not ($c | get "aws-alb-ingress-controller.enabled") }}
+    <<: *jobs
+    labels:
+      group: jobs
   - name: job-gitea-add-users
     installed: {{ and (ne $v.cluster.provider "kind") ($c | get "gitea.enabled" false) }}
     labels:
