@@ -209,6 +209,11 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
+  // exit early if isCli and ENV_DIR was empty, and let the user provide valide values first:
+  if (!originalValues) {
+    debug.log('A new values repo has been created. For next steps follow otomi.io/docs.')
+    return
+  }
   const finalValues = (await getEnvDirValues()) as Record<string, any>
   if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
   if (!finalValues.cluster.k8sContext) {
