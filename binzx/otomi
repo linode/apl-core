@@ -47,7 +47,7 @@ docker_tag_exists() {
 }
 
 docker_tag_exists_locally() {
-  docker image inspect "$1":"$2" &>/dev/null
+  docker image inspect "$1:$2" &>/dev/null
 }
 
 # shellcheck disable=SC2155
@@ -86,7 +86,7 @@ fi
 
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
 
-if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version_used; then
+if [ -z $NOPULL ] && [ -z $CI ] && ! (docker_tag_exists otomi/core $OTOMI_TAG || docker_tag_exists_locally otomi/core $OTOMI_TAG); then
   # When working in new branch, docker image doesn't exist before first commit/push
   # So need to fall back to working version
   [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
@@ -310,7 +310,6 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  set -x
   docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
