@@ -46,6 +46,10 @@ docker_tag_exists() {
   curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep "\"name\": \"$2\"" &>/dev/null
 }
 
+docker_tag_exists_locally() {
+  docker image inspect "$1":"$2" &>/dev/null
+}
+
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
@@ -74,7 +78,7 @@ else
 fi
 otomi_branch_or_tag=${current_branch:-$otomi_version}
 
-if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! docker_tag_exists otomi/core $OTOMI_TAG; then
+if [ -z $NOPULL ] && [ -n "$OTOMI_TAG" ] && [ -z $CI ] && ! (docker_tag_exists otomi/core $OTOMI_TAG || docker_tag_exists_locally otomi/core $OTOMI_TAG); then
   # OTOMI_TAG was explicitly given and doesn't exists, then error out
   echo "The tag supplied '$OTOMI_TAG' does not exist as a docker image."
   exit 1
