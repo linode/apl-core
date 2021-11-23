@@ -6,7 +6,7 @@
 
 <p align="center"><img src="https://otomi.io/assets/images/architecture-732f4ad360d0de9d24f9045e9ad3dfc2.png" width="100%" align="center" alt="Otomi Architecture"></p>
 
-Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated. 
+Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated.
 
 Otomi is a single deployable package for Kubernetes and offers:
 
@@ -25,21 +25,28 @@ Otomi is a single deployable package for Kubernetes and offers:
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
-## Get started
+## Get started (experimentation and evaluation purposes only)
+
+---
+**NOTE:**
+
+When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
+
+---
 
 ### Quickstart
 
-For experimentation and evaluation purposes, use the quickstart for Azure, GCP and AWS. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
+Use the quickstart for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
 ### Install with chart
 
-To install Otomi with minimal values:
+To install Otomi with minimal values using the Helm chart:
 
 Create a `values.yaml` file with the following values
 
 ```yaml
 cluster:
-  k8sVersion: "1.20" # 1.18, 1.19, 1.20 and 1.21 are supported
+  k8sVersion: '1.20' # 1.18, 1.19, 1.20 and 1.21 are supported
   name: # the name of your cluster
   owner: # the owner of the cluster
   provider: # choose between aws, azure, google or onprem
@@ -58,13 +65,7 @@ Install the chart
 helm install -f values.yaml otomi otomi/otomi
 ```
 
-and follow the progress of the installer
-
-```
-kubectl logs jobs/otomi -n default -f
-```
-
-When the installer has finished, copy the URL and the generated password from the bottom of the logs. Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
+When the installer has finished, copy the URL and the generated password from the bottom of the logs of the installer job (in the default namespace). Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
 
 See [otomi.io](https://otomi.io) for detailed instructions on how to install Otomi with more advanced configuration options.
 
@@ -81,6 +82,10 @@ Otomi consists out of multiple projects:
 - [Otomi API](https://github.com/redkubes/otomi-api): The brain of Otomi, handling console input and talking to Otomi Core
 - [Otomi Console](https://github.com/redkubes/otomi-console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
+
+## Developer documentation
+
+Check out the [dev docs index](./docs/index.md)
 
 ## Contribution
 

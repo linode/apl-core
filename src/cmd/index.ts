@@ -24,7 +24,6 @@ import { module as testModule } from './test'
 import { module as validateTemplatesModule } from './validate-templates'
 import { module as validateValuesModule } from './validate-values'
 import { module as valuesModule } from './values'
-import { module as waitForModule } from './wait-for'
 import { module as xModule } from './x'
 
 export { module as apply } from './apply'
@@ -51,7 +50,6 @@ export { module as test } from './test'
 export { module as validateTemplates } from './validate-templates'
 export { module as validateValues } from './validate-values'
 export { module as values } from './values'
-export { module as waitFor } from './wait-for'
 export { module as x } from './x'
 
 export const commands: CommandModule[] = [
@@ -80,7 +78,6 @@ export const commands: CommandModule[] = [
   validateTemplatesModule,
   validateValuesModule,
   valuesModule,
-  waitForModule,
   xModule,
 ]
 export const defaultCommand: CommandModule | null = null // bootstrapModule

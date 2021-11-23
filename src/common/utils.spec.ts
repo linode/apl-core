@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { expect } from 'chai'
 import * as utils from './utils'
 

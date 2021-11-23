@@ -31,7 +31,7 @@ env:
   KEYCLOAK_ADDRESS: {{ $k.address }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
-  REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" $doms.domains "sep" "/*\",\"https://") }}/*"]'
+  REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms) "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
 {{- if $v.otomi.hasExternalIDP }}
   {{- with $k | get "idp.alias" nil }}
@@ -55,5 +55,5 @@ nativeSecrets:
   IDP_CLIENT_SECRET: {{ $o.clientSecret }}
 {{- end }}
 init:
-  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "keycloak") | nindent 4 }}
+  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "wait" "keycloak") | nindent 4 }}
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}
