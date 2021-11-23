@@ -16,6 +16,8 @@ interface Arguments extends BasicArguments {
   applyDeletions?: boolean
   applyLocations?: boolean
   applyMutations?: boolean
+  preJSONPathExpr?: string
+  postJSONPathExpr?: string
 }
 
 const cmdName = getFilename(__filename)
@@ -58,6 +60,16 @@ export const module = {
         alias: ['m'],
         boolean: true,
         default: true,
+      },
+      'pre-json-path-expr': {
+        alias: ['pre'],
+        string: true,
+        conflicts: ['values-file-path'],
+      },
+      'post-json-path-expr': {
+        alias: ['post'],
+        string: true,
+        conflicts: ['values-file-path'],
       },
     }),
 
