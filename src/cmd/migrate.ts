@@ -1,14 +1,6 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
-import {
-  BasicArguments,
-  getFilename,
-  getParsedArgs,
-  loadYaml,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { BasicArguments, getFilename, loadYaml, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
 
 interface Arguments extends BasicArguments {
   file?: string
@@ -22,16 +14,17 @@ interface Arguments extends BasicArguments {
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
+let args
 
 export const deletionInPlace = (): void => {
-  const argv: Arguments = getParsedArgs()
-
   if (argv.file) {
     const yaml = loadYaml(argv.file)
     debug.info(yaml)
   }
   // writeFileSync(yamlFilePath)
 }
+
+export const migrate = (): void => {}
 
 export const module = {
   command: `${cmdName} [args..]`,
@@ -75,6 +68,8 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
+    args = argv
+
     await prepareEnvironment()
     deletionInPlace()
   },
