@@ -55,5 +55,5 @@ nativeSecrets:
   IDP_CLIENT_SECRET: {{ $o.clientSecret }}
 {{- end }}
 init:
-  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "wait" "keycloak") | nindent 4 }}
+  - {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "wait" "keycloak") | nindent 4 }}
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}

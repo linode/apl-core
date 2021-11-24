@@ -260,3 +260,4 @@ mariadb:
 
 extraRootCA: ''
 
+tasksVersion: master
