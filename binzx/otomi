@@ -290,7 +290,7 @@ if [[ $calling_args == *'-non-interactive'* ]] ||
   it=''
 fi
 
-network='--network host'
+network=${CUSTOM_NETWORK:-'--network host'}
 if [[ $calling_args == 'server'* ]]; then
   network="-p $OTOMI_PORT:$OTOMI_PORT"
 fi

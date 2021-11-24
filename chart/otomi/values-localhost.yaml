@@ -1,0 +1,6 @@
+# These values are intended for use to demo Otomi on a server/laptop.
+# Minimal recommended specs: 32GB+ RAM, 12+ (v)CPU
+cluster:
+  provider: onprem
+  domainSuffix: 127.0.0.1.nip.io
+  # k8sContext: minikube # if using minikube
