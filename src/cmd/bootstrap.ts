@@ -211,7 +211,7 @@ const bootstrapValues = async (): Promise<void> => {
   const originalValues = await processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
   if (!originalValues) {
-    debug.log('A new values repo has been created successfully. For next steps, follow otomi.io/docs, since Otomi requires additional configuration to get started.')
+    debug.log('A new values repo has been created. For next steps follow otomi.io/docs.')
     return
   }
   const finalValues = (await getEnvDirValues()) as Record<string, any>
