@@ -57,25 +57,19 @@ const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   return undefined
 }
 
-const getOtomiSecrets = async (
-  // The chart job calls bootstrap only if the otomi-status config map does not exists
-  originalValues: Record<string, any>,
-): Promise<Record<string, any>> => {
-  let generatedSecrets: Record<string, any>
-  // The chart job calls bootstrap only if the otomi-status config map does not exists
-  const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
-  debug.info(`Checking ${secretId} already exist on cluster`)
+const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+const getStoredClusterSecrets = async (): Promise<Record<string, any> | undefined> => {
+  debug.info(`Checking if ${secretId} already exists`)
   const kubeSecretObject = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
-  if (!kubeSecretObject) {
-    debug.info(`Creating ${secretId}`)
-    generatedSecrets = await generateSecrets(originalValues)
-    await createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, generatedSecrets)
-    debug.info(`Created ${secretId}`)
-  } else {
+  if (kubeSecretObject) {
     debug.info(`Found ${secretId} secrets on cluster, recovering`)
-    generatedSecrets = kubeSecretObject
+    return kubeSecretObject
   }
-  return generatedSecrets
+  return undefined
+}
+
+const storeClusterSecrets = (data: Record<string, any>): Promise<void> => {
+  return createK8sSecret(secretId, env.DEPLOYMENT_NAMESPACE, data)
 }
 
 const copyBasicFiles = async (): Promise<void> => {
@@ -121,21 +115,28 @@ const copyBasicFiles = async (): Promise<void> => {
   )
 }
 
+// retrieves input values from either VALUES_INPUT or ENV_DIR
+// and creates missing secrets as well (and stores them in a secret in chart mode)
 const processValues = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
   if (isChart) {
     console.debug(`Loading chart values from ${env.VALUES_INPUT}`)
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
-    // store chart input values, so they can be merged with generated passwords
-    await writeValues(originalValues)
+    const storedSecrets = await getStoredClusterSecrets()
+    if (storedSecrets) originalValues = { ...originalValues, storedSecrets }
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
     originalValues = (await getEnvDirValues()) as Record<string, any>
     // when we are bootstrapping from a non empty values repo, validate the input
     if (originalValues) await validateValues()
   }
-  const generatedSecrets = await getOtomiSecrets(originalValues)
+  // generate secrets that don't exist yet
+  const generatedSecrets = await generateSecrets(originalValues)
   await writeValues(generatedSecrets, false)
+  if (isChart) {
+    // and store secrets on cluster in case of failure
+    await storeClusterSecrets(generatedSecrets)
+  }
   return originalValues
 }
 
@@ -208,6 +209,11 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
+  // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
+  if (!originalValues) {
+    debug.log('A new values repo has been created. For next steps follow otomi.io/docs.')
+    return
+  }
   const finalValues = (await getEnvDirValues()) as Record<string, any>
   if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
   if (!finalValues.cluster.k8sContext) {
