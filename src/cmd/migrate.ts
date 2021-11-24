@@ -32,9 +32,7 @@ export const deletionInPlace = (): void => {
     debug.info(yaml)
 
     if (argv.preJsonPathExpr) {
-      debug.info(argv.preJsonPathExpr)
-
-      const filteredResults = query(yaml, '$.cluster')
+      const filteredResults = query(yaml, argv.preJsonPathExpr)
       debug.info('New yaml:')
       debug.info(filteredResults)
     }
