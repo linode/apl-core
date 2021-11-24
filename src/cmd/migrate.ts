@@ -1,3 +1,4 @@
+import { query } from 'jsonpath'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -16,8 +17,8 @@ interface Arguments extends BasicArguments {
   applyDeletions?: boolean
   applyLocations?: boolean
   applyMutations?: boolean
-  preJSONPathExpr?: string
-  postJSONPathExpr?: string
+  preJsonPathExpr?: string
+  postJsonPathExpr?: string
 }
 
 const cmdName = getFilename(__filename)
@@ -27,7 +28,16 @@ export const deletionInPlace = (): void => {
   const argv: Arguments = getParsedArgs()
   if (argv.file) {
     const yaml = loadYaml(argv.file)
+    debug.info('Old yaml:')
     debug.info(yaml)
+
+    if (argv.preJsonPathExpr) {
+      debug.info(argv.preJsonPathExpr)
+
+      const filteredResults = query(yaml, '$.cluster')
+      debug.info('New yaml:')
+      debug.info(filteredResults)
+    }
   }
   // writeFileSync(yamlFilePath)
 }
@@ -50,17 +60,17 @@ export const module = {
       'apply-deletions': {
         alias: ['d'],
         boolean: true,
-        default: true,
+        default: false,
       },
       'apply-locations': {
         alias: ['l'],
         boolean: true,
-        default: true,
+        default: false,
       },
       'apply-mutations': {
         alias: ['m'],
         boolean: true,
-        default: true,
+        default: false,
       },
       'pre-json-path-expr': {
         alias: ['pre'],
@@ -77,7 +87,7 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
 
-    await prepareEnvironment()
-    deletionInPlace()
+    await prepareEnvironment({ skipKubeContextCheck: true })
+    if (argv.applyDeletions) deletionInPlace()
   },
 }
