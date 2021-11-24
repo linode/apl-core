@@ -17,7 +17,7 @@ interface Arguments extends BasicArguments {
   applyDeletions?: boolean
   applyLocations?: boolean
   applyMutations?: boolean
-  preJsonPathExpr?: string
+  jsonPathExpr?: string
   postJsonPathExpr?: string
 }
 
@@ -31,10 +31,21 @@ export const deletionInPlace = (): void => {
     debug.info('Old yaml:')
     debug.info(yaml)
 
-    if (argv.preJsonPathExpr) {
-      const filteredResults = query(yaml, argv.preJsonPathExpr)
-      debug.info('New yaml:')
-      debug.info(filteredResults)
+    if (argv.jsonPathExpr) {
+      let filteredResults = query(yaml, argv.jsonPathExpr)
+      if (filteredResults.length === 1) {
+        // eslint-disable-next-line prefer-destructuring
+        filteredResults = filteredResults[0]
+        debug.info('New yaml:')
+        debug.info(filteredResults)
+      } else
+        throw new Error(
+          `The jsonpath expression '${argv.jsonPathExpr}' has multiple results: \n ${JSON.stringify(
+            filteredResults,
+            null,
+            4,
+          )}.\n It should have only one result, otherwise the yaml file cannot be modified inplace.`,
+        )
     }
   }
   // writeFileSync(yamlFilePath)
@@ -70,15 +81,15 @@ export const module = {
         boolean: true,
         default: false,
       },
-      'pre-json-path-expr': {
-        alias: ['pre'],
+      'json-path-expr': {
+        alias: ['expr'],
         string: true,
         conflicts: ['values-file-path'],
       },
       'post-json-path-expr': {
-        alias: ['post'],
+        alias: ['post-expr'],
         string: true,
-        conflicts: ['values-file-path'],
+        conflicts: ['values-file-path', 'apply-deletions'],
       },
     }),
 
