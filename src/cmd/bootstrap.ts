@@ -209,7 +209,7 @@ const bootstrapValues = async (): Promise<void> => {
   await copyBasicFiles()
 
   const originalValues = await processValues()
-  // exit early if isCli and ENV_DIR was empty, and let the user provide valide values first:
+  // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
   if (!originalValues) {
     debug.log('A new values repo has been created. For next steps follow otomi.io/docs.')
     return
