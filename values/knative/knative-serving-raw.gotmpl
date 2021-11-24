@@ -7,9 +7,10 @@ resources:
       namespace: knative-serving
     spec:
       version: 0.23.0
-      high-availability:
-        # Temporary variable #replicas, related to issue: https://github.com/knative/operator/issues/376 
-        # if replicas <5 then pods cannot be evicted (due to pdb) which is a major issue when kured is installed (nodes remain cordoned if pods cannot be evicted!)
+high-availability:
+        # Temporary variable # of replicas, related to issue: https://github.com/knative/operator/issues/376 
+        # if replicas <5 then pods cannot be evicted (due to pdb) 
+        # TODO: revisit this to check if pub is made  configurable in operator
         replicas: {{ $v.charts | get "kured.enabled" "false" | ternary 5 1 }}
       config:
         defaults:
