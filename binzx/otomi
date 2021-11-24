@@ -184,8 +184,8 @@ check_update() {
     esac
   fi
 }
-silent echo "Checking for updates"
-[ -z $CI ] && [ -z $IN_DOCKER ] && check_update
+
+[ -z $CHECK_UPDATE ] && [ -z $CI ] && [ -z $IN_DOCKER ] && silent echo "Checking for updates" && check_update
 
 tmp_env=$(mktemp)
 
