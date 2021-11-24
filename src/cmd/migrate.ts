@@ -1,4 +1,4 @@
-import { query } from 'jsonpath'
+import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -10,6 +10,7 @@ import {
   setParsedArgs,
   terminal,
 } from '../common/utils'
+import { writeValuesToFile } from '../common/values'
 
 interface Arguments extends BasicArguments {
   file?: string
@@ -24,31 +25,21 @@ interface Arguments extends BasicArguments {
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const deletionInPlace = (): void => {
+export const deletionInPlace = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file) {
+  if (argv.file && typeof argv.file === 'string') {
     const yaml = loadYaml(argv.file)
     debug.info('Old yaml:')
     debug.info(yaml)
 
     if (argv.jsonPathExpr) {
-      let filteredResults = query(yaml, argv.jsonPathExpr)
-      if (filteredResults.length === 1) {
-        // eslint-disable-next-line prefer-destructuring
-        filteredResults = filteredResults[0]
+      if (unset(yaml, argv.jsonPathExpr)) {
         debug.info('New yaml:')
-        debug.info(filteredResults)
-      } else
-        throw new Error(
-          `The jsonpath expression '${argv.jsonPathExpr}' has multiple results: \n ${JSON.stringify(
-            filteredResults,
-            null,
-            4,
-          )}.\n It should have only one result, otherwise the yaml file cannot be modified inplace.`,
-        )
+        debug.info(yaml)
+      }
     }
+    await writeValuesToFile(argv.file, yaml as Record<string, any>, true)
   }
-  // writeFileSync(yamlFilePath)
 }
 
 // export const migrate = (): void => {}
