@@ -8,6 +8,11 @@ workspace:
 concurrency:
   limit: 1
 
+resources:
+  requests:
+    cpu: {{ .requestsCpu }}
+    memory: {{ .requestsMem }}
+
 trigger:
   branch:
     - {{ .branch }}
@@ -22,13 +27,6 @@ steps:
 {{- if eq .provider "slack" }}
   - name: slack-start
     image: plugins/slack
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhook }}
       channel: {{ .channel }}
@@ -39,13 +37,6 @@ steps:
 {{- else if eq .provider "msteams" }}
   - name: notify-start
     image: diyfr/drone_plugin_teams
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhook }}
       content:
@@ -56,13 +47,6 @@ steps:
 {{- if eq .providerHome "slack" }}
   - name: slack-start-home
     image: plugins/slack
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhookHome }}
       channel: {{ .channelHome }}
@@ -73,13 +57,6 @@ steps:
 {{- else if eq .providerHome "msteams" }}
   - name: notify-start-home
     image: diyfr/drone_plugin_teams
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhookHome }}
       content:
@@ -98,13 +75,6 @@ steps:
     pull: {{ .pullPolicy }}
     depends_on:
       - prepare-env
-    resources:
-      limits:
-        cpu: 2000
-        memory: 1200Mi
-      requests:
-        cpu: 1200
-        memory: 400Mi
     commands:
       - cd .. && binzx/otomi test
 
@@ -115,13 +85,6 @@ steps:
       - cd .. && binzx/otomi apply
     depends_on:
       - test
-    resources:
-      limits:
-        cpu: 2000
-        memory: 1200Mi
-      requests:
-        cpu: 500
-        memory: 400Mi
 
 {{- if eq .provider "slack" }}
   - name: slack-result
@@ -132,9 +95,6 @@ steps:
       limits:
         cpu: 200
         memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhook }}
       channel: {{ .channel }}
@@ -157,13 +117,6 @@ steps:
     image: diyfr/drone_plugin_teams
     depends_on:
       - apply
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhook }}
       content:
@@ -178,13 +131,6 @@ steps:
     image: diyfr/drone_plugin_teams
     depends_on:
       - apply
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhook }}
       content:
@@ -200,13 +146,6 @@ steps:
     image: plugins/slack
     depends_on:
       - apply
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhookHome }}
       channel: {{ .channelHome }}
@@ -229,13 +168,6 @@ steps:
     image: diyfr/drone_plugin_teams
     depends_on:
       - apply
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhookHome }}
       content:
@@ -250,13 +182,6 @@ steps:
     image: diyfr/drone_plugin_teams
     depends_on:
       - apply
-    resources:
-      limits:
-        cpu: 200
-        memory: 200Mi
-      requests:
-        cpu: 100
-        memory: 100Mi
     settings:
       webhook: {{ .webhookHome }}
       content:

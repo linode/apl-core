@@ -64,12 +64,12 @@ server:
     {{- if and $hasGitea $v._derived.untrustedCA }}
     DRONE_GITEA_SKIP_VERIFY: true
     {{- end }}
-kubernetes:
+agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
     sidecar.istio.io/inject: "false"
   resources:
-    {{- with $d | get "resources.runner" nil }}
+    {{- with $d | get "resources.agent" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
@@ -103,12 +103,7 @@ metrics:
 
 {{- if $v._derived.untrustedCA}}
 extraRootCA: |
-{{- if eq $cm.issuer "custom-ca" }}
-  {{- $cm.customRootCA | nindent 2 }}
-{{- else }}
-  {{- $v.letsencryptRootCA | nindent 2 }}
-  {{- $v.letsencryptCA | nindent 2 }}
-{{- end }}
+  {{- $v._derived.caCert | nindent 2 }}
 {{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

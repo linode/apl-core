@@ -67,7 +67,7 @@ rules:
     - error
     - always
   func-style:
-    - error
+    - off
     - expression
   no-shadow: 'off'
   no-unused-vars: 'off'
@@ -85,3 +85,4 @@ rules:
     - 2
     - allowForLoopAfterthoughts: true
   no-underscore-dangle: off
+  prefer-template: error

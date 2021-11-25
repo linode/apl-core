@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/{{ required "A valid .Values.rbac.apiVersi
 kind: Role
 metadata:
   name: {{ template "drone.fullname" . }}-pipeline
-  namespace: {{ .Values.kubernetes.namespace }}
+  namespace: {{ .Values.agent.namespace }}
   labels:
     app: {{ template "drone.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

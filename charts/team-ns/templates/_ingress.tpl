@@ -35,8 +35,10 @@
 {{- $routes := dict }}
 {{- $names := list }}
 {{- $hasTlsPass := $.tlsPass | default false }}
+{{- $secrets := dict }}
 {{- range $s := .services }}
   {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
+  {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
   {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = merge $routes (dict $domain $paths) }}
@@ -148,7 +150,13 @@ spec:
   {{- range $domain, $paths := $routes }}
     - hosts:
         - {{ $domain }}
+      {{- if hasKey $secrets $domain }}
+        {{- if ne (index $secrets $domain) "" }}
+      secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
+        {{- end }}
+      {{- else }}
       secretName: {{ $domain | replace "." "-" }}
+      {{- end }}
   {{- end }}
 {{- end }}
 

@@ -1,9 +1,12 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
+{{- $cm := index $v.charts "cert-manager" }}
 {{- $tc := $v.teamConfig }}
 {{- $vault := $v.charts.vault }}
+{{- $k := $v.charts.keycloak }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
+{{- $rootCASecretName := "root-ca" }}
+
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
     kind: "Vault"
@@ -37,7 +40,6 @@ resources:
           runAsNonRoot: false
           runAsUser: 0
           runAsGroup: 0
-
       # Marks presence of Istio, which influences things like port namings
       istioEnabled: true
       vaultEnvsConfig:
@@ -62,6 +64,7 @@ resources:
           runAsUser: 65534
           runAsGroup: 65534
 
+
       vaultLabels: {}
 
       # Vault Configurer Pods and Services labels
@@ -79,10 +82,20 @@ resources:
         - name: vault-file
           persistentVolumeClaim:
             claimName: vault-file
-
+        {{- if $v._derived.untrustedCA }}
+        - name: root-ca
+          secret:
+            secretName: {{ $rootCASecretName }}
+        {{- end }}
       volumeMounts:
         - name: vault-file
           mountPath: /vault/file
+      {{- if $v._derived.untrustedCA }}
+        - name: 'root-ca'
+          mountPath: '/etc/ssl/certs/tls.crt'
+          subPath: tls.crt
+      {{- end }}
+
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
       caNamespaces: []
@@ -124,32 +137,37 @@ resources:
       externalConfig:
         policies:
           - name: allow-read-all-secrets
-            rules: path "secret/*" {
+            rules: |
+              path "secret/*" {
                     capabilities = ["read", "list"]
-                  }
+              }
           - name: allow-list-all-secrets
-            rules: path "secret/*" {
+            rules: |
+              path "secret/*" {
                     capabilities = ["list"]
-                  }
+              }
           - name: allow_sandbox
-            rules: path "secret/data/sandbox/*" {
+            rules: |
+              path "secret/data/sandbox/*" {
                     capabilities = ["create", "read", "update", "delete", "list"]
-                  }
+              }
           {{- range $teamId, $team := $tc.teams }}
           - name: allow-team-{{ $teamId }}
-            rules: path "secret/data/teams/team-{{ $teamId }}/*" {
+            rules: |
+              path "secret/data/teams/team-{{ $teamId }}/*" {
                     capabilities = ["create", "update", "read", "delete", "list"]
-                  }
+              }
           {{- end }}
           - name: allow-all-secrets
-            rules: path "secret/*" {
+            rules: |
+              path "secret/*" {
                     capabilities = ["create", "update", "read", "delete", "list"]
-                  }
+              }
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi
-              oidc_client_id: {{ $k.idp.clientID }}
+              oidc_discovery_url: {{ $v._derived.oidcBaseUrl }}
+              oidc_client_id: {{ $k.idp.clientID  }}
               oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true
               default_role: team
@@ -158,7 +176,9 @@ resources:
               user_claim: email
               groups_claim: groups
               # This policy will be applied to each user that uses this role
-              token_policies: [allow-list-all-secrets, allow_sandbox]
+              token_policies:
+              - allow-list-all-secrets
+              - allow_sandbox
               ttl: 1h
               #  http://localhost:8250/oidc/callback - for: vault login -method oidc
               allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.cluster.domainSuffix }}/ui/vault/auth/oidc/oidc/callback"
@@ -166,22 +186,32 @@ resources:
             roles:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
-                bound_service_account_names: ["kubernetes-external-secrets", "vault", "default"]
+                bound_service_account_names: 
+                - kubernetes-external-secrets
+                - vault
+                - default
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
-                bound_service_account_namespaces: ["shared", "vault"]
-                token_policies: ["allow-read-all-secrets"]
+                bound_service_account_namespaces: 
+                - shared
+                - vault
+                token_policies: 
+                - allow-read-all-secrets
                 ttl: 1h
 
         groups:
           {{- range $teamId, $team := $tc.teams }}
           - name: team-{{ $teamId }}
             type: external
-            policies: [allow-team-{{ $teamId }}]
+            policies: 
+            - allow-team-{{ $teamId }}
+            # A group must be able to list all paths as a prerequisite to access its own secrets.
+            - allow-list-all-secrets
             metadata: {}
           {{- end }}
           - name: team-admin
             type: external
-            policies: [allow-all-secrets]
+            policies: 
+            - allow-all-secrets
             metadata: {}
         group-aliases:
           {{- range $teamId, $team := $tc.teams }}
@@ -293,3 +323,12 @@ resources:
       - kind: ServiceAccount
         name: vault
         namespace: vault
+{{- if $v._derived.untrustedCA }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $rootCASecretName }}
+    type: Opaque
+    data:
+      tls.crt: {{ $v._derived.caCert | b64enc }}
+{{- end }}

@@ -18,18 +18,15 @@ image:
 {{ if and (not $skipCA) $v._derived.untrustedCA }}
 files:
   /tmp/node/certificates.crt: |
-  {{- if eq $cm.issuer "custom-ca" }}
-    {{- $cm.customRootCA | nindent 4 }}
-  {{- else }}
-    {{- $v.letsencryptRootCA | nindent 4 }}
-    {{- $v.letsencryptCA | nindent 4 }}
-  {{- end }}
+    {{- $v._derived.caCert | nindent 4 }}
 {{ end }}
 {{- if $wait }}
   {{- $waitUrl := printf "https://%s.%s" $wait $v.cluster.domainSuffix }}
+env:
+  WAIT_URL: '{{ $waitUrl }}'   
 script: |
   echo "Waiting until {{ $wait }} is accessible at {{ $waitUrl }}"
-  {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}binzx/otomi wait-for {{ $waitUrl }}
+  {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:wait-for
 {{- else if $task }} 
 script: |
   {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:{{ $task }}

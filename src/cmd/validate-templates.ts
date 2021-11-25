@@ -175,16 +175,18 @@ export const validateTemplates = async (): Promise<void> => {
   )
   ;`${kubevalOutput.stdout}\n${kubevalOutput.stderr}`.split('\n').forEach((x) => {
     if (x === '') return
-    const [k, v] = x.split(' - ')
+    const [left, right] = x.split(' - ')
+    const k = left ? left.trim() : ''
+    const v = right ? right.trim() : ''
     switch (k) {
       case 'PASS':
-        debug.info(`${chalk.greenBright('PASS: ')} ${chalk.italic('%s')}`, v)
+        debug.info(`${chalk.greenBright('PASS')}: ${chalk.italic('%s')}`, v)
         break
       case 'WARN':
-        debug.warn(`${chalk.yellowBright('WARN: ')} %s`, v)
+        debug.warn(`${chalk.yellowBright('WARN')}: %s`, v)
         break
-      case 'ERR ':
-        debug.error(`${chalk.redBright('ERR: ')} %s`, v)
+      case 'ERR':
+        debug.error(`${chalk.redBright('ERR')}: %s`, v)
         break
       default:
         break

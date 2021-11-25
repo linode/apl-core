@@ -250,7 +250,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
 
   // apply.ts:commitOnFirstRun can modify NODE_TLS_REJECT_UNAUTHORIZED
   // So the process.env needs to be re-parsed
-  const clnEnv = cleanEnvironment()
+  const clnEnv = cleanEnvironment() as Record<string, any>
   // Due to Boolean OR statement, first NODE_TLS_REJECT_UNAUTORIZED needs to be inverted
   // It is false if needs to skip SSL, and that doesn't work with OR
   // Then it needs to be negated again
@@ -300,7 +300,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object' && !Array.isArray(value)) return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value) && value !== null) return flattenObject(value, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
@@ -525,6 +525,8 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
 
   if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {
+    // Wait until DNS records are propagated to the cluster DNS
+    await waitTillAvailable(`https://${firstIngressData.hostname}`, { skipSsl: true, status: 404 })
     const resolveData = await resolveAny(firstIngressData.hostname)
     const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
       | AnyARecord
@@ -556,3 +558,12 @@ const isCoreCheck = (): boolean => {
 }
 
 export const isCore = isCoreCheck()
+
+export const providerMap = (provider: string): string => {
+  const map = {
+    aws: 'eks',
+    azure: 'aks',
+    google: 'gke',
+  }
+  return map[provider] ?? provider
+}
