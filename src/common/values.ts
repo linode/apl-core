@@ -37,9 +37,9 @@ export const writeValuesToFile = async (
   let result = values
   if (!isEqual(values, existingValues) && overwrite) {
     d.warn(`Changes detected for ${targetPath}${suffix}...`)
-    d.warn('values: \n', JSON.stringify(values, null, 2))
-    d.warn('existingValues: \n', JSON.stringify(existingValues, null, 2))
-    d.warn('Merging left to right...')
+    d.warn('Incoming values: \n', JSON.stringify(values, null, 2))
+    d.warn('Existing values: \n', JSON.stringify(existingValues, null, 2))
+    d.warn('Merging left to right... Done!\n')
     result = merge(cloneDeep(existingValues), values)
   }
   result = removeBlankAttributes(result)
