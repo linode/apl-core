@@ -7,17 +7,18 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 // eslint-disable-next-line import/no-unresolved
 import { resolveAny } from 'dns/promises'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirpSync } from 'fs-extra'
 import { Agent } from 'https'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { cloneDeep, isEmpty, merge, omit, pick, set } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
-import { resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { Writable, WritableOptions } from 'stream'
 import yargs, { Arguments as YargsArguments } from 'yargs'
 import { $, nothrow, ProcessOutput, sleep } from 'zx'
 import pkg from '../../package.json'
-import { DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
+import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { cleanEnvironment, env, isChart } from './envalid'
 
 const packagePath = process.cwd()
@@ -29,6 +30,7 @@ $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 export const parser = yargs(process.argv.slice(3))
 export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
+export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export interface BasicArguments extends YargsArguments {
   logLevel?: string
@@ -461,10 +463,15 @@ export const createK8sSecret = async (
 ): Promise<void> => {
   const debug: OtomiDebugger = terminal('createK8sSecret')
   const rawString = dump(data)
-  const path = `/tmp/${name}`
-  writeFileSync(path, rawString)
+  const filePath = join('/tmp', secretId)
+  const dirPath = dirname(filePath)
+  if (!existsSync(dirPath)) {
+    mkdirpSync(dirPath)
+  }
+
+  writeFileSync(filePath, rawString)
   const result = await nothrow(
-    $`kubectl create secret generic ${name} -n ${namespace} --from-file ${path} --dry-run=client -o yaml | kubectl apply -f -`,
+    $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`,
   )
   if (result.stderr) debug.error(result.stderr)
   debug.debug(`kubectl create secret output: \n ${result.stdout}`)
