@@ -21,6 +21,7 @@ import {
   OtomiDebugger,
   providerMap,
   rootDir,
+  secretId,
   setParsedArgs,
   terminal,
 } from '../common/utils'
@@ -54,10 +55,9 @@ const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
     return hfValues()
   }
-  return undefined
+  throw new Error(`Missing cluster.provider at ${env.ENV_DIR}/env/cluster.yaml`)
 }
 
-const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 const getStoredClusterSecrets = async (): Promise<Record<string, any> | undefined> => {
   debug.info(`Checking if ${secretId} already exists`)
   const kubeSecretObject = await getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
@@ -69,7 +69,7 @@ const getStoredClusterSecrets = async (): Promise<Record<string, any> | undefine
 }
 
 const storeClusterSecrets = (data: Record<string, any>): Promise<void> => {
-  return createK8sSecret(secretId, env.DEPLOYMENT_NAMESPACE, data)
+  return createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, data)
 }
 
 const copyBasicFiles = async (): Promise<void> => {
@@ -124,6 +124,7 @@ const processValues = async (): Promise<Record<string, any>> => {
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     const storedSecrets = await getStoredClusterSecrets()
     if (storedSecrets) originalValues = { ...originalValues, storedSecrets }
+    await writeValues(originalValues, false)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
     originalValues = (await getEnvDirValues()) as Record<string, any>
@@ -132,6 +133,7 @@ const processValues = async (): Promise<Record<string, any>> => {
   }
   // generate secrets that don't exist yet
   const generatedSecrets = await generateSecrets(originalValues)
+
   await writeValues(generatedSecrets, false)
   if (isChart) {
     // and store secrets on cluster in case of failure
