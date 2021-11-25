@@ -204,7 +204,7 @@ const bootstrapValues = async (): Promise<void> => {
 
   const imageTag = await getImageTag()
   const otomiImage = `otomi/core:${imageTag}`
-  debug.info(`Intalling artifacts from ${otomiImage}`)
+  debug.info(`Installing artifacts from ${otomiImage}`)
   await copyBasicFiles()
 
   const originalValues = await processValues()

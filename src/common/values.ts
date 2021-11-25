@@ -23,7 +23,7 @@ const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> =>
 
 let hasSops = false
 /**
- * Writes new values to a file. Will keep the existing values if `overwrite` is `false`.
+ * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
 export const writeValuesToFile = async (
   targetPath: string,
@@ -33,21 +33,21 @@ export const writeValuesToFile = async (
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
   const d = terminal('values:writeValuesToFile')
 
-  const existingValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
   let result = values
-  if (!isEqual(values, existingValues) && overwrite) {
+  if (!isEqual(values, originalValues) && overwrite) {
     d.warn(`Changes detected for ${targetPath}${suffix}...`)
     d.warn('Incoming values: \n', JSON.stringify(values, null, 2))
-    d.warn('Existing values: \n', JSON.stringify(existingValues, null, 2))
+    d.warn('original values: \n', JSON.stringify(originalValues, null, 2))
     d.warn('Merging left to right... Done!\n')
-    result = merge(cloneDeep(existingValues), values)
+    result = merge(cloneDeep(originalValues), values)
   }
   result = removeBlankAttributes(result)
   return writeFile(`${targetPath}${suffix}`, objectToYaml(result))
 }
 
 /**
- * Writes new values to the repo. Will keep the existing values if `overwrite` is `false`.
+ * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValues')
