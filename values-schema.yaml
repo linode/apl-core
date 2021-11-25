@@ -1406,13 +1406,13 @@ properties:
                 properties:
                   htpasswd:
                     type: string
-                    x-secret: 'htpasswd .dot.username (.dot.password | default .o.adminPassword)'
+                    x-secret: 'htpasswd .dot.username .dot.password'
                   username:
                     type: string
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
                   password:
                     type: string
-                    x-secret: ''
+                    x-secret: 'randAlphaNum 32'
             required:
               - secret
               - credentials
