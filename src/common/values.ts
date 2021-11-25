@@ -6,7 +6,7 @@ import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash'
 import { env } from './envalid'
 import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
 
-const objectToYaml = (obj: Record<string, any>): string => {
+export const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 

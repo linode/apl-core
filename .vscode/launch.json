@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "args": ["-u", "bdd", "--timeout", "999999", "--colors", "${workspaceFolder}/**/*.spec.ts"],
+      "internalConsoleOptions": "openOnSessionStart",
+      "name": "Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    },
+    {
       "type": "pwa-node",
       "request": "launch",
       "name": "bootstrap",
