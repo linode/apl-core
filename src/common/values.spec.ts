@@ -5,13 +5,13 @@ import { fs } from 'zx'
 import { objectToYaml, writeValuesToFile } from './values'
 
 describe('Writing values', () => {
-  const mockValue = {}
+  const mockValue = {
+    foo: 'bar',
+  }
   const mockFile = 'values-stub.yaml'
-  beforeEach(() => {
+  it('should write if file does not exist', async () => {
     stub(fs, 'existsSync').withArgs(mockFile).returns(true)
     stub(fs.promises, 'writeFile').withArgs(mockFile, objectToYaml(mockValue)).resolves()
-  })
-  it('should write if file does not exist', async () => {
     expect(await writeValuesToFile(mockFile, mockValue)).to.equal(undefined)
   })
 })
