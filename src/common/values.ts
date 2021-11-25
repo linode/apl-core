@@ -36,10 +36,10 @@ export const writeValuesToFile = async (
   let result = values
   const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
   if (!isEqual(values, originalValues) && !overwrite) {
-    d.warn(`Changes detected for ${targetPath}${suffix}...`)
-    d.warn('Incoming values: \n', JSON.stringify(values, null, 2))
-    d.warn('Original values: \n', JSON.stringify(originalValues, null, 2))
-    d.warn('Merging left to right... Done!\n')
+    d.info(`Changes detected for ${targetPath}${suffix}...`)
+    d.info('Incoming values: \n', JSON.stringify(values, null, 2))
+    d.info('Original values: \n', JSON.stringify(originalValues, null, 2))
+    d.info('Merging left to right... Done!\n')
     result = merge(cloneDeep(originalValues), values)
   }
   result = removeBlankAttributes(result)
