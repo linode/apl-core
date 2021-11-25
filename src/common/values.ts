@@ -33,12 +33,12 @@ export const writeValuesToFile = async (
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
   const d = terminal('values:writeValuesToFile')
 
-  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
   let result = values
-  if (!isEqual(values, originalValues) && overwrite) {
+  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+  if (!isEqual(values, originalValues) && !overwrite) {
     d.warn(`Changes detected for ${targetPath}${suffix}...`)
     d.warn('Incoming values: \n', JSON.stringify(values, null, 2))
-    d.warn('original values: \n', JSON.stringify(originalValues, null, 2))
+    d.warn('Original values: \n', JSON.stringify(originalValues, null, 2))
     d.warn('Merging left to right... Done!\n')
     result = merge(cloneDeep(originalValues), values)
   }

@@ -33,7 +33,7 @@ export const migrateDelete = async (): Promise<void> => {
       if (unset(yaml, argv.jsonPathExpr)) {
         debug.info('New yaml:')
         debug.info(yaml)
-        await writeValuesToFile(argv.file, yaml as Record<string, any>) // I don't understand values.ts line 42
+        await writeValuesToFile(argv.file, yaml as Record<string, any>)
       }
     }
   }

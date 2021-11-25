@@ -46,6 +46,24 @@
         "ENV_DIR": "${workspaceRoot}/tests/fixtures"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "bootstrap",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "bootstrap"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "ENV_DIR": "${workspaceRoot}/tests/fixtures",
+        "VERBOSITY": "4"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     }
   ]
 }
