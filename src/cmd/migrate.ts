@@ -15,12 +15,25 @@ import { writeValuesToFile } from '../common/values'
 interface Arguments extends BasicArguments {
   file?: string
   valuesFilePath?: string
-  jsonPathExpr?: string
-  postJsonPathExpr?: string
+  lhsExpression?: string
+  rhsExpression?: string
 }
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
+
+const migrateDelete = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
+  if (argv.file && typeof argv.file === 'string') {
+    const yaml = loadYaml(argv.file)
+
+    if (argv.lhsExpression) {
+      if (unset(yaml, argv.lhsExpression)) {
+        await writeValuesToFile(argv.file, yaml as Record<string, any>)
+      }
+    }
+  }
+}
 
 const migrateMove = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
@@ -28,10 +41,10 @@ const migrateMove = async (): Promise<void> => {
     const yaml = loadYaml(argv.file)
     debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
 
-    if (argv.jsonPathExpr) {
-      const moveValue = get(yaml, argv.jsonPathExpr, 'err!')
-      if (unset(yaml, argv.jsonPathExpr) && typeof yaml === 'object' && typeof argv.postJsonPathExpr === 'string') {
-        if (set(yaml, argv.postJsonPathExpr, moveValue)) {
+    if (argv.lhsExpression) {
+      const moveValue = get(yaml, argv.lhsExpression, 'err!')
+      if (unset(yaml, argv.lhsExpression) && typeof yaml === 'object' && typeof argv.rhsExpression === 'string') {
+        if (set(yaml, argv.rhsExpression, moveValue)) {
           debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
           await writeValuesToFile(argv.file, yaml)
         }
@@ -40,18 +53,23 @@ const migrateMove = async (): Promise<void> => {
   }
 }
 
-const migrateDelete = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
-  if (argv.file && typeof argv.file === 'string') {
-    const yaml = loadYaml(argv.file)
+// const migrateMutate = async (): Promise<void> => {
+//   const argv: Arguments = getParsedArgs()
+//   if (argv.file && typeof argv.file === 'string') {
+//     const yaml = loadYaml(argv.file)
+//     debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
 
-    if (argv.jsonPathExpr) {
-      if (unset(yaml, argv.jsonPathExpr)) {
-        await writeValuesToFile(argv.file, yaml as Record<string, any>)
-      }
-    }
-  }
-}
+//     if (argv.lhsExpression) {
+//       const moveValue = get(yaml, argv.lhsExpression, 'err!')
+//       if (unset(yaml, argv.lhsExpression) && typeof yaml === 'object' && typeof argv.rhsExpression === 'string') {
+//         if (set(yaml, argv.rhsExpression, moveValue)) {
+//           debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
+//           await writeValuesToFile(argv.file, yaml)
+//         }
+//       }
+//     }
+//   }
+// }
 
 // export const migrate = (): void => {}
 
@@ -83,9 +101,7 @@ export const module = {
       .command({
         command: 'mutate',
         description: '',
-        builder() {
-          console.log('builder barr!')
-        },
+        builder: (): Argv => parser,
         handler: (a) => {
           console.log('handler barr!')
         },
@@ -99,13 +115,13 @@ export const module = {
           alias: ['V'],
           string: true,
         },
-        'json-path-expr': {
-          alias: ['expr'],
+        'lhs-expression': {
+          alias: ['lhs'],
           string: true,
           conflicts: ['values-file-path'],
         },
-        'post-json-path-expr': {
-          alias: ['post-expr'],
+        'rhs-expression': {
+          alias: ['rhs'],
           string: true,
           conflicts: ['values-file-path'],
         },
