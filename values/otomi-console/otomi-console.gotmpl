@@ -11,8 +11,8 @@ resources:
     cpu: 400m
     memory: 256Mi
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 50m
+    memory: 128Mi
   {{- end }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipCA" true) }}
@@ -20,8 +20,6 @@ resources:
 env:
   API_BASE_URL: /api
   CONTEXT_PATH: ''
-podAnnotations:
-  policy.otomi.io/ignore.wget: "banned-image-tags,container-limits"
 
 podSecurityContext:
   runAsUser: 100

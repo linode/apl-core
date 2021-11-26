@@ -30,9 +30,16 @@
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
-{{- with $o | get "resources.api" nil }}
 resources:
+{{- with $o | get "resources.api" nil }}
   {{- toYaml . | nindent 2 }}
+{{- else }}
+  limits:
+    cpu: 400m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
 {{- end }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipCA" true) }}
@@ -71,19 +78,20 @@ core:
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipCA" true) | nindent 2 }}
-  {{- with $o | get "resources.tools" nil }}
   resources:
+  {{- with $o | get "resources.tools" nil }}
     {{- toYaml . | nindent 4 }}
+  {{- else }}
+    limits:
+      cpu: 600m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   {{- end }}
   env:
     # DEBUG: '*'
     VERBOSITY: '1'
-
-podAnnotations:
-  policy.otomi.io/ignore.wget: "banned-image-tags,container-limits"
-  # policy.otomi.io/ignore: psp-allowed-users
-  # policy.otomi.io/ignore-sidecar: psp-allowed-users
-  # policy.otomi.io/ignore.istio-init: psp-allowed-users
 
 podSecurityContext:
   runAsUser: 1000
