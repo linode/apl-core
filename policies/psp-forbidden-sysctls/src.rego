@@ -5,7 +5,7 @@
 # Sysctls can disable security mechanisms or affect all containers on a host, 
 # and should be disallowed except for an allowed "safe" subset.
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package pspforbiddensysctls
 
 import data.lib.core

@@ -4,7 +4,7 @@
 # such containers running as privileged or with sufficient capabilities granted
 # to obtain the same effect are not allowed.
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package pspprivileged
 
 import data.lib.core
