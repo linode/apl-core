@@ -2,7 +2,7 @@
 #
 # Containers must disable hostNetworking and port binding on the host
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package psphostnetworkingports
 
 import data.lib.core

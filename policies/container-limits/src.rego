@@ -1,7 +1,7 @@
 # @title Containers
 #
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package containerlimits
 
 import data.lib.core

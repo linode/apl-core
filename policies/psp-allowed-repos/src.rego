@@ -3,7 +3,7 @@
 # We can have a list of allowed sources and deny 
 # all containers that do not come from a trusted repository source
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package allowedrepos
 
 import data.lib.core

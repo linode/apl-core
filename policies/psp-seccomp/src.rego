@@ -1,7 +1,7 @@
 # @title Containers must not use disallowed  Seccomp profiles
 #
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package pspseccomp
 
 import data.lib.core
