@@ -1,4 +1,4 @@
-import { get, set, unset } from 'lodash'
+import { get, invoke, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -24,52 +24,44 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 const migrateDelete = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file && typeof argv.file === 'string') {
+  if (argv.file && argv.lhsExpression) {
     const yaml = loadYaml(argv.file)
 
-    if (argv.lhsExpression) {
-      if (unset(yaml, argv.lhsExpression)) {
-        await writeValuesToFile(argv.file, yaml as Record<string, any>)
-      }
+    if (unset(yaml, argv.lhsExpression)) {
+      await writeValuesToFile(argv.file, yaml as Record<string, any>)
     }
   }
 }
 
 const migrateMove = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file && typeof argv.file === 'string') {
+  if (argv.file && argv.lhsExpression) {
     const yaml = loadYaml(argv.file)
     debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
 
-    if (argv.lhsExpression) {
-      const moveValue = get(yaml, argv.lhsExpression, 'err!')
-      if (unset(yaml, argv.lhsExpression) && typeof yaml === 'object' && typeof argv.rhsExpression === 'string') {
-        if (set(yaml, argv.rhsExpression, moveValue)) {
-          debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
-          await writeValuesToFile(argv.file, yaml)
-        }
+    const moveValue = get(yaml, argv.lhsExpression, 'err!')
+    if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression) {
+      if (set(yaml, argv.rhsExpression, moveValue)) {
+        debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
+        await writeValuesToFile(argv.file, yaml)
       }
     }
   }
 }
 
-// const migrateMutate = async (): Promise<void> => {
-//   const argv: Arguments = getParsedArgs()
-//   if (argv.file && typeof argv.file === 'string') {
-//     const yaml = loadYaml(argv.file)
-//     debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
-
-//     if (argv.lhsExpression) {
-//       const moveValue = get(yaml, argv.lhsExpression, 'err!')
-//       if (unset(yaml, argv.lhsExpression) && typeof yaml === 'object' && typeof argv.rhsExpression === 'string') {
-//         if (set(yaml, argv.rhsExpression, moveValue)) {
-//           debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
-//           await writeValuesToFile(argv.file, yaml)
-//         }
-//       }
-//     }
-//   }
-// }
+const migrateMutate = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
+  if (argv.file) {
+    const yaml = loadYaml(argv.file)
+    debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
+    debug.info(argv.rhsExpression)
+    if (yaml && argv.lhsExpression && argv.rhsExpression) {
+      invoke(yaml, argv.lhsExpression, argv.rhsExpression)
+      debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
+      await writeValuesToFile(argv.file, yaml)
+    }
+  }
+}
 
 // export const migrate = (): void => {}
 
@@ -102,8 +94,10 @@ export const module = {
         command: 'mutate',
         description: '',
         builder: (): Argv => parser,
-        handler: (a) => {
-          console.log('handler barr!')
+        handler: async (argv) => {
+          setParsedArgs(argv)
+          await prepareEnvironment({ skipKubeContextCheck: true })
+          await migrateMutate()
         },
       })
       .options({
