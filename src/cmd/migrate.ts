@@ -107,7 +107,7 @@ export const module = {
         'post-json-path-expr': {
           alias: ['post-expr'],
           string: true,
-          conflicts: ['values-file-path', 'apply-deletions'],
+          conflicts: ['values-file-path'],
         },
       })
   },
