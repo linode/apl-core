@@ -1,4 +1,4 @@
-import { unset } from 'lodash'
+import { get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
 import {
@@ -22,17 +22,31 @@ interface Arguments extends BasicArguments {
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const migrateDelete = async (): Promise<void> => {
+const migrateMove = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (argv.file && typeof argv.file === 'string') {
     const yaml = loadYaml(argv.file)
-    debug.info('Old yaml:')
-    debug.info(yaml)
+    debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
+
+    if (argv.jsonPathExpr) {
+      const moveValue = get(yaml, argv.jsonPathExpr, 'err!')
+      if (unset(yaml, argv.jsonPathExpr) && typeof yaml === 'object' && typeof argv.postJsonPathExpr === 'string') {
+        if (set(yaml, argv.postJsonPathExpr, moveValue)) {
+          debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
+          await writeValuesToFile(argv.file, yaml)
+        }
+      }
+    }
+  }
+}
+
+const migrateDelete = async (): Promise<void> => {
+  const argv: Arguments = getParsedArgs()
+  if (argv.file && typeof argv.file === 'string') {
+    const yaml = loadYaml(argv.file)
 
     if (argv.jsonPathExpr) {
       if (unset(yaml, argv.jsonPathExpr)) {
-        debug.info('New yaml:')
-        debug.info(yaml)
         await writeValuesToFile(argv.file, yaml as Record<string, any>)
       }
     }
@@ -59,11 +73,11 @@ export const module = {
       .command({
         command: 'move',
         description: '',
-        builder() {
-          console.log('builder barr!')
-        },
-        handler: (a) => {
-          console.log('handler barr!')
+        builder: (): Argv => parser,
+        handler: async (argv) => {
+          setParsedArgs(argv)
+          await prepareEnvironment({ skipKubeContextCheck: true })
+          await migrateMove()
         },
       })
       .command({
