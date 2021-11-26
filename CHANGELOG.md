@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.50](https://github.com/redkubes/otomi-core/compare/v0.14.49...v0.14.50) (2021-11-26)
+
+
+### Features
+
+* values for localhost deployment ([#662](https://github.com/redkubes/otomi-core/issues/662)) ([b7be95d](https://github.com/redkubes/otomi-core/commit/b7be95d085c190572cee92679d12c56eed50635a))
+
+
+### Bug Fixes
+
+* added ksvc, job, cronjob to policy scope ([#668](https://github.com/redkubes/otomi-core/issues/668)) ([62468d2](https://github.com/redkubes/otomi-core/commit/62468d244464189ed0c016490e7d8fec227404ac))
+* allowed-users, api and console resources, values aligned ([dda5164](https://github.com/redkubes/otomi-core/commit/dda516440dd9cd317ef48ceb7ed1bc7ae791f428))
+* always create password for registry  ([#667](https://github.com/redkubes/otomi-core/issues/667)) ([eccf61a](https://github.com/redkubes/otomi-core/commit/eccf61a8e223c88f186dad4b1174da436f78b6c4))
+* knative serving ([7e46eee](https://github.com/redkubes/otomi-core/commit/7e46eeeeb5bffbcc2b5bb6632470e8499ae864d3))
+* satisfy knative pdb with min 5 containers (bleh) ([#663](https://github.com/redkubes/otomi-core/issues/663)) ([964b18f](https://github.com/redkubes/otomi-core/commit/964b18fa2bd7e4251ef62fff5f0f293407a351a8))
+
 ### [0.14.49](https://github.com/redkubes/otomi-core/compare/v0.14.48...v0.14.49) (2021-11-22)
 
 
