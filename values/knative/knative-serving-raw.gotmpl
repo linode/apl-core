@@ -7,11 +7,8 @@ resources:
       namespace: knative-serving
     spec:
       version: 0.23.0
-      # Temporary increase # of replicas, related to issue: https://github.com/knative/operator/issues/376 
-      # if replicas <5 then pods cannot be evicted (due to pdb) 
-      # TODO: revisit this to check if pdb is made configurable in operator
       high-availability:
-        replicas: 5
+        replicas: {{ $v.charts.knative.serving.replicas }}
       config:
         defaults:
           revision-timeout-seconds: "300"  # 5 minutes

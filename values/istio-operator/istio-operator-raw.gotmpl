@@ -31,8 +31,8 @@ resources:
               sidecar.istio.io/inject: "true"
             priorityClassName: "otomi-critical"
             hpaSpec:
-              minReplicas: {{ $i | get "autoscaling.pilot.minReplicas" 2 }}
-              maxReplicas: {{ $i | get "autoscaling.pilot.maxReplicas" 10 }}
+              minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
+              maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
             resources:
               {{- with $i | get "resources.pilot" nil }}
                 {{- toYaml . | nindent 14 }}
