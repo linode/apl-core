@@ -44,6 +44,7 @@ environments:
             autoscaling:
               pilot:
                 minReplicas: 1
+                maxReplicas: 10
           jaeger:
             enabled: true
           keycloak:
