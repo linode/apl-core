@@ -94,7 +94,7 @@ tools:
     VERBOSITY: '1'
 
 podSecurityContext:
-  runAsUser: 1000
+  runAsUser: 999
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:

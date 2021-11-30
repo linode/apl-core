@@ -89,15 +89,11 @@ env:
 core: {}
 
 tools:
-  enabled: true
   image:
     registry: docker.io
     repository: otomi/core
     tag: latest
     pullPolicy: IfNotPresent
-
-  securityContext:
-    runAsUser: 999
 
   resources: {}
     # limits:
