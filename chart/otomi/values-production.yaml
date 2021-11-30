@@ -1,0 +1,15 @@
+charts:
+  istio:
+    autoscaling:
+      pilot:
+        minReplicas: 2
+  knative:
+    serving:
+      # See: https://github.com/knative/operator/issues/376
+      replicas: 5
+  nginx-ingress:
+    autoscaling:
+      minReplicas: 2
+    private:
+      autoscaling:
+        minReplicas: 2

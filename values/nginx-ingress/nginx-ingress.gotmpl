@@ -34,8 +34,8 @@ controller:
   minAvailable: 1
   autoscaling:
     enabled: {{ $n | get "autoscaling.enabled" true }}
-    minReplicas: {{ $n | get "autoscaling.minReplicas" 2 }}
-    maxReplicas: {{ $n | get "autoscaling.maxReplicas" 10 }}
+    minReplicas: {{ $n.autoscaling.minReplicas }}
+    maxReplicas: {{ $n.autoscaling.maxReplicas }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
 {{- if eq $v.cluster.provider "azure" }}

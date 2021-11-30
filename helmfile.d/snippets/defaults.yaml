@@ -40,6 +40,11 @@ environments:
             enabled: false
           httpbin:
             enabled: false
+          istio:
+            autoscaling:
+              pilot:
+                minReplicas: 1
+                maxReplicas: 10
           jaeger:
             enabled: true
           keycloak:
@@ -48,6 +53,9 @@ environments:
             theme: otomi
           kiali:
             enabled: true
+          knative:
+            serving:
+              replicas: 1
           kubeapps:
             enabled: false
           kube-descheduler:
@@ -56,8 +64,14 @@ environments:
             enabled: true
           loki: {}
           nginx-ingress:
+            autoscaling:
+              minReplicas: 1
+              maxReplicas: 10
             private:
               enabled: false
+              autoscaling:
+                minReplicas: 1
+                maxReplicas: 6
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}
