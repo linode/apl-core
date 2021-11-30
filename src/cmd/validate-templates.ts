@@ -4,18 +4,12 @@ import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  OtomiDebugger,
-  readdirRecurse,
-  rootDir,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename, readdirRecurse, rootDir } from '../common/utils'
+import { getK8sVersion } from '../common/values'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

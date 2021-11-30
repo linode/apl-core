@@ -1,7 +1,16 @@
 import { existsSync } from 'fs'
-import { Argv, Options } from 'yargs'
+import yargs, { Arguments as YargsArguments, Argv, Options } from 'yargs'
 import { chalk } from 'zx'
-import { BasicArguments, logLevels } from './utils'
+import { logLevel, logLevels } from './debug'
+
+export interface BasicArguments extends YargsArguments {
+  logLevel?: string
+  nonInteractive?: boolean
+  skipCleanup?: boolean
+  trace?: boolean
+  verbose?: number
+  debug?: boolean
+}
 
 export interface Arguments extends BasicArguments {
   label?: string[]
@@ -9,6 +18,19 @@ export interface Arguments extends BasicArguments {
   l?: string[]
   file?: string[]
   f?: string[]
+}
+
+let parsedArgs: BasicArguments
+
+export const parser: any = yargs(process.argv.slice(3))
+
+export const setParsedArgs = (args: BasicArguments): void => {
+  parsedArgs = args
+  // Call needed to init LL for debugger and ZX calls:
+  logLevel(parsedArgs)
+}
+export const getParsedArgs = (): BasicArguments => {
+  return parsedArgs
 }
 
 const helmOpts: { [key: string]: Options } = {
@@ -98,4 +120,4 @@ export const basicOptions: { [key: string]: Options } = {
   },
 }
 
-export const helmOptions = (parser: Argv): Argv => parser.options(helmOpts)
+export const helmOptions = (p: Argv): Argv => p.options(helmOpts)

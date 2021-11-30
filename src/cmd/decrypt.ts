@@ -1,7 +1,8 @@
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
 import { Arguments, decrypt } from '../common/crypt'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, setParsedArgs } from '../common/utils'
+import { getFilename } from '../common/utils'
+import { setParsedArgs } from '../common/yargs-opts'
 
 const cmdName = getFilename(__filename)
 

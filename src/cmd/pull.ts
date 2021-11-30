@@ -1,9 +1,10 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { prepareEnvironment, scriptName } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment, scriptName } from '../common/setup'
-import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments as HelmArgs } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs-opts'
 
 type Arguments = HelmArgs
 

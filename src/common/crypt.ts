@@ -2,8 +2,10 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
+import { OtomiDebugger, terminal } from './debug'
 import { env, isCli } from './envalid'
-import { BasicArguments, OtomiDebugger, readdirRecurse, rootDir, terminal } from './utils'
+import { readdirRecurse, rootDir } from './utils'
+import { BasicArguments } from './yargs-opts'
 
 export interface Arguments extends BasicArguments {
   files?: string[]

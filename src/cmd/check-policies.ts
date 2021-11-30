@@ -1,20 +1,12 @@
 import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal, logLevel, logLevels } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  loadYaml,
-  logLevel,
-  logLevels,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename, loadYaml } from '../common/utils'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'

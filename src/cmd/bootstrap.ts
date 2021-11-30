@@ -5,27 +5,16 @@ import { dump } from 'js-yaml'
 import { get } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { env, isChart } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getImageTag, prepareEnvironment } from '../common/setup'
-import {
-  BasicArguments,
-  createK8sSecret,
-  generateSecrets,
-  getFilename,
-  getK8sSecret,
-  isCore,
-  loadYaml,
-  OtomiDebugger,
-  providerMap,
-  rootDir,
-  secretId,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
-import { writeValues } from '../common/values'
+import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
+import { getFilename, isCore, loadYaml, providerMap, rootDir } from '../common/utils'
+import { generateSecrets, getImageTag, writeValues } from '../common/values'
+import { BasicArguments, setParsedArgs } from '../common/yargs-opts'
 import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
@@ -117,7 +106,7 @@ const copyBasicFiles = async (): Promise<void> => {
 
 // retrieves input values from either VALUES_INPUT or ENV_DIR
 // and creates missing secrets as well (and stores them in a secret in chart mode)
-const processValues = async (): Promise<Record<string, any>> => {
+export const processValues = async (): Promise<Record<string, any>> => {
   let originalValues: Record<string, any>
   if (isChart) {
     console.debug(`Loading chart values from ${env.VALUES_INPUT}`)
@@ -202,7 +191,7 @@ const createCustomCA = async (originalValues: Record<string, any>): Promise<void
   d.info('Generated root CA and key are stored in charts.cert-manager values')
 }
 
-const bootstrapValues = async (): Promise<void> => {
+export const bootstrapValues = async (): Promise<void> => {
   const hasOtomi = existsSync(`${env.ENV_DIR}/bin/otomi`)
 
   const imageTag = await getImageTag()

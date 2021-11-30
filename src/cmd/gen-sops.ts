@@ -1,19 +1,11 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import {
-  BasicArguments,
-  getFilename,
-  getParsedArgs,
-  gucci,
-  loadYaml,
-  OtomiDebugger,
-  rootDir,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs-opts'
 
 interface Arguments extends BasicArguments {
   dryRun: boolean

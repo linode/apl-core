@@ -2,10 +2,10 @@
 import { existsSync, symlinkSync, unlinkSync } from 'fs'
 import { CommandModule } from 'yargs'
 import { commands, defaultCommand } from './cmd'
+import { scriptName } from './common/cli'
+import { terminal } from './common/debug'
 import { env } from './common/envalid'
-import { scriptName } from './common/setup'
-import { parser, terminal } from './common/utils'
-import { basicOptions } from './common/yargs-opts'
+import { basicOptions, parser } from './common/yargs-opts'
 
 console.profile('otomi')
 const debug = terminal('global')

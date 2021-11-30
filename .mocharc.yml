@@ -1,6 +1,7 @@
 extension:
   - ts
 spec:
-  - src/**/*.spec.ts
+  - src/**/*.test.ts
 require:
   - ts-node/register
+  - ./src/test-init.ts

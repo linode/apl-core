@@ -6,8 +6,9 @@ import { commit } from '../cmd/commit'
 import { genDrone } from '../cmd/gen-drone'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
+import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
-import { rootDir, terminal } from '../common/utils'
+import { rootDir } from '../common/utils'
 
 const debug = terminal('server')
 const app = express()

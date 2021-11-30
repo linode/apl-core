@@ -1,10 +1,11 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
 import { hf } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)

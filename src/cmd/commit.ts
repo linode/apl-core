@@ -1,20 +1,15 @@
 import { copyFileSync, existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
+import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getOtomiDeploymentStatus,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-  waitTillAvailable,
-} from '../common/utils'
-import { Arguments as HelmArgs } from '../common/yargs-opts'
+import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
+import { getFilename } from '../common/utils'
+import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs-opts'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'

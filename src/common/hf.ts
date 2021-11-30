@@ -2,9 +2,10 @@ import { existsSync } from 'fs'
 import { load } from 'js-yaml'
 import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
+import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { asArray, getParsedArgs, logLevels, rootDir, terminal } from './utils'
-import { Arguments } from './yargs-opts'
+import { asArray, rootDir } from './utils'
+import { Arguments, getParsedArgs } from './yargs-opts'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')

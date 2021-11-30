@@ -1,8 +1,9 @@
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
 import { hf as hfCommon } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { Arguments as HelmArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 
 interface Arguments extends HelmArgs {
   args?: string[]
