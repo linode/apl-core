@@ -5,7 +5,7 @@ import { BasicArguments, getFilename, getParsedArgs, loadYaml, setParsedArgs } f
 import { writeValuesToFile } from '../common/values'
 
 interface Arguments extends BasicArguments {
-  file?: string
+  filePath?: string
   valuesFilePath?: string
   lhsExpression?: string
   rhsExpression?: string
@@ -15,45 +15,52 @@ const cmdName = getFilename(__filename)
 
 const migrateDelete = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file && argv.lhsExpression) {
-    const yaml = loadYaml(argv.file)
+  if (argv.filePath && argv.lhsExpression) {
+    const yaml = loadYaml(argv.filePath)
 
-    if (unset(yaml, argv.lhsExpression)) await writeValuesToFile(argv.file, yaml as Record<string, any>)
+    if (unset(yaml, argv.lhsExpression)) await writeValuesToFile(argv.filePath, yaml as Record<string, any>)
   }
 }
 
 const migrateMove = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file && argv.lhsExpression) {
-    const yaml = loadYaml(argv.file)
+  if (argv.filePath && argv.lhsExpression) {
+    const yaml = loadYaml(argv.filePath)
 
     const moveValue = get(yaml, argv.lhsExpression, 'err!')
     if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression)
-      if (set(yaml, argv.rhsExpression, moveValue)) await writeValuesToFile(argv.file, yaml)
+      if (set(yaml, argv.rhsExpression, moveValue)) await writeValuesToFile(argv.filePath, yaml)
   }
 }
 
 const migrateMutate = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
-  if (argv.file) {
-    const yaml = loadYaml(argv.file)
+  if (argv.filePath) {
+    const yaml = loadYaml(argv.filePath)
 
     if (yaml && argv.lhsExpression && argv.rhsExpression)
       if (set(yaml, argv.lhsExpression, get(yaml, argv.lhsExpression).replace(...argv.rhsExpression)))
-        await writeValuesToFile(argv.file, yaml)
+        await writeValuesToFile(argv.filePath, yaml)
   }
 }
 
-// export const migrate = (): void => {}
+// // export const migrate = (): void => {}
+// export const loadValuesFile = (): Record<string, any> => {
+//   const argv: Arguments = getParsedArgs()
+//   if (argv.valuesFilePath) {
+//     const values = loadYaml(argv.valuesFilePath)
+//     if (values) return values.changes
+//   }
+// }
 
 export const module = {
-  command: `${cmdName} [subcmd] [options]`,
-  description: `Migrates otomi-values according to Otomi values-schema evolution.\n This command is suitable for prototyping jsonpath-like queries.`,
-  builder: (parser): Argv => {
-    return parser
+  command: [cmdName],
+  describe: `Migrates otomi-values according to Otomi values-schema evolution.\n This command is suitable for prototyping jsonpath-like queries.`,
+  builder: (parser: Argv): Argv =>
+    parser
       .command({
         command: 'delete',
-        description: '',
+        describe: '',
         builder: (): Argv => parser,
         handler: async (argv) => {
           setParsedArgs(argv)
@@ -63,7 +70,7 @@ export const module = {
       })
       .command({
         command: 'move',
-        description: '',
+        describe: '',
         builder: (): Argv => parser,
         handler: async (argv) => {
           setParsedArgs(argv)
@@ -73,7 +80,7 @@ export const module = {
       })
       .command({
         command: 'mutate',
-        description: '',
+        describe: '',
         builder: (): Argv => parser,
         handler: async (argv) => {
           setParsedArgs(argv)
@@ -82,9 +89,10 @@ export const module = {
         },
       })
       .options({
-        file: {
+        'file-path': {
           alias: ['f'],
           string: true,
+          demandOption: true,
         },
         'values-file-path': {
           alias: ['V'],
@@ -100,9 +108,7 @@ export const module = {
           string: true,
           conflicts: ['values-file-path'],
         },
-      })
-  },
-
+      }),
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
 
