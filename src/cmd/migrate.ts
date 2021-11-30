@@ -1,15 +1,7 @@
-import { get, invoke, set, unset } from 'lodash'
+import { get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
-import {
-  BasicArguments,
-  getFilename,
-  getParsedArgs,
-  loadYaml,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { BasicArguments, getFilename, getParsedArgs, loadYaml, setParsedArgs } from '../common/utils'
 import { writeValuesToFile } from '../common/values'
 
 interface Arguments extends BasicArguments {
@@ -20,16 +12,13 @@ interface Arguments extends BasicArguments {
 }
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const migrateDelete = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (argv.file && argv.lhsExpression) {
     const yaml = loadYaml(argv.file)
 
-    if (unset(yaml, argv.lhsExpression)) {
-      await writeValuesToFile(argv.file, yaml as Record<string, any>)
-    }
+    if (unset(yaml, argv.lhsExpression)) await writeValuesToFile(argv.file, yaml as Record<string, any>)
   }
 }
 
@@ -37,15 +26,10 @@ const migrateMove = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (argv.file && argv.lhsExpression) {
     const yaml = loadYaml(argv.file)
-    debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
 
     const moveValue = get(yaml, argv.lhsExpression, 'err!')
-    if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression) {
-      if (set(yaml, argv.rhsExpression, moveValue)) {
-        debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
-        await writeValuesToFile(argv.file, yaml)
-      }
-    }
+    if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression)
+      if (set(yaml, argv.rhsExpression, moveValue)) await writeValuesToFile(argv.file, yaml)
   }
 }
 
@@ -53,13 +37,10 @@ const migrateMutate = async (): Promise<void> => {
   const argv: Arguments = getParsedArgs()
   if (argv.file) {
     const yaml = loadYaml(argv.file)
-    debug.info(`Old yaml: ${JSON.stringify(yaml, null, 2)}`)
-    debug.info(argv.rhsExpression)
-    if (yaml && argv.lhsExpression && argv.rhsExpression) {
-      invoke(yaml, argv.lhsExpression, argv.rhsExpression)
-      debug.info(`New yaml: ${JSON.stringify(yaml, null, 2)}`)
-      await writeValuesToFile(argv.file, yaml)
-    }
+
+    if (yaml && argv.lhsExpression && argv.rhsExpression)
+      if (set(yaml, argv.lhsExpression, get(yaml, argv.lhsExpression).replace(...argv.rhsExpression)))
+        await writeValuesToFile(argv.file, yaml)
   }
 }
 
