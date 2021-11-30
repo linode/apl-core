@@ -1,60 +1,66 @@
 import { get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, getParsedArgs, loadYaml, setParsedArgs } from '../common/utils'
-import { writeValuesToFile } from '../common/values'
+import {
+  BasicArguments,
+  getFilename,
+  getParsedArgs,
+  loadYaml,
+  OtomiDebugger,
+  setParsedArgs,
+  terminal,
+} from '../common/utils'
 
 interface Arguments extends BasicArguments {
-  filePath?: string
-  valuesFilePath?: string
-  lhsExpression?: string
-  rhsExpression?: string
+  filePath: string
+  lhsExpression: string
+  rhsExpression?: string | string[]
 }
 
 const cmdName = getFilename(__filename)
+const debug: OtomiDebugger = terminal(cmdName)
 
-const migrateDelete = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+export const migrateDelete = (): Record<string, any> | undefined => {
+  const argv = getParsedArgs() as Arguments
+  let yaml
+
   if (argv.filePath && argv.lhsExpression) {
-    const yaml = loadYaml(argv.filePath)
-
-    if (unset(yaml, argv.lhsExpression)) await writeValuesToFile(argv.filePath, yaml as Record<string, any>)
+    yaml = loadYaml(argv.filePath)
+    unset(yaml, argv.lhsExpression)
   }
+  return yaml
 }
 
-const migrateMove = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
-  if (argv.filePath && argv.lhsExpression) {
-    const yaml = loadYaml(argv.filePath)
+export const migrateMove = (): Record<string, any> | undefined => {
+  const argv = getParsedArgs() as Arguments
+  let yaml
 
+  if (argv.filePath && argv.lhsExpression) {
+    yaml = loadYaml(argv.filePath)
     const moveValue = get(yaml, argv.lhsExpression, 'err!')
-    if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression)
-      if (set(yaml, argv.rhsExpression, moveValue)) await writeValuesToFile(argv.filePath, yaml)
+    if (unset(yaml, argv.lhsExpression) && yaml && argv.rhsExpression) set(yaml, argv.rhsExpression, moveValue)
   }
+  return yaml
 }
 
-const migrateMutate = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+const mutate = (yaml: Record<string, any>, lhs: string, rhs: string[]): Record<string, any> => {
+  return set(yaml, lhs, get(yaml, lhs).replace(...rhs))
+}
+
+export const migrateMutate = (): Record<string, any> | undefined => {
+  const argv = getParsedArgs() as Arguments
+  let yaml
+
   if (argv.filePath) {
-    const yaml = loadYaml(argv.filePath)
-
-    if (yaml && argv.lhsExpression && argv.rhsExpression)
-      if (set(yaml, argv.lhsExpression, get(yaml, argv.lhsExpression).replace(...argv.rhsExpression)))
-        await writeValuesToFile(argv.filePath, yaml)
+    yaml = loadYaml(argv.filePath)
+    if (yaml && argv.lhsExpression && Array.isArray(argv.rhsExpression))
+      mutate(yaml, argv.lhsExpression, argv.rhsExpression)
   }
+  return yaml
 }
-
-// // export const migrate = (): void => {}
-// export const loadValuesFile = (): Record<string, any> => {
-//   const argv: Arguments = getParsedArgs()
-//   if (argv.valuesFilePath) {
-//     const values = loadYaml(argv.valuesFilePath)
-//     if (values) return values.changes
-//   }
-// }
 
 export const module = {
-  command: [cmdName],
+  command: `${cmdName} [options]`,
   describe: `Migrates otomi-values according to Otomi values-schema evolution.\n This command is suitable for prototyping jsonpath-like queries.`,
   builder: (parser: Argv): Argv =>
     parser
@@ -62,30 +68,30 @@ export const module = {
         command: 'delete',
         describe: '',
         builder: (): Argv => parser,
-        handler: async (argv) => {
+        handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          await migrateDelete()
+          debug.info(migrateDelete())
         },
       })
       .command({
         command: 'move',
         describe: '',
         builder: (): Argv => parser,
-        handler: async (argv) => {
+        handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          await migrateMove()
+          debug.info(migrateMove())
         },
       })
       .command({
         command: 'mutate',
         describe: '',
         builder: (): Argv => parser,
-        handler: async (argv) => {
+        handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          await migrateMutate()
+          debug.info(migrateMutate())
         },
       })
       .options({
@@ -94,24 +100,18 @@ export const module = {
           string: true,
           demandOption: true,
         },
-        'values-file-path': {
-          alias: ['V'],
-          string: true,
-        },
         'lhs-expression': {
           alias: ['lhs'],
           string: true,
-          conflicts: ['values-file-path'],
+          demandOption: true,
         },
         'rhs-expression': {
           alias: ['rhs'],
           string: true,
-          conflicts: ['values-file-path'],
         },
       }),
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-
     await prepareEnvironment({ skipKubeContextCheck: true })
   },
 }
