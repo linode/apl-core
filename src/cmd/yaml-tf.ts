@@ -20,7 +20,7 @@ interface Arguments extends BasicArguments {
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-export const migrateDelete = (): Record<string, any> | undefined => {
+export const deleteGivenJsonPath = (): Record<string, any> | undefined => {
   const argv = getParsedArgs() as Arguments
   let yaml
 
@@ -31,7 +31,7 @@ export const migrateDelete = (): Record<string, any> | undefined => {
   return yaml
 }
 
-export const migrateMove = (): Record<string, any> | undefined => {
+export const moveGivenJsonPath = (): Record<string, any> | undefined => {
   const argv = getParsedArgs() as Arguments
   let yaml
 
@@ -47,7 +47,7 @@ const mutate = (yaml: Record<string, any>, lhs: string, rhs: string[]): Record<s
   return set(yaml, lhs, get(yaml, lhs).replace(...rhs))
 }
 
-export const migrateMutate = (): Record<string, any> | undefined => {
+export const mutateGivenJsonPath = (): Record<string, any> | undefined => {
   const argv = getParsedArgs() as Arguments
   let yaml
 
@@ -61,37 +61,37 @@ export const migrateMutate = (): Record<string, any> | undefined => {
 
 export const module = {
   command: `${cmdName} [options]`,
-  describe: `Migrates otomi-values according to Otomi values-schema evolution.\n This command is suitable for prototyping jsonpath-like queries.`,
+  describe: `Prototype applying jsonpath-like queries, e.g. for schema evolution.`,
   builder: (parser: Argv): Argv =>
     parser
       .command({
         command: 'delete',
-        describe: '',
+        describe: `Remove key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} delete -f my.yaml --lhs a.b.c`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          debug.info(migrateDelete())
+          debug.info(deleteGivenJsonPath())
         },
       })
       .command({
         command: 'move',
-        describe: '',
+        describe: `Move key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} move -f my.yaml --lhs a.b.c --rhs a.b.c.d`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          debug.info(migrateMove())
+          debug.info(moveGivenJsonPath())
         },
       })
       .command({
         command: 'mutate',
-        describe: '',
+        describe: `str.replace() key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} mutate -f my.yaml --lhs a.b.c --rhs $my-regexp --rhs $my-other-regexp`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
           await prepareEnvironment({ skipKubeContextCheck: true })
-          debug.info(migrateMutate())
+          debug.info(mutateGivenJsonPath())
         },
       })
       .options({
