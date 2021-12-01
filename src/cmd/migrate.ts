@@ -8,10 +8,10 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 interface Change {
   version: SemVer
+  deletions: string[]
   locations: {
     [oldLocation: string]: string
   }
-  deletions: string[]
   mutations: {
     [preMutation: string]: string[]
   }
@@ -22,6 +22,7 @@ type Changes = Array<Change>
 const migrate = async (): Promise<void> => {
   const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
   changes.sort((a, b) => compare(a.version, b.version))
+  while (changes.length) {}
 }
 
 export const module = {
