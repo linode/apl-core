@@ -21,8 +21,7 @@ type Changes = Array<Change>
 
 const migrate = async (): Promise<void> => {
   const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
-  changes.sort(compare)
-  debug.info(changes)
+  changes.sort((a, b) => compare(a.version, b.version))
 }
 
 export const module = {
