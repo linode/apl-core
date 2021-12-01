@@ -1,5 +1,17 @@
 $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: true
+changes: {}
+  # - version: 0.23.7
+  #   locations:
+  #     charts.bla.someProp: someNewRootProp.someProp
+  #   deletions:
+  #     - charts.bla.someOtherProp
+  #   mutations:
+  #     # image tag went from semver to glob
+  #     charts.bla.image.tag: 
+  #       - .*
+  #       - v$&
+  # - version: 0.23.8
 definitions:
   rawValues:
     description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
