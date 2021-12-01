@@ -1,6 +1,6 @@
 $schema: 'http://json-schema.org/draft-07/schema'
 additionalProperties: true
-changes: {}
+changes: []
   # - version: 0.23.7
   #   locations:
   #     charts.bla.someProp: someNewRootProp.someProp

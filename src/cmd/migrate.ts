@@ -1,19 +1,28 @@
+import { compare, SemVer } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-/**
- * This file is a scripting playground to test basic code
- * it's basically the same as EXAMPLE.ts
- * but loaded into the application to run.
- */
+import { BasicArguments, getFilename, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
-const playground = async (): Promise<void> => {
-  debug.log(cmdName)
+interface Change {
+  version: SemVer
+  locations: {
+    [oldLocation: string]: string
+  }
+  deletions: string[]
+  mutations: {
+    [preMutation: string]: string[]
+  }
+}
 
-  await Promise.resolve()
+type Changes = Array<Change>
+
+const migrate = async (): Promise<void> => {
+  const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
+  changes.sort(compare)
+  debug.info(changes)
 }
 
 export const module = {
@@ -25,6 +34,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    await playground()
+    await migrate()
   },
 }
