@@ -124,7 +124,7 @@ const processValues = async (): Promise<Record<string, any>> => {
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     const storedSecrets = await getStoredClusterSecrets()
     if (storedSecrets) originalValues = { ...originalValues, storedSecrets }
-    await writeValues(originalValues, false)
+    await writeValues(originalValues, true)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
     originalValues = (await getEnvDirValues()) as Record<string, any>
