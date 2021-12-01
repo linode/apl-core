@@ -66,7 +66,7 @@ export const module = {
     parser
       .command({
         command: 'delete',
-        describe: `Remove key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} delete -f my.yaml --lhs a.b.c`,
+        describe: `Remove key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} delete -f my.yaml --lhs a.b.c \n`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
@@ -76,7 +76,7 @@ export const module = {
       })
       .command({
         command: 'move',
-        describe: `Move key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} move -f my.yaml --lhs a.b.c --rhs a.b.c.d`,
+        describe: `Move key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} move -f my.yaml --lhs a.b.c --rhs a.b.c.d \n`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
@@ -86,7 +86,7 @@ export const module = {
       })
       .command({
         command: 'mutate',
-        describe: `str.replace() key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} mutate -f my.yaml --lhs a.b.c --rhs $my-regexp --rhs $my-other-regexp`,
+        describe: `str.replace() key/value pair given jsonpath query.\n\n [examples]\n - ${cmdName} mutate -f my.yaml --lhs a.b.c --rhs $my-regexp --rhs $my-other-regexp \n`,
         builder: (): Argv => parser,
         handler: async (argv: Arguments) => {
           setParsedArgs(argv)
