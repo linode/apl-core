@@ -1,0 +1,12 @@
+changes: []
+  # - version: 0.23.7
+  #   deletions:
+  #     - charts.bla.someOtherProp
+  #   locations:
+  #     charts.bla.someProp: someNewRootProp.someProp
+  #   mutations:
+  #     # image tag went from semver to glob
+  #     charts.bla.image.tag:
+  #       - .*
+  #       - v$&
+  # - version: 0.23.8

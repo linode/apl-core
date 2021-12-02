@@ -1,3 +1,4 @@
+import { get, set, unset } from 'lodash'
 import { compare, SemVer, valid } from 'semver'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
@@ -20,6 +21,25 @@ interface Change {
 }
 
 type Changes = Array<Change>
+
+export const deleteGivenJsonPath = (file: string, key: string): Record<string, any> | undefined => {
+  const yaml = loadYaml(file)
+  if (unset(yaml, key)) return yaml
+  return undefined
+}
+
+export const moveGivenJsonPath = (file: string, key: string, val: string): Record<string, any> | undefined => {
+  const yaml = loadYaml(file)
+  const moveValue = get(yaml, key, 'err!')
+  if (unset(yaml, key) && yaml && set(yaml, val, moveValue)) return yaml
+  return undefined
+}
+
+export const mutateGivenJsonPath = (file: string, key: string, val: string[]): Record<string, any> | undefined => {
+  const yaml = loadYaml(file)
+  if (Array.isArray(val) && yaml && set(yaml, key, get(yaml, key).replace(...val))) return yaml
+  return undefined
+}
 
 const migrate = () => {
   const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
