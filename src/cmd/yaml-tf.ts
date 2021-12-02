@@ -43,10 +43,6 @@ export const moveGivenJsonPath = (): Record<string, any> | undefined => {
   return yaml
 }
 
-const mutate = (yaml: Record<string, any>, lhs: string, rhs: string[]): Record<string, any> => {
-  return set(yaml, lhs, get(yaml, lhs).replace(...rhs))
-}
-
 export const mutateGivenJsonPath = (): Record<string, any> | undefined => {
   const argv = getParsedArgs() as Arguments
   let yaml
@@ -54,7 +50,8 @@ export const mutateGivenJsonPath = (): Record<string, any> | undefined => {
   if (argv.filePath) {
     yaml = loadYaml(argv.filePath)
     if (yaml && argv.lhsExpression && Array.isArray(argv.rhsExpression))
-      mutate(yaml, argv.lhsExpression, argv.rhsExpression)
+      // The mutate magic could be expanded to support more rich use cases.
+      set(yaml, argv.lhsExpression, get(yaml, argv.lhsExpression).replace(...argv.rhsExpression))
   }
   return yaml
 }
