@@ -78,12 +78,15 @@ spec:
           {{- end }}
             port:
               number: {{ $s.port | default 80 }}
-      # fix for istio (=envoy) incorrectly setting proto to http
-      # (@see https://github.com/istio/istio/issues/7964):
           headers:
             request:
               set:
+                # fix for istio (=envoy) incorrectly setting proto to http
+                # (@see https://github.com/istio/istio/issues/7964):
                 X-Forwarded-Proto: https
+              {{- if hasKey $s "removeRequestHeaders" }}
+              remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
+              {{- end }}
         {{- end }}
 ---
         {{- if and ($hasAuth) (hasKey $s "authz") }}
