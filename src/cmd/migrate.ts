@@ -2,8 +2,10 @@ import { get, set, unset } from 'lodash'
 import { compare, SemVer, valid } from 'semver'
 import { Argv } from 'yargs'
 import { env } from '../common/envalid'
+import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
+import { writeValues } from '../common/values'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -41,11 +43,13 @@ export const mutateGivenJsonPath = (file: string, key: string, val: string[]): R
   return undefined
 }
 
-const migrate = () => {
-  const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
-  changes.sort((a, b) => compare(a.version, b.version))
+const migrate = async () => {
   const currentVersion: string = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.version
   if (!valid(currentVersion)) throw new Error('Please set cluster.version to a valid SemVer, e.g. 1.2.3')
+
+  const values = await hfValues({ filesOnly: true })
+  const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+  changes.sort((a, b) => compare(a.version, b.version))
 
   while (changes.length) {
     const curr = changes.pop()
@@ -53,6 +57,7 @@ const migrate = () => {
       debug.info(`${currentVersion}>=${curr?.version}`)
     }
   }
+  if (typeof values === 'object') await writeValues(values)
 }
 
 export const module = {
