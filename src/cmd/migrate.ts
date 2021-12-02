@@ -21,7 +21,7 @@ interface Change {
 
 type Changes = Array<Change>
 
-const migrate = async (): Promise<void> => {
+const migrate = () => {
   const changes: Changes = loadYaml(`${rootDir}/values-schema.yaml`)?.changes
   changes.sort((a, b) => compare(a.version, b.version))
   const currentVersion: string = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.version
@@ -29,7 +29,9 @@ const migrate = async (): Promise<void> => {
 
   while (changes.length) {
     const curr = changes.pop()
-    if (curr && compare(currentVersion, curr?.version))
+    if (curr && compare(currentVersion, curr?.version)) {
+      debug.info(`${currentVersion}>=${curr?.version}`)
+    }
   }
 }
 
@@ -43,6 +45,6 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment()
     await validateValues()
-    await migrate()
+    migrate()
   },
 }
