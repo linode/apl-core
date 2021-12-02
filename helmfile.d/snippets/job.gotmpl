@@ -6,13 +6,8 @@
 {{- $wait := . | get "wait" nil }}
 {{- $task := . | get "task" nil }}
 image:
-  {{- if eq .item "api" }}
-  registry: eu.gcr.io
-  repository: otomi-cloud/otomi-api
-  {{- else }}
   registry: docker.io
   repository: otomi/{{ .item }}
-  {{- end }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 {{ if and (not $skipCA) $v._derived.untrustedCA }}
