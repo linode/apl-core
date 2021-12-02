@@ -55,7 +55,7 @@ const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
     return hfValues()
   }
-  throw new Error(`Missing cluster.provider at ${env.ENV_DIR}/env/cluster.yaml`)
+  return undefined
 }
 
 const getStoredClusterSecrets = async (): Promise<Record<string, any> | undefined> => {
