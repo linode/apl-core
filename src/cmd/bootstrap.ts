@@ -51,9 +51,9 @@ const generateLooseSchema = () => {
   }
 }
 
-const getEnvDirValues = async (): Promise<Record<string, any>> => {
+const getEnvDirValues = async (): Promise<Record<string, any> | undefined> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
-    return hfValues() as Record<string, any>
+    return (await hfValues()) as Record<string, any>
   }
   return undefined
 }
@@ -127,7 +127,7 @@ const processValues = async (): Promise<Record<string, any>> => {
     await writeValues(originalValues, true)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
-    originalValues = await getEnvDirValues()
+    originalValues = (await getEnvDirValues()) as Record<string, any>
     // when we are bootstrapping from a non empty values repo, validate the input
     if (originalValues) await validateValues()
   }
@@ -217,9 +217,9 @@ const bootstrapValues = async (): Promise<void> => {
     return
   }
   const finalValues = await getEnvDirValues()
-  if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
-  if (!finalValues.cluster.k8sContext) {
-    const k8sContext = `otomi-${providerMap(finalValues.cluster.provider)}-${finalValues.cluster.name}`
+  if (finalValues?.charts['cert-manager'].issuer === 'custom-ca') await createCustomCA(originalValues)
+  if (!finalValues?.cluster.k8sContext) {
+    const k8sContext = `otomi-${providerMap(finalValues?.cluster.provider)}-${finalValues?.cluster.name}`
     debug.info(`No value for cluster.k8sContext found, providing default one: ${k8sContext}`)
     await writeValues({ cluster: { k8sContext } }, true)
   }
