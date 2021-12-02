@@ -178,13 +178,9 @@ services:
     svc: po-grafana
     ownHost: true
     namespace: monitoring
-    # specifying authz will strip the bearer token by default, unless forwardOriginalToken=true
-    # this mechanism allows us to not bother services that need the same "Bearer" header for their own oidc
-    # it also adds an in-cluster enforcement that only payloads containing the right authn may access it
-    authz:
-      workload:
-        app.kubernetes.io/instance: prometheus-operator
-        app.kubernetes.io/name: po-grafana
+    removeRequestHeaders:
+      # strip authorization header from client side requests, so it does not conflict with other headers that this application is using for authentication.
+      - authorization
     type: public
     isShared: true
     auth: true
@@ -209,6 +205,7 @@ services:
     type: public
     auth: true
     removeRequestHeaders:
+      # strip authorization header from client side requests, so it does not conflict with other headers that this application is using for authentication.
       - authorization
   - name: drone
     svc: drone
@@ -218,6 +215,9 @@ services:
     type: public
     paths: [/hook, /api/user, /api/repo]
     forwardPath: true
+    removeRequestHeaders:
+      # strip authorization header from client side requests, so it does not conflict with other headers that this application is using for authentication.
+      - authorization
   - name: jaeger
     svc: jaeger-operator-jaeger-query
     port: 16686
