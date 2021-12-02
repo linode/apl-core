@@ -5,7 +5,7 @@
 ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) ![Downloads](https://img.shields.io/github/downloads/redkubes/otomi-core/total) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 
-[![Docker Pulls](https://img.shields.io/github/downloads/redkubes/otomi-core/total)](https://store.docker.com/community/images/otomi/core)
+[![Docker Pulls](https://img.shields.io/github/pulls/redkubes/otomi-core/total)](https://store.docker.com/community/images/otomi/core)
 
 
 <p align="center"><img src="https://otomi.io/assets/images/architecture-732f4ad360d0de9d24f9045e9ad3dfc2.png" width="100%" align="center" alt="Otomi Architecture"></p>
