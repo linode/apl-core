@@ -3,7 +3,7 @@
 # Kubernetes AppArmor enforcement works by first checking that all the prerequisites have been met, 
 # and then forwarding the profile selection to the container runtime for enforcement
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Serviced
 package pspapparmor
 
 import data.lib.core

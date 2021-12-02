@@ -14,39 +14,43 @@ otomi:
   # version: master
 charts:
   cert-manager:
-    # Use a custom CA (BYO or auto-generated) or use LetsEncrypt. When using LetsEncrypt, also fill in dns.
-    issuer: custom-ca 
+    # Use a custom CA (BYO or auto-generated) or use letsencrypt. When using letsencrypt, also fill in dns.
+    issuer: custom-ca
     # Fill in when using BYO CA. If not filled in, a CA will be auto generated
     # customRootCA:
     # customRootCAKey:
-    # Fill in when issuer is LetsEncrypt
-    # email: '' # Required when issuer is set to LetsEncrypt
-    # stage: staging # defaults to 'production' when commented out. Required when issuer is set to Letsencrypt
+    # Fill in when issuer is letsencrypt
+    # email: ''
+    # stage: staging # defaults to 'production' when commented out
   external-dns:
+    # list one or more domains that the credentials under dns give access to
     domainFilters:
       - ''
-    # zoneIdFilters: []
+    # if your dns credentials give authorization to manage everything on a root domain (i.e. *.example.com)
+    # you can limit the scope to a list of zones that only operate on a subdomain (i.e. test.example.com):
+    # zoneIdFilters:
+    #   - ''
 # Optional configuration
 # External dns zone configuration
 # dns:
 #   provider:
-#   # provide one of the following below: aws|azure|google
-#   aws:
-#     # next two keys are optional for explicit access with an iam role
-#     # (if no metadata exists with implicit role access to manage dns)
-#     accessKeySecret: ''
-#     secretAccessKey: ''
-#     # region is always needed
-#     region: eu-central-1
-#     role: '' # optional ARN, may be set explicitly if no metadata can be accessed
-#   azure:
-#     aadClientId: ''
-#     aadClientSecret: ''
-#     tenantId: '' # optional
-#     subscriptionId: '' # optional
-#   google:
-#     serviceAccountKey: ''
-#     project: ''
+#     # provide one of the following below: aws|azure|google
+#     aws:
+#       # next two keys are optional for explicit access with an iam role
+#       # (if no metadata exists with implicit role access to manage dns)
+#       accessKeySecret: ''
+#       secretAccessKey: ''
+#       # region is always needed
+#       region: eu-central-1
+#       role: '' # optional ARN, may be set explicitly if no metadata can be accessed
+#     azure:
+#       aadClientId: ''
+#       aadClientSecret: ''
+#       tenantId: '' # optional
+#       subscriptionId: '' # optional
+#     google:
+#       serviceAccountKey: ''
+#       project: ''
 # KMS for encrypting values
 # kms:
 #   sops:

@@ -1,7 +1,7 @@
 # @title Containers must run with allowed user and group ranges
 #
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package pspallowedusers
 
 import data.lib.core
@@ -42,8 +42,15 @@ get_user_violation(params, container) = msg {
 
 get_user_violation(params, container) = msg {
 	not get_field_value("runAsUser", container, pods.pod)
-	params.rule != "RunAsAny"
-	msg := sprintf("Policy: %s - Container %v is attempting to run without a required securityContext/runAsUser. Allowed runAsUser: %v", [policyID, container.name, params])
+	params.rule = "MustRunAs"
+	msg := sprintf("Policy: %s - Container %v is attempting to run without a required securityContext/runAsUser", [policyID, container.name])
+}
+
+get_user_violation(params, container) = msg {
+	params.rule = "MustRunAsNonRoot"
+	not get_field_value("runAsUser", container, pods.pod)
+	not get_field_value("runAsNonRoot", container, pods.pod)
+	msg := sprintf("Policy: %s - Container %v is attempting to run without a required securityContext/runAsNonRoot or securityContext/runAsUser != 0", [policyID, container.name])
 }
 
 accept_users("RunAsAny", provided_user) = true
@@ -93,15 +100,15 @@ accept_value("MustRunAs", provided_value, ranges) = res {
 }
 
 # If container level is provided, that takes precedence
-get_field_value(field, container, review) = out {
+get_field_value(field, container, obj) = out {
 	container_value := get_seccontext_field(field, container)
 	out := container_value
 }
 
 # If no container level exists, use pod level
-get_field_value(field, container, review) = out {
-	not get_seccontext_field(field, container)
-	pod_value := get_seccontext_field(field, review.spec)
+get_field_value(field, container, obj) = out {
+	not has_seccontext_field(field, container)
+	pod_value := get_seccontext_field(field, obj.spec)
 	out := pod_value
 }
 
@@ -109,6 +116,14 @@ get_field_value(field, container, review) = out {
 is_in_range(val, ranges) = res {
 	matching := {1 | val >= ranges[j].min; val <= ranges[j].max}
 	res := count(matching) > 0
+}
+
+has_seccontext_field(field, obj) {
+	get_seccontext_field(field, obj)
+}
+
+has_seccontext_field(field, obj) {
+	get_seccontext_field(field, obj) == false
 }
 
 get_seccontext_field(field, obj) = out {

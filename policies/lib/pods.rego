@@ -9,6 +9,11 @@ pod = core.resource.spec.template {
 	lower(core.kind) == pod_templates[_]
 }
 
+pod = core.resource.spec.template {
+	lower(core.apiVersion) == "serving.knative.dev/v1"
+	lower(core.kind) == "service"
+}
+
 pod = core.resource {
 	lower(core.kind) == "pod"
 }

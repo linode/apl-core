@@ -1,6 +1,6 @@
 # @title Containers must not other allow Selinux profiles
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package pspselinux
 
 import data.lib.core

@@ -1653,6 +1653,17 @@ properties:
             type: string
         required:
           - postgresqlPassword
+      knative:
+        additionalProperties: false
+        properties:
+          serving:
+            type: object
+            properties:
+              replicas:
+                description: For HA mode set to 5. Read more at https://github.com/knative/operator/issues/376
+                default: 1
+                type: integer
+                minimum: 1
       kubeapps:
         additionalProperties: false
         properties:

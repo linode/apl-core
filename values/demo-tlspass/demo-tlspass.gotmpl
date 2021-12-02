@@ -10,16 +10,9 @@ image:
     - name: otomi-pullsecret-global
   {{- end }}
   repository: nginxinc/nginx-unprivileged
-  tag: latest
+  tag: stable
 
-podAnnotations:
-  policy.otomi.io/ignore: banned-image-tags
-
-securityContext:
-#   capabilities:
-#     drop:
-#     - ALL
-#   runAsNonRoot: true
+podSecurityContext:
   runAsUser: 1001
 
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}

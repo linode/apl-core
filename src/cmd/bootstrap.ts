@@ -55,7 +55,7 @@ const getEnvDirValues = async (): Promise<Record<string, any>> => {
   if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`) && loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.provider) {
     return hfValues() as Record<string, any>
   }
-  throw new Error(`Missing cluster.provider at ${env.ENV_DIR}/env/cluster.yaml`)
+  return undefined
 }
 
 const getStoredClusterSecrets = async (): Promise<Record<string, any> | undefined> => {
@@ -124,7 +124,7 @@ const processValues = async (): Promise<Record<string, any>> => {
     originalValues = loadYaml(env.VALUES_INPUT) as Record<string, any>
     const storedSecrets = await getStoredClusterSecrets()
     if (storedSecrets) originalValues = { ...originalValues, storedSecrets }
-    await writeValues(originalValues, false)
+    await writeValues(originalValues, true)
   } else {
     console.debug(`Loading repo values from ${env.ENV_DIR}`)
     originalValues = await getEnvDirValues()
