@@ -206,12 +206,10 @@ services:
     svc: drone
     namespace: team-admin
     ownHost: true
-    authz:
-      workload:
-        app: drone
-        component: server
     type: public
     auth: true
+    removeRequestHeaders:
+      - authorization
   - name: drone
     svc: drone
     namespace: team-admin
