@@ -1,7 +1,7 @@
 import { $, chalk, ProcessOutput, ProcessPromise, question } from 'zx'
 import { DebugStream } from './debug'
 import { isCli } from './envalid'
-import { getParsedArgs } from './yargs-opts'
+import { getParsedArgs } from './yargs'
 
 $.verbose = false // https://github.com/google/zx#verbose - don't need to print the SHELL executed commands
 $.prefix = 'set -euo pipefail;' // https://github.com/google/zx/blob/main/index.mjs#L103

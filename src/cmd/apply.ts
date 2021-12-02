@@ -8,7 +8,7 @@ import { hf, hfValues } from '../common/hf'
 import { getOtomiLoadBalancerIP } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
-import { Arguments as HelmArgs, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments as HelmArgs, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { Arguments as DroneArgs } from './gen-drone'
 

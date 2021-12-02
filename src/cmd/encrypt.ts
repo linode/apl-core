@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
-import { Arguments, encrypt as encryptFunc } from '../common/crypt'
 import { prepareEnvironment } from '../common/cli'
-import { getFilename } from '../common/utils'
+import { Arguments, encrypt as encryptFunc } from '../common/crypt'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { getParsedArgs, setParsedArgs } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

@@ -32,7 +32,6 @@ spec:
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
@@ -61,9 +60,7 @@ spec:
             - name: core-values
               mountPath: /etc/otomi/core.yaml
               subPath: core.yaml
-        {{- if .Values.tools.enabled }}
         - name: {{ .Chart.Name }}-tools
-          securityContext: {{- toYaml .Values.tools.securityContext | nindent 12 }}
           image: "{{ .Values.tools.image.registry }}/{{ .Values.tools.image.repository }}:{{ .Values.tools.image.tag }}"
           imagePullPolicy: {{ .Values.tools.image.pullPolicy }}
           command: ['sh']
@@ -89,7 +86,6 @@ spec:
           volumeMounts:
             - name: repo
               mountPath: /tmp
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

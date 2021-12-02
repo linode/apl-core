@@ -4,7 +4,7 @@ import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs-opts'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

@@ -9,7 +9,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename, readdirRecurse, rootDir } from '../common/utils'
 import { getK8sVersion } from '../common/values'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -109,10 +109,10 @@ const processCrd = (path: string): crdSchema[] => {
 
 const processCrdWrapper = async (argv: Arguments) => {
   debug.log(`Generating k8s ${k8sVersion} manifests`)
-  const oldK8SVoverride = process.env.KUBE_VERSION_OVERRIDE
-  process.env.KUBE_VERSION_OVERRIDE = `${vk8sVersion}.0`
-  await hfTemplate(argv, `${k8sResourcesPath}/${vk8sVersion}`)
-  process.env.KUBE_VERSION_OVERRIDE = oldK8SVoverride
+  await hfTemplate(
+    { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
+    `${k8sResourcesPath}/${vk8sVersion}`,
+  )
 
   debug.log('Processing CRD files...')
   cd(rootDir)

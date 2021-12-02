@@ -5,7 +5,7 @@ import { $, cd, ProcessOutput } from 'zx'
 import { OtomiDebugger, terminal } from './debug'
 import { env, isCli } from './envalid'
 import { readdirRecurse, rootDir } from './utils'
-import { BasicArguments } from './yargs-opts'
+import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
   files?: string[]
@@ -23,24 +23,26 @@ enum CryptType {
 
 const preCrypt = (): void => {
   debug.debug('Checking prerequisites for the (de,en)crypt action')
-  if (env.GCLOUD_SERVICE_KEY) {
+  if (env().GCLOUD_SERVICE_KEY) {
     debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env().GCLOUD_SERVICE_KEY))
   }
   if (isCli) {
-    const secretPath = `${env.ENV_DIR}/.secrets`
+    const secretPath = `${env().ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
-      debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
+      debug.warn(
+        `Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env().`,
+      )
     }
   }
 }
 
 const getAllSecretFiles = async () => {
-  const files = (await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true }))
+  const files = (await readdirRecurse(`${env().ENV_DIR}/env`, { skipHidden: true }))
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-    .map((file) => file.replace(`${env.ENV_DIR}/`, ''))
-  // .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
+    .map((file) => file.replace(`${env().ENV_DIR}/`, ''))
+  // .filter((file) => existsSync(`${env().ENV_DIR}/${file}`))
   debug.debug('getAllSecretFiles: ', files)
   return files
 }
@@ -69,7 +71,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<void> => {
   let files: string[] = filesArgs
 
-  cd(env.ENV_DIR)
+  cd(env().ENV_DIR)
 
   if (files.length === 0) {
     files = await getAllSecretFiles()
@@ -99,7 +101,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
 }
 
 const matchTimestamps = (file: string) => {
-  const absFilePath = `${env.ENV_DIR}/${file}`
+  const absFilePath = `${env().ENV_DIR}/${file}`
   if (!existsSync(`${absFilePath}.dec`)) {
     debug.debug(`Missing ${file}.dec, skipping...`)
     return
@@ -116,7 +118,7 @@ const matchTimestamps = (file: string) => {
 export const decrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'decrypt'
   debug = terminal(namespace)
-  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+  if (!existsSync(`${env().ENV_DIR}/.sops.yaml`)) {
     debug.debug('Skipping decryption')
     return
   }
@@ -136,7 +138,7 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 export const encrypt = async (...files: string[]): Promise<void> => {
   const namespace = 'encrypt'
   debug = terminal(namespace)
-  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+  if (!existsSync(`${env().ENV_DIR}/.sops.yaml`)) {
     debug.debug('Skipping encryption')
     return
   }
@@ -144,7 +146,7 @@ export const encrypt = async (...files: string[]): Promise<void> => {
   await runOnSecretFiles(
     {
       condition: (file: string): boolean => {
-        const absFilePath = `${env.ENV_DIR}/${file}`
+        const absFilePath = `${env().ENV_DIR}/${file}`
 
         const decExists = existsSync(`${absFilePath}.dec`)
         if (!decExists) {

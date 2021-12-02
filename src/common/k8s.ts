@@ -4,8 +4,7 @@ import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 // eslint-disable-next-line import/no-unresolved
 import { resolveAny } from 'dns/promises'
-import { existsSync, writeFileSync } from 'fs'
-import { mkdirpSync } from 'fs-extra'
+import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
 import { dump, load } from 'js-yaml'
 import { isEmpty } from 'lodash'
@@ -16,10 +15,10 @@ import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './cons
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { parser } from './yargs-opts'
+import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/${env().DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
@@ -30,11 +29,13 @@ export const createK8sSecret = async (
   const rawString = dump(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
-  if (!existsSync(dirPath)) {
-    mkdirpSync(dirPath)
+  try {
+    await access(dirPath)
+  } catch (e) {
+    await mkdir(dirPath)
   }
 
-  writeFileSync(filePath, rawString)
+  await writeFile(filePath, rawString)
   const result = await nothrow(
     $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`,
   )
@@ -52,7 +53,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env().DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
 }

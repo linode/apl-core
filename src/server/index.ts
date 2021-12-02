@@ -62,7 +62,7 @@ app.get('/commit', async (req: Request, res: Response) => {
 })
 
 export const startServer = (): void => {
-  const k8sEnvDirPath = env.ENV_DIR
+  const k8sEnvDirPath = env().ENV_DIR
   const dockerEnvDir = `${rootDir}/env`
   // accomodate k8s deployment with shared values dir, and make symlink to /home/app/stack/env
   if (k8sEnvDirPath && !existsSync(k8sEnvDirPath)) {

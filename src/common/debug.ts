@@ -1,7 +1,7 @@
 import Debug, { Debugger as DebugDebugger } from 'debug'
-import { env } from 'process'
 import { Writable, WritableOptions } from 'stream'
 import { $ } from 'zx'
+import { env } from './envalid'
 
 const debuggers = {}
 
@@ -49,7 +49,7 @@ let _argv: any = {}
 export const terminal = (namespace: string): OtomiDebugger => {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     const signature = namespace + baseNamespace
-    if (env.OTOMI_IN_TERMINAL) {
+    if (env().OTOMI_IN_TERMINAL) {
       if (debuggers[signature]) return debuggers[signature]
       const debugObj: DebugDebugger = commonDebug.extend(baseNamespace)
       debuggers[signature] = debugObj
@@ -121,7 +121,7 @@ export const logLevel = (argv?: any): number => {
 
   let logLevelNum = Number(logLevels[argv.logLevel?.toUpperCase() ?? 'WARN'])
   const verbosity = Number(argv.verbose ?? 0)
-  const boolTrace = env.TRACE || argv.trace
+  const boolTrace = env().TRACE || argv.trace
   logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
 
   logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)

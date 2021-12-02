@@ -3,7 +3,7 @@ import { $, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, parser, setParsedArgs } from '../common/yargs-opts'
+import { BasicArguments, getParsedArgs, parser, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

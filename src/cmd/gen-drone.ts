@@ -6,7 +6,7 @@ import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, rootDir } from '../common/utils'
 import { getImageTag } from '../common/values'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs-opts'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean
@@ -82,7 +82,7 @@ export const genDrone = async (): Promise<void> => {
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    const file = `${env.ENV_DIR}/.drone.yml`
+    const file = `${env().ENV_DIR}/.drone.yml`
     writeFileSync(file, output)
     debug.debug('.drone.yml: ', output)
     debug.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)

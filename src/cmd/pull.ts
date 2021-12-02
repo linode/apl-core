@@ -4,7 +4,7 @@ import { prepareEnvironment, scriptName } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs-opts'
+import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs'
 
 type Arguments = HelmArgs
 

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.52](https://github.com/redkubes/otomi-core/compare/v0.14.51...v0.14.52) (2021-12-01)
+
+
+### Bug Fixes
+
+* overwrite with input values ([#672](https://github.com/redkubes/otomi-core/issues/672)) ([1acf846](https://github.com/redkubes/otomi-core/commit/1acf8463391b3cbc04e1a391a38595022f36e06e))
+
+### [0.14.51](https://github.com/redkubes/otomi-core/compare/v0.14.50...v0.14.51) (2021-11-30)
+
+
+### Features
+
+* expose values for knative serving replicas ([#669](https://github.com/redkubes/otomi-core/issues/669)) ([e833a39](https://github.com/redkubes/otomi-core/commit/e833a39cf429c5f3ffb7a76f600a6ec2b9dfa5e7))
+
+
+### Bug Fixes
+
+* api and console only need podsecuritycontext ([#671](https://github.com/redkubes/otomi-core/issues/671)) ([b6860e8](https://github.com/redkubes/otomi-core/commit/b6860e831dcea70276db2914684a36dc17ebbf77))
+
 ### [0.14.50](https://github.com/redkubes/otomi-core/compare/v0.14.49...v0.14.50) (2021-11-26)
 
 

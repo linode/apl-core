@@ -1,7 +1,157 @@
-import { expect } from 'chai'
+import { pki } from 'node-forge'
+import { createMock } from 'ts-auto-mock'
+import stubs from '../test-stubs'
+import { bootstrapValues, createCustomCA, generateLooseSchema, processValues } from './bootstrap'
 
-describe('Bootstrapping', () => {
-  it('Should not re-generate passwords if already existing in secret', () => {
-    expect(true).to.be.true
+const { terminal } = stubs
+
+describe('Bootstrapping values', () => {
+  const values = {
+    charts: { 'cert-manager': { issuer: 'custom-ca' } },
+    cluster: { name: 'bla', provider: 'dida' },
+  }
+
+  let deps
+  beforeEach(() => {
+    deps = {
+      existsSync: jest.fn(),
+      getImageTag: jest.fn(),
+      debug: terminal(),
+      copyBasicFiles: jest.fn(),
+      processValues: jest.fn().mockReturnValue(values),
+      getEnvDirValues: jest.fn().mockReturnValue(values),
+      createCustomCA: jest.fn(),
+      isCli: true,
+      writeValues: jest.fn(),
+      genSops: jest.fn(),
+      copyFile: jest.fn(),
+      encrypt: jest.fn(),
+      decrypt: jest.fn(),
+    }
+  })
+  it('should copy only skeleton files to ENV_DIR if it is empty or nonexisting', async () => {
+    deps.processValues.mockReturnValue(undefined)
+    await bootstrapValues(deps)
+    expect(deps.getEnvDirValues).toHaveBeenCalledTimes(0)
+  })
+  it('should call createCustomCA if issuer is custom-ca', async () => {
+    await bootstrapValues(deps)
+    expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
+  })
+  it('should set k8sContext if needed', async () => {
+    await bootstrapValues(deps)
+    expect(deps.writeValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cluster: { k8sContext: `otomi-${values.cluster.provider}-${values.cluster.name}` },
+      }),
+      true,
+    )
+  })
+  it('should copy sops related files if needed', async () => {
+    deps.existsSync.mockReturnValue(true)
+    await bootstrapValues(deps)
+    expect(deps.copyFile).toHaveBeenCalled()
+    expect(deps.encrypt).toHaveBeenCalled()
+    expect(deps.decrypt).toHaveBeenCalled()
+  })
+  describe('Generating a loose schema', () => {
+    const values = { test: 'ok', required: 'remove' }
+    const rootDir = '/bla'
+    const targetPath = `${rootDir}/.vscode/values-schema.yaml`
+    const deps = {
+      isCore: true,
+      rootDir,
+      loadYaml: jest.fn().mockReturnValue(values),
+      env: () => ({
+        ENV_DIR: '/bla/env',
+      }),
+      debug: terminal(),
+      outputFileSync: jest.fn(),
+    }
+    it('should create a schema without required props', () => {
+      generateLooseSchema(deps)
+      expect(deps.outputFileSync).toHaveBeenCalledWith(targetPath, 'test: ok\n')
+    })
+  })
+  describe('Checking for a custom CA', () => {
+    const deps = {
+      pki: createMock<typeof pki>(),
+      writeValues: jest.fn(),
+      terminal,
+    }
+    deps.pki.certificateToPem = jest.fn().mockReturnValue('certpem')
+    deps.pki.privateKeyToPem = jest.fn().mockReturnValue('keypem')
+    it('should create a new key pair when none exist', async () => {
+      const values = {}
+      await createCustomCA(values, deps)
+      expect(deps.writeValues).toHaveBeenCalledWith(
+        {
+          charts: {
+            'cert-manager': {
+              customRootCA: 'certpem',
+              customRootCAKey: 'keypem',
+            },
+          },
+        },
+        true,
+      )
+    })
+    it('should not create a new key pair when those already exist', async () => {
+      deps.writeValues.mockReset()
+      const values = {
+        charts: { 'cert-manager': { customRootCA: 'customRootCA', customRootCAKey: 'customRootCAKey' } },
+      }
+      await createCustomCA(values, deps)
+      expect(deps.writeValues).toHaveBeenCalledTimes(0)
+    })
+  })
+  describe('processing values', () => {
+    const values = { test: true }
+    const secret = { secret: 'true' }
+    const mergedValues = { ...values, ...secret }
+    let deps
+    beforeEach(() => {
+      deps = {
+        isChart: true,
+        loadYaml: jest.fn().mockReturnValue(values),
+        getStoredClusterSecrets: jest.fn(),
+        writeValues: jest.fn(),
+        env: () => ({
+          ENV_DIR: '/tmp/otomi-test/env',
+        }),
+        getEnvDirValues: jest.fn(),
+        validateValues: jest.fn().mockReturnValue(true),
+        generateSecrets: jest.fn(),
+        storeClusterSecrets: jest.fn(),
+      }
+    })
+    describe('processing chart values', () => {
+      it('should create a secret with passwords if no such secret exists', async () => {
+        await processValues(deps)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, values, true)
+        expect(deps.generateSecrets).toHaveBeenCalledWith(values)
+        expect(deps.storeClusterSecrets).toHaveBeenCalledTimes(1)
+      })
+      it('should not re-generate passwords if already existing in secret', async () => {
+        deps.getStoredClusterSecrets.mockReturnValue(secret)
+        await processValues(deps)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, mergedValues, true)
+        expect(deps.storeClusterSecrets).toHaveBeenCalledTimes(1)
+      })
+    })
+    describe('processing ENV_DIR values', () => {
+      beforeEach(() => {
+        deps.isChart = false
+      })
+      it('should not validate values when starting empty', async () => {
+        await processValues(deps)
+        expect(deps.validateValues).toHaveBeenCalledTimes(0)
+      })
+      it('should validate values when values were found', async () => {
+        deps.getEnvDirValues.mockReturnValue(values)
+        await processValues(deps)
+        expect(deps.validateValues).toHaveBeenCalledTimes(1)
+      })
+    })
   })
 })

@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
-import { hfTemplate } from '../common/hf'
 import { prepareEnvironment } from '../common/cli'
-import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { getFilename } from '../common/utils'
+import { Arguments as HelmArgs, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 interface Arguments extends HelmArgs {
   outDir: string

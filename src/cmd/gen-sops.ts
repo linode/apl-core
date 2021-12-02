@@ -5,7 +5,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs-opts'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 interface Arguments extends BasicArguments {
   dryRun: boolean
@@ -23,8 +23,8 @@ const providerMap = {
 
 export const genSops = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
-  const targetPath = `${env.ENV_DIR}/.sops.yaml`
-  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
+  const targetPath = `${env().ENV_DIR}/.sops.yaml`
+  const settingsFile = `${env().ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile) as Record<string, any>
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
@@ -53,7 +53,7 @@ export const genSops = async (): Promise<void> => {
   }
 
   if (provider === 'google') {
-    let serviceKeyJson = env.GCLOUD_SERVICE_KEY
+    let serviceKeyJson = env().GCLOUD_SERVICE_KEY
     if (!serviceKeyJson) {
       const values = await hfValues()
       if (values && values?.kms?.sops?.google?.accountJson && values?.kms?.sops?.google?.accountJson !== {})
@@ -62,8 +62,10 @@ export const genSops = async (): Promise<void> => {
 
     if (serviceKeyJson) {
       debug.log('Creating gcp-key.json for vscode.')
-      writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
-      writeFileSync(`${env.ENV_DIR}/.secrets`, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`, { flag: 'a' })
+      writeFileSync(`${env().ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+      writeFileSync(`${env().ENV_DIR}/.secrets`, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`, {
+        flag: 'a',
+      })
     } else {
       debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }

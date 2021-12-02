@@ -23,13 +23,6 @@ serviceAccount:
 podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-
 service:
   type: ClusterIP
   port: 80

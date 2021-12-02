@@ -1,17 +1,17 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hf } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
 import { validateValues } from './validate-values'
-import { OtomiDebugger, terminal } from '../common/debug'
 
 const cmdName = getFilename(__filename)
 const tmpFile = '/tmp/otomi/test.yaml'
@@ -49,8 +49,8 @@ const test = async (): Promise<void> => {
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
   const diffOutput = await diff()
-  debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
-  debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
+  debug.log(diffOutput.stdout.replaceAll('../env', env().ENV_DIR))
+  debug.error(diffOutput.stderr.replaceAll('../env', env().ENV_DIR))
 }
 
 export const module = {

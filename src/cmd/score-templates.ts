@@ -1,11 +1,11 @@
 import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { hfTemplate } from '../common/hf'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { getFilename } from '../common/utils'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const templatePath = '/tmp/template.yaml'

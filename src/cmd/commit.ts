@@ -9,7 +9,7 @@ import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs-opts'
+import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -46,7 +46,9 @@ const setDeploymentStatus = async (): Promise<void> => {
   const status = await getOtomiDeploymentStatus()
   if (status !== 'deployed') {
     await nothrow(
-      $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
+      $`kubectl -n ${
+        env().DEPLOYMENT_NAMESPACE
+      } create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
     )
     // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
     await nothrow($`kubectl delete secret ${DEPLOYMENT_PASSWORDS_SECRET}`)
@@ -85,8 +87,8 @@ const commitAndPush = async (): Promise<void> => {
 
 const bootstrapGit = async (values): Promise<void> => {
   debug.info('Initializing values git repo.')
-  await $`git init ${env.ENV_DIR}`
-  copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  await $`git init ${env().ENV_DIR}`
+  copyFileSync(`bin/hooks/pre-commit`, `${env().ENV_DIR}/.git/hooks/pre-commit`)
 
   const giteaEnabled = values?.charts?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
@@ -121,14 +123,14 @@ const bootstrapGit = async (values): Promise<void> => {
   await $`git config --local user.email ${email}`
   await $`git checkout -b ${branch}`
   await $`git remote add origin ${remote}`
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  if (existsSync(`${env().ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
 
   debug.log(`Done bootstrapping git`)
 }
 
 export const commit = async (): Promise<void> => {
   const d = terminal('commit')
-  cd(env.ENV_DIR)
+  cd(env().ENV_DIR)
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
@@ -136,8 +138,8 @@ export const commit = async (): Promise<void> => {
     process.env.GIT_SSL_NO_VERIFY = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
-  cd(env.ENV_DIR)
-  if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
+  cd(env().ENV_DIR)
+  if (!existsSync(`${env().ENV_DIR}/.git`)) await bootstrapGit(values)
 
   if (values?.charts?.gitea?.enabled) {
     const url = await getGiteaHealthUrl()

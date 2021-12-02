@@ -1,19 +1,13 @@
-import sinon from 'sinon'
-// import { k8s } from './k8s'
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {}
 
-export const mochaGlobalSetup = (): void => {
-  sinon.stub(console, 'log')
-  sinon.stub(console, 'debug')
-  sinon.stub(console, 'info')
-  sinon.stub(console, 'warn')
-  sinon.stub(console, 'error')
-  // const kc = k8s.kc()
-  // by default makeApiClient will try to connect to a the default k8s context
-  // (TODO: check if something is done: https://github.com/kubernetes-client/javascript/issues/744)
-  // so mock makeApiClient to return just a new instance of the requested api
-  // kc.makeApiClient = (Api) => new Api('test')
-  // sinon.stub(k8s, 'kc').returns(kc)
+export const beforeAll = (): void => {
+  jest.spyOn(console, 'log').mockImplementation(noop)
+  jest.spyOn(console, 'debug').mockImplementation(noop)
+  jest.spyOn(console, 'info').mockImplementation(noop)
+  jest.spyOn(console, 'warn').mockImplementation(noop)
+  jest.spyOn(console, 'error').mockImplementation(noop)
 }
-export const mochaGlobalTeardown = (): void => {
-  sinon.restore()
+export const afterAll = (): void => {
+  jest.clearAllMocks()
 }

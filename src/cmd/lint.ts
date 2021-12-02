@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
-import { hf } from '../common/hf'
 import { prepareEnvironment } from '../common/cli'
+import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
+import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
-import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

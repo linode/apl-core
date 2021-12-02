@@ -36,7 +36,7 @@ settings:
 
 env:
   es6: true
-  mocha: true
+  jest: true
   node: true
 
 rules:
@@ -57,7 +57,11 @@ rules:
   '@typescript-eslint/no-unsafe-call': off
   '@typescript-eslint/no-non-null-assertion': off
   '@typescript-eslint/no-floating-promises': warn
-  '@typescript-eslint/no-shadow': error
+  '@typescript-eslint/no-shadow':
+    - error
+    - allow:
+        - deps
+        - values
   func-names: 'off'
   import/no-commonjs: error
   import/no-extraneous-dependencies: off

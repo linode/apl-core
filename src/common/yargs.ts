@@ -2,6 +2,7 @@ import { existsSync } from 'fs'
 import yargs, { Arguments as YargsArguments, Argv, Options } from 'yargs'
 import { chalk } from 'zx'
 import { logLevel, logLevels } from './debug'
+import { env } from './envalid'
 
 export interface BasicArguments extends YargsArguments {
   logLevel?: string
@@ -14,10 +15,11 @@ export interface BasicArguments extends YargsArguments {
 
 export interface Arguments extends BasicArguments {
   label?: string[]
-  selector?: string[]
+  a?: string
   l?: string[]
   file?: string[]
   f?: string[]
+  args?: string
 }
 
 let parsedArgs: BasicArguments
@@ -35,16 +37,15 @@ export const getParsedArgs = (): BasicArguments => {
 
 const helmOpts: { [key: string]: Options } = {
   label: {
-    alias: ['l', 'selector'],
+    alias: ['l'],
     array: true,
     describe:
       "Select charts by label (format: <label>=<value>), e.g. '-l name=prometheus-operator' or '--label group=jobs'",
     nargs: 1,
     coerce: (labels: string[]) => {
       if (!labels || labels.length === 0) return labels
-      labels.filter((val) => {
+      labels.forEach((val) => {
         if (!/\w+!?=\w+/.exec(val)) throw new Error(`Expected label in form k=v or k!=v, got "${chalk.italic(val)}"`)
-        return true
       })
       return labels
     },
@@ -56,9 +57,21 @@ const helmOpts: { [key: string]: Options } = {
     nargs: 1,
     coerce: (files: string[]) => {
       if (!files || files.length === 0) return files
-      files.filter((val) => {
+      files.forEach((val) => {
         if (!existsSync(val)) throw new Error(`Expected file "${chalk.italic(val)}" does not exist.`)
-        return true
+      })
+      return files
+    },
+  },
+  args: {
+    alias: 'a',
+    array: true,
+    describe: "Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'",
+    nargs: 1,
+    coerce: (files: string[]) => {
+      if (!files || files.length === 0) return files
+      files.forEach((val) => {
+        if (!existsSync(val)) throw new Error(`Expected file "${chalk.italic(val)}" does not exist.`)
       })
       return files
     },
@@ -95,7 +108,7 @@ export const basicOptions: { [key: string]: Options } = {
         .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
         .map(Number)
         .reduce((prev, curr) => Math.max(prev, curr))
-      return Math.min(Math.max(val, Number(process.env.VERBOSITY || '0')), ll)
+      return Math.min(Math.max(val, Number(env().VERBOSITY || '0')), ll)
     },
   },
   'non-interactive': {

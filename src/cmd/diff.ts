@@ -4,7 +4,7 @@ import { Arguments, decrypt } from '../common/crypt'
 import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)

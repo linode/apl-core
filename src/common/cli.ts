@@ -13,11 +13,11 @@ chalk.level = 2
  */
 const isReadyEnvDir = (): boolean => {
   const d = terminal('checkEnvDir')
-  if (isCore && !env.ENV_DIR) {
+  if (isCore && !env().ENV_DIR) {
     throw new Error('The ENV_DIR environment variable is not set')
   }
-  d.debug(`ENV_DIR: ${env.ENV_DIR}`)
-  return readdirSync(env.ENV_DIR).length > 0
+  d.debug(`ENV_DIR: ${env().ENV_DIR}`)
+  return readdirSync(env().ENV_DIR).length > 0
 }
 
 type PrepareEnvironmentOptions = {
@@ -27,7 +27,7 @@ type PrepareEnvironmentOptions = {
   skipAllPreChecks?: boolean
 }
 
-export const scriptName = process.env.OTOMI_CALLER_COMMAND ?? 'otomi'
+export const scriptName = 'otomi'
 
 /**
  * Prepare environment when running an otomi command

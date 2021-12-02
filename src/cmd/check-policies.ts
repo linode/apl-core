@@ -2,11 +2,11 @@ import { rmSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal, logLevel, logLevels } from '../common/debug'
+import { logLevel, logLevels, OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
 import { getFilename, loadYaml } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
@@ -26,8 +26,8 @@ const checkPolicies = async (): Promise<void> => {
   setup(argv)
   debug.info('Policy checking STARTED')
 
-  const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
-  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
+  const policiesFile = `${env().ENV_DIR}/env/policies.yaml`
+  const settingsFile = `${env().ENV_DIR}/env/settings.yaml`
   const settings = loadYaml(settingsFile)
   if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
     debug.log('Skipping')
@@ -38,7 +38,7 @@ const checkPolicies = async (): Promise<void> => {
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
-  if (env.CI) extraArgs.push('--no-color')
+  if (env().CI) extraArgs.push('--no-color')
 
   debug.info('Checking manifest against policies')
   const confTestOutput = (

@@ -26,11 +26,10 @@ ARG KUBEVAL_VERSION=0.16.1
 ARG CONFTEST_VERSION=0.28.1
 # https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.15.0
-
+# https://nodejs.org/en/download/
 ARG NODE_VERSION=16
-
-# https://github.com/homeport/dyff/releases
-ARG DYFF_VERSION=1.4.3
+# https://github.com/kubernetes-sigs/kind/releases
+ARG KIND_VERSION=0.11.1
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -131,15 +130,17 @@ RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && m
 ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
 RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
-#dyff 
-ADD https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/dyff_${DYFF_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/dyff dyff
-
 # node
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
+# docker
+RUN curl -sSL https://get.docker.com/ | sh
+
+# kind
+RUN curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+  chmod +x /usr/bin/kind
 RUN chown -R app:app /home/app
 USER app
 

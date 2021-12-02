@@ -34,7 +34,7 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
 
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
-    path: env.ENV_DIR,
+    path: env().ENV_DIR,
     ignoreFiles: ['.gitignore'],
     follow: true,
   })
@@ -155,3 +155,14 @@ export const providerMap = (provider: string): string => {
   }
   return map[provider] ?? provider
 }
+
+// export const inject =
+//   <Dependencies, FunctionFactory>(
+//     buildFunction: (dependencies: Dependencies) => FunctionFactory,
+//     buildDependencies: () => Dependencies,
+//   ) =>
+//   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+//   (dependencies = buildDependencies()) => ({
+//     execute: buildFunction(dependencies),
+//     dependencies,
+//   })

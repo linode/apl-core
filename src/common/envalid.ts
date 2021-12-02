@@ -18,11 +18,6 @@ const cliEnvSpec = {
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
 
-export const taskEnvSpec = {
-  OTOMI_FLAGS: json({ default: {} }),
-  TEAM_IDS: json({ desc: 'A list of team ids in JSON format' }),
-}
-
 export const cleanEnvironment = (
   spec: Record<string, any> = cliEnvSpec,
   returnFunc = false,
@@ -47,7 +42,12 @@ export const cleanEnvironment = (
   return returnFunc ? func : func()
 }
 
-export const env = cleanEnvironment() as Record<string, any>
+let _env = {}
+export const env = (): Record<string, any> => {
+  if (_env !== {}) return _env
+  _env = cleanEnvironment()
+  return _env
+}
 
-export const isChart = env.CI && !!env.VALUES_INPUT
-export const isCli = !env.CI && !isChart
+export const isChart: boolean = env().CI && !!env().VALUES_INPUT
+export const isCli: boolean = !env().CI && !isChart

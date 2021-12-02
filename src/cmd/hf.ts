@@ -3,7 +3,7 @@ import { prepareEnvironment } from '../common/cli'
 import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
 import { hf as hfCommon } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments as HelmArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 interface Arguments extends HelmArgs {
   args?: string[]

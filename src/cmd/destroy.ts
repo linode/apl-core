@@ -5,7 +5,7 @@ import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)

@@ -2,11 +2,11 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/cli'
-import { getFilename, loadYaml, rootDir } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs-opts'
 import { OtomiDebugger, terminal } from '../common/debug'
+import { hfValues } from '../common/hf'
+import { getFilename, loadYaml, rootDir } from '../common/utils'
+import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
