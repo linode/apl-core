@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.53](https://github.com/redkubes/otomi-core/compare/v0.14.52...v0.14.53) (2021-12-03)
+
+
+### Bug Fixes
+
+* removing authz header ([#674](https://github.com/redkubes/otomi-core/issues/674)) ([eefe171](https://github.com/redkubes/otomi-core/commit/eefe171833fda20df740eb2692a1a541548c230d))
+* undesired error thrown ([54f6242](https://github.com/redkubes/otomi-core/commit/54f6242157948bc8588886318664f78387a81cce))
+* widget ([de54a44](https://github.com/redkubes/otomi-core/commit/de54a447395fb923cd7e3ec3d4ff04a64e4e69fc))
+* widget2 ([4918a35](https://github.com/redkubes/otomi-core/commit/4918a3511d26661d8d4a047ad72ebbfb4c36c74f))
+* widget2 ([a0b15db](https://github.com/redkubes/otomi-core/commit/a0b15dba916beae26a808c2f39bcb874709d0876))
+* widget2 ([c1c7b25](https://github.com/redkubes/otomi-core/commit/c1c7b25b8931fae8b66d2baefeaacb7c920f72b4))
+* widget2 ([1741450](https://github.com/redkubes/otomi-core/commit/1741450df9e20a304d19647e058f7e1cc61f794b))
+* widget3 ([c965c1a](https://github.com/redkubes/otomi-core/commit/c965c1a362f6b3409b7605eeccf0443298aefd8c))
+* widget4 ([84cfcf9](https://github.com/redkubes/otomi-core/commit/84cfcf920ddb44cb409c8653740fccaa20746604))
+* widget5 ([096e48f](https://github.com/redkubes/otomi-core/commit/096e48f1eea52775d412b7bd780610cbd2c03af2))
+
+
+### Code Refactoring
+
+* pulling api from docker hub ([#675](https://github.com/redkubes/otomi-core/issues/675)) ([9d8531f](https://github.com/redkubes/otomi-core/commit/9d8531f254ebb72b0bc48f9a166f7c619f3ec365))
+
+
+### Tests
+
+* **bootstrap:** initial test implementation with jest and dependency injection ([#676](https://github.com/redkubes/otomi-core/issues/676)) ([4c8a58b](https://github.com/redkubes/otomi-core/commit/4c8a58b3194bfca737f723a8ea37a1850a0150a7)), closes [#670](https://github.com/redkubes/otomi-core/issues/670)
+
 ### [0.14.52](https://github.com/redkubes/otomi-core/compare/v0.14.51...v0.14.52) (2021-12-01)
 
 
