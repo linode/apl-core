@@ -7,8 +7,8 @@ priorityClassName: "otomi-critical"
 replicaCount: 1
 
 image:
-  registry: eu.gcr.io
-  repository: otomi-cloud/otomi-api
+  registry: docker.io
+  repository: otomi/api
   tag: 0.1.1
   pullPolicy: IfNotPresent
 

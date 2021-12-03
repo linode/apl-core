@@ -897,6 +897,12 @@ definitions:
           - private
           - cluster
         type: string
+      removeRequestHeaders:
+        description: >-
+          Strip selected headers from HTTP request.
+        type: array
+        items:
+          type: string
     required:
       - name
       - type
