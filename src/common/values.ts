@@ -41,7 +41,7 @@ export const getK8sVersion = (): string => {
  * @returns string
  */
 export const getImageTag = async (): Promise<string> => {
-  if (env().OTOMI_TAG) return env().OTOMI_TAG
+  if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
   const values = await hfValues()
   if (!values) return `v${pkg.version}`
   return values.otomi!.version
