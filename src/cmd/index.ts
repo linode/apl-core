@@ -26,7 +26,6 @@ import { module as validateTemplatesModule } from './validate-templates'
 import { module as validateValuesModule } from './validate-values'
 import { module as valuesModule } from './values'
 import { module as xModule } from './x'
-import { module as yamlTFModule } from './yaml-tf'
 
 export { module as apply } from './apply'
 export { module as bash } from './bash'
@@ -54,7 +53,6 @@ export { module as validateTemplates } from './validate-templates'
 export { module as validateValues } from './validate-values'
 export { module as values } from './values'
 export { module as x } from './x'
-export { module as yamlTF } from './yaml-tf'
 
 export const commands: CommandModule[] = [
   applyModule,
@@ -84,6 +82,5 @@ export const commands: CommandModule[] = [
   validateValuesModule,
   valuesModule,
   xModule,
-  yamlTFModule,
 ]
 export const defaultCommand: CommandModule | null = null // bootstrapModule
