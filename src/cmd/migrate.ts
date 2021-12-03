@@ -24,22 +24,34 @@ interface Change {
 
 type Changes = Array<Change>
 
-export const deleteGivenJsonPath = (file: string, key: string): Record<string, any> | undefined => {
-  const yaml = loadYaml(file)
-  if (unset(yaml, key)) return yaml
+export const deleteGivenJsonPath = (
+  yaml: Record<string, unknown> | undefined,
+  jsonpath: string,
+): Record<string, any> | undefined => {
+  if (unset(yaml, jsonpath)) return yaml
   return undefined
 }
 
-export const moveGivenJsonPath = (file: string, key: string, val: string): Record<string, any> | undefined => {
-  const yaml = loadYaml(file)
-  const moveValue = get(yaml, key, 'err!')
-  if (unset(yaml, key) && yaml && set(yaml, val, moveValue)) return yaml
+export const moveGivenJsonPath = (
+  yaml: Record<string, unknown> | undefined,
+  jsonpath: string,
+  rhs: string,
+): Record<string, any> | undefined => {
+  const moveValue = get(yaml, jsonpath, 'err!')
+  if (unset(yaml, jsonpath) && yaml && set(yaml, rhs, moveValue)) return yaml
   return undefined
 }
 
-export const mutateGivenJsonPath = (file: string, key: string, val: string[]): Record<string, any> | undefined => {
-  const yaml = loadYaml(file)
-  if (Array.isArray(val) && yaml && set(yaml, key, get(yaml, key).replace(...val))) return yaml
+export const mutateGivenJsonPath = (
+  yaml: Record<string, unknown> | undefined,
+  jsonpath: string,
+  rhs: string[],
+): Record<string, any> | undefined => {
+  if (Array.isArray(rhs) && yaml) {
+    const prevValue = get(yaml, jsonpath)
+    if (typeof prevValue === 'string') set(yaml, jsonpath, prevValue.replace(new RegExp(rhs[0]), rhs[1]))
+    return yaml
+  }
   return undefined
 }
 
@@ -70,6 +82,6 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment()
     await validateValues()
-    migrate()
+    await migrate()
   },
 }
