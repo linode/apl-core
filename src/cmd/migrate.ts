@@ -1,7 +1,6 @@
 import { get, set, unset } from 'lodash'
-import { compare, SemVer, valid } from 'semver'
+import { compare, SemVer } from 'semver'
 import { Argv } from 'yargs'
-import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { prepareEnvironment } from '../common/setup'
 import { BasicArguments, getFilename, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
@@ -56,8 +55,9 @@ export const mutateGivenJsonPath = (
 }
 
 const migrate = async () => {
-  const currentVersion: string = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)?.cluster?.version
-  if (!valid(currentVersion)) throw new Error('Please set cluster.version to a valid SemVer, e.g. 1.2.3')
+  // const currentVersion: string | undefined = `${loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.otomi?.version}`
+  // if (!valid(currentVersion))
+  //   throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
 
   const values = await hfValues({ filesOnly: true })
   const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
@@ -65,9 +65,9 @@ const migrate = async () => {
 
   while (changes.length) {
     const curr = changes.pop()
-    if (curr && compare(currentVersion, curr?.version)) {
-      debug.info(`${currentVersion}>=${curr?.version}`)
-    }
+    // if (curr && compare(currentVersion, curr?.version)) {
+    //   debug.info(`${currentVersion}>=${curr?.version}`)
+    // }
   }
   if (typeof values === 'object') await writeValues(values)
 }
@@ -80,7 +80,7 @@ export const module = {
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment()
+    await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()
     await migrate()
   },

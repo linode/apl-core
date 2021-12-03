@@ -64,6 +64,22 @@
         "VERBOSITY": "4"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "migrate",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "migrate"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "env": {
+        "VERBOSITY": "4"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     }
   ]
 }
