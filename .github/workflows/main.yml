@@ -71,7 +71,7 @@ jobs:
           fi
 
           docker run --rm -e CI=1 -v $PWD/tests/kind:/home/app/stack/env $image node dist/src/otomi.js -- validate-values
-          docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind --pull always --user root otomi/core:latest sh -c 'cd kind && ./start-kind.sh'
+          docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind --pull always --user root otomi/kind:latest
           docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
           chmod +r ./kind/kubeconfig
           docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e VERBOSITY=1 --network kind -v $PWD/tests/kind:/home/app/stack/env -u 0 $image sh -c "binzx/otomi bootstrap && binzx/otomi apply"
