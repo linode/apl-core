@@ -28,8 +28,6 @@ ARG CONFTEST_VERSION=0.28.1
 ARG KONSTRAINT_VERSION=0.15.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
-# https://github.com/kubernetes-sigs/kind/releases
-ARG KIND_VERSION=0.11.1
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -135,12 +133,6 @@ RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
-# docker
-RUN curl -sSL https://get.docker.com/ | sh
-
-# kind
-RUN curl -Lo /usr/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
-  chmod +x /usr/bin/kind
 RUN chown -R app:app /home/app
 USER app
 

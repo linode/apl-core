@@ -14,6 +14,9 @@ const config: Config.InitialOptions = {
       tsconfig: 'tsconfig.jest.json',
     },
   },
+  // testPathIgnorePatterns: ['<rootDir>/src/test-stubs.ts'],
+  // collectCoverageFrom: ['src/**/{!(test-stubs),}.ts'],
+  // collectCoverageFrom: ['src/**/*.ts'],
   verbose: true,
 }
 export default config

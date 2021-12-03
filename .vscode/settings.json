@@ -49,8 +49,7 @@
   "files.exclude": {
     "**/.history": true
   },
-  "mochaExplorer.files": "tests/*.test.ts",
-  "mochaExplorer.require": "ts-node/register",
+  "jest.jestCommandLine": "npm run test:ts --",
   "opa.roots": ["${workspaceFolder}/policies"],
   "prettier.enable": true,
   "python.pythonPath": "/usr/local/bin/python3",
@@ -61,6 +60,5 @@
   "yaml.schemas": {
     ".vscode/values-schema.yaml": "**/env/*.yaml",
     "https://json-schema.org/draft-07/schema": "values-schema.yaml"
-  },
-  "jest.jestCommandLine": "npm run test:ts --"
+  }
 }

@@ -5,25 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Jest all",
-      "type": "node",
-      "request": "launch",
-      "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--coverage", "false"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "port": 9229
-    },
-    {
-      "name": "Jest current file",
-      "type": "node",
-      "request": "launch",
-      "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--coverage", "false"],
-      "args": ["${file}"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "port": 9229
-    },
-    {
       "name": "validate-templates",
       "console": "integratedTerminal",
       "type": "pwa-node",

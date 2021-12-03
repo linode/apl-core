@@ -5,19 +5,19 @@ import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
 const debug: OtomiDebugger = terminal(cmdName)
 
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
   if (existsSync(templateFile)) unlinkSync(templateFile)
 }
 
-const setup = (argv: Arguments): void => {
+const setup = (argv: HelmArguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
@@ -77,7 +77,7 @@ const destroyAll = async () => {
 }
 
 const destroy = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   debug.info('Start destroy')
   if (!argv.label && !argv.file) {
     await destroyAll()
@@ -99,7 +99,7 @@ export const module = {
   describe: 'Destroy all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment()
     setup(argv)

@@ -12,8 +12,9 @@ chalk.level = 2
  * @returns
  */
 const isReadyEnvDir = (): boolean => {
+  const { ENV_DIR, TESTING } = env()
   const d = terminal('checkEnvDir')
-  if (isCore && !env().ENV_DIR) {
+  if (!TESTING && isCore && !ENV_DIR) {
     throw new Error('The ENV_DIR environment variable is not set')
   }
   d.debug(`ENV_DIR: ${env().ENV_DIR}`)

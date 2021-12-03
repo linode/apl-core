@@ -8,7 +8,7 @@
         "cacheBetweenTests": false
       }
     ],
-    "target": "es2015"
+    "target": "es2021"
   },
   "types": ["jest"]
 }

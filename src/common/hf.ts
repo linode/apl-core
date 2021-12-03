@@ -5,7 +5,7 @@ import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
 import { asArray, rootDir } from './utils'
-import { Arguments, getParsedArgs } from './yargs'
+import { HelmArguments, getParsedArgs } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
@@ -101,7 +101,7 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
   return res
 }
 
-export const hfTemplate = async (argv: Arguments, outDir?: string, streams?: Streams): Promise<string> => {
+export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
   const debug = terminal('hfTemplate')
   process.env.QUIET = '1'
   const args = ['template', '--skip-deps']

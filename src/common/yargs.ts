@@ -13,7 +13,7 @@ export interface BasicArguments extends YargsArguments {
   debug?: boolean
 }
 
-export interface Arguments extends BasicArguments {
+export interface HelmArguments extends BasicArguments {
   label?: string[]
   a?: string
   l?: string[]

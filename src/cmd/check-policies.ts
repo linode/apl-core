@@ -6,23 +6,23 @@ import { logLevel, logLevels, OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfTemplate } from '../common/hf'
 import { getFilename, loadYaml } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
 const debug: OtomiDebugger = terminal(cmdName)
 
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: BasicArguments): void => {
   if (argv.skipCleanup) return
   rmSync(outDir, { force: true, recursive: true })
 }
 
-const setup = (argv: Arguments): void => {
+const setup = (argv: BasicArguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
 const checkPolicies = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: BasicArguments = getParsedArgs()
   setup(argv)
   debug.info('Policy checking STARTED')
 
@@ -60,7 +60,7 @@ export const module = {
   describe: 'Check if generated manifests adhere to defined OPA policies',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await checkPolicies()

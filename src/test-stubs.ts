@@ -21,10 +21,6 @@ const stubs = {
       const minimalValues = loadYaml(`${process.cwd()}/src/fixtures/bootstrap/values-full.yaml`)
       return { ...minimalValues, ...valuesOverrides }
     }),
-    getFilename: jest.fn(() => 'file-1'),
-  },
-  values: {
-    getImageTag: jest.fn(() => 'tag-1'),
   },
 }
 export default stubs

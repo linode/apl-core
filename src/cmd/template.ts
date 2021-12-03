@@ -3,9 +3,9 @@ import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
-interface Arguments extends HelmArgs {
+interface Arguments extends HelmArguments {
   outDir: string
 }
 

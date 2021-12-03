@@ -18,4 +18,4 @@ WORKDIR kind
 COPY chart chart/
 COPY helmfile.yaml kind.gotmpl kind.yaml start-kind.sh ./
 
-CMD "./kind/start-kind.sh"
+CMD "./start-kind.sh"

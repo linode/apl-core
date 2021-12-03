@@ -1,11 +1,19 @@
 import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
 import stubs from '../test-stubs'
-import { bootstrapValues, createCustomCA, generateLooseSchema, processValues } from './bootstrap'
+import {
+  bootstrapValues,
+  copyBasicFiles,
+  createCustomCA,
+  generateLooseSchema,
+  getStoredClusterSecrets,
+  processValues,
+} from './bootstrap'
 
 const { terminal } = stubs
 
 describe('Bootstrapping values', () => {
+  const secret = { secret: 'true' }
   const values = {
     charts: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
@@ -19,12 +27,13 @@ describe('Bootstrapping values', () => {
       debug: terminal(),
       copyBasicFiles: jest.fn(),
       processValues: jest.fn().mockReturnValue(values),
-      getEnvDirValues: jest.fn().mockReturnValue(values),
+      hfValues: jest.fn().mockReturnValue(values),
       createCustomCA: jest.fn(),
       isCli: true,
       writeValues: jest.fn(),
       genSops: jest.fn(),
       copyFile: jest.fn(),
+      getK8sSecret: jest.fn(),
       encrypt: jest.fn(),
       decrypt: jest.fn(),
     }
@@ -32,11 +41,17 @@ describe('Bootstrapping values', () => {
   it('should copy only skeleton files to ENV_DIR if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
     await bootstrapValues(deps)
-    expect(deps.getEnvDirValues).toHaveBeenCalledTimes(0)
+    expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
-  it('should call createCustomCA if issuer is custom-ca', async () => {
-    await bootstrapValues(deps)
-    expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
+  it('should get stored cluster secrets if those exist', async () => {
+    deps.getK8sSecret.mockReturnValue(secret)
+    const res = await getStoredClusterSecrets(deps)
+    expect(res).toEqual(secret)
+  })
+  it('should not get stored cluster secrets if those do not exist', async () => {
+    deps.getK8sSecret.mockReturnValue(undefined)
+    const res = await getStoredClusterSecrets(deps)
+    expect(res).toEqual(undefined)
   })
   it('should set k8sContext if needed', async () => {
     await bootstrapValues(deps)
@@ -73,6 +88,23 @@ describe('Bootstrapping values', () => {
       expect(deps.outputFileSync).toHaveBeenCalledWith(targetPath, 'test: ok\n')
     })
   })
+  describe('Copying basic files a loose schema', () => {
+    const deps = {
+      env: () => ({
+        ENV_DIR: '/bla/env',
+      }),
+      mkdirSync: jest.fn(),
+      copyFile: jest.fn(),
+      debug: terminal(),
+      copy: jest.fn(),
+      generateLooseSchema: jest.fn(),
+      existsSync: jest.fn(),
+    }
+    it('should not throw any exception', async () => {
+      const res = await copyBasicFiles(deps)
+      expect(res).toBe(undefined)
+    })
+  })
   describe('Checking for a custom CA', () => {
     const deps = {
       pki: createMock<typeof pki>(),
@@ -107,11 +139,11 @@ describe('Bootstrapping values', () => {
   })
   describe('processing values', () => {
     const values = { test: true }
-    const secret = { secret: 'true' }
     const mergedValues = { ...values, ...secret }
     let deps
     beforeEach(() => {
       deps = {
+        debug: terminal(),
         isChart: true,
         loadYaml: jest.fn().mockReturnValue(values),
         getStoredClusterSecrets: jest.fn(),
@@ -119,10 +151,11 @@ describe('Bootstrapping values', () => {
         env: () => ({
           ENV_DIR: '/tmp/otomi-test/env',
         }),
-        getEnvDirValues: jest.fn(),
+        createK8sSecret: jest.fn(),
+        hfValues: jest.fn(),
+        existsSync: jest.fn(),
         validateValues: jest.fn().mockReturnValue(true),
         generateSecrets: jest.fn(),
-        storeClusterSecrets: jest.fn(),
       }
     })
     describe('processing chart values', () => {
@@ -130,13 +163,13 @@ describe('Bootstrapping values', () => {
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, values, true)
         expect(deps.generateSecrets).toHaveBeenCalledWith(values)
-        expect(deps.storeClusterSecrets).toHaveBeenCalledTimes(1)
+        expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
       it('should not re-generate passwords if already existing in secret', async () => {
         deps.getStoredClusterSecrets.mockReturnValue(secret)
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, mergedValues, true)
-        expect(deps.storeClusterSecrets).toHaveBeenCalledTimes(1)
+        expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
     })
     describe('processing ENV_DIR values', () => {
@@ -148,7 +181,9 @@ describe('Bootstrapping values', () => {
         expect(deps.validateValues).toHaveBeenCalledTimes(0)
       })
       it('should validate values when values were found', async () => {
-        deps.getEnvDirValues.mockReturnValue(values)
+        deps.existsSync.mockReturnValue(true)
+        deps.loadYaml.mockReturnValue({ cluster: { provider: 'chek' } })
+        deps.hfValues.mockReturnValue(values)
         await processValues(deps)
         expect(deps.validateValues).toHaveBeenCalledTimes(1)
       })

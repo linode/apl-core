@@ -3,13 +3,13 @@ import { prepareEnvironment } from '../common/cli'
 import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 const sync = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   debug.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hf(
@@ -28,7 +28,7 @@ export const module = {
   describe: 'Sync all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment()
     await sync()

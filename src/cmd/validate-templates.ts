@@ -9,7 +9,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename, readdirRecurse, rootDir } from '../common/utils'
 import { getK8sVersion } from '../common/values'
-import { Arguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -21,7 +21,7 @@ const k8sResourcesPath = '/tmp/otomi/generated-manifests'
 let k8sVersion: string
 let vk8sVersion: string
 
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: BasicArguments): void => {
   if (argv.skipCleanup) return
   debug.log('Cleaning')
   rmSync(schemaOutputPath, { recursive: true, force: true })
@@ -29,7 +29,7 @@ const cleanup = (argv: Arguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: Arguments): Promise<void> => {
+const setup = async (argv: BasicArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
   k8sVersion = getK8sVersion()
@@ -107,7 +107,7 @@ const processCrd = (path: string): crdSchema[] => {
   return documentResult
 }
 
-const processCrdWrapper = async (argv: Arguments) => {
+const processCrdWrapper = async (argv: BasicArguments) => {
   debug.log(`Generating k8s ${k8sVersion} manifests`)
   await hfTemplate(
     { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
@@ -133,7 +133,7 @@ const processCrdWrapper = async (argv: Arguments) => {
 }
 
 export const validateTemplates = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: BasicArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
@@ -196,7 +196,7 @@ export const module = {
   describe: 'Validate generated manifests against supported k8s versions/CRDs and best practices',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateTemplates()

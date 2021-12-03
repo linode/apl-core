@@ -9,7 +9,7 @@ import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { Arguments as HelmArgs, setParsedArgs } from '../common/yargs'
+import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -17,7 +17,7 @@ import { validateValues } from './validate-values'
 const cmdName = getFilename(__filename)
 let debug: OtomiDebugger
 
-interface Arguments extends HelmArgs, DroneArgs {}
+interface Arguments extends HelmArguments, DroneArgs {}
 
 const preCommit = async (): Promise<void> => {
   await genDrone()
