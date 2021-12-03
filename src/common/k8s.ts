@@ -32,7 +32,7 @@ export const createK8sSecret = async (
   try {
     await access(dirPath)
   } catch (e) {
-    await mkdir(dirPath)
+    await mkdir(dirPath, { recursive: true })
   }
 
   await writeFile(filePath, rawString)
