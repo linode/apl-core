@@ -13,9 +13,9 @@ const debug: OtomiDebugger = terminal(cmdName)
 interface Change {
   version: SemVer
   deletions?: string[]
-  locations?: {
+  locations?: Array<{
     [oldLocation: string]: string
-  }
+  }>
   mutations?: {
     [preMutation: string]: string[]
   }
@@ -59,16 +59,20 @@ const migrate = async () => {
   // if (!valid(currentVersion))
   //   throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
 
-  const values = await hfValues({ filesOnly: true })
-  const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-  changes.sort((a, b) => compare(a.version, b.version))
-
-  while (changes.length) {
-    const curr = changes.pop()
-    // if (curr && compare(currentVersion, curr?.version)) {
-    //   debug.info(`${currentVersion}>=${curr?.version}`)
-    // }
-  }
+  let values = await hfValues({ filesOnly: true })
+  loadYaml(`${rootDir}/values-changes.yaml`)
+    ?.changes.sort((a, b) => compare(a.version, b.version))
+    .forEach((change) => {
+      change.deletions?.forEach((del) => {
+        values = { values, ...deleteGivenJsonPath(values, del) }
+      })
+      // change.locations?.forEach((loc) => {
+      //   moveGivenJsonPath(values, Object.keys(loc)[0], loc)
+      // })
+      // change.mutations?.forEach((del) => {
+      //   deleteGivenJsonPath(values, del)
+      // })
+    })
   if (typeof values === 'object') await writeValues(values)
 }
 
