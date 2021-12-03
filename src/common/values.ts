@@ -2,9 +2,12 @@ import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { cloneDeep, isEmpty, isEqual, merge, omit, pick } from 'lodash'
+import { cloneDeep, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import pkg from '../../package.json'
+import { terminal } from './debug'
 import { env } from './envalid'
-import { extract, flattenObject, getValuesSchema, loadYaml, terminal } from './utils'
+import { hfValues } from './hf'
+import { extract, flattenObject, getValuesSchema, gucci, loadYaml, stringContainsSome } from './utils'
 
 const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
@@ -19,6 +22,29 @@ const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> =>
     undefinedValues: true,
   }
   return cleanDeep(obj, options)
+}
+
+let otomiK8sVersion: string
+/**
+ * Find the cluster kubernetes version in the values
+ * @returns String of the kubernetes version on the cluster
+ */
+export const getK8sVersion = (): string => {
+  if (otomiK8sVersion) return otomiK8sVersion
+  const clusterFile: any = loadYaml(`${env().ENV_DIR}/env/cluster.yaml`)
+  otomiK8sVersion = clusterFile.cluster!.k8sVersion!
+  return otomiK8sVersion
+}
+
+/**
+ * Find what image tag is defined in configuration for otomi
+ * @returns string
+ */
+export const getImageTag = async (): Promise<string> => {
+  if (env().OTOMI_TAG) return env().OTOMI_TAG
+  const values = await hfValues()
+  if (!values) return `v${pkg.version}`
+  return values.otomi!.version
 }
 
 let hasSops = false
@@ -51,7 +77,7 @@ const writeValuesToFile = async (targetPath: string, values: Record<string, any>
  */
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValues')
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
+  hasSops = existsSync(`${env().ENV_DIR}/.sops.yaml`)
 
   // creating secret files
   const schema = await getValuesSchema()
@@ -71,14 +97,16 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
 
   const promises: Promise<void>[] = []
 
-  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (settings) promises.push(writeValuesToFile(`${env().ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (secretSettings)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
+    promises.push(writeValuesToFile(`${env().ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   // creating non secret files
   if (plainValues.cluster)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+    promises.push(writeValuesToFile(`${env().ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
+    promises.push(
+      writeValuesToFile(`${env().ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite),
+    )
 
   const plainChartPromises = Object.keys((plainValues.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -86,7 +114,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: plainValues.charts[chart],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env().ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
   })
   const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -94,10 +122,76 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: secrets.charts[chart],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env().ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])
 
   d.info('All values were written to ENV_DIR')
+}
+
+export const generateSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
+  const debug = terminal('generateSecrets')
+  const leaf = 'x-secret'
+  const localRefs = ['.dot.', '.v.', '.root.', '.o.']
+
+  const schema = await getValuesSchema()
+
+  debug.info('Extracting secrets')
+  const secrets = extract(schema, leaf, (val: any) => {
+    if (val.length > 0) {
+      if (stringContainsSome(val, ...localRefs)) return val
+      return `{{ ${val} }}`
+    }
+    return undefined
+  })
+  debug.debug('secrets: ', secrets)
+  debug.info('First round of templating')
+  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, any>
+  const firstTemplateFlattend = flattenObject(firstTemplateRound)
+
+  debug.info('Parsing values for second round of templating')
+  const expandedTemplates = Object.entries(firstTemplateFlattend)
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    .filter(([_, v]) => stringContainsSome(v, ...localRefs))
+    .map(([path, v]: string[]) => {
+      /*
+       * dotDot:
+       *  Get full path, except last item, this allows to parse for siblings
+       * dotV:
+       *  Get .v by getting the second . after charts
+       *  charts.hello.world
+       *  ^----------^ Get this content (charts.hello)
+       */
+      const dotDot = path.slice(0, path.lastIndexOf('.'))
+      const dotV = path.slice(0, path.indexOf('.', path.indexOf('charts.') + 'charts.'.length))
+
+      const sDot = v.replaceAll('.dot.', `.${dotDot}.`)
+      const vDot = sDot.replaceAll('.v.', `.${dotV}.`)
+      const oDot = vDot.replaceAll('.o.', '.otomi.')
+      const rootDot = oDot.replaceAll('.root.', '.')
+      return [path, rootDot]
+    })
+
+  expandedTemplates.map(([k, v]) => {
+    // Activate these templates and put them back into the object
+    set(firstTemplateRound, k, `{{ ${v} }}`)
+    return [k, v]
+  })
+  debug.debug('firstTemplateRound: ', firstTemplateRound)
+
+  debug.info('Gather all values for the second round of templating')
+  const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), values)
+  debug.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
+
+  debug.info('Second round of templating')
+  const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
+    asObject: true,
+  })) as Record<string, any>
+  debug.debug('secondTemplateRound: ', secondTemplateRound)
+
+  debug.info('Generated all secrets')
+  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
+  debug.debug('generateSecrets result: ', res)
+  return res
 }

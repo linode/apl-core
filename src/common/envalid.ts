@@ -1,5 +1,5 @@
 import { config } from 'dotenv'
-import { bool, cleanEnv, json, str } from 'envalid'
+import { bool, cleanEnv, json, num, str } from 'envalid'
 import { existsSync } from 'fs'
 
 const cliEnvSpec = {
@@ -15,12 +15,8 @@ const cliEnvSpec = {
   STATIC_COLORS: bool({ default: false }),
   TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
+  VERBOSITY: num({ desc: 'The verbosity level', default: 1 }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
-}
-
-export const taskEnvSpec = {
-  OTOMI_FLAGS: json({ default: {} }),
-  TEAM_IDS: json({ desc: 'A list of team ids in JSON format' }),
 }
 
 export const cleanEnvironment = (
@@ -47,7 +43,12 @@ export const cleanEnvironment = (
   return returnFunc ? func : func()
 }
 
-export const env = cleanEnvironment() as Record<string, any>
+let _env
+export const env = (): Record<string, any> => {
+  if (_env) return _env
+  _env = cleanEnvironment()
+  return _env
+}
 
-export const isChart = env.CI && !!env.VALUES_INPUT
-export const isCli = !env.CI && !isChart
+export const isChart: boolean = env().CI && !!env().VALUES_INPUT
+export const isCli: boolean = !env().CI && !isChart

@@ -1,7 +1,9 @@
 import { Arguments, Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
+import { prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { getFilename } from '../common/utils'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)

@@ -26,11 +26,8 @@ ARG KUBEVAL_VERSION=0.16.1
 ARG CONFTEST_VERSION=0.28.1
 # https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.15.0
-
+# https://nodejs.org/en/download/
 ARG NODE_VERSION=16
-
-# https://github.com/homeport/dyff/releases
-ARG DYFF_VERSION=1.4.3
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -130,10 +127,6 @@ RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && m
 # konstraint
 ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
 RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
-
-#dyff 
-ADD https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/dyff_${DYFF_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/dyff dyff
 
 # node
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -

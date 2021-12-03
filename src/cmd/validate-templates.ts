@@ -4,18 +4,12 @@ import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
-import { cleanupHandler, getK8sVersion, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getParsedArgs,
-  OtomiDebugger,
-  readdirRecurse,
-  rootDir,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename, readdirRecurse, rootDir } from '../common/utils'
+import { getK8sVersion } from '../common/values'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -27,7 +21,7 @@ const k8sResourcesPath = '/tmp/otomi/generated-manifests'
 let k8sVersion: string
 let vk8sVersion: string
 
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: BasicArguments): void => {
   if (argv.skipCleanup) return
   debug.log('Cleaning')
   rmSync(schemaOutputPath, { recursive: true, force: true })
@@ -35,7 +29,7 @@ const cleanup = (argv: Arguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: Arguments): Promise<void> => {
+const setup = async (argv: BasicArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
   k8sVersion = getK8sVersion()
@@ -113,12 +107,12 @@ const processCrd = (path: string): crdSchema[] => {
   return documentResult
 }
 
-const processCrdWrapper = async (argv: Arguments) => {
+const processCrdWrapper = async (argv: BasicArguments) => {
   debug.log(`Generating k8s ${k8sVersion} manifests`)
-  const oldK8SVoverride = process.env.KUBE_VERSION_OVERRIDE
-  process.env.KUBE_VERSION_OVERRIDE = `${vk8sVersion}.0`
-  await hfTemplate(argv, `${k8sResourcesPath}/${vk8sVersion}`)
-  process.env.KUBE_VERSION_OVERRIDE = oldK8SVoverride
+  await hfTemplate(
+    { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
+    `${k8sResourcesPath}/${vk8sVersion}`,
+  )
 
   debug.log('Processing CRD files...')
   cd(rootDir)
@@ -139,7 +133,7 @@ const processCrdWrapper = async (argv: Arguments) => {
 }
 
 export const validateTemplates = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: BasicArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
@@ -202,7 +196,7 @@ export const module = {
   describe: 'Validate generated manifests against supported k8s versions/CRDs and best practices',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateTemplates()

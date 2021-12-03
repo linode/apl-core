@@ -2,19 +2,13 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
 import { hf, hfValues } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import {
-  getFilename,
-  getOtomiLoadBalancerIP,
-  getParsedArgs,
-  logLevelString,
-  OtomiDebugger,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { getOtomiLoadBalancerIP } from '../common/k8s'
+import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { Arguments as DroneArgs } from './gen-drone'
 
@@ -23,7 +17,7 @@ const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger
 
-interface Arguments extends HelmArgs, DroneArgs {}
+interface Arguments extends HelmArguments, DroneArgs {}
 
 const cleanup = (argv: Arguments): void => {
   if (argv.skipCleanup) return

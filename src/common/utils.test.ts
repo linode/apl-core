@@ -1,4 +1,3 @@
-import { expect } from 'chai'
 import * as utils from './utils'
 
 describe('Flatten objects', () => {
@@ -20,6 +19,6 @@ describe('Flatten objects', () => {
       '1.2.3.arr': [1, 2, 3],
     }
     const flattened = utils.flattenObject(obj)
-    expect(flattened).to.deep.equal(expectingFlattenedObject)
+    expect(flattened).toEqual(expectingFlattenedObject)
   })
 })
