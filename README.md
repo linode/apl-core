@@ -1,23 +1,23 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Shift left with Kubernetes
+  Shift left with Otomi
 </h1>
-<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated</p>
+<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> and strongly relies on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated</p>
 
-<p align="center"> ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) [![Docker Pulls](https://img.shields.io/docker/pulls/otomi/core.svg)](https://store.docker.com/community/images/otomi/core) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap) ![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core) ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg) [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/) </p>
+<p align="center"> 
+![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker) 
+[![Docker Pulls](https://img.shields.io/docker/pulls/otomi/core.svg)](https://store.docker.com/community/images/otomi/core)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver) ![Crates.io](https://img.shields.io/crates/l/ap)
+![GitHub last commit](https://img.shields.io/github/last-commit/redkubes/otomi-core)
+![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+</p>
 
 
-
-
-
-<p align="center"><img src="https://otomi.io/assets/images/architecture-732f4ad360d0de9d24f9045e9ad3dfc2.png" width="100%" align="center" alt="Otomi Architecture"></p>
-
-Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using Kubernetes and strongly relies on GitOps patterns, where desired state is reflected as code and the cluster state is automatically updated.
-
-Otomi is a single deployable package for Kubernetes and offers:
+## Main features
 
 - Developer self-service
-- Pre-configured and ready-to-use applications
+- Over 20 pre-configured and ready-to-use applications
 - Application configuration management
 - Multi-tenancy
 - Implemented security policies
@@ -31,7 +31,7 @@ Otomi is a single deployable package for Kubernetes and offers:
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
-## Get started (experimentation and evaluation purposes only)
+## Quick start
 
 ---
 **NOTE:**
@@ -40,9 +40,7 @@ When installing Otomi using the quickstarts or installing with minimal values us
 
 ---
 
-### Quickstart
-
-Use the quickstart for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
+Use the quick start for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
 ### Install with chart
 
