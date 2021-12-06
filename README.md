@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
-  <a href="https://img.shields.io/docker/pulls/otomi/core.svg"><img alt="Docker pulls" src="https://store.docker.com/community/images/otomi/core" /></a>
+  <a href="https://img.shields.io/docker/pulls/otomi/core"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/otomi/core" /></a>
   <a href=""><img alt="" src="" /></a>
 </p>
 
