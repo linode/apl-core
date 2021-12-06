@@ -32,12 +32,7 @@ Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
 ## ⚡️ Quick start
 
----
-**NOTE:**
-
-When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
-
----
+> 🔔 When installing Otomi using the quickstarts or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
 
 Use the quick start for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
