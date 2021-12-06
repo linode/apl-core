@@ -13,13 +13,6 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
-
-
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
-![Crates.io](https://img.shields.io/crates/l/ap)
-![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-
 ## Key features
 
 - Developer self-service
@@ -77,11 +70,19 @@ helm install -f values.yaml otomi otomi/otomi
 
 When the installer has finished, copy the URL and the generated password from the bottom of the logs of the installer job (in the default namespace). Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
 
-See [otomi.io](https://otomi.io) for detailed instructions on how to install Otomi with more advanced configuration options.
-
 After installing Otomi, you can use Otomi Console to access all integrated applications and use the self-service features to create Knative services, publicly expose services, create secrets and create jobs.
 
 <p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
+
+## Advanced options
+
+Otomi can be installed with the following advanced options:
+
+- Use an external DNS zone with LetsEncrypt certificates
+- Configure Azure Active Directory as an IdP
+- Use KMS to manage keys for encryption
+
+Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
 ## Projects
 
