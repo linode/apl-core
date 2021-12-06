@@ -34,13 +34,13 @@ Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
 > 🔔 When installing Otomi using the quick start or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
 
-Use the quick start for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
+### Terraform
 
-### Install with chart
+Use the Terraform quick start for Azure, GCP and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
-To install Otomi with minimal values using the Helm chart:
+### Install with minimal values using Helm
 
-Create a `values.yaml` file with the following values
+To install Otomi with minimal values using Helm, first create a `values.yaml` file with the following values:
 
 ```yaml
 cluster:
@@ -50,22 +50,22 @@ cluster:
   provider: # choose between aws, azure, google or onprem
 ```
 
-Add the repository
+add the repository
 
 ```bash
 helm repo add otomi https://otomi.io/otomi-core
 helm repo update
 ```
 
-Install the chart
+and then install the Helm chart
 
 ```bash
 helm install -f values.yaml otomi otomi/otomi
 ```
 
-When the installer has finished, copy the URL and the generated password from the bottom of the logs of the installer job (in the default namespace). Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/)
+When the installer has finished, copy the URL and the generated password from the bottom of the logs of the installer job (in the default namespace). Now complete the [post-installion steps](https://otomi.io/docs/installation/post-install/).
 
-After installing Otomi, you can use Otomi Console to access all integrated applications and use the self-service features to create Knative services, publicly expose services, create secrets and create jobs.
+After installing Otomi, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
 
 <p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
 
