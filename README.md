@@ -89,10 +89,20 @@ Otomi consists out of multiple projects:
 - [Otomi Console](https://github.com/redkubes/otomi-console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
-## Developer documentation
+## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md)
+Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation
 
 ## Contribution
 
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
+
+If you want to say **thank you** or/and support active development of `Otomi`:
+
+- Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project.
+- Write interesting articles about project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or personal blog.
+
+## ⚠️ License
+
+`Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/master/LICENSE).
+
