@@ -25,7 +25,7 @@ When the installer job has finished, copy the URL and the generated password fro
 
 ### `Install with minimal values using Helm`
 
-To install Otomi with minimal values using Helm, first create a `values.yaml` file with the following values:
+To install `Otomi` with minimal values using Helm, first create a `values.yaml` file with the following values:
 
 ```yaml
 cluster:
@@ -50,7 +50,7 @@ helm install -f values.yaml otomi otomi/otomi
 
 When the installer job has finished, copy the URL and the generated password from the bottom of the logs of the job (in the default namespace). and complete the [post-installion steps](https://otomi.io/docs/installation/post-install/).
 
-After installing Otomi, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
+After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
 
 <p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
 
@@ -79,7 +79,7 @@ Go to [otomi.io](https://otomi.io) for more detailed instructions.
 - Full observability
 - Kubernetes best-practices
 
-Learn more about Otomi at [otomi.io](https://otomi.io/about).
+Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
 ## Integrated applications
 
