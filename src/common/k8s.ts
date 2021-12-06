@@ -162,27 +162,32 @@ type WaitTillAvailableOptions = {
   skipSsl?: boolean
 }
 
-export const waitTillAvailable = async (
-  url: string,
-  options: WaitTillAvailableOptions = { status: 200, skipSsl: false },
-): Promise<void> => {
+export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
+  const options = { status: 200, skipSsl: false, ...opts }
   const debug = terminal('waitTillAvailable')
   const retryOptions: Options = {
     retries: 50,
     maxTimeout: 30000,
   }
 
-  const rejectUnauthorized = !options.skipSsl
+  const globalSkipSsl = !env().NODE_TLS_REJECT_UNAUTHORIZED
+  let rejectUnauthorized = !globalSkipSsl
+  if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
   const fetchOptions: RequestInit = {
     redirect: 'follow',
     agent: new Agent({ rejectUnauthorized }),
   }
 
   await retry(async (bail) => {
-    const res = await fetch(url, fetchOptions)
-    if (res.status !== options.status) {
-      debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
-      bail(new Error(`Response status code differs from expected (${options.status}): ${res.status}`))
+    try {
+      const res = await fetch(url, fetchOptions)
+      if (res.status !== options.status) {
+        debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
+        bail(new Error(`Response status code differs from expected (${options.status}): ${res.status}`))
+      }
+    } catch (e) {
+      debug.error(e)
+      throw e
     }
   }, retryOptions)
 }

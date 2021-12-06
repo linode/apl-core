@@ -24,6 +24,23 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
+      "name": "Debug commit",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "commit"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "ENV_DIR": "/Users/Morriz/Documents/Workspace/redkubes/otomi/ENV_OUT/gke-dev"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "type": "node",
       "name": "Debug jest",
       "request": "launch",
