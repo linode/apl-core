@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install Otomi with one command on any Kubernetes cluster.</p>
+<p align="center">`Otomi` makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install `Otomi` with one command on any Kubernetes cluster.</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -35,14 +35,14 @@ cluster:
   provider: # choose between aws, azure, google or onprem
 ```
 
-add the repository
+add the repository:
 
 ```bash
 helm repo add otomi https://otomi.io/otomi-core
 helm repo update
 ```
 
-and then install the Helm chart
+and then install the Helm chart:
 
 ```bash
 helm install -f values.yaml otomi otomi/otomi
