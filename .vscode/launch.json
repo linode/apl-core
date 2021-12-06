@@ -5,23 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "task:copyCerts",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "task", "-n", "copyCerts"],
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**", "node_modules/**"],
-      "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "IN_DOCKER": "1",
-        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
-      },
-      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
-    },
-    {
       "name": "validate-templates",
       "console": "integratedTerminal",
       "type": "pwa-node",
@@ -37,6 +20,28 @@
         "ENV_DIR": "${workspaceRoot}/tests/fixtures"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "type": "node",
+      "name": "jest",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false"]
+    },
+    {
+      "type": "node",
+      "name": "jest current",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false", "${file}"]
     }
   ]
 }

@@ -1,15 +1,9 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/setup'
-import {
-  BasicArguments,
-  getFilename,
-  getParsedArgs,
-  OtomiDebugger,
-  parser,
-  setParsedArgs,
-  terminal,
-} from '../common/utils'
+import { prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { getFilename } from '../common/utils'
+import { BasicArguments, getParsedArgs, parser, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)

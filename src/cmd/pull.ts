@@ -1,11 +1,10 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { prepareEnvironment, scriptName } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment, scriptName } from '../common/setup'
-import { getFilename, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments as HelmArgs } from '../common/yargs-opts'
-
-type Arguments = HelmArgs
+import { getFilename } from '../common/utils'
+import { HelmArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -30,7 +29,7 @@ export const module = {
   describe: `Wrapper for git pull && ${scriptName} bootstrap`,
   builder: (parser: Argv): Argv => parser,
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await pull()

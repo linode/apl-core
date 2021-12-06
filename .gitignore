@@ -3,12 +3,10 @@
 .tmp
 *.bak
 node_modules/
+/coverage/
 /dist/
 /env/
 /ssl
-/*.json
-!.cspell.json
-!package*.json
 *.DS_Store
 .vscode/values-schema.yaml
 .env
@@ -18,3 +16,4 @@ chart/otomi/README.md
 workflow/
 kind/kubeconfig
 kind/.secrets
+*.new

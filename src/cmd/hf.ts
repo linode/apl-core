@@ -1,12 +1,9 @@
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
 import { hf as hfCommon } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments as HelmArgs, helmOptions } from '../common/yargs-opts'
-
-interface Arguments extends HelmArgs {
-  args?: string[]
-}
+import { getFilename } from '../common/utils'
+import { HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -16,7 +13,7 @@ export const module = {
   describe: undefined,
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment()
     await hfCommon(

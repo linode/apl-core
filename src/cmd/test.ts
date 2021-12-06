@@ -1,11 +1,12 @@
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hf } from '../common/hf'
-import { cleanupHandler, prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { diff } from './diff'
 import { lint } from './lint'
@@ -16,12 +17,12 @@ const cmdName = getFilename(__filename)
 const tmpFile = '/tmp/otomi/test.yaml'
 let debug: OtomiDebugger
 
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
   if (existsSync(tmpFile)) unlinkSync(tmpFile)
 }
 
-const setup = (argv: Arguments): void => {
+const setup = (argv: HelmArguments): void => {
   cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 }
@@ -48,8 +49,8 @@ const test = async (): Promise<void> => {
   debug.log((await $`kubectl apply --dry-run=client -f ${tmpFile}`).stdout)
 
   const diffOutput = await diff()
-  debug.log(diffOutput.stdout.replaceAll('../env', env.ENV_DIR))
-  debug.error(diffOutput.stderr.replaceAll('../env', env.ENV_DIR))
+  debug.log(diffOutput.stdout.replaceAll('../env', env().ENV_DIR))
+  debug.error(diffOutput.stderr.replaceAll('../env', env().ENV_DIR))
 }
 
 export const module = {
@@ -57,7 +58,7 @@ export const module = {
   describe: 'Run tests against the target cluster',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await test()

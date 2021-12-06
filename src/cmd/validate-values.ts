@@ -2,10 +2,11 @@ import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
+import { prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
-import { Arguments, helmOptions } from '../common/yargs-opts'
+import { getFilename, loadYaml, rootDir } from '../common/utils'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -16,7 +17,7 @@ const internalPaths: string[] = ['apps', 'k8s', 'services', 'teamConfig.services
 export const validateValues = async (): Promise<void> => {
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   debug.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
@@ -65,7 +66,7 @@ export const module = {
   describe: 'Validate values for each cluster against JSON schema (takes target options)',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()

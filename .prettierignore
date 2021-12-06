@@ -1,6 +1,6 @@
 .history/
-/charts/
-!^/charts/*.{yaml | md}
+/chart*/
+!^/chart*/*.{yaml | md}
 !^/charts/team-ns/*.{yaml | md}
 /helmfile*/
 *.sh

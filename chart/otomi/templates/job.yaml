@@ -36,7 +36,7 @@ spec:
                 echo 'The initial Otomi deployment hes been performed successfully! To modify the configuration please use either the Otomi CLI or Otomi console.'
                 exit
               fi
-              binzx/otomi bootstrap 
+              binzx/otomi bootstrap
               binzx/otomi apply
               binzx/otomi commit
           env:
