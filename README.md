@@ -91,7 +91,7 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 - [Loki](https://grafana.com/oss/loki/): Collecting container application logs
 - [Harbor](https://goharbor.io/): Container image registry with role-based access control, image scanning and image signing
 - [HashiCorp Vault](https://www.vaultproject.io/): Manage Secrets and Protect Sensitive Data
-- [Bitnami Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
+- [Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
 - [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
 - [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud native environments
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry recognized TLS certificates
@@ -124,4 +124,3 @@ If you want to say **thank you** or/and support active development of `Otomi`:
 ## ⚠️ License
 
 `Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/master/LICENSE).
-
