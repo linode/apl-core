@@ -5,25 +5,27 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "validate-templates",
+      "name": "Debug bootstrap - chart",
       "console": "integratedTerminal",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "validate-templates"],
+      "args": ["src/otomi.ts", "--", "bootstrap"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
+        "CI": "true",
+        "ENV_DIR": "/tmp/otomi/env",
+        "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
       "type": "node",
-      "name": "jest",
+      "name": "Debug jest",
       "request": "launch",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -34,7 +36,7 @@
     },
     {
       "type": "node",
-      "name": "jest current",
+      "name": "Debug jest current",
       "request": "launch",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

@@ -2,27 +2,19 @@
 {{- $version := $v.versions | get .item }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $cm := $v.charts | get "cert-manager" }}
-{{- $skipCA := . | get "skipCA" false }}
-{{- $wait := . | get "wait" nil }}
+{{- $skipScript := . | get "skipScript" false }}
 {{- $task := . | get "task" nil }}
 image:
   registry: docker.io
   repository: otomi/{{ .item }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
-{{ if and (not $skipCA) $v._derived.untrustedCA }}
+{{ if $v._derived.untrustedCA }}
 files:
   /tmp/node/certificates.crt: |
     {{- $v._derived.caCert | nindent 4 }}
 {{ end }}
-{{- if $wait }}
-  {{- $waitUrl := printf "https://%s.%s" $wait $v.cluster.domainSuffix }}
-env:
-  WAIT_URL: '{{ $waitUrl }}'   
-script: |
-  echo "Waiting until {{ $wait }} is accessible at {{ $waitUrl }}"
-  {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:wait-for
-{{- else if $task }} 
+{{- if not $skipScript }}
 script: |
   {{ if $v._derived.untrustedCA }}NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt {{ end }}npm run tasks:{{ $task }}
 {{- end }}
