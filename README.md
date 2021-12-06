@@ -30,7 +30,7 @@
 
 Learn more about Otomi at [otomi.io](https://otomi.io/about).
 
-## Quick start
+## ⚡️ Quick start
 
 ---
 **NOTE:**
