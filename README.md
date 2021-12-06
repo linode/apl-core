@@ -73,13 +73,28 @@ After installing Otomi, you can use [Otomi Console](https://otomi.io/docs/consol
 
 ## ⚙️ Advanced configuration
 
-Otomi can be installed with the following advanced configuration options:
+`Otomi` can be installed with the following advanced configuration options:
 
 - Use an external DNS zone with LetsEncrypt certificates
 - Configure Azure Active Directory as an IdP
 - Use KMS to manage keys for encryption
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
+
+## Integrated applications
+
+`Otomi` ships with the following pre-configured and ready to use applications:
+
+- [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
+- [Knative](https://knative.dev/): Deploy and manage serverless workloads
+- [Promethues](https://prometheus.io/): Collecting container application metrics
+- [Loki](https://grafana.com/oss/loki/): Collecting container application logs
+- [Harbor](https://goharbor.io/): Container image registry with role-based access control, image scanning and image signing
+- [HashiCorp Vault](https://www.vaultproject.io/): Manage Secrets and Protect Sensitive Data
+- [Bitnami Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
+- [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
+- [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud native environments
+- [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry recognized TLS certificates
 
 ## Projects
 
@@ -93,7 +108,7 @@ Otomi consists out of multiple projects:
 
 ## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation
+Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
 ## Contribution
 
