@@ -13,23 +13,6 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
-## Key features
-
-- Developer self-service
-- Over 20 pre-configured and ready-to-use applications
-- Application configuration management
-- Multi-tenancy
-- Implemented security policies
-- Single Sign On
-- Automatic ingress configuration
-- Input/output validation
-- Automatic image vulnerability scanning
-- Secrets management
-- Full observability
-- Kubernetes best-practices
-
-Learn more about Otomi at [otomi.io](https://otomi.io/about).
-
 ## ⚡️ Quick start
 
 > 🔔 When installing Otomi using the quick start or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
@@ -81,6 +64,23 @@ After installing Otomi, you can use [Otomi Console](https://otomi.io/docs/consol
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
+## Key features
+
+- Developer self-service
+- Over 20 pre-configured and ready-to-use applications and add-ons
+- Application configuration management
+- Multi-tenancy
+- Implemented security policies
+- Single Sign On
+- Automatic ingress configuration
+- Input/output validation
+- Automatic image vulnerability scanning
+- Secrets management
+- Full observability
+- Kubernetes best-practices
+
+Learn more about Otomi at [otomi.io](https://otomi.io/about).
+
 ## Integrated applications
 
 `Otomi` ships with the following pre-configured and ready to use applications:
@@ -95,6 +95,8 @@ Go to [otomi.io](https://otomi.io) for more detailed instructions.
 - [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
 - [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud native environments
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry recognized TLS certificates
+- [Jaeger](https://www.jaegertracing.io/): End-to-end distributed tracing and monitor for complex distributed systems
+- [Kiali](https://kiali.io/): Observe Istio service mesh relations and connections
 
 ## Projects
 
