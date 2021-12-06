@@ -4,6 +4,8 @@
 </h1>
 <p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.</p>
 
+<p align="center"><a href="https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker" alt="Build Status" /></a></p>
+
 ![Build Status](https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker)
 [![Docker Pulls](https://img.shields.io/docker/pulls/otomi/core.svg)](https://store.docker.com/community/images/otomi/core)
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/otomi/core?sort=semver)
