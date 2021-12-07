@@ -20,6 +20,9 @@ teamConfig:
                               memory: 64Mi
                       secrets:
                           - mysecret-generic
+                  networkPolicy:
+                      - app: backend
+                        team: mercury
                   type: public
                 - name: hello-auth
                   port: 80

@@ -490,6 +490,20 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  networkPolicy:
+    type: array
+    items:
+      type: object
+      properties:
+        app:
+          description: A value of app label
+          type: string
+        team:
+          description: Name name
+          type: string
+      required:
+        - app
+        - team
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -863,6 +877,8 @@ definitions:
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
+      networkPolicy:
+        $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
         description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.

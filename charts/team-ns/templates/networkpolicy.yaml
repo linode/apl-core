@@ -1,3 +1,4 @@
+{{- $v := .Values }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -32,10 +33,10 @@ spec:
           podSelector:
             matchLabels:
               app: prometheus
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: shared
+    # - from:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: shared
   egress:
     - to:
         - podSelector: {}
@@ -47,13 +48,13 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: ingressgateway
+    # - to:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: istio-system
+    #       podSelector:
+    #         matchLabels:
+    #           app: ingressgateway
     - to:
         - namespaceSelector:
             matchLabels:
@@ -61,18 +62,24 @@ spec:
           podSelector:
             matchLabels:
               app: istiod
+    # - to:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: monitoring
+    #       podSelector:
+    #         matchLabels:
+    #           app: prometheus
+    # - to:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: shared
     - to:
         - namespaceSelector:
-            matchLabels:
-              name: monitoring
-          podSelector:
-            matchLabels:
-              app: prometheus
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: shared
-
+            matchExpressions:
+              - key: name
+                operator: In
+                values:
+                  - team-
 {{- range $s := $v.services }}
 {{- range $s.networkPolicy | default list }}
 ---
@@ -83,7 +90,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: {{ $s.name }}
+      app: {{ $s.name }}-peers
   policyTypes:
     - Ingress
     - Egress
@@ -109,7 +116,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ internet-access-$s.name }}
+  name: {{ $s.name }}-internet-access
 spec:
   podSelector:
     matchLabels:
