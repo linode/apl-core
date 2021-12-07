@@ -1,0 +1,125 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: ingressgateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: istiod
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: shared
+  egress:
+    - to:
+        - podSelector: {}
+    - to:
+        - namespaceSelector: {}
+          podSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: ingressgateway
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: istiod
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: shared
+
+{{- range $s := $v.services }}
+{{- range $s.networkPolicy | default list }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $s.name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $s.name }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .team }}
+          podSelector:
+            matchLabels:
+              app: {{ .app }}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .team }}
+          podSelector:
+            matchLabels:
+              app: {{ .app }}
+
+{{- if .hasInternetAccess | default false}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ internet-access-$s.name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $s.name }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+{{- end }}
+{{- end }}
+{{- end }}
