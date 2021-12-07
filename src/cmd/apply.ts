@@ -73,7 +73,7 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-  debug.info('Deploying charts containig label stage=prep')
+  debug.info('Deploying charts containing label stage=prep')
   await hf(
     {
       fileOpts: argv.file,

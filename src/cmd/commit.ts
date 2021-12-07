@@ -136,14 +136,13 @@ export const commit = async (): Promise<void> => {
   const values = await hfValues()
   if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
   cd(env().ENV_DIR)
   if (!existsSync(`${env().ENV_DIR}/.git`)) await bootstrapGit(values)
 
   if (values?.charts?.gitea?.enabled) {
     const url = await getGiteaHealthUrl()
-    await waitTillAvailable(url)
+    await waitTillAvailable(url, { skipSsl: values?._derived?.untrustedCA })
   }
   await preCommit()
   await encrypt()

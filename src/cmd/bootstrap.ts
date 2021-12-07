@@ -2,7 +2,7 @@ import { existsSync, mkdirSync } from 'fs'
 import { copy, outputFileSync } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { get } from 'lodash'
+import { get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
@@ -114,7 +114,7 @@ export const processValues = async (
     deps.debug.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
     const storedSecrets = await deps.getStoredClusterSecrets()
-    if (storedSecrets) originalValues = { ...originalValues, ...storedSecrets }
+    if (storedSecrets) originalValues = merge(originalValues, storedSecrets)
     await deps.writeValues(originalValues, true)
   } else {
     deps.debug.log(`Loading repo values from ${ENV_DIR}`)

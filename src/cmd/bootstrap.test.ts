@@ -13,7 +13,7 @@ import {
 const { terminal } = stubs
 
 describe('Bootstrapping values', () => {
-  const secret = { secret: 'true' }
+  const secrets = { secret: 'true', some: { nested: 'secret' } }
   const values = {
     charts: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
@@ -44,9 +44,9 @@ describe('Bootstrapping values', () => {
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
-    deps.getK8sSecret.mockReturnValue(secret)
+    deps.getK8sSecret.mockReturnValue(secrets)
     const res = await getStoredClusterSecrets(deps)
-    expect(res).toEqual(secret)
+    expect(res).toEqual(secrets)
   })
   it('should not get stored cluster secrets if those do not exist', async () => {
     deps.getK8sSecret.mockReturnValue(undefined)
@@ -88,7 +88,7 @@ describe('Bootstrapping values', () => {
       expect(deps.outputFileSync).toHaveBeenCalledWith(targetPath, 'test: ok\n')
     })
   })
-  describe('Copying basic files a loose schema', () => {
+  describe('Copying basic files', () => {
     const deps = {
       env: () => ({
         ENV_DIR: '/bla/env',
@@ -138,8 +138,8 @@ describe('Bootstrapping values', () => {
     })
   })
   describe('processing values', () => {
-    const values = { test: true }
-    const mergedValues = { ...values, ...secret }
+    const values = { test: true, some: { thing: 'ok' } }
+    const mergedValues = { secret: 'true', test: true, some: { thing: 'ok', nested: 'secret' } }
     let deps
     beforeEach(() => {
       deps = {
@@ -165,11 +165,12 @@ describe('Bootstrapping values', () => {
         expect(deps.generateSecrets).toHaveBeenCalledWith(values)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
-      it('should not re-generate passwords if already existing in secret', async () => {
-        deps.getStoredClusterSecrets.mockReturnValue(secret)
-        await processValues(deps)
+      it('should not re-generate passwords if already existing in secrets', async () => {
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        const res = await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, mergedValues, true)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
+        expect(res).toEqual(mergedValues)
       })
     })
     describe('processing ENV_DIR values', () => {

@@ -61,6 +61,7 @@ rules:
     - error
     - allow:
         - deps
+        - secrets
         - values
   func-names: 'off'
   import/no-commonjs: error

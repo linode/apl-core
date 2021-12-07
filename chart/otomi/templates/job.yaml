@@ -43,7 +43,7 @@ spec:
             - name: CI
               value: '1'
             - name: VERBOSITY
-              value: '2'
+              value: '1'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT

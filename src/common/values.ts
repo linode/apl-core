@@ -191,7 +191,8 @@ export const generateSecrets = async (values: Record<string, any> = {}): Promise
   debug.debug('secondTemplateRound: ', secondTemplateRound)
 
   debug.info('Generated all secrets')
-  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
+  // Only return values that have x-secrets prop and are now fully templated:
+  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets)))
   debug.debug('generateSecrets result: ', res)
   return res
 }
