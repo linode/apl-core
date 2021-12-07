@@ -182,8 +182,13 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
     try {
       const res = await fetch(url, fetchOptions)
       if (res.status !== options.status) {
-        debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
-        bail(new Error(`Response status code differs from expected (${options.status}): ${res.status}`))
+        console.warn(`GET ${url} ${res.status} !== ${options.status}`)
+        const err = new Error(`Wrong status code: ${res.status}`)
+        // if we get a 404 or 503 we know some changes in either nginx or istio might still not be ready
+        if (res.status !== 404 && res.status !== 503) {
+          // but any other status code that is not the desired one tells us to stop retrying
+          bail(err)
+        } else throw err
       }
     } catch (e) {
       debug.error(e)
