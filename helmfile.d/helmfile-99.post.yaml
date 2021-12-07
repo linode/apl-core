@@ -17,16 +17,19 @@ releases:
     <<: *jobs
     labels:
       group: jobs
+      type: cronjob
   - name: job-copy-certs
     installed:  {{ not ($c | get "aws-alb-ingress-controller.enabled") }}
     <<: *jobs
     labels:
       group: jobs
+      type: cronjob
   - name: job-gitea-add-users
     installed: {{ and (ne $v.cluster.provider "kind") ($c | get "gitea.enabled" false) }}
     labels:
       pkg: gitea
       group: jobs
+      type: cronjob
     <<: *jobs
   - name: job-harbor
     installed: {{ $c | get "harbor.enabled" }}
