@@ -5,50 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "args": ["-u", "bdd", "--timeout", "999999", "--colors", "${workspaceFolder}/**/*.spec.ts"],
-      "internalConsoleOptions": "openOnSessionStart",
-      "name": "Mocha Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "request": "launch",
-      "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
-    },
-    {
-      "name": "task:copyCerts",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "task", "-n", "copyCerts"],
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**", "node_modules/**"],
-      "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "IN_DOCKER": "1",
-        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
-      },
-      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
-    },
-    {
-      "name": "validate-templates",
-      "console": "integratedTerminal",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "validate-templates"],
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**", "node_modules/**"],
-      "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "ENV_DIR": "${workspaceRoot}/tests/fixtures"
-      },
-      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
-    },
-    {
-      "name": "bootstrap",
+      "name": "Debug bootstrap - chart",
       "console": "integratedTerminal",
       "type": "pwa-node",
       "request": "launch",
@@ -60,26 +17,50 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "ENV_DIR": "${workspaceRoot}/tests/fixtures",
-        "VERBOSITY": "4"
+        "CI": "true",
+        "ENV_DIR": "/tmp/otomi/env",
+        "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
-      "name": "migrate",
+      "name": "Debug commit",
       "console": "integratedTerminal",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "migrate"],
+      "args": ["src/otomi.ts", "--", "commit"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
       "env": {
-        "VERBOSITY": "4"
+        "ENV_DIR": "/Users/Morriz/Documents/Workspace/redkubes/otomi/ENV_OUT/gke-dev"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "type": "node",
+      "name": "Debug jest",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false"]
+    },
+    {
+      "type": "node",
+      "name": "Debug jest current",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false", "${file}"]
     }
   ]
 }

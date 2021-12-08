@@ -4,5 +4,5 @@ otomi:
     hasCloudLB: false
     isHomeMonitored: false
     isManaged: false
-    isMultitenant: false
+    isMultitenant: true
     version: latest

@@ -91,7 +91,7 @@ resources:
         - name: vault-file
           mountPath: /vault/file
       {{- if $v._derived.untrustedCA }}
-        - name: 'root-ca'
+        - name: root-ca
           mountPath: '/etc/ssl/certs/tls.crt'
           subPath: tls.crt
       {{- end }}

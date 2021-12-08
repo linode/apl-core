@@ -42,7 +42,7 @@ resources:
     memory: 256Mi
 {{- end }}
 
-{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipCA" true) }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
 secrets:
   {{- if $hasGitea }}
@@ -77,7 +77,7 @@ core:
   teamConfig: {{- toYaml (dict "services" $teamApps) | nindent 4 }}
 
 tools:
-  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipCA" true) | nindent 2 }}
+  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
   resources:
   {{- with $o | get "resources.tools" nil }}
     {{- toYaml . | nindent 4 }}

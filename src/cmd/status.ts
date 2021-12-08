@@ -1,7 +1,8 @@
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, setParsedArgs } from '../common/utils'
+import { prepareEnvironment } from '../common/cli'
+import { getFilename } from '../common/utils'
+import { BasicArguments, setParsedArgs } from '../common/yargs'
 
 type Arguments = BasicArguments
 

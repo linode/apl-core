@@ -1,9 +1,10 @@
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
 import { Arguments, decrypt } from '../common/crypt'
+import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
 import { hf } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { getFilename, getParsedArgs, logLevelString, OtomiDebugger, setParsedArgs, terminal } from '../common/utils'
-import { helmOptions } from '../common/yargs-opts'
+import { getFilename } from '../common/utils'
+import { getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
