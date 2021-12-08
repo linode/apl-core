@@ -60,7 +60,7 @@ export const mutateGivenJsonPath = (
 export function filterChanges(currentVersion: string, changes: Changes): Changes {
   if (!valid(currentVersion))
     throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
-  return changes.filter((c) => compare(c.version, currentVersion)).sort((a, b) => compare(a.version, b.version))
+  return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
 const migrate = async (
