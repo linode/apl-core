@@ -1,10 +1,13 @@
 import { get, set, unset } from 'lodash'
-import { compare, SemVer } from 'semver'
+import { compare, SemVer, valid } from 'semver'
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { OtomiDebugger, terminal } from '../common/debug'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { prepareEnvironment } from '../common/setup'
-import { BasicArguments, getFilename, loadYaml, OtomiDebugger, rootDir, setParsedArgs, terminal } from '../common/utils'
+import { getFilename, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
+import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -54,32 +57,35 @@ export const mutateGivenJsonPath = (
   return undefined
 }
 
-const migrate = async () => {
-  // const currentVersion: string | undefined = `${loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.otomi?.version}`
-  // if (!valid(currentVersion))
-  //   throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
+function filterChanges(currentVersion: string, changes: Changes): Changes {
+  if (!valid(currentVersion))
+    throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
+  return changes.filter((c) => compare(c.version, currentVersion)).sort((a, b) => compare(a.version, b.version))
+}
 
+const migrate = async (
+  deps = { env, loadYaml, deleteGivenJsonPath, moveGivenJsonPath, mutateGivenJsonPath, filterChanges },
+) => {
   let values = await hfValues({ filesOnly: true })
-  loadYaml(`${rootDir}/values-changes.yaml`)
-    ?.changes.sort((a, b) => compare(a.version, b.version))
+
+  deps
+    .filterChanges(
+      `${loadYaml(`${deps.env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
+      deps.loadYaml(`${rootDir}/values-changes.yaml`)?.changes,
+    )
     .forEach((change) => {
       change.deletions?.forEach((del) => {
-        values = { values, ...deleteGivenJsonPath(values, del) }
+        values = { values, ...deps.deleteGivenJsonPath(values, del) }
       })
-      // change.locations?.forEach((loc) => {
-      //   moveGivenJsonPath(values, Object.keys(loc)[0], loc)
-      // })
-      // change.mutations?.forEach((del) => {
-      //   deleteGivenJsonPath(values, del)
-      // })
     })
-  if (typeof values === 'object') await writeValues(values)
+
+  if (values) await writeValues(values)
 }
 
 export const module = {
-  command: `${cmdName} [opts...]`,
+  command: cmdName,
   hidden: true,
-  describe: undefined,
+  describe: 'Migrate values',
   builder: (parser: Argv): Argv => parser,
 
   handler: async (argv: BasicArguments): Promise<void> => {
