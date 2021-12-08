@@ -15,7 +15,7 @@ const debug: OtomiDebugger = terminal(cmdName)
 
 interface Change {
   version: string
-  deletions?: string[]
+  deletions?: Array<string>
   locations?: Array<{
     [oldLocation: string]: string
   }>
