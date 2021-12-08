@@ -24,7 +24,7 @@ interface Change {
   }
 }
 
-type Changes = Array<Change>
+export type Changes = Array<Change>
 
 export const deleteGivenJsonPath = (
   yaml: Record<string, unknown> | undefined,
@@ -64,13 +64,13 @@ function filterChanges(currentVersion: string, changes: Changes): Changes {
 }
 
 const migrate = async (
-  deps = { env, loadYaml, deleteGivenJsonPath, moveGivenJsonPath, mutateGivenJsonPath, filterChanges },
+  deps = { env, loadYaml, writeValues, deleteGivenJsonPath, moveGivenJsonPath, mutateGivenJsonPath, filterChanges },
 ) => {
   let values = await hfValues({ filesOnly: true })
 
   deps
     .filterChanges(
-      `${loadYaml(`${deps.env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
+      `${deps.loadYaml(`${deps.env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
       deps.loadYaml(`${rootDir}/values-changes.yaml`)?.changes,
     )
     .forEach((change) => {
@@ -79,7 +79,7 @@ const migrate = async (
       })
     })
 
-  if (values) await writeValues(values)
+  if (values) await deps.writeValues(values)
 }
 
 export const module = {
