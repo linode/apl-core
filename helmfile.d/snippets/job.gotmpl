@@ -18,10 +18,10 @@ files:
 {{- if not $skipScript }}
 script: |
   {{- if $v._derived.untrustedCA }}
-  env NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
+  export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
   {{- end }}
   {{- if eq $type "cronjob" }}
-  env WAIT_OPTIONS='{"confirmations":1,"retries":0}'
+  export WAIT_OPTIONS='{"confirmations":1,"retries":0}'
   {{- end }}
   npm run tasks:{{ $task }}
 {{- end }}
