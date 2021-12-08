@@ -1,25 +1,45 @@
-import { describe } from 'yargs'
 import stubs from '../test-stubs'
-import { Changes } from './migrate'
+import { Changes, filterChanges } from './migrate'
 
 const { terminal } = stubs
 
 describe('Upgrading values', () => {
   const currentVersion = '0.4.5' // otomi.version in values
-  const mockChanges: Changes = [{}, {}, {}, {}, {}]
-  let deps
-  beforeEach(() => {
-    deps = {
-      debug: terminal(),
-    }
-  })
-  // it('should copy only skeleton files to ENV_DIR if it is empty or nonexisting', async () => {
-  //   deps.processValues.mockReturnValue(undefined)
-  //   await bootstrapValues(deps)
-  //   expect(deps.hfValues).toHaveBeenCalledTimes(0)
-  // })
+  const mockChanges: Changes = [
+    {
+      version: '0.1.1',
+      deletions: ['some.json.path'],
+    },
+    {
+      version: '0.2.3',
+      deletions: ['some.json.path'],
+    },
+    {
+      version: '0.3.4',
+      deletions: ['some.json.path'],
+    },
+    {
+      version: '0.5.6',
+      deletions: ['some.json.path'],
+    },
+    {
+      version: '0.7.8',
+      deletions: ['some.json.path'],
+    },
+  ]
 
   describe('Filter changes', () => {
-    it('should only apply changes whose version >= current version', () => {})
+    it('should only apply changes whose version >= current version', () => {
+      expect(filterChanges(currentVersion, mockChanges)).toEqual([
+        {
+          version: '0.5.6',
+          deletions: ['some.json.path'],
+        },
+        {
+          version: '0.7.8',
+          deletions: ['some.json.path'],
+        },
+      ])
+    })
   })
 })

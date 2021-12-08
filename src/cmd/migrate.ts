@@ -1,5 +1,5 @@
 import { get, set, unset } from 'lodash'
-import { compare, SemVer, valid } from 'semver'
+import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
@@ -14,14 +14,14 @@ const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 interface Change {
-  version: SemVer
+  version: string
   deletions?: string[]
   locations?: Array<{
     [oldLocation: string]: string
   }>
-  mutations?: {
+  mutations?: Array<{
     [preMutation: string]: string[]
-  }
+  }>
 }
 
 export type Changes = Array<Change>
@@ -57,7 +57,7 @@ export const mutateGivenJsonPath = (
   return undefined
 }
 
-function filterChanges(currentVersion: string, changes: Changes): Changes {
+export function filterChanges(currentVersion: string, changes: Changes): Changes {
   if (!valid(currentVersion))
     throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
   return changes.filter((c) => compare(c.version, currentVersion)).sort((a, b) => compare(a.version, b.version))
