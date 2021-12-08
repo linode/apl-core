@@ -1,0 +1,54 @@
+# this release file is used to dump the final values used by helmfile
+environments:
+  default:
+    values:
+      - teamServices:
+          - name: a1
+            namespace: team-a
+            labels:
+              app: a1
+      - otherServices:
+          - name: istiod
+            namespace: istio-system
+            labels:
+              app: istiod
+          - name: ingressgateway
+            namespace: istio-system
+            labels:
+              app: ingressgateway
+          - name: prometheus
+            namespace: monitoring
+            labels:
+              app: prometheus
+          - name: a1
+            namespace: team-a
+            labels:
+              app: a1
+          - name: a2
+            namespace: team-a
+            labels:
+              app: a2
+          - name: b1
+            namespace: team-b
+            labels:
+              app: b1
+          - name: c1
+            namespace: team-c
+            labels:
+              app: c1
+{{- $v := .Values }}
+
+releases:
+  - name: inter-team-connectivity
+    installed: true
+    chart: ../charts/raw
+    values:
+    - ../values/connectivity/connectivity-raw.gotmpl
+
+
+releases:
+  - name: platform-team-connectivity
+    installed: true
+    chart: ../charts/raw
+    values:
+    - ../values/connectivity/connectivity-raw.gotmpl
