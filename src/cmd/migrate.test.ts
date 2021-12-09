@@ -8,23 +8,21 @@ describe('Upgrading values', () => {
   const mockChanges: Changes = [
     {
       version: '0.1.1',
-      deletions: ['some.json.path'],
     },
     {
       version: '0.2.3',
-      deletions: ['some.json.path'],
     },
     {
       version: '0.3.4',
-      deletions: ['some.json.path'],
     },
     {
       version: '0.5.6',
       deletions: ['some.json.path'],
+      locations: [{ 'some.json': 'some.bla' }],
     },
     {
       version: '0.7.8',
-      deletions: ['some.json.path'],
+      mutations: [{ 'some.version': ['18', '19'] }],
     },
   ]
 
@@ -34,30 +32,19 @@ describe('Upgrading values', () => {
         {
           version: '0.5.6',
           deletions: ['some.json.path'],
+          locations: [{ 'some.json': 'some.bla' }],
         },
         {
           version: '0.7.8',
-          deletions: ['some.json.path'],
-        },
-      ])
-    })
-    it('should only apply changes whose version >= current version in the correct order false positively', () => {
-      expect(filterChanges(currentVersion, mockChanges)).not.toEqual([
-        {
-          version: '0.7.8',
-          deletions: ['some.json.path'],
-        },
-        {
-          version: '0.5.6',
-          deletions: ['some.json.path'],
+          mutations: [{ 'some.version': ['18', '19'] }],
         },
       ])
     })
   })
   describe('Apply changes to values', () => {
-    const mockValues = { some: { json: { path: 'bla' } } }
+    const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
     it('should apply changes to values', () => {
-      expect(migrate(mockValues, mockChanges)).toEqual({ some: { json: {} } })
+      expect(migrate(mockValues, mockChanges)).toEqual({ some: { bla: {}, version: '1.19' } })
     })
   })
 })
