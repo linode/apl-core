@@ -65,24 +65,13 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
 
 const migrate = (
   values: Record<string, unknown> | undefined,
-  deps = {
-    env,
-    loadYaml,
-    deleteGivenJsonPath,
-    moveGivenJsonPath,
-    mutateGivenJsonPath,
-    filterChanges,
-  },
+  changes: Changes,
 ): Record<string, unknown> | undefined => {
   let returnValues = cloneDeep(values)
-  deps
-    .filterChanges(
-      `${deps.loadYaml(`${deps.env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
-      deps.loadYaml(`${rootDir}/values-changes.yaml`)?.changes,
-    )
-    .forEach((change) => {
+  if (changes)
+    changes.forEach((change) => {
       change.deletions?.forEach((del) => {
-        returnValues = { returnValues, ...deps.deleteGivenJsonPath(returnValues, del) }
+        returnValues = { returnValues, ...deleteGivenJsonPath(returnValues, del) }
       })
     })
 
@@ -99,7 +88,12 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()
-    const processedValues = migrate(await hfValues({ filesOnly: true }))
+
+    const changes = filterChanges(
+      `${loadYaml(`${env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
+      loadYaml(`${rootDir}/values-changes.yaml`)?.changes,
+    )
+    const processedValues = migrate(await hfValues({ filesOnly: true }), changes)
     if (processedValues) await writeValues(processedValues)
   },
 }
