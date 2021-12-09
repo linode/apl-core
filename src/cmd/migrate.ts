@@ -63,7 +63,7 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
   return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
-const migrate = (
+export const migrate = (
   values: Record<string, unknown> | undefined,
   changes: Changes,
 ): Record<string, unknown> | undefined => {
@@ -89,10 +89,9 @@ export const module = {
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()
 
-    const changes = filterChanges(
-      `${loadYaml(`${env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
-      loadYaml(`${rootDir}/values-changes.yaml`)?.changes,
-    )
+    const currentVersion = loadYaml(`${env().ENV_DIR}/env/settings.yaml`)?.otomi?.version
+    const readChanges = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+    const changes = filterChanges(currentVersion, readChanges)
     const processedValues = migrate(await hfValues({ filesOnly: true }), changes)
     if (processedValues) await writeValues(processedValues)
   },

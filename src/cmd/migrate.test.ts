@@ -1,5 +1,5 @@
 import stubs from '../test-stubs'
-import { Changes, filterChanges } from './migrate'
+import { Changes, filterChanges, migrate } from './migrate'
 
 const { terminal } = stubs
 
@@ -54,7 +54,10 @@ describe('Upgrading values', () => {
       ])
     })
   })
-  // describe('Apply changes to values', () => {
-  //   it('should apply changes to values', () => {})
-  // })
+  describe('Apply changes to values', () => {
+    const mockValues = { some: { json: { path: 'bla' } } }
+    it('should apply changes to values', () => {
+      expect(migrate(mockValues, mockChanges)).toEqual({})
+    })
+  })
 })
