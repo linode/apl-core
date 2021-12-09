@@ -1,4 +1,4 @@
-import { get, set, unset } from 'lodash'
+import { cloneDeep, get, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
@@ -63,11 +63,18 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
   return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
-const migrate = async (
-  deps = { env, loadYaml, writeValues, deleteGivenJsonPath, moveGivenJsonPath, mutateGivenJsonPath, filterChanges },
-) => {
-  let values = await hfValues({ filesOnly: true })
-
+const migrate = (
+  values: Record<string, unknown> | undefined,
+  deps = {
+    env,
+    loadYaml,
+    deleteGivenJsonPath,
+    moveGivenJsonPath,
+    mutateGivenJsonPath,
+    filterChanges,
+  },
+): Record<string, unknown> | undefined => {
+  let returnValues = cloneDeep(values)
   deps
     .filterChanges(
       `${deps.loadYaml(`${deps.env().ENV_DIR}/env/settings.yaml`)?.otomi?.version}`,
@@ -75,11 +82,11 @@ const migrate = async (
     )
     .forEach((change) => {
       change.deletions?.forEach((del) => {
-        values = { values, ...deps.deleteGivenJsonPath(values, del) }
+        returnValues = { returnValues, ...deps.deleteGivenJsonPath(returnValues, del) }
       })
     })
 
-  if (values) await deps.writeValues(values)
+  return returnValues
 }
 
 export const module = {
@@ -92,6 +99,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()
-    await migrate()
+    const processedValues = migrate(await hfValues({ filesOnly: true }))
+    if (processedValues) await writeValues(processedValues)
   },
 }
