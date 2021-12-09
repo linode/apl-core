@@ -2,24 +2,7 @@
 environments:
   default:
     values:
-      - teamServices:
-          - name: a1
-            namespace: team-a
-            labels:
-              app: a1
-      - otherServices:
-          - name: istiod
-            namespace: istio-system
-            labels:
-              app: istiod
-          - name: ingressgateway
-            namespace: istio-system
-            labels:
-              app: ingressgateway
-          - name: prometheus
-            namespace: monitoring
-            labels:
-              app: prometheus
+      - interTeamConnectivity:
           - name: a1
             namespace: team-a
             labels:
@@ -32,11 +15,20 @@ environments:
             namespace: team-b
             labels:
               app: b1
-          - name: c1
-            namespace: team-c
+
+      - teamPlatformConnectivity:
+          - name: istiod
+            namespace: istio-system
             labels:
-              app: c1
-{{- $v := .Values }}
+              app: istiod
+          - name: ingressgateway
+            namespace: istio-system
+            labels:
+              app: ingressgateway
+          - name: prometheus
+            namespace: monitoring
+            labels:
+              app: prometheus
 
 releases:
   - name: inter-team-connectivity
