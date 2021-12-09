@@ -71,6 +71,8 @@ export const migrate = (
   if (changes)
     changes.forEach((change) => {
       change.deletions?.map((del) => deleteGivenJsonPath(returnValues, del))
+      change.locations?.map((loc) => moveGivenJsonPath(returnValues, Object.keys(loc)[0], Object.values(loc)[0]))
+      change.mutations?.map((del) => mutateGivenJsonPath(returnValues, Object.keys(del)[0], Object.values(del)[0]))
     })
 
   return returnValues
