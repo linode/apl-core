@@ -1,3 +1,4 @@
+import { diff } from 'deep-diff'
 import { cloneDeep, get, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
@@ -72,7 +73,7 @@ export const migrate = (
     changes.forEach((change) => {
       change.deletions?.map((del) => deleteGivenJsonPath(returnValues, del))
       change.locations?.map((loc) => moveGivenJsonPath(returnValues, Object.keys(loc)[0], Object.values(loc)[0]))
-      change.mutations?.map((del) => mutateGivenJsonPath(returnValues, Object.keys(del)[0], Object.values(del)[0]))
+      change.mutations?.map((mut) => mutateGivenJsonPath(returnValues, Object.keys(mut)[0], Object.values(mut)[0]))
     })
 
   return returnValues
@@ -92,7 +93,10 @@ export const module = {
     const currentVersion = loadYaml(`${env().ENV_DIR}/env/settings.yaml`)?.otomi?.version
     const readChanges = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
     const changes = filterChanges(currentVersion, readChanges)
-    const processedValues = migrate(await hfValues({ filesOnly: true }), changes)
+    const prevValues = await hfValues({ filesOnly: true })
+    const processedValues = migrate(prevValues, changes)
+    debug.info(`Ack change: ${diff(prevValues, processedValues)}`)
+
     if (processedValues) await writeValues(processedValues)
   },
 }
