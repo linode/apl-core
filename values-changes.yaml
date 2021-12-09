@@ -1,19 +1,19 @@
-changes:
-  - version: v0.23.7
-    deletions:
-      - cluster.provider
-    locations:
-      - charts.hello.enabled: charts.hello.enabledCharts.enabled
-    mutations:
-      - cluster.domainSuffix:
-          - '127'
-          - '128'
-  - version: v0.23.8
-    deletions:
-      - cluster.name
-    locations:
-      - charts.hello.enabledCharts.enabled: charts.hello.enabledCharts.bla.enabled
-    mutations:
-      - cluster.domainSuffix:
-          - '128'
-          - '129'
+# changes:
+#   - version: v0.23.7
+#     deletions:
+#       - cluster.provider
+#     locations:
+#       - charts.hello.enabled: charts.hello.enabledCharts.enabled
+#     mutations:
+#       - cluster.domainSuffix:
+#           - '127'
+#           - '128'
+#   - version: v0.23.8
+#     deletions:
+#       - cluster.name
+#     locations:
+#       - charts.hello.enabledCharts.enabled: charts.hello.enabledCharts.bla.enabled
+#     mutations:
+#       - cluster.domainSuffix:
+#           - '128'
+#           - '129'

@@ -9,7 +9,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { extract, flattenObject, getValuesSchema, gucci, loadYaml, stringContainsSome } from './utils'
 
-export const objectToYaml = (obj: Record<string, any>): string => {
+const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
 }
 
@@ -51,25 +51,25 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValuesToFile = async (
-  targetPath: string,
-  values: Record<string, any>,
-  overwrite = true,
-): Promise<void> => {
-  const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
+const writeValuesToFile = async (targetPath: string, values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValuesToFile')
-
-  let result = values
-  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
-  if (!isEqual(values, originalValues) && !overwrite) {
-    d.info(`Changes detected for ${targetPath}${suffix}...`)
-    d.info('Incoming values: \n', JSON.stringify(values, null, 2))
-    d.info('Original values: \n', JSON.stringify(originalValues, null, 2))
-    d.info('Merging left to right... Done!\n')
-    result = merge(cloneDeep(originalValues), values)
+  const nonEmptyValues = removeBlankAttributes(values)
+  d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
+  if (!existsSync(targetPath)) {
+    return writeFile(targetPath, objectToYaml(nonEmptyValues))
   }
-  result = removeBlankAttributes(result)
-  return writeFile(`${targetPath}${suffix}`, objectToYaml(result))
+  const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
+  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+  d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
+  const mergeResult = merge(cloneDeep(originalValues), nonEmptyValues, !overwrite ? originalValues : {})
+  if (isEqual(originalValues, mergeResult)) {
+    d.info(`No changes for ${targetPath}${suffix}, skipping...`)
+    return undefined
+  }
+  d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
+  const res = writeFile(`${targetPath}${suffix}`, objectToYaml(mergeResult))
+  d.info(`Values were written to ${targetPath}${suffix}`)
+  return res
 }
 
 /**
@@ -191,8 +191,7 @@ export const generateSecrets = async (values: Record<string, any> = {}): Promise
   debug.debug('secondTemplateRound: ', secondTemplateRound)
 
   debug.info('Generated all secrets')
-  // Only return values that have x-secrets prop and are now fully templated:
-  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets)))
+  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets))) // Only return values that belonged to x-secrets and are now fully templated
   debug.debug('generateSecrets result: ', res)
   return res
 }
