@@ -67,12 +67,10 @@ export const migrate = (
   values: Record<string, unknown> | undefined,
   changes: Changes,
 ): Record<string, unknown> | undefined => {
-  let returnValues = cloneDeep(values)
+  const returnValues = cloneDeep(values)
   if (changes)
     changes.forEach((change) => {
-      change.deletions?.forEach((del) => {
-        returnValues = { returnValues, ...deleteGivenJsonPath(returnValues, del) }
-      })
+      change.deletions?.map((del) => deleteGivenJsonPath(returnValues, del))
     })
 
   return returnValues
