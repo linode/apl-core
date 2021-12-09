@@ -4,11 +4,11 @@ import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
-import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
+import { askYesNo } from '../common/zx-enhance'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -79,6 +79,18 @@ export const migrate = (
   return returnValues
 }
 
+// Differences are reported as one or more change records. Change records have the following structure:
+
+// kind - indicates the kind of change; will be one of the following:
+// N - indicates a newly added property/element
+// D - indicates a property/element was deleted
+// E - indicates a property/element was edited
+// A - indicates a change occurred within an array
+// path - the property path (from the left-hand-side root)
+// lhs - the value on the left-hand-side of the comparison (undefined if kind === 'N')
+// rhs - the value on the right-hand-side of the comparison (undefined if kind === 'D')
+// index - when kind === 'A', indicates the array index where the change occurred
+// item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
 export const module = {
   command: cmdName,
   hidden: true,
@@ -90,13 +102,15 @@ export const module = {
     await prepareEnvironment({ skipKubeContextCheck: true })
     await validateValues()
 
-    const currentVersion = loadYaml(`${env().ENV_DIR}/env/settings.yaml`)?.otomi?.version
-    const readChanges = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-    const changes = filterChanges(currentVersion, readChanges)
     const prevValues = await hfValues({ filesOnly: true })
+    const currentVersion = prevValues?.otomi?.version
+    const readChanges: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+    const changes = filterChanges(currentVersion, readChanges)
     const processedValues = migrate(prevValues, changes)
-    debug.info(`Ack change: ${diff(prevValues, processedValues)}`)
-
-    if (processedValues) await writeValues(processedValues)
+    debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+    if ((await askYesNo(`Acknowledge migration:`)) && processedValues) {
+      await writeValues(processedValues)
+      await validateValues()
+    }
   },
 }
