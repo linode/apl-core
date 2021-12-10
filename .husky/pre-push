@@ -1,18 +1,8 @@
-#!/bin/sh
+#!/usr/bin/bash
 . "$(dirname "$0")/_/husky.sh"
 
-set -e
+version=$(node -p "require('./package.json').version")
+sed -i "/^\([[:space:]]*version: \).*/s//\1$version/" $PWD/.values/env/settings.yaml
 
-function rep () {
-  sed -i "/^\([[:space:]]*version: \).*/s//\1$1/" $2
-}
-
-function main () {
-  version=$(node -p "require('./package.json').version")
-  rep $version $PWD/.values/env/settings.yaml
-
-  # npm run lint
-  npm run migrate:.values
-}
-
-main
+# npm run lint
+npm run migrate:.values
