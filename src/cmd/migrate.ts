@@ -1,5 +1,5 @@
 import { diff } from 'deep-diff'
-import { cloneDeep, get, set, unset } from 'lodash'
+import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
@@ -102,13 +102,15 @@ export const module = {
 
     const prevValues = await hfValues({ filesOnly: true })
     const currentVersion = prevValues?.otomi?.version
-    const readChanges: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-
-    const changes = filterChanges(currentVersion, readChanges)
+    let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+    if (changes) changes = filterChanges(currentVersion, changes)
     const processedValues = migrate(prevValues, changes)
-    debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-    if ((await askYesNo(`Acknowledge migration:`)) && processedValues) {
-      await writeValues(processedValues)
-    }
+
+    if (!isEqual(prevValues, processedValues)) {
+      debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+      if (processedValues && (await askYesNo(`Acknowledge migration:`))) {
+        await writeValues(processedValues)
+      }
+    } else debug.info('No changes detected, skipping')
   },
 }
