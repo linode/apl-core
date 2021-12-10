@@ -9,7 +9,6 @@ import { getFilename, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { askYesNo } from '../common/zx-enhance'
-import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -100,17 +99,16 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await validateValues()
 
     const prevValues = await hfValues({ filesOnly: true })
     const currentVersion = prevValues?.otomi?.version
     const readChanges: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+
     const changes = filterChanges(currentVersion, readChanges)
     const processedValues = migrate(prevValues, changes)
     debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
     if ((await askYesNo(`Acknowledge migration:`)) && processedValues) {
       await writeValues(processedValues)
-      await validateValues()
     }
   },
 }
