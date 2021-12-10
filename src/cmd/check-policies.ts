@@ -37,14 +37,14 @@ export const checkPolicies = async (): Promise<void> => {
     debug.log('Skipping')
     return
   }
-  debug.info('Generating k8s manifest for cluster')
+  debug.info('Generating k8s manifests for cluster')
   await hfTemplate(argv, outDir, { stdout: debug.stream.debug })
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
   if (env().CI) extraArgs.push('--no-color')
 
-  debug.info('Checking manifest against policies')
+  debug.info('Checking manifests for policy violations')
   const confTestOutput = (
     await nothrow(
       $`conftest test ${extraArgs} --fail-on-warn --all-namespaces -d ${parametersFile} -p policies ${outDir}`,
