@@ -1042,6 +1042,7 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           customRootCA:
+            x-secret: '' # made secret to let it be added to k8s secret for chart install
             type: string
             description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
           customRootCAKey:

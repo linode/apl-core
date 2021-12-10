@@ -52,7 +52,7 @@ const prepareValues = async (): Promise<void> => {
   const values = await hfValues()
   d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
-    d.info('cluster.domainSuffix was not foud, creating fallback')
+    d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
     await setDomainSuffix(values)
   }
 }
@@ -76,7 +76,7 @@ const applyAll = async () => {
   debug.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      fileOpts: argv.file,
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],

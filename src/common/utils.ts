@@ -1,6 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
 import $RefParser from '@apidevtools/json-schema-ref-parser'
+import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -18,6 +19,17 @@ export const getFilename = (path: string): string => path.split('/').pop()?.spli
 
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
+}
+
+export const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
+  const options: CleanOptions = {
+    emptyArrays: false,
+    emptyObjects: true,
+    emptyStrings: true,
+    nullValues: false,
+    undefinedValues: true,
+  }
+  return cleanDeep(obj, options)
 }
 
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
@@ -93,15 +105,6 @@ export const gucci = async (
     $.quote = quoteBackup
   }
 }
-
-/* Can't use for now because of:
-https://github.com/homeport/dyff/issues/173
-export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Promise<boolean> => {
-  const result = await nothrow($`git show HEAD:${filePath} | dyff between --filter "${jsonPathFilter}" --set-exit-code --omit-header - ${filePath}`)
-  const isThereADiff = result.exitCode === 1
-  return isThereADiff
-}
-*/
 
 export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']

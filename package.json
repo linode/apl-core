@@ -121,7 +121,7 @@
     "lint": "run-p spellcheck lint:hf lint:ts lint:types",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
-    "lint:hf": "TESTING=1 binzx/otomi lint",
+    "lint:hf": "export TESTING=1 && binzx/otomi lint",
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc",

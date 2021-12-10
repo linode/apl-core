@@ -1,9 +1,16 @@
 import { config } from 'dotenv'
-import { bool, cleanEnv, json, num, str } from 'envalid'
+import { bool, cleanEnv, json, makeValidator, num, str } from 'envalid'
 import { existsSync } from 'fs'
 
+const ciBool = makeValidator((x) => {
+  if (x === 'vscode-jest-tests') return true
+  if (x === undefined) return undefined
+  const { _parse } = bool({ default: false })
+  return _parse(x)
+})
+
 const cliEnvSpec = {
-  CI: bool({ default: false }),
+  CI: ciBool({ default: false }),
   DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
@@ -27,7 +34,7 @@ export const cleanEnvironment = (
     let pEnv: any = process.env
     // load local .env if we have it, for devs
     let path = `${process.cwd()}/.env`
-    if (existsSync(path)) {
+    if (!process.env.TESTING && existsSync(path)) {
       const result = config({ path })
       if (result.error) console.error(result.error)
       pEnv = { ...pEnv, ...result.parsed }
