@@ -22,7 +22,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: postinstall
-          image: badouralix/curl-http2:latest
+          image: badouralix/curl-http2:alpine
           command:
             - sh
             - -c
@@ -41,5 +41,7 @@ spec:
             requests:
               cpu: 10m
               memory: 16Mi
+          securityContext:
+            runAsNonRoot: true
 
 
