@@ -62,6 +62,7 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
 export interface GucciOptions {
   asObject?: boolean
 }
+
 export const gucci = async (
   tmpl: string | unknown,
   args: { [key: string]: any },

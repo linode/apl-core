@@ -22,7 +22,7 @@ describe('Upgrading values', () => {
     },
     {
       version: '0.7.8',
-      mutations: [{ 'some.version': ['18', '19'] }],
+      mutations: [{ 'some.version': 'printf "v%s"' }],
     },
   ]
 
@@ -36,7 +36,7 @@ describe('Upgrading values', () => {
         },
         {
           version: '0.7.8',
-          mutations: [{ 'some.version': ['18', '19'] }],
+          mutations: [{ 'some.version': 'printf "v%s"' }],
         },
       ])
     })
@@ -44,7 +44,8 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
     it('should apply changes to values', () => {
-      expect(migrate(mockValues, mockChanges)).toEqual({ some: { bla: {}, version: '1.19' } })
+      migrate(mockValues, mockChanges)
+      expect(mockValues).toEqual({ some: { bla: {}, version: 'bla' } })
     })
   })
 })

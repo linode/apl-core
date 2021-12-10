@@ -1,7 +1,10 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
+import { $ } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
@@ -20,42 +23,23 @@ interface Change {
     [oldLocation: string]: string
   }>
   mutations?: Array<{
-    [preMutation: string]: string[]
+    [preMutation: string]: string
   }>
 }
 
 export type Changes = Array<Change>
 
-export const deleteGivenJsonPath = (
-  yaml: Record<string, unknown> | undefined,
-  jsonpath: string,
-): Record<string, any> | undefined => {
-  if (unset(yaml, jsonpath)) return yaml
-  return undefined
+export const moveGivenJsonPath = (yaml: Record<string, unknown> | undefined, lhs: string, rhs: string): void => {
+  const moveValue = get(yaml, lhs, 'err!')
+  if (yaml && unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-export const moveGivenJsonPath = (
-  yaml: Record<string, unknown> | undefined,
-  jsonpath: string,
-  rhs: string,
-): Record<string, any> | undefined => {
-  const moveValue = get(yaml, jsonpath, 'err!')
-  if (unset(yaml, jsonpath) && yaml && set(yaml, rhs, moveValue)) return yaml
-  return undefined
+export const inlineGucci = async (): Promise<string> => {
+  const execTmpl = await $`echo '{{ print "bla" }}' | gucci`
+  return execTmpl.stdout.trim()
 }
 
-export const mutateGivenJsonPath = (
-  yaml: Record<string, unknown> | undefined,
-  jsonpath: string,
-  rhs: string[],
-): Record<string, any> | undefined => {
-  if (Array.isArray(rhs) && yaml) {
-    const prevValue = get(yaml, jsonpath)
-    if (typeof prevValue === 'string') set(yaml, jsonpath, prevValue.replace(new RegExp(rhs[0]), rhs[1]))
-    return yaml
-  }
-  return undefined
-}
+// save work https://stackoverflow.com/questions/11488014/asynchronous-process-inside-a-javascript-for-loop
 
 export function filterChanges(currentVersion: string, changes: Changes): Changes {
   if (!valid(currentVersion))
@@ -63,19 +47,24 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
   return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
-export const migrate = (
-  values: Record<string, unknown> | undefined,
-  changes: Changes,
-): Record<string, unknown> | undefined => {
-  const returnValues = cloneDeep(values)
-  if (changes)
-    changes.forEach((change) => {
-      change.deletions?.map((del) => deleteGivenJsonPath(returnValues, del))
-      change.locations?.map((loc) => moveGivenJsonPath(returnValues, Object.keys(loc)[0], Object.values(loc)[0]))
-      change.mutations?.map((mut) => mutateGivenJsonPath(returnValues, Object.keys(mut)[0], Object.values(mut)[0]))
-    })
+export const migrate = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
+  for (const c of changes) {
+    c.deletions?.forEach((del) => unset(values, del))
+    c.locations?.forEach((loc) => moveGivenJsonPath(values, Object.keys(loc)[0], Object.values(loc)[0]))
 
-  return returnValues
+    if (c.mutations && values)
+      for await (const mut of c.mutations) {
+        const prevValue = get(values, Object.keys(mut)[0])
+        let proc
+        try {
+          proc = await inlineGucci()
+        } catch (err) {
+          throw new Error(err)
+        } finally {
+          set(values, Object.keys(mut)[0], proc)
+        }
+      }
+  }
 }
 
 // Differences are reported as one or more change records. Change records have the following structure:
@@ -104,7 +93,8 @@ export const module = {
     const currentVersion = prevValues?.otomi?.version
     let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
     if (changes) changes = filterChanges(currentVersion, changes)
-    const processedValues = migrate(prevValues, changes)
+    const processedValues = cloneDeep(prevValues)
+    await migrate(processedValues, changes)
 
     if (!isEqual(prevValues, processedValues)) {
       debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
