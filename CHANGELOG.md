@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.54](https://github.com/redkubes/otomi-core/compare/v0.14.53...v0.14.54) (2021-12-10)
+
+
+### Bug Fixes
+
+* ca made secret to not generate again, fixes [#681](https://github.com/redkubes/otomi-core/issues/681) ([a128bb1](https://github.com/redkubes/otomi-core/commit/a128bb168db734973bfe87147d92ae130fe468d7))
+* chart install [ci skip] ([6c3a79f](https://github.com/redkubes/otomi-core/commit/6c3a79fb811f6289f304ca87039f03fc5c9f273f))
+* export env ([#682](https://github.com/redkubes/otomi-core/issues/682)) ([cef235a](https://github.com/redkubes/otomi-core/commit/cef235a0f1eb297a450d03d3440426f2459e6c19))
+* kind runner ([8c0694f](https://github.com/redkubes/otomi-core/commit/8c0694fac8f0d340db8ae0b6112089058ec52fb7))
+* otomi tag check ([0218691](https://github.com/redkubes/otomi-core/commit/02186912a03152f0dfd279539726b8300be20a8a))
+* readme ([be3bcf5](https://github.com/redkubes/otomi-core/commit/be3bcf56e48c9e6e7dd2de7284bd600b9784fbd3))
+* readme ([17eef6f](https://github.com/redkubes/otomi-core/commit/17eef6f53a12a5b68254ba4da9315e40195b9fda))
+* readme ([a9cb5da](https://github.com/redkubes/otomi-core/commit/a9cb5da22bf6634a5e7db6c1960b2bffcc0b25a5))
+* readme ([694d650](https://github.com/redkubes/otomi-core/commit/694d650ba763d42f6ec1e20b9f017ebcb4c83b86))
+* readme ([ea14020](https://github.com/redkubes/otomi-core/commit/ea14020257fec603eec6a3448ddd348085cf4a7c))
+* readme ([f6f5a29](https://github.com/redkubes/otomi-core/commit/f6f5a299b56272d6dbbdc50e745395cdf7f60c5a))
+* readme ([62d1d24](https://github.com/redkubes/otomi-core/commit/62d1d24952cb6f5ff3706ef448d69c3174c70efa))
+* readme ([39f06f3](https://github.com/redkubes/otomi-core/commit/39f06f3fc383fb19e4ec8e4680aca071bdf76ee2))
+* readme ([94679a7](https://github.com/redkubes/otomi-core/commit/94679a71be0ef9723cfa050623fbfc97ba02f613))
+* readme ([933de2b](https://github.com/redkubes/otomi-core/commit/933de2b48c3b6539ddf15dffd5bfdf9bc2e99e89))
+* readme ([0641b17](https://github.com/redkubes/otomi-core/commit/0641b1757cf5e198bd27b358c25f2ce62b28b066))
+* readme ([ea34f7c](https://github.com/redkubes/otomi-core/commit/ea34f7c4e4ec494c38f3fac26d9042109664db94))
+* readme ([c00ab97](https://github.com/redkubes/otomi-core/commit/c00ab9727709a859f62c55a051f0ec1b7d1b2a82))
+* readme ([843a805](https://github.com/redkubes/otomi-core/commit/843a80533097b08ed38cd809326acd16c71d1689))
+* readme ([a520d4d](https://github.com/redkubes/otomi-core/commit/a520d4dae54f8375829ada80428bd2b59db4f258))
+* readme ([b9fe475](https://github.com/redkubes/otomi-core/commit/b9fe475b68991524c0e664c2fe174faa50c72e3f))
+* readme ([0da3d45](https://github.com/redkubes/otomi-core/commit/0da3d45294991b6c1ec4720c53e29a893d56b1cf))
+* readme ([bd1286d](https://github.com/redkubes/otomi-core/commit/bd1286d05aa84f14f1477e852ef77fde562c9899))
+* readme ([e523e19](https://github.com/redkubes/otomi-core/commit/e523e194db89ceb3e8a3c3bce7874f4ff3787ea6))
+* readme [ci skip] ([968bbec](https://github.com/redkubes/otomi-core/commit/968bbec03b3402f42052393b39782652edd9b0f4))
+* readme [ci skip] ([ea568ac](https://github.com/redkubes/otomi-core/commit/ea568ac21a52650ec1e3bd47ab2fe4d923031321))
+* readme [ci skip] ([8ecf6be](https://github.com/redkubes/otomi-core/commit/8ecf6be5c60ab57ad3d2d2a4a81d07fb27949498))
+* readme [ci skip] ([8daa82f](https://github.com/redkubes/otomi-core/commit/8daa82ffdab2a4408080b9349602aac95ca2e7a3))
+* readme [ci skip] ([b7828ce](https://github.com/redkubes/otomi-core/commit/b7828ce44f582a1f13e883310986e2bad2bd7f0a))
+* readme [ci skip] ([5443a23](https://github.com/redkubes/otomi-core/commit/5443a2384722c4fa3bb44ffa1499742621c01ad7))
+* readme [ci skip] ([f1e2f3e](https://github.com/redkubes/otomi-core/commit/f1e2f3e423e664b180d3796b1165e433ed7188cb))
+* readme spellcheck ([31adb66](https://github.com/redkubes/otomi-core/commit/31adb66d10598806f7830994375d2427fb492f2b))
+* Update README.md ([f0d1490](https://github.com/redkubes/otomi-core/commit/f0d149090ffeeaef9868752e6c2df1e688d42727))
+* wait for, chart value merge issues, clusterissuer ([#679](https://github.com/redkubes/otomi-core/issues/679)) ([a6cd524](https://github.com/redkubes/otomi-core/commit/a6cd52448ec422d48e46fadbf41b4e1f6e38389f))
+* workflow changelog [ci skip] ([e4abd10](https://github.com/redkubes/otomi-core/commit/e4abd10da3c9347490cdae683b28e3749baaec6b))
+* wrong usage of multitenant flag ([dbba831](https://github.com/redkubes/otomi-core/commit/dbba8314826f15778f6ec9937fabc203670d834f))
+
+
+### Others
+
+* **release:** 0.14.53 ([4ceb001](https://github.com/redkubes/otomi-core/commit/4ceb001ce99c88e6810b094021cafeaf9b69fc11))
+* **release:** 0.14.53 ([3d0ba92](https://github.com/redkubes/otomi-core/commit/3d0ba92296db5514f291fedcc6cb596563e10afd))
+* **release:** 0.14.53 ([659d97c](https://github.com/redkubes/otomi-core/commit/659d97c0b63d6b64b1151103ef4a19803b127989))
+
 ### [0.14.53](https://github.com/redkubes/otomi-core/compare/v0.14.52...v0.14.53) (2021-12-03)
 
 
