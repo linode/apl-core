@@ -43,5 +43,6 @@ spec:
               memory: 16Mi
           securityContext:
             runAsNonRoot: true
+            runAsUser: 65534
 
 
