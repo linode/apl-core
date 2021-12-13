@@ -12,7 +12,7 @@ metadata:
 spec:
   containers:
     - name: wget
-      image: busybox
+      image: busybox:stable
       command: ['wget']
       args:  ['{{ include "otomi-api.fullname" . }}:{{ .Values.service.port }}']
       resources:

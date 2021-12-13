@@ -1,4 +1,4 @@
-import { rmSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
@@ -21,29 +21,33 @@ const setup = (argv: BasicArguments): void => {
   cleanupHandler(() => cleanup(argv))
 }
 
-const checkPolicies = async (): Promise<void> => {
+export const checkPolicies = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   setup(argv)
   debug.info('Policy checking STARTED')
 
   const policiesFile = `${env().ENV_DIR}/env/policies.yaml`
+  const parametersFile = `${outDir}/parameters.yaml`
+  if (!existsSync(outDir)) mkdirSync(outDir)
+  // the policy parameters file's root prop is 'policies:', but conftest expects it to be served with 'parameters:'
+  writeFileSync(parametersFile, readFileSync(policiesFile, 'utf8').replace('policies:', 'parameters:'))
   const settingsFile = `${env().ENV_DIR}/env/settings.yaml`
   const settings = loadYaml(settingsFile)
   if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
     debug.log('Skipping')
     return
   }
-  debug.info('Generating k8s manifest for cluster')
+  debug.info('Generating k8s manifests for cluster')
   await hfTemplate(argv, outDir, { stdout: debug.stream.debug })
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
   if (env().CI) extraArgs.push('--no-color')
 
-  debug.info('Checking manifest against policies')
+  debug.info('Checking manifests for policy violations')
   const confTestOutput = (
     await nothrow(
-      $`conftest test ${extraArgs} --fail-on-warn --all-namespaces -d ${policiesFile} -p policies ${outDir}`,
+      $`conftest test ${extraArgs} --fail-on-warn --all-namespaces -d ${parametersFile} -p policies ${outDir}`,
     )
   ).stdout
   const cleanConftest: string = confTestOutput
