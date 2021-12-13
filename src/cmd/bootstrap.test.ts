@@ -38,7 +38,7 @@ describe('Bootstrapping values', () => {
       decrypt: jest.fn(),
     }
   })
-  it('should copy only skeleton files to ENV_DIR if it is empty or nonexisting', async () => {
+  it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
     await bootstrapValues(deps)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
@@ -159,7 +159,7 @@ describe('Bootstrapping values', () => {
       })
     })
     describe('processing chart values', () => {
-      it('should not retrieve values from ENV_DIR with hfValues', async () => {
+      it('should not retrieve values from env dir', async () => {
         await processValues(deps)
         expect(deps.hfValues).toHaveBeenCalledTimes(0)
       })
@@ -190,8 +190,16 @@ describe('Bootstrapping values', () => {
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
       })
+      it('should merge original with generated values and write them to env dir', async () => {
+        const enrichedSecrets = merge(secrets, { some: { other: 'secret' } })
+        const enrichedValues = merge(values, enrichedSecrets)
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
+        deps.generateSecrets.mockReturnValue(enrichedSecrets)
+        await processValues(deps)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(2, enrichedValues, true)
+      })
     })
-    describe('processing ENV_DIR values', () => {
+    describe('processing env dir values', () => {
       beforeEach(() => {
         deps.isChart = false
       })

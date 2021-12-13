@@ -136,8 +136,8 @@ export const processValues = async (
       deps.debug.info('Skipping custom RootCA generation')
     } else generatedSecrets = deps.createCustomCA(originalValues as Record<string, any>)
   }
-  // we have generated all we need, now store the values
-  await deps.writeValues(generatedSecrets, false)
+  // we have generated all we need, now store the values and merge in the secrets
+  await deps.writeValues(merge(originalValues, generatedSecrets), true)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
