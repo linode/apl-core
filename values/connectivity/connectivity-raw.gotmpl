@@ -1,39 +1,45 @@
 {{ $v:=.Values}}
+
+{{ $ref:= $v.teamConnectivity.ref}}
 resources:
-{{- range $svcA:=$v.teamServices }}
+{{- range $workload:=$v.teamConnectivity.workloads }}
+{{ $refName:= printf "%s.%s-to-%s.%s" $ref.labels.app $ref.namespace $workload.labels.app $workload.namespace }}
+{{ $workloadName:= printf "%s.%s-to-%s.%s" $workload.labels.app $workload.namespace $ref.labels.app $ref.namespace }}
+{{ $refUrl:= printf "%s.%s.svc.cluster.local" $ref.labels.app $ref.namespace }}
+{{ $workloadUrl:= printf "%s.%s.svc.cluster.local" $workload.labels.app $workload.namespace}}
+
 - apiVersion: v1
   kind: Service
   metadata:
-    labels:
-      name: {{ $svcA.name }}
-    name: {{ $svcA.name }}
-    namespace: {{ $svcA.namespace }}
+    labels: {{- $ref.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $refName }}
+    namespace: {{ $ref.namespace}}
   spec:
     ports:
     - name: 8080-8080
       port: 8080
       protocol: TCP
       targetPort: 8080
-    selector:
-      name: {{ $svcA.name }}
+    selector: {{- $ref.labels | toYaml | nindent 6 }}
     type: ClusterIP
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
-    name: {{ $svcA.name }}
-    labels:
-      name: {{ $svcA.name }}
-      component: network-check
-    namespace: {{ $svcA.namespace }}
+    labels: {{- $ref.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $refName }}
+    namespace: {{ $ref.namespace}}
   spec:
     template:
       metadata:
-        labels:
-          name: echo-{{ $svcA.name }}-{{ $svcA.name }}
+        labels: {{- $ref.labels | toYaml | nindent 10 }}
+          module: connectivity
+        name: {{ $refName }}
       spec:
         hostNetwork: false
         containers:
-          - name: echo-{{$svcA.name}}-to-{{$svcA.name}}
+          - name: {{ $refName }}
             env:
               - name: PORT
                 value: '8080'
@@ -56,7 +62,7 @@ resources:
                   - '5'
                   - -o
                   - /dev/null
-                  - {{$svcA.name}}.{{$svcA.namespace}}.svc.cluster.local
+                  - {{ $workloadUrl }}
             livenessProbe:
               timeoutSeconds: 7
               exec:
@@ -68,33 +74,43 @@ resources:
                   - '5'
                   - -o
                   - /dev/null
-                  - {{$svcA.name}}.{{$svcA.namespace}}.svc.cluster.local
+                  - {{ $workloadUrl }}
     selector:
-      matchLabels:
-        name: {{ $svcA.name }}
-
+      matchLabels: {{- $ref.labels | toYaml | nindent 8 }}
     replicas: 1
 
-{{- range $svcB:=$v.services }}
-
-{{- if not (eq $svcA.name $svcB.name) }}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels: {{- $workload.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $workloadName }}
+    namespace: {{ $workload.namespace}}
+  spec:
+    ports:
+    - name: 8080-8080
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector: {{- $workload.labels | toYaml | nindent 6 }}
+    type: ClusterIP
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
-    name: {{$svcB.name}}
-    labels:
-      name: echo-{{ $svcB.name }}-to-{{ $svcA.name }}
-      component: network-check
-    namespace: {{$svcB.namespace}}
+    labels: {{- $workload.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $workloadName }}
+    namespace: {{ $workload.namespace}}
   spec:
     template:
       metadata:
-        labels:
-          name: echo-{{ $svcB.name }}-to-{{ $svcA.name }}
+        labels: {{- $workload.labels | toYaml | nindent 10 }}
+          module: connectivity
+        name: {{ $workloadName }}
       spec:
         hostNetwork: false
         containers:
-          - name: echo-{{ $svcB.name }}-to-{{ $svcA.name }}
+          - name: {{ $workloadName }}
             env:
               - name: PORT
                 value: '8080'
@@ -117,7 +133,7 @@ resources:
                   - '5'
                   - -o
                   - /dev/null
-                  - {{$svcA.name}}.{{$svcA.namespace}}.svc.cluster.local
+                  - {{ $workloadUrl }}
             livenessProbe:
               timeoutSeconds: 7
               exec:
@@ -129,12 +145,8 @@ resources:
                   - '5'
                   - -o
                   - /dev/null
-                  - {{$svcA.name}}.{{$svcA.namespace}}.svc.cluster.local
+                  - {{ $workloadUrl }}
     selector:
-      matchLabels:
-        name: echo-{{ $svcB.name }}-to-{{ $svcA.name }}
+      matchLabels: {{- $workload.labels | toYaml | nindent 8 }}
     replicas: 1
-{{- end }}
-
-{{- end }}
 {{- end }}
