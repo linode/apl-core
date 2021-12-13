@@ -113,28 +113,17 @@ describe('Bootstrapping values', () => {
     }
     deps.pki.certificateToPem = jest.fn().mockReturnValue('certpem')
     deps.pki.privateKeyToPem = jest.fn().mockReturnValue('keypem')
-    it('should create a new key pair when none exist', async () => {
+    it('should create a new key pair when none exist', () => {
       const values = {}
-      await createCustomCA(values, deps)
-      expect(deps.writeValues).toHaveBeenCalledWith(
-        {
-          charts: {
-            'cert-manager': {
-              customRootCA: 'certpem',
-              customRootCAKey: 'keypem',
-            },
+      const res = createCustomCA(values, deps)
+      expect(res).toMatchObject({
+        charts: {
+          'cert-manager': {
+            customRootCA: 'certpem',
+            customRootCAKey: 'keypem',
           },
         },
-        true,
-      )
-    })
-    it('should not create a new key pair when those already exist', async () => {
-      deps.writeValues.mockReset()
-      const values = {
-        charts: { 'cert-manager': { customRootCA: 'customRootCA', customRootCAKey: 'customRootCAKey' } },
-      }
-      await createCustomCA(values, deps)
-      expect(deps.writeValues).toHaveBeenCalledTimes(0)
+      })
     })
   })
   describe('processing values', () => {
@@ -170,11 +159,20 @@ describe('Bootstrapping values', () => {
       })
     })
     describe('processing chart values', () => {
+      it('should not retrieve values from ENV_DIR with hfValues', async () => {
+        await processValues(deps)
+        expect(deps.hfValues).toHaveBeenCalledTimes(0)
+      })
       it('should create a secret with passwords if no such secret exists', async () => {
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, values, true)
         expect(deps.generateSecrets).toHaveBeenCalledWith(values)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
+      })
+      it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
+        deps.loadYaml.mockReturnValue(merge(values, { charts: { 'cert-manager': { issuer: 'custom-ca' } } }))
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalledWith(values)
       })
       it('should not re-generate passwords if already existing in secrets', async () => {
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
@@ -182,6 +180,15 @@ describe('Bootstrapping values', () => {
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, mergedValues, true)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
         expect(res).toEqual(mergedValues)
+      })
+      it('should not re-create a custom ca if issuer is custom-ca or undefined and a CA already exists', async () => {
+        deps.loadYaml.mockReturnValue(
+          merge(values, {
+            charts: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
+          }),
+        )
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
       })
     })
     describe('processing ENV_DIR values', () => {
