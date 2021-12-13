@@ -27,13 +27,10 @@ jobs:
           git config --global user.name $GIT_USER
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GIT_PASSWORD }}
-          fetch-depth: 2
       - name: CI tests, image build and push tag for master or branch
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: redkubesbot
+          username: ${{ env.GIT_USER }}
           password: '${{ secrets.NPM_TOKEN }}'
           registry: ${{ env.CACHE_REGISTRY }}
           image_name: ${{ env.CACHE_REPO }}
@@ -65,7 +62,7 @@ jobs:
           if $ACT; then 
             image=$REPO:$TAG
           else
-            docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+            docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
             echo "Pulling the following tag: $image..."
             docker pull $image
           fi
@@ -84,7 +81,7 @@ jobs:
       - name: Push to docker hub
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u redkubesbot -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
           docker tag $image $REPO:$TAG
@@ -101,6 +98,8 @@ jobs:
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Set env
         run: |
           git config --global user.email $GIT_USER@users.noreply.github.com

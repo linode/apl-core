@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug bootstrap - chart",
+      "name": "Debug bootstrap",
       "console": "integratedTerminal",
       "type": "pwa-node",
       "request": "launch",
@@ -17,10 +17,24 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "CI": "true",
-        "ENV_DIR": "/tmp/otomi/env",
-        "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
+        // "CI": "true",
+        // "ENV_DIR": "/tmp/otomi/env",
+        // "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
       },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "Debug apply",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "apply"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {

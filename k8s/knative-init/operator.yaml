@@ -756,6 +756,8 @@ spec:
             requests:
               cpu: 10m
               memory: 32Mi
+          securityContext:
+            runAsNonRoot: true
 
 ---
 # Copyright 2020 The Knative Authors

@@ -12,7 +12,7 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
-import { getFilename, isCore, loadYaml, providerMap, rootDir } from '../common/utils'
+import { getFilename, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
 import { generateSecrets, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { genSops } from './gen-sops'
@@ -28,7 +28,9 @@ export const generateLooseSchema = (deps = { debug, rootDir, env, isCore, loadYa
   const sourcePath = `${deps.rootDir}/values-schema.yaml`
 
   const valuesSchema = deps.loadYaml(sourcePath)
-  const trimmedVS = dump(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2)))
+  const trimmedVS = dump(
+    removeBlankAttributes(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2))),
+  )
   deps.debug.debug('generated values-schema.yaml: ', trimmedVS)
   deps.outputFileSync(targetPath, trimmedVS)
   deps.debug.info(`Stored loose YAML schema at: ${targetPath}`)
@@ -106,33 +108,41 @@ export const processValues = async (
     validateValues,
     generateSecrets,
     createK8sSecret,
+    createCustomCA,
   },
 ): Promise<Record<string, any> | undefined> => {
   const { ENV_DIR, VALUES_INPUT } = deps.env()
   let originalValues: Record<string, any> | undefined
+  let derivedValues: Record<string, any>
   if (deps.isChart) {
     deps.debug.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
     const storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalValues = merge(originalValues, storedSecrets)
     await deps.writeValues(originalValues, true)
+    derivedValues = (await deps.hfValues()) as Record<string, any>
   } else {
     deps.debug.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
       originalValues = (await deps.hfValues()) as Record<string, any>
     }
-    // when we are bootstrapping from a non empty values repo, validate the input
-    if (originalValues) await deps.validateValues()
+    derivedValues = originalValues as Record<string, any>
+  }
+  // do we need to create a custom CA?
+  if (derivedValues?.charts && derivedValues.charts['cert-manager']?.issuer === 'custom-ca') {
+    await deps.createCustomCA(derivedValues)
   }
   // generate secrets that don't exist yet
   const generatedSecrets = await deps.generateSecrets(originalValues)
-
   await deps.writeValues(generatedSecrets, false)
+  // and do some context dependent post processing:
   if (deps.isChart) {
-    // and store secrets on cluster in case of failure
+    // to support potential failing chart install we store secrets on cluster
     await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, generatedSecrets)
-  }
+  } else if (originalValues)
+    // cli: when we are bootstrapping from a non empty values repo, validate the input
+    await deps.validateValues()
   return originalValues
 }
 
@@ -207,7 +217,6 @@ export const bootstrapValues = async (
     copyBasicFiles,
     processValues,
     hfValues,
-    createCustomCA,
     isCli,
     writeValues,
     genSops,
@@ -231,7 +240,6 @@ export const bootstrapValues = async (
     return
   }
   const finalValues = (await deps.hfValues()) as Record<string, any>
-  if (finalValues.charts['cert-manager'].issuer === 'custom-ca') await deps.createCustomCA(originalValues)
   if (deps.isCli && !finalValues.cluster.k8sContext) {
     const k8sContext = `otomi-${providerMap(finalValues.cluster.provider)}-${finalValues.cluster.name}`
     deps.debug.info(`No value for cluster.k8sContext found, providing default one: ${k8sContext}`)

@@ -1,4 +1,3 @@
-import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
@@ -7,21 +6,18 @@ import pkg from '../../package.json'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { extract, flattenObject, getValuesSchema, gucci, loadYaml, stringContainsSome } from './utils'
+import {
+  extract,
+  flattenObject,
+  getValuesSchema,
+  gucci,
+  loadYaml,
+  removeBlankAttributes,
+  stringContainsSome,
+} from './utils'
 
 const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
-}
-
-const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
-  const options: CleanOptions = {
-    emptyArrays: false,
-    emptyObjects: true,
-    emptyStrings: true,
-    nullValues: false,
-    undefinedValues: true,
-  }
-  return cleanDeep(obj, options)
 }
 
 let otomiK8sVersion: string

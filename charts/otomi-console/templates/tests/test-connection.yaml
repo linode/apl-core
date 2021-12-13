@@ -12,9 +12,16 @@ metadata:
 spec:
   containers:
     - name: wget
-      image: busybox
+      image: busybox:stable
       command: ['wget']
       args:  ['{{ include "otomi-console.fullname" . }}:{{ .Values.service.port }}']
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 16Mi
   restartPolicy: Never
   {{- with .Values.podSecurityContext }}
   securityContext:  {{- toYaml . | nindent 4 }}

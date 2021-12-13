@@ -127,7 +127,7 @@
     "lint": "run-p spellcheck lint:hf lint:ts lint:types",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
-    "lint:hf": "TESTING=1 binzx/otomi lint",
+    "lint:hf": "export TESTING=1 && binzx/otomi lint",
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc",
@@ -139,7 +139,7 @@
     "score-templates": "TESTING=1 binzx/otomi score-templates",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
-    "test": "TESTING=1 run-p lint validate-templates test:ts",
+    "test": "TESTING=1 run-s test:ts validate-values lint validate-templates check-policies",
     "test:opa": "binzx/otomi x opa test policies -v",
     "test:ts": "jest",
     "test:ts-cov": "jest --coverage",
@@ -152,5 +152,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.14.53"
+  "version": "0.14.54"
 }

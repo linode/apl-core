@@ -1,3 +1,4 @@
+import { merge } from 'lodash'
 import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
 import stubs from '../test-stubs'
@@ -13,12 +14,11 @@ import {
 const { terminal } = stubs
 
 describe('Bootstrapping values', () => {
-  const secrets = { secret: 'true', some: { nested: 'secret' } }
   const values = {
     charts: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
   }
-
+  const secrets = { secret: 'true', some: { nested: 'secret' } }
   let deps
   beforeEach(() => {
     deps = {
@@ -70,7 +70,7 @@ describe('Bootstrapping values', () => {
     expect(deps.decrypt).toHaveBeenCalled()
   })
   describe('Generating a loose schema', () => {
-    const values = { test: 'ok', required: 'remove' }
+    const values = { test: 'ok', required: 'remove', nested: { required: 'remove-leaf' } }
     const rootDir = '/bla'
     const targetPath = `${rootDir}/.vscode/values-schema.yaml`
     const deps = {
@@ -138,8 +138,7 @@ describe('Bootstrapping values', () => {
     })
   })
   describe('processing values', () => {
-    const values = { test: true, some: { thing: 'ok' } }
-    const mergedValues = { secret: 'true', test: true, some: { thing: 'ok', nested: 'secret' } }
+    const mergedValues = merge(values, secrets)
     let deps
     beforeEach(() => {
       deps = {
@@ -152,11 +151,23 @@ describe('Bootstrapping values', () => {
           ENV_DIR: '/tmp/otomi-test/env',
         }),
         createK8sSecret: jest.fn(),
-        hfValues: jest.fn(),
+        createCustomCA: jest.fn(),
+        hfValues: jest.fn().mockReturnValue(values),
         existsSync: jest.fn(),
         validateValues: jest.fn().mockReturnValue(true),
         generateSecrets: jest.fn(),
       }
+    })
+    describe('Creating CA', () => {
+      it('should ask to create a CA if issuer is custom-ca', async () => {
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
+      })
+      it('should not ask to create a CA if issuer is not custom-ca', async () => {
+        deps.loadYaml.mockReturnValue(merge(values, { charts: { 'cert-manager': { issuer: 'nono' } } }))
+        await processValues(deps)
+        expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
+      })
     })
     describe('processing chart values', () => {
       it('should create a secret with passwords if no such secret exists', async () => {
@@ -178,6 +189,7 @@ describe('Bootstrapping values', () => {
         deps.isChart = false
       })
       it('should not validate values when starting empty', async () => {
+        deps.hfValues.mockReturnValue(undefined)
         await processValues(deps)
         expect(deps.validateValues).toHaveBeenCalledTimes(0)
       })
