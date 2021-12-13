@@ -42,6 +42,6 @@ spec:
               cpu: 10m
               memory: 16Mi
           securityContext:
-            runAsNonRoot: true
+            runAsUser: 65534
 
 
