@@ -34,9 +34,10 @@ export const moveGivenJsonPath = (yaml: Record<string, unknown> | undefined, lhs
   if (yaml && unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-const inlineGucci = async (prev: string, tmpl: string): Promise<string> => {
-  const execTmpl = await $`echo '{{ ${tmpl} "${prev}" }}' | gucci`
-  return execTmpl.stdout.trim()
+const inlineGucci = async (tmpl: string, prev: string): Promise<string> => {
+  const separateTmpl = tmpl.split(' ')
+  const execTmpl = await $`echo '{{ ${separateTmpl[0]} "${separateTmpl[1]}" "${prev}" }}' | gucci`
+  return execTmpl.stdout.trim().replaceAll('$', '')
 }
 
 // save work https://stackoverflow.com/questions/11488014/asynchronous-process-inside-a-javascript-for-loop
@@ -57,7 +58,7 @@ export const migrate = async (values: Record<string, unknown> | undefined, chang
         const path = Object.keys(mut)[0]
         const tmpl = Object.values(mut)[0]
         const prev = get(values, path)
-        if (typeof prev === 'string') set(values, path, await inlineGucci(prev, tmpl))
+        if (typeof prev === 'string') set(values, path, await inlineGucci(tmpl, prev))
       }
   }
 }
