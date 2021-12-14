@@ -1,7 +1,4 @@
-import stubs from '../test-stubs'
-import { Changes, filterChanges, migrate } from './migrate'
-
-const { terminal } = stubs
+import { applyChanges, Changes, filterChanges } from './migrate'
 
 describe('Upgrading values', () => {
   const currentVersion = '0.4.5' // otomi.version in values
@@ -39,7 +36,7 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
     it('should apply changes to values', async () => {
-      await migrate(mockValues, filterChanges(currentVersion, mockChanges))
+      await applyChanges(mockValues, filterChanges(currentVersion, mockChanges))
       expect(mockValues).toEqual({ some: { bla: {}, version: 'v1.18' } })
     })
   })

@@ -48,7 +48,7 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
   return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
-export const migrate = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
+export const applyChanges = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
   if (!values) return
   for (const c of changes) {
     c.deletions?.forEach((del) => unset(values, del))
@@ -64,18 +64,36 @@ export const migrate = async (values: Record<string, unknown> | undefined, chang
   }
 }
 
-// Differences are reported as one or more change records. Change records have the following structure:
+/**
+ * Differences are reported as one or more change records. Change records have the following structure:
 
-// kind - indicates the kind of change; will be one of the following:
-// N - indicates a newly added property/element
-// D - indicates a property/element was deleted
-// E - indicates a property/element was edited
-// A - indicates a change occurred within an array
-// path - the property path (from the left-hand-side root)
-// lhs - the value on the left-hand-side of the comparison (undefined if kind === 'N')
-// rhs - the value on the right-hand-side of the comparison (undefined if kind === 'D')
-// index - when kind === 'A', indicates the array index where the change occurred
-// item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
+  kind - indicates the kind of change; will be one of the following:
+  N - indicates a newly added property/element
+  D - indicates a property/element was deleted
+  E - indicates a property/element was edited
+  A - indicates a change occurred within an array
+  path - the property path (from the left-hand-side root)
+  lhs - the value on the left-hand-side of the comparison (undefined if kind === 'N')
+  rhs - the value on the right-hand-side of the comparison (undefined if kind === 'D')
+  index - when kind === 'A', indicates the array index where the change occurred
+  item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
+ */
+const migrate = async () => {
+  const prevValues = await hfValues({ filesOnly: true })
+  const currentVersion = prevValues?.otomi?.version
+  let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+  if (changes) changes = filterChanges(currentVersion, changes)
+  const processedValues = cloneDeep(prevValues)
+  await applyChanges(processedValues, changes)
+
+  if (!isEqual(prevValues, processedValues)) {
+    debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+    if (processedValues && (await askYesNo(`Acknowledge migration:`))) {
+      await writeValues(processedValues)
+    }
+  } else debug.info('No changes detected, skipping')
+}
+
 export const module = {
   command: cmdName,
   hidden: true,
@@ -85,19 +103,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-
-    const prevValues = await hfValues({ filesOnly: true })
-    const currentVersion = prevValues?.otomi?.version
-    let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-    if (changes) changes = filterChanges(currentVersion, changes)
-    const processedValues = cloneDeep(prevValues)
-    await migrate(processedValues, changes)
-
-    if (!isEqual(prevValues, processedValues)) {
-      debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-      if (processedValues && (await askYesNo(`Acknowledge migration:`))) {
-        await writeValues(processedValues)
-      }
-    } else debug.info('No changes detected, skipping')
+    await migrate()
   },
 }
