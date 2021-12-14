@@ -43,8 +43,8 @@ describe('Upgrading values', () => {
   })
   describe('Apply changes to values', () => {
     const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
-    it('should apply changes to values', () => {
-      migrate(mockValues, mockChanges)
+    it('should apply changes to values', async () => {
+      await migrate(mockValues, mockChanges)
       expect(mockValues).toEqual({ some: { bla: {}, version: 'bla' } })
     })
   })

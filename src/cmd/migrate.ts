@@ -34,8 +34,8 @@ export const moveGivenJsonPath = (yaml: Record<string, unknown> | undefined, lhs
   if (yaml && unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-export const inlineGucci = async (): Promise<string> => {
-  const execTmpl = await $`echo '{{ print "bla" }}' | gucci`
+const inlineGucci = async (prev: string, tmpl: string): Promise<string> => {
+  const execTmpl = await $`echo '{{ ${tmpl} "${prev}" }}' | gucci`
   return execTmpl.stdout.trim()
 }
 
@@ -53,16 +53,11 @@ export const migrate = async (values: Record<string, unknown> | undefined, chang
     c.locations?.forEach((loc) => moveGivenJsonPath(values, Object.keys(loc)[0], Object.values(loc)[0]))
 
     if (c.mutations && values)
-      for await (const mut of c.mutations) {
-        const prevValue = get(values, Object.keys(mut)[0])
-        let proc
-        try {
-          proc = await inlineGucci()
-        } catch (err) {
-          throw new Error(err)
-        } finally {
-          set(values, Object.keys(mut)[0], proc)
-        }
+      for (const mut of c.mutations) {
+        const path = Object.keys(mut)[0]
+        const tmpl = Object.values(mut)[0]
+        const prev = get(values, path)
+        if (typeof prev === 'string') set(values, path, await inlineGucci(prev, tmpl))
       }
   }
 }
