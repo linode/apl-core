@@ -7,13 +7,8 @@ describe('Upgrading values', () => {
   const currentVersion = '0.4.5' // otomi.version in values
   const mockChanges: Changes = [
     {
-      version: '0.1.1',
-    },
-    {
       version: '0.2.3',
-    },
-    {
-      version: '0.3.4',
+      mutations: [{ 'some.version': 'printf "v%s"' }],
     },
     {
       version: '0.5.6',
@@ -44,7 +39,7 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
     it('should apply changes to values', async () => {
-      await migrate(mockValues, mockChanges)
+      await migrate(mockValues, filterChanges(currentVersion, mockChanges))
       expect(mockValues).toEqual({ some: { bla: {}, version: 'v1.18' } })
     })
   })
