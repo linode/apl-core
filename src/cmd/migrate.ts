@@ -4,11 +4,10 @@ import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
-import { getFilename, loadYaml, rootDir } from '../common/utils'
+import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { askYesNo } from '../common/zx-enhance'
@@ -34,14 +33,6 @@ export const moveGivenJsonPath = (yaml: Record<string, unknown>, lhs: string, rh
   if (unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-const inlineGucci = async (tmpl: string, prev: string): Promise<string> => {
-  const separateTmpl = tmpl.split(' ')
-  const execTmpl = await $`echo '{{ ${separateTmpl[0]} "${separateTmpl[1]}" "${prev}" }}' | gucci`
-  return execTmpl.stdout.trim().replaceAll('$', '')
-}
-
-// save work https://stackoverflow.com/questions/11488014/asynchronous-process-inside-a-javascript-for-loop
-
 export function filterChanges(currentVersion: string, changes: Changes): Changes {
   if (!valid(currentVersion))
     throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
@@ -57,9 +48,10 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
     if (c.mutations)
       for (const mut of c.mutations) {
         const path = Object.keys(mut)[0]
-        const tmpl = Object.values(mut)[0]
+        const tmpl = `{{ ${Object.values(mut)[0]} .prev }}`
         const prev = get(values, path)
-        if (typeof prev === 'string') set(values, path, await inlineGucci(tmpl, prev))
+        const ret = await gucci(tmpl, { prev })
+        set(values, path, ret)
       }
   }
 }
