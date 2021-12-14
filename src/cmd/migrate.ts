@@ -29,9 +29,9 @@ interface Change {
 
 export type Changes = Array<Change>
 
-export const moveGivenJsonPath = (yaml: Record<string, unknown> | undefined, lhs: string, rhs: string): void => {
+export const moveGivenJsonPath = (yaml: Record<string, unknown>, lhs: string, rhs: string): void => {
   const moveValue = get(yaml, lhs, 'err!')
-  if (yaml && unset(yaml, lhs)) set(yaml, rhs, moveValue)
+  if (unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
 const inlineGucci = async (tmpl: string, prev: string): Promise<string> => {
@@ -49,11 +49,12 @@ export function filterChanges(currentVersion: string, changes: Changes): Changes
 }
 
 export const migrate = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
+  if (!values) return
   for (const c of changes) {
     c.deletions?.forEach((del) => unset(values, del))
     c.locations?.forEach((loc) => moveGivenJsonPath(values, Object.keys(loc)[0], Object.values(loc)[0]))
 
-    if (c.mutations && values)
+    if (c.mutations)
       for (const mut of c.mutations) {
         const path = Object.keys(mut)[0]
         const tmpl = Object.values(mut)[0]
