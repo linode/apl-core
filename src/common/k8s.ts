@@ -98,7 +98,12 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {
     // Wait until DNS records are propagated to the cluster DNS
-    await waitTillAvailable(`https://${firstIngressData.hostname}`, { skipSsl: true, status: 404 })
+    await waitTillAvailable(`https://${firstIngressData.hostname}`, {
+      skipSsl: true,
+      status: 404,
+      maxTimeout: 10 * 1000, // retry every max 10 seconds, so no exponential backoff
+      retries: 100, // we should have a LB within 100 * 10 secs (=14 minutes)
+    })
     const resolveData = await resolveAny(firstIngressData.hostname)
     const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
       | AnyARecord
@@ -156,7 +161,7 @@ export const checkKubeContext = async (): Promise<void> => {
   }
 }
 
-type WaitTillAvailableOptions = {
+type WaitTillAvailableOptions = Options & {
   status?: number
   skipSsl?: boolean
 }

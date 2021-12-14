@@ -126,6 +126,10 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   d.info('All values were written to ENV_DIR')
 }
 
+/**
+ * Takes values as input and generates secrets that don't exist yet.
+ * Returns all generated secrets.
+ */
 export const generateSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
   const debug = terminal('generateSecrets')
   const leaf = 'x-secret'

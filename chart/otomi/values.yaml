@@ -81,3 +81,7 @@ charts:
 #   adminGroupID: ''
 #   # IDP group id used to identify team admin
 #   teamAdminGroupID: ''
+
+# WARNING: setting this to ANY VALUE removes ALL cluster resources 
+# (not just from otomi install) upon chart uninstall
+# destroyUponRemoval: true

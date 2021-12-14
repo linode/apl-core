@@ -13,6 +13,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 spec:
+  ttlSecondsAfterFinished: 100
   template:
     metadata:
       labels:

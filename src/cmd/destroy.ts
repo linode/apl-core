@@ -1,12 +1,14 @@
-import { existsSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
+import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
+import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
+import { isChart } from '../common/envalid'
 import { hf } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
-import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
+import { getFilename, loadYaml } from '../common/utils'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
+import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
@@ -22,7 +24,7 @@ const setup = (argv: HelmArguments): void => {
 }
 
 const destroyAll = async () => {
-  debug.log('Uninstalling otomi...')
+  debug.log('Uninstalling otomi (some errors are expected)...')
   const debugStream = { stdout: debug.stream.debug, stderr: debug.stream.error }
   debug.info('Removing problematic part: olm deployments...')
   await stream(nothrow($`kubectl -n olm delete deploy --all`), debugStream)
@@ -32,22 +34,30 @@ const destroyAll = async () => {
     debugStream,
   )
   debug.info('Uninstalling all charts...')
-  await hf({ args: 'destroy' }, { streams: debugStream })
-  debug.info('Uninstalled all charts.')
-  debug.info('Uninstalling applied manifests...')
-  const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: debugStream },
+  await stream(
+    nothrow($`helm ls -a -d --all-namespaces | awk 'NR > 1 { print "-n "$2, $1}' | xargs -L1 helm delete`),
+    debugStream,
   )
-  if (output.exitCode > 0 || output.stderr.length > 0) {
-    debug.error(output.stderr)
-  }
-  const templateOutput: string = output.stdout
-  writeFileSync(templateFile, templateOutput)
-  await stream(nothrow($`kubectl delete -f ${templateFile}`), debugStream)
-  debug.info('Uninstalled all manifests.')
-  debug.info('Uninstalling CRDs...')
+  debug.info('Uninstalled all charts.')
 
+  debug.info('Uninstalling applied manifests...')
+  await stream(nothrow($`kubectl delete cm otomi-status`), debugStream)
+  if (isChart) {
+    debug.info('Uninstalling chart related manifests')
+    await stream(nothrow($`kubectl delete cm ${DEPLOYMENT_STATUS_CONFIGMAP}`), debugStream)
+    await stream(nothrow($`kubectl delete secret ${DEPLOYMENT_PASSWORDS_SECRET}`), debugStream)
+  }
+  debug.info('Uninstalled all manifests.')
+
+  debug.info('Uninstalling namespaces...')
+  const core = loadYaml(`${process.cwd()}/core.yaml`) as Record<string, any>
+  const ourNamespaces = core.k8s.namespaces
+  await Promise.allSettled(
+    ourNamespaces.map(async (ns) => stream(nothrow($`kubectl delete ns ${ns.name}`), debugStream)),
+  )
+  debug.info('Uninstalled namespaces.')
+
+  debug.info('Uninstalling CRDs...')
   const ourCRDS = [
     'appgw.ingress.k8s.io',
     'cert-manager.io',
@@ -101,7 +111,7 @@ export const module = {
 
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment()
+    await prepareEnvironment({ skipAllPreChecks: true })
     setup(argv)
     await destroy()
   },

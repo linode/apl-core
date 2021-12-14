@@ -134,7 +134,7 @@ describe('Bootstrapping values', () => {
         debug: terminal(),
         isChart: true,
         loadYaml: jest.fn().mockReturnValue(values),
-        getStoredClusterSecrets: jest.fn(),
+        getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
         writeValues: jest.fn(),
         env: () => ({
           ENV_DIR: '/tmp/otomi-test/env',
@@ -166,7 +166,7 @@ describe('Bootstrapping values', () => {
       it('should create a secret with passwords if no such secret exists', async () => {
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(1, values, true)
-        expect(deps.generateSecrets).toHaveBeenCalledWith(values)
+        expect(deps.generateSecrets).toHaveBeenCalledWith(secrets)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {

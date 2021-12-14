@@ -1,0 +1,49 @@
+{{- $kms := .Values.kms | default dict }}
+{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{ if hasKey .Values "destroyUponRemoval" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: otomi-pre-delete-job
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels: {{- include "otomi.labels" . | nindent 4 }}
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      labels:
+        app: {{ template "otomi.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "otomi.fullname" . }}
+      containers:
+        - name: pre-delete
+          image: otomi/core:{{ $version }}
+          command:
+            - sh
+            - -c
+          args:
+            - |
+              sleep 3
+              binzx/otomi destroy
+              echo "Otomi has been uninstalled."
+          env:
+            - name: CI
+              value: '1'
+            - name: ENV_DIR
+              value: /home/app/stack/env
+            - name: VERBOSITY
+              value: '1'
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: '2'
+            requests:
+              memory: 1Gi
+              cpu: '1'
+          securityContext:
+            runAsUser: 999
+{{- end }}

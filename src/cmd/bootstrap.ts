@@ -113,28 +113,33 @@ export const processValues = async (
 ): Promise<Record<string, any> | undefined> => {
   const { ENV_DIR, VALUES_INPUT } = deps.env()
   let originalValues: Record<string, any> | undefined
+  let storedSecrets: Record<string, any> | undefined
   if (deps.isChart) {
     deps.debug.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
-    const storedSecrets = await deps.getStoredClusterSecrets()
+    storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalValues = merge(originalValues, storedSecrets)
     await deps.writeValues(originalValues, true)
   } else {
     deps.debug.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
+    storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
       originalValues = (await deps.hfValues()) as Record<string, any>
     }
+    if (originalValues) storedSecrets = originalValues
   }
   // generate secrets that don't exist yet
-  let generatedSecrets = await deps.generateSecrets(originalValues)
-
+  let generatedSecrets = await deps.generateSecrets(storedSecrets)
   // do we need to create a custom CA? if so add it to the secrets
   const cm = get(originalValues, 'charts.cert-manager', {})
   if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
     if (cm.customRootCA && cm.customRootCAKey) {
       deps.debug.info('Skipping custom RootCA generation')
-    } else generatedSecrets = deps.createCustomCA(originalValues as Record<string, any>)
+    } else {
+      const ca = deps.createCustomCA(originalValues as Record<string, any>)
+      generatedSecrets = merge(generatedSecrets, ca)
+    }
   }
   // we have generated all we need, now store the values and merge in the secrets
   await deps.writeValues(merge(originalValues, generatedSecrets), true)
@@ -148,6 +153,14 @@ export const processValues = async (
   return originalValues
 }
 
+/**
+ * Creates a custom CA cert and key pair in the location as defined in the schema. i.e.:
+ *
+ * charts:
+ *   cert-manager:
+ *     customRootCA: rootCrt,
+ *     customRootCAKey: rootKey
+ */
 export const createCustomCA = (
   originalValues: Record<string, any>,
   deps = { terminal, pki, writeValues },
