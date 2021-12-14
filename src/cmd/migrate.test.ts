@@ -22,7 +22,7 @@ describe('Upgrading values', () => {
     },
     {
       version: '0.7.8',
-      mutations: [{ 'some.version': 'printf "v%s"' }],
+      mutations: [{ 'some.version': 'printf v%s' }],
     },
   ]
 
