@@ -72,19 +72,21 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
 const migrate = async () => {
-  const prevValues = await hfValues({ filesOnly: true })
-  const currentVersion = prevValues?.otomi?.version
   let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-  if (changes) changes = filterChanges(currentVersion, changes)
-  const processedValues = cloneDeep(prevValues)
-  await applyChanges(processedValues, changes)
+  if (changes) {
+    const prevValues = await hfValues({ filesOnly: true })
+    const currentVersion = prevValues?.otomi?.version
+    changes = filterChanges(currentVersion, changes)
+    const processedValues = cloneDeep(prevValues)
+    await applyChanges(processedValues, changes)
 
-  if (!isEqual(prevValues, processedValues)) {
-    debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-    const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
-    if ((!process.stdin.isTTY || ack) && processedValues?.otomi.version) {
-      processedValues.otomi.version = version
-      await writeValues(processedValues)
+    if (!isEqual(prevValues, processedValues)) {
+      debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+      const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
+      if ((!process.stdin.isTTY || ack) && processedValues?.otomi.version) {
+        processedValues.otomi.version = version
+        await writeValues(processedValues)
+      }
     }
   } else debug.info('No changes detected, skipping')
 }
