@@ -45,6 +45,8 @@ environments:
           {{- end }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
+          keycloakUrl: https://keycloak.{{ $domainSuffix }}
+          ingressAzureEnabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
         charts:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
@@ -71,11 +73,8 @@ environments:
             enabled: {{ $v.otomi.hasExternalDNS }}
           gitea:
             adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
-          ingress-azure:
-            enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
-            address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}

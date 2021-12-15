@@ -35,7 +35,7 @@ releases:
     namespace: external-dns
     <<: *default
   - name: ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
+    installed: {{ $v | get "_derived.ingressAzureEnabled" }}
     namespace: ingress
     labels:
       tag: ingress
@@ -48,7 +48,7 @@ releases:
       tag: ingress
     <<: *default
   - name: job-ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
+    installed: {{ $v | get "_derived.ingressAzureEnabled" }}
     <<: *jobs
     labels:
       pkg: ingress-azure

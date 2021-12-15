@@ -28,7 +28,7 @@ env:
   # DEBUG: '*'
   KEYCLOAK_ADMIN: {{ $k.adminUsername }}
   FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
-  KEYCLOAK_ADDRESS: {{ $k.address }}
+  KEYCLOAK_ADDRESS: {{ $v._derived.keycloakUrl }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
