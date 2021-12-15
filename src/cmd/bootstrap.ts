@@ -130,19 +130,19 @@ export const processValues = async (
     if (originalValues) storedSecrets = originalValues
   }
   // generate secrets that don't exist yet
-  let generatedSecrets = await deps.generateSecrets(storedSecrets)
+  const generatedSecrets = await deps.generateSecrets(storedSecrets)
   // do we need to create a custom CA? if so add it to the secrets
   const cm = get(originalValues, 'charts.cert-manager', {})
+  let caSecrets = {}
   if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
     if (cm.customRootCA && cm.customRootCAKey) {
       deps.debug.info('Skipping custom RootCA generation')
     } else {
-      const ca = deps.createCustomCA(originalValues as Record<string, any>)
-      generatedSecrets = merge(generatedSecrets, ca)
+      caSecrets = deps.createCustomCA(originalValues as Record<string, any>)
     }
   }
   // we have generated all we need, now store the values and merge in the secrets
-  await deps.writeValues(merge(originalValues, generatedSecrets), true)
+  await deps.writeValues(merge(originalValues, generatedSecrets, caSecrets), true)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster

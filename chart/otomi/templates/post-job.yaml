@@ -1,6 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
-{{ if hasKey .Values "destroyUponRemoval" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -27,8 +26,7 @@ spec:
             - -c
           args:
             - |
-              sleep 3
-              binzx/otomi destroy
+              kubectl delete cm otomi-status
               echo "Otomi has been uninstalled."
           env:
             - name: CI
@@ -46,4 +44,3 @@ spec:
               cpu: '1'
           securityContext:
             runAsUser: 999
-{{- end }}

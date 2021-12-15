@@ -47,7 +47,12 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-const writeValuesToFile = async (targetPath: string, values: Record<string, any>, overwrite = true): Promise<void> => {
+const writeValuesToFile = async (
+  targetPath: string,
+  inValues: Record<string, any>,
+  overwrite = true,
+): Promise<void> => {
+  const values = cloneDeep(inValues)
   const d = terminal('values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
