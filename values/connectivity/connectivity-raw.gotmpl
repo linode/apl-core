@@ -23,7 +23,6 @@ resources:
     selector: {{- $workload.labels | toYaml | nindent 6 }}
       module: connectivity
     type: ClusterIP
-
 - apiVersion: v1
   kind: Service
   metadata:
@@ -58,7 +57,7 @@ resources:
       spec:
         hostNetwork: false
         containers:
-          - name: {{ $refApp }}
+          - name: server
             args:
               - -listen=:8080
               - -text="Connected"
@@ -77,6 +76,25 @@ resources:
               httpGet:
                 path: /
                 port: 8080
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8080
+          - name: client
+            args:
+              - -sS
+              - --fail
+              - --connect-timeout
+              - '5'
+              - -o
+              - /dev/null
+              - {{ $workloadUrl }}
+            resources:
+              limits:
+                cpu: 50m
+                memory: 64M
+            image: curlimages/curl:7.80.0
+            imagePullPolicy: IfNotPresent
     selector:
       matchLabels: {{- $ref.labels | toYaml | nindent 8 }}
         module: connectivity
@@ -95,12 +113,33 @@ resources:
         labels: {{- $workload.labels | toYaml | nindent 10 }}
           module: connectivity
         name: {{ $workloadName }}
-        annotations:
-          sidecar.istio.io/rewriteAppHTTPProbers: "false" 
       spec:
         hostNetwork: false
         containers:
-          - name: {{ $workloadName }}
+          - name: server
+            args:
+              - -listen=:8080
+              - -text="Connected"
+            env:
+              - name: PORT
+                value: '8080'
+            ports:
+              - containerPort: 8080
+            resources:
+              limits:
+                cpu: 50m
+                memory: 64M
+            image: hashicorp/http-echo
+            imagePullPolicy: IfNotPresent
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 8080
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8080
+          - name: client
             args:
               - -sS
               - --fail
@@ -109,22 +148,12 @@ resources:
               - -o
               - /dev/null
               - {{ $refAppUrl }}
-            ports:
-              - containerPort: 8080
             resources:
               limits:
                 cpu: 50m
                 memory: 64M
             image: curlimages/curl:7.80.0
             imagePullPolicy: IfNotPresent
-    livenessProbe:
-      exec:
-        command:
-        - cat
-        - /tmp/healthy
-      initialDelaySeconds: 5
-      periodSeconds: 5
-
     selector:
       matchLabels: {{- $workload.labels | toYaml | nindent 8 }}
         module: connectivity
