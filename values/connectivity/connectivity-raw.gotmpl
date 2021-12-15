@@ -3,82 +3,10 @@
 {{ $ref:= $v.teamConnectivity.ref}}
 resources:
 {{- range $workload:=$v.teamConnectivity.workloads }}
-{{ $refName:= printf "%s.%s-to-%s.%s" $ref.labels.app $ref.namespace $workload.labels.app $workload.namespace }}
-{{ $workloadName:= printf "%s.%s-to-%s.%s" $workload.labels.app $workload.namespace $ref.labels.app $ref.namespace }}
-{{ $refUrl:= printf "%s.%s.svc.cluster.local" $ref.labels.app $ref.namespace }}
-{{ $workloadUrl:= printf "%s.%s.svc.cluster.local" $workload.labels.app $workload.namespace}}
-
-- apiVersion: v1
-  kind: Service
-  metadata:
-    labels: {{- $ref.labels | toYaml | nindent 6 }}
-      module: connectivity
-    name: {{ $refName }}
-    namespace: {{ $ref.namespace}}
-  spec:
-    ports:
-    - name: 8080-8080
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
-    selector: {{- $ref.labels | toYaml | nindent 6 }}
-    type: ClusterIP
-- apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    labels: {{- $ref.labels | toYaml | nindent 6 }}
-      module: connectivity
-    name: {{ $refName }}
-    namespace: {{ $ref.namespace}}
-  spec:
-    template:
-      metadata:
-        labels: {{- $ref.labels | toYaml | nindent 10 }}
-          module: connectivity
-        name: {{ $refName }}
-      spec:
-        hostNetwork: false
-        containers:
-          - name: {{ $refName }}
-            env:
-              - name: PORT
-                value: '8080'
-            ports:
-              - containerPort: 8080
-            resources:
-              limits:
-                cpu: 50m
-                memory: 64M
-            image: docker.io/cilium/json-mock:1.2
-            imagePullPolicy: IfNotPresent
-            readinessProbe:
-              timeoutSeconds: 7
-              exec:
-                command:
-                  - curl
-                  - -sS
-                  - --fail
-                  - --connect-timeout
-                  - '5'
-                  - -o
-                  - /dev/null
-                  - {{ $workloadUrl }}
-            livenessProbe:
-              timeoutSeconds: 7
-              exec:
-                command:
-                  - curl
-                  - -sS
-                  - --fail
-                  - --connect-timeout
-                  - '5'
-                  - -o
-                  - /dev/null
-                  - {{ $workloadUrl }}
-    selector:
-      matchLabels: {{- $ref.labels | toYaml | nindent 8 }}
-    replicas: 1
-
+{{ $refApp:= printf "conn-%s-%s" $ref.labels.app $workload.labels.app }}
+{{ $workloadName:= printf "conn-%s-%s" $workload.labels.app $ref.labels.app }}
+{{ $refAppUrl:= printf "%s.%s.svc.cluster.local" $refApp $ref.namespace }}
+{{ $workloadUrl:= printf "%s.%s.svc.cluster.local" $workloadName $workload.namespace}}
 - apiVersion: v1
   kind: Service
   metadata:
@@ -88,12 +16,72 @@ resources:
     namespace: {{ $workload.namespace}}
   spec:
     ports:
-    - name: 8080-8080
-      port: 8080
+    - name: http
+      port: 80
       protocol: TCP
       targetPort: 8080
     selector: {{- $workload.labels | toYaml | nindent 6 }}
+      module: connectivity
     type: ClusterIP
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels: {{- $ref.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $refApp }}
+    namespace: {{ $ref.namespace}}
+  spec:
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector: {{- $ref.labels | toYaml | nindent 6 }}
+      module: connectivity
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels: {{- $ref.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $refApp }}
+    namespace: {{ $ref.namespace}}
+  spec:
+    template:
+      metadata:
+        labels: {{- $ref.labels | toYaml | nindent 10 }}
+          module: connectivity
+        name: {{ $refApp }}
+        annotations:
+          sidecar.istio.io/rewriteAppHTTPProbers: "false" 
+      spec:
+        hostNetwork: false
+        containers:
+          - name: {{ $refApp }}
+            args:
+              - -listen=:8080
+              - -text="Connected"
+            env:
+              - name: PORT
+                value: '8080'
+            ports:
+              - containerPort: 8080
+            resources:
+              limits:
+                cpu: 50m
+                memory: 64M
+            image: hashicorp/http-echo
+            imagePullPolicy: IfNotPresent
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 8080
+    selector:
+      matchLabels: {{- $ref.labels | toYaml | nindent 8 }}
+        module: connectivity
+    replicas: 1
+
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -107,46 +95,38 @@ resources:
         labels: {{- $workload.labels | toYaml | nindent 10 }}
           module: connectivity
         name: {{ $workloadName }}
+        annotations:
+          sidecar.istio.io/rewriteAppHTTPProbers: "false" 
       spec:
         hostNetwork: false
         containers:
           - name: {{ $workloadName }}
-            env:
-              - name: PORT
-                value: '8080'
+            args:
+              - -sS
+              - --fail
+              - --connect-timeout
+              - '5'
+              - -o
+              - /dev/null
+              - {{ $refAppUrl }}
             ports:
               - containerPort: 8080
             resources:
               limits:
                 cpu: 50m
                 memory: 64M
-            image: docker.io/cilium/json-mock:1.2
+            image: curlimages/curl:7.80.0
             imagePullPolicy: IfNotPresent
-            readinessProbe:
-              timeoutSeconds: 7
-              exec:
-                command:
-                  - curl
-                  - -sS
-                  - --fail
-                  - --connect-timeout
-                  - '5'
-                  - -o
-                  - /dev/null
-                  - {{ $workloadUrl }}
-            livenessProbe:
-              timeoutSeconds: 7
-              exec:
-                command:
-                  - curl
-                  - -sS
-                  - --fail
-                  - --connect-timeout
-                  - '5'
-                  - -o
-                  - /dev/null
-                  - {{ $workloadUrl }}
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
     selector:
       matchLabels: {{- $workload.labels | toYaml | nindent 8 }}
+        module: connectivity
     replicas: 1
 {{- end }}
