@@ -1,8 +1,5 @@
 #!/usr/bin/bash
 . "$(dirname "$0")/_/husky.sh"
 
-version=$(node -p "require('./package.json').version")
-sed -i "/^\([[:space:]]*version: \).*/s//\1$version/" $PWD/.values/env/settings.yaml
-
 npm run lint
-npm run migrate:values
+npm run migrate:values 

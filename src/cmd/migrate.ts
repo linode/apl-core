@@ -4,13 +4,14 @@ import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
-import yesno from 'yesno'
+import { version } from '../../package.json'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
+import { askYesNo } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
@@ -80,13 +81,12 @@ const migrate = async () => {
 
   if (!isEqual(prevValues, processedValues)) {
     debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-    const ack = await yesno({ question: 'Acknowledge migration?', defaultValue: null })
-    debug.info(ack)
-    if (ack && processedValues?.otomi.version && process.env.npm_package_version) {
-      processedValues.otomi.version = process.env.npm_package_version
+    const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
+    if ((!process.stdin.isTTY || ack) && processedValues?.otomi.version) {
+      processedValues.otomi.version = version
       await writeValues(processedValues)
-    } else debug.info('No changes detected, skipping')
-  }
+    }
+  } else debug.info('No changes detected, skipping')
 }
 
 export const module = {
