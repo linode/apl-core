@@ -113,29 +113,36 @@ export const processValues = async (
 ): Promise<Record<string, any> | undefined> => {
   const { ENV_DIR, VALUES_INPUT } = deps.env()
   let originalValues: Record<string, any> | undefined
-  let derivedValues: Record<string, any>
+  let storedSecrets: Record<string, any> | undefined
   if (deps.isChart) {
     deps.debug.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
-    const storedSecrets = await deps.getStoredClusterSecrets()
+    storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalValues = merge(originalValues, storedSecrets)
     await deps.writeValues(originalValues, true)
-    derivedValues = (await deps.hfValues()) as Record<string, any>
   } else {
     deps.debug.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
+    storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
       originalValues = (await deps.hfValues()) as Record<string, any>
     }
-    derivedValues = originalValues as Record<string, any>
-  }
-  // do we need to create a custom CA?
-  if (derivedValues?.charts && derivedValues.charts['cert-manager']?.issuer === 'custom-ca') {
-    await deps.createCustomCA(derivedValues)
+    if (originalValues) storedSecrets = originalValues
   }
   // generate secrets that don't exist yet
-  const generatedSecrets = await deps.generateSecrets(originalValues)
-  await deps.writeValues(generatedSecrets, false)
+  const generatedSecrets = await deps.generateSecrets(storedSecrets)
+  // do we need to create a custom CA? if so add it to the secrets
+  const cm = get(originalValues, 'charts.cert-manager', {})
+  let caSecrets = {}
+  if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
+    if (cm.customRootCA && cm.customRootCAKey) {
+      deps.debug.info('Skipping custom RootCA generation')
+    } else {
+      caSecrets = deps.createCustomCA(originalValues as Record<string, any>)
+    }
+  }
+  // we have generated all we need, now store the values and merge in the secrets
+  await deps.writeValues(merge(originalValues, generatedSecrets, caSecrets), true)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
@@ -146,17 +153,19 @@ export const processValues = async (
   return originalValues
 }
 
-export const createCustomCA = async (
+/**
+ * Creates a custom CA cert and key pair in the location as defined in the schema. i.e.:
+ *
+ * charts:
+ *   cert-manager:
+ *     customRootCA: rootCrt,
+ *     customRootCAKey: rootKey
+ */
+export const createCustomCA = (
   originalValues: Record<string, any>,
   deps = { terminal, pki, writeValues },
-): Promise<void> => {
+): Record<string, any> => {
   const d = deps.terminal('createCustomCA')
-  const cm = get(originalValues, 'charts.cert-manager', {})
-
-  if (cm.customRootCA && cm.customRootCAKey) {
-    d.info('Skipping custom RootCA generation')
-    return
-  }
   d.info('Generating custom root CA')
 
   // Code example from: https://www.npmjs.com/package/node-forge#x509
@@ -197,16 +206,14 @@ export const createCustomCA = async (
   const rootCrt = deps.pki.certificateToPem(cert).replaceAll('\r\n', '\n')
   const rootKey = deps.pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
-  const value = {
+  return merge(originalValues, {
     charts: {
       'cert-manager': {
         customRootCA: rootCrt,
         customRootCAKey: rootKey,
       },
     },
-  }
-  await deps.writeValues(value, true)
-  d.info('Generated root CA and key are stored in charts.cert-manager values')
+  })
 }
 
 export const bootstrapValues = async (
