@@ -1,3 +1,7 @@
+#####
+# Example changes
+#####
+# ---
 # changes:
 #   - version: v0.23.7
 #     deletions:
@@ -5,15 +9,9 @@
 #     locations:
 #       - charts.hello.enabled: charts.hello.enabledCharts.enabled
 #     mutations:
-#       - cluster.domainSuffix:
-#           - '127'
-#           - '128'
+#       - cluster.domainSuffix: printf "v%s"
 #   - version: v0.23.8
 #     deletions:
 #       - cluster.name
 #     locations:
 #       - charts.hello.enabledCharts.enabled: charts.hello.enabledCharts.bla.enabled
-#     mutations:
-#       - cluster.domainSuffix:
-#           - '128'
-#           - '129'
