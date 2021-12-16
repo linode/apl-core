@@ -125,7 +125,7 @@ export const processValues = async (
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
-      originalValues = (await deps.hfValues()) as Record<string, any>
+      originalValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
     }
     if (originalValues) storedSecrets = originalValues
   }
