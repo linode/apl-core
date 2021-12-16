@@ -4,7 +4,6 @@ import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
-import { version } from '../../package.json'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
@@ -34,10 +33,9 @@ export const moveGivenJsonPath = (yaml: Record<string, unknown>, lhs: string, rh
   if (unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-export function filterChanges(currentVersion: string, changes: Changes): Changes {
-  if (!valid(currentVersion))
-    throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${currentVersion})`)
-  return changes.filter((c) => compare(c.version, currentVersion) >= 1).sort((a, b) => compare(a.version, b.version))
+export function filterChanges(semver: string, changes: Changes): Changes {
+  if (!valid(semver)) throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${semver})`)
+  return changes.filter((c) => compare(c.version, semver) >= 1).sort((a, b) => compare(a.version, b.version))
 }
 
 export const applyChanges = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
@@ -75,16 +73,16 @@ const migrate = async () => {
   let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   if (changes) {
     const prevValues = await hfValues({ filesOnly: true })
-    const currentVersion = prevValues?.otomi?.version
-    changes = filterChanges(currentVersion, changes)
+    const newVersion = prevValues?.otomi?.version
+    changes = filterChanges(newVersion, changes)
     const processedValues = cloneDeep(prevValues)
     await applyChanges(processedValues, changes)
 
     if (!isEqual(prevValues, processedValues)) {
       debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
       const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
-      if ((!process.stdin.isTTY || ack) && processedValues?.otomi.version) {
-        processedValues.otomi.version = version
+      if ((!process.stdin.isTTY || ack) && processedValues) {
+        // processedValues.otomi.version = version
         await writeValues(processedValues)
       }
     }

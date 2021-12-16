@@ -1,7 +1,7 @@
 import { applyChanges, Changes, filterChanges } from './migrate'
 
 describe('Upgrading values', () => {
-  const currentVersion = '0.4.5' // otomi.version in values
+  const oldVersion = '0.4.5'
   const mockChanges: Changes = [
     {
       version: '0.2.3',
@@ -20,7 +20,7 @@ describe('Upgrading values', () => {
 
   describe('Filter changes', () => {
     it('should only apply changes whose version >= current version', () => {
-      expect(filterChanges(currentVersion, mockChanges)).toEqual([
+      expect(filterChanges(oldVersion, mockChanges)).toEqual([
         {
           version: '0.5.6',
           deletions: ['some.json.path'],
@@ -36,7 +36,7 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
     it('should apply changes to values', async () => {
-      await applyChanges(mockValues, filterChanges(currentVersion, mockChanges))
+      await applyChanges(mockValues, filterChanges(oldVersion, mockChanges))
       expect(mockValues).toEqual({ some: { bla: {}, version: 'v1.18' } })
     })
   })
