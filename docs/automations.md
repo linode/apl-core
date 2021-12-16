@@ -1,4 +1,8 @@
-## `binzx/otomi migrate`
+# Migrating values
+
+Assumptions/conventions used in this document:
+
+- `otomi-values` is a git repo with values bootstrapped by a version of an `otomi-core` container.
 
 ### The problem
 
@@ -8,50 +12,39 @@ We break the schema (`values-schema.yaml`) in our `otomi-values` when:
 - We move properties around
 - We mutate/transform (change property type or value shape)
 
-`otomi-core` could have a mechanism that migrates `otomi-values` to conform to a new schema.
+In order to move to another version of `otomi-core` (which might contain some of these changes), we needed a mechanism that migrates the old `otomi-values` to conform to the new schema. So we came up with a simple approach that serves our simple schema.
 
 ### Solution
 
-The versioning in `otomi-values` will be reused (semver; patches are additions; minors are breaking changes). The designated key is `otomi.version` (found in `settings.yaml`). Note that it will only perform migrations on anything >= `otomi.version` . 
+By comparing the diff between the old and the new schema a developer is able to create change records in `otomi-core` and store them in `values-changes.yaml`. Each record is given a successive number. If a user wants to upgrade the platform to a newer version of `otomi-core`, these change records will have to be applied to the values in successive order. When a dev runs `otomi commit` in an `otomi-values` repo, changes made to `otomi.version` will be detected, and the migration script will run in the newer container. The script only needs to compare the new `version` in `values-schema.yaml` with the `version` found in `otomi-values`.
 
-After a successful migration, `otomi.version` is replaced with the most recent version. This results in idempotency of the operation, ie., every run of the migration results in the same shape.
+### Change records
 
-### `values-changes.yaml` description
+The `values-changes.yaml` file contains records holding information about changes. The order of operations, _in a given change_ is the following:
 
-`values-changes.yaml` will contain objects holding information about changes. Note that the order of operations, _in a given change_ is the following: first `deletions`, then `locations`, then `mutations`. Note that it does not matter in which order the object key is written, it always executes it in that order. 
+1. `deletions`
+2. `relocations`
+3. `mutations`
 
-It also needs a corresponding semver to be executed. The _order of changes_ is also important, because e.g. properties could have been deleted in a future version if the properties were actually present at that point in time, just to name a problem if the order is not adhered to. Note that in this case it also does not matter in which order the object is written, it always executes from the earliest semver to the most recent known semver.
+Note that it does not matter in which order these properties are listed, as it always executes it in that order. This is important to understand, as it implies that any changes made in `locations` need to be reflected in the `mutations` stage. So mutations can't reference values that have been relocated in the previous step!
 
-#### 1. The list of deleted (json)path keys
-
-```yaml
-changes:
-  deletions: 
-    # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
-    - charts.bla.someProp 
-```
-
-#### 2. The list of old-to-new (json)path key mappings
+Let's take a look at an example:
 
 ```yaml
 changes:
-  locations:
-    # move the key (and value, obviously) at charts.bla.someProp to someNewRootProp.someProp
-    - charts.bla.someProp: someNewRootProp.someProp 
+  - version: 3
+    deletions:
+      # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
+      - charts.bla.someProp
+    locations:
+      # move the key (and value, obviously) at charts.bla.someProp to someNewRootProp.someProp
+      - charts.bla.someProp: someNewRootProp.someProp
+    mutations:
+      # image tag went from semver to glob
+      - charts.bla.image.tag: printf "v%s"
 ```
 
-#### 3. The list of new types by applying a Go(lang) template (`gotmpl` or `tmpl`) to a given (json)path key mapping
-
-```yaml
-changes:
-  mutations:
-    # image tag went from semver to glob
-    - charts.bla.image.tag: printf "v%s"
-```
-
-##### NOTE 
-
-`mutations` of new `locations` can be introduced, but make sure to specify the RHS (= Right Hand Side, ie. the value for a given key) as the mutation to execute! 
+To repeat once more: `mutations` can not reference previous `deletions` or `relocations`.
 
 E.g. the following migration is incorrect:
 
@@ -73,30 +66,12 @@ changes:
     - someNewRootProp.someProp: printf "v%s"
 ```
 
-#### 4. The corresponding (semver) version
-
-
-
-```yaml
-changes:
-  # ie., these changes happened in v0.23.7, so execute them if we were in e.g. v0.23.6, v0.22.0, etc., but not v0.23.8, v0.24.0, v1.0.0, etc.
-  - version: v0.23.7 
-    deletions: []
-    locations: []
-    mutations: []
-  - version: v0.23.8
-    deletions: []
-    locations: []
-    mutations: []
-```
-
 ### Workflow
 
-Every time a developer changes the schema (`values-schema.yaml`) which includes these changes, the `binzx/otomi migrate` command should be performed that will massage the values to migrate to the new structure. For the following example workflow, we assume that the current version of `otomi-core` is `>= v0.23.7` (easy to remember: otomi-core is always higher!), and the `otomi-values` version that the developer *still* has is `< v0.23.7` (easy to remember: developer is always lower and wants to go up!). 
-
-Note that the semver used here is arbitrary, ie., it is not based on the actual version of `otomi-core`. Please always refer to the version found in `package.json` or the most recent release in the `otomi-core` repo for the latest version.
+Every time a developer changes the schema (`values-schema.yaml`) and adds change records, the `otomi migrate` command should be performed that will migrate the values to the new structure. For the following example workflow, we assume that the current (new) schema version of `otomi-core` is `4`, and the previous `otomi-values` version is at `3`.
 
 Note:
+
 - ex ante (generally) means "the situation judged before the operation happened"
 - ex post (generally) means "the situation judged after the operation happened"
 
@@ -105,6 +80,7 @@ Note:
 ex ante `otomi-values`:
 
 ```yaml
+version: 3
 charts:
   bla:
     someProp: someValue
@@ -113,6 +89,7 @@ charts:
 ex ante `values-schema.yaml`:
 
 ```yaml
+version: 3
 definitions:
   type: object
   charts:
@@ -128,6 +105,7 @@ developer modifies `values-schema.yaml`. In order for automation to take place, 
 ex post `values-schema.yaml`:
 
 ```yaml
+version: 4
 definitions:
   type: object
   charts:
@@ -140,10 +118,10 @@ definitions:
 
 ```yaml
 changes:
-  - version: v0.23.7
-    deletions: 
-    # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
-    - charts.bla.someProp 
+  - version: 4
+    deletions:
+      # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
+      - charts.bla.someProp
 ```
 
 ex post `otomi-values` (end result)
@@ -153,4 +131,4 @@ charts:
   bla: {}
 ```
 
-This is generalized for `deletions`, `locations` and `mutations`. 
+This works the same for `deletions`, `locations` and `mutations`.
