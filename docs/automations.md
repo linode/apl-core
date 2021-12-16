@@ -18,9 +18,11 @@ After a successful migration, `otomi.version` is replaced with the most recent v
 
 ### `values-changes.yaml` description
 
-`values-changes.yaml` will contain objects holding information about changes. Note that the order of operations, _in a given change_ is important: first `deletions`, then `locations`, then `mutations`. It also needs a corresponding semver to be executed. The _order of changes_ is also important, because e.g. properties could have been deleted in a future version if the properties were actually present at that point in time, just to name a problem if the order is not adhered to. 
+`values-changes.yaml` will contain objects holding information about changes. Note that the order of operations, _in a given change_ is the following: first `deletions`, then `locations`, then `mutations`. Note that it does not matter in which order the object key is written, it always executes it in that order. 
 
-#### 1. The list of deleted props (deletions go first so we don't have to iterate over the changes more than necessary)
+It also needs a corresponding semver to be executed. The _order of changes_ is also important, because e.g. properties could have been deleted in a future version if the properties were actually present at that point in time, just to name a problem if the order is not adhered to. Note that in this case it also does not matter in which order the object is written, it always executes from the earliest semver to the most recent known semver.
+
+#### 1. The list of deleted (json)path keys
 
 ```yaml
 changes:
@@ -29,7 +31,7 @@ changes:
     - charts.bla.someProp 
 ```
 
-#### 2. The list of old-to-new (json)path mappings
+#### 2. The list of old-to-new (json)path key mappings
 
 ```yaml
 changes:
@@ -38,7 +40,7 @@ changes:
     - charts.bla.someProp: someNewRootProp.someProp 
 ```
 
-#### 3. The list of new types by applying a Go(lang) template (`gotmpl` or `tmpl`)
+#### 3. The list of new types by applying a Go(lang) template (`gotmpl` or `tmpl`) to a given (json)path key mapping
 
 ```yaml
 changes:
@@ -49,7 +51,7 @@ changes:
 
 ##### NOTE 
 
-`mutations` of new `locations` can be introduced, but make sure to specify the RHS as the mutation to execute! 
+`mutations` of new `locations` can be introduced, but make sure to specify the RHS (= Right Hand Side, ie. the value for a given key) as the mutation to execute! 
 
 E.g. the following migration is incorrect:
 
