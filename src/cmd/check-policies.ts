@@ -24,7 +24,7 @@ const setup = (argv: BasicArguments): void => {
 export const checkPolicies = async (): Promise<void> => {
   const argv: BasicArguments = getParsedArgs()
   setup(argv)
-  debug.info('Policy checking STARTED')
+  debug.log('Policy checking STARTED')
 
   const policiesFile = `${env().ENV_DIR}/env/policies.yaml`
   const parametersFile = `${outDir}/parameters.yaml`
@@ -56,7 +56,7 @@ export const checkPolicies = async (): Promise<void> => {
     .replace(/^.*PASS.*[\r\n]/gm, '')
   if (cleanConftest.indexOf('FAIL') > -1) {
     throw new Error(cleanConftest)
-  }
+  } else debug.log('Policy checks OK!')
 }
 
 export const module = {
