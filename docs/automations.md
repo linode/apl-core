@@ -2,13 +2,13 @@
 
 ### The problem
 
-We break the schema (`values-schema.yaml`) when:
+We break the schema (`values-schema.yaml`) in our `otomi-values` when:
 
 - We delete props
 - We move properties around
-- We mutate (change property type or value shape)
+- We mutate/transform (change property type or value shape)
 
-`otomi-core` should have a mechanism that migrates values to conform to the new spec.
+`otomi-core` could have a mechanism that migrates `otomi-values` to conform to a new schema.
 
 ### Solution
 
@@ -90,12 +90,17 @@ changes:
     mutations: []
 ```
 
-### Workflow example
+### Workflow
 
-Every time a developer changes the schema (`values-schema.yaml`) which includes these changes, the `binzx/otomi migrate` command should be performed that will massage the values to migrate to the new structure. For the following example workflow, we assume that the current version (`otomi.version`) is `< v0.23.7`. Note that the semver used here is arbitrary, ie., it is not based on the actual version of `otomi-core`. Please always refer to the version found in `package.json` or the most recent release in the `otomi-core` repo for the latest version.
+Every time a developer changes the schema (`values-schema.yaml`) which includes these changes, the `binzx/otomi migrate` command should be performed that will massage the values to migrate to the new structure. For the following example workflow, we assume that the current version of `otomi-core` is `>= v0.23.7` (easy to remember: otomi-core is always higher!), and the `otomi-values` version that the developer *still* has is `< v0.23.7` (easy to remember: developer is always lower and wants to go up!). 
 
+Note that the semver used here is arbitrary, ie., it is not based on the actual version of `otomi-core`. Please always refer to the version found in `package.json` or the most recent release in the `otomi-core` repo for the latest version.
+
+Note:
 - ex ante (generally) means "the situation judged before the operation happened"
 - ex post (generally) means "the situation judged after the operation happened"
+
+#### Start example workflow
 
 ex ante `otomi-values`:
 
@@ -135,7 +140,8 @@ definitions:
 
 ```yaml
 changes:
-  deletions: 
+  - version: v0.23.7
+    deletions: 
     # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
     - charts.bla.someProp 
 ```
