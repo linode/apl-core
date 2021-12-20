@@ -19,13 +19,13 @@ hf list | grep $release && is_deployed=true
 # - Always: remove job
 
 if [ "$run_policy" = 'Always' ]; then
-  hf -l name=$release destroy
+  hf -l name=$release destroy --args=--wait
 else
   # OnSpecChange
   has_diff=false
   hf -l name=$release diff --skip-deps && has_diff=true
   [ -n "$VERBOSE" ] && echo "has_diff: $has_diff"
   if $has_diff && $is_deployed; then
-    hf -l name=$release destroy
+    hf -l name=$release destroy --args=--wait
   fi
 fi
