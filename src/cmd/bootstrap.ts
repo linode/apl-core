@@ -235,7 +235,7 @@ export const bootstrapValues = async (
 
   const imageTag = await deps.getImageTag()
   const otomiImage = `otomi/core:${imageTag}`
-  deps.debug.info(`Intalling artifacts from ${otomiImage}`)
+  deps.debug.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
 
   const originalValues = await deps.processValues()
