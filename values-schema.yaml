@@ -1620,7 +1620,7 @@ properties:
                 type: string
               clientID:
                 $ref: '#/definitions/wordCharacterPattern'
-                x-secret: '"otomi"'
+                default: otomi
               clientSecret:
                 type: string
                 x-secret: 'randAlphaNum 32'

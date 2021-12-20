@@ -125,7 +125,7 @@ export const processValues = async (
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
-      originalValues = (await deps.hfValues()) as Record<string, any>
+      originalValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
     }
     if (originalValues) storedSecrets = originalValues
   }
@@ -141,12 +141,13 @@ export const processValues = async (
       caSecrets = deps.createCustomCA()
     }
   }
+  const allSecrets = merge(generatedSecrets, caSecrets)
   // we have generated all we need, now store the values and merge in the secrets that don't exist yet
-  await deps.writeValues(merge(generatedSecrets, caSecrets, originalValues), false)
+  await deps.writeValues(merge(allSecrets, originalValues), false)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, generatedSecrets)
+    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalValues)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()

@@ -202,6 +202,11 @@ describe('Bootstrapping values', () => {
       beforeEach(() => {
         deps.isChart = false
       })
+      it('should retrieve previous user input when cluster provider is set', async () => {
+        deps.loadYaml.mockReturnValue({ ...values, cluster: { provider: 'set' } })
+        await processValues(deps)
+        expect(deps.hfValues).toHaveBeenCalledWith({ filesOnly: true })
+      })
       it('should not validate values when starting empty', async () => {
         deps.hfValues.mockReturnValue(undefined)
         await processValues(deps)

@@ -17,9 +17,11 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "CI": "true",
-        "ENV_DIR": "/tmp/otomi/env",
-        "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
+        // "CI": "true",
+        // "ENV_DIR": "/tmp/otomi/env",
+        "ENV_DIR": "/Users/Morriz/Documents/Workspace/redkubes/otomi/ENV_OUT/eks-devv"
+        // "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
+        // "VALUES_INPUT": "/tmp/otomi/values.yaml"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
