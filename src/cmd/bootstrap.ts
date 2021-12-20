@@ -125,7 +125,7 @@ export const processValues = async (
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
-      originalValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
+      originalValues = (await deps.hfValues()) as Record<string, any>
     }
     if (originalValues) storedSecrets = originalValues
   }
@@ -138,11 +138,11 @@ export const processValues = async (
     if (cm.customRootCA && cm.customRootCAKey) {
       deps.debug.info('Skipping custom RootCA generation')
     } else {
-      caSecrets = deps.createCustomCA(originalValues as Record<string, any>)
+      caSecrets = deps.createCustomCA()
     }
   }
-  // we have generated all we need, now store the values and merge in the secrets
-  await deps.writeValues(merge(originalValues, generatedSecrets, caSecrets), true)
+  // we have generated all we need, now store the values and merge in the secrets that don't exist yet
+  await deps.writeValues(merge(generatedSecrets, caSecrets, originalValues), false)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
@@ -161,10 +161,7 @@ export const processValues = async (
  *     customRootCA: rootCrt,
  *     customRootCAKey: rootKey
  */
-export const createCustomCA = (
-  originalValues: Record<string, any>,
-  deps = { terminal, pki, writeValues },
-): Record<string, any> => {
+export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<string, any> => {
   const d = deps.terminal('createCustomCA')
   d.info('Generating custom root CA')
 
@@ -206,14 +203,14 @@ export const createCustomCA = (
   const rootCrt = deps.pki.certificateToPem(cert).replaceAll('\r\n', '\n')
   const rootKey = deps.pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
-  return merge(originalValues, {
+  return {
     charts: {
       'cert-manager': {
         customRootCA: rootCrt,
         customRootCAKey: rootKey,
       },
     },
-  })
+  }
 }
 
 export const bootstrapValues = async (
