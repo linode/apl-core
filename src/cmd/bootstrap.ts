@@ -155,12 +155,7 @@ export const processValues = async (
 }
 
 /**
- * Creates a custom CA cert and key pair in the location as defined in the schema. i.e.:
- *
- * charts:
- *   cert-manager:
- *     customRootCA: rootCrt,
- *     customRootCAKey: rootKey
+ * Creates a custom CA cert and key pair in the location as defined in the schema.
  */
 export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<string, any> => {
   const d = deps.terminal('createCustomCA')
