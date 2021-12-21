@@ -2,7 +2,7 @@
 # Example changes
 #####
 # ---
-# changes:
+changes: []
 #   - version: 1
 #     deletions:
 #       - cluster.provider
