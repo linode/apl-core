@@ -76,15 +76,21 @@ export const migrate = async (): Promise<void> => {
   const cloneValues = cloneDeep(prevValues)
   const processedValues = await applyChanges(cloneValues as Record<string, any>, filteredChanges)
 
+  let approve
   if (!isEqual(prevValues, processedValues)) {
     debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-    const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
-    if (ack) {
+    approve = await askYesNo('approvenowledge migration? (implicit schema bump, even without changes!)', {
+      defaultYes: true,
+    })
+    if (approve) {
       await writeValues(processedValues)
-      const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
-      Object.assign(processedValues, { version: schema.version })
     }
   } else debug.info('No changes detected, skipping')
+
+  if (approve !== false) {
+    const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
+    Object.assign(processedValues, { version: schema.version })
+  }
 }
 
 export const module = {
