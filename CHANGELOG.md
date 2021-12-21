@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.55](https://github.com/redkubes/otomi-core/compare/v0.14.54...v0.14.55) (2021-12-16)
+
+
+### Bug Fixes
+
+* bootstrap should only validate only input values [kind] ([#693](https://github.com/redkubes/otomi-core/issues/693)) ([288c7ec](https://github.com/redkubes/otomi-core/commit/288c7ec7400bf5ae325903bfb9fe09ec5237f72d))
+* gatekeeper postinstall job securityContext ([#689](https://github.com/redkubes/otomi-core/issues/689)) ([07e3208](https://github.com/redkubes/otomi-core/commit/07e320855831abc97e79c76be17ca533334debc4)), closes [#688](https://github.com/redkubes/otomi-core/issues/688)
+* secrets generation, more bootstrap tests ([#687](https://github.com/redkubes/otomi-core/issues/687)) ([86e7c31](https://github.com/redkubes/otomi-core/commit/86e7c3118635f9a9c290a6fb9b147cdc9ea5de09))
+
 ### [0.14.54](https://github.com/redkubes/otomi-core/compare/v0.14.53...v0.14.54) (2021-12-10)
 
 
