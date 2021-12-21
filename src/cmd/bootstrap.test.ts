@@ -41,6 +41,7 @@ describe('Bootstrapping values', () => {
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
     await bootstrapValues(deps)
+    expect(deps.getImageTag).toHaveBeenCalledWith(true)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {

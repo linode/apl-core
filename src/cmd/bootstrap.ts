@@ -228,7 +228,7 @@ export const bootstrapValues = async (
   const { ENV_DIR } = env()
   const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
 
-  const imageTag = await deps.getImageTag()
+  const imageTag = await deps.getImageTag(true)
   const otomiImage = `otomi/core:${imageTag}`
   deps.debug.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()

@@ -36,11 +36,11 @@ export const getK8sVersion = (): string => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = async (): Promise<string> => {
+export const getImageTag = async (isBootstrap = false): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  const values = await hfValues({ filesOnly: true })
-  if (!values) return `v${pkg.version}`
-  return values.otomi!.version
+  if (isBootstrap) return `v${pkg.version}`
+  const values = await hfValues()
+  return values!.otomi!.version
 }
 
 let hasSops = false

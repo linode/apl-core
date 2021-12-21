@@ -9,7 +9,7 @@ ARG SKIP_TESTS='false'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
 ENV IN_DOCKER='1'
-ENV VERBOSITY='1'
+ENV VERBOSITY='0'
 
 COPY --chown=app . .
 
