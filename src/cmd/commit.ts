@@ -125,7 +125,7 @@ const bootstrapGit = async (values): Promise<void> => {
   debug.log(`Done bootstrapping git`)
 }
 
-async function preCommit() {
+const preCommit = async (): Promise<void> => {
   await migrate()
   await genDrone()
   await encrypt()
