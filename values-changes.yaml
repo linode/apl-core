@@ -3,14 +3,14 @@
 #####
 # ---
 # changes:
-#   - version: 0
+#   - version: 1
 #     deletions:
 #       - cluster.provider
 #     locations:
 #       - charts.hello.enabled: charts.hello.enabledCharts.enabled
 #     mutations:
 #       - cluster.domainSuffix: printf "v%s"
-#   - version: 1
+#   - version: 2
 #     deletions:
 #       - cluster.name
 #     locations:

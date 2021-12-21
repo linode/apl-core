@@ -54,4 +54,4 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 0
+version: 1

@@ -1,5 +1,5 @@
 $schema: 'http://json-schema.org/draft-07/schema'
-version: 0
+version: 1
 additionalProperties: true
 definitions:
   rawValues:
