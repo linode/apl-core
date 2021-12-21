@@ -8,11 +8,14 @@ import { OtomiDebugger, terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
-import { askYesNo } from '../common/zx-enhance'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
+
+interface Arguments extends BasicArguments {
+  dryRun?: boolean
+}
 
 interface Change {
   version: number
@@ -76,28 +79,29 @@ export const migrate = async (): Promise<void> => {
   const cloneValues = cloneDeep(prevValues)
   const processedValues = await applyChanges(cloneValues as Record<string, any>, filteredChanges)
 
-  let approve
   if (!isEqual(prevValues, processedValues)) {
-    debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
-    approve = await askYesNo('approvenowledge migration? (implicit schema bump, even without changes!)', {
-      defaultYes: true,
-    })
-    if (approve) {
-      await writeValues(processedValues)
-    }
+    const argv: Arguments = getParsedArgs()
+    debug[argv.dryRun ? 'log' : 'info'](`Full migration: ${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+    if (!argv.dryRun) await writeValues(processedValues)
   } else debug.info('No changes detected, skipping')
 
-  if (approve !== false) {
-    const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
-    Object.assign(processedValues, { version: schema.version })
-  }
+  const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
+  Object.assign(processedValues, { version: schema.version })
 }
 
 export const module = {
   command: cmdName,
   hidden: true,
   describe: 'Migrate values',
-  builder: (parser: Argv): Argv => parser,
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      'dry-run': {
+        alias: ['d'],
+        boolean: true,
+        default: false,
+        hidden: true,
+      },
+    }),
 
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
