@@ -19,7 +19,7 @@ describe('Upgrading values', () => {
   ]
 
   describe('Filter changes', () => {
-    it('should only apply changes whose version >= current version', () => {
+    it('should only select changes whose version >= current version', () => {
       expect(filterChanges(oldVersion, mockChanges)).toEqual([
         {
           version: 2,
