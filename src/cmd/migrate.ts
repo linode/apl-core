@@ -78,8 +78,8 @@ export const migrate = async (): Promise<void> => {
   if (!isEqual(prevValues, processedValues)) {
     debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
     const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
-    if ((!process.stdin.isTTY || ack) && processedValues) {
-      await writeValues(processedValues)
+    if (ack) {
+      await writeValues(processedValues as Record<string, any>)
       const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
       Object.assign(processedValues, { version: schema.version })
     }
