@@ -125,6 +125,12 @@ const bootstrapGit = async (values): Promise<void> => {
   debug.log(`Done bootstrapping git`)
 }
 
+async function preCommit() {
+  await migrate()
+  await genDrone()
+  await encrypt()
+}
+
 export const commit = async (): Promise<void> => {
   const d = terminal('commit')
   cd(env().ENV_DIR)
@@ -141,9 +147,7 @@ export const commit = async (): Promise<void> => {
     const url = await getGiteaHealthUrl()
     await waitTillAvailable(url, { skipSsl: values?._derived?.untrustedCA })
   }
-  await genDrone()
-  await migrate()
-  await encrypt()
+  await preCommit()
   d.info('Committing values')
   if (values?.charts?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
