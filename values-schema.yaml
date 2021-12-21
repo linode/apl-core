@@ -2543,7 +2543,7 @@ properties:
           ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$:
             $ref: '#/definitions/team'
   version:
-    type: string
+    type: integer
     description: Holds the values-schema version. For more details, see `otomi migrate`.
 required:
   - cluster
