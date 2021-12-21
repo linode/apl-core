@@ -2,7 +2,6 @@
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
-import { compare, valid } from 'semver'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { OtomiDebugger, terminal } from '../common/debug'
@@ -16,7 +15,7 @@ const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 interface Change {
-  version: string
+  version: number
   deletions?: Array<string>
   locations?: Array<{
     [oldLocation: string]: string
@@ -33,9 +32,8 @@ export const moveGivenJsonPath = (yaml: Record<string, unknown>, lhs: string, rh
   if (unset(yaml, lhs)) set(yaml, rhs, moveValue)
 }
 
-export function filterChanges(semver: string, changes: Changes): Changes {
-  if (!valid(semver)) throw new Error(`Please set otomi.version to a valid SemVer, e.g. 1.2.3 (received ${semver})`)
-  return changes.filter((c) => compare(c.version, semver) >= 1).sort((a, b) => compare(a.version, b.version))
+export function filterChanges(version: number, changes: Changes): Changes {
+  return changes.filter((c) => c.version - version > 0)
 }
 
 export const applyChanges = async (values: Record<string, unknown> | undefined, changes: Changes): Promise<void> => {
@@ -69,12 +67,11 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
-const migrate = async () => {
+const migrate = async (version: number) => {
   let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   if (changes) {
     const prevValues = await hfValues({ filesOnly: true })
-    const newVersion = prevValues?.otomi?.version
-    changes = filterChanges(newVersion, changes)
+    changes = filterChanges(version, changes)
     const processedValues = cloneDeep(prevValues)
     await applyChanges(processedValues, changes)
 
@@ -98,6 +95,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await migrate()
+    await migrate(2)
   },
 }

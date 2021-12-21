@@ -1,19 +1,19 @@
 import { applyChanges, Changes, filterChanges } from './migrate'
 
 describe('Upgrading values', () => {
-  const oldVersion = '0.4.5'
+  const oldVersion = 1
   const mockChanges: Changes = [
     {
-      version: '0.2.3',
+      version: 1,
       mutations: [{ 'some.version': 'printf "v%s"' }],
     },
     {
-      version: '0.5.6',
+      version: 2,
       deletions: ['some.json.path'],
       locations: [{ 'some.json': 'some.bla' }],
     },
     {
-      version: '0.7.8',
+      version: 3,
       mutations: [{ 'some.version': 'printf "v%s"' }],
     },
   ]
@@ -22,12 +22,12 @@ describe('Upgrading values', () => {
     it('should only apply changes whose version >= current version', () => {
       expect(filterChanges(oldVersion, mockChanges)).toEqual([
         {
-          version: '0.5.6',
+          version: 2,
           deletions: ['some.json.path'],
           locations: [{ 'some.json': 'some.bla' }],
         },
         {
-          version: '0.7.8',
+          version: 3,
           mutations: [{ 'some.version': 'printf "v%s"' }],
         },
       ])
