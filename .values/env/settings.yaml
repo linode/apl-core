@@ -6,4 +6,4 @@ otomi:
     isHomeMonitored: false
     isManaged: false
     isMultitenant: true
-    version: 0.14.52
+    version: latest
