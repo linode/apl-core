@@ -95,8 +95,6 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
     return undefined
   }
   let output
-  console.trace()
-
   if (filesOnly) output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' })
   else output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' })
   const res = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
