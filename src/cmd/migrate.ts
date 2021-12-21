@@ -81,7 +81,9 @@ export const migrate = async (): Promise<void> => {
 
   if (!isEqual(prevValues, processedValues)) {
     const argv: Arguments = getParsedArgs()
-    debug[argv.dryRun ? 'log' : 'info'](`Full migration: ${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
+    debug[argv.dryRun ? 'log' : 'info'](
+      `Migration changes: ${JSON.stringify(diff(prevValues, processedValues), null, 2)}`,
+    )
     if (!argv.dryRun) await writeValues(processedValues)
   } else debug.info('No changes detected, skipping')
 
