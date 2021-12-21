@@ -36,7 +36,7 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
     it('should apply changes to values', async () => {
-      await applyChanges(mockValues, filterChanges(oldVersion, mockChanges))
+      await applyChanges(mockValues, mockChanges.slice(1))
       expect(mockValues).toEqual({ version: 3, some: { bla: {}, k8sVersion: 'v1.18' } })
     })
   })
