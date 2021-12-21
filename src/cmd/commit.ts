@@ -11,6 +11,7 @@ import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { migrate } from './migrate'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
@@ -18,10 +19,6 @@ const cmdName = getFilename(__filename)
 let debug: OtomiDebugger
 
 interface Arguments extends HelmArguments, DroneArgs {}
-
-const preCommit = async (): Promise<void> => {
-  await genDrone()
-}
 
 const gitPush = async (): Promise<boolean> => {
   const d = terminal('gitPush')
@@ -144,7 +141,8 @@ export const commit = async (): Promise<void> => {
     const url = await getGiteaHealthUrl()
     await waitTillAvailable(url, { skipSsl: values?._derived?.untrustedCA })
   }
-  await preCommit()
+  await genDrone()
+  await migrate()
   await encrypt()
   d.info('Committing values')
   if (values?.charts?.gitea?.enabled) await commitAndPush()
@@ -156,7 +154,7 @@ export const commit = async (): Promise<void> => {
     const message = `
     ########################################################################################################################################
     #
-    #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/ 
+    #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/
     #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
     #  The URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
     #  When no external IDP was configured, please log into Keycloak first to create one or more users and add them either to the 'team-admin' or 'admin' group.

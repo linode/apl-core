@@ -127,6 +127,7 @@ changes:
 ex post `otomi-values` (end result)
 
 ```yaml
+version: 4
 charts:
   bla: {}
 ```

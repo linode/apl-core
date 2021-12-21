@@ -1,3 +1,4 @@
+version: 0
 otomi:
     hasExternalDNS: false
     hasExternalIDP: false

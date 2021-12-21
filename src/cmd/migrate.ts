@@ -50,6 +50,7 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
         const ret = await gucci(tmpl, { prev })
         set(values, path, ret)
       }
+    if (typeof values.version === 'number' && values.version > 0) Object.assign(values, { version: values.version + 1 })
   }
 }
 
@@ -67,11 +68,11 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
-const migrate = async (version: number) => {
+export const migrate = async (): Promise<void> => {
   let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   if (changes) {
     const prevValues = await hfValues({ filesOnly: true })
-    changes = filterChanges(version, changes)
+    changes = filterChanges(prevValues?.version, changes)
     const processedValues = cloneDeep(prevValues)
     await applyChanges(processedValues, changes)
 
@@ -79,7 +80,6 @@ const migrate = async (version: number) => {
       debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
       const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
       if ((!process.stdin.isTTY || ack) && processedValues) {
-        // processedValues.otomi.version = version
         await writeValues(processedValues)
       }
     }
@@ -95,6 +95,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await migrate(2)
+    await migrate()
   },
 }

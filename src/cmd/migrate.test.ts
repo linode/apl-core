@@ -14,7 +14,7 @@ describe('Upgrading values', () => {
     },
     {
       version: 3,
-      mutations: [{ 'some.version': 'printf "v%s"' }],
+      mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
     },
   ]
 
@@ -28,16 +28,16 @@ describe('Upgrading values', () => {
         },
         {
           version: 3,
-          mutations: [{ 'some.version': 'printf "v%s"' }],
+          mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
         },
       ])
     })
   })
   describe('Apply changes to values', () => {
-    const mockValues = { some: { json: { path: 'bla' }, version: '1.18' } }
+    const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
     it('should apply changes to values', async () => {
       await applyChanges(mockValues, filterChanges(oldVersion, mockChanges))
-      expect(mockValues).toEqual({ some: { bla: {}, version: 'v1.18' } })
+      expect(mockValues).toEqual({ version: 3, some: { bla: {}, k8sVersion: 'v1.18' } })
     })
   })
 })
