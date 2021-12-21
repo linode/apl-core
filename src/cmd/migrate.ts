@@ -50,7 +50,8 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
         const ret = await gucci(tmpl, { prev })
         set(values, path, ret)
       }
-    if (typeof values.version === 'number' && values.version > 0) Object.assign(values, { version: values.version + 1 })
+    if (typeof values.version === 'number' && values.version >= 0)
+      Object.assign(values, { version: values.version + 1 })
   }
 }
 
