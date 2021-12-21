@@ -69,18 +69,20 @@ export const applyChanges = async (values: Record<string, unknown> | undefined, 
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
 export const migrate = async (): Promise<void> => {
-  let changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
+  const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   if (changes) {
     const prevValues = await hfValues({ filesOnly: true })
-    changes = filterChanges(prevValues?.version, changes)
+    const filteredChanges = filterChanges(prevValues?.version, changes)
     const processedValues = cloneDeep(prevValues)
-    await applyChanges(processedValues, changes)
+    await applyChanges(processedValues, filteredChanges)
 
     if (!isEqual(prevValues, processedValues)) {
       debug.info(`${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
       const ack = await askYesNo('Acknowledge migration?', { defaultYes: true })
       if ((!process.stdin.isTTY || ack) && processedValues) {
         await writeValues(processedValues)
+        const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
+        Object.assign(processedValues, { version: schema.version })
       }
     }
   } else debug.info('No changes detected, skipping')
