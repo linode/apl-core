@@ -22,6 +22,7 @@ RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && n
 FROM otomi/tools:v1.4.21 as prod
 
 ENV APP_HOME=/home/app/stack
+ENV ENV_DIR=/home/app/stack/env
 ENV IN_DOCKER='1'
 ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
