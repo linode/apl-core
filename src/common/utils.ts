@@ -74,12 +74,13 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
 export interface GucciOptions {
   asObject?: boolean
 }
+
 export const gucci = async (
   tmpl: string | unknown,
-  args: { [key: string]: any },
+  ctx: { [key: string]: any },
   opts?: GucciOptions,
 ): Promise<string | Record<string, any>> => {
-  const kv = flattenObject(args)
+  const kv = flattenObject(ctx)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''

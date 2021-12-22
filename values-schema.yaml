@@ -1,4 +1,5 @@
 $schema: 'http://json-schema.org/draft-07/schema'
+version: 1
 additionalProperties: true
 definitions:
   rawValues:
@@ -2539,6 +2540,10 @@ properties:
         patternProperties:
           ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$:
             $ref: '#/definitions/team'
+  version:
+    type: integer
+    description: Holds the values-schema version. For more details, see `otomi migrate`.
 required:
   - cluster
   - otomi
+  - version

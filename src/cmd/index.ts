@@ -13,6 +13,7 @@ import { module as genDroneModule } from './gen-drone'
 import { module as genSopsModule } from './gen-sops'
 import { module as hfModule } from './hf'
 import { module as lintModule } from './lint'
+import { module as migrateModule } from './migrate'
 import { module as playgroundModule } from './playground'
 import { module as pullModule } from './pull'
 import { module as scoreTemplatesModule } from './score-templates'
@@ -40,6 +41,7 @@ export { module as genDrone } from './gen-drone'
 export { module as genSops } from './gen-sops'
 export { module as hf } from './hf'
 export { module as lint } from './lint'
+export { module as migrate } from './migrate'
 export { module as pull } from './pull'
 export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
@@ -67,6 +69,7 @@ export const commands: CommandModule[] = [
   genSopsModule,
   hfModule,
   lintModule,
+  migrateModule,
   playgroundModule,
   pullModule,
   scoreTemplatesModule,
