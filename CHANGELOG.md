@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.56](https://github.com/redkubes/otomi-core/compare/v0.14.55...v0.14.56) (2021-12-22)
+
+
+### Features
+
+* values-schema mechanism to update values to conform to schema changes ([#684](https://github.com/redkubes/otomi-core/issues/684)) ([757039d](https://github.com/redkubes/otomi-core/commit/757039db515ef95b74920c2a932d193788f4413c))
+
+
+### Bug Fixes
+
+* bootstrap merge order ([#697](https://github.com/redkubes/otomi-core/issues/697)) ([2356ffc](https://github.com/redkubes/otomi-core/commit/2356ffc6167b9ad31b802bb9f19fc0974e56ad19))
+* default env dir ([6b10ae4](https://github.com/redkubes/otomi-core/commit/6b10ae4c043b1a8661216a150005eb8afab8911c))
+* **grafana:** grafana patch 8.0.3 to 8.0.7 for CVE-2021-43798 ([#694](https://github.com/redkubes/otomi-core/issues/694)) ([9e57423](https://github.com/redkubes/otomi-core/commit/9e574232a409808c1ccde551553b57e5e9f8291b))
+* jobs ([#695](https://github.com/redkubes/otomi-core/issues/695)) ([c2b4580](https://github.com/redkubes/otomi-core/commit/c2b4580cdba9252d37919a1726c470fbea0055d2))
+
 ### [0.14.55](https://github.com/redkubes/otomi-core/compare/v0.14.54...v0.14.55) (2021-12-16)
 
 
