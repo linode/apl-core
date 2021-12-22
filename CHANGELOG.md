@@ -2,13 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.14.53](https://github.com/redkubes/otomi-core/compare/v0.14.56...v0.14.53) (2021-12-22)
+### [0.14.53](https://github.com/redkubes/otomi-core/compare/v0.14.52...v0.14.53) (2021-12-22)
 
+### Features
+
+- values-schema mechanism to update values to conform to schema changes ([#684](https://github.com/redkubes/otomi-core/issues/684)) ([757039d](https://github.com/redkubes/otomi-core/commit/757039db515ef95b74920c2a932d193788f4413c))
 
 ### Bug Fixes
 
-* reverted versions [ci skip] ([3f1c75c](https://github.com/redkubes/otomi-core/commit/3f1c75c633c11e61cbd19c05d5bd9502722d78be))
-* version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
+- version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
+- bootstrap merge order ([#697](https://github.com/redkubes/otomi-core/issues/697)) ([2356ffc](https://github.com/redkubes/otomi-core/commit/2356ffc6167b9ad31b802bb9f19fc0974e56ad19))
+- default env dir ([6b10ae4](https://github.com/redkubes/otomi-core/commit/6b10ae4c043b1a8661216a150005eb8afab8911c))
+- **grafana:** grafana patch 8.0.3 to 8.0.7 for CVE-2021-43798 ([#694](https://github.com/redkubes/otomi-core/issues/694)) ([9e57423](https://github.com/redkubes/otomi-core/commit/9e574232a409808c1ccde551553b57e5e9f8291b))
+- jobs ([#695](https://github.com/redkubes/otomi-core/issues/695)) ([c2b4580](https://github.com/redkubes/otomi-core/commit/c2b4580cdba9252d37919a1726c470fbea0055d2))
+- bootstrap should only validate only input values [kind] ([#693](https://github.com/redkubes/otomi-core/issues/693)) ([288c7ec](https://github.com/redkubes/otomi-core/commit/288c7ec7400bf5ae325903bfb9fe09ec5237f72d))
+- gatekeeper postinstall job securityContext ([#689](https://github.com/redkubes/otomi-core/issues/689)) ([07e3208](https://github.com/redkubes/otomi-core/commit/07e320855831abc97e79c76be17ca533334debc4)), closes [#688](https://github.com/redkubes/otomi-core/issues/688)
+- secrets generation, more bootstrap tests ([#687](https://github.com/redkubes/otomi-core/issues/687)) ([86e7c31](https://github.com/redkubes/otomi-core/commit/86e7c3118635f9a9c290a6fb9b147cdc9ea5de09))
+- ca made secret to not generate again, fixes [#681](https://github.com/redkubes/otomi-core/issues/681) ([a128bb1](https://github.com/redkubes/otomi-core/commit/a128bb168db734973bfe87147d92ae130fe468d7))
+- chart install [ci skip] ([6c3a79f](https://github.com/redkubes/otomi-core/commit/6c3a79fb811f6289f304ca87039f03fc5c9f273f))
+- export env ([#682](https://github.com/redkubes/otomi-core/issues/682)) ([cef235a](https://github.com/redkubes/otomi-core/commit/cef235a0f1eb297a450d03d3440426f2459e6c19))
+- kind runner ([8c0694f](https://github.com/redkubes/otomi-core/commit/8c0694fac8f0d340db8ae0b6112089058ec52fb7))
+- otomi tag check ([0218691](https://github.com/redkubes/otomi-core/commit/02186912a03152f0dfd279539726b8300be20a8a))
+- wait for, chart value merge issues, clusterissuer ([#679](https://github.com/redkubes/otomi-core/issues/679)) ([a6cd524](https://github.com/redkubes/otomi-core/commit/a6cd52448ec422d48e46fadbf41b4e1f6e38389f))
+- workflow changelog [ci skip] ([e4abd10](https://github.com/redkubes/otomi-core/commit/e4abd10da3c9347490cdae683b28e3749baaec6b))
+- wrong usage of multitenant flag ([dbba831](https://github.com/redkubes/otomi-core/commit/dbba8314826f15778f6ec9937fabc203670d834f))
+- removing authz header ([#674](https://github.com/redkubes/otomi-core/issues/674)) ([eefe171](https://github.com/redkubes/otomi-core/commit/eefe171833fda20df740eb2692a1a541548c230d))
+- undesired error thrown ([54f6242](https://github.com/redkubes/otomi-core/commit/54f6242157948bc8588886318664f78387a81cce))
+
+### Code Refactoring
+
+- pulling api from docker hub ([#675](https://github.com/redkubes/otomi-core/issues/675)) ([9d8531f](https://github.com/redkubes/otomi-core/commit/9d8531f254ebb72b0bc48f9a166f7c619f3ec365))
+
+### Tests
+
+- **bootstrap:** initial test implementation with jest and dependency injection ([#676](https://github.com/redkubes/otomi-core/issues/676)) ([4c8a58b](https://github.com/redkubes/otomi-core/commit/4c8a58b3194bfca737f723a8ea37a1850a0150a7)), closes [#670](https://github.com/redkubes/otomi-core/issues/670)
 
 ### [0.14.52](https://github.com/redkubes/otomi-core/compare/v0.14.51...v0.14.52) (2021-12-01)
 
