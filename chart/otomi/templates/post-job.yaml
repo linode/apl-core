@@ -28,19 +28,12 @@ spec:
               kubectl delete cm otomi-status
               kubectl delete secret otomi-generated-passwords
               echo "Otomi has been uninstalled."
-          env:
-            - name: CI
-              value: '1'
-            - name: ENV_DIR
-              value: /home/app/stack/env
-            - name: VERBOSITY
-              value: '1'
           resources:
             limits:
-              memory: 2Gi
-              cpu: '2'
+              memory: 100Mi
+              cpu: 100m
             requests:
-              memory: 1Gi
-              cpu: '1'
+              memory: 50Mi
+              cpu: 50m
           securityContext:
             runAsUser: 999
