@@ -19,7 +19,7 @@
       "env": {
         "CI": "true",
         "ENV_DIR": "/tmp/otomi/env",
-        "VALUES_INPUT": "${workspaceRoot}/src/fixtures/bootstrap/values-full.yaml"
+        "VALUES_INPUT": "/tmp/otomi/values.yaml"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },

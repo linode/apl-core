@@ -25,13 +25,13 @@ type AskType = {
  * @param maxRetriesOrDefaultAnswer
  * @returns
  */
-export const ask = async (query: string, options?: AskType): Promise<string> => {
+export const ask = async (query: string, options?: AskType, deps = { getParsedArgs, question }): Promise<string> => {
   const choices = options?.choices ?? []
   const matching = options?.matching ?? []
   const defaultAnswer = options?.defaultAnswer ?? ''
   const maxRetries = options?.maxRetries ?? MAX_RETRIES_QUESTION
 
-  if (!getParsedArgs() || getParsedArgs().nonInteractive) return defaultAnswer
+  if (!deps.getParsedArgs() || deps.getParsedArgs().nonInteractive) return defaultAnswer
 
   const defaultMatchingFn = (answer: string) =>
     [...new Set(matching.map((val) => val.toLowerCase()))].includes(answer.toLowerCase())
@@ -43,7 +43,7 @@ export const ask = async (query: string, options?: AskType): Promise<string> => 
   let matches = false
   /* eslint-disable no-await-in-loop */
   do {
-    answer = await question(`${query}\n> `, { choices })
+    answer = await deps.question(`${query}\n> `, { choices })
     matches = await matchingFn(answer)
     tries += 1
     if (answer?.length === 0 && defaultAnswer.length > 0) return defaultAnswer
@@ -53,18 +53,18 @@ export const ask = async (query: string, options?: AskType): Promise<string> => 
   return answer
 }
 
-export const askYesNo = async (query: string, option?: { defaultYes?: boolean }): Promise<boolean> => {
-  const defaultAnswer = option?.defaultYes ? 'yes' : 'no'
-  const defaults = option?.defaultYes ? 'Yes/no' : 'yes/No'
+export const askYesNo = async (query: string, options?: { defaultYes?: boolean }, deps = { ask }): Promise<boolean> => {
+  const defaultAnswer = options?.defaultYes ? 'yes' : 'no'
+  const defaults = options?.defaultYes ? 'Yes/no' : 'yes/No'
   const yes = ['y', 'yes']
   const matching = [...yes, 'n', 'no', '']
-  const answer = await ask(`${query} [${defaults}]`, {
+  const answer = await deps.ask(`${query} [${defaults}]`, {
     choices: ['Yes', 'No'],
     matching,
     defaultAnswer,
   })
 
-  return yes.includes(answer.length > 0 ? answer : defaultAnswer)
+  return yes.includes(answer.length > 0 ? answer.toLowerCase() : defaultAnswer)
 }
 
 export type Streams = {

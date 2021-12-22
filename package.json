@@ -112,7 +112,8 @@
     "url": "git+https://github.com/redkubes/otomi-core.git"
   },
   "run-if-changed": {
-    "package-lock.json": "npm install --prefer-offline --no-audit"
+    "package-lock.json": "npm install --prefer-offline --no-audit",
+    "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
     "check-policies": "TESTING=1 binzx/otomi check-policies",
@@ -124,6 +125,7 @@
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
+    "gen:chart-schema": "js-yaml values-schema.yaml > chart/otomi/values.schema.json",
     "lint": "run-p spellcheck lint:hf lint:ts lint:types",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",

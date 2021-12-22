@@ -1621,7 +1621,7 @@ properties:
                 type: string
               clientID:
                 $ref: '#/definitions/wordCharacterPattern'
-                x-secret: '"otomi"'
+                default: otomi
               clientSecret:
                 type: string
                 x-secret: 'randAlphaNum 32'
@@ -2310,8 +2310,6 @@ properties:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
         pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
-    required:
-      - adminPassword
   policies:
     type: object
     description: |

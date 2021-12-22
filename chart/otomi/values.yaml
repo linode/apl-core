@@ -5,7 +5,7 @@ cluster:
   owner: ''
   provider: '' # provider can be one of aws|azure|google|onprem
 otomi:
-  adminPassword: '' # Will be automatically generated if not filled-in
+  # adminPassword: '' # Will be automatically generated if not filled-in
   # Set to true when using an external DNS zone. Use default (false) to get assigned a '*.nip.io' domain.
   hasExternalDNS: false
   # Set this to true, when you bring your own IDP such as Azure AD. Then you must also fill in the 'oidc:' settings below. When set to false Keycloak will become the IDP.

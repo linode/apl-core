@@ -138,15 +138,16 @@ export const processValues = async (
     if (cm.customRootCA && cm.customRootCAKey) {
       deps.debug.info('Skipping custom RootCA generation')
     } else {
-      caSecrets = deps.createCustomCA(originalValues as Record<string, any>)
+      caSecrets = deps.createCustomCA()
     }
   }
-  // we have generated all we need, now store the values and merge in the secrets
-  await deps.writeValues(merge(originalValues, generatedSecrets, caSecrets), true)
+  const allSecrets = merge(generatedSecrets, caSecrets)
+  // we have generated all we need, now store the values and merge in the secrets that don't exist yet
+  await deps.writeValues(merge(allSecrets, originalValues), false)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, generatedSecrets)
+    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalValues)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -154,17 +155,9 @@ export const processValues = async (
 }
 
 /**
- * Creates a custom CA cert and key pair in the location as defined in the schema. i.e.:
- *
- * charts:
- *   cert-manager:
- *     customRootCA: rootCrt,
- *     customRootCAKey: rootKey
+ * Creates a custom CA cert and key pair in the location as defined in the schema.
  */
-export const createCustomCA = (
-  originalValues: Record<string, any>,
-  deps = { terminal, pki, writeValues },
-): Record<string, any> => {
+export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<string, any> => {
   const d = deps.terminal('createCustomCA')
   d.info('Generating custom root CA')
 
@@ -206,14 +199,14 @@ export const createCustomCA = (
   const rootCrt = deps.pki.certificateToPem(cert).replaceAll('\r\n', '\n')
   const rootKey = deps.pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
-  return merge(originalValues, {
+  return {
     charts: {
       'cert-manager': {
         customRootCA: rootCrt,
         customRootCAKey: rootKey,
       },
     },
-  })
+  }
 }
 
 export const bootstrapValues = async (
@@ -235,9 +228,9 @@ export const bootstrapValues = async (
   const { ENV_DIR } = env()
   const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
 
-  const imageTag = await deps.getImageTag()
+  const imageTag = await deps.getImageTag(true)
   const otomiImage = `otomi/core:${imageTag}`
-  deps.debug.info(`Intalling artifacts from ${otomiImage}`)
+  deps.debug.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
 
   const originalValues = await deps.processValues()

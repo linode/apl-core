@@ -87,4 +87,5 @@ environments:
             enabled: false #{{ eq $provider "aws" }}
         otomi:
           version: {{ $otomiTag }}
-        versions: {{- $versions | toYaml | nindent 10 }} 
+        versions: {{- $versions | toYaml | nindent 10 }}
+      - ../core.yaml

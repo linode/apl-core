@@ -41,6 +41,7 @@ describe('Bootstrapping values', () => {
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
     await bootstrapValues(deps)
+    expect(deps.getImageTag).toHaveBeenCalledWith(true)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
@@ -114,8 +115,7 @@ describe('Bootstrapping values', () => {
     deps.pki.certificateToPem = jest.fn().mockReturnValue('certpem')
     deps.pki.privateKeyToPem = jest.fn().mockReturnValue('keypem')
     it('should create a new key pair when none exist', () => {
-      const values = {}
-      const res = createCustomCA(values, deps)
+      const res = createCustomCA(deps)
       expect(res).toMatchObject({
         charts: {
           'cert-manager': {
@@ -172,7 +172,7 @@ describe('Bootstrapping values', () => {
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
         deps.loadYaml.mockReturnValue(merge(values, { charts: { 'cert-manager': { issuer: 'custom-ca' } } }))
         await processValues(deps)
-        expect(deps.createCustomCA).toHaveBeenCalledWith(values)
+        expect(deps.createCustomCA).toHaveBeenCalled()
       })
       it('should not re-generate passwords if already existing in secrets', async () => {
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
@@ -196,12 +196,17 @@ describe('Bootstrapping values', () => {
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(enrichedSecrets)
         await processValues(deps)
-        expect(deps.writeValues).toHaveBeenNthCalledWith(2, enrichedValues, true)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(2, enrichedValues, false)
       })
     })
     describe('processing env dir values', () => {
       beforeEach(() => {
         deps.isChart = false
+      })
+      it('should retrieve previous user input when cluster provider is set', async () => {
+        deps.loadYaml.mockReturnValue({ ...values, cluster: { provider: 'set' } })
+        await processValues(deps)
+        expect(deps.hfValues).toHaveBeenCalledWith({ filesOnly: true })
       })
       it('should not validate values when starting empty', async () => {
         deps.hfValues.mockReturnValue(undefined)

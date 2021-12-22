@@ -36,11 +36,11 @@ export const getK8sVersion = (): string => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = async (): Promise<string> => {
+export const getImageTag = async (isBootstrap = false): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
+  if (isBootstrap) return `v${pkg.version}`
   const values = await hfValues()
-  if (!values) return `v${pkg.version}`
-  return values.otomi!.version
+  return values!.otomi!.version
 }
 
 let hasSops = false
@@ -78,8 +78,8 @@ const writeValuesToFile = async (
  */
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValues')
+  d.debug('Writing values: ', values)
   hasSops = existsSync(`${env().ENV_DIR}/.sops.yaml`)
-
   // creating secret files
   const schema = await getValuesSchema()
   const leaf = 'x-secret'
@@ -88,20 +88,19 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   // Get all JSON paths for secrets, without the .x-secret appended
   const secretsJsonPath = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
   d.debug('secretsJsonPath: ', secretsJsonPath)
+  // separate out the secrets
   const secrets = removeBlankAttributes(pick(values, secretsJsonPath))
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
-  // removing secrets
+  // from the plain values
   const plainValues = removeBlankAttributes(omit(values, secretsJsonPath)) as any
   const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts', '_derived']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
-
+  // and write to their files
   const promises: Promise<void>[] = []
-
   if (settings) promises.push(writeValuesToFile(`${env().ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (secretSettings)
     promises.push(writeValuesToFile(`${env().ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
-  // creating non secret files
   if (plainValues.cluster)
     promises.push(writeValuesToFile(`${env().ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)

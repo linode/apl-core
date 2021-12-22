@@ -9,7 +9,7 @@ ARG SKIP_TESTS='false'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
 ENV IN_DOCKER='1'
-ENV VERBOSITY='1'
+ENV VERBOSITY='2'
 
 COPY --chown=app . .
 
@@ -23,6 +23,7 @@ FROM otomi/tools:v1.4.21 as prod
 
 ENV APP_HOME=/home/app/stack
 ENV IN_DOCKER='1'
+ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
 
 RUN npm config set update-notifier false

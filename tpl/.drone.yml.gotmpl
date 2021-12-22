@@ -22,6 +22,7 @@ trigger:
 environment:
   IN_DOCKER: '1'
   VERBOSITY: '1'
+  ENV_DIR: /home/app/stack/env
 
 steps:
 {{- if eq .provider "slack" }}
