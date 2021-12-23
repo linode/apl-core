@@ -2,15 +2,16 @@ cluster:
   # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
   k8sVersion: '1.20'
   name: 'dev'
-  owner: ''
   provider: '' # provider can be one of aws|azure|google|onprem
-otomi:
+  # owner: '' # will be set to 'otomi' if left empty
+otomi: {}
   # adminPassword: '' # Will be automatically generated if not filled-in
-  # Set to true when using an external DNS zone. Use default (false) to get assigned a '*.nip.io' domain.
-  hasExternalDNS: false
-  # Set this to true, when you bring your own IDP such as Azure AD. Then you must also fill in the 'oidc:' settings below. When set to false Keycloak will become the IDP.
+  # Set hasExternalDNS to true when using an external DNS zone. Otherwise a '*.nip.io' domain will be created.
+  # hasExternalDNS: false
+  # Set hasExternalIDP to true,when you bring your own IDP such as Azure AD. When set to false Keycloak will become the IDP.
+  # NOTE: When this is set to true you must also fill in the 'oidc:' settings below. 
   # hasExternalIDP: false
-  # by default the image tag is set to .Chart.AppVersion
+  # By default the image tag is set to .Chart.AppVersion
   # version: master
 charts:
   cert-manager:
