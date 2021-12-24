@@ -257,7 +257,6 @@ definitions:
     required:
       - k8sVersion
       - name
-      - owner
       - provider
   containerSpecNoSec:
     properties:
