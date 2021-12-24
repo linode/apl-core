@@ -240,10 +240,29 @@ export const bootstrapValues = async (
     return
   }
   const finalValues = (await deps.hfValues()) as Record<string, any>
-  if (deps.isCli && !finalValues.cluster.k8sContext) {
-    const k8sContext = `otomi-${providerMap(finalValues.cluster.provider)}-${finalValues.cluster.name}`
-    deps.debug.info(`No value for cluster.k8sContext found, providing default one: ${k8sContext}`)
-    await deps.writeValues({ cluster: { k8sContext } }, true)
+  const {
+    cluster: { apiName, k8sContext, name, owner, provider },
+  } = finalValues
+  // we can set defaults for the following 3 and some derived values
+  // that we want to end up in the files, so the api can access them
+  if (!k8sContext || !apiName || !owner) {
+    const add: Record<string, any> = { cluster: {} }
+    const engine = providerMap(provider)
+    const defaultOwner = 'otomi'
+    const defaultName = `${owner || defaultOwner}-${engine}-${name}`
+    if (!apiName) {
+      deps.debug.info(`No value for cluster.apiName found, providing default one: ${defaultName}`)
+      add.cluster.apiName = defaultName
+    }
+    if (!k8sContext) {
+      deps.debug.info(`No value for cluster.k8sContext found, providing default one: ${defaultName}`)
+      add.cluster.k8sContext = defaultName
+    }
+    if (!owner) {
+      deps.debug.info(`No value for cluster.owner found, providing default one: ${defaultOwner}`)
+      add.cluster.owner = defaultOwner
+    }
+    await deps.writeValues(add, true)
   }
   await deps.genSops()
   if (deps.existsSync(`${ENV_DIR}/.sops.yaml`)) {

@@ -9,7 +9,7 @@ image:
   {{- end }}
   repository: eu.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
   tag: v1.18.2
-{{ $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}
+{{- $map := readFile "../../helmfile.d/snippets/provider-engine-map.gotmpl" | fromYaml }}
 autoDiscovery:
   clusterName:  {{ printf "%s-%s-%s" $v.cluster.owner (index $map $v.cluster.provider) $v.cluster.name }}
 

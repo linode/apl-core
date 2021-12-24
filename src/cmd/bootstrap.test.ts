@@ -54,11 +54,15 @@ describe('Bootstrapping values', () => {
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(undefined)
   })
-  it('should set k8sContext if needed', async () => {
+  it('should set apiName, k8sContext and owner if needed', async () => {
     await bootstrapValues(deps)
     expect(deps.writeValues).toHaveBeenCalledWith(
       expect.objectContaining({
-        cluster: { k8sContext: `otomi-${values.cluster.provider}-${values.cluster.name}` },
+        cluster: expect.objectContaining({
+          apiName: expect.any(String),
+          k8sContext: expect.any(String),
+          owner: expect.any(String),
+        }),
       }),
       true,
     )
