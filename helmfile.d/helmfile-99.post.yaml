@@ -43,3 +43,9 @@ releases:
     labels:
       pkg: ingress-azure
       group: jobs
+  - name: host-mods
+    installed: {{ $c | get "host-mods.enabled" }}
+    namespace: kube-system
+    labels:
+      pkg: host
+    <<: *default

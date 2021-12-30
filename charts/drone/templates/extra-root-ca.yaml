@@ -1,1 +1,0 @@
-{{ include "extraRootCA.secret" (dict "rootCA" .Values.extraRootCA) }}

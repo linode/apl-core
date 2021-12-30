@@ -143,9 +143,17 @@ export const commit = async (): Promise<void> => {
   cd(env().ENV_DIR)
   if (!existsSync(`${env().ENV_DIR}/.git`)) await bootstrapGit(values)
 
-  if (values?.charts?.gitea?.enabled) {
+  if (values!.charts!.gitea!.enabled) {
     const url = await getGiteaHealthUrl()
-    await waitTillAvailable(url, { skipSsl: values?._derived?.untrustedCA })
+    const { adminPassword } = values!.charts!.gitea
+    await waitTillAvailable(url, {
+      // we wait for a 404 as that is the best we can do,
+      // since that is what gitea gives for repos that have nothing public
+      status: 404,
+      skipSsl: values?._derived?.untrustedCA,
+      username: 'otomi-admin',
+      password: adminPassword,
+    })
   }
   await preCommit()
   d.info('Committing values')

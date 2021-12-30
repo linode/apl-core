@@ -11,12 +11,13 @@
 {{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
+{{- $dindEnabled := false }}
 
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 images:
   server:
-    tag: 1.9.0
+    tag: 2.7.2
   agent:
     repository: "docker.io/drone/drone-runner-kube"
     tag: latest
@@ -24,8 +25,7 @@ images:
 nameOverride: drone
 fullnameOverride: drone
 sharedSecret: {{ $d | get "sharedSecret" }}
-sourceControl:
-{{- $d.sourceControl | toYaml | nindent 2 }}
+sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users
@@ -34,7 +34,7 @@ server:
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
   adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" $v.otomi.adminPassword) }}
   dind:
-    enabled: false
+    enabled: {{ $dindEnabled }}
   resources:
     {{- with $d | get "resources.server" nil }}
       {{- toYaml .| nindent 4 }}
@@ -61,9 +61,7 @@ server:
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
     DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" (randAlpha 32) }}
     {{- end }}
-    {{- if and $hasGitea $v._derived.untrustedCA }}
-    DRONE_GITEA_SKIP_VERIFY: true
-    {{- end }}
+
 agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
@@ -82,15 +80,20 @@ agent:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
-    {{- if and $hasGitea $v._derived.untrustedCA }}
-    DRONE_GITEA_SKIP_VERIFY: true
-    {{- end }}
-  envFile: |
+  runnerEnv:
     {{- $sopsEnv | nindent 4 }}
     {{- if and $hasGitea $v._derived.untrustedCA }}
-    DRONE_GITEA_SKIP_VERIFY: true
+      {{- if $dindEnabled }}
+    DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'
+      {{- else }}
+    {{- /*
+    We can not yet be sure wether containerd runtime is in use, because that depends on provider and version.
+    Once we know for sure we can map the host path to the cert:
+    DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'.
+    But for now we have to skip ssl verification: */}}
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
+      {{- end }}
     {{- end }}
 
 persistence:
@@ -101,12 +104,12 @@ metrics:
   prometheus:
     enabled: true
 
-{{- if $v._derived.untrustedCA}}
-extraRootCA: |
-  {{- $v._derived.caCert | nindent 2 }}
-{{- end }}
-
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
+{{- end }}
+
+{{- if $v._derived.untrustedCA }}
+customCa: |
+  {{- $v._derived.caCert | nindent 2 }}
 {{- end }}

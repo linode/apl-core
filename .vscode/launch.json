@@ -24,6 +24,25 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
+      "name": "Debug hf",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "hf", "build", "-f", "helmfile.d/helmfile-70.shared.yaml"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "CI": "true",
+        "ENV_DIR": "/tmp/otomi/env",
+        "VALUES_INPUT": "/tmp/otomi/values.yaml"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "name": "Debug apply",
       "console": "integratedTerminal",
       "type": "pwa-node",

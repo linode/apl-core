@@ -164,6 +164,8 @@ export const checkKubeContext = async (): Promise<void> => {
 type WaitTillAvailableOptions = Options & {
   status?: number
   skipSsl?: boolean
+  username?: string
+  password?: string
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
@@ -180,6 +182,11 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
   const fetchOptions: RequestInit = {
     redirect: 'follow',
     agent: new Agent({ rejectUnauthorized }),
+  }
+  if (options.username && options.password) {
+    fetchOptions.headers = {
+      Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+    }
   }
 
   await retry(async (bail) => {

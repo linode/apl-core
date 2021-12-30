@@ -134,12 +134,18 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
  * Takes values as input and generates secrets that don't exist yet.
  * Returns all generated secrets.
  */
-export const generateSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
-  const debug = terminal('generateSecrets')
+export const generateSecrets = async (
+  values: Record<string, any> = {},
+  deps = {
+    terminal,
+    getValuesSchema,
+  },
+): Promise<Record<string, any>> => {
+  const debug = deps.terminal('generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
 
-  const schema = await getValuesSchema()
+  const schema = await deps.getValuesSchema()
 
   debug.info('Extracting secrets')
   const secrets = extract(schema, leaf, (val: any) => {
@@ -185,7 +191,7 @@ export const generateSecrets = async (values: Record<string, any> = {}): Promise
   debug.debug('firstTemplateRound: ', firstTemplateRound)
 
   debug.info('Gather all values for the second round of templating')
-  const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), values)
+  const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), cloneDeep(values))
   debug.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
 
   debug.info('Second round of templating')
@@ -196,7 +202,8 @@ export const generateSecrets = async (values: Record<string, any> = {}): Promise
 
   debug.info('Generated all secrets')
   // Only return values that have x-secrets prop and are now fully templated:
-  const res = pick(secondTemplateRound, Object.keys(flattenObject(secrets)))
+  const allSecrets = extract(schema, leaf)
+  const res = pick(merge(secondTemplateRound, cloneDeep(values)), Object.keys(flattenObject(allSecrets)))
   debug.debug('generateSecrets result: ', res)
   return res
 }

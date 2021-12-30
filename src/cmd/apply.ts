@@ -10,22 +10,19 @@ import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { Arguments as DroneArgs } from './gen-drone'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
 let debug: OtomiDebugger
 
-interface Arguments extends HelmArguments, DroneArgs {}
-
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
 }
 
 const setup = (): void => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
   debug = terminal(cmdName)
 
@@ -58,7 +55,7 @@ const prepareValues = async (): Promise<void> => {
 }
 
 const applyAll = async () => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   debug.info('Start apply all')
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
@@ -97,7 +94,7 @@ const applyAll = async () => {
 }
 
 const apply = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
     return
@@ -120,7 +117,7 @@ export const module: CommandModule = {
   describe: 'Apply all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()

@@ -8,8 +8,6 @@
 
 nameOverride: gitea
 fullnameOverride: gitea
-waitForUrl: {{ $oidcWellKnownUrl }}
-tasksVersion: {{ $v.versions.tasks }}
 
 resources:
   limits:
@@ -35,11 +33,14 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  tag: 1.14.2
+  tag: 1.15.8
   pullPolicy: IfNotPresent
   rootless: true
 
 gitea:
+  podAnnotations:
+    policy.otomi.io/ignore.init: psp-allowed-users
+    policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
@@ -60,11 +61,6 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-  {{- if $v._derived.untrustedCA}}
-      SKIP_TLS_VERIFY: true
-    webhook:
-      SKIP_TLS_VERIFY: true
-  {{- end }}
     
     
   metrics:
@@ -74,12 +70,11 @@ gitea:
       additionalLabels:
         prometheus: system
   oauth:
-    enabled: true
-    name: {{ $k.idp.alias }}
-    provider: openidConnect
-    key: {{ $k.idp.clientID  }}
-    secret: {{ $k.idp.clientSecret }}
-    autoDiscoverUrl: {{ $oidcWellKnownUrl }}
+    - name: {{ $k.idp.alias }}
+      provider: openidConnect
+      key: {{ $k.idp.clientID  }}
+      secret: {{ $k.idp.clientSecret }}
+      autoDiscoverUrl: {{ $oidcWellKnownUrl }}
 
 init:
   resources:
@@ -117,12 +112,21 @@ postgresql:
       memory: 256Mi
       cpu: 250m
 
-{{- if $v._derived.untrustedCA}}
-extraRootCA: |
-  {{- $v._derived.caCert | nindent 2 }}
+{{- if $v._derived.untrustedCA }}
+extraVolumeMounts:
+  - name: custom-ca
+    mountPath: /etc/ssl/certs/ca-certificates.crt
+    subPath: ca-certificates.crt
+extraVolumes:
+  - name: custom-ca
+    secret:
+      secretName: custom-ca
 {{- end }}
 
-securityContext:
+podSecurityContext:
+  fsGroup: 1000
+
+containerSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000

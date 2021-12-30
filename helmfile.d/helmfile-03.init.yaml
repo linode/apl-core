@@ -12,6 +12,24 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
+  - name: gitea-artifacts
+    installed: {{ $c | get "gitea.enabled" }}
+    namespace: gitea
+    labels:
+      pkg: gitea
+    <<: *raw
+  - name: keycloak-artifacts
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+    <<: *raw
+  - name: kiali-operator-artifacts
+    installed: {{ $v._derived.untrustedCA }}
+    namespace: kiali
+    labels:
+      pkg: kiali
+    <<: *raw
   - name: knative-init
     installed: true
     namespace: default

@@ -35,7 +35,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: team-{{ $v.teamId }}-{{ $type }}-tls{{ $tls }}
-  labels: {{- include "chart-labels" $ | nindent 4 }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
     istio: ingressgateway-{{ $type }}

@@ -37,9 +37,13 @@ const startup = async (): Promise<void> => {
       .completion('completion', false)
     await parser.parseAsync()
   } catch (error) {
-    if (`${error}`.includes('Unknown command') || `${error}`.includes('Not enough non-option arguments: got 0'))
+    debug.error(error)
+    if (
+      `${error}`.includes('Unknown command') ||
+      `${error}`.includes('Not enough non-option arguments: got 0') ||
+      `${error}`.includes('No arguments were passed')
+    )
       parser.showHelp()
-    else debug.error(error)
     process.exit(1)
   } finally {
     if (!env().IN_DOCKER && env().OTOMI_DEV && env().ENV_DIR) unlinkSync(`${process.cwd()}/env`)

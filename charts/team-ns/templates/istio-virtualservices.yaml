@@ -17,7 +17,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: {{ $vsName }}
-  labels: {{- include "chart-labels" $ | nindent 4 }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
       {{- if $hasAuth }}
     auth: "true"
       {{- end }}

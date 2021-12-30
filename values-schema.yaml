@@ -1824,6 +1824,14 @@ properties:
             properties:
               annotations:
                 $ref: '#/definitions/annotations'
+      host-mods:
+        properties:
+          certDir:
+            type: string
+            description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
+          updateCmd:
+            type: string
+            description: The update command to run after copying the certificates.
       oauth2-proxy:
         additionalProperties: false
         properties:

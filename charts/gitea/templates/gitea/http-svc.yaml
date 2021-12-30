@@ -11,6 +11,19 @@ spec:
   {{- if and .Values.service.http.loadBalancerIP (eq .Values.service.http.type "LoadBalancer") }}
   loadBalancerIP: {{ .Values.service.http.loadBalancerIP  }}
   {{- end }}
+  {{- if .Values.service.http.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- range .Values.service.http.loadBalancerSourceRanges }}
+    - {{ . }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.service.http.externalIPs }}
+  externalIPs:
+    {{- toYaml .Values.service.http.externalIPs | nindent 4 }}
+  {{- end }}
+  {{- if .Values.service.http.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.http.externalTrafficPolicy }}
+  {{- end }}
   {{- if and .Values.service.http.clusterIP (eq .Values.service.http.type "ClusterIP") }}
   clusterIP: {{ .Values.service.http.clusterIP }}
   {{- end }}

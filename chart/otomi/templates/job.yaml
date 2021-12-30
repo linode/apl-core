@@ -12,6 +12,7 @@ spec:
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
+        otomi-core: "true"
     spec:
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:

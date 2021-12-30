@@ -2,7 +2,7 @@ import { existsSync, mkdirSync } from 'fs'
 import { copy, outputFileSync } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { get, merge } from 'lodash'
+import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
@@ -112,25 +112,27 @@ export const processValues = async (
   },
 ): Promise<Record<string, any> | undefined> => {
   const { ENV_DIR, VALUES_INPUT } = deps.env()
+  let originalInput: Record<string, any> | undefined
   let originalValues: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
   if (deps.isChart) {
     deps.debug.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
     storedSecrets = await deps.getStoredClusterSecrets()
-    if (storedSecrets) originalValues = merge(originalValues, storedSecrets)
-    await deps.writeValues(originalValues, true)
+    if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
+    else originalInput = cloneDeep(originalValues)
+    await deps.writeValues(originalInput, true)
   } else {
     deps.debug.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
-      originalValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
+      originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
     }
-    if (originalValues) storedSecrets = originalValues
+    if (originalInput) storedSecrets = originalValues
   }
   // generate secrets that don't exist yet
-  const generatedSecrets = await deps.generateSecrets(storedSecrets)
+  const generatedSecrets = await deps.generateSecrets(merge(cloneDeep(storedSecrets), cloneDeep(originalInput)))
   // do we need to create a custom CA? if so add it to the secrets
   const cm = get(originalValues, 'charts.cert-manager', {})
   let caSecrets = {}
@@ -141,17 +143,17 @@ export const processValues = async (
       caSecrets = deps.createCustomCA()
     }
   }
-  const allSecrets = merge(generatedSecrets, caSecrets)
-  // we have generated all we need, now store the values and merge in the secrets that don't exist yet
-  await deps.writeValues(merge(allSecrets, originalValues), false)
+  const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
+  // we have generated all we need, now store the original values and merge in the secrets that don't exist yet
+  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)), false)
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
     await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, allSecrets)
-  } else if (originalValues)
+  } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
-  return originalValues
+  return originalInput
 }
 
 /**

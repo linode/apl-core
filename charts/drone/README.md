@@ -96,32 +96,32 @@ The following table lists the configurable parameters of the drone charts and th
 | `server.host`               | Drone **server** hostname (should match callback url in oauth config)              | `(internal hostname)`       |
 | `server.protocol`               | Drone **server** scheme/protocol [http,https]                                                         | `http`       |
 | `server.env`                | Drone **server** environment variables                                                        | `(default values)`          |
-| `server.envSecrets`         | Drone **server** secret environment variables                                                 | `(default values)`          |
-| `server.adminUser`         | Initial user to create and set as admin                                                 | ``          |
-| `server.alwaysAuth`         | whether to authenticate when cloning public repositories                                                 | `false`          |
-| `server.kubernetes.enabled`         | whether to use kubernetes to run pipelines (if `false` will run agents instead)                                            | `true`          |
-| `server.kubernetes.namespace`         | namespace in which to run pipelines, defaults to release namespace.                                            | ``          |
-| `server.kubernetes.pipelineServiceAccount`         | if rbac is enabled, what should name of pipeline service account be?                                            | ``          |
-| `server.annotations`        | Drone **server** annotations                                                                  | `{}`                        |
+| `server.envSecrets`         | Drone **server** secret environment variables                                                 | `(default values)`          |
+| `server.adminUser`         | Initial user to create and set as admin                                                 | ``          |
+| `server.alwaysAuth`         | whether to authenticate when cloning public repositories                                                 | `false`          |
+| `server.kubernetes.enabled`         | whether to use kubernetes to run pipelines (if `false` will run agents instead)                                            | `true`          |
+| `server.kubernetes.namespace`         | namespace in which to run pipelines, defaults to release namespace.                                            | ``          |
+| `server.kubernetes.pipelineServiceAccount`         | if rbac is enabled, what should name of pipeline service account be?                                            | ``          |
+| `server.annotations`        | Drone **server** pod annotations                                                                  | `{}`                        |
 | `server.resources`          | Drone **server** pod resource requests & limits                                               | `{}`                        |
 | `server.schedulerName`      | Drone **server** alternate scheduler name                                                     | `nil`                       |
 | `server.affinity`           | Drone **server** scheduling preferences                                                       | `{}`                        |
 | `server.nodeSelector`       | Drone **server** node labels for pod assignment                                               | `{}`                        |
 | `server.tolerations`        | Drone **server** node taints to tolerate                                                      | `[]`                        |
-| `server.extraContainers`    | Additional sidecar containers                                                                 | `""`                        |
-| `server.extraVolumes`       | Additional volumes for use in extraContainers                                                 | `""`                        |
+| `server.volumes`            | Drone **server** additional volumes                                                           | `[]`                        |
+| `server.volumeMounts`       | Drone **server** mount points for volumes                                                     | `[]`                        |
 | `agent.env`                 | Drone **agent** environment variables                                                         | `(default values)`          |
 | `agent.replicas`            | Drone **agent** replicas                                                                      | `1`                         |
-| `agent.annotations`         | Drone **agent** annotations                                                                   | `{}`                        |
+| `agent.annotations`         | Drone **agent** pod annotations                                                                   | `{}`                        |
 | `agent.resources`           | Drone **agent** pod resource requests & limits                                                | `{}`                        |
 | `agent.schedulerName`       | Drone **agent** alternate scheduler name                                                      | `nil`                       |
 | `agent.affinity`            | Drone **agent** scheduling preferences                                                        | `{}`                        |
 | `agent.nodeSelector`        | Drone **agent** node labels for pod assignment                                                | `{}`                        |
 | `agent.tolerations`         | Drone **agent** node taints to tolerate                                                       | `[]`                        |
-| `agent.livenessProbe` | Not currently used. | `{}` |
-| `agent.readinessProbe` | Not currently used  | `{}` |
-| `agent.volumes`             | Additional volumes to make available to agent (shared by dind if used)                        | `nil`                       |
-| `agent.volumeMounts`        | Mount points for volumes                                                                      | `nil`                       |
+| `agent.livenessProbe`       | Not currently used. | `{}` |
+| `agent.readinessProbe`      | Not currently used  | `{}` |
+| `agent.volumes`             | Additional volumes to make available to agent (shared by dind if used)                        | `[]`                       |
+| `agent.volumeMounts`        | Mount points for volumes                                                                      | `[]`                       |
 | `dind.enabled`              | Enable or disable **DinD**                                                                    | `true`                      |
 | `dind.driver`               | **DinD** storage driver                                                                       | `overlay2`                  |
 | `dind.volumeMounts`         | Mount points for volumes (defined in agent.volumes)                                           | `nil`                       |

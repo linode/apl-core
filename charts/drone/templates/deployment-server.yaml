@@ -22,13 +22,13 @@ spec:
     metadata:
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-{{- if .Values.metrics.prometheus.enabled }}
+        {{- if .Values.metrics.prometheus.enabled }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
-{{- end }}
-{{- if .Values.server.annotations }}
+        {{- end }}
+        {{- if .Values.server.annotations }}
         {{ toYaml .Values.server.annotations | nindent 8 }}
-{{- end }}
+        {{- end }}
       labels:
         app: {{ template "drone.name" . }}
         release: "{{ .Release.Name }}"
@@ -37,22 +37,21 @@ spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- if .Values.server.securityContext }}
-      securityContext: {{- toYaml .Values.server.securityContext | nindent 8 }}
-{{- end }}
-{{- if .Values.server.schedulerName }}
-      schedulerName: "{{ .Values.server.schedulerName }}"
-{{- end }}
-{{- if .Values.server.affinity }}
-      affinity: {{- toYaml .Values.server.affinity | nindent 8 }}
-{{- end }}
-{{- if .Values.server.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.server.nodeSelector | nindent 8 }}
-{{- end }}
-{{- with .Values.server.tolerations }}
+      {{- with .Values.server.securityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.schedulerName }}
+      schedulerName: "{{ . }}"
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
-{{- end }}
-      initContainers: {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 6 }}
+      {{- end }}
       containers:
         - name: server
           image: "{{ .Values.images.server.repository }}:{{ .Values.images.server.tag }}"
@@ -63,8 +62,8 @@ spec:
             - name: DRONE_GIT_ALWAYS_AUTH
               value: {{ .Values.server.alwaysAuth | quote }}
             - name: DRONE_SERVER_HOST
-            {{- if hasKey .Values.server "host" }}
-              value: "{{ .Values.server.host }}"
+            {{- with .Values.server.host }}
+              value: "{{ . }}"
             {{- else }}
               value: "{{ template "drone.fullname" . }}"
             {{- end }}
@@ -116,35 +115,36 @@ spec:
               port: http
           resources: {{- toYaml .Values.server.resources | nindent 12 }}
           volumeMounts:
-          {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
-          - name: bitbucket-private-key
-            mountPath: /etc/bitbucket
-            readOnly: true
-          {{- end }}
-          - name: data
-            mountPath: /var/lib/drone
-          {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 10 }}
-        {{- with .Values.server.extraContainers }}
-        {{- tpl . $ | nindent 8 }}
-        {{- end }}
+            {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
+            - name: bitbucket-private-key
+              mountPath: /etc/bitbucket
+              readOnly: true
+            {{- end }}
+            - name: data
+              mountPath: /var/lib/drone
+            - name: custom-ca
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              subPath: ca-certificates.crt
       volumes:
-      {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
+        {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
         - name: bitbucket-private-key
           secret:
             secretName: {{ template "drone.sourceControlSecret" . }}
             items:
               - key: {{ .Values.sourceControl.bitbucketServer.privateKey }}
                 path: key.pem
-      {{- end }}
+        {{- end }}
         - name: data
-        {{- if .Values.persistence.enabled }}
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim | default (include "drone.fullname" .) }}
-        {{- else }}
+          {{- else }}
           emptyDir: {}
-        {{- end -}}
-        {{- include "extraRootCA.volumes" (dict "rootCA" .Values.extraRootCA) | nindent 8 }}
-        {{- with .Values.server.extraVolumes }}
-        {{ tpl . $ | nindent 8 }}
+          {{- end }}
+        - name: custom-ca
+          secret:
+            secretName: {{ template "drone.fullname" . }}-ca
+        {{- with .Values.server.volumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
 {{ end }}
