@@ -5,6 +5,11 @@
 {{- $teamNames = print "%s%s" $teamNames $name }}
 {{- end }}
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
+
+# @TODO:
+# image:
+#   tag: v2.4.1
+
 tracing:
   jaegerAgentHost:
 

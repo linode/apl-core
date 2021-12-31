@@ -27,7 +27,7 @@ let otomiK8sVersion: string
  */
 export const getK8sVersion = (): string => {
   if (otomiK8sVersion) return otomiK8sVersion
-  const clusterFile: any = loadYaml(`${env().ENV_DIR}/env/cluster.yaml`)
+  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiK8sVersion = clusterFile.cluster!.k8sVersion!
   return otomiK8sVersion
 }
@@ -79,7 +79,7 @@ const writeValuesToFile = async (
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
   const d = terminal('values:writeValues')
   d.debug('Writing values: ', values)
-  hasSops = existsSync(`${env().ENV_DIR}/.sops.yaml`)
+  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
   // creating secret files
   const schema = await getValuesSchema()
   const leaf = 'x-secret'
@@ -98,15 +98,13 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   const settings = omit(plainValues, fieldsToOmit)
   // and write to their files
   const promises: Promise<void>[] = []
-  if (settings) promises.push(writeValuesToFile(`${env().ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (secretSettings)
-    promises.push(writeValuesToFile(`${env().ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster)
-    promises.push(writeValuesToFile(`${env().ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
-    promises.push(
-      writeValuesToFile(`${env().ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite),
-    )
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
 
   const plainChartPromises = Object.keys((plainValues.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -114,7 +112,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: plainValues.charts[chart],
       },
     }
-    return writeValuesToFile(`${env().ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
   })
   const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -122,7 +120,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: secrets.charts[chart],
       },
     }
-    return writeValuesToFile(`${env().ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])

@@ -9,7 +9,7 @@ images:
   ##
   server:
     repository: "docker.io/drone/drone"
-    tag: 2.7.2
+    tag: 1.10.2
     pullPolicy: IfNotPresent
 
   ## The drone runner image, change tag to use a different version.

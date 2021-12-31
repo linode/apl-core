@@ -22,7 +22,7 @@ const cmdName = getFilename(__filename)
 const debug: OtomiDebugger = terminal(cmdName)
 
 export const generateLooseSchema = (deps = { debug, rootDir, env, isCore, loadYaml, outputFileSync }): void => {
-  const { ENV_DIR } = env()
+  const { ENV_DIR } = env
   const devOnlyPath = `${deps.rootDir}/.vscode/values-schema.yaml`
   const targetPath = `${ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${deps.rootDir}/values-schema.yaml`
@@ -45,7 +45,8 @@ export const getStoredClusterSecrets = async (
   deps = { debug, getK8sSecret },
 ): Promise<Record<string, any> | undefined> => {
   deps.debug.info(`Checking if ${secretId} already exists`)
-  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE)
+  if (env.OTOMI_DEV) return undefined
+  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
   if (kubeSecretObject) {
     deps.debug.info(`Found ${secretId} secrets on cluster, recovering`)
     return kubeSecretObject
@@ -56,7 +57,7 @@ export const getStoredClusterSecrets = async (
 export const copyBasicFiles = async (
   deps = { debug, env, mkdirSync, copyFile, copy, generateLooseSchema, existsSync },
 ): Promise<void> => {
-  const { ENV_DIR } = deps.env()
+  const { ENV_DIR } = deps.env
   const binPath = `${ENV_DIR}/bin`
   deps.mkdirSync(binPath, { recursive: true })
   await Promise.allSettled([
@@ -111,7 +112,7 @@ export const processValues = async (
     createCustomCA,
   },
 ): Promise<Record<string, any> | undefined> => {
-  const { ENV_DIR, VALUES_INPUT } = deps.env()
+  const { ENV_DIR, VALUES_INPUT } = deps.env
   let originalInput: Record<string, any> | undefined
   let originalValues: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
@@ -127,6 +128,7 @@ export const processValues = async (
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
     if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
+      await decrypt()
       originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
     }
     if (originalInput) storedSecrets = originalValues
@@ -147,9 +149,9 @@ export const processValues = async (
   // we have generated all we need, now store the original values and merge in the secrets that don't exist yet
   await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)), false)
   // and do some context dependent post processing:
-  if (deps.isChart) {
+  if (deps.isChart && !env.OTOMI_DEV) {
     // to support potential failing chart install we store secrets on cluster
-    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env().DEPLOYMENT_NAMESPACE, allSecrets)
+    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -227,7 +229,7 @@ export const bootstrapValues = async (
     decrypt,
   },
 ): Promise<void> => {
-  const { ENV_DIR } = env()
+  const { ENV_DIR } = env
   const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
 
   const imageTag = await deps.getImageTag(true)
@@ -245,7 +247,7 @@ export const bootstrapValues = async (
   const {
     cluster: { apiName, k8sContext, name, owner, provider },
   } = finalValues
-  // we can set defaults for the following 3 and some derived values
+  // we can derive defaults for the following values
   // that we want to end up in the files, so the api can access them
   if (!k8sContext || !apiName || !owner) {
     const add: Record<string, any> = { cluster: {} }
@@ -307,6 +309,5 @@ export const module = {
 
     */
     await bootstrapValues()
-    await decrypt()
   },
 }

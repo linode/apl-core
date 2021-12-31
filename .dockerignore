@@ -1,3 +1,4 @@
+.env
 .git*
 .history
 .husky

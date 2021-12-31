@@ -100,7 +100,7 @@ export const basicOptions: { [key: string]: Options } = {
         .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
         .map(Number)
         .reduce((prev, curr) => Math.max(prev, curr))
-      return Math.min(Math.max(val, Number(env().VERBOSITY || '0')), ll)
+      return Math.min(Math.max(val, Number(env.VERBOSITY || '0')), ll)
     },
   },
   'non-interactive': {

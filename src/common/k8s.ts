@@ -18,7 +18,7 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env().DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
@@ -52,7 +52,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${env().DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
 }
@@ -176,7 +176,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
     maxTimeout: 30000,
   }
 
-  const globalSkipSsl = !env().NODE_TLS_REJECT_UNAUTHORIZED
+  const globalSkipSsl = !env.NODE_TLS_REJECT_UNAUTHORIZED
   let rejectUnauthorized = !globalSkipSsl
   if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
   const fetchOptions: RequestInit = {

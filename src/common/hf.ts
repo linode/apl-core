@@ -9,7 +9,7 @@ import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
-const replaceHFPaths = (output: string): string => output.replaceAll('../env', env().ENV_DIR)
+const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 type HFParams = {
   fileOpts?: string | string[] | null
@@ -44,8 +44,8 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     throw new Error('No arguments were passed')
   }
 
-  if (env().KUBE_VERSION_OVERRIDE && env().KUBE_VERSION_OVERRIDE.length > 0) {
-    paramsCopy.args.push(`--set kubeVersionOverride=${env().KUBE_VERSION_OVERRIDE}`)
+  if (env.KUBE_VERSION_OVERRIDE && env.KUBE_VERSION_OVERRIDE.length > 0) {
+    paramsCopy.args.push(`--set kubeVersionOverride=${env.KUBE_VERSION_OVERRIDE}`)
   }
 
   const labels = paramsCopy.labelOpts?.map((item: string) => `-l=${item}`)
@@ -89,8 +89,8 @@ export type ValuesArgs = {
 }
 export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<Record<string, any> | undefined> => {
   const d = terminal('hfValues')
-  if (!(existsSync(`${env().ENV_DIR}/env/teams.yaml`) && existsSync(`${env().ENV_DIR}/env/settings.yaml`))) {
-    // teams and settings file are the minimum needed files to run env().gotmpl and get the values
+  if (!(existsSync(`${env.ENV_DIR}/env/teams.yaml`) && existsSync(`${env.ENV_DIR}/env/settings.yaml`))) {
+    // teams and settings file are the minimum needed files to run env.gotmpl and get the values
     d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
     return undefined
   }

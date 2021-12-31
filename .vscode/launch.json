@@ -17,9 +17,7 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "CI": "true",
-        "ENV_DIR": "/tmp/otomi/env",
-        "VALUES_INPUT": "/tmp/otomi/values.yaml"
+        "CI": "true"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
@@ -35,11 +33,20 @@
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "CI": "true",
-        "ENV_DIR": "/tmp/otomi/env",
-        "VALUES_INPUT": "/tmp/otomi/values.yaml"
-      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "Debug decrypt",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "decrypt"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
@@ -68,9 +75,6 @@
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "ENV_DIR": "/Users/Morriz/Documents/Workspace/redkubes/otomi/ENV_OUT/gke-dev"
-      },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
@@ -81,6 +85,20 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
       "args": ["src/otomi.ts", "--", "migrate"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "Debug server",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "server"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],

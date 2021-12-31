@@ -23,23 +23,6 @@ spec:
       {{- end }}
       serviceAccount: {{ include "host-mods.fullname" . }}
       initContainers:
-        - name: check-containerd
-          command: ["sh"]
-          args: ["-c", "$(CHECK_SCRIPT)"]
-          {{- with .Values.image }}
-          image: {{ .repository }}:{{ .tag }}
-          {{- end }}
-          env:
-            - name: CHECK_SCRIPT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "host-mods.fullname" . }}
-                  key: check.sh
-          securityContext:
-            runAsNonRoot: true
-          volumeMounts:
-            - name: shared
-              mountPath: /otomi
         - name: node-mod
           command: ["nsenter"]
           args: ["--mount=/proc/1/ns/mnt", "--", "sh", "-c", "$(SETUP_SCRIPT)"]
@@ -66,14 +49,8 @@ spec:
           securityContext:
             runAsUser: 0
             privileged: true
-          volumeMounts:
-            - name: shared
-              mountPath: /otomi
       containers:
         - name: wait
           image: k8s.gcr.io/pause:3.1
           securityContext:
             runAsUser: 1000
-      volumes:
-        - name: shared
-          emptyDir: {}

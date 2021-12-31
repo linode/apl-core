@@ -187,7 +187,7 @@ export const validateTemplates = async (): Promise<void> => {
     }
   })
   if (kubevalOutput.exitCode !== 0) {
-    throw new Error('Template validation FAILED')
+    throw new Error(`Template validation FAILED: ${kubevalOutput.exitCode}`)
   } else debug.log('Template validation SUCCESS')
 }
 

@@ -43,9 +43,7 @@ const setDeploymentStatus = async (): Promise<void> => {
   const status = await getOtomiDeploymentStatus()
   if (status !== 'deployed') {
     await nothrow(
-      $`kubectl -n ${
-        env().DEPLOYMENT_NAMESPACE
-      } create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
+      $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
     )
     // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
     await nothrow($`kubectl delete secret ${DEPLOYMENT_PASSWORDS_SECRET}`)
@@ -60,6 +58,8 @@ const getGiteaHealthUrl = async (): Promise<string> => {
 
 const commitAndPush = async (): Promise<void> => {
   const d = terminal('commitAndPush')
+  d.info('Committing values')
+  cd(env.ENV_DIR)
   await $`git add -A`
   try {
     await $`git commit -m 'otomi commit' --no-verify`
@@ -84,8 +84,9 @@ const commitAndPush = async (): Promise<void> => {
 
 const bootstrapGit = async (values): Promise<void> => {
   debug.info('Initializing values git repo.')
-  await $`git init ${env().ENV_DIR}`
-  copyFileSync(`bin/hooks/pre-commit`, `${env().ENV_DIR}/.git/hooks/pre-commit`)
+  cd(env.ENV_DIR)
+  await $`git init ${env.ENV_DIR}`
+  copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   const giteaEnabled = values?.charts?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
@@ -120,7 +121,7 @@ const bootstrapGit = async (values): Promise<void> => {
   await $`git config --local user.email ${email}`
   await $`git checkout -b ${branch}`
   await $`git remote add origin ${remote}`
-  if (existsSync(`${env().ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
 
   debug.log(`Done bootstrapping git`)
 }
@@ -133,15 +134,13 @@ const preCommit = async (): Promise<void> => {
 
 export const commit = async (): Promise<void> => {
   const d = terminal('commit')
-  cd(env().ENV_DIR)
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
   if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
-  cd(env().ENV_DIR)
-  if (!existsSync(`${env().ENV_DIR}/.git`)) await bootstrapGit(values)
+  if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
 
   if (values!.charts!.gitea!.enabled) {
     const url = await getGiteaHealthUrl()
@@ -156,7 +155,6 @@ export const commit = async (): Promise<void> => {
     })
   }
   await preCommit()
-  d.info('Committing values')
   if (values?.charts?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 

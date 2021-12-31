@@ -6,6 +6,10 @@ sources:
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
+# @TODO:
+# image:
+#   tag: 0.10.2
+
 {{- range $provider, $config := $dns.provider }}
 provider: {{ $provider }}
 {{ $provider }}: {{- $config | toYaml | nindent 2 }}

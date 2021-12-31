@@ -82,7 +82,7 @@ export const genDrone = async (): Promise<void> => {
   if (argv.dryRun) {
     debug.log(output)
   } else {
-    const file = `${env().ENV_DIR}/.drone.yml`
+    const file = `${env.ENV_DIR}/.drone.yml`
     writeFileSync(file, output)
     debug.debug('.drone.yml: ', output)
     debug.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)

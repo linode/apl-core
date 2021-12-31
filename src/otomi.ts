@@ -13,10 +13,10 @@ const terminalScale = 0.75
 
 const startup = async (): Promise<void> => {
   const link = `${process.cwd()}/env`
-  if (!env().ENV_DIR) process.env.ENV_DIR = `${process.cwd()}/env`
-  if (!env().IN_DOCKER && env().OTOMI_DEV && env().ENV_DIR) {
+  if (!env.ENV_DIR) process.env.ENV_DIR = `${process.cwd()}/env`
+  if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) {
     if (existsSync(link)) unlinkSync(link)
-    symlinkSync(env().ENV_DIR, link)
+    symlinkSync(env.ENV_DIR, link)
   }
   try {
     parser.scriptName(scriptName)
@@ -46,7 +46,7 @@ const startup = async (): Promise<void> => {
       parser.showHelp()
     process.exit(1)
   } finally {
-    if (!env().IN_DOCKER && env().OTOMI_DEV && env().ENV_DIR) unlinkSync(`${process.cwd()}/env`)
+    if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) unlinkSync(`${process.cwd()}/env`)
     console.profileEnd('otomi')
   }
 }

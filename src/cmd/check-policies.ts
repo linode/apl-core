@@ -26,12 +26,12 @@ export const checkPolicies = async (): Promise<void> => {
   setup(argv)
   debug.log('Policy checking STARTED')
 
-  const policiesFile = `${env().ENV_DIR}/env/policies.yaml`
+  const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
   const parametersFile = `${outDir}/parameters.yaml`
   if (!existsSync(outDir)) mkdirSync(outDir)
   // the policy parameters file's root prop is 'policies:', but conftest expects it to be served with 'parameters:'
   writeFileSync(parametersFile, readFileSync(policiesFile, 'utf8').replace('policies:', 'parameters:'))
-  const settingsFile = `${env().ENV_DIR}/env/settings.yaml`
+  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settings = loadYaml(settingsFile)
   if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
     debug.log('Skipping')
@@ -42,7 +42,7 @@ export const checkPolicies = async (): Promise<void> => {
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
-  if (env().CI) extraArgs.push('--no-color')
+  if (env.CI) extraArgs.push('--no-color')
 
   debug.info('Checking manifests for policy violations')
   const confTestOutput = (
