@@ -29,7 +29,6 @@ To install `Otomi` with minimal values using the Helm chart, first create a `val
 cluster:
   k8sVersion: '1.20' # currently 1.18, 1.19, 1.20 and 1.21 are supported
   name: # the name of your cluster
-  owner: # the owner of the cluster
   provider: # choose between aws, azure, google or onprem
 ```
 
