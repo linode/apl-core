@@ -145,6 +145,7 @@ describe('Bootstrapping values', () => {
         debug: terminal(),
         isChart: true,
         loadYaml: jest.fn(),
+        decrypt: jest.fn(),
         getStoredClusterSecrets: jest.fn().mockReturnValue(secrets),
         writeValues: jest.fn(),
         env: () => ({
