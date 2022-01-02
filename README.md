@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install Otomi with one command on any Kubernetes cluster to get a complete enterprise-grade platform experience with developer self-service.</p>
+<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install Otomi on your Kubernetes cluster and get a complete platform experience with developer self-service that works out-of-the-box.</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -15,27 +15,24 @@
 
 ## ⚡️ Quick start
 
-> 🔔 When installing Otomi using the quick start or installing with minimal values using Helm, you will not be able to pull images from the local Harbor registry unless you add the auto-generated CA to all cluster nodes. To be able to pull images from Harbor without adding the CA to all cluster nodes, install Otomi with `hasExternalDNS=true` and `issuer=letsencrypt` (or BYO CA). See [otomi.io](https://otomi.io) for more instructions.
-
 ### `Terraform`
 
 Use the Terraform quick start for Azure, GCP, and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
-When the installer job has finished, copy the URL and the generated password from the bottom of the logs of the job (in the default namespace) and complete the [post-installion steps](https://otomi.io/docs/installation/post-install/).
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs of the job and complete the [post-installion steps](https://otomi.io/docs/installation/post-install/).
 
-### `Install with minimal values using Helm`
+### `Helm Chart`
 
-To install `Otomi` with minimal values using Helm, first create a `values.yaml` file with the following values:
+To install `Otomi` with minimal values using the Helm chart, first create a `values.yaml` file with the following values:
 
 ```yaml
 cluster:
-  k8sVersion: '1.20' # 1.18, 1.19, 1.20 and 1.21 are supported
+  k8sVersion: '1.20' # currently 1.18, 1.19, 1.20 and 1.21 are supported
   name: # the name of your cluster
-  owner: # the owner of the cluster
   provider: # choose between aws, azure, google or onprem
 ```
 
-add the repository:
+add the Helm repository:
 
 ```bash
 helm repo add otomi https://otomi.io/otomi-core
@@ -48,7 +45,7 @@ and then install the Helm chart:
 helm install -f values.yaml otomi otomi/otomi
 ```
 
-When the installer job has finished, copy the URL and the generated password from the bottom of the logs of the job (in the default namespace). and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
 After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
 
@@ -58,9 +55,9 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 `Otomi` can be installed with the following advanced configuration options:
 
-- Use an external DNS zone with LetsEncrypt certificates
-- Configure Azure Active Directory as an IdP
-- Use KMS to manage keys for encryption
+- Use a DNS zone with LetsEncrypt certificates
+- Configure Azure Active Directory as IdP
+- Use SOPS/KMS to encrypt sensitive configuration values
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
@@ -78,12 +75,13 @@ Go to [otomi.io](https://otomi.io) for more detailed instructions.
 - Secrets management
 - Full observability
 - Kubernetes best-practices
+- GitOps workflow
 
 Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
 ## Integrated applications
 
-`Otomi` ships with the following pre-configured and ready to use applications:
+`Otomi` ships with the following pre-configured and ready-to-use applications and add-ons:
 
 - [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
 - [Knative](https://knative.dev/): Deploy and manage serverless workloads
@@ -97,10 +95,12 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry-recognized TLS certificates
 - [Jaeger](https://www.jaegertracing.io/): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://kiali.io/): Observe Istio service mesh relations and connections
+- [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
+- [Drone](https://www.drone.io/): Continuous integration platform built on Docker
 
 ## Projects
 
-Otomi consists out of multiple projects:
+`Otomi` consists out of multiple projects:
 
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
