@@ -7,8 +7,8 @@ sources:
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
 # @TODO:
-# image:
-#   tag: 0.10.2
+image:
+  tag: 0.10.2
 
 {{- range $provider, $config := $dns.provider }}
 provider: {{ $provider }}
@@ -29,7 +29,7 @@ rbac:
   apiVersion: v1beta1
   pspEnabled: true
 
-securityContext:
+containerSecurityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:

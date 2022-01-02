@@ -24,7 +24,7 @@ describe('Bootstrapping values', () => {
     deps = {
       existsSync: jest.fn(),
       getImageTag: jest.fn(),
-      debug: terminal(),
+      terminal,
       copyBasicFiles: jest.fn(),
       processValues: jest.fn(),
       hfValues: jest.fn(),
@@ -89,7 +89,7 @@ describe('Bootstrapping values', () => {
       env: () => ({
         ENV_DIR: '/bla/env',
       }),
-      debug: terminal(),
+      terminal,
       outputFileSync: jest.fn(),
     }
     it('should create a schema without required props', () => {
@@ -104,7 +104,7 @@ describe('Bootstrapping values', () => {
       }),
       mkdirSync: jest.fn(),
       copyFile: jest.fn(),
-      debug: terminal(),
+      terminal,
       copy: jest.fn(),
       generateLooseSchema: jest.fn(),
       existsSync: jest.fn(),
@@ -142,7 +142,7 @@ describe('Bootstrapping values', () => {
     let deps
     beforeEach(() => {
       deps = {
-        debug: terminal(),
+        terminal,
         isChart: true,
         loadYaml: jest.fn(),
         decrypt: jest.fn(),

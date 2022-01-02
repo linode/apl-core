@@ -11,9 +11,8 @@ import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
 
-const d = terminal('test')
-
 const test = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:test`)
   d.log('Running tests against cluster state...')
   await validateValues()
   await lint()

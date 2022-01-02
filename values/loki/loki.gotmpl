@@ -7,8 +7,8 @@
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
 
 # @TODO:
-# image:
-#   tag: v2.4.1
+image:
+  tag: 2.4.1
 
 tracing:
   jaegerAgentHost:
@@ -52,7 +52,7 @@ config:
     retention_period: {{ $l | get "retention.period" "24h" }}
 
 networkPolicy:
-  enabled: false
+  enabled: true
 
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 ## If you set enabled as "True", you need :

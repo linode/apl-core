@@ -64,9 +64,6 @@ gitea:
     
     
   metrics:
-    # @TODO:
-    # image:
-    #   tag: 0.10.0
     enabled: true
     serviceMonitor:
       enabled: true
@@ -90,8 +87,8 @@ init:
 
 memcached:
   # @TODO:
-  # image:
-  #   tag: 1.6.12
+  image:
+    tag: 1.6.12
   resources:
     limits:
       cpu: 250m
@@ -105,12 +102,17 @@ persistence:
 
 postgresql:
   # @TODO:
-  # image:
-  #   tag: 13.5.0
+  image:
+    tag: 13.5.0
+  metrics:
+    image:
+      tag: 0.10.0
   persistence:
     size: 1Gi
   global:
     postgresql:
+      image:
+        tag: 13.5.0
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:

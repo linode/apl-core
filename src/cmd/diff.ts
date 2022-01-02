@@ -1,19 +1,18 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { Arguments, decrypt } from '../common/crypt'
-import { OtomiDebugger, terminal, logLevelString } from '../common/debug'
+import { Arguments } from '../common/crypt'
+import { logLevelString, terminal } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
 import { getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 export const diff = async (): Promise<ProcessOutputTrimmed> => {
+  const d = terminal(`cmd:${cmdName}:diff`)
   const argv: Arguments = getParsedArgs()
-  await decrypt(...(argv.files ?? []))
-  debug.info('Start Diff')
+  d.info('Start Diff')
   const res = await hf(
     {
       fileOpts: argv.file as string[],
@@ -21,7 +20,7 @@ export const diff = async (): Promise<ProcessOutputTrimmed> => {
       logLevel: logLevelString(),
       args: ['diff', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   return new ProcessOutputTrimmed(res)
 }

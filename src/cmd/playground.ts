@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { getFilename } from '../common/utils'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 /**
@@ -10,10 +10,9 @@ import { BasicArguments, setParsedArgs } from '../common/yargs'
  */
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const playground = async (): Promise<void> => {
-  debug.log(cmdName)
+  const d = terminal(`cmd:${cmdName}:playGround`)
 
   await Promise.resolve()
 }

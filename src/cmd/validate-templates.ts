@@ -5,14 +5,13 @@ import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename, readdirRecurse, rootDir } from '../common/utils'
 import { getK8sVersion } from '../common/values'
 import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const schemaOutputPath = '/tmp/otomi/kubernetes-json-schema'
 const outputPath = '/tmp/otomi/generated-crd-schemas'
@@ -23,7 +22,6 @@ let vk8sVersion: string
 
 const cleanup = (argv: BasicArguments): void => {
   if (argv.skipCleanup) return
-  debug.log('Cleaning')
   rmSync(schemaOutputPath, { recursive: true, force: true })
   rmSync(outputPath, { recursive: true, force: true })
   rmSync(k8sResourcesPath, { recursive: true, force: true })
@@ -108,13 +106,14 @@ const processCrd = (path: string): crdSchema[] => {
 }
 
 const processCrdWrapper = async (argv: BasicArguments) => {
-  debug.log(`Generating k8s ${k8sVersion} manifests`)
+  const d = terminal(`cmd:${cmdName}:processCrdWrapper`)
+  d.log(`Generating k8s ${k8sVersion} manifests`)
   await hfTemplate(
     { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
     `${k8sResourcesPath}/${vk8sVersion}`,
   )
 
-  debug.log('Processing CRD files...')
+  d.log('Processing CRD files...')
   cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
   const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
@@ -133,6 +132,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
 }
 
 export const validateTemplates = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:validateTemplates`)
   const argv: BasicArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
@@ -155,13 +155,13 @@ export const validateTemplates = async (): Promise<void> => {
   const skipKinds = ['CustomResourceDefinition', 'AppRepository', ...constraintKinds]
   const skipFilenames = ['crd', 'constraint']
 
-  debug.log('Validating resources')
+  d.log('Validating resources')
   const quiet = !argv.verbose ? [] : ['--quiet']
-  debug.info(`Schema Output Path: ${schemaOutputPath}`)
-  debug.info(`Skip kinds: ${skipKinds.join(', ')}`)
-  debug.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
-  debug.info(`K8S Resource Path: ${k8sResourcesPath}`)
-  debug.info(`Schema location: file://${schemaOutputPath}`)
+  d.info(`Schema Output Path: ${schemaOutputPath}`)
+  d.info(`Skip kinds: ${skipKinds.join(', ')}`)
+  d.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
+  d.info(`K8S Resource Path: ${k8sResourcesPath}`)
+  d.info(`Schema location: file://${schemaOutputPath}`)
   const kubevalOutput = await nothrow(
     $`kubeval ${quiet} --skip-kinds ${skipKinds.join(',')} --ignored-filename-patterns ${skipFilenames.join(
       ',',
@@ -174,13 +174,13 @@ export const validateTemplates = async (): Promise<void> => {
     const v = right ? right.trim() : ''
     switch (k) {
       case 'PASS':
-        debug.info(`${chalk.greenBright('PASS')}: ${chalk.italic('%s')}`, v)
+        d.info(`${chalk.greenBright('PASS')}: ${chalk.italic('%s')}`, v)
         break
       case 'WARN':
-        debug.warn(`${chalk.yellowBright('WARN')}: %s`, v)
+        d.warn(`${chalk.yellowBright('WARN')}: %s`, v)
         break
       case 'ERR':
-        debug.error(`${chalk.redBright('ERR')}: %s`, v)
+        d.error(`${chalk.redBright('ERR')}: %s`, v)
         break
       default:
         break
@@ -188,7 +188,7 @@ export const validateTemplates = async (): Promise<void> => {
   })
   if (kubevalOutput.exitCode !== 0) {
     throw new Error(`Template validation FAILED: ${kubevalOutput.exitCode}`)
-  } else debug.log('Template validation SUCCESS')
+  } else d.log('Template validation SUCCESS')
 }
 
 export const module = {

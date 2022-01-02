@@ -13,7 +13,7 @@ chalk.level = 2
  */
 const isReadyEnvDir = (): boolean => {
   const { ENV_DIR, TESTING } = env
-  const d = terminal('checkEnvDir')
+  const d = terminal('common:isReadyEnvDir')
   if (!TESTING && isCore && !ENV_DIR) {
     throw new Error('The ENV_DIR environment variable is not set')
   }
@@ -35,7 +35,7 @@ export const scriptName = 'otomi'
  */
 export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): Promise<void> => {
   if (options?.skipAllPreChecks) return
-  const d = terminal('prepareEnvironment')
+  const d = terminal('common:prepareEnvironment')
   d.info('Checking environment')
   if (!options?.skipEnvDirCheck && isReadyEnvDir()) {
     if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()

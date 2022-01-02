@@ -53,7 +53,7 @@ const writeValuesToFile = async (
   overwrite = true,
 ): Promise<void> => {
   const values = cloneDeep(inValues)
-  const d = terminal('values:writeValuesToFile')
+  const d = terminal('common:values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
   if (!existsSync(targetPath)) {
@@ -77,7 +77,7 @@ const writeValuesToFile = async (
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
 export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
-  const d = terminal('values:writeValues')
+  const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', values)
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
   // creating secret files
@@ -139,13 +139,13 @@ export const generateSecrets = async (
     getValuesSchema,
   },
 ): Promise<Record<string, any>> => {
-  const debug = deps.terminal('generateSecrets')
+  const d = deps.terminal('common:values:generateSecrets')
   const leaf = 'x-secret'
   const localRefs = ['.dot.', '.v.', '.root.', '.o.']
 
   const schema = await deps.getValuesSchema()
 
-  debug.info('Extracting secrets')
+  d.info('Extracting secrets')
   const secrets = extract(schema, leaf, (val: any) => {
     if (val.length > 0) {
       if (stringContainsSome(val, ...localRefs)) return val
@@ -153,12 +153,12 @@ export const generateSecrets = async (
     }
     return undefined
   })
-  debug.debug('secrets: ', secrets)
-  debug.info('First round of templating')
+  d.debug('secrets: ', secrets)
+  d.info('First round of templating')
   const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, any>
   const firstTemplateFlattend = flattenObject(firstTemplateRound)
 
-  debug.info('Parsing values for second round of templating')
+  d.info('Parsing values for second round of templating')
   const expandedTemplates = Object.entries(firstTemplateFlattend)
     // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
     .filter(([_, v]) => stringContainsSome(v, ...localRefs))
@@ -186,22 +186,22 @@ export const generateSecrets = async (
     set(firstTemplateRound, k, `{{ ${v} }}`)
     return [k, v]
   })
-  debug.debug('firstTemplateRound: ', firstTemplateRound)
+  d.debug('firstTemplateRound: ', firstTemplateRound)
 
-  debug.info('Gather all values for the second round of templating')
+  d.info('Gather all values for the second round of templating')
   const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), cloneDeep(values))
-  debug.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
+  d.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
 
-  debug.info('Second round of templating')
+  d.info('Second round of templating')
   const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
     asObject: true,
   })) as Record<string, any>
-  debug.debug('secondTemplateRound: ', secondTemplateRound)
+  d.debug('secondTemplateRound: ', secondTemplateRound)
 
-  debug.info('Generated all secrets')
+  d.info('Generated all secrets')
   // Only return values that have x-secrets prop and are now fully templated:
   const allSecrets = extract(schema, leaf)
   const res = pick(merge(secondTemplateRound, cloneDeep(values)), Object.keys(flattenObject(allSecrets)))
-  debug.debug('generateSecrets result: ', res)
+  d.debug('generateSecrets result: ', res)
   return res
 }

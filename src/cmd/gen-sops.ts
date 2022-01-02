@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
@@ -12,7 +12,6 @@ interface Arguments extends BasicArguments {
 }
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const providerMap = {
   aws: 'kms',
@@ -22,13 +21,14 @@ const providerMap = {
 }
 
 export const genSops = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:genSops`)
   const argv: BasicArguments = getParsedArgs()
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = loadYaml(settingsFile) as Record<string, any>
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
-    debug.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
+    d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
     return
   }
 
@@ -41,15 +41,15 @@ export const genSops = async (): Promise<void> => {
     keys: kmsKeys,
   }
 
-  debug.log(`Creating sops file for provider ${provider}`)
+  d.log(`Creating sops file for provider ${provider}`)
 
   const output = (await gucci(templatePath, obj)) as string
 
   if (argv.dryRun) {
-    debug.log(output)
+    d.log(output)
   } else {
     writeFileSync(targetPath, output)
-    debug.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
+    d.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
   }
 
   if (provider === 'google') {
@@ -61,13 +61,13 @@ export const genSops = async (): Promise<void> => {
     }
 
     if (serviceKeyJson) {
-      debug.log('Creating gcp-key.json for vscode.')
+      d.log('Creating gcp-key.json for vscode.')
       writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
       writeFileSync(`${env.ENV_DIR}/.secrets`, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`, {
         flag: 'a',
       })
     } else {
-      debug.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
+      d.log('`GCLOUD_SERVICE_KEY` environment variable is not set, cannot create gcp-key.json.')
     }
   }
 }

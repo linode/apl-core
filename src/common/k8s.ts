@@ -25,7 +25,7 @@ export const createK8sSecret = async (
   namespace: string,
   data: Record<string, any> | string,
 ): Promise<void> => {
-  const d = terminal('createK8sSecret')
+  const d = terminal('common:k8s:createK8sSecret')
   const rawString = dump(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
@@ -58,7 +58,7 @@ export const getOtomiDeploymentStatus = async (): Promise<string> => {
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {
-  const d = terminal('fetchLoadBalancerIngressData')
+  const d = terminal('common:k8s:fetchLoadBalancerIngressData')
   let ingressDataString = ''
   let count = 0
   for (;;) {
@@ -77,7 +77,7 @@ interface IngressRecord {
   hostname?: string
 }
 export const getOtomiLoadBalancerIP = async (): Promise<string> => {
-  const d = terminal('getOtomiLoadBalancerIP')
+  const d = terminal('common:k8s:getOtomiLoadBalancerIP')
   d.debug('Find LoadBalancer IP or Hostname')
 
   const ingressDataString = await fetchLoadBalancerIngressData()
@@ -134,7 +134,7 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
  * @returns
  */
 export const checkKubeContext = async (): Promise<void> => {
-  const d = terminal('checkKubeContext')
+  const d = terminal('common:k8s:checkKubeContext')
   d.info('Validating kube context')
 
   const values = await hfValues()
@@ -170,7 +170,7 @@ type WaitTillAvailableOptions = Options & {
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
   const options = { status: 200, skipSsl: false, ...opts }
-  const debug = terminal('waitTillAvailable')
+  const d = terminal('common:k8s:waitTillAvailable')
   const retryOptions: Options = {
     retries: 50,
     maxTimeout: 30000,
@@ -202,7 +202,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
         } else throw err
       }
     } catch (e) {
-      debug.error(e)
+      d.error(e)
       throw e
     }
   }, retryOptions)

@@ -88,7 +88,7 @@ export type ValuesArgs = {
   filesOnly?: boolean
 }
 export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<Record<string, any> | undefined> => {
-  const d = terminal('hfValues')
+  const d = terminal('common:hf:hfValues')
   if (!(existsSync(`${env.ENV_DIR}/env/teams.yaml`) && existsSync(`${env.ENV_DIR}/env/settings.yaml`))) {
     // teams and settings file are the minimum needed files to run env.gotmpl and get the values
     d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
@@ -102,7 +102,7 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
 }
 
 export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
-  const debug = terminal('hfTemplate')
+  const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
   const args = ['template', '--skip-deps']
   if (outDir) args.push(`--output-dir=${outDir}`)
@@ -112,15 +112,15 @@ export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?:
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
     const file = 'helmfile.tpl/helmfile-init.yaml'
-    debug.debug(`Templating ${file} started`)
+    d.debug(`Templating ${file} started`)
     const outInit = await hf({ ...params, fileOpts: file }, { streams })
-    debug.debug(`Templating ${file} done`)
+    d.debug(`Templating ${file} done`)
     template += outInit.stdout
     template += '\n'
   }
-  debug.debug('Templating charts started')
+  d.debug('Templating charts started')
   const outAll = await hf(params, { streams })
-  debug.debug('Templating charts done')
+  d.debug('Templating charts done')
   template += outAll.stdout
   return template
 }

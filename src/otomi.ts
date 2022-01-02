@@ -8,7 +8,7 @@ import { env } from './common/envalid'
 import { basicOptions, parser } from './common/yargs'
 
 console.profile('otomi')
-const debug = terminal('global')
+const d = terminal('global')
 const terminalScale = 0.75
 
 const startup = async (): Promise<void> => {
@@ -37,7 +37,7 @@ const startup = async (): Promise<void> => {
       .completion('completion', false)
     await parser.parseAsync()
   } catch (error) {
-    debug.error(error)
+    d.error(error)
     if (
       `${error}`.includes('Unknown command') ||
       `${error}`.includes('Not enough non-option arguments: got 0') ||

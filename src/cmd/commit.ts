@@ -4,7 +4,7 @@ import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
@@ -16,12 +16,11 @@ import { pull } from './pull'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
-let debug: OtomiDebugger
 
 interface Arguments extends HelmArguments, DroneArgs {}
 
 const gitPush = async (): Promise<boolean> => {
-  const d = terminal('gitPush')
+  const d = terminal(`cmd:${cmdName}:gitPush`)
   const values = await hfValues()
   let branch = 'main'
   if (values?.charts?.gitea?.enabled === false) {
@@ -51,13 +50,14 @@ const setDeploymentStatus = async (): Promise<void> => {
 }
 
 const getGiteaHealthUrl = async (): Promise<string> => {
+  const d = terminal(`cmd:${cmdName}:getGiteaHealthUrl`)
   const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
-  debug.debug('gitea healthUrl: ', healthUrl)
+  d.debug('gitea healthUrl: ', healthUrl)
   return healthUrl
 }
 
 const commitAndPush = async (): Promise<void> => {
-  const d = terminal('commitAndPush')
+  const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   cd(env.ENV_DIR)
   await $`git add -A`
@@ -83,7 +83,8 @@ const commitAndPush = async (): Promise<void> => {
 }
 
 const bootstrapGit = async (values): Promise<void> => {
-  debug.info('Initializing values git repo.')
+  const d = terminal(`cmd:${cmdName}:bootstrapGit`)
+  d.info('Initializing values git repo.')
   cd(env.ENV_DIR)
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
@@ -123,7 +124,7 @@ const bootstrapGit = async (values): Promise<void> => {
   await $`git remote add origin ${remote}`
   if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
 
-  debug.log(`Done bootstrapping git`)
+  d.log(`Done bootstrapping git`)
 }
 
 const preCommit = async (): Promise<void> => {
@@ -133,7 +134,7 @@ const preCommit = async (): Promise<void> => {
 }
 
 export const commit = async (): Promise<void> => {
-  const d = terminal('commit')
+  const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
   const values = await hfValues()
@@ -182,7 +183,6 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    debug = terminal(cmdName)
     await prepareEnvironment({ skipKubeContextCheck: true })
     await commit()
   },

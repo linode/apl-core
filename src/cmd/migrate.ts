@@ -4,14 +4,13 @@ import { diff } from 'deep-diff'
 import { cloneDeep, get, isEqual, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 interface Arguments extends BasicArguments {
   dryRun?: boolean
@@ -73,6 +72,7 @@ export const applyChanges = async (values: Record<string, any>, changes: Changes
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
 export const migrate = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:migrate`)
   const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   const prevValues = await hfValues({ filesOnly: true })
   const filteredChanges = filterChanges(prevValues?.version, changes)
@@ -81,11 +81,9 @@ export const migrate = async (): Promise<void> => {
 
   if (!isEqual(prevValues, processedValues)) {
     const argv: Arguments = getParsedArgs()
-    debug[argv.dryRun ? 'log' : 'info'](
-      `Migration changes: ${JSON.stringify(diff(prevValues, processedValues), null, 2)}`,
-    )
+    d[argv.dryRun ? 'log' : 'info'](`Migration changes: ${JSON.stringify(diff(prevValues, processedValues), null, 2)}`)
     if (!argv.dryRun) await writeValues(processedValues)
-  } else debug.info('No changes detected, skipping')
+  } else d.info('No changes detected, skipping')
 
   const schema = loadYaml(`${rootDir}/values-schema.yaml`)?.version
   Object.assign(processedValues, { version: schema.version })

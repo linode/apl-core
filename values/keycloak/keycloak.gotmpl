@@ -104,6 +104,9 @@ podAnnotations:
   policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
+  # @TODO:
+  image:
+    tag: 13.5.0
   commonAnnotations: 
     policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
@@ -115,6 +118,8 @@ postgresql:
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
+    image:
+      tag: 0.10.0
     enabled: true
     resources:
       limits:

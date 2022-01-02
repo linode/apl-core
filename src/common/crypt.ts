@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
-import { OtomiDebugger, terminal } from './debug'
+import { terminal } from './debug'
 import { env, isCli } from './envalid'
 import { readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
@@ -13,8 +13,6 @@ export interface Arguments extends BasicArguments {
 
 EventEmitter.defaultMaxListeners = 20
 
-const debug: OtomiDebugger = terminal('crypt')
-
 enum CryptType {
   ENCRYPT = 'helm secrets enc',
   DECRYPT = 'helm secrets dec',
@@ -22,26 +20,28 @@ enum CryptType {
 }
 
 const preCrypt = (): void => {
-  debug.debug('Checking prerequisites for the (de,en)crypt action')
+  const d = terminal(`common:crypt:preCrypt`)
+  d.debug('Checking prerequisites for the (de,en)crypt action')
   if (env.GCLOUD_SERVICE_KEY) {
-    debug.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
+    d.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
   }
   if (isCli) {
     const secretPath = `${env.ENV_DIR}/.secrets`
     if (!existsSync(secretPath)) {
-      debug.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
+      d.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
     }
   }
 }
 
 const getAllSecretFiles = async () => {
+  const d = terminal(`common:crypt:getAllSecretFiles`)
   const files = (await readdirRecurse(`${env.ENV_DIR}/env`, { skipHidden: true }))
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
     .map((file) => file.replace(`${env.ENV_DIR}/`, ''))
   // .filter((file) => existsSync(`${env.ENV_DIR}/${file}`))
-  debug.debug('getAllSecretFiles: ', files)
+  d.debug('getAllSecretFiles: ', files)
   return files
 }
 
@@ -52,9 +52,10 @@ type CR = {
 }
 
 const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOutput | undefined)[]> => {
+  const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || crypt.condition(file)) {
-      debug.debug(`${crypt.cmd} ${file}`)
+      d.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then((res) => {
         if (crypt.post) crypt.post(file)
@@ -67,6 +68,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 }
 
 const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<void> => {
+  const d = terminal(`common:crypt:runOnSecretFiles`)
   let files: string[] = filesArgs
 
   cd(env.ENV_DIR)
@@ -81,7 +83,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
-  debug.debug(`runOnSecretFiles: ${crypt.cmd}`)
+  d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     // eslint-disable-next-line no-restricted-syntax
     for (const fileChunk of filesChunked) {
@@ -90,7 +92,7 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
     }
     return
   } catch (error) {
-    debug.error(error)
+    d.error(error)
     throw error
   } finally {
     cd(rootDir)
@@ -99,9 +101,10 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
 }
 
 const matchTimestamps = (file: string) => {
+  const d = terminal(`common:crypt:matchTimeStamps`)
   const absFilePath = `${env.ENV_DIR}/${file}`
   if (!existsSync(`${absFilePath}.dec`)) {
-    debug.debug(`Missing ${file}.dec, skipping...`)
+    d.debug(`Missing ${file}.dec, skipping...`)
     return
   }
 
@@ -110,15 +113,16 @@ const matchTimestamps = (file: string) => {
   utimesSync(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  debug.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
+  d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:decrypt`)
   if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    debug.debug('Skipping decryption')
+    d.debug('Skipping decryption')
     return
   }
-  debug.info('Starting decryption')
+  d.info('Starting decryption')
 
   await runOnSecretFiles(
     {
@@ -128,15 +132,16 @@ export const decrypt = async (...files: string[]): Promise<void> => {
     files,
   )
 
-  debug.info('Decryption is done')
+  d.info('Decryption is done')
 }
 
 export const encrypt = async (...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:encrypt`)
   if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    debug.debug('Skipping encryption')
+    d.debug('Skipping encryption')
     return
   }
-  debug.info('Starting encryption')
+  d.info('Starting encryption')
   await runOnSecretFiles(
     {
       condition: (file: string): boolean => {
@@ -144,23 +149,23 @@ export const encrypt = async (...files: string[]): Promise<void> => {
 
         const decExists = existsSync(`${absFilePath}.dec`)
         if (!decExists) {
-          debug.debug(`Did not find decrypted ${absFilePath}.dec`)
+          d.debug(`Did not find decrypted ${absFilePath}.dec`)
           return true
         }
 
         // if there is a .dec && .dec is > 1s newer
-        debug.debug(`Found decrypted ${file}.dec`)
+        d.debug(`Found decrypted ${file}.dec`)
 
         const encTS = statSync(absFilePath)
         const decTS = statSync(`${absFilePath}.dec`)
-        debug.debug('encTS.mtime: ', encTS.mtime)
-        debug.debug('decTS.mtime: ', decTS.mtime)
+        d.debug('encTS.mtime: ', encTS.mtime)
+        d.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
         if (timeDiff > 1) {
-          debug.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
+          d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
           return true
         }
-        debug.info(`Skipping encryption for ${file} as it has not changed`)
+        d.info(`Skipping encryption for ${file} as it has not changed`)
         return false
       },
       cmd: CryptType.ENCRYPT,
@@ -169,5 +174,5 @@ export const encrypt = async (...files: string[]): Promise<void> => {
     files,
   )
 
-  debug.info('Encryption is done')
+  d.info('Encryption is done')
 }

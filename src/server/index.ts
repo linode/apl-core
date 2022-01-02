@@ -10,7 +10,7 @@ import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { rootDir } from '../common/utils'
 
-const debug = terminal('server')
+const d = terminal('server')
 const app = express()
 let server: Server
 
@@ -24,17 +24,17 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 
 app.get('/decrypt', async (req: Request, res: Response) => {
   try {
-    debug.log('Request to decrypt')
+    d.log('Request to decrypt')
     await decrypt()
     res.status(200).send('ok')
   } catch (error) {
-    debug.error(error)
+    d.error(error)
     res.status(500).send(`${error}`)
   }
 })
 app.get('/encrypt', async (req: Request, res: Response) => {
   try {
-    debug.log('Request to encrypt')
+    d.log('Request to encrypt')
     await validateValues()
     await genDrone()
     await encrypt()
@@ -42,7 +42,7 @@ app.get('/encrypt', async (req: Request, res: Response) => {
   } catch (error) {
     const err = `${error}`
     let status = 500
-    debug.error(err)
+    d.error(err)
     if (err.includes('Values validation FAILED')) {
       status = 422
     }
@@ -52,11 +52,11 @@ app.get('/encrypt', async (req: Request, res: Response) => {
 
 app.get('/commit', async (req: Request, res: Response) => {
   try {
-    debug.log('Request to commit')
+    d.log('Request to commit')
     await commit()
     res.status(200).send('ok')
   } catch (error) {
-    debug.error(error)
+    d.error(error)
     res.status(500).send(`${error}`)
   }
 })
@@ -66,13 +66,13 @@ export const startServer = (): void => {
   const dockerEnvDir = `${rootDir}/env`
   // accomodate k8s deployment with shared values dir, and make symlink to /home/app/stack/env
   if (k8sEnvDirPath && !existsSync(k8sEnvDirPath)) {
-    debug.info('Creating k8s values folder for symlink: ', k8sEnvDirPath)
+    d.info('Creating k8s values folder for symlink: ', k8sEnvDirPath)
     mkdirSync(k8sEnvDirPath)
   }
   if (!existsSync(dockerEnvDir)) {
-    debug.info(`Creating symlink from ${k8sEnvDirPath} to ${dockerEnvDir}`)
+    d.info(`Creating symlink from ${k8sEnvDirPath} to ${dockerEnvDir}`)
     symlinkSync(k8sEnvDirPath, dockerEnvDir)
   }
   server = app.listen(17771, '0.0.0.0')
-  debug.log(`Container listening on http://0.0.0.0:17771`)
+  d.log(`Container listening on http://0.0.0.0:17771`)
 }

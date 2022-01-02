@@ -7,12 +7,12 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
+const d: OtomiDebugger = terminal(`cmd:${cmdName}`)
 
 export const x = async (inArgv?: Arguments): Promise<number> => {
   const argv: Arguments = inArgv ?? getParsedArgs()
   const commands = argv._.slice(1)
-  const output = await stream(nothrow($`${commands}`), { stdout: debug.stream.log, stderr: debug.stream.error })
+  const output = await stream(nothrow($`${commands}`), { stdout: d.stream.log, stderr: d.stream.error })
   return output.exitCode
 }
 
