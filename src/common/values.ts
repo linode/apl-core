@@ -56,11 +56,11 @@ const writeValuesToFile = async (
   const d = terminal('common:values:writeValuesToFile')
   const nonEmptyValues = removeBlankAttributes(values)
   d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
-  if (!existsSync(targetPath)) {
-    return writeFile(targetPath, objectToYaml(nonEmptyValues))
-  }
   const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
-  const originalValues = loadYaml(`${targetPath}${suffix}`, { noError: true }) ?? {}
+  if (!existsSync(targetPath)) {
+    return writeFile(targetPath + suffix, objectToYaml(nonEmptyValues))
+  }
+  const originalValues = loadYaml(targetPath + suffix, { noError: true }) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
   const mergeResult = merge(cloneDeep(originalValues), nonEmptyValues, !overwrite ? originalValues : {})
   if (isEqual(originalValues, mergeResult)) {
@@ -68,7 +68,7 @@ const writeValuesToFile = async (
     return undefined
   }
   d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
-  const res = writeFile(`${targetPath}${suffix}`, objectToYaml(mergeResult))
+  const res = writeFile(targetPath + suffix, objectToYaml(mergeResult))
   d.info(`Values were written to ${targetPath}${suffix}`)
   return res
 }

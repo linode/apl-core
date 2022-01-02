@@ -111,8 +111,6 @@ postgresql:
     size: 1Gi
   global:
     postgresql:
-      image:
-        tag: 13.5.0
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:

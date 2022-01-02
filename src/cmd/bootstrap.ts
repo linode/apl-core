@@ -140,7 +140,7 @@ export const processValues = async (
   // generate secrets that don't exist yet
   const generatedSecrets = await deps.generateSecrets(merge(cloneDeep(storedSecrets), cloneDeep(originalInput)))
   // do we need to create a custom CA? if so add it to the secrets
-  const cm = get(originalValues, 'charts.cert-manager', {})
+  const cm = get(originalInput, 'charts.cert-manager', {})
   let caSecrets = {}
   if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
     if (cm.customRootCA && cm.customRootCAKey) {

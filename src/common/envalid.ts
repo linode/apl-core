@@ -33,13 +33,13 @@ export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record
   if (!process.env.TESTING && existsSync(path)) {
     const result = config({ path })
     if (result.error) console.error(result.error)
-    pEnv = { ...pEnv, ...result.parsed }
+    pEnv = { ...result.parsed, ...pEnv }
   }
   path = `${pEnv.ENV_DIR}/.secrets`
   if (existsSync(path)) {
     const result = config({ path })
     if (result.error) console.error(result.error)
-    pEnv = { ...pEnv, ...result.parsed }
+    pEnv = { ...result.parsed, ...pEnv }
   }
   return cleanEnv(pEnv, spec)
 }
