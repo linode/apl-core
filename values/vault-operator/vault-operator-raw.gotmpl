@@ -6,6 +6,8 @@
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}
+{{- $vaultVersion := "1.6.1" }}
+{{- $bankVaultsVersion := "1.14.4" }}
 
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
@@ -14,9 +16,8 @@ resources:
       name: "vault"
     spec:
       size: 1
-      image: vault:1.6.1
-      # specify a custom bank-vaults image with bankVaultsImage:
-      # bankVaultsImage: ghcr.io/banzaicloud/bank-vaults:latest
+      image: vault:{{ $vaultVersion }}
+      bankVaultsImage: 'ghcr.io/banzaicloud/bank-vaults:{{ $bankVaultsVersion }}'
 
       # Common annotations for all created resources
       annotations:

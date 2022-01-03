@@ -1,10 +1,11 @@
 {{- $v := .Values }}
-
+{{- $version := "1.29" }}
 jaeger:
   create: true
   namespace: jaeger
   spec:
     allInOne:
+      image: jaegertracing/all-in-one:{{ $version }}
       options:
         query:
           base-path: /jaeger
