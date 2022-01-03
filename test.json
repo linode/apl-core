@@ -1,0 +1,18 @@
+{
+  "bridge": "none",
+  "default-ulimits": {
+    "memlock": {
+      "Hard": -1,
+      "Name": "memlock",
+      "Soft": -1
+    }
+  },
+  "insecure-registries": ["harbor.18.196.140.96.nip.io"],
+  "live-restore": true,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-file": "10",
+    "max-size": "10m"
+  },
+  "max-concurrent-downloads": 10
+}

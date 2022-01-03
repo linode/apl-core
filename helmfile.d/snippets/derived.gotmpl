@@ -71,6 +71,8 @@ environments:
             enabled: {{ $v.otomi.hasExternalDNS }}
           gitea:
             adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+          host-mods:
+            enabled: {{ $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:

@@ -8,50 +8,81 @@ clusterDomain: cluster.local
 
 image:
   repository: gitea/gitea
-  tag: 1.14.2
-  pullPolicy: IfNotPresent
-  rootless: true
+  tag: 1.15.8
+  pullPolicy: Always
+  rootless: false # only possible when running 1.14 or later
 
 imagePullSecrets: []
+
+# Security context is only usable with rootless image due to image design
+podSecurityContext:
+  fsGroup: 1000
+
+containerSecurityContext: {}
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+#   # Add the SYS_CHROOT capability for root and rootless images if you intend to
+#   # run pods on nodes that use the container runtime cri-o. Otherwise, you will
+#   # get an error message from the SSH server that it is not possible to read from
+#   # the repository.
+#   # https://gitea.com/gitea/helm-chart/issues/161
+#     add:
+#       - SYS_CHROOT
+#   privileged: false
+#   readOnlyRootFilesystem: true
+#   runAsGroup: 1000
+#   runAsNonRoot: true
+#   runAsUser: 1000
+
+# DEPRECATED. The securityContext variable has been split two:
+# - containerSecurityContext
+# - podSecurityContext.
+securityContext: {}
 
 service:
   http:
     type: ClusterIP
     port: 3000
-    clusterIP: 
-    #loadBalancerIP:
-    #nodePort:
-    annotations:
-  ssh:
-    type: ClusterIP
-    port: 22
-    clusterIP:
+    clusterIP: None
     #loadBalancerIP:
     #nodePort:
     #externalTrafficPolicy:
     #externalIPs:
-    # loadBalancerSourceRanges: []
+    loadBalancerSourceRanges: []
+    annotations:
+  ssh:
+    type: ClusterIP
+    port: 22
+    clusterIP: None
+    #loadBalancerIP:
+    #nodePort:
+    #externalTrafficPolicy:
+    #externalIPs:
+    loadBalancerSourceRanges: []
     annotations:
 
 ingress:
   enabled: false
+  # className: nginx
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - git.example.com
+    - host: git.example.com
+      paths:
+        - path: /
+          pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - git.example.com
+  # Mostly for argocd or any other CI that uses `helm template | kubectl apply` or similar
+  # If helm doesn't correctly detect your ingress API version you can set it here.
+  # apiVersion: networking.k8s.io/v1
 
-resources:
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -62,6 +93,11 @@ resources:
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+## Use an alternate scheduler, e.g. "stork".
+## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+##
+# schedulerName:
 
 nodeSelector: {}
 
@@ -84,6 +120,8 @@ persistence:
     - ReadWriteOnce
   labels: {}
   annotations: {}
+  # storageClass:
+  # subPath:
 
 # additional volumes to add to the Gitea statefulset.
 extraVolumes:
@@ -109,9 +147,14 @@ initPreScript: ""
 #   chown -R git:git /data/git/.postgresql/
 #   chmod 400 /data/git/.postgresql/postgresql.key
 
+# Configure commit/action signing prerequisites
+signing:
+  enabled: false
+  gpgHome: /data/git/.gnupg
 
 gitea:
   admin:
+    #existingSecret: gitea-admin-secret
     username: gitea_admin
     password: r8sA8CPHD9!bt6d
     email: "gitea@local.domain"
@@ -120,34 +163,37 @@ gitea:
     enabled: false
     serviceMonitor:
       enabled: false
+      #  additionalLabels:
+      #    prometheus-release: prom1
 
-  ldap:
-    enabled: false
-    #name: 
-    #securityProtocol: 
-    #host: 
-    #port: 
-    #userSearchBase: 
-    #userFilter: 
-    #adminFilter: 
-    #emailAttribute: 
-    #bindDn: 
-    #bindPassword: 
-    #usernameAttribute: 
-    #sshPublicKeyAttribute:
+  ldap: []
+    # - name: "LDAP 1"
+    #  existingSecret:
+    #  securityProtocol:
+    #  host:
+    #  port:
+    #  userSearchBase:
+    #  userFilter:
+    #  adminFilter:
+    #  emailAttribute:
+    #  bindDn:
+    #  bindPassword:
+    #  usernameAttribute:
+    #  publicSSHKeyAttribute:
 
-  oauth:
-    enabled: false
-    #name:
-    #provider
-    #key: 
-    #secret: 
-    #autoDiscoverUrl:
-    #useCustomUrls
-    #customAuthUrl
-    #customTokenUrl
-    #customProfileUrl
-    #customEmailUrl
+  # Either specify inline `key` and `secret` or refer to them via `existingSecret`
+  oauth: []
+    # - name: 'OAuth 1'
+    #   provider:
+    #   key:
+    #   secret:
+    #   existingSecret:
+    #   autoDiscoverUrl:
+    #   useCustomUrls:
+    #   customAuthUrl:
+    #   customTokenUrl:
+    #   customProfileUrl:
+    #   customEmailUrl:
 
   config: {}
   #  APP_NAME: "Gitea: Git with a cup of tea"
@@ -159,72 +205,51 @@ gitea:
   #  security:
   #    PASSWORD_COMPLEXITY: spec
 
+  additionalConfigSources: []
+  #   - secret:
+  #       secretName: gitea-app-ini-oauth
+  #   - configMap:
+  #       name: gitea-app-ini-plaintext
+
   podAnnotations: {}
 
-  database:
-    builtIn:
-      postgresql:
-        enabled: true
-      mysql:
-        enabled: false
-      mariadb:
-        enabled: false
-
-  cache:
-    builtIn:
-      enabled: true
-
+  # Modify the liveness probe for your needs or completely disable it by commenting out.
   livenessProbe:
-    enabled: true
+    tcpSocket:
+      port: http
     initialDelaySeconds: 200
     timeoutSeconds: 1
     periodSeconds: 10
     successThreshold: 1
     failureThreshold: 10
+
+  # Modify the readiness probe for your needs or completely disable it by commenting out.
   readinessProbe:
-    enabled: true
+    tcpSocket:
+      port: http
     initialDelaySeconds: 5
     timeoutSeconds: 1
     periodSeconds: 10
     successThreshold: 1
     failureThreshold: 3
-  startupProbe:
-    enabled: false
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    successThreshold: 1
-    failureThreshold: 10
 
-  # customLivenessProbe:
-  #   httpGet:
-  #     path: /user/login
+  # # Uncomment the startup probe to enable and modify it for your needs.
+  # startupProbe:
+  #   tcpSocket:
   #     port: http
   #   initialDelaySeconds: 60
-  #   periodSeconds: 10
-  #   successThreshold: 1
-  #   failureThreshold: 10
-  # customReadinessProbe:
-  #   httpGet:
-  #     path: /user/login
-  #     port: http
-  #   initialDelaySeconds: 5
-  #   periodSeconds: 10
-  #   successThreshold: 1
-  #   failureThreshold: 3
-  # customStartupProbe:
-  #   httpGet:
-  #     path: /user/login
-  #     port: http
-  #   initialDelaySeconds: 60
+  #   timeoutSeconds: 1
   #   periodSeconds: 10
   #   successThreshold: 1
   #   failureThreshold: 10
 
 memcached:
+  enabled: true
   service:
     port: 11211
 
 postgresql:
+  enabled: true
   global:
     postgresql:
       postgresqlDatabase: gitea
@@ -235,6 +260,7 @@ postgresql:
     size: 10Gi
 
 mysql:
+  enabled: false
   root:
     password: gitea
   db:
@@ -247,6 +273,7 @@ mysql:
     size: 10Gi
 
 mariadb:
+  enabled: false
   auth:
     database: gitea
     username: gitea
@@ -258,6 +285,6 @@ mariadb:
     persistence:
       size: 10Gi
 
-extraRootCA: ''
-
-tasksVersion: master
+# By default, removed or moved settings that still remain in a user defined values.yaml will cause Helm to fail running the install/update.
+# Set it to false to skip this basic validation check.
+checkDeprecation: true

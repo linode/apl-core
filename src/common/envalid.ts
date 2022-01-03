@@ -26,36 +26,25 @@ const cliEnvSpec = {
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
 
-export const cleanEnvironment = (
-  spec: Record<string, any> = cliEnvSpec,
-  returnFunc = false,
-): Record<string, any> | CallableFunction => {
-  const func = (): Record<string, any> => {
-    let pEnv: any = process.env
-    // load local .env if we have it, for devs
-    let path = `${process.cwd()}/.env`
-    if (!process.env.TESTING && existsSync(path)) {
-      const result = config({ path })
-      if (result.error) console.error(result.error)
-      pEnv = { ...pEnv, ...result.parsed }
-    }
-    path = `${pEnv.ENV_DIR}/.secrets`
-    if (existsSync(path)) {
-      const result = config({ path })
-      if (result.error) console.error(result.error)
-      pEnv = { ...pEnv, ...result.parsed }
-    }
-    return cleanEnv(pEnv, spec)
+export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record<string, any> => {
+  let pEnv: any = process.env
+  // load local .env if we have it, for devs
+  let path = `${process.cwd()}/.env`
+  if (!process.env.TESTING && existsSync(path)) {
+    const result = config({ path })
+    if (result.error) console.error(result.error)
+    pEnv = { ...result.parsed, ...pEnv }
   }
-  return returnFunc ? func : func()
+  path = `${pEnv.ENV_DIR}/.secrets`
+  if (existsSync(path)) {
+    const result = config({ path })
+    if (result.error) console.error(result.error)
+    pEnv = { ...result.parsed, ...pEnv }
+  }
+  return cleanEnv(pEnv, spec)
 }
 
-let _env
-export const env = (): Record<string, any> => {
-  if (_env) return _env
-  _env = cleanEnvironment()
-  return _env
-}
+export const env = cleanEnvironment()
 
-export const isChart: boolean = env().CI && !!env().VALUES_INPUT
-export const isCli: boolean = !env().CI && !isChart
+export const isChart: boolean = env.CI && !!env.VALUES_INPUT
+export const isCli: boolean = !env.CI && !isChart

@@ -1,30 +1,25 @@
-import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { prepareEnvironment } from '../common/cli'
+import { terminal } from '../common/debug'
+import { hfValues } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
+import { HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
+import { checkPolicies } from './check-policies'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
-const tmpFile = '/tmp/otomi/test.yaml'
-
-const cleanup = (argv: HelmArguments): void => {
-  if (argv.skipCleanup) return
-  if (existsSync(tmpFile)) unlinkSync(tmpFile)
-}
-
-const setup = (argv: HelmArguments): void => {
-  cleanupHandler(() => cleanup(argv))
-}
 
 const test = async (): Promise<void> => {
-  setup(getParsedArgs())
+  const d = terminal(`cmd:${cmdName}:test`)
+  d.log('Running tests against cluster state...')
   await validateValues()
   await lint()
   await validateTemplates()
-  // await checkPolicies()
+  const values = await hfValues()
+  if (!values!.charts['gatekeeper-operator']!.disableValidatingWebhook) await checkPolicies()
+  d.log('Tests OK!')
 }
 
 export const module = {

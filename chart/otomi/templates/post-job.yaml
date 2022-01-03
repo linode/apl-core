@@ -19,7 +19,7 @@ spec:
       serviceAccountName: {{ include "otomi.fullname" . }}
       containers:
         - name: pre-delete
-          image: otomi/core:{{ $version }}
+          image: bitnami/kubectl:{{ .Values.cluster.k8sVersion }}
           command:
             - sh
             - -c

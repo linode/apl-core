@@ -1,16 +1,16 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
+import { logLevelString, terminal } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const sync = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:sync`)
   const argv: HelmArguments = getParsedArgs()
-  debug.info('Start sync')
+  d.info('Start sync')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hf(
     {
@@ -19,7 +19,7 @@ const sync = async (): Promise<void> => {
       logLevel: logLevelString(),
       args: ['sync', '--skip-deps', skipCleanup],
     },
-    { streams: { stdout: debug.stream.log } },
+    { streams: { stdout: d.stream.log } },
   )
 }
 

@@ -1,6 +1,6 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename } from '../common/utils'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
@@ -10,13 +10,13 @@ interface Arguments extends HelmArguments {
 }
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const template = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:template`)
   const argv = getParsedArgs() as Arguments
-  debug.info('Templating STARTED')
-  await hfTemplate(argv, argv.outDir, { stdout: debug.stream.log, stderr: debug.stream.error })
-  debug.info('Templating DONE')
+  d.info('Templating STARTED')
+  await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
+  d.info('Templating DONE')
 }
 
 export const module = {

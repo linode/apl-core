@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, rootDir } from '../common/utils'
@@ -13,9 +13,9 @@ export interface Arguments extends BasicArguments {
 }
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 export const genDrone = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:genDrone`)
   const argv: Arguments = getParsedArgs()
   const allValues = await hfValues()
   if (!allValues?.charts?.drone?.enabled) {
@@ -75,17 +75,17 @@ export const genDrone = async (): Promise<void> => {
 
   // TODO: Remove when validate-values can validate subpaths
   if (!output) {
-    debug.warn('Something went wrong trying to template using gucci')
+    d.warn('Something went wrong trying to template using gucci')
     return
   }
 
   if (argv.dryRun) {
-    debug.log(output)
+    d.log(output)
   } else {
-    const file = `${env().ENV_DIR}/.drone.yml`
+    const file = `${env.ENV_DIR}/.drone.yml`
     writeFileSync(file, output)
-    debug.debug('.drone.yml: ', output)
-    debug.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)
+    d.debug('.drone.yml: ', output)
+    d.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)
   }
 }
 

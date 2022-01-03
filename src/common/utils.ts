@@ -46,7 +46,7 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
 
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
-    path: env().ENV_DIR,
+    path: env.ENV_DIR,
     ignoreFiles: ['.gitignore'],
     follow: true,
   })

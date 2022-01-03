@@ -3,22 +3,22 @@ import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { hfValues } from '../common/hf'
 import { getFilename, loadYaml, rootDir } from '../common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const internalPaths: string[] = ['apps', 'k8s', 'services', 'teamConfig.services']
 
 // TODO: Accept json path to validate - on empty, validate all
 export const validateValues = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:validateValues`)
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
   const argv: HelmArguments = getParsedArgs()
-  debug.log('Values validation STARTED')
+  d.log('Values validation STARTED')
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
@@ -32,24 +32,24 @@ export const validateValues = async (): Promise<void> => {
     unset(values, internalPath)
   }
 
-  debug.info('Loading values-schema.yaml')
+  d.info('Loading values-schema.yaml')
   const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, any>
-  debug.debug('Initializing Ajv')
+  d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
-  debug.debug('Compiling Ajv validation')
+  d.debug('Compiling Ajv validation')
   let validate: ValidateFunction<unknown>
   try {
     validate = ajv.compile(valuesSchema)
   } catch (error) {
     throw new Error(`Schema is invalid: ${chalk.italic(error.message)}`)
   }
-  debug.info(`Validating values`)
+  d.info(`Validating values`)
   const val = validate(values)
   if (val) {
-    debug.log('Values validation SUCCESSFUL')
+    d.log('Values validation SUCCESSFUL')
   } else {
     validate.errors?.map((error: DefinedError) =>
-      debug.error('%O', {
+      d.error('%O', {
         keyword: error.keyword,
         dataPath: error.instancePath,
         schemaPath: error.schemaPath,

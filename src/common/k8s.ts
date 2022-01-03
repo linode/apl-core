@@ -18,14 +18,14 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env().DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
   namespace: string,
   data: Record<string, any> | string,
 ): Promise<void> => {
-  const d = terminal('createK8sSecret')
+  const d = terminal('common:k8s:createK8sSecret')
   const rawString = dump(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
@@ -52,13 +52,13 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${env().DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {
-  const d = terminal('fetchLoadBalancerIngressData')
+  const d = terminal('common:k8s:fetchLoadBalancerIngressData')
   let ingressDataString = ''
   let count = 0
   for (;;) {
@@ -77,7 +77,7 @@ interface IngressRecord {
   hostname?: string
 }
 export const getOtomiLoadBalancerIP = async (): Promise<string> => {
-  const d = terminal('getOtomiLoadBalancerIP')
+  const d = terminal('common:k8s:getOtomiLoadBalancerIP')
   d.debug('Find LoadBalancer IP or Hostname')
 
   const ingressDataString = await fetchLoadBalancerIngressData()
@@ -134,7 +134,7 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
  * @returns
  */
 export const checkKubeContext = async (): Promise<void> => {
-  const d = terminal('checkKubeContext')
+  const d = terminal('common:k8s:checkKubeContext')
   d.info('Validating kube context')
 
   const values = await hfValues()
@@ -164,22 +164,29 @@ export const checkKubeContext = async (): Promise<void> => {
 type WaitTillAvailableOptions = Options & {
   status?: number
   skipSsl?: boolean
+  username?: string
+  password?: string
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
   const options = { status: 200, skipSsl: false, ...opts }
-  const debug = terminal('waitTillAvailable')
+  const d = terminal('common:k8s:waitTillAvailable')
   const retryOptions: Options = {
     retries: 50,
     maxTimeout: 30000,
   }
 
-  const globalSkipSsl = !env().NODE_TLS_REJECT_UNAUTHORIZED
+  const globalSkipSsl = !env.NODE_TLS_REJECT_UNAUTHORIZED
   let rejectUnauthorized = !globalSkipSsl
   if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
   const fetchOptions: RequestInit = {
     redirect: 'follow',
     agent: new Agent({ rejectUnauthorized }),
+  }
+  if (options.username && options.password) {
+    fetchOptions.headers = {
+      Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+    }
   }
 
   await retry(async (bail) => {
@@ -195,7 +202,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
         } else throw err
       }
     } catch (e) {
-      debug.error(e)
+      d.error(e)
       throw e
     }
   }, retryOptions)

@@ -1,148 +1,127 @@
 apiVersion: v1
 kind: Secret
 metadata:
+  name: {{ include "gitea.fullname" . }}-inline-config
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  {{- include "gitea.inline_configuration" . | nindent 2 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
   name: {{ include "gitea.fullname" . }}
   labels:
     {{- include "gitea.labels" . | nindent 4 }}
 type: Opaque
 stringData:
-  app.ini: |-
-    {{- if not (hasKey .Values.gitea.config "cache") -}}
-    {{- $_ := set .Values.gitea.config "cache" dict -}}
-    {{- end -}}
+  config_environment.sh: |-
+    #!/usr/bin/env bash
+    set -euo pipefail
 
-    {{- if not (hasKey .Values.gitea.config "server") -}}
-    {{- $_ := set .Values.gitea.config "server" dict -}}
-    {{- end -}}
+    function env2ini::log() {
+      printf "${1}\n"
+    }
 
-    {{- if not (hasKey .Values.gitea.config "metrics") -}}
-    {{- $_ := set .Values.gitea.config "metrics" dict -}}
-    {{- end -}}
+    function env2ini::read_config_to_env() {
+      local section="${1}"
+      local line="${2}"
 
-    {{- if not (hasKey .Values.gitea.config "database") -}}
-    {{- $_ := set .Values.gitea.config "database" dict -}}
-    {{- end -}}
+      if [[ -z "${line}" ]]; then
+        # skip empty line
+        return
+      fi
+      
+      # 'xargs echo -n' trims all leading/trailing whitespaces and a trailing new line
+      local setting="$(awk -F '=' '{print $1}' <<< "${line}" | xargs echo -n)"
 
-    {{- if not (hasKey .Values.gitea.config "security") -}}
-    {{- $_ := set .Values.gitea.config "security" dict -}}
-    {{- end -}}
+      if [[ -z "${setting}" ]]; then
+        env2ini::log '  ! invalid setting'
+        exit 1
+      fi
 
-    {{- if not .Values.gitea.config.repository -}}
-    {{- $_ := set .Values.gitea.config "repository" dict -}}
-    {{- end -}}
+      local value=''
+      local regex="^${setting}(\s*)=(\s*)(.*)"
+      if [[ $line =~ $regex ]]; then
+        value="${BASH_REMATCH[3]}"
+      else
+        env2ini::log '  ! invalid setting'
+        exit 1
+      fi
 
-    {{- /* repository default settings */ -}}
-    {{- if not .Values.gitea.config.repository.ROOT -}}
-    {{- $_ := set .Values.gitea.config.repository "ROOT" "/data/git/gitea-repositories" -}}
-    {{- end -}}
+      env2ini::log "    + '${setting}'"
 
-    {{- /* security default settings */ -}}
-    {{- if not .Values.gitea.config.security.INSTALL_LOCK -}}
-    {{- $_ := set .Values.gitea.config.security "INSTALL_LOCK" "true" -}}
-    {{- end -}}
+      if [[ -z "${section}" ]]; then
+        export "ENV_TO_INI____${setting^^}=${value}"                           # '^^' makes the variable content uppercase
+        return
+      fi
 
-    {{- /* server default settings */ -}}
-    {{- if not (hasKey .Values.gitea.config.server "HTTP_PORT") -}}
-    {{- $_ := set .Values.gitea.config.server "HTTP_PORT" .Values.service.http.port -}}
-    {{- end -}}
-    {{- if not .Values.gitea.config.server.PROTOCOL -}}
-    {{- $_ := set .Values.gitea.config.server "PROTOCOL" "http" -}}
-    {{- end -}}
-    {{- if not (.Values.gitea.config.server.DOMAIN) -}}
-    {{- if gt (len .Values.ingress.hosts) 0 -}}
-    {{- $_ := set .Values.gitea.config.server "DOMAIN" (index .Values.ingress.hosts 0) -}}
-    {{- else -}}
-    {{- $_ := set .Values.gitea.config.server "DOMAIN" (include "gitea.default_domain" .) -}}
-    {{- end -}}
-    {{- end -}}
-    {{- if not .Values.gitea.config.server.ROOT_URL -}}
-    {{- if .Values.ingress.enabled -}}
-    {{- if gt (len .Values.ingress.tls) 0 -}}
-    {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index (index .Values.ingress.tls 0).hosts 0)) -}}
-    {{- else -}}
-    {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index .Values.ingress.hosts 0)) -}}
-    {{- end -}}
-    {{- else -}}
-    {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL .Values.gitea.config.server.DOMAIN) -}}
-    {{- end -}}
-    {{- end -}}
-    {{- if not .Values.gitea.config.server.SSH_DOMAIN -}}
-    {{- $_ := set .Values.gitea.config.server "SSH_DOMAIN" .Values.gitea.config.server.DOMAIN -}}
-    {{- end -}}
-    {{- if not .Values.gitea.config.server.SSH_PORT -}}
-    {{- $_ := set .Values.gitea.config.server "SSH_PORT" .Values.service.ssh.port -}}
-    {{- end -}}
-    {{- if not (hasKey .Values.gitea.config.server "SSH_LISTEN_PORT") -}}
-    {{- if not .Values.image.rootless -}}
-    {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" .Values.gitea.config.server.SSH_PORT -}}
-    {{- else -}}
-    {{- $_ := set .Values.gitea.config.server "SSH_LISTEN_PORT" "2222" -}}
-    {{- end -}}
-    {{- end -}}
-    {{- if not (hasKey .Values.gitea.config.server "START_SSH_SERVER") -}}
-    {{- if .Values.image.rootless -}}
-    {{- $_ := set .Values.gitea.config.server "START_SSH_SERVER" "true" -}}
-    {{- end -}}
-    {{- end -}}
-    {{- if not (hasKey .Values.gitea.config.server "APP_DATA_PATH") -}}
-    {{- $_ := set .Values.gitea.config.server "APP_DATA_PATH" "/data" -}}
-    {{- end -}}
-    {{- if not (hasKey .Values.gitea.config.server "ENABLE_PPROF") -}}
-    {{- $_ := set .Values.gitea.config.server "ENABLE_PPROF" false -}}
-    {{- end -}}
+      local masked_section="${section//./_0X2E_}"                            # '//' instructs to replace all matches
+      masked_section="${masked_section//-/_0X2D_}"
 
-    {{- /* metrics default settings */ -}}
-    {{- if not (hasKey .Values.gitea.config.metrics "ENABLED") -}}
-    {{- $_ := set .Values.gitea.config.metrics "ENABLED" .Values.gitea.metrics.enabled -}}
-    {{- end -}}
+      export "ENV_TO_INI__${masked_section^^}__${setting^^}=${value}"        # '^^' makes the variable content uppercase
+    }
 
-    {{- /* database default settings */ -}}
-    {{- if .Values.gitea.database.builtIn.postgresql.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "postgres" -}}
-    {{- if not (.Values.gitea.config.database.HOST) -}}
-    {{- $_ := set .Values.gitea.config.database "HOST"      (include "postgresql.dns" .) -}}
-    {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.postgresql.global.postgresql.postgresqlDatabase -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.postgresqlUsername -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.postgresqlPassword -}}
-    {{ else if .Values.gitea.database.builtIn.mysql.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
-    {{- if not (.Values.gitea.config.database.HOST) -}}
-    {{- $_ := set .Values.gitea.config.database "HOST"      (include "mysql.dns" .) -}}
-    {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mysql.db.name -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mysql.db.user -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mysql.db.password -}}
-    {{ else if .Values.gitea.database.builtIn.mariadb.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
-    {{- if not (.Values.gitea.config.database.HOST) -}}
-    {{- $_ := set .Values.gitea.config.database "HOST"      (include "mariadb.dns" .) -}}
-    {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mariadb.auth.database -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mariadb.auth.username -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mariadb.auth.password -}}
-    {{- end -}}
+    function env2ini::process_config_file() {
+      local config_file="${1}"
+      local section="$(basename "${config_file}")"
 
-    {{- /* cache default settings */ -}}
-    {{- if .Values.gitea.cache.builtIn.enabled -}}
-    {{- $_ := set .Values.gitea.config.cache "ENABLED" "true" -}}
-    {{- $_ := set .Values.gitea.config.cache "ADAPTER" "memcache" -}}
-    {{- if not (.Values.gitea.config.cache.HOST) -}}
-    {{- $_ := set .Values.gitea.config.cache "HOST" (include "memcached.dns" .) -}}
-    {{- end -}}
-    {{- end -}}
+      if [[ $section == '_generals_' ]]; then
+        env2ini::log "  [ini root]"
+        section=''
+      else
+        env2ini::log "  ${section}"
+      fi
 
-    {{- /* autogenerate app.ini */ -}}
-    {{- range $key, $value := .Values.gitea.config  }}
-    {{- if kindIs "map" $value }}
-    {{- if gt (len $value) 0 }}
+      while read -r line; do
+        env2ini::read_config_to_env "${section}" "${line}"
+      done < <(awk 1 "${config_file}")                             # Helm .toYaml trims the trailing new line which breaks line processing; awk 1 ... adds it back while reading
+    }
 
-    [{{ $key }}]
-    {{- range $n_key, $n_value := $value }}
-    {{ $n_key | upper }} = {{ $n_value }}
-    {{- end }}
-    {{- end }}
-    {{- else }}
-    {{ $key | upper }} = {{ $value }}
-    {{- end }}
-    {{- end }}
+    function env2ini::load_config_sources() {
+      local path="${1}"
+
+      env2ini::log "Processing $(basename "${path}")..."
+
+      while read -d '' configFile; do
+        env2ini::process_config_file "${configFile}"
+      done < <(find "${path}" -type l -not -name '..data' -print0)
+
+      env2ini::log "\n"
+    }
+
+    function env2ini::generate_initial_secrets() {
+      # These environment variables will either be
+      #   - overwritten with user defined values,
+      #   - initially used to set up Gitea
+      # Anyway, they won't harm existing app.ini files
+
+      export ENV_TO_INI__SECURITY__INTERNAL_TOKEN=$(gitea generate secret INTERNAL_TOKEN)
+      export ENV_TO_INI__SECURITY__SECRET_KEY=$(gitea generate secret SECRET_KEY)
+      export ENV_TO_INI__OAUTH2__JWT_SECRET=$(gitea generate secret JWT_SECRET)
+
+      env2ini::log "...Initial secrets generated\n"
+    }
+
+    # MUST BE CALLED BEFORE OTHER CONFIGURATION
+    env2ini::generate_initial_secrets
+
+    env2ini::load_config_sources '/env-to-ini-mounts/inlines/'
+    env2ini::load_config_sources '/env-to-ini-mounts/additionals/'
+
+    env2ini::log "=== All configuration sources loaded ===\n"
+
+    # safety to prevent rewrite of secret keys if an app.ini already exists
+    if [ -f ${GITEA_APP_INI} ]; then
+      env2ini::log 'An app.ini file already exists. To prevent overwriting secret keys, these settings are dropped and remain unchanged:'
+      env2ini::log '  - security.INTERNAL_TOKEN'
+      env2ini::log '  - security.SECRET_KEY'
+      env2ini::log '  - oauth2.JWT_SECRET'
+
+      unset ENV_TO_INI__SECURITY__INTERNAL_TOKEN
+      unset ENV_TO_INI__SECURITY__SECRET_KEY
+      unset ENV_TO_INI__OAUTH2__JWT_SECRET
+    fi
+
+    environment-to-ini -o $GITEA_APP_INI -p ENV_TO_INI

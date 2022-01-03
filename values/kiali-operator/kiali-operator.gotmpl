@@ -1,6 +1,10 @@
 {{- $v := .Values }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 
+image:
+  # @TODO:
+  tag: v1.44.0
+
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
 

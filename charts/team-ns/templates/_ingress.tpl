@@ -106,7 +106,7 @@ metadata:
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
       rewrite ^(/jaeger)$ $1/ permanent;
 {{- end }}
-  labels: {{- include "chart-labels" .dot | nindent 4 }}
+  labels: {{- include "team-ns.chart-labels" .dot | nindent 4 }}
   name: {{ $.provider }}-team-{{ $v.teamId }}-{{ .type }}-{{ .name }}
   namespace: {{ if ne .provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:

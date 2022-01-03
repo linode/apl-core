@@ -1,16 +1,16 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { Arguments, encrypt as encryptFunc } from '../common/crypt'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { getFilename } from '../common/utils'
 import { getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const encrypt = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:encrypt`)
   const argv: Arguments = getParsedArgs()
-  debug.info('otomi encrypt')
+  d.info('otomi encrypt')
   await encryptFunc(...(argv.files ?? []))
 }
 

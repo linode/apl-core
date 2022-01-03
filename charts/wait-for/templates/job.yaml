@@ -1,0 +1,60 @@
+{{- $retries := .Values.retries | default "50" }}
+{{- $isSemver := regexMatch "^[0-9.]+" .Values.tasksVersion }}
+{{- $tag := printf "%s%s" ($isSemver | ternary "v" "") .Values.tasksVersion }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "wait-for.fullname" . }}
+  labels:
+    {{- include "wait-for.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "wait-for.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wait-for.serviceAccountName" . }}
+      containers:
+        - name: wait-for
+          image: {{ printf "otomi/tasks:%s" $tag }}
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $tag) }} 
+          command: ["sh"]
+          args:
+            - -c
+            - npm run tasks:wait-for
+          env:
+            - name: WAIT_URL
+              value: '{{ .Values.url }}'
+            - name: WAIT_OPTIONS
+              value: '{"retries":{{ $retries }}}'
+            {{- if .Values.customCa }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /otomi/certs/custom-ca.pem
+            {{- end }}
+          securityContext:
+            runAsUser: 1000
+          {{- if .Values.customCa }}
+          volumeMounts:
+            - name: {{ include "wait-for.fullname" . }}
+              mountPath: /otomi/certs/custom-ca.pem
+              subPath: custom-ca.pem
+          {{- end }}
+      volumes:
+        - name: {{ include "wait-for.fullname" . }}
+          secret:
+            secretName: {{ include "wait-for.fullname" . }}
+  backoffLimit: 1

@@ -22,6 +22,7 @@ trigger:
 environment:
   IN_DOCKER: '1'
   VERBOSITY: '1'
+  DRONE_RUNNER_VOLUMES: 
 
 steps:
 {{- if eq .provider "slack" }}

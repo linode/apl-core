@@ -1,5 +1,11 @@
 watchNamespace: "vault"
 
+# @TODO:
+image:
+  tag: 1.14.4
+vault-operator:
+  bank-vaults:
+    version: 1.14.4
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
   imagePullSecrets:

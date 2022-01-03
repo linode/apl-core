@@ -1,16 +1,16 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
-import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
+import { logLevelString, terminal } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 export const lint = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:lint`)
   const argv: HelmArguments = getParsedArgs()
-  debug.info('Start linting')
+  d.info('Start linting')
   await hf(
     {
       fileOpts: argv.file,
@@ -20,8 +20,8 @@ export const lint = async (): Promise<void> => {
     },
     {
       streams: {
-        stdout: debug.stream.log,
-        stderr: debug.stream.error,
+        stdout: d.stream.log,
+        stderr: d.stream.error,
       },
     },
   )

@@ -4,9 +4,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  {{- with .Values.ingress.annotations }}
   annotations:
-  {{- range $key, $value := .Values.ingress.annotations }}
+    {{- range $key, $value := . }}
     {{ $key }}: {{ $value | quote }}
+    {{- end }}
   {{- end }}
   labels:
     app: {{ template "drone.name" . }}
@@ -17,7 +19,7 @@ metadata:
   namespace: {{ template "drone.namespace" . }}
 spec:
   rules:
-  {{- range .Values.ingress.hosts }}
+    {{- range .Values.ingress.hosts }}
     - host: {{ . }}
       http:
         paths:
@@ -38,9 +40,8 @@ spec:
                 port:
                   number: {{ $httpPort }}
             pathType: Prefix
-  {{- end -}}
+    {{- end -}}
   {{- if .Values.ingress.tls }}
-  tls:
-{{ toYaml .Values.ingress.tls | indent 4 }}
+  tls: {{- toYaml .Values.ingress.tls | nindent 4 }}
   {{- end -}}
 {{- end -}}

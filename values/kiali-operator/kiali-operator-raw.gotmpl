@@ -1,0 +1,7 @@
+resources:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: kiali-cabundle
+    data:
+      openid-server-ca.crt: {{ .Values._derived.caCert | b64enc }}

@@ -2,14 +2,13 @@ import { existsSync, unlinkSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const templatePath = '/tmp/template.yaml'
-const debug: OtomiDebugger = terminal(cmdName)
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -21,13 +20,14 @@ const setup = (argv: HelmArguments): void => {
 }
 
 const scoreTemplate = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:score`)
   const argv: HelmArguments = getParsedArgs()
-  debug.info('Scoring STARTED')
+  d.info('Scoring STARTED')
   await hfTemplate(argv, templatePath)
-  debug.info('Scoring DONE')
+  d.info('Scoring DONE')
 
   const scoreResult = await nothrow($`kube-score score ${templatePath}`)
-  debug.log(scoreResult.stdout.trim())
+  d.log(scoreResult.stdout.trim())
 }
 
 export const module = {
