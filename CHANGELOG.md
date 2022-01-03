@@ -4,44 +4,34 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.15.0](https://github.com/redkubes/otomi-core/compare/v0.14.56...v0.15.0) (2022-01-03)
 
-
 ### Features
 
-* host mods ([#702](https://github.com/redkubes/otomi-core/issues/702)) ([59951b8](https://github.com/redkubes/otomi-core/commit/59951b8c135499044180786d09c4ef07f706dad8))
-
+- host mods ([#702](https://github.com/redkubes/otomi-core/issues/702)) ([59951b8](https://github.com/redkubes/otomi-core/commit/59951b8c135499044180786d09c4ef07f706dad8))
 
 ### Bug Fixes
 
-* downgrade kes ([#703](https://github.com/redkubes/otomi-core/issues/703)) ([7209bbd](https://github.com/redkubes/otomi-core/commit/7209bbdf8a3574104327093e41019b9aaa7a3866))
-* encryption ([#700](https://github.com/redkubes/otomi-core/issues/700)) ([f0a42bc](https://github.com/redkubes/otomi-core/commit/f0a42bcb6336a6bab04a87ea7f7980b75574af53))
-* owner not required [ci skip] ([acd9e15](https://github.com/redkubes/otomi-core/commit/acd9e15b6d6f86345b412938894d2f4349bbf677))
-* reverted versions [ci skip] ([3f1c75c](https://github.com/redkubes/otomi-core/commit/3f1c75c633c11e61cbd19c05d5bd9502722d78be))
-* version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
-* wait-for chart should actually wait, chart value for provider needed ([a72ef2d](https://github.com/redkubes/otomi-core/commit/a72ef2d8c6e2932026d921785a078576681e9872))
-
+- downgrade kes ([#703](https://github.com/redkubes/otomi-core/issues/703)) ([7209bbd](https://github.com/redkubes/otomi-core/commit/7209bbdf8a3574104327093e41019b9aaa7a3866))
+- encryption ([#700](https://github.com/redkubes/otomi-core/issues/700)) ([f0a42bc](https://github.com/redkubes/otomi-core/commit/f0a42bcb6336a6bab04a87ea7f7980b75574af53))
+- owner not required [ci skip] ([acd9e15](https://github.com/redkubes/otomi-core/commit/acd9e15b6d6f86345b412938894d2f4349bbf677))
+- reverted versions [ci skip] ([3f1c75c](https://github.com/redkubes/otomi-core/commit/3f1c75c633c11e61cbd19c05d5bd9502722d78be))
+- version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
+- wait-for chart should actually wait, chart value for provider needed ([a72ef2d](https://github.com/redkubes/otomi-core/commit/a72ef2d8c6e2932026d921785a078576681e9872))
 
 ### Others
 
-* **deps:** updated images for bank vaults, jaeger ([6f5acd4](https://github.com/redkubes/otomi-core/commit/6f5acd4b4ef293953b5fe87846e3b7bcbb19618d))
-* **release:** 0.14.53 ([d581bac](https://github.com/redkubes/otomi-core/commit/d581bac0d100d1ecc4d7f154a2304fd20c525978))
-* **release:** 0.14.53 ([52d0a5c](https://github.com/redkubes/otomi-core/commit/52d0a5ce333d4151534534587e56ddf77e7396cb))
-* **release:** 0.14.54 ([7a5fdd3](https://github.com/redkubes/otomi-core/commit/7a5fdd32c75d094c7e715e716433ad7c3136912e))
+- **deps:** updated vulnerable images for bank vaults, jaeger ([6f5acd4](https://github.com/redkubes/otomi-core/commit/6f5acd4b4ef293953b5fe87846e3b7bcbb19618d))
+-
 
 ### [0.14.54](https://github.com/redkubes/otomi-core/compare/v0.14.56...v0.14.54) (2021-12-24)
 
-
 ### Bug Fixes
 
-* encryption ([#700](https://github.com/redkubes/otomi-core/issues/700)) ([f0a42bc](https://github.com/redkubes/otomi-core/commit/f0a42bcb6336a6bab04a87ea7f7980b75574af53))
-* owner not required [ci skip] ([acd9e15](https://github.com/redkubes/otomi-core/commit/acd9e15b6d6f86345b412938894d2f4349bbf677))
-* reverted versions [ci skip] ([3f1c75c](https://github.com/redkubes/otomi-core/commit/3f1c75c633c11e61cbd19c05d5bd9502722d78be))
-* version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
+- encryption ([#700](https://github.com/redkubes/otomi-core/issues/700)) ([f0a42bc](https://github.com/redkubes/otomi-core/commit/f0a42bcb6336a6bab04a87ea7f7980b75574af53))
+- owner not required [ci skip] ([acd9e15](https://github.com/redkubes/otomi-core/commit/acd9e15b6d6f86345b412938894d2f4349bbf677))
+- reverted versions [ci skip] ([3f1c75c](https://github.com/redkubes/otomi-core/commit/3f1c75c633c11e61cbd19c05d5bd9502722d78be))
+- version not required ([17877e9](https://github.com/redkubes/otomi-core/commit/17877e9e95782141906c395a3b1a3069871391df))
 
-
-### Others
-
-* **release:** 0.14.53 ([d581bac](https://github.com/redkubes/otomi-core/commit/d581bac0d100d1ecc4d7f154a2304fd20c525978))
-* **release:** 0.14.53 ([52d0a5c](https://github.com/redkubes/otomi-core/commit/52d0a5ce333d4151534534587e56ddf77e7396cb))
+- **release:** 0.14.53 ([52d0a5c](https://github.com/redkubes/otomi-core/commit/52d0a5ce333d4151534534587e56ddf77e7396cb))
 
 ### [0.14.53](https://github.com/redkubes/otomi-core/compare/v0.14.52...v0.14.53) (2021-12-22)
 
