@@ -5,6 +5,9 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "wait-for.fullname" . }}
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-delete-policy: hook-succeeded
   labels:
     {{- include "wait-for.labels" . | nindent 4 }}
 spec:
