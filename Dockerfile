@@ -1,4 +1,4 @@
-FROM otomi/tools:v1.4.21 as test
+FROM otomi/tools:v1.4.22 as test
 
 ENV APP_HOME=/home/app/stack
 
@@ -19,7 +19,7 @@ RUN npm ci --ignore-scripts && npm run compile
 RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm $APP_HOME/env; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.21 as prod
+FROM otomi/tools:v1.4.22 as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env

@@ -2,6 +2,9 @@ FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# https://cloud.google.com/sdk/docs/downloads-versioned-archives
+ARG CLOUD_SDK_VERSION=367.0.0
+ENV PATH "$PATH:/opt/google-cloud-sdk/bin/"
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.21.5
 # https://github.com/helm/helm/tags
@@ -70,8 +73,8 @@ RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -
 COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
-RUN groupadd -r app &&\
-  useradd -r -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
+RUN groupadd -r app -g 999 &&\
+  useradd -r -u 999 -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/tools
 RUN mkdir $APP_HOME
@@ -107,6 +110,11 @@ RUN pip3 install --upgrade --no-cache-dir awscli
 # aws-iam-authenticator
 ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
 RUN chmod +x aws-iam-authenticator
+
+# gcloud
+ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
+RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk $APP_HOME/gsdk && rm -rf /tmp/*
+ENV PATH $PATH:$APP_HOME/gsdk/bin
 
 # opa
 ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
