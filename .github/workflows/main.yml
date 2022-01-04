@@ -79,6 +79,8 @@ jobs:
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Push to docker hub
         run: |
           TAG=${GITHUB_REF##*/}
@@ -124,8 +126,6 @@ jobs:
           docker push $REPO:$release_tag
           # also build and push cli
           cli_image="otomi/cli:$release_tag"
-          pwd
-          ls -als
           cd tools
           docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
           cd -
