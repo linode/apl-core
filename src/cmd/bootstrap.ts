@@ -28,6 +28,7 @@ const kmsMap = {
 
 export const bootstrapSops = async (
   deps = {
+    terminal,
     loadYaml,
     copyFile,
     decrypt,
@@ -39,7 +40,7 @@ export const bootstrapSops = async (
     writeFileSync,
   },
 ): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:genSops`)
+  const d = deps.terminal(`cmd:${cmdName}:genSops`)
   const targetPath = `${env.ENV_DIR}/.sops.yaml`
   const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
   const settingsVals = deps.loadYaml(settingsFile) as Record<string, any>
@@ -58,7 +59,7 @@ export const bootstrapSops = async (
     keys: kmsKeys,
   }
 
-  const exists = existsSync(targetPath)
+  const exists = deps.existsSync(targetPath)
   // we can just get the values the first time because those are unencrypted
   const values = exists ? {} : await deps.hfValues()
 
@@ -72,32 +73,32 @@ export const bootstrapSops = async (
   const file = '.gitattributes'
   await deps.copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
 
-  // prepare some credential files the first time
-  if (!exists && (isCli || env.OTOMI_DEV)) {
-    // first time so we know we have values
-    const secretsFile = `${env.ENV_DIR}/.secrets`
-    if (provider === 'google') {
-      // and we also assume the correct values are given by using '!' (we want to err when not set)
-      const serviceKeyJson = JSON.parse(values!.kms!.sops!.google!.accountJson)
-      // and set it in env for later decryption
-      process.env.GCLOUD_SERVICE_KEY = values!.kms!.sops!.google!.accountJson
-      d.log('Creating gcp-key.json for vscode.')
-      deps.writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
-      d.log(`Creating credentials file: ${secretsFile}`)
-      deps.writeFileSync(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
-    } else if (provider === 'aws') {
-      const v = values!.kms!.sops!.aws!
-      deps.writeFileSync(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
-    } else if (provider === 'azure') {
-      const v = values!.kms!.sops!.azure!
-      deps.writeFileSync(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
-    } else if (provider === 'vault') {
-      const v = values!.kms!.sops!.vault!
-      deps.writeFileSync(secretsFile, `VAULT_TOKEN='${v.token}'`)
-    }
-  }
+  // prepare some credential files the first time and crypt some
   if (!exists) {
-    // now do a round of encryption and decryption to make sure we have all the files in place for hfValues
+    if (isCli || env.OTOMI_DEV) {
+      // first time so we know we have values
+      const secretsFile = `${env.ENV_DIR}/.secrets`
+      if (provider === 'google') {
+        // and we also assume the correct values are given by using '!' (we want to err when not set)
+        const serviceKeyJson = JSON.parse(values!.kms!.sops!.google!.accountJson)
+        // and set it in env for later decryption
+        process.env.GCLOUD_SERVICE_KEY = values!.kms!.sops!.google!.accountJson
+        d.log('Creating gcp-key.json for vscode.')
+        deps.writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+        d.log(`Creating credentials file: ${secretsFile}`)
+        deps.writeFileSync(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
+      } else if (provider === 'aws') {
+        const v = values!.kms!.sops!.aws!
+        deps.writeFileSync(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
+      } else if (provider === 'azure') {
+        const v = values!.kms!.sops!.azure!
+        deps.writeFileSync(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+      } else if (provider === 'vault') {
+        const v = values!.kms!.sops!.vault!
+        deps.writeFileSync(secretsFile, `VAULT_TOKEN='${v.token}'`)
+      }
+    }
+    // now do a round of encryption and decryption to make sure we have all the files in place for later
     await deps.encrypt()
     await deps.decrypt()
   }
@@ -129,7 +130,7 @@ export const getStoredClusterSecrets = async (
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already exists`)
-  if (env.OTOMI_DEV) return undefined
+  if (!env.TESTING && env.DISABLE_SYNC) return undefined
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
@@ -206,7 +207,7 @@ export const processValues = async (
   if (deps.isChart) {
     d.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
-    if (!env.DISABLE_SYNC) storedSecrets = await deps.getStoredClusterSecrets()
+    storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
     else originalInput = cloneDeep(originalValues)
     await deps.writeValues(originalInput, true)
@@ -238,7 +239,8 @@ export const processValues = async (
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
+    if (!env.TESTING && !env.DISABLE_SYNC)
+      await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
