@@ -17,7 +17,10 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "CI": "true"
+        "CI": "1",
+        "DISABLE_SYNC": "1",
+        "IN_DOCKER": "1",
+        "OTOMI_DEV": "1"
       },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },

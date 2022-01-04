@@ -11,6 +11,7 @@ const ciBool = makeValidator((x) => {
 
 const cliEnvSpec = {
   CI: ciBool({ default: false }),
+  DISABLE_SYNC: bool({ default: false }),
   DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
