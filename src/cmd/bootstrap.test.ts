@@ -1,8 +1,10 @@
 import { cloneDeep, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
+import { decrypt } from '../common/crypt'
 import stubs from '../test-stubs'
 import {
+  bootstrapSops,
   bootstrapValues,
   copyBasicFiles,
   createCustomCA,
@@ -24,6 +26,7 @@ describe('Bootstrapping values', () => {
     deps = {
       existsSync: jest.fn(),
       getImageTag: jest.fn(),
+      bootstrapSops: jest.fn(),
       terminal,
       copyBasicFiles: jest.fn(),
       processValues: jest.fn(),
@@ -38,10 +41,17 @@ describe('Bootstrapping values', () => {
       decrypt: jest.fn(),
     }
   })
+  it('should call relevant sub routines', async () => {
+    deps.processValues.mockReturnValue(values)
+    deps.hfValues.mockReturnValue(values)
+    await bootstrapValues(deps)
+    expect(deps.copyBasicFiles).toHaveBeenCalled()
+    expect(deps.bootstrapSops).toHaveBeenCalled()
+    expect(deps.getImageTag).toHaveBeenCalledWith(true)
+  })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
     await bootstrapValues(deps)
-    expect(deps.getImageTag).toHaveBeenCalledWith(true)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
@@ -68,15 +78,6 @@ describe('Bootstrapping values', () => {
       }),
       true,
     )
-  })
-  it('should copy sops related files if needed', async () => {
-    deps.processValues.mockReturnValue(values)
-    deps.hfValues.mockReturnValue(values)
-    deps.existsSync.mockReturnValue(true)
-    await bootstrapValues(deps)
-    expect(deps.copyFile).toHaveBeenCalled()
-    expect(deps.encrypt).toHaveBeenCalled()
-    expect(deps.decrypt).toHaveBeenCalled()
   })
   describe('Generating a loose schema', () => {
     const values = { test: 'ok', required: 'remove', nested: { required: 'remove-leaf' } }
@@ -112,6 +113,47 @@ describe('Bootstrapping values', () => {
     it('should not throw any exception', async () => {
       const res = await copyBasicFiles(deps)
       expect(res).toBe(undefined)
+    })
+  })
+  describe('Generating sops related files', () => {
+    const settings = {
+      kms: {
+        sops: {
+          provider: 'aws',
+          aws: {
+            keys: 'key1,key2',
+          },
+        },
+      },
+    }
+    const deps = {
+      terminal,
+      loadYaml: jest.fn().mockReturnValue(settings),
+      copyFile: jest.fn(),
+      decrypt: jest.fn(),
+      encrypt: jest.fn(),
+      gucci: jest.fn().mockReturnValue('ok'),
+      hfValues: jest.fn(),
+      existsSync: jest.fn(),
+      readFileSync: jest.fn(),
+      writeFileSync: jest.fn(),
+    }
+    it('should create files on first run and en/de-crypt', async () => {
+      deps.existsSync.mockReturnValue(false)
+      deps.hfValues.mockReturnValue(settings)
+      await bootstrapSops(deps)
+      expect(deps.encrypt).toHaveBeenCalled()
+      expect(deps.decrypt).toHaveBeenCalled()
+    })
+    it('should just create files on next runs', async () => {
+      deps.existsSync.mockReturnValue(true)
+      deps.hfValues.mockReturnValue(settings)
+      deps.decrypt = jest.fn()
+      deps.encrypt = jest.fn()
+      const res = await bootstrapSops(deps)
+      expect(res).toBe(undefined)
+      expect(deps.encrypt).not.toHaveBeenCalled()
+      expect(deps.decrypt).not.toHaveBeenCalled()
     })
   })
   describe('Checking for a custom CA', () => {

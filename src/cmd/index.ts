@@ -10,7 +10,6 @@ import { module as diffModule } from './diff'
 import { module as encryptModule } from './encrypt'
 import { module as filesModule } from './files'
 import { module as genDroneModule } from './gen-drone'
-import { module as genSopsModule } from './gen-sops'
 import { module as hfModule } from './hf'
 import { module as lintModule } from './lint'
 import { module as migrateModule } from './migrate'
@@ -38,7 +37,6 @@ export { module as diff } from './diff'
 export { module as encrypt } from './encrypt'
 export { module as files } from './files'
 export { module as genDrone } from './gen-drone'
-export { module as genSops } from './gen-sops'
 export { module as hf } from './hf'
 export { module as lint } from './lint'
 export { module as migrate } from './migrate'
@@ -66,7 +64,6 @@ export const commands: CommandModule[] = [
   encryptModule,
   filesModule,
   genDroneModule,
-  genSopsModule,
   hfModule,
   lintModule,
   migrateModule,

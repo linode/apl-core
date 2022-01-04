@@ -80,26 +80,12 @@ extraEnv: |
     value: {{ $k | get "admin.username" "admin" }}
   - name: KEYCLOAK_PASSWORD
     value: {{ $k | get "admin.password" $v.otomi.adminPassword }}
-{{- if $v._derived.untrustedCA }}
-  # - name: X509_CA_BUNDLE
-  #   value: /otomi/certs/custom-ca.pem
-{{- end }}
 extraVolumeMounts: |
   - name: theme
     mountPath: /themes
-{{- if $v._derived.untrustedCA }}
-  # - name: custom-ca
-  #   mountPath: /otomi/certs/custom-ca.pem
-  #   subPath: custom-ca.pem
-{{- end }}
 extraVolumes: |
   - name: theme
     emptyDir: {}
-{{- if $v._derived.untrustedCA }}
-  # - name: custom-ca
-  #   secret:
-  #     secretName: custom-ca
-{{- end }}
 podAnnotations: 
   policy.otomi.io/ignore-sidecar: psp-allowed-users
 

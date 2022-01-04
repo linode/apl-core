@@ -3,7 +3,7 @@ import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
-import { env, isCli } from './envalid'
+import { cleanEnvironment, env, isCli } from './envalid'
 import { readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
@@ -22,10 +22,14 @@ enum CryptType {
 const preCrypt = (): void => {
   const d = terminal(`common:crypt:preCrypt`)
   d.debug('Checking prerequisites for the (de,en)crypt action')
-  if (env.GCLOUD_SERVICE_KEY) {
+  // we might have set GCLOUD_SERVICE_KEY in bootstrap so reparse env
+  // just this time (not desired as should be considered read only):
+  const lateEnv = cleanEnvironment()
+  if (lateEnv.GCLOUD_SERVICE_KEY) {
     d.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
+    // and set the location to the file holding the credentials for zx running sops
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
-    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(env.GCLOUD_SERVICE_KEY))
+    writeFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(lateEnv.GCLOUD_SERVICE_KEY))
   }
   if (isCli) {
     const secretPath = `${env.ENV_DIR}/.secrets`
