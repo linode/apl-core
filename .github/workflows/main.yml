@@ -9,6 +9,7 @@ env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-core
   REPO: otomi/core
+  REPO_CLI: otomi/cli
   GIT_USER: redkubesbot
 
 jobs:
@@ -93,7 +94,7 @@ jobs:
           # also build and push cli
           cli_image="otomi/cli:$TAG"
           cd tools
-          docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
+          docker build -t $cli_image --build-arg="TAG=$TAG" -f Dockerfile.cli . && docker push $cli_image
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
@@ -126,9 +127,12 @@ jobs:
           docker push $REPO:$release_tag
           # also build and push cli
           cli_image="otomi/cli:$release_tag"
-          cd tools
-          docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
-          cd -
+          docker pull $REPO_CLI:$TAG
+          docker tag $REPO_CLI:$TAG $REPO_CLI:latest
+          docker push $REPO_CLI:latest
+          docker tag $REPO_CLI:$TAG $REPO_CLI:$release_tag
+          # now create release in github
+          docker push $REPO_CLI:$release_tag
           echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
           git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags origin master
           changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
