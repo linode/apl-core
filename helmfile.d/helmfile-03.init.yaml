@@ -13,16 +13,10 @@ bases:
 
 releases:
   - name: gitea-artifacts
-    installed: {{ $c | get "gitea.enabled" }}
+    installed: {{ $v._derived.untrustedCA }}
     namespace: gitea
     labels:
       pkg: gitea
-    <<: *raw
-  - name: keycloak-artifacts
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
     <<: *raw
   - name: kiali-operator-artifacts
     installed: {{ $v._derived.untrustedCA }}
