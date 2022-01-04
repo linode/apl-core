@@ -41,6 +41,10 @@ silent() {
   fi
 }
 
+docker_tag_exists() {
+  curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep "\"name\": \"$2\"" &>/dev/null
+}
+
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
@@ -72,7 +76,12 @@ otomi_branch_or_tag=${current_branch:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
 otomi_image="cli"
 [ -n "$IN_DOCKER" ] && otomi_image="core"
-readonly otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
+otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
+# backwards compatibility with pre core/cli split era
+if [ $otomi_image = 'cli' ] && ! docker_tag_exists cli master; then
+  otomi_image='core'
+  otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
+fi
 silent echo "Using image: $otomi_tools_image"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-TAG="v1.4.22"
+TAG=${TAG:-"v1.4.22"}
 
 cd tools >/dev/null 2>&1 || true
 

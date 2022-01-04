@@ -31,7 +31,11 @@ RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk $APP_HOME/gsd
 ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
 RUN chmod +x opa
 
-RUN chown -R app:app /home/app/tools
+# kubescore
+ADD https://github.com/zegl/kube-score/releases/download/v${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION}_linux_amd64 kube-score
+RUN chmod +x kube-score
+
+RUN chown -R app:app $TOOLS_HOME
 
 USER app
 
