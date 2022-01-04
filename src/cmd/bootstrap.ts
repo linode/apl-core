@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { copy, outputFileSync } from 'fs-extra'
 import { copyFile } from 'fs/promises'
 import { dump } from 'js-yaml'
@@ -12,13 +12,96 @@ import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
-import { getFilename, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
+import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
 import { generateSecrets, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
-import { genSops } from './gen-sops'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
+
+const kmsMap = {
+  aws: 'kms',
+  azure: 'azure_keyvault',
+  google: 'gcp_kms',
+  vault: 'hc_vault_transit_uri',
+}
+
+export const bootstrapSops = async (
+  deps = {
+    loadYaml,
+    copyFile,
+    decrypt,
+    encrypt,
+    gucci,
+    hfValues,
+    existsSync,
+    readFileSync,
+    writeFileSync,
+  },
+): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:genSops`)
+  const targetPath = `${env.ENV_DIR}/.sops.yaml`
+  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
+  const settingsVals = deps.loadYaml(settingsFile) as Record<string, any>
+  const provider: string | undefined = settingsVals?.kms?.sops?.provider
+  if (!provider) {
+    d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
+    return
+  }
+
+  const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
+  const kmsProvider = kmsMap[provider] as string
+  const kmsKeys = settingsVals.kms.sops[provider].keys as string
+
+  const obj = {
+    provider: kmsProvider,
+    keys: kmsKeys,
+  }
+
+  const exists = existsSync(targetPath)
+  // we can just get the values the first time because those are unencrypted
+  const values = exists ? {} : await deps.hfValues()
+
+  d.log(`Creating sops file for provider ${provider}`)
+  const output = (await deps.gucci(templatePath, obj)) as string
+  deps.writeFileSync(targetPath, output)
+  d.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
+
+  d.info('Copying sops related files')
+  // add sops related files
+  const file = '.gitattributes'
+  await deps.copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+
+  // prepare some credential files the first time
+  if (!exists && (isCli || env.OTOMI_DEV)) {
+    // first time so we know we have values
+    const secretsFile = `${env.ENV_DIR}/.secrets`
+    if (provider === 'google') {
+      // and we also assume the correct values are given by using '!' (we want to err when not set)
+      const serviceKeyJson = JSON.parse(values!.kms!.sops!.google!.accountJson)
+      // and set it in env for later decryption
+      process.env.GCLOUD_SERVICE_KEY = values!.kms!.sops!.google!.accountJson
+      d.log('Creating gcp-key.json for vscode.')
+      deps.writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+      d.log(`Creating credentials file: ${secretsFile}`)
+      deps.writeFileSync(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
+    } else if (provider === 'aws') {
+      const v = values!.kms!.sops!.aws!
+      deps.writeFileSync(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
+    } else if (provider === 'azure') {
+      const v = values!.kms!.sops!.azure!
+      deps.writeFileSync(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+    } else if (provider === 'vault') {
+      const v = values!.kms!.sops!.vault!
+      deps.writeFileSync(secretsFile, `VAULT_TOKEN='${v.token}'`)
+    }
+  }
+  if (!exists) {
+    // now do a round of encryption and decryption to make sure we have all the files in place for hfValues
+    await deps.encrypt()
+    await deps.decrypt()
+  }
+}
 
 export const generateLooseSchema = (deps = { terminal, rootDir, env, isCore, loadYaml, outputFileSync }): void => {
   const d = deps.terminal(`cmd:${cmdName}:generateLooseSchema`)
@@ -123,7 +206,7 @@ export const processValues = async (
   if (deps.isChart) {
     d.log(`Loading chart values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
-    storedSecrets = await deps.getStoredClusterSecrets()
+    if (!env.DISABLE_SYNC) storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
     else originalInput = cloneDeep(originalValues)
     await deps.writeValues(originalInput, true)
@@ -153,9 +236,9 @@ export const processValues = async (
   // we have generated all we need, now store the original values and merge in the secrets that don't exist yet
   await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)), false)
   // and do some context dependent post processing:
-  if (deps.isChart && !env.OTOMI_DEV) {
+  if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
+    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -227,7 +310,7 @@ export const bootstrapValues = async (
     hfValues,
     isCli,
     writeValues,
-    genSops,
+    bootstrapSops,
     copyFile,
     encrypt,
     decrypt,
@@ -273,16 +356,7 @@ export const bootstrapValues = async (
     }
     await deps.writeValues(add, true)
   }
-  await deps.genSops()
-  if (deps.existsSync(`${ENV_DIR}/.sops.yaml`)) {
-    d.info('Copying sops related files')
-    // add sops related files
-    const file = '.gitattributes'
-    await deps.copyFile(`${rootDir}/.values/${file}`, `${ENV_DIR}/${file}`)
-    // now do a round of encryption and decryption to make sure we have all the files in place for validation
-    await deps.encrypt()
-    await deps.decrypt()
-  }
+  await deps.bootstrapSops()
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it
   if (!originalValues?.otomi?.adminPassword) {
@@ -305,14 +379,7 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    /*
-      We have the following scenarios:
-      1. chart install: assume empty env dir, so git init > bootstrap values (=load skeleton files, then merge chart values) > and commit
-      2. cli install: first time, so git init > bootstrap values
-      3. cli install: n-th time (.git exists), so pull > bootstrap values
-      4. chart install: n-th time. (values are stored in some git repository), so configure git, then clone values, then merge chart values) > and commit
-
-    */
+    await decrypt()
     await bootstrapValues()
   },
 }

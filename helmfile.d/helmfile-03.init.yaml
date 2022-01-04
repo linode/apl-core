@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: gitea-artifacts
-    installed: {{ $v._derived.untrustedCA }}
+    installed: {{ and $v._derived.untrustedCA ($c | get "gitea.enabled")  }}
     namespace: gitea
     labels:
       pkg: gitea

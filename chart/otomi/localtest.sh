@@ -1,10 +1,7 @@
 set -e
 
-export VALUES_INPUT=${VALUES_INPUT:-/tmp/otomi/values.yaml}
+export VALUES_INPUT=${VALUES_INPUT:-'/tmp/otomi/values.yaml'}
 export CI=1
-export VERBOSITY=1
-# export GCLOUD_SERVICE_KEY=
+export VERBOSITY=${VERBOSITY:-'1'}
 
 binzx/otomi bootstrap
-# binzx/otomi apply
-# binzx/otomi commit
