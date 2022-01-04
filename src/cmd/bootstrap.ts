@@ -130,7 +130,7 @@ export const getStoredClusterSecrets = async (
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already exists`)
-  if (!env.TESTING && env.DISABLE_SYNC) return undefined
+  if (env.DISABLE_SYNC) return undefined
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
@@ -239,8 +239,7 @@ export const processValues = async (
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    if (!env.TESTING && !env.DISABLE_SYNC)
-      await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
+    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
