@@ -35,7 +35,7 @@ jobs:
           registry: ${{ env.CACHE_REGISTRY }}
           image_name: ${{ env.CACHE_REPO }}
           image_tag: ${{ env.TAG }}
-          build_extra_args: '--squash'
+          # build_extra_args: '--squash'
           pull_image_and_stages: false
 
   integration:
@@ -124,6 +124,8 @@ jobs:
           docker push $REPO:$release_tag
           # also build and push cli
           cli_image="otomi/cli:$release_tag"
+          pwd
+          ls -als
           cd tools
           docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
           cd -
