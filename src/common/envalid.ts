@@ -13,6 +13,7 @@ const cliEnvSpec = {
   CI: ciBool({ default: false }),
   DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
+  GCLOUD_BIN: str({ default: undefined }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),

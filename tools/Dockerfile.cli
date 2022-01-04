@@ -1,0 +1,14 @@
+ARG TAG
+FROM otomi/tools:v1.4.22 as tools
+FROM otomi/core:$TAG
+
+COPY --from=tools $TOOLS_DIR/awscli $TOOLS_DIR/awscli
+COPY --from=tools $TOOLS_DIR/aws-iam-authenticator $TOOLS_DIR/aws-iam-authenticator
+COPY --from=tools $TOOLS_DIR/gsdk $TOOLS_DIR/gsdk
+COPY --from=tools $TOOLS_DIR/opa $TOOLS_DIR/opa
+
+ENV PATH $PATH:$APP_HOME/awscli/bin:$APP_HOME/gsdk/bin
+
+USER root
+RUN chown -R app:app $TOOLS_DIR/awscli $TOOLS_DIR/aws-iam-authenticator $TOOLS_DIR/gsdk $TOOLS_DIR/opa
+USER app

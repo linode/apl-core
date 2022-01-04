@@ -16,10 +16,6 @@ ARG SOPS_VERSION=3.7.1
 ARG GUCCI_VERSION=1.5.0
 # https://github.com/roboll/helmfile/releases
 ARG HELMFILE_VERSION=0.141.0
-# https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.33.1
-# https://github.com/zegl/kube-score/releases
-ARG KUBESCORE_VERSION=1.12.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
@@ -37,7 +33,6 @@ RUN apt-get update -qq \
   && apt install --reinstall coreutils \
   && apt install -qqy --no-install-recommends \
   apt-transport-https \
-  awscli \
   ca-certificates \
   curl \
   gettext \
@@ -46,16 +41,9 @@ RUN apt-get update -qq \
   groff \
   locales \
   nano \
-  netcat \
-  openssh-server \
-  python3 \
-  python3-pip \
-  python3-setuptools \
   rlwrap \
+  unzip \
   vim \
-  nano \
-  groff \
-  awscli \
   && rm -rf /var/lib/apt/lists/*
 
 # set locale
@@ -70,11 +58,12 @@ RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -
 COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
-RUN groupadd -r app &&\
-  useradd -r -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
+RUN groupadd -r app -g 999 &&\
+  useradd -r -u 999 -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
 ENV HOME=/home/app
-ENV APP_HOME=/home/app/tools
-RUN mkdir $APP_HOME
+ENV APP_HOME=$HOME/stack
+ENV TOOLS_HOME=$HOME/tools
+RUN mkdir $APP_HOME $TOOLS_HOME
 WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
 
@@ -101,24 +90,9 @@ RUN chmod +x helmfile
 ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 gucci
 RUN chmod +x gucci
 
-# aws
-RUN pip3 install --upgrade --no-cache-dir awscli
-
-# aws-iam-authenticator
-ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
-RUN chmod +x aws-iam-authenticator
-
-# opa
-ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
-RUN chmod +x opa
-
 # kubeval
 ADD https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
-
-# kubescore
-ADD https://github.com/zegl/kube-score/releases/download/v${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION}_linux_amd64 kube-score
-RUN chmod +x kube-score
 
 # conftest
 ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp

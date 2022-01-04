@@ -1,5 +1,6 @@
 #!/usr/bin/env node --nolazy -r ts-node/register
-import { existsSync, symlinkSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, symlinkSync, unlinkSync } from 'fs'
+import { dirname } from 'path'
 import { CommandModule } from 'yargs'
 import { commands, defaultCommand } from './cmd'
 import { scriptName } from './common/cli'
@@ -14,9 +15,17 @@ const terminalScale = 0.75
 const startup = async (): Promise<void> => {
   const link = `${process.cwd()}/env`
   if (!env.ENV_DIR) process.env.ENV_DIR = `${process.cwd()}/env`
+  // create symlink to make env dir approachable from relative path
   if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) {
     if (existsSync(link)) unlinkSync(link)
     symlinkSync(env.ENV_DIR, link)
+  }
+  // create gcloud symlink to be able to refresh token
+  if (env.GCLOUD_BIN) {
+    const gcloudBinLoc = '/home/app/tools/gsdk/bin'
+    if (!existsSync(env.GCLOUD_BIN)) mkdirSync(dirname(env.GCLOUD_BIN), { recursive: true })
+    if (existsSync(env.GCLOUD_BIN)) unlinkSync(env.GCLOUD_BIN)
+    symlinkSync(gcloudBinLoc, env.GCLOUD_BIN)
   }
   try {
     parser.scriptName(scriptName)
@@ -46,6 +55,7 @@ const startup = async (): Promise<void> => {
       parser.showHelp()
     process.exit(1)
   } finally {
+    // devs should not manually have to remove docker symlinks from docker runs before:
     if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) unlinkSync(`${process.cwd()}/env`)
     console.profileEnd('otomi')
   }

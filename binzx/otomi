@@ -51,6 +51,7 @@ fi
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
+[ -n "$in_core" ] && [ -f "$PWD/.env" ] && source "$PWD/.env"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 fallback_otomi_version='latest'
 fallback_otomi_dev_version='master'
@@ -69,7 +70,10 @@ else
 fi
 otomi_branch_or_tag=${current_branch:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
-readonly otomi_tools_image="otomi/core:${otomi_version_used}"
+otomi_image="cli"
+[ -n "$IN_DOCKER" ] && otomi_image="core"
+readonly otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
+silent echo "Using image: $otomi_tools_image"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
@@ -191,6 +195,7 @@ vars=(
   CI
   DEBUG
   ENV_DIR
+  GCLOUD_BIN
   GCLOUD_SERVICE_KEY
   KUBE_VERSION_OVERRIDE
   NODE_TLS_REJECT_UNAUTHORIZED
@@ -288,7 +293,7 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
-  docker run --name $container_name --rm --init $it \
+  docker run --name $container_name --rm --init $it -u 0 \
     $linux_workaround \
     $network \
     $stack_volume \
@@ -304,6 +309,7 @@ else
     $(check_volume_path $ENV_DIR "$ENV_DIR") \
     $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
     $DOCKER_EXTRA_ARGS \
+    -e GCLOUD_BIN=$(dirname $(which gcloud)) \
     --env-file "$tmp_env" \
     -w "$stack_dir" \
     "$otomi_tools_image" \

@@ -20,7 +20,7 @@ export const module = {
 
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
-    await prepareEnvironment({ skipEnvDirCheck: true, skipDecrypt: true })
+    await prepareEnvironment({ skipDecrypt: true })
     await status()
   },
 }

@@ -87,6 +87,10 @@ jobs:
           docker tag $image $REPO:$TAG
           docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
           docker push $REPO:$TAG
+          # also build and push cli
+          cli_image="otomi/cli:$TAG"
+          cd tools
+          docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
@@ -117,6 +121,11 @@ jobs:
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
+          # also build and push cli
+          cli_image="otomi/cli:$release_tag"
+          cd tools
+          docker build -t $cli_image -f Dockerfile.cli . && docker push $cli_image
+          cd -
           echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
           git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags origin master
           changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
