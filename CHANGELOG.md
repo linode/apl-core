@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.1](https://github.com/redkubes/otomi-core/compare/v0.15.0...v0.15.1) (2022-01-05)
+
+
+### Bug Fixes
+
+* ca condition, fixes [#704](https://github.com/redkubes/otomi-core/issues/704) ([#705](https://github.com/redkubes/otomi-core/issues/705)) ([1e97cfb](https://github.com/redkubes/otomi-core/commit/1e97cfb046a4a49427479194a97bc38ad41f9ec3))
+* missing ca conditions, google kms conf ([0a8ca8a](https://github.com/redkubes/otomi-core/commit/0a8ca8acadadbf994ed3a7475ee93fd2356f6706))
+
+
+### Others
+
+* **release:** 0.15.0 ([a22b67d](https://github.com/redkubes/otomi-core/commit/a22b67d11e1f72460f2334d1b359e07e75ae27ed))
+* **release:** 0.15.0 ([99a09da](https://github.com/redkubes/otomi-core/commit/99a09da8a51106a2fcd65df795a69700b717e34c))
+
 ## [0.15.0](https://github.com/redkubes/otomi-core/compare/v0.14.56...v0.15.0) (2022-01-03)
 
 ### Features

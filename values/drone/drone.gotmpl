@@ -81,7 +81,7 @@ agent:
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
-  runnerEnv:
+  runnerEnv: |
     {{- $sopsEnv | nindent 4 }}
     {{- if and $hasGitea $v._derived.untrustedCA }}
       {{- if $dindEnabled }}
