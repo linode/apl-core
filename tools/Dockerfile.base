@@ -103,7 +103,7 @@ RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
-RUN chown -R app:app $TOOLS_HOME
+RUN chown -R app:app $HOME
 USER app
 
 CMD "/bin/bash"

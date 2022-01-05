@@ -25,7 +25,7 @@ RUN chmod +x aws-iam-authenticator
 
 # gcloud
 ADD https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_SDK_VERSION}-linux-x86_64.tar.gz /tmp/gsdk.tar.gz
-RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk $APP_HOME/gsdk && rm -rf /tmp/*
+RUN tar -zxvf /tmp/gsdk.tar.gz -C /tmp && mv /tmp/google-cloud-sdk gsdk && rm -rf /tmp/*
 
 # opa
 ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
