@@ -66,7 +66,7 @@ export const bootstrapSops = async (
   d.log(`Creating sops file for provider ${provider}`)
   const output = (await deps.gucci(templatePath, obj)) as string
   deps.writeFileSync(targetPath, output)
-  d.log(`gen-sops is done and the configuration is written to: ${targetPath}`)
+  d.log(`Ready generating sops files. The configuration is written to: ${targetPath}`)
 
   d.info('Copying sops related files')
   // add sops related files
@@ -221,8 +221,8 @@ export const processValues = async (
     }
     if (originalInput) storedSecrets = originalValues
   }
-  // generate secrets that don't exist yet
-  const generatedSecrets = await deps.generateSecrets(merge(cloneDeep(storedSecrets), cloneDeep(originalInput)))
+  // generate all secrets (does not diff against previous so generates all new secrets every time)
+  const generatedSecrets = await deps.generateSecrets(originalInput)
   // do we need to create a custom CA? if so add it to the secrets
   const cm = get(originalInput, 'charts.cert-manager', {})
   let caSecrets = {}
@@ -233,9 +233,10 @@ export const processValues = async (
       caSecrets = deps.createCustomCA()
     }
   }
+  // merge existing secrets over newly generated ones to keep them
   const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
-  // we have generated all we need, now store the original values and merge in the secrets that don't exist yet
-  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)), false)
+  // we have generated all we need, now store everything by merging the original values over all the secrets
+  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)))
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster

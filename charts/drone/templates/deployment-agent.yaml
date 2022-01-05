@@ -82,9 +82,11 @@ spec:
               name: docker-socket
             - name: envfile
               mountPath: /etc/drone
+            {{- if .Values.customCa }}
             - name: custom-ca
               mountPath: /etc/ssl/certs/ca-certificates.crt
               subPath: ca-certificates.crt
+            {{- end }}
             {{- with .Values.agent.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -118,9 +120,11 @@ spec:
           volumeMounts:
             - name: docker-graph-storage
               mountPath: /var/lib/docker
+            {{- if .Values.customCa }}
             - name: custom-ca
               mountPath: /etc/ssl/certs/ca-certificates.crt
               subPath: ca-certificates.crt
+            {{- end }}
             {{- with .Values.dind.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -128,9 +132,11 @@ spec:
         - name: docker-graph-storage
           emptyDir: {}
 {{- end }}
+        {{- if .Values.customCa }}
         - name: custom-ca
           secret:
             secretName: {{ template "drone.fullname" . }}-ca
+        {{- end }}
         - name: envfile
           secret:
             secretName: {{ template "drone.fullname" . }}-envfile

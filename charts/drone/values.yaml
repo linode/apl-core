@@ -393,9 +393,11 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
 
-  ## If any default image pull secrets should be defined within the service account
-  ## These imagePullSecrets are automatically attached to pods in the Service Account namespace
-  ## imagePullSecrets:
-  ## - dockerconfig
-
+## If any default image pull secrets should be defined within the service account
+## These imagePullSecrets are automatically attached to pods in the Service Account namespace
+## imagePullSecrets:
+## - dockerconfig
 imagePullSecrets: []
+
+## Custom CA to be used for TLS communication
+customCa: ''

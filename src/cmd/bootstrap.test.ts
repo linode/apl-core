@@ -1,7 +1,6 @@
 import { cloneDeep, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
-import { decrypt } from '../common/crypt'
 import stubs from '../test-stubs'
 import {
   bootstrapSops,
@@ -180,7 +179,9 @@ describe('Bootstrapping values', () => {
     const generatedSecrets = { gen: 'x' }
     const ca = { a: 'cert' }
     const mergedValues = merge(cloneDeep(values), cloneDeep(secrets))
-    const mergedSecrets = merge(cloneDeep(generatedSecrets), cloneDeep(ca), cloneDeep(secrets))
+    const mergedSecretsWithCa = merge(cloneDeep(secrets), cloneDeep(ca))
+    const mergedSecretsWithGen = merge(cloneDeep(secrets), cloneDeep(generatedSecrets))
+    const mergedSecretsWithGenAndCa = merge(cloneDeep(mergedSecretsWithGen), cloneDeep(ca))
     let deps
     beforeEach(() => {
       deps = {
@@ -223,15 +224,14 @@ describe('Bootstrapping values', () => {
         expect(deps.generateSecrets).toHaveBeenCalledWith(merge(cloneDeep(secrets), cloneDeep(values)))
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
-      it('should create a secret with passwords if no such secret exists', async () => {
-        const existingSecret = { secret: 'exists' }
-        const valuesWithSecrets = merge(cloneDeep(values), existingSecret)
-        const allSecrets = merge(cloneDeep(mergedSecrets), existingSecret)
+      it('should overwrite a stored secret with one that was provided in values', async () => {
+        const newSecret = { secret: 'new' }
+        const valuesWithSecrets = merge(cloneDeep(values), newSecret)
+        const allSecrets = merge(cloneDeep(mergedSecretsWithCa), newSecret)
         deps.loadYaml.mockReturnValue(valuesWithSecrets)
-        deps.getStoredClusterSecrets.mockReturnValue(merge(cloneDeep(secrets), { secret: 'stale' }))
+        deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(allSecrets)
         await processValues(deps)
-        expect(deps.generateSecrets).toHaveBeenCalledWith(merge(cloneDeep(secrets), cloneDeep(valuesWithSecrets)))
         expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'default', allSecrets)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
@@ -245,14 +245,27 @@ describe('Bootstrapping values', () => {
           charts: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
         })
         await processValues(deps)
-        expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
+        expect(deps.createCustomCA).not.toHaveBeenCalled()
       })
       it('should only store secrets', async () => {
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(generatedSecrets)
         deps.createCustomCA.mockReturnValue(ca)
         await processValues(deps)
-        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'default', mergedSecrets)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith(
+          'otomi-generated-passwords',
+          'default',
+          mergedSecretsWithGenAndCa,
+        )
+      })
+      it('should not overwrite stored secrets', async () => {
+        deps.loadYaml.mockReturnValue({})
+        deps.getStoredClusterSecrets.mockReturnValue(generatedSecrets)
+        deps.createCustomCA.mockReturnValue({})
+        deps.generateSecrets.mockReturnValue(generatedSecrets)
+        await processValues(deps)
+        expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'default', generatedSecrets)
       })
       it('should only write and return original values', async () => {
         const writtenValues = merge(cloneDeep(values), cloneDeep(secrets))
@@ -265,12 +278,12 @@ describe('Bootstrapping values', () => {
         expect(res).toEqual(mergedValues)
       })
       it('should merge original with generated values and write them to env dir', async () => {
-        const writtenValues = merge(cloneDeep(values), cloneDeep(mergedSecrets))
+        const writtenValues = merge(cloneDeep(values), cloneDeep(mergedSecretsWithGenAndCa))
         deps.loadYaml.mockReturnValue(values)
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(generatedSecrets)
         await processValues(deps)
-        expect(deps.writeValues).toHaveBeenNthCalledWith(2, writtenValues, false)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(2, writtenValues)
       })
     })
     describe('processing env dir values', () => {

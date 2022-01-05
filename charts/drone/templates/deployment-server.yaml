@@ -122,9 +122,11 @@ spec:
             {{- end }}
             - name: data
               mountPath: /var/lib/drone
+            {{- if .Values.customCa }}
             - name: custom-ca
               mountPath: /etc/ssl/certs/ca-certificates.crt
               subPath: ca-certificates.crt
+            {{- end }}
       volumes:
         {{- if eq .Values.sourceControl.provider "bitbucketServer" }}
         - name: bitbucket-private-key
@@ -141,9 +143,11 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        {{- if .Values.customCa }}
         - name: custom-ca
           secret:
             secretName: {{ template "drone.fullname" . }}-ca
+        {{- end }}
         {{- with .Values.server.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
