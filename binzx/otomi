@@ -79,7 +79,17 @@ otomi_image="cli"
 otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
 # backwards compatibility with pre core/cli split era
 if [ $otomi_image = 'cli' ] && ! docker_tag_exists otomi/cli $otomi_version_used; then
-  otomi_image='core'
+  # check if master version exists
+  if docker_tag_exists otomi/cli master; then
+    otomi_version_used='master'
+  else
+    otomi_image='core'
+  fi
+  otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
+fi
+# finally fall back to master tag if image not found
+if ! docker_tag_exists $otomi_image $otomi_version_used; then
+  otomi_version_used=master
   otomi_tools_image="otomi/$otomi_image:$otomi_version_used"
 fi
 silent echo "Using image: $otomi_tools_image"
