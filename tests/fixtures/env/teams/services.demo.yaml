@@ -21,8 +21,10 @@ teamConfig:
                       secrets:
                           - mysecret-generic
                   networkPolicy:
-                      - app: backend
-                        team: mercury
+                      ingressPrivate:
+                          mode: allowAll
+                      egressPublic:
+                          mode: allowAll
                   type: public
                 - name: hello-auth
                   port: 80
@@ -45,6 +47,11 @@ teamConfig:
                               memory: 64Mi
                       secrets:
                           - mysecret-generic
+                  networkPolicy:
+                      ingressPrivate:
+                          mode: allowAll
+                      egressPublic:
+                          mode: allowAll
                   type: public
                 - name: tlspass
                   port: 443
@@ -90,15 +97,30 @@ teamConfig:
                           /etc/nginx-server-certs: mysecret-tls
                   type: public
                   tlsPass: true
+                  networkPolicy:
+                      ingressPrivate:
+                          mode: allowAll
+                      egressPublic:
+                          mode: allowAll
                 - name: some-svc
                   port: 80
                   id: f7275813-a461-44c5-b174-612e0865efd3
                   type: cluster
+                  networkPolicy:
+                      ingressPrivate:
+                          mode: allowAll
+                      egressPublic:
+                          mode: allowAll
                 - name: has-cert-svc
                   hasCert: true
                   certArn: arn:aws:acm:eu-central-1:12345678:certificate/has-cert-svc
                   certName: 'has-cert-svc'
                   type: public
+                  networkPolicy:
+                      ingressPrivate:
+                          mode: allowAll
+                      egressPublic:
+                          mode: allowAll
                 - name: service-a
                   type: cluster
                   networkPolicy:
@@ -114,13 +136,6 @@ teamConfig:
                               - domain1.com
                               - domain2.com
                 - name: service-b
-                  type: cluster
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: denyAll
-                      egressPublic:
-                          mode: denyAll
-                - name: service-c
                   type: cluster
                   networkPolicy:
                       ingressPrivate:

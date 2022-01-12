@@ -81,31 +81,35 @@ spec:
                 values:
                   - team-
 {{- range $s := $v.services }}
-{{ $ingressPrivateMode:= $s.networkPolicy.ingressPrivate.mode | default "denyAll" }}
+{{- if not $s.isCore }}
+{{- $ingressPrivateMode := $s.networkPolicy.ingressPrivate.mode | default "denyAll" }}
 {{- if eq $ingressPrivateMode "allowAll" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}
+  name: {{ $s.name }}-ingress-private-allow-all
 spec:
   podSelector:
     matchLabels:
-      app: {{ $s.name }}-peers
+      app: {{ $s.name }}
   policyTypes:
     - Ingress
   ingress:
     - from:
         - namespaceSelector:
-            matchLabels:
-              name: {{ .team }}
+            matchExpressions:
+              - key: name
+                operator: In
+                values:
+                  - team-
 {{- else if eq $ingressPrivateMode "allowOnly" }}
 {{- range $s.networkPolicy.ingressPrivate.allow }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-ingress-private
+  name: {{ $s.name }}-ingress-private-allow-only
 spec:
   podSelector:
     matchLabels:
@@ -121,17 +125,16 @@ spec:
           podSelector:
             matchLabels:
               app: {{ .service }}
-          {{- end }} {{/* hasKey /*}}
-{{- end }} {{/* range ingressPrivate.allow /*}}
-{{- end }} {{/* if ingressPrivateMode /*}}
-
-{{ $egressPublicMode:= $s.networkPolicy.egressPublic.mode | default "denyAll" }}
-{{- if or (eq $egressPublicMode "allowAll") (eq $egressPublicMode "allowOnly" }}
+          {{- end }} {{/* hasKey */}}
+{{- end }} {{/* range ingressPrivate.allow */}}
+{{- end }} {{/* if ingressPrivateMode */}}
+{{- $egressPublicMode:= $s.networkPolicy.egressPublic.mode | default "denyAll" }}
+{{- if or (eq $egressPublicMode "allowAll") (eq $egressPublicMode "allowOnly") }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-egress-public
+  name: {{ $s.name }}-egress-public-allow
 spec:
   podSelector:
     matchLabels:
@@ -146,5 +149,6 @@ spec:
           podSelector:
             matchLabels:
               istio: egressgateway
-{{- end }} {{/* if egressPublicMode /*}}
-{{- end }} {{/* range services /*}}
+{{- end }} {{/* if egressPublicMode */}}
+{{- end }} {{/* not $s.isCore */}}
+{{- end }} {{/* range services */}}

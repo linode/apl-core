@@ -491,9 +491,15 @@ definitions:
     type: object
     title: Kubernetes secrets
   networkPolicy:
+    additionalProperties: false
+    required:
+      - ingressPrivate
+      - egressPublic
     properties:
       ingressPrivate:
         title: Ingress inside the cluster
+        required:
+          - mode
         oneOf:
           - title: Deny traffic from all team services
             properties:
@@ -528,6 +534,8 @@ definitions:
                     - team
       egressPublic:
         title: Egress outside the cluster
+        required:
+          - mode
         oneOf:
           - title: Deny all
             properties:
@@ -973,6 +981,7 @@ definitions:
     required:
       - name
       - type
+      - networkPolicy
   size:
     description: Disk size. Valid units are E|P|T|G|Ti|Gi.
     examples:
