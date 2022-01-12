@@ -491,19 +491,67 @@ definitions:
     type: object
     title: Kubernetes secrets
   networkPolicy:
-    type: array
-    items:
-      type: object
-      properties:
-        app:
-          description: A value of app label
-          type: string
-        team:
-          description: Name name
-          type: string
-      required:
-        - app
-        - team
+    properties:
+      ingressPrivate:
+        title: Ingress inside the cluster
+        oneOf:
+          - title: Deny traffic from all team services
+            properties:
+              mode:
+                default: denyAll
+                enum:
+                  - denyAll
+          - title: Allow traffic from all team services
+            properties:
+              mode:
+                default: allowAll
+                enum:
+                  - allowAll
+          - title: Allow traffic from selected team services
+            properties:
+              mode:
+                default: allowOnly
+                enum:
+                  - allowOnly
+              allow:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    team:
+                      description: A team name
+                      type: string
+                    service:
+                      description: A service name
+                      type: string
+                  required:
+                    - team
+      egressPublic:
+        title: Egress outside the cluster
+        oneOf:
+          - title: Deny all
+            properties:
+              mode:
+                default: denyAll
+                enum:
+                  - denyAll
+          - title: Accept all
+            properties:
+              mode:
+                default: allowAll
+                enum:
+                  - allowAll
+          - title: Allow only selected
+            properties:
+              mode:
+                default: allowOnly
+                enum:
+                  - allowOnly
+              allow:
+                title: FQDN or public IP addresses
+                type: array
+                items:
+                  type: string
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
