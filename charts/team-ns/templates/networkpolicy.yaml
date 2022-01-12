@@ -99,7 +99,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: {{ .team }}
-{{- else eq $ingressPrivateMode "allowOnly" }}
+{{- else if eq $ingressPrivateMode "allowOnly" }}
 {{- range $s.networkPolicy.ingressPrivate.allow }}
 ---
 apiVersion: networking.k8s.io/v1
