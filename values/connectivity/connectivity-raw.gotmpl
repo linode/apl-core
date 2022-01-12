@@ -1,161 +1,84 @@
 {{ $v:=.Values}}
 
-{{ $ref:= $v.teamConnectivity.ref}}
 resources:
-{{- range $workload:=$v.teamConnectivity.workloads }}
-{{ $refApp:= printf "conn-%s-%s" $ref.labels.app $workload.labels.app }}
-{{ $workloadName:= printf "conn-%s-%s" $workload.labels.app $ref.labels.app }}
-{{ $refAppUrl:= printf "%s.%s.svc.cluster.local" $refApp $ref.namespace }}
-{{ $workloadUrl:= printf "%s.%s.svc.cluster.local" $workloadName $workload.namespace}}
-- apiVersion: v1
-  kind: Service
-  metadata:
-    labels: {{- $workload.labels | toYaml | nindent 6 }}
-      module: connectivity
-    name: {{ $workloadName }}
-    namespace: {{ $workload.namespace}}
-  spec:
-    ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: 8080
-    selector: {{- $workload.labels | toYaml | nindent 6 }}
-      module: connectivity
-    type: ClusterIP
-- apiVersion: v1
-  kind: Service
-  metadata:
-    labels: {{- $ref.labels | toYaml | nindent 6 }}
-      module: connectivity
-    name: {{ $refApp }}
-    namespace: {{ $ref.namespace}}
-  spec:
-    ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: 8080
-    selector: {{- $ref.labels | toYaml | nindent 6 }}
-      module: connectivity
-    type: ClusterIP
-- apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    labels: {{- $ref.labels | toYaml | nindent 6 }}
-      module: connectivity
-    name: {{ $refApp }}
-    namespace: {{ $ref.namespace}}
-  spec:
-    template:
-      metadata:
-        labels: {{- $ref.labels | toYaml | nindent 10 }}
-          module: connectivity
-        name: {{ $refApp }}
-        annotations:
-          sidecar.istio.io/rewriteAppHTTPProbers: "false" 
-      spec:
-        hostNetwork: false
-        containers:
-          - name: server
-            args:
-              - -listen=:8080
-              - -text="Connected"
-            env:
-              - name: PORT
-                value: '8080'
-            ports:
-              - containerPort: 8080
-            resources:
-              limits:
-                cpu: 50m
-                memory: 64M
-            image: hashicorp/http-echo
-            imagePullPolicy: IfNotPresent
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 8080
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 8080
-          - name: client
-            args:
-              - -sS
-              - --fail
-              - --connect-timeout
-              - '5'
-              - -o
-              - /dev/null
-              - {{ $workloadUrl }}
-            resources:
-              limits:
-                cpu: 50m
-                memory: 64M
-            image: curlimages/curl:7.80.0
-            imagePullPolicy: IfNotPresent
-    selector:
-      matchLabels: {{- $ref.labels | toYaml | nindent 8 }}
-        module: connectivity
-    replicas: 1
+{{- range $item:=$v.teamConnectivity }}
+{{- $server := $item.server }}
+{{- $serverSubdomain:= "connectivity" }}
+{{- $serverHostname:= printf "conn-server-%s" $server.labels.app }}
+{{- $serverUrl:= printf "%s.%s.%s.svc.cluster.local" $serverHostname $serverSubdomain $server.namespace }}
 
-- apiVersion: apps/v1
-  kind: Deployment
+# Server
+- apiVersion: v1
+  kind: Pod
   metadata:
-    labels: {{- $workload.labels | toYaml | nindent 6 }}
+    labels: {{- $item.server.labels | toYaml | nindent 6 }}
       module: connectivity
-    name: {{ $workloadName }}
-    namespace: {{ $workload.namespace}}
+    name: {{ $serverHostname }}
+    namespace: {{ $server.namespace}}
   spec:
-    template:
-      metadata:
-        labels: {{- $workload.labels | toYaml | nindent 10 }}
-          module: connectivity
-        name: {{ $workloadName }}
-      spec:
-        hostNetwork: false
-        containers:
-          - name: server
-            args:
-              - -listen=:8080
-              - -text="Connected"
-            env:
-              - name: PORT
-                value: '8080'
-            ports:
-              - containerPort: 8080
-            resources:
-              limits:
-                cpu: 50m
-                memory: 64M
-            image: hashicorp/http-echo
-            imagePullPolicy: IfNotPresent
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 8080
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 8080
-          - name: client
-            args:
-              - -sS
-              - --fail
-              - --connect-timeout
-              - '5'
-              - -o
-              - /dev/null
-              - {{ $refAppUrl }}
-            resources:
-              limits:
-                cpu: 50m
-                memory: 64M
-            image: curlimages/curl:7.80.0
-            imagePullPolicy: IfNotPresent
-    selector:
-      matchLabels: {{- $workload.labels | toYaml | nindent 8 }}
-        module: connectivity
-    replicas: 1
-{{- end }}
+    hostname: {{ $serverHostname }}
+    subdomain: {{ $serverSubdomain }}
+    containers:
+      - name: server
+        args:
+          - -listen=:8080
+          - -text="Connected"
+        env:
+          - name: PORT
+            value: '8080'
+        ports:
+          - containerPort: 8080
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64M
+        image: hashicorp/http-echo
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+
+{{- range $client:=$item.clients }}
+{{- $serverHostname:= printf "conn-client-%s-to-%s" $client.labels.app $server.labels.app }}
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    labels: {{- $client.labels | toYaml | nindent 6 }}
+      module: connectivity
+    name: {{ $serverHostname }}
+    namespace: {{ $client.namespace}}
+  spec:
+    hostNetwork: false
+    subdomain: connectivity
+    containers:
+      - name: server
+        args:
+          - -listen=:8080
+          - -text="Connected"
+        env:
+          - name: PORT
+            value: '8080'
+        ports:
+          - containerPort: 8080
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64M
+        image: hashicorp/http-echo
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: {{ $serverUrl }}
+            port: 8080
+
+{{- end }} {{/* range clients */}}
+{{- end }} {{/* range */}}

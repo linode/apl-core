@@ -2,25 +2,15 @@
 environments:
   default:
     values:
-      - teamConnectivity:
-          ref:
+    - teamConnectivity:
+        - server:
             namespace: team-a1
             labels:
                 app: app
-          workloads:
+          clients:
             - namespace: team-a2
               labels:
                 app: a2
-            - namespace: istio-system
-              labels:
-                app: istiod
-            - namespace: istio-system
-              labels:
-                app: ingressgateway
-            - namespace: monitoring
-              labels:
-                app: prometheus
-
 releases:
   - name: inter-team-connectivity
     installed: true
