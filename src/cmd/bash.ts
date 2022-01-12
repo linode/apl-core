@@ -1,14 +1,14 @@
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { getFilename } from '../common/utils'
 import { BasicArguments, getParsedArgs, parser, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
-const debug: OtomiDebugger = terminal(cmdName)
 
 const bash = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}bash`)
   const argv: BasicArguments = getParsedArgs()
   if (argv._[0] === 'bash') parser.showHelp()
   else {
@@ -18,12 +18,12 @@ const bash = async (): Promise<void> => {
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => debug.log(line))
+      .map((line) => d.log(line))
     output.stderr
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => debug.error(line))
+      .map((line) => d.error(line))
     process.exit(output.exitCode)
   }
 }

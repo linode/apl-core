@@ -1,4 +1,3 @@
-{{- $image := include "gitea.image" . }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -18,32 +17,34 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/gitea/config.yaml") . | sha256sum }}
-        checksum/ldap: {{ include "gitea.ldap_settings" . | sha256sum }}
-        checksum/oauth: {{ include "gitea.oauth_settings" . | sha256sum }}
+        {{- range $idx, $value := .Values.gitea.ldap }}
+        checksum/ldap_{{ $idx }}: {{ include "gitea.ldap_settings" (list $idx $value) | sha256sum }}
+        {{- end }}
+        {{- range $idx, $value := .Values.gitea.oauth }}
+        checksum/oauth_{{ $idx }}: {{ include "gitea.oauth_settings" (list $idx $value) | sha256sum }}
+        {{- end }}
         {{- with .Values.gitea.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        policy.otomi.io/ignore.init-ca: psp-allowed-users
-        policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
       labels:
         {{- include "gitea.labels" . | nindent 8 }}
         {{- if .Values.statefulset.labels }}
         {{- toYaml .Values.statefulset.labels | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.schedulerName }}
+      schedulerName: "{{ .Values.schedulerName }}"
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        fsGroup: 1000
-      initContainers: 
-        {{- include "extraRootCA.init" (dict "image" $image "rootCA" .Values.extraRootCA) | nindent 8 }}
-        {{- include "waitForUrl.init" (dict "tasksVersion" .Values.tasksVersion "url"  .Values.waitForUrl "extraRootCA" .Values.extraRootCA) | nindent 8 }}
-        - name: init
-          image: "{{ $image }}"
-          command: ["/usr/sbin/init_gitea.sh"]
-          resources: {{- .Values.init.resources | toYaml | nindent 12 }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-directories
+          image: "{{ include "gitea.image" . }}"
+          command: ["/usr/sbin/init_directory_structure.sh"]
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -51,21 +52,148 @@ spec:
               value: /data/gitea
             - name: GITEA_WORK_DIR
               value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
-            - name: config
-              mountPath: /etc/gitea/conf
+            - name: temp
+              mountPath: /tmp
             - name: data
               mountPath: /data
-            {{- if ne .Values.extraRootCA "" }}
-            {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 12 }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+        - name: init-app-ini
+          image: "{{ include "gitea.image" . }}"
+          command: ["/usr/sbin/config_environment.sh"]
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /usr/sbin
+            - name: temp
+              mountPath: /tmp
+            - name: data
+              mountPath: /data
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            - name: inline-config-sources
+              mountPath: /env-to-ini-mounts/inlines/
+            {{- range $idx, $value := .Values.gitea.additionalConfigSources }}
+            - name: additional-config-sources-{{ $idx }}
+              mountPath: "/env-to-ini-mounts/additionals/{{ $idx }}/"
+            {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+        - name: configure-gitea
+          image: "{{ include "gitea.image" . }}"
+          command: ["/usr/sbin/configure_gitea.sh"]
+          securityContext:
+            {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
+            {{- $csc := deepCopy .Values.containerSecurityContext -}}
+            {{- if not (hasKey $csc "runAsUser") -}}
+            {{- $_ := set $csc "runAsUser" 1000 -}}
+            {{- end -}}
+            {{- toYaml $csc | nindent 12 }}
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            {{- if .Values.gitea.ldap }}
+            {{- range $idx, $value := .Values.gitea.ldap }}
+            {{- if $value.existingSecret }}
+            - name: GITEA_LDAP_BIND_DN_{{ $idx }}
+              valueFrom:
+                secretKeyRef:
+                  key:  bindDn
+                  name: {{ $value.existingSecret }}
+            - name: GITEA_LDAP_PASSWORD_{{ $idx }}
+              valueFrom:
+                secretKeyRef:
+                  key:  bindPassword
+                  name: {{ $value.existingSecret }}
+            {{- else }}
+            - name: GITEA_LDAP_BIND_DN_{{ $idx }}
+              value: {{ $value.bindDn | quote }}
+            - name: GITEA_LDAP_PASSWORD_{{ $idx }}
+              value: {{ $value.bindPassword | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.gitea.oauth }}
+            {{- range $idx, $value := .Values.gitea.oauth }}
+            {{- if $value.existingSecret }}
+            - name: GITEA_OAUTH_KEY_{{ $idx }}
+              valueFrom:
+                secretKeyRef:
+                  key:  key
+                  name: {{ $value.existingSecret }}
+            - name: GITEA_OAUTH_SECRET_{{ $idx }}
+              valueFrom:
+                secretKeyRef:
+                  key:  secret
+                  name: {{ $value.existingSecret }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.gitea.admin.existingSecret }}
+            - name: GITEA_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key:  username
+                  name: {{ .Values.gitea.admin.existingSecret }}
+            - name: GITEA_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key:  password
+                  name: {{ .Values.gitea.admin.existingSecret }}
+            {{- else }}
+            - name: GITEA_ADMIN_USERNAME
+              value: {{ .Values.gitea.admin.username | quote }}
+            - name: GITEA_ADMIN_PASSWORD
+              value: {{ .Values.gitea.admin.password | quote }}
+            {{- end }}
+            {{- if .Values.statefulset.env }}
+            {{- toYaml .Values.statefulset.env | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: init
+              mountPath: /usr/sbin
+            - name: temp
+              mountPath: /tmp
+            - name: data
+              mountPath: /data
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -88,6 +216,12 @@ spec:
               value: /data
             - name: GITEA_TEMP
               value: /tmp/gitea
+            - name: TMPDIR
+              value: /tmp/gitea
+            {{- if .Values.signing.enabled }}
+            - name: GNUPGHOME
+              value: {{ .Values.signing.gpgHome }}
+            {{- end }}
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
@@ -100,63 +234,35 @@ spec:
             - name: profiler
               containerPort: 6060
             {{- end }}
-          {{- if .Values.gitea.livenessProbe.enabled }}
+          {{- if .Values.gitea.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.gitea.customLivenessProbe | nindent 12 }}
+            {{- toYaml .Values.gitea.livenessProbe | nindent 12 }}
           {{- end }}
-          {{- if .Values.gitea.readinessProbe.enabled }}
+          {{- if .Values.gitea.readinessProbe }}
           readinessProbe:
-            tcpSocket:
-              port: http
-            initialDelaySeconds: {{ .Values.gitea.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.gitea.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.gitea.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.gitea.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.gitea.livenessProbe.failureThreshold }}
-          {{- else if .Values.gitea.customLivenessProbe }}
-          livenessProbe:
-            {{- toYaml .Values.gitea.customLivenessProbe | nindent 12 }}
+            {{- toYaml .Values.gitea.readinessProbe | nindent 12 }}
           {{- end }}
-          {{- if .Values.gitea.readinessProbe.enabled }}
-          readinessProbe:
-            {{- toYaml .Values.gitea.customReadinessProbe | nindent 12 }}
-          {{- end }}
-          {{- if .Values.gitea.startupProbe.enabled }}
+          {{- if .Values.gitea.startupProbe }}
           startupProbe:
-            tcpSocket:
-              port: http
-            initialDelaySeconds: {{ .Values.gitea.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.gitea.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.gitea.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.gitea.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.gitea.readinessProbe.failureThreshold }}
-          {{- else if .Values.gitea.customReadinessProbe }}
-          readinessProbe: {{- toYaml .Values.gitea.customReadinessProbe | nindent 12 }}
-          {{- end }}
-          resources: {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.gitea.startupProbe.enabled }}
-          startupProbe:
-            tcpSocket:
-              port: http
-            initialDelaySeconds: {{ .Values.gitea.startupProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.gitea.startupProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.gitea.startupProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.gitea.startupProbe.successThreshold }}
-            failureThreshold: {{ .Values.gitea.startupProbe.failureThreshold }}
-          {{- else if .Values.gitea.customStartupProbe }}
-          startupProbe:
-            {{- toYaml .Values.gitea.customStartupProbe | nindent 12 }}
+            {{- toYaml .Values.gitea.startupProbe | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- /* Honor the deprecated securityContext variable when defined */ -}}
+            {{- if .Values.containerSecurityContext -}}
+            {{ toYaml .Values.containerSecurityContext | nindent 12 -}}
+            {{- else -}}
+            {{ toYaml .Values.securityContext | nindent 12 -}}
+            {{- end }}
           volumeMounts:
             - name: temp
-              mountPath: /tmp/gitea
+              mountPath: /tmp
             - name: data
               mountPath: /data
-            {{- include "extraRootCA.volumeMounts" (dict "rootCA" .Values.extraRootCA) | nindent 12 }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -176,20 +282,29 @@ spec:
         - name: init
           secret:
             secretName: {{ include "gitea.fullname" . }}-init
-            defaultMode: 0777
+            defaultMode: 110
         - name: config
           secret:
             secretName: {{ include "gitea.fullname" . }}
+            defaultMode: 110
         {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 8 }}
         {{- end }}
+        - name: inline-config-sources
+          secret:
+            secretName: {{ include "gitea.fullname" . }}-inline-config
+        {{- range $idx, $value := .Values.gitea.additionalConfigSources }}
+        - name: additional-config-sources-{{ $idx }}
+          {{- toYaml $value | nindent 10 }}
+        {{- end }}
         - name: temp
           emptyDir: {}
-        {{- include "extraRootCA.volumes" (dict "rootCA" .Values.extraRootCA) | nindent 8 }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim }}
+  {{- with .Values.persistence.existingClaim }}
+            claimName: {{ tpl . $ }}
+  {{- end }}
   {{- else if not .Values.persistence.enabled }}
         - name: data
           emptyDir: {}

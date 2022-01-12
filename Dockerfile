@@ -1,4 +1,4 @@
-FROM otomi/tools:v1.4.20 as test
+FROM otomi/tools:v1.4.21 as test
 
 ENV APP_HOME=/home/app/stack
 
@@ -9,7 +9,7 @@ ARG SKIP_TESTS='false'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
 ENV IN_DOCKER='1'
-ENV VERBOSITY='1'
+ENV VERBOSITY='2'
 
 COPY --chown=app . .
 
@@ -19,12 +19,15 @@ RUN npm ci --ignore-scripts && npm run compile
 RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm $APP_HOME/env; fi
 
 #-----------------------------
-FROM otomi/tools:v1.4.20 as prod
+FROM otomi/tools:v1.4.21 as prod
 
 ENV APP_HOME=/home/app/stack
+ENV ENV_DIR=/home/app/stack/env
 ENV IN_DOCKER='1'
+ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
-ENV NO_UPDATE_NOTIFIER='1'
+
+RUN npm config set update-notifier false
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME

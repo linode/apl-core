@@ -28,7 +28,7 @@ resources:
     metadata:
       name: {{ $issuerName }}
     spec:
-{{- if not $v._derived.untrustedCA }}
+{{- if eq $cm.issuer "letsencrypt" }}
       acme:
         server: https://acme{{ (eq ($cm | get "stage" "") "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}

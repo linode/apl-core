@@ -66,15 +66,7 @@ const helmOpts: { [key: string]: Options } = {
   args: {
     alias: 'a',
     array: true,
-    describe: "Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'",
-    nargs: 1,
-    coerce: (files: string[]) => {
-      if (!files || files.length === 0) return files
-      files.forEach((val) => {
-        if (!existsSync(val)) throw new Error(`Expected file "${chalk.italic(val)}" does not exist.`)
-      })
-      return files
-    },
+    describe: "Pass arguments to the helmfile command, e.g. '--set somevar=val,another=ok'",
   },
 }
 Object.keys(helmOpts).map((k) => {
@@ -108,7 +100,7 @@ export const basicOptions: { [key: string]: Options } = {
         .filter((logLevelVal) => !Number.isNaN(Number(logLevelVal)))
         .map(Number)
         .reduce((prev, curr) => Math.max(prev, curr))
-      return Math.min(Math.max(val, Number(env().VERBOSITY || '0')), ll)
+      return Math.min(Math.max(val, Number(env.VERBOSITY || '0')), ll)
     },
   },
   'non-interactive': {

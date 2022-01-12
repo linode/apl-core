@@ -3,37 +3,33 @@ import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { logLevelString, OtomiDebugger, terminal } from '../common/debug'
+import { logLevelString, terminal } from '../common/debug'
+import { isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
 import { getOtomiLoadBalancerIP } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { Arguments as DroneArgs } from './gen-drone'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const templateFile = `${dir}deploy-template.yaml`
-let debug: OtomiDebugger
 
-interface Arguments extends HelmArguments, DroneArgs {}
-
-const cleanup = (argv: Arguments): void => {
+const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
 }
 
 const setup = (): void => {
-  const argv: Arguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   cleanupHandler(() => cleanup(argv))
-  debug = terminal(cmdName)
-
   mkdirSync(dir, { recursive: true })
 }
 
 const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal('apply:setDomainSuffix')
+  const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
   d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
   const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
@@ -47,44 +43,45 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
 }
 
 const prepareValues = async (): Promise<void> => {
-  const d = terminal('apply:prepareValues')
+  const d = terminal(`cmd:${cmdName}:prepareValues`)
 
   const values = await hfValues()
   d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
-    d.info('cluster.domainSuffix was not foud, creating fallback')
+    d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
     await setDomainSuffix(values)
   }
 }
 
 const applyAll = async () => {
-  const argv: Arguments = getParsedArgs()
-  debug.info('Start apply all')
+  const d = terminal(`cmd:${cmdName}:applyAll`)
+  const argv: HelmArguments = getParsedArgs()
+  d.info('Start apply all')
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {
     throw new Error(output.stderr)
   } else if (output.stderr.length > 0) {
-    debug.error(output.stderr)
+    d.error(output.stderr)
   }
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await $`kubectl apply -f charts/prometheus-operator/crds`
-  debug.info('Deploying charts containig label stage=prep')
+  d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      fileOpts: argv.file,
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await prepareValues()
-  debug.info('Deploying charts containing label stage!=prep')
+  d.info('Deploying charts containing label stage!=prep')
   await hf(
     {
       fileOpts: argv.file,
@@ -92,17 +89,19 @@ const applyAll = async () => {
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps'],
     },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 }
 
 const apply = async (): Promise<void> => {
-  const argv: Arguments = getParsedArgs()
+  const d = terminal(`cmd:${cmdName}:applyAll`)
+  const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
+    if (isCli) await commit()
     return
   }
-  debug.info('Start apply')
+  d.info('Start apply')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hf(
     {
@@ -111,7 +110,7 @@ const apply = async (): Promise<void> => {
       logLevel: logLevelString(),
       args: ['apply', '--skip-deps', skipCleanup],
     },
-    { streams: { stdout: debug.stream.log, stderr: debug.stream.error } },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 }
 
@@ -120,7 +119,7 @@ export const module: CommandModule = {
   describe: 'Apply all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()

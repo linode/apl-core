@@ -1,0 +1,7 @@
+resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: custom-ca
+    data:
+      ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}

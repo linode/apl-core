@@ -7,4 +7,4 @@ env:
   OTOMI_FLAGS: '{{ omit $v.otomi "additionalClusters" "adminPassword" "globalPullSecret" | toJson }}'
 name: copy-certs
 schedule: "0/3 * * * *" # every 3 minutes
-{{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "copy-certs") }}
+{{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "copy-certs" "type" "cronjob") }}

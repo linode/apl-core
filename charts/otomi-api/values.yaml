@@ -72,6 +72,15 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+  # podAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #           - key: affinity.otomi.io
+  #             operator: In
+  #             values:
+  #               - "core"
+  #       topologyKey: kubernetes.io/hostname
 
 secrets:
   GIT_USER: 

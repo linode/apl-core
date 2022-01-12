@@ -1,8 +1,9 @@
+version: 1
 otomi:
     hasExternalDNS: false
     hasExternalIDP: false
     hasCloudLB: false
     isHomeMonitored: false
     isManaged: false
-    isMultitenant: false
+    isMultitenant: true
     version: latest

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: LimitRange
 metadata:
   name: team-ns-limitrange
-  labels: {{- include "chart-labels" . | nindent 4 }}
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 spec:
   limits:
   - default: {{- $v.limitRange.default | toYaml | nindent 6 }}

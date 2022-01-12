@@ -1,9 +1,17 @@
 import { config } from 'dotenv'
-import { bool, cleanEnv, json, num, str } from 'envalid'
+import { bool, cleanEnv, json, makeValidator, num, str } from 'envalid'
 import { existsSync } from 'fs'
 
+const ciBool = makeValidator((x) => {
+  if (x === 'vscode-jest-tests') return true
+  if (x === undefined) return undefined
+  const { _parse } = bool({ default: false })
+  return _parse(x)
+})
+
 const cliEnvSpec = {
-  CI: bool({ default: false }),
+  CI: ciBool({ default: false }),
+  DISABLE_SYNC: bool({ default: false }),
   DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
@@ -19,36 +27,25 @@ const cliEnvSpec = {
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
 
-export const cleanEnvironment = (
-  spec: Record<string, any> = cliEnvSpec,
-  returnFunc = false,
-): Record<string, any> | CallableFunction => {
-  const func = (): Record<string, any> => {
-    let pEnv: any = process.env
-    // load local .env if we have it, for devs
-    let path = `${process.cwd()}/.env`
-    if (existsSync(path)) {
-      const result = config({ path })
-      if (result.error) console.error(result.error)
-      pEnv = { ...pEnv, ...result.parsed }
-    }
-    path = `${pEnv.ENV_DIR}/.secrets`
-    if (existsSync(path)) {
-      const result = config({ path })
-      if (result.error) console.error(result.error)
-      pEnv = { ...pEnv, ...result.parsed }
-    }
-    return cleanEnv(pEnv, spec)
+export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record<string, any> => {
+  let pEnv: any = process.env
+  // load local .env if we have it, for devs
+  let path = `${process.cwd()}/.env`
+  if (!process.env.TESTING && existsSync(path)) {
+    const result = config({ path })
+    if (result.error) console.error(result.error)
+    pEnv = { ...result.parsed, ...pEnv }
   }
-  return returnFunc ? func : func()
+  path = `${pEnv.ENV_DIR}/.secrets`
+  if (existsSync(path)) {
+    const result = config({ path })
+    if (result.error) console.error(result.error)
+    pEnv = { ...result.parsed, ...pEnv }
+  }
+  return cleanEnv(pEnv, spec)
 }
 
-let _env
-export const env = (): Record<string, any> => {
-  if (_env) return _env
-  _env = cleanEnvironment()
-  return _env
-}
+export const env = cleanEnvironment()
 
-export const isChart: boolean = env().CI && !!env().VALUES_INPUT
-export const isCli: boolean = !env().CI && !isChart
+export const isChart: boolean = env.CI && !!env.VALUES_INPUT
+export const isCli: boolean = !env.CI && !isChart

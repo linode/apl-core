@@ -2,8 +2,8 @@
 {{- $k := $v.charts.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 
-# image:
-#   tag: 15.0.2
+image:
+  tag: 15.1.1
 contextPath: ""
 persistence:
   dbVendor: {{ $dbVendor }}
@@ -80,20 +80,20 @@ extraEnv: |
     value: {{ $k | get "admin.username" "admin" }}
   - name: KEYCLOAK_PASSWORD
     value: {{ $k | get "admin.password" $v.otomi.adminPassword }}
-extraVolumes: |
-  - name: theme
-    emptyDir: {}
-
 extraVolumeMounts: |
   - name: theme
     mountPath: /themes
+extraVolumes: |
+  - name: theme
+    emptyDir: {}
 podAnnotations: 
-  # policy.otomi.io/ignore: banned-image-tags
   policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
+  # @TODO:
+  image:
+    tag: 13.5.0
   commonAnnotations: 
-    # policy.otomi.io/ignore: banned-image-tags
     policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
     enabled: true
@@ -104,6 +104,8 @@ postgresql:
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
+    image:
+      tag: 0.10.0
     enabled: true
     resources:
       limits:

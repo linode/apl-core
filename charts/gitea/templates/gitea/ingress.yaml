@@ -1,13 +1,15 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "gitea.fullname" . -}}
 {{- $httpPort := .Values.service.http.port -}}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
-apiVersion: networking.k8s.io/v1
+{{- $apiVersion := "extensions/v1beta1" -}}
+{{- if .Values.ingress.apiVersion -}}
+{{- $apiVersion = .Values.ingress.apiVersion -}}
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
+{{- $apiVersion = "networking.k8s.io/v1" }}
 {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
+{{- $apiVersion = "networking.k8s.io/v1beta1" }}
 {{- end }}
+apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -18,6 +20,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+{{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+{{- end }}
 {{- if .Values.ingress.tls }}
   tls:
   {{- range .Values.ingress.tls }}
@@ -29,16 +34,17 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  {{- range .Values.ingress.hosts }}
-    - host: {{ . | quote }}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
       http:
         paths:
-          - path: /
-            {{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
-            pathType: Prefix
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (eq $apiVersion "networking.k8s.io/v1") }}
+            pathType: {{ .pathType }}
             {{- end }}
             backend:
-            {{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+            {{- if eq $apiVersion "networking.k8s.io/v1" }}
               service:
                 name: {{ $fullName }}-http
                 port:
@@ -47,5 +53,6 @@ spec:
               serviceName: {{ $fullName }}-http
               servicePort: {{ $httpPort }}
             {{- end }}
-  {{- end }}
+          {{- end }}
+    {{- end }}
 {{- end }}

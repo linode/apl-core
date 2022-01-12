@@ -17,7 +17,7 @@
   {{- $otomiTag = print "v" $otomiVersion }}
 {{- end }}
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
-# Domain suffix may not be present during initial deplyment stage
+# Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $c.drone.sourceControl.provider }}
@@ -71,6 +71,8 @@ environments:
             enabled: {{ $v.otomi.hasExternalDNS }}
           gitea:
             adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+          host-mods:
+            enabled: {{ $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
@@ -87,4 +89,5 @@ environments:
             enabled: false #{{ eq $provider "aws" }}
         otomi:
           version: {{ $otomiTag }}
-        versions: {{- $versions | toYaml | nindent 10 }} 
+        versions: {{- $versions | toYaml | nindent 10 }}
+      - ../core.yaml

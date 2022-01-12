@@ -1,37 +1,36 @@
 {{- $v := .Values }}
 {{- $k := $v.charts.keycloak | default dict }}
 {{- $kkMaster := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
-{{- if or (eq $v.teamId "admin") ($v.otomi.isMultitenant) }}
-  {{- $ := . }}
-  {{- range $s := $v.services }}
-    {{- $type := $s.type | default "public" }}
-    {{- $hasAuth := $s.auth | default false }}
-    {{- $hasTlsPass := $s.tlsPass | default false }}
-    {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-    {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
-      {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
-      {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
-      {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
-      {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
-        {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
+{{- $ := . }}
+{{- range $s := $v.services }}
+  {{- $type := $s.type | default "public" }}
+  {{- $hasAuth := $s.auth | default false }}
+  {{- $hasTlsPass := $s.tlsPass | default false }}
+  {{- $ns := index $s "namespace" | default $.Release.Namespace }}
+  {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
+    {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
+    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
+    {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
+    {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
+      {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: {{ $vsName }}
-  labels: {{- include "chart-labels" $ | nindent 4 }}
-        {{- if $hasAuth }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+      {{- if $hasAuth }}
     auth: "true"
-        {{- end }}
+      {{- end }}
 spec:
   gateways:
-        {{- if hasKey $s "ksvc" }}
+      {{- if hasKey $s "ksvc" }}
     - knative-serving/knative-ingress-gateway
-        {{- else }}
+      {{- else }}
     - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ $type }}-tls{{ if $hasTlsPass }}pass{{ else }}term{{ end }}
-        {{- end }}
+      {{- end }}
   hosts:
     - {{ $domain }}
-        {{- if $hasTlsPass }}
+      {{- if $hasTlsPass }}
   tls:
     - match:
         - port: 443
@@ -42,7 +41,7 @@ spec:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             port:
               number: {{ $s.port | default 443 }}
-        {{- else }}
+      {{- else }}
   http:
     - match:
         - uri:
@@ -51,31 +50,31 @@ spec:
         authority: auth.{{ $v.cluster.domainSuffix }}
         uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.cluster.domainSuffix }}
     -
-          {{- with $s.paths | default (list "/") }}
+        {{- with $s.paths | default (list "/") }}
       match:
-            {{- range $path := . }}
+          {{- range $path := . }}
         - uri:
             prefix: '{{ $path }}'        
-            {{- end }}
           {{- end }}
-          {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
+        {{- end }}
+        {{- if or (hasKey $s "ksvc") (not (hasKey $s "forwardPath")) }}
       rewrite:
-            {{- if hasKey $s "ksvc" }}
-        authority: {{ $s.name }}.{{ $v.domain }}
-            {{- end }}
-            {{- if not (hasKey $s "forwardPath") }}
-        uri: /
-            {{- end }}
-          {{- end }}
           {{- if hasKey $s "ksvc" }}
+        authority: {{ $s.name }}.{{ $v.domain }}
+          {{- end }}
+          {{- if not (hasKey $s "forwardPath") }}
+        uri: /
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $s "ksvc" }}
       route:
         - destination:
             host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
-          {{- else }}
+        {{- else }}
       route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
-          {{- end }}
+        {{- end }}
             port:
               number: {{ $s.port | default 80 }}
           headers:
@@ -84,13 +83,13 @@ spec:
                 # fix for istio (=envoy) incorrectly setting proto to http
                 # (@see https://github.com/istio/istio/issues/7964):
                 X-Forwarded-Proto: https
-              {{- if hasKey $s "removeRequestHeaders" }}
+        {{- if hasKey $s "removeRequestHeaders" }}
               remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
-              {{- end }}
         {{- end }}
+      {{- end }}
 ---
-        {{- if and ($hasAuth) (hasKey $s "authz") }}
-          {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
+      {{- if and ($hasAuth) (hasKey $s "authz") }}
+        {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
@@ -106,7 +105,7 @@ spec:
         - {{ $k.idp.clientID }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
-        {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
+      {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -120,28 +119,27 @@ spec:
     - from: 
         - source:
             requestPrincipals: [{{ $principal }}]
-          {{- if not $s.isShared }}
+        {{- if not $s.isShared }}
       when:
         - key: request.auth.claims[groups]
           values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
-          {{- end }}
+        {{- end }}
       to:
         - operation:
-          {{- with $s.authz.paths }}
+        {{- with $s.authz.paths }}
             paths:
-              {{- range $path := . }}
+            {{- range $path := . }}
               - {{ $path }}
-              {{- end }}
-          {{- end }}
+            {{- end }}
+        {{- end }}
             hosts: [{{ $domain }}]
-          {{- if $s.authz.excludePaths }}
+        {{- if $s.authz.excludePaths }}
             notPaths: [{{ include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.authz.excludePaths "sep" ",") }}]
-          {{- end }}
+        {{- end }}
     - from:
         - source:
             notRequestPrincipals: [{{ $principal }}]
 ---
-        {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}

@@ -16,6 +16,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "otomi-api.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        affinity.otomi.io: "core"
       annotations:
         checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum | trunc 63 }}
         checksum/config: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}

@@ -2,6 +2,9 @@
 {{- $n := $v.charts | get "nginx-ingress" }}
 nameOverride: nginx-ingress
 controller:
+  # @TODO:
+  image:
+    tag: v1.0.5
   scope:
     enabled: true
     namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}

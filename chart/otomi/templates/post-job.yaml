@@ -1,0 +1,39 @@
+{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "otomi.fullname" . }}-pre-delete-job
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels: {{- include "otomi.labels" . | nindent 4 }}
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      labels:
+        app: {{ template "otomi.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "otomi.fullname" . }}
+      containers:
+        - name: pre-delete
+          image: bitnami/kubectl:{{ .Values.cluster.k8sVersion }}
+          command:
+            - sh
+            - -c
+          args:
+            - |
+              kubectl delete cm otomi-status
+              kubectl delete secret otomi-generated-passwords
+              echo "Otomi has been uninstalled."
+          resources:
+            limits:
+              memory: 100Mi
+              cpu: 100m
+            requests:
+              memory: 50Mi
+              cpu: 50m
+          securityContext:
+            runAsUser: 999

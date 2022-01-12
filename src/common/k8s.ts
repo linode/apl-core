@@ -18,14 +18,14 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env().DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
   namespace: string,
   data: Record<string, any> | string,
 ): Promise<void> => {
-  const d = terminal('createK8sSecret')
+  const d = terminal('common:k8s:createK8sSecret')
   const rawString = dump(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
@@ -36,9 +36,8 @@ export const createK8sSecret = async (
   }
 
   await writeFile(filePath, rawString)
-  const result = await nothrow(
-    $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`,
-  )
+  const result =
+    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`
   if (result.stderr) d.error(result.stderr)
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
@@ -53,13 +52,13 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
 
 export const getOtomiDeploymentStatus = async (): Promise<string> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${env().DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
   )
   return result.stdout
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {
-  const d = terminal('fetchLoadBalancerIngressData')
+  const d = terminal('common:k8s:fetchLoadBalancerIngressData')
   let ingressDataString = ''
   let count = 0
   for (;;) {
@@ -78,7 +77,7 @@ interface IngressRecord {
   hostname?: string
 }
 export const getOtomiLoadBalancerIP = async (): Promise<string> => {
-  const d = terminal('getOtomiLoadBalancerIP')
+  const d = terminal('common:k8s:getOtomiLoadBalancerIP')
   d.debug('Find LoadBalancer IP or Hostname')
 
   const ingressDataString = await fetchLoadBalancerIngressData()
@@ -99,7 +98,12 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {
     // Wait until DNS records are propagated to the cluster DNS
-    await waitTillAvailable(`https://${firstIngressData.hostname}`, { skipSsl: true, status: 404 })
+    await waitTillAvailable(`https://${firstIngressData.hostname}`, {
+      skipSsl: true,
+      status: 404,
+      maxTimeout: 10 * 1000, // retry every max 10 seconds, so no exponential backoff
+      retries: 100, // we should have a LB within 100 * 10 secs (=14 minutes)
+    })
     const resolveData = await resolveAny(firstIngressData.hostname)
     const resolveDataFiltered = resolveData.filter((val) => val.type === 'A' || val.type === 'AAAA') as (
       | AnyARecord
@@ -130,7 +134,7 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
  * @returns
  */
 export const checkKubeContext = async (): Promise<void> => {
-  const d = terminal('checkKubeContext')
+  const d = terminal('common:k8s:checkKubeContext')
   d.info('Validating kube context')
 
   const values = await hfValues()
@@ -157,32 +161,49 @@ export const checkKubeContext = async (): Promise<void> => {
   }
 }
 
-type WaitTillAvailableOptions = {
+type WaitTillAvailableOptions = Options & {
   status?: number
   skipSsl?: boolean
+  username?: string
+  password?: string
 }
 
-export const waitTillAvailable = async (
-  url: string,
-  options: WaitTillAvailableOptions = { status: 200, skipSsl: false },
-): Promise<void> => {
-  const debug = terminal('waitTillAvailable')
+export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
+  const options = { status: 200, skipSsl: false, ...opts }
+  const d = terminal('common:k8s:waitTillAvailable')
   const retryOptions: Options = {
     retries: 50,
     maxTimeout: 30000,
   }
 
-  const rejectUnauthorized = !options.skipSsl
+  const globalSkipSsl = !env.NODE_TLS_REJECT_UNAUTHORIZED
+  let rejectUnauthorized = !globalSkipSsl
+  if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
   const fetchOptions: RequestInit = {
     redirect: 'follow',
     agent: new Agent({ rejectUnauthorized }),
   }
+  if (options.username && options.password) {
+    fetchOptions.headers = {
+      Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+    }
+  }
 
   await retry(async (bail) => {
-    const res = await fetch(url, fetchOptions)
-    if (res.status !== options.status) {
-      debug.warn(`GET ${res.url} ${res.status} ${options.status}`)
-      bail(new Error(`Response status code differs from expected (${options.status}): ${res.status}`))
+    try {
+      const res = await fetch(url, fetchOptions)
+      if (res.status !== options.status) {
+        console.warn(`GET ${url} ${res.status} !== ${options.status}`)
+        const err = new Error(`Wrong status code: ${res.status}`)
+        // if we get a 404 or 503 we know some changes in either nginx or istio might still not be ready
+        if (res.status !== 404 && res.status !== 503) {
+          // but any other status code that is not the desired one tells us to stop retrying
+          bail(err)
+        } else throw err
+      }
+    } catch (e) {
+      d.error(e)
+      throw e
     }
   }, retryOptions)
 }

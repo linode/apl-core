@@ -25,6 +25,8 @@ releases:
     installed: true
     namespace: kiali-operator
     disableValidationOnInstall: true
+    labels:
+      pkg: kiali
     <<: *default
   - name: loki
     installed: true

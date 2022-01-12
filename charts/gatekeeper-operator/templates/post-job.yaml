@@ -13,6 +13,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 spec:
+  ttlSecondsAfterFinished: 100
   template:
     metadata:
       labels:
@@ -22,7 +23,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: postinstall
-          image: badouralix/curl-http2:latest
+          image: badouralix/curl-http2:alpine
           command:
             - sh
             - -c
@@ -41,5 +42,7 @@ spec:
             requests:
               cpu: 10m
               memory: 16Mi
+          securityContext:
+            runAsUser: 65534
 
 

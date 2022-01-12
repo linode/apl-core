@@ -1,6 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
 import $RefParser from '@apidevtools/json-schema-ref-parser'
+import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync, readdirSync, readFileSync } from 'fs'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -20,6 +21,17 @@ export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
 }
 
+export const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
+  const options: CleanOptions = {
+    emptyArrays: false,
+    emptyObjects: true,
+    emptyStrings: true,
+    nullValues: false,
+    undefinedValues: true,
+  }
+  return cleanDeep(obj, options)
+}
+
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
   const dirs = readdirSync(dir, { withFileTypes: true })
   const files = await Promise.all(
@@ -34,7 +46,7 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
 
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
-    path: env().ENV_DIR,
+    path: env.ENV_DIR,
     ignoreFiles: ['.gitignore'],
     follow: true,
   })
@@ -62,12 +74,13 @@ export const flattenObject = (obj: Record<string, any>, path = ''): { [key: stri
 export interface GucciOptions {
   asObject?: boolean
 }
+
 export const gucci = async (
   tmpl: string | unknown,
-  args: { [key: string]: any },
+  ctx: { [key: string]: any },
   opts?: GucciOptions,
 ): Promise<string | Record<string, any>> => {
-  const kv = flattenObject(args)
+  const kv = flattenObject(ctx)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
@@ -93,15 +106,6 @@ export const gucci = async (
     $.quote = quoteBackup
   }
 }
-
-/* Can't use for now because of:
-https://github.com/homeport/dyff/issues/173
-export const gitDyff = async(filePath: string, jsonPathFilter: string = ''): Promise<boolean> => {
-  const result = await nothrow($`git show HEAD:${filePath} | dyff between --filter "${jsonPathFilter}" --set-exit-code --omit-header - ${filePath}`)
-  const isThereADiff = result.exitCode === 1
-  return isThereADiff
-}
-*/
 
 export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']

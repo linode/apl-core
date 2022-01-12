@@ -1,10 +1,10 @@
-{{- define "raw.name" -}}
+{{- define "team-ns.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "chart-labels" -}}
-app: {{ template "raw.name" . }}
-app.kubernetes.io/name: {{ template "raw.name" . }}
+{{- define "team-ns.chart-labels" -}}
+app: {{ template "team-ns.name" . }}
+app.kubernetes.io/name: {{ template "team-ns.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.Version }}

@@ -57,8 +57,10 @@ config:
   server:
     log_level: error
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+# @TODO:
 image:
+  tag: 2.4.1
+{{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - otomi-pullsecret-global
 {{- end }}

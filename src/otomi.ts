@@ -8,14 +8,15 @@ import { env } from './common/envalid'
 import { basicOptions, parser } from './common/yargs'
 
 console.profile('otomi')
-const debug = terminal('global')
+const d = terminal('global')
 const terminalScale = 0.75
 
 const startup = async (): Promise<void> => {
   const link = `${process.cwd()}/env`
-  if (!env().IN_DOCKER && env().OTOMI_DEV && env().ENV_DIR) {
+  if (!env.ENV_DIR) process.env.ENV_DIR = `${process.cwd()}/env`
+  if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) {
     if (existsSync(link)) unlinkSync(link)
-    symlinkSync(env().ENV_DIR, link)
+    symlinkSync(env.ENV_DIR, link)
   }
   try {
     parser.scriptName(scriptName)
@@ -36,12 +37,16 @@ const startup = async (): Promise<void> => {
       .completion('completion', false)
     await parser.parseAsync()
   } catch (error) {
-    if (`${error}`.includes('Unknown command') || `${error}`.includes('Not enough non-option arguments: got 0'))
+    d.error(error)
+    if (
+      `${error}`.includes('Unknown command') ||
+      `${error}`.includes('Not enough non-option arguments: got 0') ||
+      `${error}`.includes('No arguments were passed')
+    )
       parser.showHelp()
-    else debug.error(error)
     process.exit(1)
   } finally {
-    if (!env().IN_DOCKER && env().OTOMI_DEV && env().ENV_DIR) unlinkSync(`${process.cwd()}/env`)
+    if (!env.IN_DOCKER && env.OTOMI_DEV && env.ENV_DIR) unlinkSync(`${process.cwd()}/env`)
     console.profileEnd('otomi')
   }
 }

@@ -6,7 +6,12 @@ resources:
       name: knative-serving
       namespace: knative-serving
     spec:
-      version: 0.23.0
+      version: 1.1.0
+      {{- if $v._derived.untrustedCA }}
+      controller-custom-certs:
+        name: certs
+        type: Secret
+      {{- end }}
       high-availability:
         replicas: {{ $v.charts.knative.serving.replicas }}
       config:
@@ -43,3 +48,11 @@ resources:
     spec:
       mtls:
         mode: PERMISSIVE
+  {{- if $v._derived.untrustedCA }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: certs
+    data:
+      ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
+  {{- end }}

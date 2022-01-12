@@ -12,6 +12,7 @@ spec:
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
+        otomi-core: "true"
     spec:
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:
@@ -43,7 +44,7 @@ spec:
             - name: CI
               value: '1'
             - name: VERBOSITY
-              value: '2'
+              value: '1'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT
