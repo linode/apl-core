@@ -4,13 +4,13 @@ environments:
     values:
       - teamConnectivity:
           ref:
-            namespace: team-a
+            namespace: team-a1
             labels:
                 app: app
           workloads:
-            - namespace: team-b
+            - namespace: team-a2
               labels:
-                app: b
+                app: a2
             - namespace: istio-system
               labels:
                 app: istiod
