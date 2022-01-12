@@ -104,7 +104,6 @@ spec:
                 values:
                   - team-
 {{- else if eq $ingressPrivateMode "allowOnly" }}
-{{- range $s.networkPolicy.ingressPrivate.allow }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -118,6 +117,7 @@ spec:
     - Ingress
   ingress:
     - from:
+{{- range $s.networkPolicy.ingressPrivate.allow }}
         - namespaceSelector:
             matchLabels:
               name: {{ .team }}
