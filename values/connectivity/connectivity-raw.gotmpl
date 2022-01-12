@@ -55,6 +55,7 @@ resources:
   spec:
     hostNetwork: false
     subdomain: connectivity
+    restratPolicy: Never
     containers:
       - name: server
         args:
@@ -77,8 +78,27 @@ resources:
             port: 8080
         livenessProbe:
           httpGet:
-            path: {{ $serverUrl }}
+            path: /
             port: 8080
-
+      - name: client
+        args:
+          - -sS
+          - --fail
+          - --connect-timeout
+          - '5'
+          - -o
+          - /dev/null
+          - --retry
+          - '10'
+          - --retry-delay
+          - '5'
+          - {{ $serverUrl }}
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64M
+        image: curlimages/curl:7.80.0
+        imagePullPolicy: IfNotPresent
 {{- end }} {{/* range clients */}}
 {{- end }} {{/* range */}}
+
