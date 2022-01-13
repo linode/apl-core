@@ -3,14 +3,53 @@ environments:
   default:
     values:
     - teamConnectivity:
-        - server:
+        - description: s1 allows ingress from team-a2/allowed pod
+          server:
             namespace: team-a1
             labels:
-                app: app
+                app: s1
           clients:
             - namespace: team-a2
               labels:
-                app: a2
+                app: allowed
+            - namespace: team-a2
+              labels:
+                app: denied
+        # - description: s2 does not any ingress except ingress from specific platform apps
+        #   server:
+        #     namespace: team-a1
+        #     labels:
+        #         app: s2
+        #   clients:
+        #     - 
+        #     - namespace: istio-system
+        #       labels:
+        #         app: ingressgateway
+        #     - namespace: istio-system
+        #       labels:
+        #         app: istiod
+        #     - namespace: monitoring
+        #       labels:
+        #         app: prometheus
+        #     - namespace: shared
+        #       labels:
+        #         app: any
+
+        # - description: s3 allows ingress from any pod from team-a2 namespace
+        #   server:
+        #     namespace: team-a1
+        #     labels:
+        #         app: s3
+        #   clients:
+        #     - namespace: team-a2
+        #       labels:
+        #         app: allowed1
+        #     - namespace: team-a2
+        #       labels:
+        #         app: allowed2
+        #     - namespace: team-a2
+        #       labels:
+        #         app: denied1
 releases:
   - name: inter-team-connectivity
     installed: true
