@@ -120,7 +120,7 @@ spec:
 {{- range $s.networkPolicy.ingressPrivate.allow }}
         - namespaceSelector:
             matchLabels:
-              name: {{ .team }}
+              name: team-{{ .team }}
           {{- if hasKey . "service" }}
           podSelector:
             matchLabels:
