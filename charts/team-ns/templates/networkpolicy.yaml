@@ -121,10 +121,10 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: team-{{ .team }}
-          {{- if hasKey . "service" }}
+          {{- if hasKey . "app" }}
           podSelector:
             matchLabels:
-              app: {{ .service }}
+              app: {{ .app }}
           {{- end }} {{/* hasKey */}}
 {{- end }} {{/* range ingressPrivate.allow */}}
 {{- end }} {{/* if ingressPrivateMode */}}
