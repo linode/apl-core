@@ -8,10 +8,10 @@ spec:
   podSelector: {}
   policyTypes:
     - Ingress
-    - Egress
+    # - Egress
   ingress:
-    - from:
-        - podSelector: {}
+    # - from:
+    #     - podSelector: {}
     - from:
         - namespaceSelector:
             matchLabels:
@@ -37,49 +37,49 @@ spec:
     #     - namespaceSelector:
     #         matchLabels:
     #           name: shared
-  egress:
-    - to:
-        - podSelector: {}
-    - to:
-        - namespaceSelector: {}
-          podSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
-    # - to:
-    #     - namespaceSelector:
-    #         matchLabels:
-    #           name: istio-system
-    #       podSelector:
-    #         matchLabels:
-    #           app: ingressgateway
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: istiod
-    # - to:
-    #     - namespaceSelector:
-    #         matchLabels:
-    #           name: monitoring
-    #       podSelector:
-    #         matchLabels:
-    #           app: prometheus
-    # - to:
-    #     - namespaceSelector:
-    #         matchLabels:
-    #           name: shared
-    - to:
-        - namespaceSelector:
-            matchExpressions:
-              - key: name
-                operator: In
-                values:
-                  - team-
+  # egress:
+  #   - to:
+  #       - podSelector: {}
+  #   - to:
+  #       - namespaceSelector: {}
+  #         podSelector: {}
+  #     ports:
+  #       - port: 53
+  #         protocol: UDP
+  #       - port: 53
+  #         protocol: TCP
+  #   # - to:
+  #   #     - namespaceSelector:
+  #   #         matchLabels:
+  #   #           name: istio-system
+  #   #       podSelector:
+  #   #         matchLabels:
+  #   #           app: ingressgateway
+  #   - to:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             name: istio-system
+  #         podSelector:
+  #           matchLabels:
+  #             app: istiod
+  #   # - to:
+  #   #     - namespaceSelector:
+  #   #         matchLabels:
+  #   #           name: monitoring
+  #   #       podSelector:
+  #   #         matchLabels:
+  #   #           app: prometheus
+  #   # - to:
+  #   #     - namespaceSelector:
+  #   #         matchLabels:
+  #   #           name: shared
+  #   - to:
+  #       - namespaceSelector:
+  #           matchExpressions:
+  #             - key: name
+  #               operator: In
+  #               values:
+  #                 - team
 {{- range $s := $v.services }}
 {{- if not $s.isCore }}
 {{- $ingressPrivateMode := $s.networkPolicy.ingressPrivate.mode | default "denyAll" }}
@@ -130,25 +130,25 @@ spec:
 {{- end }} {{/* if ingressPrivateMode */}}
 {{- $egressPublicMode:= $s.networkPolicy.egressPublic.mode | default "denyAll" }}
 {{- if or (eq $egressPublicMode "allowAll") (eq $egressPublicMode "allowOnly") }}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: {{ $s.name }}-egress-public-allow
-spec:
-  podSelector:
-    matchLabels:
-      app: {{ $s.name }}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              istio: egressgateway
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: {{ $s.name }}-egress-public-allow
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: {{ $s.name }}
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: istio-system
+#           podSelector:
+#             matchLabels:
+#               istio: egressgateway
 {{- end }} {{/* if egressPublicMode */}}
 {{- end }} {{/* not $s.isCore */}}
 {{- end }} {{/* range services */}}
