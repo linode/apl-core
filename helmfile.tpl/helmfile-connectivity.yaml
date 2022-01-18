@@ -1,11 +1,15 @@
-# this release file is used to dump the final values used by helmfile
-# After deploying the realease waith aboiut 3 minutes before ibtaining results.
-# Get status form client Pods:
-# k get pods -l module=connectivity,type=client -A --sort-by=metadata.name
-# The status NotReady means that connection has succeded and container exited code of 0
-# The Pod status Running means that client is still attempting to reach out target
-# The Pod status Error means that connection did not succeded thus network policy denies traffic
-
+# This release file define workloads used to verify connectivity between workloads
+#
+# Usage:
+# helmfile -f helmfile.tpl/helmfile-connectivity.yaml apply
+#
+# Observe status of client Pods with the following command:
+# watch 'kubectl get pods -l module=connectivity,type=client -A --sort-by=metadata.name'
+#
+# The Pod status 'Running' means that client is still attempting to reach out target
+# The Pod status 'NotReady' means that connection has succeded and container exited code of 0
+# The Pod status 'Error' means that connection did not succeded thus network policy denies traffic
+#
 # Example output
 # NAMESPACE   NAME                              READY   STATUS     RESTARTS   AGE
 # team-a1     client-c1-team-a1-to-s1-team-a1   2/3     Error      0          3m25s
@@ -54,6 +58,9 @@ environments:
             - namespace: team-a2
               labels:
                 app: c3
+            - namespace: team-a2
+              labels:
+                app: c3b
         - server:
             namespace: team-a1
             labels:
@@ -64,7 +71,18 @@ environments:
                 app: c4
             - namespace: team-a2
               labels:
-                app: c4   
+                app: c4
+        - server:
+            namespace: team-a1
+            labels:
+                app: s5
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c5
+            - namespace: team-a2
+              labels:
+                app: c5
         # - description: s10 does not any ingress except ingress from specific platform apps
         #   server:
         #     namespace: team-a1
