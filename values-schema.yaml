@@ -492,14 +492,9 @@ definitions:
     title: Kubernetes secrets
   networkPolicy:
     additionalProperties: false
-    required:
-      - ingressPrivate
-      - egressPublic
     properties:
       ingressPrivate:
         title: Ingress inside the cluster
-        required:
-          - mode
         oneOf:
           - title: Deny traffic from all team services
             properties:
@@ -534,8 +529,6 @@ definitions:
                     - team
       egressPublic:
         title: Egress outside the cluster
-        required:
-          - mode
         oneOf:
           - title: Deny all
             properties:
@@ -543,7 +536,7 @@ definitions:
                 default: denyAll
                 enum:
                   - denyAll
-          - title: Accept all
+          - title: Allow all
             properties:
               mode:
                 default: allowAll
