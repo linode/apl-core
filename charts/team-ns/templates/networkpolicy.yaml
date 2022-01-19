@@ -4,21 +4,30 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-ingress
+  name: default-ingress-deny
 spec:
   podSelector: {}
   policyTypes:
   - Ingress
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: default-egress-deny
+# spec:
+#   podSelector: {}
+#   policyTypes:
+#   - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: platform
+  name: default-ingress-platform
 spec:
+  # Match all Pods in this namespace
   podSelector: {}
   policyTypes:
     - Ingress
-    # - Egress
   ingress:
     - from:
         - namespaceSelector:
@@ -45,55 +54,75 @@ spec:
     #     - namespaceSelector:
     #         matchLabels:
     #           name: shared
-  egress:
-    - to:
-        - podSelector: {}
-    - to:
-        - namespaceSelector: {}
-          podSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: ingressgateway
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: istiod
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-          podSelector:
-            matchLabels:
-              app: prometheus
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: shared
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              type: team
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: default-egress-platform
+# spec:
+#   # Match all Pods in this namespace
+#   podSelector: {}
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - to:
+#         # Allow egress to DNS
+#         - namespaceSelector: {}
+#           podSelector: {}
+#       ports:
+#         - port: 53
+#           protocol: UDP
+#         - port: 53
+#           protocol: TCP
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: istio-system
+#           podSelector:
+#             matchLabels:
+#               app: ingressgateway
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: istio-system
+#           podSelector:
+#             matchLabels:
+#               app: istiod
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: monitoring
+#           podSelector:
+#             matchLabels:
+#               app: prometheus
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: shared
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: default-egress-teams
+# spec:
+#   podSelector: {}
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               type: team
 {{- range $s := $v.services }}
 {{- if not $s.isCore }}
-{{- $ingressPrivateMode := $s.networkPolicy.ingressPrivate.mode | default "denyAll" }}
+{{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "denyAll" $s }}
 {{- if eq $ingressPrivateMode "allowAll" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-ingress-private-allow-all
+  name: {{ $s.name }}-ingress-from-all-teams
 spec:
   podSelector:
     matchLabels:
@@ -103,26 +132,25 @@ spec:
   ingress:
     - from:
         - namespaceSelector:
-            matchExpressions:
-              - key: name
-                operator: In
-                values:
-                  - team-
+            matchLabels:
+              type: team
 {{- else if eq $ingressPrivateMode "allowOnly" }}
 ---
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-ingress-private-allow-only
+  name: {{ $s.name }}-ingress-allow-only
 spec:
   podSelector:
     matchLabels:
       app: {{ $s.name }}
   policyTypes:
     - Ingress
+{{- with $s.networkPolicy.ingressPrivate.allow }}
   ingress:
     - from:
-{{- range $s.networkPolicy.ingressPrivate.allow }}
+{{- range . }}
         - namespaceSelector:
             matchLabels:
               name: team-{{ .team }}
@@ -131,29 +159,31 @@ spec:
             matchLabels:
               app: {{ .app }}
           {{- end }} {{/* hasKey */}}
-{{- end }} {{/* range ingressPrivate.allow */}}
+{{- end }} {{/* range . */}}
+{{- end }} {{/* with ingressPrivate.allow */}}
 {{- end }} {{/* if ingressPrivateMode */}}
-{{- $egressPublicMode:= $s.networkPolicy.egressPublic.mode | default "denyAll" }}
+
+{{- $egressPublicMode:= dig "networkPolicy" "egressPublic" "mode" "denyAll" $s }}
 {{- if or (eq $egressPublicMode "allowAll") (eq $egressPublicMode "allowOnly") }}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: {{ $s.name }}-egress-public-allow
-spec:
-  podSelector:
-    matchLabels:
-      app: {{ $s.name }}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              istio: egressgateway
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: {{ $s.name }}-egress-public
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: {{ $s.name }}
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - to:
+#         - namespaceSelector:
+#             matchLabels:
+#               name: istio-system
+#           podSelector:
+#             matchLabels:
+#               istio: egressgateway
 {{- end }} {{/* if egressPublicMode */}}
 {{- end }} {{/* not $s.isCore */}}
 {{- end }} {{/* range services */}}
