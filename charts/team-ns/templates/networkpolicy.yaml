@@ -24,16 +24,10 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: istio-system
-          podSelector:
-            matchLabels:
-              app: ingressgateway
     - from:
         - namespaceSelector:
             matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: istiod
+              name: knative-serving
     - from:
         - namespaceSelector:
             matchLabels:
