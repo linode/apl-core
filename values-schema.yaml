@@ -948,7 +948,6 @@ definitions:
     required:
       - name
       - type
-      - networkPolicy
   size:
     description: Disk size. Valid units are E|P|T|G|Ti|Gi.
     examples:
