@@ -527,32 +527,6 @@ definitions:
                       type: string
                   required:
                     - team
-      egressPublic:
-        title: Egress outside the cluster
-        oneOf:
-          - title: Deny all
-            properties:
-              mode:
-                default: denyAll
-                enum:
-                  - denyAll
-          - title: Allow all
-            properties:
-              mode:
-                default: allowAll
-                enum:
-                  - allowAll
-          - title: Allow only selected
-            properties:
-              mode:
-                default: allowOnly
-                enum:
-                  - allowOnly
-              allow:
-                title: FQDN or public IP addresses
-                type: array
-                items:
-                  type: string
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
