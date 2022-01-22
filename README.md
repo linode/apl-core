@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install Otomi on your Kubernetes cluster and get a complete platform experience with developer self-service that works out-of-the-box.</p>
+<p align="center">Otomi makes developers self-serving and lowers the burdon on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured workflows that work out-of-the-box.</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -13,7 +13,7 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
-## ⚡️ Quick start
+## Quick start
 
 ### `Terraform`
 
@@ -47,11 +47,19 @@ helm install -f values.yaml otomi otomi/otomi
 
 When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
-After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
+After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
+
+## Pre-configured use cases
+
+`Otomi` supports the following workflows
+
+Ingress                    |  Serverless
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
 
 <p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
 
-## ⚙️ Advanced configuration
+## Advanced configuration
 
 `Otomi` can be installed with the following advanced configuration options:
 
@@ -64,18 +72,18 @@ Go to [otomi.io](https://otomi.io) for more detailed instructions.
 ## Key features
 
 - Developer self-service
-- Over 20 pre-configured and ready-to-use applications and add-ons
-- Application configuration management
+- Coinfiguration as Code
 - Multi-tenancy
-- Implemented security policies
-- Single Sign-On
+- Security policy enforcement
+- Single Sign-On, bring your own IdP
 - Automatic ingress configuration
-- Input/output validation
-- Automatic image vulnerability scanning
 - Secrets management
 - Full observability
 - Kubernetes best-practices
-- GitOps workflow
+- Network isolation
+- Egress filtering
+- Web Application Firewall
+- Artifact management
 
 Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
