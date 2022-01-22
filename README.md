@@ -49,16 +49,30 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
 
+## Key features
+
+- Developer self-service
+- Coinfiguration as Code
+- Multi-tenancy
+- Multi- and hybrid cloud support
+- Security policy enforcement
+- Single Sign-On, bring your own IdP
+- Automatic ingress configuration
+- Full observability
+- Implemented Kubernetes best-practices
+
 ## Pre-configured use cases
 
 `Otomi` supports the following workflows
 
-Ingress                    |  Serverless
+Configure Ingress                    |  Deploy Serverless workloads
 :-------------------------:|:-------------------------:
 ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Otomi makes developers self-serving and lowers the burdon on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured workflows that work out-of-the-box.
-
-
+Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
+Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
 
 ## Advanced configuration
 
@@ -69,22 +83,6 @@ Otomi makes developers self-serving and lowers the burdon on Operations teams wh
 - Use SOPS/KMS to encrypt sensitive configuration values
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
-
-## Key features
-
-- Developer self-service
-- Coinfiguration as Code
-- Multi-tenancy
-- Security policy enforcement
-- Single Sign-On, bring your own IdP
-- Automatic ingress configuration
-- Secrets management
-- Full observability
-- Kubernetes best-practices
-- Network isolation
-- Egress filtering
-- Web Application Firewall
-- Artifact management
 
 Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
