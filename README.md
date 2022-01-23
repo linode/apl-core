@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi makes developers self-serving and helps DevOps teams to guarantee application security and availability at the earliest stages in the development lifecycle when using <b>Kubernetes</b> while strongly relying on <b>GitOps</b> patterns, where desired state is reflected as code and the cluster state is automatically updated.<br/><br/>Install Otomi on your Kubernetes cluster and get a complete platform experience with developer self-service that works out-of-the-box.</p>
+<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured apps and self-service tasks</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -13,7 +13,7 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
-## ⚡️ Quick start
+## Quick start
 
 ### `Terraform`
 
@@ -47,39 +47,85 @@ helm install -f values.yaml otomi otomi/otomi
 
 When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
-After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and use the self-service features to create new Knative services, publicly expose pre-deployed services, create secrets and create Kubernetes Jobs / Cron Jobs.
-
-<p align="center"><img src="https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png" width="100%" align="center" alt="Otomi Console"></p>
-
-## ⚙️ Advanced configuration
-
-`Otomi` can be installed with the following advanced configuration options:
-
-- Use a DNS zone with LetsEncrypt certificates
-- Configure Azure Active Directory as IdP
-- Use SOPS/KMS to encrypt sensitive configuration values
-
-Go to [otomi.io](https://otomi.io) for more detailed instructions.
+After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
 
 ## Key features
 
+- Single installable package
 - Developer self-service
-- Over 20 pre-configured and ready-to-use applications and add-ons
-- Application configuration management
+- Configuration as Code
 - Multi-tenancy
-- Implemented security policies
-- Single Sign-On
+- Kubernetes-native
+- Security policy enforcement
+- Single Sign-On, bring your own IdP
 - Automatic ingress configuration
-- Input/output validation
-- Automatic image vulnerability scanning
-- Secrets management
 - Full observability
-- Kubernetes best-practices
-- GitOps workflow
+- Implemented Kubernetes best-practices
+- Over 30 pre-configured and integrated apps and add-ons
 
-Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
+## Self-service tasks
 
-## Integrated applications
+<details>
+  <summary>:point_right: Click here to see all the self-service tasks :point_left:</summary>
+
+### Configure Ingress
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/configure-ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
+Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured.
+
+### Deploy serverless workloads
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/serverless-workloads.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use the web UI to deploy Knative serverless workloads without writing any YAML.
+
+### Use Secrets stored in Vault
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/secrets.png" width="100%" align="center" alt="Configure Ingress"></p>
+Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes
+
+### Create Teams for multi-tenancy
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/teams.png" width="100%" align="center" alt="Configure Ingress"></p>
+Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
+
+### Create Jobs and CronJobs
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/jobs.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use the web UI to create Kubernetes Jobs and Cron Jobs without writing any YAML  
+
+### Configure OIDC authentication
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/oidc.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use Keycloak as IdP or bring your own IdP and provide role-based access to all integrated apps
+
+### Manage artifacts
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/artifacts.png" width="100%" align="center" alt="Configure Ingress"></p>
+Get role-based access to Harbor
+
+### Configure Alerting
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/alerts.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use the web UI to configure alerting endpoints per cluster and per team
+
+### Enforce security policies
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/policies.png" width="100%" align="center" alt="Configure Ingress"></p>
+Select the security mode and start enforcing security policies 
+
+### Access container metrics
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/metrics.png" width="100%" align="center" alt="Configure Ingress"></p>
+Get direct access to pre-configured Grafana dashboards
+
+### Configure network policies
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/network-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use the web UI to configure network access to services between teams or between services in the same team
+
+</details>
+
+## Integrated and pre-configured applications
 
 `Otomi` ships with the following pre-configured and ready-to-use applications and add-ons:
 
@@ -98,6 +144,16 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
 - [Drone](https://www.drone.io/): Continuous integration platform built on Docker
 
+## Advanced configuration
+
+`Otomi` can be installed with the following advanced configuration options:
+
+- Use a DNS zone with LetsEncrypt certificates
+- Configure Azure Active Directory as IdP
+- Use SOPS/KMS to encrypt sensitive configuration values
+
+Go to [otomi.io](https://otomi.io) for more detailed instructions.
+
 ## Projects
 
 `Otomi` consists out of multiple projects:
@@ -108,9 +164,9 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 - [Otomi Console](https://hub.docker.com/repository/docker/otomi/console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
-## 📖 Documentation
+## Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
+Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation and [tutorials](https://otomi.io/docs/tutorials/).
 
 ## Contribution
 
@@ -120,6 +176,11 @@ If you want to say **thank you** or/and support the active development of `Otomi
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or on your personal blog
+
+## Community
+
+- Join the [Otomi Community Slack Channel](https://otomi.slack.com/signup#/domain-signup)
+- Subscribe to the [Otomi Community Page](https://redkubes.com/community/)
 
 ## ⚠️ License
 
