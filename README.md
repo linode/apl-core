@@ -63,7 +63,8 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 ## Pre-configured tasks
 
-`Otomi` supports the following workflows
+<details>
+  <summary>Click here to see all the pre-configured tasks</summary>
 
 ### Configure Ingress
 
@@ -75,30 +76,37 @@ Configure exposure for pre-deployed services with a single click. All ingress re
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/security-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to deploy Knative serverless workloads without writing any YAML.
 
-Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
-:-------------------------:|:-------------------------:
-![](https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/ingress.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes |  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
+### Use Secrets stored in Vault                 |  
+Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes
 
-Create Jobs and CronJobs                 |  Configure OIDC authentication
-:-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Use the web UI to create Kubernetes Jobs and Cron Jobs without writing any YAML |  Use Keycloak as IdP or bring your own IdP and provide role-based access to all integrated apps
+### Create Teams for multi-tenancy
+Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
 
-Manage artifacts                 |  Configure Alerting
-:-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Get role-based access to Harbor |  Use the web UI to configure alerting endpoints per cluster and per team
+### Create Jobs and CronJobs                 |  
+Use the web UI to create Kubernetes Jobs and Cron Jobs without writing any YAML  
 
-Enforce security policies                 |  Access container logs
-:-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Select the security mode and start enforcing security policies |  Get direct access to all container logs using Grafana/Loki. Teams can only access their own logs
+### Configure OIDC authentication
+Use Keycloak as IdP or bring your own IdP and provide role-based access to all integrated apps
 
-Access container metrics                 |  Configure network policies
-:-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Get direct access to pre-configured Grafana dashboards |  Use the web UI to configure network access to services between teams or between services in the same team
+### Manage artifacts
+Get role-based access to Harbor
+
+### Configure Alerting
+Use the web UI to configure alerting endpoints per cluster and per team
+
+### Enforce security policies
+Select the security mode and start enforcing security policies 
+
+### Access container logs
+Get direct access to all container logs using Grafana/Loki. Teams can only access their own logs
+
+### Access container metrics
+Get direct access to pre-configured Grafana dashboards
+### Configure network policies
+Use the web UI to configure network access to services between teams or between services in the same team
+
+
+</details>
 
 ## Integrated pre-configured applications
 
