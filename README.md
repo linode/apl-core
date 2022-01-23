@@ -70,57 +70,57 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 ### Configure Ingress
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/configure-ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/configure-ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
 Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured.
 
 ### Deploy serverless workloads
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/serverless-workloads.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/serverless-workloads.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to deploy Knative serverless workloads without writing any YAML.
 
 ### Use Secrets stored in Vault
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/secrets.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/secrets.png" width="100%" align="center" alt="Configure Ingress"></p>
 Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes
 
 ### Create Teams for multi-tenancy
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/teams.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/teams.png" width="100%" align="center" alt="Configure Ingress"></p>
 Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
 
 ### Create Jobs and CronJobs
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/jobs.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/jobs.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to create Kubernetes Jobs and Cron Jobs without writing any YAML  
 
 ### Configure OIDC authentication
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/oidc.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/oidc.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use Keycloak as IdP or bring your own IdP and provide role-based access to all integrated apps
 
 ### Manage artifacts
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/artifacts.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/artifacts.png" width="100%" align="center" alt="Configure Ingress"></p>
 Get role-based access to Harbor
 
 ### Configure Alerting
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/alerts.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/alerts.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to configure alerting endpoints per cluster and per team
 
 ### Enforce security policies
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/policies.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/policies.png" width="100%" align="center" alt="Configure Ingress"></p>
 Select the security mode and start enforcing security policies 
 
 ### Access container metrics
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/metrics.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/metrics.png" width="100%" align="center" alt="Configure Ingress"></p>
 Get direct access to pre-configured Grafana dashboards
 
 ### Configure network policies
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/network-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/network-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to configure network access to services between teams or between services in the same team
 
 </details>
