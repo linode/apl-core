@@ -68,26 +68,34 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 Configure Ingress                    |  Deploy Serverless workloads
 :-------------------------:|:-------------------------:
 ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
+Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured |  Use the web UI to deploy Knative serverless workloads without writing any YAML
 
 Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
 :-------------------------:|:-------------------------:
 ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
-Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
+Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes |  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
 
-## Advanced configuration
+Create Jobs and CronJobs                 |  Configure OIDC authentication
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+Use the web UI to create Kubernetes Jobs and Cron Jobs without writing any YAML |  Use Keycloak as IdP or bring your own IdP and provide role-based access to all integrated apps
 
-`Otomi` can be installed with the following advanced configuration options:
+Manage artifacts                 |  Configure Alerting
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+Get role-based access to Harbor |  Use the web UI to configure alerting endpoints per cluster and per team
 
-- Use a DNS zone with LetsEncrypt certificates
-- Configure Azure Active Directory as IdP
-- Use SOPS/KMS to encrypt sensitive configuration values
+Enforce security policies                 |  Access container logs
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+Select the security mode and start enforcing security policies |  Get direct access to all container logs using Grafana/Loki. Teams can only access their own logs
 
-Go to [otomi.io](https://otomi.io) for more detailed instructions.
+Access container metrics                 |  Configure network policies
+:-------------------------:|:-------------------------:
+![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+Get direct access to pre-configured Grafana dashboards |  Use the web UI to configure network access to services between teams or between services in the same team
 
-Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
-
-## Integrated applications
+## Integrated pre-configured applications
 
 `Otomi` ships with the following pre-configured and ready-to-use applications and add-ons:
 
@@ -105,6 +113,18 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 - [Kiali](https://kiali.io/): Observe Istio service mesh relations and connections
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
 - [Drone](https://www.drone.io/): Continuous integration platform built on Docker
+
+## Advanced configuration
+
+`Otomi` can be installed with the following advanced configuration options:
+
+- Use a DNS zone with LetsEncrypt certificates
+- Configure Azure Active Directory as IdP
+- Use SOPS/KMS to encrypt sensitive configuration values
+
+Go to [otomi.io](https://otomi.io) for more detailed instructions.
+
+Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
 ## Projects
 
