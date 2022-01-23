@@ -66,7 +66,7 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 ## Self-service tasks
 
 <details>
-  <summary>Click here to see all the self-service tasks :point_down: :point_down:</summary>
+  <summary>:point_right: Click here to see all the self-service tasks :point_left:</summary>
 
 ### Configure Ingress
 
