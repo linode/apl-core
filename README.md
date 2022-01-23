@@ -71,6 +71,7 @@ Configure Ingress                    |  Deploy Serverless workloads
 Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
 
 Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
+:-------------------------:|:-------------------------:
 ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
 Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box. |  Otomi makes developers self-serving and lowers the burdon on Operations teams when using by providing a productivity suite with pre-configured workflows that work out-of-the-box.
 
