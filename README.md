@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi empowers developers and lowers the burdon on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured apps and self-service tasks</p>
+<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured apps and self-service tasks</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -51,15 +51,17 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 ## Key features
 
+- Single installable package
 - Developer self-service
-- Coinfiguration as Code
+- Configuration as Code
 - Multi-tenancy
-- Multi- and hybrid cloud support
+- Kubernetes-native
 - Security policy enforcement
 - Single Sign-On, bring your own IdP
 - Automatic ingress configuration
 - Full observability
 - Implemented Kubernetes best-practices
+- Over 30 pre-configured and integrated apps and add-ons
 
 ## Self-service tasks
 
@@ -123,7 +125,7 @@ Use the web UI to configure network access to services between teams or between 
 
 </details>
 
-## Integrated pre-configured applications
+## Integrated and pre-configured applications
 
 `Otomi` ships with the following pre-configured and ready-to-use applications and add-ons:
 
@@ -152,8 +154,6 @@ Use the web UI to configure network access to services between teams or between 
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
-Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
-
 ## Projects
 
 `Otomi` consists out of multiple projects:
@@ -166,7 +166,7 @@ Learn more about `Otomi` at [otomi.io](https://otomi.io/about).
 
 ## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
+Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation and [tutorials](https://otomi.io/docs/tutorials/).
 
 ## Contribution
 
@@ -176,6 +176,11 @@ If you want to say **thank you** or/and support the active development of `Otomi
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or on your personal blog
+
+## Community
+
+- Join the [Otomi Community Slack Channel](https://otomi.slack.com/signup#/domain-signup)
+- Subscribe to the [Otomi Community Page](https://redkubes.com/community/)
 
 ## ⚠️ License
 
