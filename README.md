@@ -61,7 +61,7 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 - Full observability
 - Implemented Kubernetes best-practices
 
-## Pre-configured use cases
+## Pre-configured tasks
 
 `Otomi` supports the following workflows
 
