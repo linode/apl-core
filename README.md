@@ -65,14 +65,19 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 `Otomi` supports the following workflows
 
-Configure Ingress                    |  Deploy Serverless workloads
-:-------------------------:|:-------------------------:
-![](https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/security-policies.png)  |  ![](https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/ingress.png)
-Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured |  Use the web UI to deploy Knative serverless workloads without writing any YAML
+### Configure Ingress
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
+Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured.
+
+### Deploy serverless workloads
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/security-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
+Use the web UI to deploy Knative serverless workloads without writing any YAML.
 
 Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
 :-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+![](https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/ingress.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
 Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes |  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
 
 Create Jobs and CronJobs                 |  Configure OIDC authentication
