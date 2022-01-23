@@ -67,7 +67,7 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 
 Configure Ingress                    |  Deploy Serverless workloads
 :-------------------------:|:-------------------------:
-![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
+![](https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/security-policies.png)  |  ![](https://otomi.io/assets/images/console-apps-eed3320fa1754480a623287e0bbe2365.png)
 Configure exposure for pre-deployed services with a single click. All ingress resources are automatically created and configured |  Use the web UI to deploy Knative serverless workloads without writing any YAML
 
 Use Secrets stored in Vault                 |  Create Teams for multi-tenancy
