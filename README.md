@@ -73,7 +73,7 @@ Configure exposure for pre-deployed services with a single click. All ingress re
 
 ### Deploy serverless workloads
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/serverless.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/readme-update/docs/img/serverless-workloads.png" width="100%" align="center" alt="Configure Ingress"></p>
 Use the web UI to deploy Knative serverless workloads without writing any YAML.
 
 ### Use Secrets stored in Vault
