@@ -27,7 +27,10 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              name: knative-serving
+              # FIXME: it seems that knative operator wipes out 'name' label, 
+              # we can still rely on automatic k8s labeling but it has some prerequsites: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#automatic-labelling
+              # name: knative-serving
+              kubernetes.io/metadata.name: knative-serving
     - from:
         - namespaceSelector:
             matchLabels:
@@ -62,7 +65,6 @@ spec:
               type: team
 {{- else if eq $ingressPrivateMode "allowOnly" }}
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
