@@ -490,6 +490,43 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  networkPolicy:
+    additionalProperties: false
+    properties:
+      ingressPrivate:
+        title: Ingress inside the cluster
+        oneOf:
+          - title: Deny traffic from all team services
+            properties:
+              mode:
+                default: denyAll
+                enum:
+                  - denyAll
+          - title: Allow traffic from all team services
+            properties:
+              mode:
+                default: allowAll
+                enum:
+                  - allowAll
+          - title: Allow traffic from selected team services
+            properties:
+              mode:
+                default: allowOnly
+                enum:
+                  - allowOnly
+              allow:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    team:
+                      description: A team name
+                      type: string
+                    service:
+                      description: A service name
+                      type: string
+                  required:
+                    - team
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -866,6 +903,8 @@ definitions:
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
+      networkPolicy:
+        $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
         description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.

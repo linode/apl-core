@@ -202,7 +202,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
         } else throw err
       }
     } catch (e) {
-      d.error(e)
+      d.error(`GET ${url}`, e)
       throw e
     }
   }, retryOptions)
