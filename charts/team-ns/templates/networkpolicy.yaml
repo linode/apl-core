@@ -55,7 +55,12 @@ metadata:
 spec:
   podSelector:
     matchLabels:
+      {{- if hasKey $s "ksvc" }}
+      # The app label cannot be used because Knative appends revision number to the service
+      serving.knative.dev/service: {{ $s.name }}
+      {{- else }}
       app: {{ $s.name }}
+      {{- end }}
   policyTypes:
     - Ingress
   ingress:
@@ -72,7 +77,12 @@ metadata:
 spec:
   podSelector:
     matchLabels:
+      {{- if hasKey $s "ksvc" }}
+      # The app label cannot be used because Knative appends revision number to the service
+      serving.knative.dev/service: {{ $s.name }}
+      {{- else }}
       app: {{ $s.name }}
+      {{- end }}
   policyTypes:
     - Ingress
 {{- with $s.networkPolicy.ingressPrivate.allow }}
