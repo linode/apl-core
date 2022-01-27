@@ -58,9 +58,6 @@ environments:
             - namespace: team-a2
               labels:
                 app: c3
-            - namespace: team-a2
-              labels:
-                app: c3b
         - server:
             namespace: team-a1
             labels:
@@ -83,11 +80,20 @@ environments:
             - namespace: team-a2
               labels:
                 app: c5
-        # - description: s10 does not any ingress except ingress from specific platform apps
-        #   server:
-        #     namespace: team-a1
-        #     labels:
-        #         app: s10
+        - server:
+            namespace: team-a1
+            labels:
+                app: s6
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c6
+            - namespace: team-a1
+              labels:
+                app: c6b
+            - namespace: team-a2
+              labels:
+                app: c6
         #   clients:
         #     - namespace: istio-system
         #       labels:
@@ -102,21 +108,6 @@ environments:
         #       labels:
         #         app: any
 
-        # - description: s3 allows ingress from any pod from team-a2 namespace
-        #   server:
-        #     namespace: team-a1
-        #     labels:
-        #         app: s3
-        #   clients:
-        #     - namespace: team-a2
-        #       labels:
-        #         app: allowed1
-        #     - namespace: team-a2
-        #       labels:
-        #         app: allowed2
-        #     - namespace: team-a2
-        #       labels:
-        #         app: denied1
 releases:
   - name: inter-team-connectivity
     installed: true
