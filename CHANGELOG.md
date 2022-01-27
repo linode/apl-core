@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.2](https://github.com/redkubes/otomi-core/compare/v0.15.1...v0.15.2) (2022-01-27)
+
+### Features
+
+- network policies for team workloads ([777dcec](https://github.com/redkubes/otomi-core/commit/777dcec1816424ba1942aee61308ffb27d1f997d))
+
 ### [0.15.1](https://github.com/redkubes/otomi-core/compare/v0.15.0...v0.15.1) (2022-01-05)
 
 
