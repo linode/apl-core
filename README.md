@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured apps and self-service tasks</p>
+<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a productivity suite with pre-configured apps and developer self-service</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -63,10 +63,7 @@ After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/cons
 - Implemented Kubernetes best-practices
 - Over 30 pre-configured and integrated apps and add-ons
 
-## Self-service tasks
-
-<details>
-  <summary>:point_right: Click here to see all the self-service tasks :point_left:</summary>
+## Self-service features
 
 ### Configure Ingress
 
@@ -76,12 +73,12 @@ Configure exposure for pre-deployed services with a single click. All ingress re
 ### Deploy serverless workloads
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/serverless-workloads.png" width="100%" align="center" alt="Configure Ingress"></p>
-Use the web UI to deploy Knative serverless workloads without writing any YAML.
+Deploy Knative serverless workloads without writing any YAML.
 
 ### Use Secrets stored in Vault
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/secrets.png" width="100%" align="center" alt="Configure Ingress"></p>
-Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in Kubernetes
+Create and manage secrets in HashiCorp Vault, map secrets to the configuration, and use them in your deployments
 
 ### Create Teams for multi-tenancy
 
@@ -101,12 +98,12 @@ Use Keycloak as IdP or bring your own IdP and provide role-based access to all i
 ### Manage artifacts
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/artifacts.png" width="100%" align="center" alt="Configure Ingress"></p>
-Get role-based access to Harbor
+Role-based access to Harbor based on team membership
 
 ### Configure Alerting
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/alerts.png" width="100%" align="center" alt="Configure Ingress"></p>
-Use the web UI to configure alerting endpoints per cluster and per team
+Configure alerting endpoints per cluster and per team
 
 ### Enforce security policies
 
@@ -116,14 +113,12 @@ Select the security mode and start enforcing security policies
 ### Access container metrics
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/metrics.png" width="100%" align="center" alt="Configure Ingress"></p>
-Get direct access to pre-configured Grafana dashboards
+Direct access to pre-configured Grafana dashboards
 
 ### Configure network policies
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/network-policies.png" width="100%" align="center" alt="Configure Ingress"></p>
-Use the web UI to configure network access to services between teams or between services in the same team
-
-</details>
+Configure network access to services between teams or between services in the same team
 
 ## Integrated and pre-configured applications
 
@@ -149,8 +144,10 @@ Use the web UI to configure network access to services between teams or between 
 `Otomi` can be installed with the following advanced configuration options:
 
 - Use a DNS zone with LetsEncrypt certificates
+- Use your own CA
 - Configure Azure Active Directory as IdP
-- Use SOPS/KMS to encrypt sensitive configuration values
+- Use SOPS/KMS to encrypt sensitive configuration code like passwords
+- Use GitHub or GitLab as the configuration code respository
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
@@ -180,8 +177,8 @@ If you want to say **thank you** or/and support the active development of `Otomi
 ## Community
 
 - Join the [Otomi Community Slack Channel](https://otomi.slack.com/signup#/domain-signup)
-- Subscribe to the [Otomi Community Page](https://redkubes.com/community/)
+- Join the Otomi community on [Gitter](https://gitter.im/redkubes/community)
 
-## ⚠️ License
+## License
 
 `Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/master/LICENSE).
