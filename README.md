@@ -117,7 +117,7 @@ Onboard new development teams or projects within minutes in a comprehensive mult
 
 ### Enforce security policies
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/metrics.png" width="100%" align="center" alt="Enforce OPA policies"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/policies.png" width="100%" align="center" alt="Enforce OPA policies"></p>
 Select the security policies teams need to comply to.
 
 ### Configure platform settings
