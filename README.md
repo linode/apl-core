@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a complete suite of pre-configured apps and developer self-service</p>
+<p align="center">Otomi empowers developers and lowers the burden on Operations teams when using <b>Kubernetes</b> by providing a complete suite of pre-configured apps combined with developer self-service</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
