@@ -19,7 +19,7 @@
 
 Use the Terraform quick start for Azure, GCP, and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs of the job and complete the [post-installion steps](https://otomi.io/docs/installation/post-install/).
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs of the job and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
 ### Helm Chart
 
@@ -152,7 +152,7 @@ Use the UI to add additional clusters running Otomi and configure alerting, DNS,
 - Use your own CA
 - Configure Azure Active Directory as IdP
 - Use SOPS/KMS to encrypt sensitive configuration code like passwords
-- Use GitHub or GitLab as the configuration code respository
+- Use GitHub or GitLab as the configuration code repository
 
 Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
@@ -177,12 +177,12 @@ If you wish to contribute please read our [Contributor Code of Conduct](https://
 If you want to say **thank you** or/and support the active development of `Otomi`:
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
-- Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or on your personal blog
+- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi
 
 ## Community
 
-- Join the [Otomi Community Slack Channel](https://otomi.slack.com/signup#/domain-signup)
-- Join the Otomi community on [Gitter](https://gitter.im/redkubes/community)
+- Join the [Otomi Community](https://redkubes.com/community/) for latest Otomi news, technical blogs, and events.
+- Join the [Otomi Slack Channel](https://otomi.slack.com/signup#/domain-signup)
 
 ## License
 
