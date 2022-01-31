@@ -143,6 +143,8 @@ Use the UI to add additional clusters running Otomi and configure alerting, DNS,
 - [Kiali](https://kiali.io/): Observe Istio service mesh relations and connections
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
 - [Drone](https://www.drone.io/): Continuous integration platform built on Docker
+- [Gitea](https://gitea.io/): Self-hosted Git service
+- [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/): Ingress controller for Kubernetes
 
 ## Advanced configuration
 
