@@ -78,7 +78,7 @@ spec:
   podSelector:
     matchLabels:
       {{- if hasKey $s "ksvc" }}
-      # The app label cannot be used because Knative appends revision number to the service
+      # The app label cannot be used because Knative appends revision number to its value
       serving.knative.dev/service: {{ $s.name }}
       {{- else }}
       app: {{ $s.name }}
@@ -97,6 +97,15 @@ spec:
             matchLabels:
               app: {{ .service }}
           {{- end }} {{/* hasKey */}}
+        {{- if hasKey . "service" }}
+        # An extra rule for Pods that are spawn by knative-serving
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              serving.knative.dev/service: {{ .service}}
+        {{- end }} {{/* hasKey */}}
 {{- end }} {{/* range . */}}
 {{- end }} {{/* with ingressPrivate.allow */}}
 {{- end }} {{/* if ingressPrivateMode */}}
