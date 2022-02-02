@@ -495,7 +495,7 @@ definitions:
     properties:
       ingressPrivate:
         title: Ingress traffic inside the cluster
-        description: 'Pods belonging to this service shall contain either: "app: <this service name>" or "serving.knative.dev/service: <this service name>" label'
+        description: 'Pods belonging to this service must contain "app: <service name>" label'
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -504,14 +504,14 @@ definitions:
                 default: denyAll
                 enum:
                   - denyAll
-          - title: Allow only
-            description: Allow traffic from selected teams and services
+          - title: Allow selected
             properties:
               mode:
                 default: allowOnly
                 enum:
                   - allowOnly
               allow:
+                title: Add team or team with service
                 type: array
                 items:
                   type: object
@@ -522,7 +522,7 @@ definitions:
                       type: string
                     service:
                       title: Service name
-                      description: 'Allow traffic from pods with "app: <other service name>" or "serving.knative.dev/service: <other service name>" label'
+                      description: 'Allow traffic from pods with "app: <some service name>" label'
                       type: string
                   required:
                     - team
