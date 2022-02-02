@@ -51,6 +51,7 @@ k8s:
       disableIstioInjection: true
     - name: knative-serving
       disablePolicyChecks: true
+      disableIstioInjection: true
     - name: kubeapps
       disableIstioInjection: true
       disablePolicyChecks: true

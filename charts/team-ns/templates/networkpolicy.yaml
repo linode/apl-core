@@ -1,0 +1,95 @@
+{{- $v := .Values }}
+{{- if not (eq $v.teamId "admin") }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-ingress-deny
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-ingress-platform
+spec:
+  # Match all Pods in this namespace
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              # FIXME: it seems that knative operator wipes out 'name' label, 
+              # we can still rely on automatic k8s labeling but it has some prerequsites: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#automatic-labelling
+              # name: knative-serving
+              kubernetes.io/metadata.name: knative-serving
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+    # - from:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: shared
+
+{{- range $s := $v.services }}
+{{- if not $s.isCore }}
+{{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "denyAll" $s }}
+{{- if eq $ingressPrivateMode "allowAll" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $s.name }}-ingress-from-all-teams
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $s.name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              type: team
+{{- else if eq $ingressPrivateMode "allowOnly" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $s.name }}-ingress-allow-only
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $s.name }}
+  policyTypes:
+    - Ingress
+{{- with $s.networkPolicy.ingressPrivate.allow }}
+  ingress:
+    - from:
+{{- range . }}
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          {{- if hasKey . "service" }}
+          podSelector:
+            matchLabels:
+              app: {{ .service }}
+          {{- end }} {{/* hasKey */}}
+{{- end }} {{/* range . */}}
+{{- end }} {{/* with ingressPrivate.allow */}}
+{{- end }} {{/* if ingressPrivateMode */}}
+{{- end }} {{/* not $s.isCore */}}
+{{- end }} {{/* range services */}}
+{{- end }} {{/* if $v.teamId */}}

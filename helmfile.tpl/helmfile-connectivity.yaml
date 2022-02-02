@@ -1,0 +1,116 @@
+# This release file define workloads used to verify connectivity between workloads
+#
+# Usage:
+# helmfile -f helmfile.tpl/helmfile-connectivity.yaml apply
+#
+# Observe status of client Pods with the following command:
+# watch 'kubectl get pods -l module=connectivity,type=client -A --sort-by=metadata.name'
+#
+# The Pod status 'Running' means that client is still attempting to reach out target
+# The Pod status 'NotReady' means that connection has succeded and container exited code of 0
+# The Pod status 'Error' means that connection did not succeded thus network policy denies traffic
+#
+# Example output
+# NAMESPACE   NAME                              READY   STATUS     RESTARTS   AGE
+# team-a1     client-c1-team-a1-to-s1-team-a1   2/3     Error      0          3m25s
+# team-a2     client-c1-team-a2-to-s1-team-a1   2/3     Error      0          3m25s
+# team-a1     client-c2-team-a1-to-s2-team-a1   2/3     NotReady   0          3m24s
+#
+# From above:
+# The pod client-c2-team-a1-to-s2-team-a1  was able to connect workload in team-a1 namespace and label app=s2
+# The pod client-c1-team-a2-to-s1-team-a1  was NOT able able to connect with workload in team-a1 namespace and label app=s1
+
+
+environments:
+  default:
+    values:
+    - teamConnectivity:
+        - server:
+            namespace: team-a1
+            labels:
+                app: s1
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c1
+            - namespace: team-a2
+              labels:
+                app: c1
+        - server:
+            namespace: team-a1
+            labels:
+                app: s2
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c2
+            - namespace: team-a2
+              labels:
+                app: c2
+        - server:
+            namespace: team-a1
+            labels:
+                app: s3
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c3
+            - namespace: team-a2
+              labels:
+                app: c3
+        - server:
+            namespace: team-a1
+            labels:
+                app: s4
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c4
+            - namespace: team-a2
+              labels:
+                app: c4
+        - server:
+            namespace: team-a1
+            labels:
+                app: s5
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c5
+            - namespace: team-a2
+              labels:
+                app: c5
+        - server:
+            namespace: team-a1
+            labels:
+                app: s6
+          clients:
+            - namespace: team-a1
+              labels:
+                app: c6
+            - namespace: team-a1
+              labels:
+                app: c6b
+            - namespace: team-a2
+              labels:
+                app: c6
+        #   clients:
+        #     - namespace: istio-system
+        #       labels:
+        #         app: ingressgateway
+        #     - namespace: istio-system
+        #       labels:
+        #         app: istiod
+        #     - namespace: monitoring
+        #       labels:
+        #         app: prometheus
+        #     - namespace: shared
+        #       labels:
+        #         app: any
+
+releases:
+  - name: inter-team-connectivity
+    installed: true
+    chart: ../charts/raw
+    values:
+    - ../values/connectivity/connectivity-raw.gotmpl
