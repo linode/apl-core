@@ -2,7 +2,7 @@
 {{- $c := $v.charts }}
 {{- $k := $v.charts.keycloak }}
 {{- $o := $v | get "oidc" dict }}
-{{- $p := $v.charts | get "prometheus-operator" }}
+{{- $p := $v.charts | get "prometheus" }}
 {{- $hasKeycloak := $k.enabled }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}

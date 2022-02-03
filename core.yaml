@@ -177,7 +177,7 @@ apps:
     logo: knative_logo.png
   - name: kubeapps
     tags: [dev, apps]
-    deps: [olm]
+    deps: [operator-lifecycle-manager]
     isShared: true
     ingress:
       - svc: kubeapps
@@ -209,11 +209,7 @@ apps:
   #       hide: true
   #       type: public
   #       auth: true
-  - name: olm
-    hide: true
-    tags: [operators, lifecycle]
-    deps: []
-  - name: otomi
+  - name: otomi-api
     hide: true
     isShared: true
     ingress:
@@ -223,6 +219,10 @@ apps:
         paths: [/api/]
         type: public
         auth: true
+  - name: otomi-console
+    hide: true
+    isShared: true
+    ingress:
       - svc: otomi-console
         namespace: otomi
         ownHost: true

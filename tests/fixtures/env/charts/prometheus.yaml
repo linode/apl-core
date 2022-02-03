@@ -1,0 +1,3 @@
+charts:
+    prometheus:
+        storageSize: 10Gi

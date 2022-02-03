@@ -13,7 +13,7 @@ bases:
 {{- range $s := $tc.apps }}
 {{- if $v.charts | get $s.name | get "enabled" false }}
 {{- range $ing := $s | get "ingress" list }}
-{{- $svc := merge $s (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false)) }}
+{{- $svc := merge $s (dict "isCore" true "name" $s.name) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}
 {{- end }}
 {{- end }}

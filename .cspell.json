@@ -54,6 +54,7 @@
   "words": [
     "alertmanager",
     "apigee",
+    "authn",
     "authz",
     "autodiscovery",
     "autoscaler",
