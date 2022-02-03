@@ -22,7 +22,7 @@ teamConfig:
                           - mysecret-generic
                   networkPolicy:
                       ingressPrivate:
-                          mode: allowAll
+                          mode: AllowAll
                   type: public
                 - name: hello-auth
                   port: 80
@@ -97,7 +97,7 @@ teamConfig:
                   type: cluster
                   networkPolicy:
                       ingressPrivate:
-                          mode: allowAll
+                          mode: AllowAll
                 - name: has-cert-svc
                   hasCert: true
                   certArn: arn:aws:acm:eu-central-1:12345678:certificate/has-cert-svc
@@ -107,7 +107,7 @@ teamConfig:
                   type: cluster
                   networkPolicy:
                       ingressPrivate:
-                          mode: allowOnly
+                          mode: AllowOnly
                           allow:
                               - team: team1
                               - team: team2
@@ -116,9 +116,9 @@ teamConfig:
                   type: cluster
                   networkPolicy:
                       ingressPrivate:
-                          mode: denyAll
+                          mode: DenyAll
                 - name: service-d
                   type: cluster
                   networkPolicy:
                       ingressPrivate:
-                          mode: allowOnly
+                          mode: AllowOnly
