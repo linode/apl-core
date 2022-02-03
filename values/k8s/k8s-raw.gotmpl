@@ -39,6 +39,7 @@ resources:
       name: {{ $ns }}
       labels:
         name: {{ $ns }}
+        type: team
         istio-injection: enabled
   {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1

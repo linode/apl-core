@@ -52,7 +52,7 @@ config:
     retention_period: {{ $l | get "retention.period" "24h" }}
 
 networkPolicy:
-  enabled: true
+  enabled: false
 
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 ## If you set enabled as "True", you need :
