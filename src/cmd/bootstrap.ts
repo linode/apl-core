@@ -210,7 +210,7 @@ export const processValues = async (
     storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
     else originalInput = cloneDeep(originalValues)
-    await deps.writeValues(originalInput, true)
+    await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
@@ -356,7 +356,7 @@ export const bootstrapValues = async (
       d.info(`No value for cluster.owner found, providing default one: ${defaultOwner}`)
       add.cluster.owner = defaultOwner
     }
-    await deps.writeValues(add, true)
+    await deps.writeValues(add)
   }
   await deps.bootstrapSops()
   // if we did not have the admin password before we know we have generated it for the first time

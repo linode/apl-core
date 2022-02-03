@@ -100,7 +100,7 @@ charts:
         requests:
           cpu: 10m
           memory: 10Mi
-  nginx-ingress:
+  ingress-nginx:
     _rawValues:
       controller:
         resources:
@@ -161,4 +161,3 @@ charts:
             requests:
               cpu: 10m
               memory: 10Mi
-      

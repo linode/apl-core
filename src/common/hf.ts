@@ -75,7 +75,7 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
   const output = {
     stdout: proc.stdout,
-    stderr: proc.stderr.pipe(transform),
+    stderr: proc.stderr, // .pipe(transform),
     proc,
   }
 

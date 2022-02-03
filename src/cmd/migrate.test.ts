@@ -1,4 +1,8 @@
+import { env } from '../common/envalid'
+import stubs from '../test-stubs'
 import { applyChanges, Changes, filterChanges } from './migrate'
+
+const { terminal } = stubs
 
 describe('Upgrading values', () => {
   const oldVersion = 1
@@ -10,11 +14,12 @@ describe('Upgrading values', () => {
     {
       version: 2,
       deletions: ['some.json.path'],
-      locations: [{ 'some.json': 'some.bla' }],
+      locations: { 'some.json': 'some.bla' },
     },
     {
       version: 3,
       mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
+      renamings: { 'somefile.yaml': 'newloc.yaml' },
     },
   ]
 
@@ -25,11 +30,20 @@ describe('Upgrading values', () => {
   })
   describe('Apply changes to values', () => {
     const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
+    const deps = {
+      existsSync: jest.fn().mockReturnValue(true),
+      renameSync: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(mockValues),
+      terminal,
+      writeValues: jest.fn(),
+    }
     it('should apply changes to values', async () => {
-      expect(await applyChanges(mockValues, mockChanges.slice(1))).toEqual({
+      await applyChanges(mockChanges.slice(1), false, deps)
+      expect(deps.writeValues).toBeCalledWith({
         version: 3,
         some: { bla: {}, k8sVersion: 'v1.18' },
       })
+      expect(deps.renameSync).toBeCalledWith(`${env.ENV_DIR}/somefile.yaml`, `${env.ENV_DIR}/newloc.yaml`)
     })
   })
 })

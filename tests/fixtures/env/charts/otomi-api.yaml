@@ -4,6 +4,8 @@ charts:
         git:
             localPath: /tmp/otomi-values
             repoUrl: github.com/redkubes/otomi-values-demo.git
+            email: some@secret.value
+            user: somesecretvalue
         image:
             pullPolicy: Always
             tag: latest

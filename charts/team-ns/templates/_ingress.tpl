@@ -133,7 +133,7 @@ spec:
       {{- if eq $.provider "aws" }}
           {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
       {{- end }}
-          {{- include "ingress.path" (dict "dot" $.dot "svc" "nginx-ingress-controller") | nindent 8 }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ingress-nginx-controller") | nindent 8 }}
     {{- else }}
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}

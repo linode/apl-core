@@ -20,29 +20,29 @@ releases:
       pkg: csi
       provider: aws 
     <<: *default
-  - name: gatekeeper-operator
-    installed: {{ $c | get "gatekeeper-operator.enabled" }}
+  - name: gatekeeper
+    installed: {{ $c | get "gatekeeper.enabled" }}
     namespace: default
-    chart: ../charts/gatekeeper-operator
+    chart: ../charts/gatekeeper
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     values:
-      - ../values/gatekeeper/gatekeeper-operator.gotmpl
+      - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
-  - name: nginx-ingress
+  - name: ingress-nginx
     installed: true
     namespace: ingress
     labels:
       tag: ingress
       stage: prep
     <<: *default
-  - name: nginx-ingress-private
-    installed: {{ $c | get "nginx-ingress.private.enabled" }}
+  - name: ingress-nginx-private
+    installed: {{ $c | get "ingress-nginx.private.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
-    chart: ../charts/nginx-ingress
+    chart: ../charts/ingress-nginx
     values:
-      - ../values/nginx-ingress/nginx-ingress.gotmpl
-      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
+      - ../values/ingress-nginx/ingress-nginx.gotmpl
+      - ../values/ingress-nginx/ingress-nginx-private.gotmpl

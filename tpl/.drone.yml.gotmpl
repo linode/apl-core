@@ -35,6 +35,7 @@ steps:
       template: >
         Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+
 {{- else if eq .provider "msteams" }}
   - name: notify-start
     image: diyfr/drone_plugin_teams
@@ -44,6 +45,21 @@ steps:
         title: Started syncing cluster
         text: Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         themeColor: 009EEA
+
+{{- else if eq .provider "opsgenie" }}
+  - name: notify-start
+    image: plugins/webhook
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Started syncing cluster",
+          "description": "Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "note": "Status: {{ print "{" "{" }} build.status {{ print "}" "}" }}"
+          "responders": {{ .responders }}
+        }
+
 {{- end }}
 {{- if eq .providerHome "slack" }}
   - name: slack-start-home
@@ -55,6 +71,7 @@ steps:
       template: >
         Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         Drone: <{{ print "{" "{" }} build.link {{ print "}" "}" }}>
+
 {{- else if eq .providerHome "msteams" }}
   - name: notify-start-home
     image: diyfr/drone_plugin_teams
@@ -64,6 +81,21 @@ steps:
         title: Started syncing cluster
         text: Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...
         themeColor: 009EEA
+
+{{- else if eq .providerHome "opsgenie" }}
+  - name: notify-start-home
+    image: plugins/webhook
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Started syncing cluster",
+          "description": "Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "note": "Status: {{ print "{" "{" }} build.status {{ print "}" "}" }}"
+          "responders": {{ .responders }}
+        }
+
 {{- end }}
   - name: prepare-env
     image: ubuntu:20.04
@@ -141,6 +173,43 @@ steps:
     when:
       status:
         - failure
+        - failure
+
+{{- else if eq .provider "opsgenie" }}
+  - name: notify-success
+    image: plugins/webhook
+    depends_on:
+      - apply
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Completed syncing cluster",
+          "description": "Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "responders": {{ .responders }}
+        }
+    when:
+      status:
+        - success
+
+  - name: notify-error
+    image: plugins/webhook
+    depends_on:
+      - apply
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Failed syncing cluster",
+          "description": "Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "responders": {{ .responders }}
+        }
+    when:
+      status:
+        - failure
+
 {{- end }}
 {{- if eq .providerHome "slack" }}
   - name: slack-result-home
@@ -162,6 +231,41 @@ steps:
     when:
       status:
         - success
+        - failure
+
+{{- else if eq .providerHome "opsgenie" }}
+  - name: notify-success
+    image: plugins/webhook
+    depends_on:
+      - apply
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Completed syncing cluster",
+          "description": "Completed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "responders": {{ .responders }}
+        }
+    when:
+      status:
+        - success
+
+  - name: notify-error
+    image: plugins/webhook
+    depends_on:
+      - apply
+    settings:
+      urls: {{ .webhook }}?apiKey={{ .apiKey }}
+      content_type: application/json
+      template: |
+        {
+          "message": "Failed syncing cluster",
+          "description": "Failed syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
+          "responders": {{ .responders }}
+        }
+    when:
+      status:
         - failure
 
 {{- else if eq .providerHome "msteams" }}
@@ -192,9 +296,11 @@ steps:
     when:
       status:
         - failure
+
 {{- end }}
 
 {{- if .globalPullSecret }}
+
 image_pull_secrets:
 - otomi-pullsecret-global
 {{- end }}

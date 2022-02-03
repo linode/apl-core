@@ -11,6 +11,9 @@ azure:
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
+    monitor:
+        subscriptionId: somesecretvalue
+        tenantId: somesecretvalue
 cloud:
     skipStorageClasses:
         - std
@@ -54,4 +57,9 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 1
+version: 2
+kms:
+    sops:
+        azure:
+            keys: somesecretvalue
+            tenantId: somesecretvalue

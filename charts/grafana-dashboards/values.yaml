@@ -2,7 +2,6 @@ folders:
   - k8s
   - istio
   - azure
-  - sitespeed
 
 sidecar:
   dashboards:

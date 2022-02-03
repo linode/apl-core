@@ -9,11 +9,20 @@ bases:
 ---
 {{- $v := .Values }}
 {{- $tc := $v.teamConfig }}
-{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $coreTeamServices := list }}
+{{- range $s := $tc.apps }}
+{{- if $v.charts | get $s.name | get "enabled" false }}
+{{- range $ing := $s | get "ingress" list }}
+{{- $svc := merge $s (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false)) }}
+{{- $coreTeamServices = append $coreTeamServices $svc }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- $c := $v.charts }}
 {{- $cm := index $v.charts "cert-manager" }}
 {{- $po := index $v.charts "prometheus-operator" }}
-{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
+{{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 
 releases:
   {{- range $teamId, $team := $tc | get "teams" dict }}
@@ -69,7 +78,7 @@ releases:
         alertmanager:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl) | nindent 12 }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         {{- else }}
         defaultRules:
           rules:
@@ -151,13 +160,6 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if $c | get "sitespeed.enabled" false }}
-            - name: Graphite
-              editable: false
-              type: graphite
-              access: proxy
-              url: http://graphite.monitoring:80
-            {{- end }}
             {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
             {{- end }}
@@ -196,8 +198,6 @@ releases:
           # - istio-teams
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
-          {{- if $team | get "stack.sitespeed" false }}
-          - sitespeed{{ end }}
   {{- end }}
   {{- if hasKey $team "jobs" }}
   {{- range $job := $team.jobs }}

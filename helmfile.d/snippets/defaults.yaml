@@ -21,8 +21,8 @@ environments:
               username: otomi-admin
           external-dns:
             domainFilters: []
-          gatekeeper-operator:
-            enabled: true
+          gatekeeper:
+            enabled: false
             auditFromCache: false
             auditInterval: 60
             constraintViolationsLimit: 20
@@ -35,7 +35,7 @@ environments:
             enabled: true
             adminUsername: otomi-admin
           harbor:
-            enabled: true
+            enabled: false
           hello:
             enabled: false
           httpbin:
@@ -46,7 +46,7 @@ environments:
                 minReplicas: 1
                 maxReplicas: 10
           jaeger:
-            enabled: true
+            enabled: false
           keycloak:
             enabled: true
             adminUsername: admin
@@ -55,18 +55,19 @@ environments:
               alias: otomi-idp
               clientID: otomi
           kiali:
-            enabled: true
+            enabled: false
           knative:
+            enabled: false
             serving:
               replicas: 1
           kubeapps:
             enabled: false
           kube-descheduler:
-            enabled: true
+            enabled: false
           kubernetes-external-secrets:
-            enabled: true
+            enabled: false
           loki: {}
-          nginx-ingress:
+          ingress-nginx:
             autoscaling:
               minReplicas: 1
               maxReplicas: 10
@@ -84,12 +85,8 @@ environments:
           prometheus-operator: {}
           redis-shared:
             enabled: false
-          sitespeed:
-            enabled: false
           vault:
             enabled: true
-          weave-scope:
-            enabled: false
         otomi:
           hasCloudLB: false
           hasExternalDNS: false

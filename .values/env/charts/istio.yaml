@@ -1,2 +1,3 @@
 charts:
-    istio: {}
+    istio:
+        enabled: true

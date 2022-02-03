@@ -47,22 +47,19 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-const writeValuesToFile = async (
-  targetPath: string,
-  inValues: Record<string, any>,
-  overwrite = true,
-): Promise<void> => {
+const writeValuesToFile = async (targetPath: string, inValues: Record<string, any>): Promise<void> => {
   const values = cloneDeep(inValues)
   const d = terminal('common:values:writeValuesToFile')
-  const nonEmptyValues = removeBlankAttributes(values)
-  d.debug('nonEmptyValues: ', JSON.stringify(nonEmptyValues, null, 2))
-  const suffix = targetPath.includes('/secrets.') && hasSops ? '.dec' : ''
+  const isSecretsFile = targetPath.includes('/secrets.') && hasSops
+  const newValues = isSecretsFile ? removeBlankAttributes(values) : values
+  d.debug('newValues: ', JSON.stringify(newValues, null, 2))
+  const suffix = isSecretsFile ? '.dec' : ''
   if (!existsSync(targetPath)) {
-    return writeFile(targetPath + suffix, objectToYaml(nonEmptyValues))
+    return writeFile(targetPath + suffix, objectToYaml(newValues))
   }
   const originalValues = loadYaml(targetPath + suffix, { noError: true }) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = merge(cloneDeep(originalValues), nonEmptyValues, !overwrite ? originalValues : {})
+  const mergeResult = merge(cloneDeep(originalValues), newValues)
   if (isEqual(originalValues, mergeResult)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
     return undefined
@@ -76,7 +73,7 @@ const writeValuesToFile = async (
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValues = async (values: Record<string, any>, overwrite = true): Promise<void> => {
+export const writeValues = async (values: Record<string, any>): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', values)
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
@@ -92,19 +89,18 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
   const secrets = removeBlankAttributes(pick(values, secretsJsonPath))
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
-  const plainValues = removeBlankAttributes(omit(values, secretsJsonPath)) as any
+  const plainValues = omit(values, secretsJsonPath) as any
   const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts', '_derived']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
   // and write to their files
   const promises: Promise<void>[] = []
-  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
-  if (secretSettings)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
+  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings))
+  if (secretSettings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings))
   if (plainValues.cluster)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }))
   if (plainValues.policies)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }))
 
   const plainChartPromises = Object.keys((plainValues.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -112,7 +108,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: plainValues.charts[chart],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject)
   })
   const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, any>).map((chart) => {
     const valueObject = {
@@ -120,7 +116,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = true)
         [chart]: secrets.charts[chart],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject, overwrite)
+    return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])

@@ -1,6 +1,3 @@
 charts:
     keycloak:
         enabled: true
-        idp:
-            alias: otomi-idp
-            clientID: otomi

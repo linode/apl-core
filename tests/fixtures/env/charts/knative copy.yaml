@@ -1,0 +1,3 @@
+charts:
+    knative:
+        enabled: true

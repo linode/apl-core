@@ -13,6 +13,7 @@ definitions:
         enum:
           - slack
           - msteams
+          - opsgenie
         type: string
       email:
         additionalProperties: false
@@ -46,6 +47,7 @@ definitions:
           enum:
             - slack
             - msteams
+            - opsgenie
             - email
           type: string
         type: array
@@ -68,6 +70,46 @@ definitions:
             $ref: '#/definitions/url'
             description: A Slack webhook URL.
             x-secret: ''
+      opsgenie:
+        additionalProperties: false
+        properties:
+          apiKey:
+            description: The api key to use for authn
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          url:
+            $ref: '#/definitions/url'
+            description: A Slack webhook URL.
+            x-secret: ''
+          responders:
+            type: array
+            items:
+              allOf:
+                - properties:
+                    type:
+                      type: string
+                      enum:
+                        - team
+                        - user
+                        - escalation
+                        - schedule
+                - oneOf:
+                    - title: ID
+                      required: [id]
+                      properties:
+                        id:
+                          $ref: '#/definitions/idName'
+                    - title: Name
+                      required: [name]
+                      properties:
+                        name:
+                          $ref: '#/definitions/idName'
+                    - title: Username
+                      required: [username]
+                      properties:
+                        username:
+                          $ref: '#/definitions/idName'
+              required: [type]
     allOf:
       - anyOf:
           - not:
@@ -97,6 +139,13 @@ definitions:
                     - slack
             required:
               - slack
+          - properties:
+              receivers:
+                contains:
+                  enum:
+                    - opsgenie
+            required:
+              - opsgenie
       - anyOf:
           - not:
               required:
@@ -111,6 +160,11 @@ definitions:
                 const: slack
             required:
               - slack
+          - properties:
+              drone:
+                const: opsgenie
+            required:
+              - opsgenie
 
   annotations:
     $ref: '#/definitions/labelsAnnotations'
@@ -490,6 +544,10 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  path:
+    description: An absolute path
+    type: string
+    pattern: '^[/].*$'
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -598,6 +656,20 @@ definitions:
       - limits
       - requests
     title: Pod resources
+  shortcuts:
+    type: array
+    items:
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          description: Title for the shortcut
+        description:
+          type: string
+          description: A short decription about the target of this shortcut.
+        path:
+          $ref: '#/definitions/path'
+      type: object
   unixOwnerIdRange:
     type: object
     additionalProperties: false
@@ -644,7 +716,7 @@ definitions:
         readOnly: true
         type: string
       name:
-        $ref: '#/definitions/subdomainType'
+        $ref: '#/definitions/idName'
     required:
       - name
     oneOf:
@@ -916,9 +988,6 @@ definitions:
       - 0.5Ti
     pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
     type: string
-  subdomainType:
-    type: string
-    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   team:
     additionalProperties: false
     properties:
@@ -1040,6 +1109,12 @@ properties:
   charts:
     additionalProperties: true
     properties:
+      alert-manager:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
       cert-manager:
         properties:
           _rawValues:
@@ -1262,7 +1337,7 @@ properties:
           zoneIdFilters:
             items:
               type: string
-      gatekeeper-operator:
+      gatekeeper:
         additionalProperties: false
         properties:
           _rawValues:
@@ -1321,6 +1396,12 @@ properties:
                     - enabled
               - required:
                   - postgresqlPassword
+      grafana:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
       harbor:
         additionalProperties: false
         properties:
@@ -1466,6 +1547,14 @@ properties:
           enabled:
             type: boolean
             default: false
+      host-mods:
+        properties:
+          certDir:
+            type: string
+            description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
+          updateCmd:
+            type: string
+            description: The update command to run after copying the certificates.
       ingress-azure:
         additionalProperties: false
         description: A chart for Azure Application Gateway.
@@ -1523,248 +1612,7 @@ properties:
               - required:
                   - armAuth
                   - appgw
-      istio:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          addonComponents:
-            additionalProperties: false
-            properties:
-              grafana:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-              kiali:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-              prometheus:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-              tracing:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-          autoscaling:
-            properties:
-              egressgateway:
-                $ref: '#/definitions/scaling'
-              gateway-local:
-                $ref: '#/definitions/scaling'
-              ingressgateway:
-                $ref: '#/definitions/scaling'
-              ingressgateway-auth:
-                $ref: '#/definitions/scaling'
-              pilot:
-                $ref: '#/definitions/scaling'
-          egressGateway:
-            properties:
-              enabled:
-                default: false
-                type: boolean
-          global:
-            additionalProperties: false
-            properties:
-              logging:
-                properties:
-                  level:
-                    type: string
-              mtls:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-              proxy:
-                additionalProperties: false
-                properties:
-                  resources:
-                    $ref: '#/definitions/resources'
-              sds:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-          meshConfig:
-            properties:
-              defaultConfig:
-                type: object
-            required:
-              - defaultConfig
-          resources:
-            properties:
-              egressgateway:
-                $ref: '#/definitions/resources'
-              gateway-local:
-                $ref: '#/definitions/resources'
-              ingressgateway:
-                $ref: '#/definitions/resources'
-              ingressgateway-auth:
-                $ref: '#/definitions/resources'
-              pilot:
-                $ref: '#/definitions/resources'
-      keycloak:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: true
-          idp:
-            additionalProperties: false
-            properties:
-              alias:
-                type: string
-              clientID:
-                $ref: '#/definitions/wordCharacterPattern'
-                default: otomi
-              clientSecret:
-                type: string
-                x-secret: 'randAlphaNum 32'
-          postgresqlPassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: 'randAlphaNum 20'
-          adminUsername:
-            type: string
-            default: admin
-          adminPassword:
-            type: string
-            x-secret: ''
-          resources:
-            additionalProperties: false
-            properties:
-              keycloak:
-                $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-          theme:
-            enum:
-              - default
-              - otomi
-            type: string
-        required:
-          - postgresqlPassword
-      knative:
-        additionalProperties: false
-        properties:
-          serving:
-            type: object
-            properties:
-              replicas:
-                description: For HA mode set to 5. Read more at https://github.com/knative/operator/issues/376
-                default: 1
-                type: integer
-                minimum: 1
-      kubeapps:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          postgresqlPassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: 'randAlphaNum 20'
-        allOf:
-          - anyOf:
-              - not:
-                  properties:
-                    enabled:
-                      const: true
-                  required:
-                    - enabled
-              - required:
-                  - postgresqlPassword
-      kubernetes-external-secrets:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-          logLevel:
-            $ref: '#/definitions/logLevel'
-      kube-descheduler:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          schedule:
-            default: '*/30 * * * *'
-            type: string
-      loki:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          adminPassword:
-            type: string
-            x-secret: 'randAlphaNum 20'
-          persistence:
-            additionalProperties: false
-            properties:
-              size:
-                default: 20Gi
-                type: string
-          retention:
-            additionalProperties: false
-            properties:
-              duration:
-                default: 24h
-                type: string
-              period:
-                default: 24h
-                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
-                type: string
-            required:
-              - duration
-          aws:
-            type: object
-          azure:
-            description: Missing from docs but available with this schema.
-            properties:
-              account_key:
-                type: string
-                x-secret: ''
-              account_name:
-                type: string
-              container_name:
-                type: string
-            type: object
-          bigtable:
-            type: object
-          cassandra:
-            type: object
-          gcs:
-            type: object
-          swift:
-            type: object
-          local:
-            type: object
-          storageType:
-            type: string
-            enum:
-              - aws
-              - azure
-              - bigtable
-              - cassandra
-              - filesystem
-              - gcs
-              - swift
-              - local
-          v11StartDate:
-            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
-            title: Schema v11 start date
-            type: string
-        required:
-          - adminPassword
-      nginx-ingress:
+      ingress-nginx:
         additionalProperties: false
         properties:
           _rawValues:
@@ -1827,14 +1675,258 @@ properties:
             properties:
               annotations:
                 $ref: '#/definitions/annotations'
-      host-mods:
+      istio:
+        additionalProperties: false
         properties:
-          certDir:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            default: true
+            type: boolean
+          autoscaling:
+            properties:
+              egressgateway:
+                $ref: '#/definitions/scaling'
+              gateway-local:
+                $ref: '#/definitions/scaling'
+              ingressgateway:
+                $ref: '#/definitions/scaling'
+              ingressgateway-auth:
+                $ref: '#/definitions/scaling'
+              pilot:
+                $ref: '#/definitions/scaling'
+          egressGateway:
+            properties:
+              enabled:
+                default: false
+                type: boolean
+          global:
+            additionalProperties: false
+            properties:
+              logging:
+                properties:
+                  level:
+                    type: string
+              mtls:
+                additionalProperties: false
+                properties:
+                  enabled:
+                    type: boolean
+              proxy:
+                additionalProperties: false
+                properties:
+                  resources:
+                    $ref: '#/definitions/resources'
+              sds:
+                additionalProperties: false
+                properties:
+                  enabled:
+                    type: boolean
+          meshConfig:
+            properties:
+              defaultConfig:
+                type: object
+            required:
+              - defaultConfig
+          resources:
+            properties:
+              egressgateway:
+                $ref: '#/definitions/resources'
+              gateway-local:
+                $ref: '#/definitions/resources'
+              ingressgateway:
+                $ref: '#/definitions/resources'
+              ingressgateway-auth:
+                $ref: '#/definitions/resources'
+              pilot:
+                $ref: '#/definitions/resources'
+      jaeger:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+      keycloak:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          idp:
+            additionalProperties: false
+            properties:
+              alias:
+                type: string
+                default: otomi-idp
+              clientID:
+                $ref: '#/definitions/wordCharacterPattern'
+                default: otomi
+              clientSecret:
+                type: string
+                x-secret: 'randAlphaNum 32'
+          postgresqlPassword:
             type: string
-            description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
-          updateCmd:
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
+          adminUsername:
             type: string
-            description: The update command to run after copying the certificates.
+            default: admin
+          adminPassword:
+            type: string
+            x-secret: ''
+          resources:
+            additionalProperties: false
+            properties:
+              keycloak:
+                $ref: '#/definitions/resources'
+              postgresql:
+                $ref: '#/definitions/resources'
+          theme:
+            enum:
+              - default
+              - otomi
+            type: string
+        required:
+          - postgresqlPassword
+      kiali:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+      knative:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          serving:
+            type: object
+            properties:
+              replicas:
+                description: For HA mode set to 5. Read more at https://github.com/knative/operator/issues/376
+                default: 1
+                type: integer
+                minimum: 1
+      kubeapps:
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
+          postgresqlPassword:
+            type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - postgresqlPassword
+      kubernetes-external-secrets:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+          logLevel:
+            $ref: '#/definitions/logLevel'
+      kube-descheduler:
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
+          schedule:
+            default: '*/30 * * * *'
+            type: string
+      loki:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          adminPassword:
+            type: string
+            x-secret: 'randAlphaNum 20'
+          persistence:
+            additionalProperties: false
+            properties:
+              size:
+                default: 20Gi
+                type: string
+          retention:
+            additionalProperties: false
+            properties:
+              duration:
+                default: 24h
+                type: string
+              period:
+                default: 24h
+                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
+                type: string
+            required:
+              - duration
+          aws:
+            type: object
+          azure:
+            description: Missing from docs but available with this schema.
+            properties:
+              account_key:
+                type: string
+                x-secret: ''
+              account_name:
+                type: string
+              container_name:
+                type: string
+            type: object
+          bigtable:
+            type: object
+          cassandra:
+            type: object
+          gcs:
+            type: object
+          swift:
+            type: object
+          local:
+            type: object
+          storageType:
+            type: string
+            enum:
+              - aws
+              - azure
+              - bigtable
+              - cassandra
+              - filesystem
+              - gcs
+              - swift
+              - local
+          v11StartDate:
+            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
+            title: Schema v11 start date
+            type: string
+        required:
+          - adminPassword
+      metrics-server:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -1900,11 +1992,14 @@ properties:
                       - username
                       - password
         type: object
-      prometheus-operator:
+      prometheus:
+        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          additionalProperties: false
+          enabled:
+            type: boolean
+            default: false
           grafana:
             additionalProperties: false
             properties:
@@ -1935,24 +2030,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-      sitespeed:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-          pvc:
-            additionalProperties: false
-            properties:
-              graphite:
-                type: string
-              results:
-                type: string
-          retention:
-            type: string
-          schedule:
-            type: string
       vault:
         additionalProperties: false
         properties:
@@ -2027,13 +2104,7 @@ properties:
                   - azurekeyvault
           storage:
             description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
-      weave-scope:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
+            type: object
   cluster:
     $ref: '#/definitions/cluster'
   dns:

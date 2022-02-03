@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $n := $v.charts | get "nginx-ingress" }}
-nameOverride: nginx-ingress-private
+{{- $n := $v.charts | get "ingress-nginx" }}
+nameOverride: ingress-nginx-private
 controller:
   ingressClass: nginx-private
   resources:

@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: gatekeeper-artifacts
-    installed: {{ $c | get "gatekeeper-operator.enabled" }}
+    installed: {{ $c | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
     createNamespace: false

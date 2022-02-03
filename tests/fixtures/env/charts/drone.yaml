@@ -6,10 +6,13 @@ charts:
         githubAdmins:
             org: redkubes
             team: admins
+            token: somesecretvalue
         orgsFilter: redkubes
         owner: redkubes
         repoFilter: redkubes
         sourceControl:
             github:
                 server: https://github.com
+                clientID: somesecretvalue
             provider: github
+        adminUser: somesecretvalue

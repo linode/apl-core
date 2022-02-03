@@ -1,7 +1,19 @@
 {{- $v := . }}
 {{- $tc := .teamConfig }}
-{{- $coreAdminServices := list }}{{- range $s := .services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $coreAdminServices := list }}
+{{- range $s := $v.apps }}
+{{- range $ing := $s | get "ingress" list }}
+{{- $svc := merge $s (dict "isCore" true "name" $s.name "iShared" ($s | get "isShared" false)) }}
+{{- $coreAdminServices = append $coreAdminServices $svc }}
+{{- end }}
+{{- end }}
+{{- $coreTeamServices := list }}
+{{- range $s := $tc.apps }}
+{{- range $ing := $s | get "ingress" list }}
+{{- $svc := merge $s (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false)) }}
+{{- $coreTeamServices = append $coreTeamServices $svc }}
+{{- end }}
+{{- end }}
 {{- $domains := dict }}
 {{- $teams := set $tc.teams "admin" dict }}
 {{- range $teamId, $team := $tc.teams }}

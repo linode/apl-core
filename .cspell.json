@@ -118,7 +118,6 @@
     "selinux",
     "semver",
     "showlogs",
-    "sitespeed",
     "sysctls",
     "testmode",
     "textconv",

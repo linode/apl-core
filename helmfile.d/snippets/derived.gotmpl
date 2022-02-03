@@ -82,7 +82,7 @@ environments:
           kured:
             enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
           metrics-server:
-            enabled: {{ list "onprem" "aws" | has $provider }}
+            enabled: {{ list "onprem" "aws" | has $provider | default ($c | get "metrics-server.enabled" false) }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:

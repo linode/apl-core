@@ -84,7 +84,8 @@ export const gucci = async (
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
-    return `-s ${k}='${v ?? ''}'`
+    const val = typeof v === 'object' ? JSON.stringify(v) : v
+    return `-s ${k}='${val ?? ''}'`
   })
 
   const quoteBackup = $.quote
@@ -108,7 +109,7 @@ export const gucci = async (
 }
 
 export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
-  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
+  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret', 'x-acl']
   return Object.keys(schema)
     .map((key) => {
       const childObj = schema[key]

@@ -18,7 +18,7 @@ const test = async (): Promise<void> => {
   await lint()
   await validateTemplates()
   const values = await hfValues()
-  if (!values!.charts['gatekeeper-operator']!.disableValidatingWebhook) await checkPolicies()
+  if (!values!.charts.gatekeeper!.disableValidatingWebhook) await checkPolicies()
   d.log('Tests OK!')
 }
 

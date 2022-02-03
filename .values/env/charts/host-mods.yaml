@@ -1,2 +1,3 @@
 charts:
-    host-mods: {}
+    host-mods:
+        enabled: false

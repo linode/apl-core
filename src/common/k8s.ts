@@ -63,7 +63,7 @@ const fetchLoadBalancerIngressData = async (): Promise<string> => {
   let count = 0
   for (;;) {
     ingressDataString = (
-      await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
+      await $`kubectl get -n ingress svc ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress}"`
     ).stdout.trim()
     count += 1
     if (ingressDataString) return ingressDataString

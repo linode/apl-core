@@ -14,6 +14,27 @@ export interface Arguments extends BasicArguments {
 
 const cmdName = getFilename(__filename)
 
+const getApiKey = (receiver) => {
+  switch (receiver) {
+    case 'opsgenie':
+      return 'apiKey'
+    default:
+      return undefined
+  }
+}
+
+const getUrlKey = (receiver) => {
+  switch (receiver) {
+    case 'drone':
+    case 'opsgenie':
+      return 'url'
+    case 'msteams':
+      return 'lowPrio'
+    default:
+      return undefined
+  }
+}
+
 export const genDrone = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:genDrone`)
   const argv: Arguments = getParsedArgs()
@@ -29,16 +50,24 @@ export const genDrone = async (): Promise<void> => {
   let webhookHome
   let channel
   let channelHome
+  let apiKey
+  let apiKeyHome
+  let responders
+  let respondersHome
   if (receiver) {
-    const key = receiver === 'slack' ? 'url' : 'lowPrio'
-    channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'mon-otomi' : undefined
-    webhook = allValues.alerts?.[receiver]?.[key]
+    apiKey = getApiKey(receiver)
+    const key = getUrlKey(receiver)
+    if (receiver === 'slack') channel = allValues.alerts?.[receiver]?.channel ?? 'mon-otomi'
+    if (receiver === 'opsgenie') responders = allValues.alerts?.[receiver]?.responders
+    webhook = key && allValues.alerts?.[receiver]?.[key]
     if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
   }
   if (homeReceiver) {
-    const key = homeReceiver === 'slack' ? 'url' : 'lowPrio'
-    channelHome = receiver === 'slack' ? allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi' : undefined
-    webhookHome = allValues.home?.[homeReceiver]?.[key]
+    apiKeyHome = getApiKey(homeReceiver)
+    const key = getUrlKey(homeReceiver)
+    if (receiver === 'slack') channelHome = allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi'
+    if (homeReceiver === 'opsgenie') respondersHome = allValues.home?.[homeReceiver]?.responders
+    webhookHome = key && allValues.home?.[homeReceiver]?.[key]
     if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${homeReceiver}.${key}'`)
   }
 
@@ -54,21 +83,24 @@ export const genDrone = async (): Promise<void> => {
   const requestsMem = allValues.charts.drone.resources.runner.requests.memory
 
   const obj = {
+    apiKey,
+    apiKeyHome,
     imageTag,
     branch,
     cluster,
     cloudProvider,
     channel,
     channelHome,
-    owner,
     globalPullSecret,
+    owner,
     provider,
     providerHome,
-    webhook,
-    webhookHome,
     pullPolicy,
     requestsCpu,
     requestsMem,
+    responders,
+    webhook,
+    webhookHome,
   }
 
   const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj)) as string

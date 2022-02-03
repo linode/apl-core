@@ -1,27 +1,4 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
-
-# keep list of all apps for frontend
-apps:
-  alertmanager: {}
-  drone: {}
-  gatekeeper: {}
-  gitea: {}
-  # gilab: {}
-  grafana: {}
-  harbor: {}
-  hello: {}
-  httpbin: {}
-  keycloak: {}
-  kiali: {}
-  kubeapps: {}
-  loki: {}
-  owasp: {}
-  prometheus: {}
-  sitespeed: {}
-  jaeger: {}
-  vault: {}
-  weave-scope: {}
-
 k8s:
   namespaces:
     - name: cert-manager
@@ -67,256 +44,243 @@ k8s:
     - name: team-admin
     - name: vault
 
-services:
-  - name: keycloak
-    namespace: keycloak
-    svc: keycloak-http
-    ownHost: true
-    type: public
-  - name: httpbin
-    namespace: shared
-    svc: httpbin
-    ownHost: true
-    isShared: true
-    type: public
-    auth: true
-  - name: gatekeeper
-    svc: po-grafana
-    ownHost: true
-    host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
-    namespace: monitoring
-    path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
-    type: public
-    auth: true
-  - name: harbor
-    svc: harbor-portal
-    namespace: harbor
-    ownHost: true
-    isShared: true
-    type: public
-    auth: true
-  - name: harbor
-    svc: harbor-core
-    namespace: harbor
-    ownHost: true
-    paths: [/api/, /c/, /chartrepo/]
-    forwardPath: true
-    hide: true
-    isShared: true
-    type: public
-    auth: true
-  - name: harbor
-    svc: harbor-core
-    namespace: harbor
-    ownHost: true
-    paths: [/service/, /v1/, /v2/]
-    forwardPath: true
-    hide: true
-    type: public
-  - name: gitea
-    namespace: gitea
-    svc: gitea-http
-    ownHost: true
-    isShared: true
-    port: 3000
-    forwardPath: true
-    type: public
-  - name: kiali
-    svc: kiali
-    forwardPath: true
-    port: 20001
-    namespace: kiali
-    type: public
-    auth: true
-  - name: notary
-    svc: harbor-notary-server
-    port: 4443
-    namespace: harbor
-    ownHost: true
-    hide: true
-    isShared: true
-    type: public
-    auth: true
-  - name: otomi
-    namespace: otomi
-    ownHost: true
-    isShared: true
-    svc: otomi-api
-    hide: true
-    paths: [/api/]
-    type: public
-    auth: true
-  - name: otomi
-    namespace: otomi
-    ownHost: true
-    isShared: true
-    svc: otomi-console
-    type: public
-    auth: true
-  - name: loki
-    svc: po-grafana
-    ownHost: true
-    host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
-    namespace: monitoring
-    path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
-    type: public
-    auth: true
-  - name: owasp
-    svc: po-grafana
-    ownHost: true
-    host: grafana
-    path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D"%7D%5D
-    type: public
-    isShared: true
-    auth: true
-  # - name: weave-scope
-  #   svc: weave-scope
-  #   namespace: monitoring
-  #   type: public
-  #   auth: true
-  - name: grafana
-    svc: po-grafana
-    ownHost: true
-    namespace: monitoring
-    removeRequestHeaders:
-      - authorization
-    type: public
-    isShared: true
-    auth: true
-  - name: prometheus
-    svc: po-prometheus
-    port: 9090
-    namespace: monitoring
-    type: public
-    auth: true
+apps:
   - name: alertmanager
-    svc: po-alertmanager
-    port: 9093
-    logo:
-      name: prometheus
-    namespace: monitoring
-    type: public
-    auth: true
+    tags: [alerting, observability]
+    deps: [prometheus]
+    ingress:
+      - svc: po-alertmanager
+        namespace: monitoring
+        port: 9093
+        type: public
+        auth: true
+  - name: cert-manager
+    tags: [ingress, security, tls]
   - name: drone
-    svc: drone
-    namespace: team-admin
-    ownHost: true
-    type: public
-    auth: true
-    removeRequestHeaders:
-      - authorization
-  - name: drone
-    svc: drone
-    namespace: team-admin
-    ownHost: true
+    tags: [cicd, deployment, pipeline]
+    isShared: true
+    ingress:
+      - svc: drone
+        namespace: team-admin
+        ownHost: true
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization
+      - svc: drone
+        namespace: team-admin
+        ownHost: true
+        type: public
+        paths: [/hook, /api/user, /api/repo]
+        forwardPath: true
+        removeRequestHeaders:
+          - authorization
+  - name: external-dns
+    tags: [ingress, security, tls]
+  - name: gatekeeper
+    tags: [security, policies, observability]
+    deps: [prometheus]
+  - name: gitea
+    tags: [git]
+    isShared: true
+    ingress:
+      - namespace: gitea
+        svc: gitea-http
+        ownHost: true
+        port: 3000
+        forwardPath: true
+        type: public
+  - name: grafana
+    tags: [tracing, telemetry, observability]
+    deps: [prometheus]
+    ingress:
+      - svc: po-grafana
+        ownHost: true
+        namespace: monitoring
+        removeRequestHeaders:
+          - authorization
+        type: public
+        auth: true
+  - name: harbor
+    tags: [security]
+    deps: [istio]
+    isShared: true
+    ingress:
+      - svc: harbor-portal
+        namespace: harbor
+        ownHost: true
+        type: public
+        auth: true
+      - svc: harbor-core
+        namespace: harbor
+        ownHost: true
+        paths: [/api/, /c/, /chartrepo/]
+        forwardPath: true
+        type: public
+        auth: true
+      - svc: harbor-core
+        namespace: harbor
+        ownHost: true
+        paths: [/service/, /v1/, /v2/]
+        forwardPath: true
+        type: public
+  - name: hello
     hide: true
-    type: public
-    paths: [/hook, /api/user, /api/repo]
-    forwardPath: true
-    removeRequestHeaders:
-      - authorization
+    tags: [demo]
+    deps: []
+  - name: httpbin
+    tags: [dev, testing, debugging]
+    isShared: true
+    ingress:
+      - namespace: shared
+        svc: httpbin
+        ownHost: true
+        type: public
+        auth: true
+  - name: ingress-nginx
+    tags: [ingress, auth]
+  - name: istio
+    tags: [ingress, egress, routing, security, tls, observability, policies]
+    deps: [grafana, prometheus]
   - name: jaeger
-    svc: jaeger-operator-jaeger-query
-    port: 16686
-    forwardPath: true
-    namespace: jaeger
-    type: public
-    auth: true
-  - name: vault
-    namespace: vault
-    svc: vault-0
-    port: 8200
-    ownHost: true
-    logo:
-      name: vault
-    isShared: true
-    path: ui/vault/auth?with=oidc
-    type: public
-    auth: true
+    tags: [ingress, telemetry, observability]
+    deps: [istio]
+    ingress:
+      - svc: jaeger-operator-jaeger-query
+        port: 16686
+        forwardPath: true
+        namespace: jaeger
+        type: public
+        auth: true
+  - name: keycloak
+    tags: [auth, sso]
+    deps: [istio]
+    ingress:
+      - namespace: keycloak
+        svc: keycloak-http
+        ownHost: true
+        type: public
+  - name: kiali
+    tags: [tracing, telemetry, observability]
+    deps: [istio]
+    ingress:
+      - svc: kiali
+        forwardPath: true
+        port: 20001
+        namespace: kiali
+        type: public
+        auth: true
+  - name: knative
+    tags: [serverless, functions]
+    deps: [istio]
+    logo: knative_logo.png
   - name: kubeapps
-    svc: kubeapps
-    namespace: kubeapps
-    ownHost: true
-    logo:
-      name: kubernetes
-    type: public
+    tags: [dev, apps]
+    deps: [olm]
     isShared: true
-    auth: true
+    ingress:
+      - svc: kubeapps
+        namespace: kubeapps
+        ownHost: true
+        type: public
+        auth: true
+  - name: loki
+    tags: [logging, telemetry, observability]
+    deps: [grafana, prometheus]
+    shortcuts:
+      - title: OWASP violations
+        description: ingress traffic triggering OWASP rules
+        path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
+      - title: Gatekeeper violations
+        description: Kube API violations logged by OPA gatekepeer
+        path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
+    ingress:
+      - host: grafana # this service is only specified to generate an icon on the dashboard that opens grafana's loki view
+        path: 'explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D'
+  # - name: notary
+  #   isShared: true
+  #   hide: true
+  #   ingress:
+  #     - svc: harbor-notary-server
+  #       port: 4443
+  #       namespace: harbor
+  #       ownHost: true
+  #       hide: true
+  #       type: public
+  #       auth: true
+  - name: olm
+    hide: true
+    tags: [operators, lifecycle]
+    deps: []
+  - name: otomi
+    hide: true
+    isShared: true
+    ingress:
+      - svc: otomi-api
+        namespace: otomi
+        ownHost: true
+        paths: [/api/]
+        type: public
+        auth: true
+      - svc: otomi-console
+        namespace: otomi
+        ownHost: true
+        type: public
+        auth: true
+  - name: prometheus
+    tags: [metrics, observability]
+    deps: [grafana]
+    ingress:
+      - svc: po-prometheus
+        port: 9090
+        namespace: monitoring
+        type: public
+        auth: true
+  - name: vault
+    tags: [secrets, security, observability]
+    deps: [kubernetes-external-secrets]
+    isShared: true
+    ingress:
+      - namespace: vault
+        svc: vault-0
+        port: 8200
+        ownHost: true
+        logo:
+          name: vault
+        path: ui/vault/secrets/secret/list/teams/#NS#/
+        type: public
+        auth: true
 
 teamConfig:
-  services:
-    - name: harbor
-      svc: harbor-portal
-      namespace: harbor
-      isShared: true
-      host: harbor
-      type: public
-      auth: true
-    - name: httpbin
-      namespace: shared
-      svc: httpbin
-      isShared: true
-      host: httpbin
-      type: public
-      auth: true
-    - name: vault
-      namespace: vault
-      svc: vault-0
-      port: 8200
-      host: vault
-      logo:
-        name: vault
-      isShared: true
-      path: ui/vault/secrets/secret/list/teams/#NS#/
-      type: public
-      auth: true
-    - name: kubeapps
-      namespace: kubeapps
-      svc: kubeapps
-      isShared: true
-      host: kubeapps
-      logo:
-        name: kubernetes
-      type: public
-      auth: true
-    - name: loki
-      svc: po-grafana
-      host: grafana
-      path: explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
-      type: public
-      auth: true
-    - name: gatekeeper
-      svc: po-grafana
-      host: grafana
-      path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"%5C%5C%5C"resource_namespace%5C%5C%5C":%5C%5C%5C"#NS#%5C%5C%5C"%5C""%7D%5D
-      type: public
-      isShared: true
-      auth: true
-    - name: owasp
-      svc: po-grafana
-      host: grafana
-      path: explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
-      type: public
-      isShared: true
-      auth: true
-    - name: grafana
-      svc: po-grafana
-      hasPrefix: true
-      removeRequestHeaders:
-        - authorization
-      type: public
-      auth: true
-    - name: prometheus
-      svc: po-prometheus
-      hasPrefix: true
-      port: 9090
-      type: public
-      auth: true
+  apps:
     - name: alertmanager
-      svc: po-alertmanager
-      hasPrefix: true
-      port: 9093
-      logo:
-        name: prometheus
-      type: public
-      auth: true
+      ingress:
+        - svc: po-alertmanager
+          hasPrefix: true
+          port: 9093
+          logo:
+            name: prometheus
+          type: public
+          auth: true
+    - name: grafana
+      ingress:
+        - svc: po-grafana
+          hasPrefix: true
+          removeRequestHeaders:
+            - authorization
+          type: public
+          auth: true
+    - name: loki
+      ingress:
+        - svc: po-grafana
+          host: grafana
+          path: explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
+          type: public
+          auth: true
+    - name: prometheus
+      ingress:
+        - svc: po-prometheus
+          hasPrefix: true
+          port: 9090
+          type: public
+          auth: true

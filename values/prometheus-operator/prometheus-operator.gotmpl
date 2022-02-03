@@ -6,7 +6,8 @@
 {{- $hasKeycloak := $k.enabled }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
-{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
+{{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 
 nameOverride: po
@@ -113,7 +114,7 @@ alertmanager:
         cpu: 500m
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
-  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
+  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
   {{- else }}
   enabled: false
   {{- end }}
@@ -191,13 +192,6 @@ grafana:
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
-    {{- end }}
-    {{- if $c | get "sitespeed.enabled" false }}
-    - name: Graphite
-      editable: false
-      type: graphite
-      access: proxy
-      url: http://graphite:80
     {{- end }}
   adminPassword: {{ $p | get "grafana.adminPassword" $v.otomi.adminPassword }}
   service:

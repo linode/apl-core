@@ -44,11 +44,3 @@ releases:
     installed: {{ $c | get "prometheus-msteams.enabled" }}
     namespace: monitoring
     <<: *default
-  - name: sitespeed
-    installed: {{ $c | get "sitespeed.enabled" }}
-    namespace: monitoring
-    <<: *default
-  - name: weave-scope
-    installed: {{ $c | get "weave-scope.enabled" }}
-    namespace: monitoring
-    <<: *default
