@@ -13,6 +13,19 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
+## About Otomi
+
+Otomi is an Application Configuration Platform for Kubernetes
+
+- Install all your favorite Kubernetes apps and add-ons in one run
+- All apps and add-ons are pre-configured based on sane defaults
+- Turn apps on/off to create your ideal suite of apps
+- Self-service features to utilize integrated apps
+- Adjust the configuration of all integrated apps based on Configuration as Code
+- Out-of-the-box experience
+- One UI to access all apps and self-service features
+- Over 30 pre-configured and integrated apps and add-ons
+
 ## Quick start
 
 ### Terraform
@@ -48,20 +61,6 @@ helm install -f values.yaml otomi otomi/otomi
 When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
 After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
-
-## Key features
-
-- Single installable package
-- Developer self-service
-- Configuration as Code
-- Multi-tenancy
-- Kubernetes-native
-- Security policy enforcement
-- Single Sign-On, bring your own IdP
-- Automatic ingress configuration
-- Full observability
-- Implemented Kubernetes best-practices
-- Over 30 pre-configured and integrated apps and add-ons
 
 ## Developer self-service features
 ### Configure Ingress
