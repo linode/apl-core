@@ -64,7 +64,20 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
 
+## Advanced configuration
+
+`Otomi` can be installed with the following advanced configuration options:
+
+- Use a DNS zone with LetsEncrypt certificates
+- Use your own CA
+- Configure Azure Active Directory as IdP
+- Use SOPS/KMS to encrypt sensitive configuration code like passwords
+- Use GitHub or GitLab as the configuration code repository
+
+Go to [otomi.io](https://otomi.io) for more detailed instructions.
+
 ## Developer self-service features
+
 ### Configure Ingress
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/configure-ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
@@ -146,18 +159,6 @@ Use the UI to add additional clusters running Otomi and configure alerting, DNS,
 - [Drone](https://www.drone.io/): Continuous integration platform built on Docker
 - [Gitea](https://gitea.io/): Self-hosted Git service
 - [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/): Ingress controller for Kubernetes
-
-## Advanced configuration
-
-`Otomi` can be installed with the following advanced configuration options:
-
-- Use a DNS zone with LetsEncrypt certificates
-- Use your own CA
-- Configure Azure Active Directory as IdP
-- Use SOPS/KMS to encrypt sensitive configuration code like passwords
-- Use GitHub or GitLab as the configuration code repository
-
-Go to [otomi.io](https://otomi.io) for more detailed instructions.
 
 ## Projects
 
