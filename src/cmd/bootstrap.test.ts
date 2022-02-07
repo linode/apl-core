@@ -75,7 +75,6 @@ describe('Bootstrapping values', () => {
           owner: expect.any(String),
         }),
       }),
-      true,
     )
   })
   describe('Generating a loose schema', () => {
@@ -274,7 +273,7 @@ describe('Bootstrapping values', () => {
         deps.generateSecrets.mockReturnValue(generatedSecrets)
         deps.createCustomCA.mockReturnValue(ca)
         const res = await processValues(deps)
-        expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues, true)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
         expect(res).toEqual(mergedValues)
       })
       it('should merge original with generated values and write them to env dir', async () => {
