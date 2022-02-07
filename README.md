@@ -15,7 +15,7 @@
 
 ## About Otomi
 
-Otomi is a Kubernetes Applications Configuration & Automation Platform.
+Otomi is a Kubernetes Application Configuration & Automation Platform.
 
 - Install all your favorite Kubernetes apps in one run
 - Unified user experience
