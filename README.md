@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi empowers developers and lowers the burden on operations when using <b>Kubernetes</b> by providing a complete suite of pre-configured Kubernetes apps and add-ons combined with developer self-service</p>
+<p align="center">Otomi empowers developers and lowers the burden on operations when using <b>Kubernetes</b> by providing a complete suite of pre-configured Kubernetes application combined with developer self-service</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -15,17 +15,19 @@
 
 ## About Otomi
 
-Otomi is a Kubernetes Applications and add-ons Configuration Platform:
+Otomi is a Kubernetes Applications Configuration & Automation Platform.
 
-- Install all your favorite Kubernetes apps and add-ons in one run
-- All apps and add-ons are pre-configured based on sane defaults
+- Install all your favorite Kubernetes apps in one run
+- Unified user experience
+- All apps and are pre-configured based on sane default
+- All integrated apps work in tandem
 - Turn apps on/off to create your ideal suite of apps
 - Self-service features to utilize all integrated apps
 - Adjust the configuration of all integrated apps based on Configuration as Code
-- Out-of-the-box experience
+- Works out-of-the-box
 - One UI to access all apps and self-service features
 - Kubernetes-native: Install Otomi on any Kubernetes cluster in any cloud or on-prem
-- Over 30 pre-configured and integrated apps and add-ons for Kubernetes
+- Over 20 pre-configured and integrated apps for Kubernetes
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
 
