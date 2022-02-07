@@ -1,8 +1,17 @@
 charts:
-  cert-manager:
-    issuer: custom-ca
+  gitea:
     _rawValues:
-      cainjector:
+      init:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+      memcached:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+      postgresql:
         resources:
           requests:
             cpu: 10m
@@ -11,13 +20,5 @@ charts:
         requests:
           cpu: 10m
           memory: 10Mi
-      startupapicheck:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      webhook:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
+    admin:
+      password: giteapass

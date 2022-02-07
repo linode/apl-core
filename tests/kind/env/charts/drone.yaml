@@ -1,13 +1,12 @@
 charts:
-  gatekeeper:
-    enabled: false
+  drone:
     _rawValues:
-      audit:
+      kubernetes:
         resources:
           requests:
             cpu: 10m
             memory: 10Mi
-      controllerManager:
+      server:
         resources:
           requests:
             cpu: 10m

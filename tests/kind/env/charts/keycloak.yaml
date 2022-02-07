@@ -1,8 +1,22 @@
 charts:
-    keycloak:
-        _rawValues: {}
-        enabled: true
-        theme: otomi
-        idp:
-            clientID: otomi
-            alias: redkubes-azure
+  keycloak:
+    _rawValues:
+      postgresql:
+        metrics:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+      resources:
+        requests:
+          cpu: 10m
+          memory: 10Mi
+    enabled: true
+    theme: otomi
+    idp:
+      clientID: otomi
+      alias: redkubes-azure

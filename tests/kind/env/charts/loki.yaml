@@ -6,3 +6,8 @@ charts:
       duration: 24h
       period: 24h
     storageType: filesystem
+    _rawValues:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 10Mi

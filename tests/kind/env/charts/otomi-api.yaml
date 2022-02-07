@@ -1,0 +1,5 @@
+charts:
+  otomi-api:
+    git:
+      email: some@secret.value
+      user: otomi-admin

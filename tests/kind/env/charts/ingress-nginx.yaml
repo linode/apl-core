@@ -1,6 +1,16 @@
 charts:
   ingress-nginx:
-    _rawValues: {}
+    _rawValues:
+      controller:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+      defaultBackend:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
     maxBodySize: 1024m
     resources:
       limits:
