@@ -41,6 +41,10 @@ silent() {
   fi
 }
 
+docker_tag_exists() {
+  curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep "\"name\": \"$2\"" &>/dev/null
+}
+
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
@@ -69,6 +73,14 @@ else
 fi
 otomi_branch_or_tag=${current_branch:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
+if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version_used; then
+  # When working in new branch, docker image doesn't exist before first commit/push
+  # So need to fall back to working version
+  [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
+  echo "Docker doesn't have otomi/core:${otomi_version_used}"
+  echo "Falling back to otomi/core:${otomi_version}"
+  otomi_version_used=$otomi_version
+fi
 readonly otomi_tools_image="otomi/core:${otomi_version_used}"
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then

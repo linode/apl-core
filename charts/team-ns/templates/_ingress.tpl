@@ -85,7 +85,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "onprem") $internetFacing }}
+{{- if and (eq $v.cluster.provider "onprem") (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}

@@ -1,5 +1,0 @@
-charts:
-    gitea:
-        enabled: true
-        admin:
-            password: bladibla

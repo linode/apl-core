@@ -1,0 +1,10 @@
+apps:
+    otomi-api:
+        git:
+            email: some@secret.value
+            localPath: /tmp/otomi-values
+            repoUrl: github.com/redkubes/otomi-values-demo.git
+            user: somesecretvalue
+        image:
+            pullPolicy: Always
+            tag: latest

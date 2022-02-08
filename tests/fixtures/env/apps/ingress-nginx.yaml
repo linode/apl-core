@@ -1,0 +1,22 @@
+apps:
+    ingress-nginx:
+        maxBodySize: 1024m
+        private:
+            enabled: true
+            resources:
+                limits:
+                    cpu: 200m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 192Mi
+            service:
+                annotations:
+                    private: 'true'
+        resources:
+            limits:
+                cpu: 200m
+                memory: 256Mi
+            requests:
+                cpu: 100m
+                memory: 192Mi

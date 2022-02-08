@@ -47,14 +47,18 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-const writeValuesToFile = async (targetPath: string, inValues: Record<string, any>): Promise<void> => {
+const writeValuesToFile = async (
+  targetPath: string,
+  inValues: Record<string, any>,
+  overwrite = false,
+): Promise<void> => {
   const values = cloneDeep(inValues)
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
-  const newValues = isSecretsFile ? removeBlankAttributes(values) : values
+  const newValues = removeBlankAttributes(values)
   d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
-  if (!existsSync(targetPath)) {
+  if (!existsSync(targetPath) || overwrite) {
     return writeFile(targetPath + suffix, objectToYaml(newValues))
   }
   const originalValues = loadYaml(targetPath + suffix, { noError: true }) ?? {}
@@ -73,7 +77,7 @@ const writeValuesToFile = async (targetPath: string, inValues: Record<string, an
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValues = async (values: Record<string, any>): Promise<void> => {
+export const writeValues = async (values: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', values)
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
@@ -90,33 +94,34 @@ export const writeValues = async (values: Record<string, any>): Promise<void> =>
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, secretsJsonPath) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'charts', '_derived']
+  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
   // and write to their files
   const promises: Promise<void>[] = []
-  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings))
-  if (secretSettings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings))
+  if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (secretSettings)
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
 
-  const plainChartPromises = Object.keys((plainValues.charts || {}) as Record<string, any>).map((chart) => {
+  const plainChartPromises = Object.keys((plainValues.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
-      charts: {
-        [chart]: plainValues.charts[chart],
+      apps: {
+        [app]: plainValues.apps[app],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/${chart}.yaml`, valueObject)
+    return writeValuesToFile(`${env.ENV_DIR}/env/apps/${app}.yaml`, valueObject, overwrite)
   })
-  const secretChartPromises = Object.keys((secrets.charts || {}) as Record<string, any>).map((chart) => {
+  const secretChartPromises = Object.keys((secrets.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
-      charts: {
-        [chart]: secrets.charts[chart],
+      apps: {
+        [app]: secrets.apps[app],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/charts/secrets.${chart}.yaml`, valueObject)
+    return writeValuesToFile(`${env.ENV_DIR}/env/apps/secrets.${app}.yaml`, valueObject, overwrite)
   })
 
   await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])
@@ -163,12 +168,12 @@ export const generateSecrets = async (
        * dotDot:
        *  Get full path, except last item, this allows to parse for siblings
        * dotV:
-       *  Get .v by getting the second . after charts
-       *  charts.hello.world
-       *  ^----------^ Get this content (charts.hello)
+       *  Get .v by getting the second . after apps
+       *  apps.hello.world
+       *  ^----------^ Get this content (apps.hello)
        */
       const dotDot = path.slice(0, path.lastIndexOf('.'))
-      const dotV = path.slice(0, path.indexOf('.', path.indexOf('charts.') + 'charts.'.length))
+      const dotV = path.slice(0, path.indexOf('.', path.indexOf('apps.') + 'apps.'.length))
 
       const sDot = v.replaceAll('.dot.', `.${dotDot}.`)
       const vDot = sDot.replaceAll('.v.', `.${dotV}.`)

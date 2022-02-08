@@ -9,7 +9,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 
 releases:
   - name: gitea-artifacts

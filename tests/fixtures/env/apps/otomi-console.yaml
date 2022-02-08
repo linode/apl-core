@@ -1,0 +1,5 @@
+apps:
+    otomi-console:
+        image:
+            pullPolicy: Always
+            tag: latest

@@ -1,5 +1,5 @@
 {{- $v := . }}
-{{- $tc := .teamConfig }}
+{{- $tc := $v.teamConfig }}
 {{- $coreAdminServices := list }}
 {{- range $s := $v.apps }}
 {{- range $ing := $s | get "ingress" list }}
@@ -8,7 +8,7 @@
 {{- end }}
 {{- end }}
 {{- $coreTeamServices := list }}
-{{- range $s := $tc.apps }}
+{{- range $s := $v.teamApps }}
 {{- range $ing := $s | get "ingress" list }}
 {{- $svc := merge $s (dict "isCore" true "name" $s.name) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}

@@ -15,6 +15,7 @@ import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
 import { generateSecrets, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
+import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -181,7 +182,7 @@ export const copyBasicFiles = async (
 }
 
 // retrieves input values from either VALUES_INPUT or ENV_DIR
-// and creates missing secrets as well (and stores them in a secret in chart mode)
+// and creates missing secrets as well (and stores them in a secret in app mode)
 export const processValues = async (
   deps = {
     terminal,
@@ -205,7 +206,7 @@ export const processValues = async (
   let originalValues: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
   if (deps.isChart) {
-    d.log(`Loading chart values from ${VALUES_INPUT}`)
+    d.log(`Loading app values from ${VALUES_INPUT}`)
     originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
     storedSecrets = await deps.getStoredClusterSecrets()
     if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
@@ -224,7 +225,7 @@ export const processValues = async (
   // generate all secrets (does not diff against previous so generates all new secrets every time)
   const generatedSecrets = await deps.generateSecrets(originalInput)
   // do we need to create a custom CA? if so add it to the secrets
-  const cm = get(originalInput, 'charts.cert-manager', {})
+  const cm = get(originalInput, 'apps.cert-manager', {})
   let caSecrets = {}
   if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
     if (cm.customRootCA && cm.customRootCAKey) {
@@ -293,7 +294,7 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
   const rootKey = deps.pki.privateKeyToPem(keys.privateKey).replaceAll('\r\n', '\n')
 
   return {
-    charts: {
+    apps: {
       'cert-manager': {
         customRootCA: rootCrt,
         customRootCAKey: rootKey,
@@ -383,5 +384,6 @@ export const module = {
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
     await bootstrapValues()
+    await migrate()
   },
 }

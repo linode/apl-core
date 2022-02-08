@@ -1,12 +1,12 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
-import { existsSync } from 'fs'
-import { renameSync } from 'fs-extra'
+import { copy, move, pathExists, renameSync, rm } from 'fs-extra'
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
 import { prepareEnvironment } from '../common/cli'
+import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
@@ -23,46 +23,85 @@ interface Arguments extends BasicArguments {
 interface Change {
   version: number
   deletions?: Array<string>
-  locations?: Record<string, string>
-  mutations?: Array<{
-    [preMutation: string]: string
+  relocations?: Array<{
+    [oldLocation: string]: string
   }>
-  renamings?: Record<string, string>
+  mutations?: Array<{
+    [mutation: string]: string
+  }>
+  renamings?: Array<{
+    [oldName: string]: string
+  }>
 }
 
 export type Changes = Array<Change>
 
-export const rename = (
+export const rename = async (
   oldName: string,
   newName: string,
   dryRun = false,
-  deps = { existsSync, renameSync, terminal },
-): void => {
+  deps = { pathExists, renameSync, terminal, move, copy, rm },
+): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
-  if (!deps.existsSync(`${env.ENV_DIR}/${oldName}`)) {
+  if (!(await deps.pathExists(`${env.ENV_DIR}/${oldName}`))) {
     d.warn(`File does not exist: ${env.ENV_DIR}/${oldName}. Already renamed?`)
     return
   }
+  // so the file exists, check if it has a '/secrets.' companion
+  let secretsCompanionOld
+  let secretsCompanionNew
+  if (oldName.includes('.yaml') && !oldName.includes('secrets.')) {
+    const lastSlashPosOld = oldName.lastIndexOf('/') + 1
+    const tmpOld = `${oldName.substring(0, lastSlashPosOld)}secrets.${oldName.substring(lastSlashPosOld)}`
+    if (await deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}`)) {
+      secretsCompanionOld = tmpOld
+      const lastSlashPosNew = oldName.lastIndexOf('/') + 1
+      secretsCompanionNew = `${newName.substring(0, lastSlashPosNew)}secrets.${newName.substring(lastSlashPosNew)}`
+    }
+  }
   d.info(`Renaming ${oldName} to ${newName}`)
-  if (!dryRun) deps.renameSync(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`)
+  if (!dryRun) {
+    try {
+      await deps.move(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`)
+      if (secretsCompanionOld) {
+        // we also rename the secret companion
+        await deps.move(`${env.ENV_DIR}/${secretsCompanionOld}`, `${env.ENV_DIR}/${secretsCompanionNew}`)
+        if (await deps.pathExists(`${env.ENV_DIR}/${secretsCompanionOld}.dec`))
+          // and remove the old decrypted file
+          await deps.rm(`${env.ENV_DIR}/${secretsCompanionOld}.dec`)
+      }
+    } catch (e) {
+      if (e.message === 'dest already exists.') {
+        // we were given a folder that already exists, which is allowed,
+        // so we defer to copying the contents and remove the source
+        await deps.copy(`${env.ENV_DIR}/${oldName}`, `${env.ENV_DIR}/${newName}`, { preserveTimestamps: true })
+        await deps.rm(`${env.ENV_DIR}/${oldName}`, { recursive: true, force: true })
+      }
+    }
+  }
 }
 
 export const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
-  const moveValue = get(values, lhs, 'err!')
-  if (unset(values, lhs)) set(values, rhs, moveValue)
+  const val = get(values, lhs)
+  if (val && unset(values, lhs)) set(values, rhs, val)
 }
 
 export function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
+/**
+ * Applies changes from configuration.
+ *
+ * NOTE: renamings,deletions,relocations and mutations MUST be given in arrays only,
+ * with max 1 item per array, to preserve order of operation
+ */
 export const applyChanges = async (
   changes: Changes,
   dryRun = false,
   deps = {
-    existsSync,
+    rename,
     hfValues,
-    renameSync,
     terminal,
     writeValues,
   },
@@ -70,14 +109,21 @@ export const applyChanges = async (
   cd(env.ENV_DIR)
   // do file renamings first as those have to match the current containers expectations
   for (const c of changes) {
-    each(c.renamings, (newName, oldName) => rename(oldName, newName, dryRun, deps))
+    if (c.renamings)
+      for (const r of c.renamings) {
+        const oldName = Object.keys(r)[0]
+        const newName = Object.values(r)[0]
+        await deps.rename(oldName, newName, dryRun)
+      }
   }
   // only then can we get the values and do mutations on them
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
     c.deletions?.forEach((del) => unset(values, del))
-    each(c.locations, (newName, oldName) => moveGivenJsonPath(values, oldName, newName))
+    c.relocations?.forEach((r) => {
+      each(r, (newName, oldName) => moveGivenJsonPath(values, oldName, newName))
+    })
 
     if (c.mutations)
       for (const mut of c.mutations) {
@@ -89,7 +135,7 @@ export const applyChanges = async (
       }
     Object.assign(values, { version: c.version })
   }
-  if (!dryRun) await deps.writeValues(values)
+  if (!dryRun) await deps.writeValues(values, true)
   // @ts-ignore
   return diff(prevValues, values)
 }
@@ -116,6 +162,9 @@ export const migrate = async (): Promise<void> => {
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
+    // encrypt and decrypt to
+    await encrypt()
+    await decrypt()
     d[argv.dryRun ? 'log' : 'info'](`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
   } else d.info('No changes detected, skipping')
 }

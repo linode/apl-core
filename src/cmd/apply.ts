@@ -31,7 +31,7 @@ const setup = (): void => {
 const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
   d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
-  const ingressIP = values.charts['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+  const ingressIP = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
   const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
 

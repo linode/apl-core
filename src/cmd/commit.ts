@@ -23,8 +23,8 @@ const gitPush = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
   const values = await hfValues()
   let branch = 'main'
-  if (values?.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? branch
+  if (values?.apps?.gitea?.enabled === false) {
+    branch = values.apps!['otomi-api']!.git!.branch ?? branch
   }
   d.info('Starting git push.')
   try {
@@ -89,12 +89,12 @@ const bootstrapGit = async (values): Promise<void> => {
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
-  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+  const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
-  const byor = !!values?.charts?.['otomi-api']?.git
+  const byor = !!values?.apps?.['otomi-api']?.git
 
   if (!giteaEnabled && !byor) {
-    throw new Error('Gitea is disabled but no charts.otomi-api.git config was given.')
+    throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
   }
   let username = 'Otomi Admin'
   let email: string
@@ -102,14 +102,14 @@ const bootstrapGit = async (values): Promise<void> => {
   let remote: string
   const branch = 'main'
   if (!giteaEnabled) {
-    const otomiApiGit = values?.charts?.['otomi-api']?.git
+    const otomiApiGit = values?.apps?.['otomi-api']?.git
     username = otomiApiGit?.user
     password = otomiApiGit?.password
     remote = otomiApiGit?.repoUrl
     email = otomiApiGit?.email
   } else {
     username = 'otomi-admin'
-    password = values?.charts?.gitea?.adminPassword ?? values?.otomi?.adminPassword
+    password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
     email = `otomi-admin@${clusterDomain}`
     const giteaUrl = `gitea.${clusterDomain}`
     const giteaOrg = 'otomi'
@@ -128,7 +128,6 @@ const bootstrapGit = async (values): Promise<void> => {
 }
 
 const preCommit = async (): Promise<void> => {
-  await migrate()
   await genDrone()
   await encrypt()
 }
@@ -143,9 +142,9 @@ export const commit = async (): Promise<void> => {
   }
   if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
 
-  if (values!.charts!.gitea!.enabled) {
+  if (values!.apps!.gitea!.enabled) {
     const url = await getGiteaHealthUrl()
-    const { adminPassword } = values!.charts!.gitea
+    const { adminPassword } = values!.apps!.gitea
     await waitTillAvailable(url, {
       // we wait for a 404 as that is the best we can do,
       // since that is what gitea gives for repos that have nothing public
@@ -156,12 +155,12 @@ export const commit = async (): Promise<void> => {
     })
   }
   await preCommit()
-  if (values?.charts?.gitea?.enabled) await commitAndPush()
+  if (values?.apps?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) {
     await setDeploymentStatus()
-    const credentials = values!.charts.keycloak
+    const credentials = values!.apps.keycloak
     const message = `
     ########################################################################################################################################
     #

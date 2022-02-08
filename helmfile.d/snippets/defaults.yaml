@@ -4,7 +4,7 @@ environments:
       - azure:
           appgw:
             isManaged: true
-        charts:
+        apps:
           cert-manager:
             issuer: custom-ca
           demo-tlspass:

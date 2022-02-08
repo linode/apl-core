@@ -1,6 +1,6 @@
 
 {{- $v := .Values }}
-{{- $gk := $v.charts | get "gatekeeper" }}
+{{- $gk := $v.apps | get "gatekeeper" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 ### Config Resources for OPA Gatekeeper

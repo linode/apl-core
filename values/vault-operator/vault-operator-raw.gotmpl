@@ -1,8 +1,8 @@
 {{- $v := .Values }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- $tc := $v.teamConfig }}
-{{- $vault := $v.charts.vault }}
-{{- $k := $v.charts.keycloak }}
+{{- $vault := $v.apps.vault }}
+{{- $k := $v.apps.keycloak }}
 {{- $seal := $vault | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}

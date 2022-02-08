@@ -1,0 +1,5 @@
+apps:
+    knative:
+        enabled: true
+        serving:
+            replicas: 5

@@ -1,0 +1,13 @@
+apps:
+  loki:
+    _rawValues:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 10Mi
+    persistence:
+      size: 1Gi
+    retention:
+      duration: 24h
+      period: 24h
+    storageType: filesystem

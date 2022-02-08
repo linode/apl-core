@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $n := $v.charts | get "ingress-nginx" }}
+{{- $n := $v.apps | get "ingress-nginx" }}
 nameOverride: ingress-nginx
 controller:
   # @TODO:

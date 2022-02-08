@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $h := $v.charts.harbor }}
+{{- $h := $v.apps.harbor }}
 {{- $hp := $h | get "persistence" dict }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}

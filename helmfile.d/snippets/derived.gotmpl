@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 {{- $k := $c | get "keycloak" dict }}
 {{- $o := $v | get "oidc" dict }}
 
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
 {{- $otomiVersion := $v.otomi | get "version" nil }}
@@ -45,7 +45,7 @@ environments:
           {{- end }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
-        charts:
+        apps:
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:

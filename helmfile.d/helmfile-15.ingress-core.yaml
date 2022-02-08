@@ -10,16 +10,16 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $coreAdminServices := list }}
-{{- range $s := $v.apps }}
-{{- if $v.charts | get $s.name | get "enabled" false }}
+{{- range $s := $v.adminApps }}
+{{- if $v.apps | get $s.name | get "enabled" false }}
 {{- range $ing := $s | get "ingress" list }}
 {{- $svc := merge $s (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false)) }}
 {{- $coreAdminServices = append $coreAdminServices $svc }}
 {{- end }}
 {{- end }}
 {{- end }}
-{{- $c := $v.charts }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $c := $v.apps }}
+{{- $cm := index $v.apps "cert-manager" }}
 
 releases:
   - name: team-ns-admin
@@ -33,7 +33,7 @@ releases:
     values:
       - name: admin
         teamId: admin
-        charts: {{- $v.charts | toYaml | nindent 10 }}
+        charts: {{- $v.apps | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}

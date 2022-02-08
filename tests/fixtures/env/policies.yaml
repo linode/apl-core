@@ -40,7 +40,7 @@ policies:
         allowedCapabilities:
             - NET_BIND_SERVICE
             - NET_RAW
-        enabled: false # not working correctly as data.parameters is empty
+        enabled: false
         requiredDropCapabilities:
             - ALL
     psp-forbidden-sysctls:

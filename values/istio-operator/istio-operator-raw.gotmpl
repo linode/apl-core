@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $cm := $v.charts | get "cert-manager" }}
-{{- $i := $v.charts.istio }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $i := $v.apps.istio }}
 {{- $ig := $i | get "global" dict }}
 {{- $excludedNamespaces := list "kube-system" }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 

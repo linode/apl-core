@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
+{{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 
 image:

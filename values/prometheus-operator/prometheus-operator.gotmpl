@@ -1,8 +1,10 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
-{{- $k := $v.charts.keycloak }}
+{{- $c := $v.apps }}
+{{- $k := $v.apps.keycloak }}
 {{- $o := $v | get "oidc" dict }}
-{{- $p := $v.charts | get "prometheus" }}
+{{- $a := $v.apps | get "alertmanager" }}
+{{- $g := $v.apps | get "grafana" }}
+{{- $p := $v.apps | get "prometheus" }}
 {{- $hasKeycloak := $k.enabled }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
@@ -63,7 +65,7 @@ prometheus:
       matchLabels:
         prometheus: system
     resources:
-      {{- with $p | get "resources.prometheus" nil }}
+      {{- with $p | get "resources" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
@@ -77,8 +79,8 @@ prometheus:
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     portName: http-web
-    retention: {{ $p | get "prometheus.retention" "1d" }}
-    retentionSize: {{ $p | get "prometheus.retentionSize" "4GB" }}
+    retention: {{ $p | get "retention" "1d" }}
+    retentionSize: {{ $p | get "retentionSize" "4GB" }}
     storageSpec:
       volumeClaimTemplate:
         metadata:
@@ -87,7 +89,7 @@ prometheus:
           storageClassName: fast
           resources:
             requests:
-              storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
+              storage: {{ $p | get "storageSize" "5Gi" }}
 
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
@@ -138,7 +140,7 @@ grafana:
         cpu: 100m
         memory: 128Mi
   resources:
-    {{- with $p | get "resources.grafana" nil }}
+    {{- with $g | get "resources" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
@@ -186,14 +188,14 @@ grafana:
       url: http://loki:11811
       basicAuth: true
       basicAuthUser: admins
-      basicAuthPassword: {{ $v.charts.loki.adminPassword }}
+      basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
       url: http://loki:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
-  adminPassword: {{ $p | get "grafana.adminPassword" $v.otomi.adminPassword }}
+  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   service:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}

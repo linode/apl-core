@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $a := $v.charts | get "cluster-autoscaler" dict }}
+{{- $a := $v.apps | get "cluster-autoscaler" dict }}
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 image:

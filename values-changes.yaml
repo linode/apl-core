@@ -4,8 +4,16 @@ changes:
     deletions:
       - charts.istio.addonComponents
     renamings:
-      env/charts/gatekeeper-operator.yaml: env/charts/gatekeeper.yaml
-      env/charts/ingress-nginx.yaml: env/charts/ingress-nginx.yaml
-    locations:
-      charts.gatekeeper-operator: charts.gatekeeper
-      charts.ingress-nginx: charts.ingress-nginx
+      - env/charts: env/apps
+      - env/apps/gatekeeper-operator.yaml: env/apps/gatekeeper.yaml
+      - env/apps/nginx-ingress.yaml: env/apps/ingress-nginx.yaml
+      - env/apps/prometheus-operator.yaml: env/apps/prometheus.yaml
+    relocations:
+      - charts: apps
+      - apps.gatekeeper-operator: apps.gatekeeper
+      - apps.nginx-ingress: apps.ingress-nginx
+      - apps.prometheus-operator: apps.prometheus
+      - apps.prometheus.grafana: apps.grafana
+      - apps.prometheus.resources.grafana: apps.grafana.resources
+      - apps.prometheus.alertmanager: apps.alertmanager
+      - apps.prometheus.resources.alertmanager: apps.alertmanager.resources

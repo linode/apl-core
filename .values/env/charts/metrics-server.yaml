@@ -1,3 +1,0 @@
-charts:
-    metrics-server:
-        enabled: true

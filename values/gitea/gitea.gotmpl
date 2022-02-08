@@ -1,10 +1,10 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
-{{- $g := $v.charts.gitea }}
-{{- $k := $v.charts.keycloak }}
+{{- $g := $v.apps.gitea }}
+{{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $v._derived.oidcBaseUrl }}
-{{- $cm := $v.charts | get "cert-manager" }}
+{{- $cm := $v.apps | get "cert-manager" }}
 
 nameOverride: gitea
 fullnameOverride: gitea

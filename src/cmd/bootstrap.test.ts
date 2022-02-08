@@ -16,7 +16,7 @@ const { terminal } = stubs
 
 describe('Bootstrapping values', () => {
   const values = {
-    charts: { 'cert-manager': { issuer: 'custom-ca' } },
+    apps: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
   }
   const secrets = { secret: 'true', deep: { nested: 'secret' } }
@@ -165,7 +165,7 @@ describe('Bootstrapping values', () => {
     it('should create a new key pair when none exist', () => {
       const res = createCustomCA(deps)
       expect(res).toMatchObject({
-        charts: {
+        apps: {
           'cert-manager': {
             customRootCA: 'certpem',
             customRootCAKey: 'keypem',
@@ -207,12 +207,12 @@ describe('Bootstrapping values', () => {
         expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
       })
       it('should not ask to create a CA if issuer is not custom-ca', async () => {
-        deps.loadYaml.mockReturnValue(merge(cloneDeep(values), { charts: { 'cert-manager': { issuer: 'nono' } } }))
+        deps.loadYaml.mockReturnValue(merge(cloneDeep(values), { apps: { 'cert-manager': { issuer: 'nono' } } }))
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
       })
     })
-    describe('processing chart values', () => {
+    describe('processing app values', () => {
       it('should not retrieve values from env dir', async () => {
         await processValues(deps)
         expect(deps.hfValues).toHaveBeenCalledTimes(0)
@@ -235,13 +235,13 @@ describe('Bootstrapping values', () => {
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
-        deps.loadYaml.mockReturnValue({ charts: { 'cert-manager': { issuer: 'custom-ca' } } })
+        deps.loadYaml.mockReturnValue({ apps: { 'cert-manager': { issuer: 'custom-ca' } } })
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalled()
       })
       it('should not re-create a custom ca if issuer is custom-ca or undefined and a CA already exists', async () => {
         deps.loadYaml.mockReturnValue({
-          charts: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
+          apps: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
         })
         await processValues(deps)
         expect(deps.createCustomCA).not.toHaveBeenCalled()

@@ -1,8 +1,8 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
-{{- $cm := $v.charts | get "cert-manager" }}
-{{- $oauth2 := $v.charts | get "oauth2-proxy" }}
-{{- $r := $v.charts | get "oauth2-proxy-redis" }}
+{{- $k := $v.apps.keycloak }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $oauth2 := $v.apps | get "oauth2-proxy" }}
+{{- $r := $v.apps | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 

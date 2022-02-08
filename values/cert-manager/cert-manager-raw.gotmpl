@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}

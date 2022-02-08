@@ -1,0 +1,3 @@
+apps:
+    drone:
+        enabled: true

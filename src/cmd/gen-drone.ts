@@ -38,13 +38,13 @@ const getUrlKey = (receiver) => {
 export const genDrone = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:genDrone`)
   const argv: Arguments = getParsedArgs()
-  const allValues = await hfValues()
-  if (!allValues?.charts?.drone?.enabled) {
+  const allValues = (await hfValues()) as Record<string, any>
+  if (allValues.apps?.drone?.enabled !== undefined && !allValues.apps?.drone?.enabled) {
     return
   }
   const receiver = allValues.alerts?.drone
   const homeReceiver = allValues.home?.drone
-  const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues.apps?.['otomi-api']?.git?.branch ?? 'main'
 
   let webhook
   let webhookHome
@@ -79,8 +79,8 @@ export const genDrone = async (): Promise<void> => {
   const providerHome = allValues.home?.drone
   const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
-  const requestsCpu = allValues.charts.drone.resources.runner.requests.cpu
-  const requestsMem = allValues.charts.drone.resources.runner.requests.memory
+  const requestsCpu = allValues.apps.drone.resources.runner.requests.cpu
+  const requestsMem = allValues.apps.drone.resources.runner.requests.memory
 
   const obj = {
     apiKey,

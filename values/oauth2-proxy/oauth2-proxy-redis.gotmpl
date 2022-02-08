@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $r := $v.charts | get "oauth2-proxy-redis" }}
+{{- $r := $v.apps | get "oauth2-proxy-redis" }}
 
 architecture: {{ $r | get "architecture" "standalone" }}
 auth:

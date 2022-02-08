@@ -13,7 +13,7 @@
 {{- end }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $k := $c.keycloak }}
 type: Job

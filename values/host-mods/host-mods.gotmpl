@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $c := $v.charts | get "host-mods" }}
+{{- $c := $v.apps | get "host-mods" }}
 
 isChart: {{ ne (env "VALUES_INPUT" | default "") "" }}
 

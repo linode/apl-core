@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 {{- $o := $v | get "oidc" dict }}
 {{- $h := $c.harbor }}
 {{- $k := $c.keycloak }}

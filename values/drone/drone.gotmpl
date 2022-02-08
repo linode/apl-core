@@ -1,8 +1,8 @@
 {{- $v := .Values }}
-{{- $d := $v.charts.drone }}
-{{- $oa := $v.charts | get "otomi-api" }}
-{{- $cm := $v.charts | get "cert-manager" }}
-{{- $g := $v.charts | get "gitea" }}
+{{- $d := $v.apps.drone }}
+{{- $oa := $v.apps | get "otomi-api" }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $g := $v.apps | get "gitea" }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" }}
