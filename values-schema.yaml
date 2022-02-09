@@ -490,6 +490,49 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
+  networkPolicy:
+    additionalProperties: false
+    properties:
+      ingressPrivate:
+        title: Ingress traffic inside the cluster
+        description: 'Pods belonging to this service must contain "app: <service name>" label'
+        oneOf:
+          - title: Deny all
+            description: Deny traffic from all teams (including this one)
+            properties:
+              mode:
+                default: denyAll
+                enum:
+                  - denyAll
+          - title: Allow selected
+            properties:
+              mode:
+                default: allowOnly
+                enum:
+                  - allowOnly
+              allow:
+                title: Add team or team with service
+                type: array
+                items:
+                  type: object
+                  properties:
+                    team:
+                      title: Team name
+                      description: 'Allow traffic from a given team'
+                      type: string
+                    service:
+                      title: Service name
+                      description: 'Allow traffic from pods with "app: <some service name>" label'
+                      type: string
+                  required:
+                    - team
+          - title: Allow all
+            description: Allow traffic from all teams
+            properties:
+              mode:
+                default: allowAll
+                enum:
+                  - allowAll
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -866,6 +909,8 @@ definitions:
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
+      networkPolicy:
+        $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
         description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
