@@ -8,9 +8,10 @@ Assumptions/conventions used in this document:
 
 We break the schema (`values-schema.yaml`) in our `otomi-values` when:
 
+- We rename files we depend on
 - We delete props
-- We move properties around
-- We mutate/transform (change property type or value shape)
+- We move props around
+- We mutate a property's type and/or it's value shape
 
 In order to move to another version of `otomi-core` (which might contain some of these changes), we needed a mechanism that migrates the old `otomi-values` to conform to the new schema. So we came up with a simple approach that serves our simple schema.
 
@@ -20,23 +21,26 @@ By comparing the diff between the old and the new schema a developer is able to 
 
 ### Change records
 
-The `values-changes.yaml` file contains records holding information about changes. The order of operations, _in a given change_ is the following:
+The `values-changes.yaml` file contains records holding information about changes. The order of operations, _in any given change record_ is the following:
 
-1. `deletions`
-2. `relocations`
-3. `mutations`
+1. `renamings`
+2. `deletions`
+3. `relocations`
+4. `mutations`
 
-Note that it does not matter in which order these properties are listed, as it always executes it in that order. This is important to understand, as it implies that any changes made in `locations` need to be reflected in the `mutations` stage. So mutations can't reference values that have been relocated in the previous step!
+Note that it does not matter in which order these properties are listed, as changes are always executed in the above order. This is important to understand, as it implies that any changes made in `relocations` need to be reflected in the `mutations` stage. So mutations can't reference yaml paths that have just been relocated in the previous step!
 
 Let's take a look at an example:
 
 ```yaml
 changes:
   - version: 3
+    renamings:
+      - env/base.yaml: env/settings.yaml
     deletions:
       # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
       - charts.bla.someProp
-    locations:
+    relocations:
       # move the key (and value, obviously) at charts.bla.someProp to someNewRootProp.someProp
       - charts.bla.someProp: someNewRootProp.someProp
     mutations:
@@ -50,7 +54,7 @@ E.g. the following migration is incorrect:
 
 ```yaml
 changes:
-  locations:
+  relocations:
     - charts.bla.someProp: someNewRootProp.someProp
   mutations:
     - charts.bla.someProp: printf "v%s"
@@ -60,7 +64,7 @@ changes:
 
 ```yaml
 changes:
-  locations:
+  relocations:
     - charts.bla.someProp: someNewRootProp.someProp
   mutations:
     - someNewRootProp.someProp: printf "v%s"
@@ -84,6 +88,7 @@ version: 3
 charts:
   bla:
     someProp: someValue
+    anotherProp: anotherValue
 ```
 
 ex ante `values-schema.yaml`:
@@ -96,11 +101,13 @@ definitions:
     type: object
     bla:
       type: object
+      anotherProp:
+        type: string
       someProp:
         type: string
 ```
 
-developer modifies `values-schema.yaml`. In order for automation to take place, developer has to modify `values-changes.yaml`.
+Now a developer modifies `values-schema.yaml` to remove `someProp`. In order for automation to take place, the developer has to modify `values-changes.yaml`.
 
 ex post `values-schema.yaml`:
 
@@ -112,9 +119,11 @@ definitions:
     type: object
     bla:
       type: object
+      anotherProp:
+        type: string
 ```
 
-`values-changes.yaml`:
+ex post `values-changes.yaml`:
 
 ```yaml
 changes:
@@ -129,7 +138,8 @@ ex post `otomi-values` (end result)
 ```yaml
 version: 4
 charts:
-  bla: {}
+  bla:
+    anotherProp: anotherValue
 ```
 
-This works the same for `deletions`, `locations` and `mutations`.
+This works the same for `deletions`, `relocations` and `mutations`.

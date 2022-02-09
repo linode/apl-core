@@ -1,6 +1,6 @@
-# Meta-schema validation
+# Schema validation
 
-We validate values with our `values-schema.yaml` JSON Schema. The supported version can always be found on top of the file for easy reference.
+We validate values with our `values-schema.yaml` JSON Schema.
 
 ## Guidelines for describing strings
 
@@ -20,7 +20,7 @@ oauth2-proxy:
          properties:
       cookieSecret:
          type: string
-         description: Cookie secret must be 128 bit base64 encoded string.
+         description: Must be a 128 bit base64 encoded string.
          pattern: ^(?:[A-Za-z0-9+/]{4})\\\*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?\$
 
 ```
