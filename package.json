@@ -133,7 +133,7 @@
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc",
-    "migrate:values": "ENV_DIR=$PWD/.values binzx/otomi migrate && ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate && ENV_DIR=$PWD/tests/kind binzx/otomi migrate",
+    "migrate-values": "ENV_DIR=$PWD/.values binzx/otomi migrate && ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate && ENV_DIR=$PWD/tests/kind binzx/otomi migrate",
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",

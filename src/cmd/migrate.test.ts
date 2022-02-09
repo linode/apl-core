@@ -14,12 +14,12 @@ describe('Upgrading values', () => {
     {
       version: 2,
       deletions: ['some.json.path'],
-      locations: { 'some.json': 'some.bla' },
+      relocations: [{ 'some.json': 'some.bla' }],
     },
     {
       version: 3,
       mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
-      renamings: { 'somefile.yaml': 'newloc.yaml' },
+      renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
   ]
 
@@ -31,8 +31,7 @@ describe('Upgrading values', () => {
   describe('Apply changes to values', () => {
     const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
     const deps = {
-      existsSync: jest.fn().mockReturnValue(true),
-      renameSync: jest.fn(),
+      rename: jest.fn(),
       hfValues: jest.fn().mockReturnValue(mockValues),
       terminal,
       writeValues: jest.fn(),
@@ -43,7 +42,7 @@ describe('Upgrading values', () => {
         version: 3,
         some: { bla: {}, k8sVersion: 'v1.18' },
       })
-      expect(deps.renameSync).toBeCalledWith(`${env.ENV_DIR}/somefile.yaml`, `${env.ENV_DIR}/newloc.yaml`)
+      expect(deps.rename).toBeCalledWith(`${env.ENV_DIR}/somefile.yaml`, `${env.ENV_DIR}/newloc.yaml`)
     })
   })
 })
