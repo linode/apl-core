@@ -24,7 +24,10 @@ teamConfig:
                       ingressPrivate:
                           mode: allowAll
                       egressPublic:
-                          mode: allowAll
+                          allow:
+                              - 185.199.110.153
+                              - redkubes.com
+                              - ae::1
                   type: public
                 - name: hello-auth
                   port: 80

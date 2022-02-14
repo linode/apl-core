@@ -1,0 +1,11 @@
+{{- $v := .Values | merge (dict) }}
+{{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true $v }}
+{{- if $egressFilteringEnabled }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: default
+spec:
+  outboundTrafficPolicy: REGISTRY_ONLY
+{{- end }}
