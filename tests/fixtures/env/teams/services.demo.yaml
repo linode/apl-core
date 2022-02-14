@@ -125,6 +125,7 @@ teamConfig:
                           allow:
                               - domain1.com
                               - domain2.com
+                              - 185.199.110.153
                 - name: service-b
                   type: cluster
                   networkPolicy:

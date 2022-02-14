@@ -3,11 +3,17 @@
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
 {{- if $egressFilteringEnabled }}
+
+{{- $uniqueHosts := list }}
 {{- range $s := $v.services }}
-{{- if not $s.isCore }}
-{{- $hosts := dig "networkPolicy" "egressPublic" "allow" list $s }}
-{{- range $host := $hosts }}
-{{- $serviceName := printf "svc-%s-%s" $s.name (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
+{{- range $host := (dig "networkPolicy" "egressPublic" "allow" (list) $s) }}
+{{- $uniqueHosts = append $uniqueHosts $host }}
+{{- end }} {{/* range */}}
+{{- end }} {{/* range $s := $v.services */}}
+{{- $uniqueHosts = uniq $uniqueHosts }}
+
+{{- range $host := $uniqueHosts }}
+{{- $serviceName := printf "svc-%s" (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
 {{/* check if host is IPv4 or IPv6 address */}}
 {{- $isIp := regexMatch "^([a-f0-9:]+:+)+[a-f0-9]+$|^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$" $host }}
 
@@ -42,8 +48,6 @@ spec:
   location: MESH_EXTERNAL
   resolution: DNS
 {{- end }} {{/* if isIp */}}
-{{- end }} {{/* range $host */}}
-{{- end }} {{/* if not $s.isCore */}}
-{{- end }} {{/* range $s := $v.services */}}
+{{- end }} {{/* range $uniqueHosts */}}
 {{- end }} {{/* if $egressFilteringEnabled */}}
 {{- end }} {{/* if $v.teamId */}}
