@@ -7,5 +7,6 @@ kind: Sidecar
 metadata:
   name: default
 spec:
-  outboundTrafficPolicy: REGISTRY_ONLY
+  outboundTrafficPolicy: 
+    mode: REGISTRY_ONLY
 {{- end }}
