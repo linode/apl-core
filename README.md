@@ -40,6 +40,14 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ### Helm Chart
 
+To install Otomi using the Helm chart, make sure to have a running Kubernetes cluster of version `1.18` up to `1.21` with a node pool with at least **12 vCPU** and **32GB+ RAM** in AWS, Azure, GCP.
+
+For testing and experimentation, we advise to use the following machine/instance types:
+
+- Azure: 3 x DS3_v2 (4 vCPU / 14 GiB RAM)
+- AWS: 3 x t2.xlarge (4 vCPU / 16 GiB RAM)
+- GCP: 3 x e2-highmem-4 (4 vCPU / 32 GiB RAM)
+
 To install `Otomi` with minimal values using the Helm chart, first create a `values.yaml` file with the following values:
 
 ```yaml
