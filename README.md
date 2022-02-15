@@ -196,7 +196,7 @@ If you want to say **thank you** or/and support the active development of `Otomi
 ## Community
 
 - Join the [Otomi Community](https://redkubes.com/community/) for latest Otomi news, technical blogs, and events.
-- Join the [Otomi Slack Channel](https://otomi.slack.com/signup#/domain-signup)
+- Join the [Otomi Slack Channel](https://otomi.slack.com/ssb/redirect#/shared-invite/email)
 
 ## License
 
