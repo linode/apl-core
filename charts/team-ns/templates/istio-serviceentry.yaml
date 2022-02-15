@@ -14,9 +14,8 @@
 
 {{- range $host := $uniqueHosts }}
 {{- $serviceName := printf "svc-%s" (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
-{{/* check if host is IPv4 or IPv6 address */}}
+{{/* check if host is either IPv4 or IPv6 address */}}
 {{- $isIp := regexMatch "^([a-f0-9:]+:+)+[a-f0-9]+$|^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$" $host }}
-
 {{- if $isIp }}
 ---
 apiVersion: networking.istio.io/v1alpha3

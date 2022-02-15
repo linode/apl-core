@@ -24,99 +24,74 @@
 environments:
   default:
     values:
-    - teamConnectivity:
-        - server:
-            namespace: team-a1
-            labels:
-                app: s1
-          clients:
-            - namespace: team-a1
-              labels:
-                app: c1
-            - namespace: team-a2
-              labels:
-                app: c1
-        - server:
-            namespace: team-a1
-            labels:
-                app: s2
-          clients:
-            - namespace: team-a1
-              labels:
-                app: c2
-            - namespace: team-a2
-              labels:
-                app: c2
-        - server:
-            namespace: team-a1
-            labels:
-                app: s3
-          clients:
-            - namespace: team-a1
-              labels:
-                app: c3
-            - namespace: team-a2
-              labels:
-                app: c3
-            - namespace: team-a2
-              labels:
-                app: c3b
-        - server:
-            namespace: team-a1
-            labels:
-                app: s4
-          clients:
-            - namespace: team-a1
-              labels:
-                app: c4
-            - namespace: team-a2
-              labels:
-                app: c4
-        - server:
-            namespace: team-a1
-            labels:
-                app: s5
-          clients:
-            - namespace: team-a1
-              labels:
-                app: c5
-            - namespace: team-a2
-              labels:
-                app: c5
-        # - description: s10 does not any ingress except ingress from specific platform apps
-        #   server:
+    - teamConnectivity: []
+        # - server:
         #     namespace: team-a1
         #     labels:
-        #         app: s10
+        #         app: s1
         #   clients:
-        #     - namespace: istio-system
+        #     - namespace: team-a1
         #       labels:
-        #         app: ingressgateway
-        #     - namespace: istio-system
+        #         app: c1
+        #     - namespace: team-a2
         #       labels:
-        #         app: istiod
-        #     - namespace: monitoring
+        #         app: c1
+        # - server:
+        #     namespace: team-a1
+        #     labels:
+        #         app: s2
+        #   clients:
+        #     - namespace: team-a1
         #       labels:
-        #         app: prometheus
-        #     - namespace: shared
+        #         app: c2
+        #     - namespace: team-a2
         #       labels:
-        #         app: any
-
-        # - description: s3 allows ingress from any pod from team-a2 namespace
-        #   server:
+        #         app: c2
+        # - server:
         #     namespace: team-a1
         #     labels:
         #         app: s3
         #   clients:
+        #     - namespace: team-a1
+        #       labels:
+        #         app: c3
         #     - namespace: team-a2
         #       labels:
-        #         app: allowed1
+        #         app: c3
         #     - namespace: team-a2
         #       labels:
-        #         app: allowed2
+        #         app: c3b
+        # - server:
+        #     namespace: team-a1
+        #     labels:
+        #         app: s4
+        #   clients:
+        #     - namespace: team-a1
+        #       labels:
+        #         app: c4
         #     - namespace: team-a2
         #       labels:
-        #         app: denied1
+        #         app: c4
+        # - server:
+        #     namespace: team-a1
+        #     labels:
+        #         app: s5
+        #   clients:
+        #     - namespace: team-a1
+        #       labels:
+        #         app: c5
+        #     - namespace: team-a2
+        #       labels:
+        #         app: c5
+      egressPublic:
+        - namespace: team-a1
+          labels:
+            app: ce1
+          hosts:
+          - https://otomi.io
+          - https://116.203.255.68
+          - http://httpbin.org/headers
+
 releases:
   - name: inter-team-connectivity
     installed: true
