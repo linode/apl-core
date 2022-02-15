@@ -12,15 +12,6 @@ spec:
   podSelector: {}
   policyTypes:
   - Ingress
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: NetworkPolicy
-# metadata:
-#   name: default-egress-deny
-# spec:
-#   podSelector: {}
-#   policyTypes:
-#   - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -36,16 +27,13 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: istio-system
-          podSelector:
-            matchLabels:
-              app: ingressgateway
     - from:
         - namespaceSelector:
             matchLabels:
-              name: istio-system
-          podSelector:
-            matchLabels:
-              app: istiod
+              # FIXME: it seems that knative operator wipes out 'name' label, 
+              # we can still rely on automatic k8s labeling but it has some prerequsites: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#automatic-labelling
+              # name: knative-serving
+              kubernetes.io/metadata.name: knative-serving
     - from:
         - namespaceSelector:
             matchLabels:
@@ -57,66 +45,7 @@ spec:
     #     - namespaceSelector:
     #         matchLabels:
     #           name: shared
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: NetworkPolicy
-# metadata:
-#   name: default-egress-platform
-# spec:
-#   # Match all Pods in this namespace
-#   podSelector: {}
-#   policyTypes:
-#     - Egress
-#   egress:
-#     - to:
-#         # Allow egress to DNS
-#         - namespaceSelector: {}
-#           podSelector: {}
-#       ports:
-#         - port: 53
-#           protocol: UDP
-#         - port: 53
-#           protocol: TCP
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               name: istio-system
-#           podSelector:
-#             matchLabels:
-#               app: ingressgateway
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               name: istio-system
-#           podSelector:
-#             matchLabels:
-#               app: istiod
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               name: monitoring
-#           podSelector:
-#             matchLabels:
-#               app: prometheus
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               name: shared
 
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: NetworkPolicy
-# metadata:
-#   name: default-egress-teams
-# spec:
-#   podSelector: {}
-#   policyTypes:
-#     - Egress
-#   egress:
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               type: team
 {{- range $s := $v.services }}
 {{- if not $s.isCore }}
 {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "denyAll" $s }}
@@ -129,7 +58,12 @@ metadata:
 spec:
   podSelector:
     matchLabels:
+      {{- if hasKey $s "ksvc" }}
+      # The app label cannot be used because Knative appends revision number to the service
+      serving.knative.dev/service: {{ $s.name }}
+      {{- else }}
       app: {{ $s.name }}
+      {{- end }}
   policyTypes:
     - Ingress
   ingress:
@@ -139,7 +73,6 @@ spec:
               type: team
 {{- else if eq $ingressPrivateMode "allowOnly" }}
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -147,7 +80,12 @@ metadata:
 spec:
   podSelector:
     matchLabels:
+      {{- if hasKey $s "ksvc" }}
+      # The app label cannot be used because Knative appends revision number to its value
+      serving.knative.dev/service: {{ $s.name }}
+      {{- else }}
       app: {{ $s.name }}
+      {{- end }}
   policyTypes:
     - Ingress
 {{- with $s.networkPolicy.ingressPrivate.allow }}
@@ -157,38 +95,24 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: team-{{ .team }}
-          {{- if hasKey . "app" }}
+          {{- if hasKey . "service" }}
           podSelector:
             matchLabels:
-              app: {{ .app }}
+              app: {{ .service }}
           {{- end }} {{/* hasKey */}}
+        {{- if hasKey . "service" }}
+        # An extra rule for Pods that are spawn by knative-serving
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              serving.knative.dev/service: {{ .service}}
+        {{- end }} {{/* hasKey */}}
 {{- end }} {{/* range . */}}
 {{- end }} {{/* with ingressPrivate.allow */}}
 {{- end }} {{/* if ingressPrivateMode */}}
-
-{{- $egressPublicMode:= dig "networkPolicy" "egressPublic" "mode" "denyAll" $s }}
-{{- if or (eq $egressPublicMode "allowAll") (eq $egressPublicMode "allowOnly") }}
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: NetworkPolicy
-# metadata:
-#   name: {{ $s.name }}-egress-public
-# spec:
-#   podSelector:
-#     matchLabels:
-#       app: {{ $s.name }}
-#   policyTypes:
-#     - Egress
-#   egress:
-#     - to:
-#         - namespaceSelector:
-#             matchLabels:
-#               name: istio-system
-#           podSelector:
-#             matchLabels:
-#               istio: egressgateway
-{{- end }} {{/* if egressPublicMode */}}
 {{- end }} {{/* not $s.isCore */}}
 {{- end }} {{/* range services */}}
-{{- end }} {{/* if $v.networkPolicy.ingressPrivate */}}
+{{- end }} {{/* if "networkPolicy" "ingressPrivate" true $v */}}
 {{- end }} {{/* if $v.teamId */}}

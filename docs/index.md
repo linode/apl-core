@@ -1,9 +1,10 @@
 # Otomi Developer Docs
 
-Next to the Architecture Design Docs in the `adr/` folder we offer the following documention:
+Choose your pick:
 
-- [Architecture Overview](./architecture.md)
+- [Setting up your environment](./setup.md)
+- Architecture [Overview](./architecture.md) and Design Records in the `adr/` folder
 - [Otomi's OPA Policies framework](./policies.md)
-- [Schema validation](./meta-schema-validation.md)
+- [Schema validation](./schema-validation.md)
+- [Migrating values](./migrating-values.md)
 - [Running tasks](./tasks.md)
-- [Automations](./automations.md)
