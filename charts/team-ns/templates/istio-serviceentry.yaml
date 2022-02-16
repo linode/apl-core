@@ -6,7 +6,7 @@
 
 {{- $uniqueHosts := list }}
 {{- range $s := $v.services }}
-{{- range $host := (dig "networkPolicy" "egressPublic" "allow" (list) $s) }}
+{{- range $host := (dig "networkPolicy" "egressPublic" (list) $s) }}
 {{- $uniqueHosts = append $uniqueHosts $host }}
 {{- end }} {{/* range */}}
 {{- end }} {{/* range $s := $v.services */}}

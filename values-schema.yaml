@@ -494,7 +494,7 @@ definitions:
     additionalProperties: false
     properties:
       ingressPrivate:
-        title: Ingress traffic inside the cluster
+        title: Internal ingress filtering
         description: 'Pods belonging to this service must contain "app: <service name>" label'
         oneOf:
           - title: Deny all
@@ -534,31 +534,13 @@ definitions:
                 enum:
                   - allowAll
       egressPublic:
-        title: Egress outside the cluster
-        oneOf:
-          - title: Deny all
-            properties:
-              mode:
-                default: denyAll
-                enum:
-                  - denyAll
-          - title: Allow all
-            properties:
-              mode:
-                default: allowAll
-                enum:
-                  - allowAll
-          - title: Allow only selected
-            properties:
-              mode:
-                default: allowOnly
-                enum:
-                  - allowOnly
-              allow:
-                title: FQDN or public IP addresses
-                type: array
-                items:
-                  type: string
+        title: External egress filtering
+        description: Trusted domains this service can access
+        type: array
+        items:
+          title: Either FQDN or public IP address
+          type: string
+
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -980,7 +962,6 @@ definitions:
     required:
       - name
       - type
-      - networkPolicy
   size:
     description: Disk size. Valid units are E|P|T|G|Ti|Gi.
     examples:
