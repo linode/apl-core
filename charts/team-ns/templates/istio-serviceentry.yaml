@@ -24,13 +24,17 @@ metadata:
   name: {{ $serviceName }}
 spec:
   hosts:
-    - {{ $host }}
+    - {{ $serviceName }}  # not used but still mandatory
   addresses:
-    - {{ $host }}
+    - {{ $host | quote }}
+  ports:
+  - number: 443
+    name: https
+    protocol: TLS
   resolution: STATIC
   location: MESH_EXTERNAL
   endpoints:
-    - address: {{ $host }}
+    - address: {{ $host | quote }}
   exportTo:
     - "."
 {{- else }}
@@ -42,6 +46,10 @@ metadata:
 spec:
   hosts:
   - {{ $host }}
+  ports:
+  - number: 443
+    name: https
+    protocol: TLS
   exportTo:
   - "."
   location: MESH_EXTERNAL

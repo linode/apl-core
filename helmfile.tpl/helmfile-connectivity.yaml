@@ -140,7 +140,14 @@ environments:
           hosts:
           - https://otomi.io
           - https://116.203.255.68
-          - http://httpbin.org/headersg+ 
+          - https://httpbin.org/headers
+        - namespace: team-a2
+          labels:
+            app: ce1
+          hosts:
+          - https://otomi.io
+          - https://116.203.255.68
+          - https://httpbin.org/headers
 releases:
   - name: inter-team-connectivity
     installed: true
