@@ -165,6 +165,7 @@ resources:
           - '10'
           - --retry-delay
           - '5'
+          - --retry-connrefuse
           - -w 
           - 'URL=%{url_effective} HttpCode=%{http_code}\n'
           - http://{{ $serverUrl }}:8080/
