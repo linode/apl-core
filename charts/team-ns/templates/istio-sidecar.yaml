@@ -11,4 +11,4 @@ spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
 {{- end }} {{/* if not (eq $v.teamId "admin") */}}
-{{- end }} {{/* if $egressFilteringEnabled* /}}
+{{- end }} {{/* if $egressFilteringEnabled */}}
