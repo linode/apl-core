@@ -48,6 +48,7 @@
     "somesecretvalue",
     "spotinst",
     "westeurope",
+    "xlarge",
     "xsrf"
   ],
   "language": "en",
@@ -116,6 +117,7 @@
     "rbac",
     "repos",
     "redkubes",
+    "renamings",
     "runbook",
     "selinux",
     "semver",
