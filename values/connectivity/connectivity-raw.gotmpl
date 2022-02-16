@@ -115,69 +115,6 @@ resources:
 {{- end }} {{/* range clients */}}
 {{- end }} {{/* range */}}
 
-{{- range $client:=$item.clients }}
-{{- $clientName:= printf "client-%s-%s-to-%s-%s" $client.labels.app $client.namespace $server.labels.app $server.namespace}}
-- apiVersion: v1
-  kind: Pod
-  metadata:
-    labels: {{- $client.labels | toYaml | nindent 6 }}
-      module: connectivity
-      type: client
-    name: {{ $clientName }}
-    namespace: {{ $client.namespace}}
-  spec:
-    hostNetwork: false
-    subdomain: connectivity
-    restartPolicy: Never
-    containers:
-      - name: server
-        args:
-          - -listen=:8080
-          - -text="Connected"
-        env:
-          - name: PORT
-            value: '8080'
-        ports:
-          - containerPort: 8080
-        resources:
-          limits:
-            cpu: 50m
-            memory: 64M
-        image: hashicorp/http-echo
-        imagePullPolicy: IfNotPresent
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8080
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8080
-      - name: client
-        args:
-          - -sS
-          - --fail
-          - --connect-timeout
-          - '5'
-          - -o
-          - /dev/null
-          - --retry
-          - '10'
-          - --retry-delay
-          - '5'
-          - --retry-connrefuse
-          - -w 
-          - 'URL=%{url_effective} HttpCode=%{http_code}\n'
-          - http://{{ $serverUrl }}:8080/
-        resources:
-          limits:
-            cpu: 50m
-            memory: 64M
-        image: curlimages/curl:7.80.0
-        imagePullPolicy: IfNotPresent
-{{- end }} {{/* range clients */}}
-{{- end }} {{/* range */}}
-
 {{- range $client:=$v.egressPublic }}
 {{- range $host:=$client.hosts }}
 {{- $clientName := printf "client-%s-%s-%s" $client.labels.app $client.namespace ($host | replace "://" "-" | replace "/" "-" | replace "." "-" | replace "::" "-" | replace ":" "-") }}
@@ -221,6 +158,7 @@ resources:
       - name: client
         args:
           - -sS
+          - --insecure
           - --fail
           - --connect-timeout
           - '5'
@@ -230,6 +168,7 @@ resources:
           - '10'
           - --retry-delay
           - '5'
+          - --retry-connrefused
           - -w 
           - 'URL=%{url_effective} HttpCode=%{http_code}\n'
           - {{$host}}
