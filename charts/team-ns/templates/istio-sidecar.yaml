@@ -1,6 +1,7 @@
 {{- $v := .Values | merge (dict) }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true $v }}
 {{- if $egressFilteringEnabled }}
+{{- if not (eq $v.teamId "admin") }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
@@ -9,4 +10,5 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
-{{- end }}
+{{- end }} {{/* if not (eq $v.teamId "admin") */}}
+{{- end }} {{/* if $egressFilteringEnabled* /}}
