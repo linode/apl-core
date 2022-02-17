@@ -4,6 +4,3 @@ charts:
         git:
             localPath: /tmp/otomi-values
             repoUrl: github.com/redkubes/otomi-values-demo.git
-        image:
-            pullPolicy: Always
-            tag: latest
