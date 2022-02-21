@@ -126,6 +126,7 @@
     "sysctls",
     "testmode",
     "textconv",
-    "untrusted"
+    "untrusted",
+    "xlarge"
   ]
 }

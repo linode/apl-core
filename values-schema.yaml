@@ -1934,8 +1934,6 @@ properties:
                 $ref: '#/definitions/repoUrl'
               user:
                 type: string
-          image:
-            $ref: '#/definitions/imageSimple'
           resources:
             additionalProperties: false
             properties:
@@ -1948,8 +1946,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          image:
-            $ref: '#/definitions/imageSimple'
         allOf:
           - anyOf:
               - not:
