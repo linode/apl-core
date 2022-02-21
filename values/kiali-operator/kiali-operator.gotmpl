@@ -78,11 +78,11 @@ cr:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
           type: none
         enabled: true
-        in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686
+        in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686/jaeger/
         is_core: false
         namespace_selector: true
         url: https://{{ $appsDomain }}/jaeger/
-        use_grpc: true
+        use_grpc: false #use different port if use_grpc=true
         whitelist_istio_system: ["istio-ingressgateway-public","istio-ingressgateway-private","istio-egressgateway"]
     istio_component_namespaces:
       prometheus: monitoring
