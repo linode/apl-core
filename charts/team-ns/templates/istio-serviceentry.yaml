@@ -19,7 +19,7 @@ metadata:
   name: {{ $serviceName }}
 spec:
   hosts:
-    - {{ $serviceName }}  # not used but still mandatory
+    - {{ $hostName }}  # not used but still mandatory
   addresses:
     - {{ $host | quote }}
 {{- range $port := $entry.ports }}
