@@ -56,22 +56,5 @@ spec:
   resolution: DNS
 {{- end }} {{/* if isIp */}}
 {{- end }} {{/* range $uniqueHosts */}}
-
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: platform-po-grafana
-spec:
-  hosts:
-  # Grafana connecting to https://grafana.com/api/plugins/
-  - grafana.com
-  ports:
-  - number: 443
-    name: https
-    protocol: TLS
-  exportTo:
-  - "."
-  location: MESH_EXTERNAL
-  resolution: DNS
 {{- end }} {{/* if $egressFilteringEnabled */}}
 {{- end }} {{/* if $v.teamId */}}
