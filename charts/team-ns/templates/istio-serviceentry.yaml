@@ -3,17 +3,12 @@
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
 {{- if $egressFilteringEnabled }}
-
-{{- $uniqueHosts := list }}
 {{- range $s := $v.services }}
-{{- range $host := (dig "networkPolicy" "egressPublic" (list) $s) }}
-{{- $uniqueHosts = append $uniqueHosts $host }}
-{{- end }} {{/* range */}}
-{{- end }} {{/* range $s := $v.services */}}
-{{- $uniqueHosts = uniq $uniqueHosts }}
-
-{{- range $host := $uniqueHosts }}
-{{- $serviceName := printf "svc-%s" (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
+{{- range $entry := (dig "networkPolicy" "egressPublic" (list) $s) }}
+{{- $host := $entry.domain }}
+{{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
+{{/* Service entry names need to globally unique */}}
+{{- $serviceName := printf "%s-%s-%s" $v.teamId $s.name $hostName }}
 {{/* check if host is either IPv4 or IPv6 address */}}
 {{- $isIp := regexMatch "^([a-f0-9:]+:+)+[a-f0-9]+$|^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$" $host }}
 {{- if $isIp }}
@@ -27,10 +22,12 @@ spec:
     - {{ $serviceName }}  # not used but still mandatory
   addresses:
     - {{ $host | quote }}
+{{- range $port := $entry.ports }}
   ports:
-  - number: 443
-    name: https
-    protocol: TLS
+  - number: {{ $port.number }}
+    name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
+    protocol: {{ $port.protocol }}
+{{- end }} {{/* range $port := $entry */}}
   resolution: STATIC
   location: MESH_EXTERNAL
   endpoints:
@@ -46,15 +43,18 @@ metadata:
 spec:
   hosts:
   - {{ $host }}
+{{- range $port := $entry.ports }}
   ports:
-  - number: 443
-    name: https
-    protocol: TLS
+  - number: {{ $port.number }}
+    name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
+    protocol: {{ $port.protocol }}
+{{- end }} {{/* range $port := $entry */}}
   exportTo:
   - "."
   location: MESH_EXTERNAL
   resolution: DNS
 {{- end }} {{/* if isIp */}}
-{{- end }} {{/* range $uniqueHosts */}}
+{{- end }} {{/* range $entry */}}
+{{- end }} {{/* range $s */}}
 {{- end }} {{/* if $egressFilteringEnabled */}}
 {{- end }} {{/* if $v.teamId */}}

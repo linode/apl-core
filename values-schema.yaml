@@ -298,7 +298,7 @@ definitions:
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
   domain:
-    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+    pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
   droneGit:
     properties:
@@ -538,8 +538,33 @@ definitions:
         description: Trusted domains this service can access
         type: array
         items:
-          title: Either FQDN or public IP address
-          type: string
+          type: object
+          properties:
+            host:
+              title: FQDN or IP address
+              $ref: '#/definitions/domain'
+            ports:
+              type: array
+              items:
+                properties:
+                  number:
+                    title: Port number
+                    type: integer
+                    minimum: 1
+                    maximum: 65535
+                  protocol:
+                    title: Protocol
+                    type: string
+                    enum: [HTTPS, HTTP, TCP]
+                    default: HTTPS
+                required:
+                  - number
+                  - protocol
+                minItems: 1
+                uniqueItems: true
+              default:
+                - number: 443
+                  protocol: HTTPS
 
   podSecurityContext:
     allOf:

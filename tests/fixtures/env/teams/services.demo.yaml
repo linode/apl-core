@@ -23,10 +23,6 @@ teamConfig:
                   networkPolicy:
                       ingressPrivate:
                           mode: allowAll
-                      egressPublic:
-                          - 185.199.110.153
-                          - redkubes.com
-                          - ae::1
                   type: public
                 - name: hello-auth
                   port: 80
@@ -117,9 +113,22 @@ teamConfig:
                               - team: team2
                                 service: service-x
                       egressPublic:
-                          - domain1.com
-                          - domain2.com
-                          - 185.199.110.153
+                          - domain: domain1.com
+                            ports:
+                                - protocol: TCP
+                                  number: 8443
+                          - domain: domain2.com
+                            ports:
+                                - protocol: HTTPS
+                                  number: 443
+                          - domain: 185.199.110.153
+                            ports:
+                                - protocol: TCP
+                                  number: 443
+                          - domain: ae::1
+                            ports:
+                                - protocol: TCP
+                                  number: 443
                 - name: service-b
                   type: cluster
                   networkPolicy:
