@@ -1,6 +1,3 @@
 charts:
     otomi-console:
         _rawValues: {}
-        image:
-            pullPolicy: Always
-            tag: latest
