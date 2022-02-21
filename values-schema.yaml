@@ -1062,7 +1062,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [ingress, networkPolicy.ingressPrivate, networkPolicy.egressPublic]
+          enum: [ingress, networkPolicy]
         uniqueItems: true
       Team:
         title: Team
