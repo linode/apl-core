@@ -71,9 +71,8 @@ cr:
         cache_duration: 10
         cache_enabled: true
         cache_expiration: 300
-        in_cluster_url: http://po-prometheus.monitoring:9090
         is_core: false
-        url: https://{{ $appsDomain }}/prometheus/
+        url: http://po-prometheus.monitoring:9090/
       tracing:
         auth:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
