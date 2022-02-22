@@ -40,6 +40,12 @@ releases:
     labels:
       pkg: keycloak
     <<: *default
+  - name: keycloak-artifacts
+    installed: {{ $c | get "keycloak.enabled" }}
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+    <<: *raw
   - name: vault-operator-artifacts
     installed: {{ $c | get "vault.enabled" }}
     namespace: vault
