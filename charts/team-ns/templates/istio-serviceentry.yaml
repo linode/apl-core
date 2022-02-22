@@ -4,6 +4,7 @@
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
 {{- if $egressFilteringEnabled }}
 {{- range $s := $v.services }}
+{{- if not $s.isCore }}
 {{- range $entry := (dig "networkPolicy" "egressPublic" (list) $s) }}
 {{- $host := $entry.domain }}
 {{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
@@ -55,6 +56,7 @@ spec:
   resolution: DNS
 {{- end }} {{/* if isIp */}}
 {{- end }} {{/* range $entry */}}
+{{- end }} {{/* if not $s.isCore */}}
 {{- end }} {{/* range $s */}}
 {{- end }} {{/* if $egressFilteringEnabled */}}
 {{- end }} {{/* if $v.teamId */}}
