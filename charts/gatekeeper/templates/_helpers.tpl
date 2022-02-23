@@ -1,3 +1,4 @@
+
 {{/*
 Expand the name of the chart.
 */}}
@@ -31,14 +32,10 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Common labels
+Adds additional pod labels to the common ones
 */}}
-{{- define "gatekeeper.labels" -}}
-app.kubernetes.io/name: {{ include "gatekeeper.name" . }}
-helm.sh/chart: {{ include "gatekeeper.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- define "gatekeeper.podLabels" -}}
+{{- if .Values.podLabels }}
+{{- toYaml .Values.podLabels | nindent 8 }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}

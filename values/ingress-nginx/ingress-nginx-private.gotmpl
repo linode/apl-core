@@ -5,7 +5,7 @@ controller:
   ingressClass: nginx-private
   resources:
     {{- with $n | get "private.resources" nil  }}
-      {{- . | toYaml | nindent 4 }}
+      {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
         cpu: 2000m
@@ -28,7 +28,7 @@ controller:
         {{- end }}
       {{- end }}
       {{- with $n | get "private.service.annotations" nil }}
-      {{ . | toYaml | indent 6 }}
+      {{ toYaml . | indent 6 }}
       {{- end }}
     {{- end }}
   publishService:

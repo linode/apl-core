@@ -77,7 +77,7 @@ if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version
   # When working in new branch, docker image doesn't exist before first commit/push
   # So need to fall back to working version
   [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
-  echo "Docker doesn't have otomi/core:${otomi_version_used}"
+  echo "Registry doesn't have otomi/core:${otomi_version_used}"
   echo "Falling back to otomi/core:${otomi_version}"
   otomi_version_used=$otomi_version
 fi

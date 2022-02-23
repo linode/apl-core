@@ -5,29 +5,21 @@
   "[js]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[md]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[shell]": {
+  "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
       "source.organizeImports": true
     },
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "[yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  "cSpell.diagnosticLevel": "Hint",
   "cSpell.enabled": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": true
   },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
   "eslint.validate": ["javascript", "typescript"],
@@ -52,11 +44,9 @@
   "jest.jestCommandLine": "npm run test:ts --",
   "opa.roots": ["${workspaceFolder}/policies"],
   "prettier.enable": true,
-  "python.pythonPath": "/usr/local/bin/python3",
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
   "shellformat.flag": "-i 2 -ci",
   "sops.enabled": false,
-  "standard.enable": false,
   "yaml.schemas": {
     ".vscode/values-schema.yaml": "**/env/*.yaml",
     "https://json-schema.org/draft-07/schema": "values-schema.yaml"

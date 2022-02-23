@@ -40,6 +40,18 @@ environments:
             enabled: false
           httpbin:
             enabled: false
+          ingress-nginx:
+            enabled: true
+            autoscaling:
+              enabled: true
+              minReplicas: 1
+              maxReplicas: 10
+            private:
+              enabled: false
+              autoscaling:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 10
           istio:
             autoscaling:
               pilot:
@@ -67,15 +79,6 @@ environments:
           kubernetes-external-secrets:
             enabled: false
           loki: {}
-          ingress-nginx:
-            autoscaling:
-              minReplicas: 1
-              maxReplicas: 10
-            private:
-              enabled: false
-              autoscaling:
-                minReplicas: 1
-                maxReplicas: 6
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}

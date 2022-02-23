@@ -1,42 +1,49 @@
 
 {{- $v := .Values }}
-{{- $gk := $v.apps | get "gatekeeper" }}
+{{- $g := $v.apps | get "gatekeeper" }}
 
 image:
   repository: openpolicyagent/gatekeeper
-  release: v3.4.0
-  pullPolicy: IfNotPresent
+  release: {{ $g | get "image.tag" "v3.7.1" }}
+  pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   {{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
 
-replicas: {{ $gk | get "replicas" }} 
+replicas: {{ $g | get "replicas" }} 
 
-emitAuditEvents:  {{ $gk | get "emitAuditEvents" false }} 
-emitAdmissionEvents: {{ $gk | get "emitAdmissionEvents" false }}  
-constraintViolationsLimit: {{ $gk | get "constraintViolationsLimit" 20 }}  
-auditInterval: {{ $gk | get "auditInterval" 60 }}  
-logLevel: {{ $gk | get "logLevel" "INFO" }}  
-untrustedCA: {{ $v._derived.untrustedCA }}
+emitAuditEvents:  {{ $g | get "emitAuditEvents" }} 
+emitAdmissionEvents: {{ $g | get "emitAdmissionEvents" }}  
+constraintViolationsLimit: {{ $g | get "constraintViolationsLimit" }}
+auditMatchKindOnly: true
+auditInterval: {{ $g | get "auditInterval" 60 }}  
+logLevel: {{ $g | get "logLevel" "INFO" }}  
+
+auditFromCache: {{ $g | get "auditFromCache" }}
+disableValidatingWebhook: {{ $g | get "disableValidatingWebhook" }}
 
 audit:
   resources:
+    {{- with $g | get "resources.audit" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
-      cpu: 1500m
+      cpu: 1000m
       memory: 512Mi
     requests:
-      cpu: 750m
-      memory: 150Mi
+      cpu: 100m
+      memory: 256Mi
+    {{- end }}
 controllerManager:
   resources:
+    {{- with $g | get "resources.controller" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
-      cpu: 500m
+      cpu: 1000m
       memory: 512Mi
     requests:
-      cpu: 200m
+      cpu: 100m
       memory: 256Mi
-
-# enable data sync
-auditFromCache: {{ $gk | get "auditFromCache" }}
-disableValidatingWebhook: {{ $gk | get "disableValidatingWebhook" }}
+    {{- end }}

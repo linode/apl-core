@@ -1,13 +1,13 @@
 {{- $v := .Values }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $tc := $v.teamConfig }}
-{{- $vault := $v.apps.vault }}
+{{- $vt := $v.apps.vault }}
 {{- $k := $v.apps.keycloak }}
-{{- $seal := $vault | get "seal"  (dict "type" "default") }}
+{{- $seal := $vt | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}
 {{- $vaultVersion := "1.6.1" }}
-{{- $bankVaultsVersion := "1.14.4" }}
+{{- $bankVaultsVersion := $vt | get "image.tag" "1.14.4" }}
 
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
@@ -30,12 +30,16 @@ resources:
         policy.otomi.io/ignore: "banned-image-tags,psp-capabilities,psp-allowed-users"
       resources:
         vault:
+          {{- with $vt | get "resources" nil }}
+            {{- toYaml . | nindent 6 }}
+          {{- else }}
           limits:
             cpu: "1"
             memory: 512Mi
           requests:
             cpu: 500m
             memory: 256Mi
+          {{- end }}
       vaultPodSpec:
         securityContext:
           runAsNonRoot: false
@@ -45,7 +49,7 @@ resources:
       istioEnabled: true
       vaultEnvsConfig:
         - name: VAULT_LOG_LEVEL
-          value: {{ $vault | get "logLevel" "info" }}
+          value: {{ $vt | get "logLevel" "info" }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
 
@@ -60,6 +64,9 @@ resources:
       # Vault Pods , Services and TLS Secret labels
 
       vaultConfigurerPodSpec:
+        containers:
+          items:
+
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -114,15 +121,15 @@ resources:
       # See https://www.vaultproject.io/docs/configuration/ for more information.
       config:
         storage:
-          {{- if $vault | get "storage" nil }}
-            {{- $vault.storage | toYaml  | nindent 12 }}
+          {{- if $vt | get "storage" nil }}
+            {{- $vt.storage | toYaml  | nindent 12 }}
           {{- else }}
           file:
             path: "${ .Env.VAULT_STORAGE_FILE }" # An example how Vault config environment interpolation can be used
           {{- end }}  
 
         # https://www.vaultproject.io/docs/configuration/seal
-        {{- with $vault | get "seal" nil }}
+        {{- with $vt | get "seal" nil }}
         seal: {{- toYaml $seal | nindent 10 }}
         {{- end }}
         listener:

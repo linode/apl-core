@@ -1,4 +1,4 @@
-{{- $hookUrl := print "https://gatekeeper-webhook-service.gatekeeper-system:443" }}
+{{- $hookUrl := printf "https://gatekeeper-webhook-service.%s:443" .Release.Namespace }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -20,10 +20,15 @@ spec:
         app: {{ template "gatekeeper.name" . }}
         release: {{ .Release.Name }}
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
+      {{- if .Values.postInstall.labelNamespace.image.pullSecrets }}
+      imagePullSecrets:
+      {{- .Values.postInstall.labelNamespace.image.pullSecrets | toYaml | nindent 12 }}
+      {{- end }}
       containers:
         - name: postinstall
-          image: badouralix/curl-http2:alpine
+          image: "{{ .Values.postInstall.labelNamespace.image.repository }}:{{ .Values.postInstall.labelNamespace.image.tag }}"
+          imagePullPolicy: {{ .Values.postInstall.labelNamespace.image.pullPolicy }}
           command:
             - sh
             - -c
@@ -43,6 +48,13 @@ spec:
               cpu: 10m
               memory: 16Mi
           securityContext:
-            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - all
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
 
 

@@ -90,6 +90,12 @@ cr:
       grafana: monitoring
       jaeger: jaeger
     istio_namespace: istio-system
+    kiali_feature_flags:
+      certificates_information_indicators:
+        enabled: true
+        secrets:
+        - cacerts
+        - istio-ca-secret
     server:
       web_root: /kiali
       web_fqdn: {{ $appsDomain }}

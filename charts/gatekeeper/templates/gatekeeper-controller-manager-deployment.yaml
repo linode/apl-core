@@ -10,7 +10,7 @@ metadata:
     heritage: '{{ .Release.Service }}'
     release: '{{ .Release.Name }}'
   name: gatekeeper-controller-manager
-  namespace: gatekeeper-system
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: {{ .Values.replicas }}
   selector:
@@ -24,9 +24,10 @@ spec:
       release: '{{ .Release.Name }}'
   template:
     metadata:
-      annotations: 
-{{- toYaml .Values.podAnnotations | trim | nindent 8 }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | trim | nindent 8 }}
       labels:
+{{- include "gatekeeper.podLabels" . }}
         app: '{{ template "gatekeeper.name" . }}'
         chart: '{{ template "gatekeeper.name" . }}'
         control-plane: controller-manager
@@ -35,15 +36,34 @@ spec:
         heritage: '{{ .Release.Service }}'
         release: '{{ .Release.Name }}'
     spec:
+      affinity:
+        {{- toYaml .Values.controllerManager.affinity | nindent 8 }}
       automountServiceAccountToken: true
       containers:
       - args:
-        - --port=8443
+        - --port={{ .Values.controllerManager.port }}
+        - --health-addr=:{{ .Values.controllerManager.healthPort }}
+        - --prometheus-port={{ .Values.controllerManager.metricsPort }}
         - --logtostderr
+        - --log-denies={{ .Values.logDenies }}
         - --emit-admission-events={{ .Values.emitAdmissionEvents }}
         - --log-level={{ .Values.logLevel }}
-        - --exempt-namespace=gatekeeper-system
+        - --exempt-namespace={{ .Release.Namespace }}
         - --operation=webhook
+        - --enable-external-data={{ .Values.enableExternalData }}
+        {{ if not .Values.disableMutation}}- --operation=mutation-webhook{{- end }}
+        
+        {{- range .Values.disabledBuiltins}}
+        - --disable-opa-builtin={{ . }}
+        {{- end }}
+        
+        {{- range .Values.controllerManager.exemptNamespaces}}
+        - --exempt-namespace={{ . }}
+        {{- end }}
+        
+        {{- range .Values.controllerManager.exemptNamespacePrefixes}}
+        - --exempt-namespace-prefix={{ . }}
+        {{- end }}
         command:
         - /manager
         env:
@@ -61,29 +81,30 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 9090
+            port: {{ .Values.controllerManager.healthPort }}
         name: manager
         ports:
-        - containerPort: 8443
+        - containerPort: {{ .Values.controllerManager.port }}
           name: webhook-server
           protocol: TCP
-        - containerPort: 8888
+        - containerPort: {{ .Values.controllerManager.metricsPort }}
           name: metrics
           protocol: TCP
-        - containerPort: 9090
+        - containerPort: {{ .Values.controllerManager.healthPort }}
           name: healthz
           protocol: TCP
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 9090
-        resources: 
-{{ toYaml .Values.controllerManager.resources | indent 10 }}
+            port: {{ .Values.controllerManager.healthPort }}
+        resources:
+          {{- toYaml .Values.controllerManager.resources | nindent 10 }}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop:
-            - ALL
+            - all
+          readOnlyRootFilesystem: true
           runAsGroup: 999
           runAsNonRoot: true
           runAsUser: 1000
@@ -91,16 +112,19 @@ spec:
         - mountPath: /certs
           name: cert
           readOnly: true
-      nodeSelector: 
-{{ toYaml .Values.nodeSelector | indent 8 }}
-      affinity:
-{{ toYaml .Values.affinity | indent 8 }}
-      tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
+      dnsPolicy: {{ .Values.controllerManager.dnsPolicy }}
+      hostNetwork: {{ .Values.controllerManager.hostNetwork }}
       imagePullSecrets:
-{{ toYaml .Values.image.pullSecrets | indent 8 }}
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.controllerManager.nodeSelector | nindent 8 }}
+      {{- if .Values.controllerManager.priorityClassName }} 
+      priorityClassName:  {{ .Values.controllerManager.priorityClassName }}
+      {{- end }}
       serviceAccountName: gatekeeper-admin
       terminationGracePeriodSeconds: 60
+      tolerations:
+        {{- toYaml .Values.controllerManager.tolerations | nindent 8 }}
       volumes:
       - name: cert
         secret:

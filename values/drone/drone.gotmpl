@@ -16,12 +16,13 @@
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
 images:
-  # @TODO:
-  server:
-    tag: 2.7.3
   agent:
     repository: "docker.io/drone/drone-runner-kube"
-    tag: latest
+    tag: {{ $d | get "image.agent.tag" "latest" }}
+    pullPolicy:  {{ $d | get "image.agent.pullPolicy" "Always" }}
+  server:
+    tag: {{ $d | get "image.server.tag" "2.7.3" }}
+    pullPolicy:  {{ $d | get "image.server.pullPolicy" "IfNotPresent" }}
 
 nameOverride: drone
 fullnameOverride: drone
@@ -40,12 +41,12 @@ server:
     {{- with $d | get "resources.server" nil }}
       {{- toYaml .| nindent 4 }}
     {{- else }}
-    requests:
-      memory: 32Mi
-      cpu: 40m
     limits:
-      memory: 256Mi
       cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 40m
+      memory: 32Mi
     {{- end }}
   env:
     DRONE_LOGS_DEBUG: {{ $debug }}
@@ -71,18 +72,24 @@ agent:
     {{- with $d | get "resources.agent" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      memory: 32Mi
-      cpu: 40m
     limits:
-      memory: 256Mi
       cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 40m
+      memory: 32Mi
     {{- end }}
   env:
     DRONE_TRACE: {{ $trace }}
     DRONE_DEBUG: {{ $debug }}
   runnerEnv: |
     {{- $sopsEnv | nindent 4 }}
+    {{- with $d | get "resources.runner.cpu" nil }}
+    DRONE_RESOURCE_REQUEST_CPU: {{ . }}
+    {{- end }}
+    {{- with $d | get "resources.runner.memory" nil }}
+    DRONE_RESOURCE_REQUEST_MEMORY: {{ . }}
+    {{- end }}
     {{- if and $hasGitea $v._derived.untrustedCA }}
       {{- if $dindEnabled }}
     DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'

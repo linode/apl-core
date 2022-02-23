@@ -4,7 +4,8 @@ nameOverride: ingress-nginx
 controller:
   # @TODO:
   image:
-    tag: v1.0.5
+    tag: {{ $n | get "image.tag" "v1.0.5" }}
+    pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
     enabled: true
     namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
@@ -36,7 +37,7 @@ controller:
   replicaCount: 2
   minAvailable: 1
   autoscaling:
-    enabled: {{ $n | get "autoscaling.enabled" true }}
+    enabled: {{ $n.autoscaling.enabled }}
     minReplicas: {{ $n.autoscaling.minReplicas }}
     maxReplicas: {{ $n.autoscaling.maxReplicas }}
     targetCPUUtilizationPercentage: 60
@@ -98,7 +99,7 @@ controller:
     annotations:
       dummy: 'true'
       {{- with $n | get "service.annotations" nil }}
-      {{ . | toYaml | indent 6 }}
+      {{ toYaml . | indent 6 }}
       {{- end }}
       {{- with $n | get "loadBalancerRG" nil }}
       service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}

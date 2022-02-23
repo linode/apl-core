@@ -57,7 +57,8 @@ commonLabels:
 prometheus:
   prometheusSpec:
     image:
-      tag: v2.30.3
+      tag: {{ $g | get "image.prometheus.tag" "v2.30.3" }}
+      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
     podMonitorSelector:
       matchLabels:
         prometheus: system
@@ -105,15 +106,20 @@ alertmanager:
   enabled: true
   alertmanagerSpec:
     image:
-      tag: v0.23.0
+      tag: {{ $a | get "image.tag" "v0.23.0" }}
+      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
     priorityClassName: "otomi-critical"
     resources:
-      requests:
-        memory: 128Mi
-        cpu: 100m
+      {{- with $a | get "resources" nil }}
+        {{- toYaml . | nindent 4 }}
+      {{- else }}
       limits:
-        memory: 256Mi
         cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      {{- end }}
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
@@ -130,7 +136,8 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: 8.0.7
+    tag: {{ $g | get "image.prometheus.tag" "8.0.7" }}
+    pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
   initChownData:
     resources:
       limits:
@@ -140,15 +147,15 @@ grafana:
         cpu: 100m
         memory: 128Mi
   resources:
-    {{- with $g | get "resources" nil }}
+    {{- with $g | get "resources.prometheus" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      memory: 128Mi
-      cpu: 100m
     limits:
-      memory: 256Mi
       cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
     {{- end }}
   sidecar:
     # @TODO:
@@ -169,13 +176,8 @@ grafana:
   podAnnotations:
     sidecar.istio.io/inject: "true"
 
-  testFramework:
-    # enabled: true
-    # image: "bats/bats"
-    # tag: "v1.1.0"
-    # imagePullPolicy: IfNotPresent
-    securityContext: 
-      runAsUser: 1000
+  # testFramework:
+  #   enabled: false
     
   plugins:
     - grafana-piechart-panel
@@ -206,34 +208,38 @@ kubeApiServer:
   enabled: false
 
 kube-state-metrics:
-  # image:
-  #   tag: v1.8.0
-  # collectors:
-  #   networkpolicies: false
-  #   mutatingwebhookconfigurations: false
-  #   validatingwebhookconfigurations: false
-  #   volumeattachments: false
-  #   verticalpodautoscalers: false
-  # podAnnotations:
-  #   sidecar.istio.io/inject: "false"
+  image:
+    tag: {{ $p | get "image.kube-state-metrics.tag" "v1.8.0" }}
+    pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
   resources:
-    requests:
-      memory: 128Mi
-      cpu: 100m
+    {{- with $p | get "resources.kube-state-metrics" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
+      cpu: 100m
       memory: 256Mi
-      cpu: 400m
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    {{- end }}
   podSecurityPolicy:
     enabled: false
 
 prometheus-node-exporter:
+  image:
+    tag: {{ $p | get "image.node-exporter.tag" "v1.3.1" }}
+    pullPolicy: {{ $p | get "image.node-exporter.pullPolicy" "IfNotPresent" }}
   resources:
-    requests:
-      memory: 128Mi
-      cpu: 100m
+    {{- with $p | get "resources.prometheus-node-exporter" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
-      memory: 128Mi
       cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    {{- end }}
   rbac:
     pspEnabled: false
   priorityClassName: "otomi-critical"

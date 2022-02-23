@@ -172,15 +172,20 @@ definitions:
   autoscaling:
     additionalProperties: false
     properties:
-      enabled:
-        default: true
-        type: boolean
       maxReplicas:
         type: integer
         default: 10
       minReplicas:
         type: integer
-        default: 2
+        default: 1
+  autoscalingEnabled:
+    additionalProperties: false
+    allOf:
+      - properties:
+          enabled:
+            default: true
+            type: boolean
+      - $ref: '#/definitions/autoscaling'
   aws:
     definitions:
       accessKey:
@@ -420,20 +425,27 @@ definitions:
         default: latest
         $ref: '#/definitions/wordCharacterPattern'
     title: Container image
+  imagePullPolicy:
+    default: IfNotPresent
+    enum:
+      - IfNotPresent
+      - Always
+    type: string
+  imageTag:
+    x-default: stable
+    pattern: '[\w][\w.-]{0,127}'
+    type: string
+    x-message: a valid container registry image tag
   imageSimple:
-    additionalProperties: false
     properties:
-      pullPolicy:
-        default: IfNotPresent
-        enum:
-          - IfNotPresent
-          - Always
-        type: string
       tag:
-        type: string
-    title: Container image
+        $ref: '#/definitions/imageTag'
+      pullPolicy:
+        $ref: '#/definitions/imagePullPolicy'
     required:
       - tag
+    type: object
+    title: Container image
   jobs:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
@@ -734,14 +746,6 @@ definitions:
     minimum: 0
     maximum: 65535
     default: 1001
-  scaling:
-    additionalProperties: false
-    description: Min and max number of replicas.
-    properties:
-      maxReplicas:
-        type: integer
-      minReplicas:
-        type: integer
   script:
     description: May specify a non-empty string containing an executable script.
     type: string
@@ -1243,11 +1247,16 @@ properties:
             $ref: '#/definitions/idName'
           repoFilter:
             $ref: '#/definitions/wordCharacterPattern'
-          resources:
+          image:
             additionalProperties: false
             properties:
               agent:
-                $ref: '#/definitions/resources'
+                $ref: '#/definitions/imageSimple'
+              server:
+                $ref: '#/definitions/imageSimple'
+          resources:
+            additionalProperties: false
+            properties:
               runner:
                 properties:
                   requests:
@@ -1258,6 +1267,8 @@ properties:
                       memory:
                         $ref: '#/definitions/memoryQuantity'
                         description: Requested memory resources for all the containers started by the runner (guaranteed).
+              agent:
+                $ref: '#/definitions/resources'
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
@@ -1364,6 +1375,17 @@ properties:
             type: array
             items:
               type: object
+              properties:
+                group:
+                  description: A k8s resource api group.
+                  type: string
+                kind:
+                  description: A k8s resource kind.
+                  type: string
+                version:
+                  description: A k8s resource version.
+                  type: string
+              required: [kind, version]
           disableValidatingWebhook:
             type: boolean
             default: true
@@ -1382,6 +1404,15 @@ properties:
             default: 'INFO'
           replicas:
             type: integer
+          image:
+            $ref: '#/definitions/imageSimple'
+          resources:
+            additionalProperties: false
+            properties:
+              audit:
+                $ref: '#/definitions/resources'
+              controller:
+                $ref: '#/definitions/resources'
       gitea:
         properties:
           enabled:
@@ -1393,22 +1424,34 @@ properties:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: 'randAlphaNum 20'
-        allOf:
-          - anyOf:
-              - not:
-                  properties:
-                    enabled:
-                      const: true
-                  required:
-                    - enabled
-              - required:
-                  - postgresqlPassword
+          image:
+            additionalProperties: false
+            properties:
+              gitea:
+                $ref: '#/definitions/imageSimple'
+              postgresql:
+                $ref: '#/definitions/imageSimple'
+              memcached:
+                $ref: '#/definitions/imageSimple'
+          resources:
+            additionalProperties: false
+            properties:
+              gitea:
+                $ref: '#/definitions/resources'
+              postgresql:
+                $ref: '#/definitions/resources'
+              memcached:
+                $ref: '#/definitions/resources'
       grafana:
         additionalProperties: false
         properties:
           enabled:
             type: boolean
             default: false
+          image:
+            $ref: '#/definitions/imageSimple'
+          resources:
+            $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false
         properties:
@@ -1495,6 +1538,12 @@ properties:
                         type: string
                   type:
                     type: string
+                    enum:
+                      - aws
+                      - azure
+                      - gcs
+                      - file
+                    default: file
           registry:
             properties:
               secret:
@@ -1514,16 +1563,16 @@ properties:
             required:
               - secret
               - credentials
+          image:
+            $ref: '#/definitions/imageSimple'
           resources:
             additionalProperties: false
             properties:
-              adapter:
-                $ref: '#/definitions/resources'
               chartmuseum:
                 $ref: '#/definitions/resources'
               clair:
                 $ref: '#/definitions/resources'
-              controller:
+              clair-adapter:
                 $ref: '#/definitions/resources'
               core:
                 $ref: '#/definitions/resources'
@@ -1625,7 +1674,7 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           autoscaling:
-            $ref: '#/definitions/autoscaling'
+            $ref: '#/definitions/autoscalingEnabled'
           loadBalancerIP:
             type: string
           loadBalancerRG:
@@ -1654,6 +1703,13 @@ properties:
                 type: boolean
                 default: true
             type: object
+          image:
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+                x-default: v1.0.5
+              pullPolicy:
+                $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
           private:
@@ -1665,7 +1721,7 @@ properties:
                 type: boolean
                 default: false
               autoscaling:
-                $ref: '#/definitions/autoscaling'
+                $ref: '#/definitions/autoscalingEnabled'
               loadBalancerIP:
                 type: string
               loadBalancerRG:
@@ -1693,15 +1749,13 @@ properties:
           autoscaling:
             properties:
               egressgateway:
-                $ref: '#/definitions/scaling'
-              gateway-local:
-                $ref: '#/definitions/scaling'
+                $ref: '#/definitions/autoscaling'
               ingressgateway:
-                $ref: '#/definitions/scaling'
-              ingressgateway-auth:
-                $ref: '#/definitions/scaling'
+                $ref: '#/definitions/autoscaling'
+              ingressgateway-private:
+                $ref: '#/definitions/autoscaling'
               pilot:
-                $ref: '#/definitions/scaling'
+                $ref: '#/definitions/autoscaling'
           egressGateway:
             properties:
               enabled:
@@ -1714,36 +1768,26 @@ properties:
                 properties:
                   level:
                     type: string
-              mtls:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
               proxy:
                 additionalProperties: false
                 properties:
                   resources:
                     $ref: '#/definitions/resources'
-              sds:
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
           meshConfig:
             properties:
               defaultConfig:
                 type: object
             required:
               - defaultConfig
+          image:
+            $ref: '#/definitions/imageSimple'
           resources:
             properties:
               egressgateway:
                 $ref: '#/definitions/resources'
-              gateway-local:
-                $ref: '#/definitions/resources'
               ingressgateway:
                 $ref: '#/definitions/resources'
-              ingressgateway-auth:
+              ingressgateway-private:
                 $ref: '#/definitions/resources'
               pilot:
                 $ref: '#/definitions/resources'
@@ -1785,6 +1829,12 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          image:
+            properties:
+              keycloak:
+                $ref: '#/definitions/imageSimple'
+              postgresql:
+                $ref: '#/definitions/imageSimple'
           resources:
             additionalProperties: false
             properties:
@@ -2007,28 +2057,30 @@ properties:
           enabled:
             type: boolean
             default: false
-          grafana:
-            additionalProperties: false
+          retention:
+            $ref: '#/definitions/duration'
+          retentionSize:
+            description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
+            default: 4GB
+            pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
+          storageSize:
+            $ref: '#/definitions/size'
+            default: 5Gi
+          image:
             properties:
-              adminPassword:
-                type: string
-                x-secret: ''
-          prometheus:
-            additionalProperties: false
-            properties:
-              retention:
-                $ref: '#/definitions/duration'
-              retentionSize:
-                description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
-                default: 4GB
-                pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
-              storageSize:
-                $ref: '#/definitions/size'
-                default: 5Gi
+              prometheus:
+                $ref: '#/definitions/imageSimple'
+              kube-state-metrics:
+                $ref: '#/definitions/imageSimple'
+              node-exporter:
+                $ref: '#/definitions/imageSimple'
           resources:
-            additionalProperties: false
             properties:
-              grafana:
+              prometheus:
+                $ref: '#/definitions/resources'
+              kube-state-metrics:
+                $ref: '#/definitions/resources'
+              node-exporter:
                 $ref: '#/definitions/resources'
       redis-shared:
         allOf:
@@ -2112,6 +2164,12 @@ properties:
           storage:
             description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
             type: object
+          image:
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+          resources:
+            $ref: '#/definitions/resources'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -2391,7 +2449,7 @@ properties:
         description: Whether masters are managed and not under control. Set this to false when onprem.
         type: boolean
       isMultitenant:
-        default: true
+        default: false
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       version:

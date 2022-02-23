@@ -1,8 +1,7 @@
 {{- if not .Values.disableValidatingWebhook }}
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   labels:
     app: '{{ template "gatekeeper.name" . }}'
     chart: '{{ template "gatekeeper.name" . }}'
@@ -11,13 +10,16 @@ metadata:
     release: '{{ .Release.Name }}'
   name: gatekeeper-validating-webhook-configuration
 webhooks:
-- clientConfig:
-    caBundle: Cg==
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     service:
       name: gatekeeper-webhook-service
-      namespace: gatekeeper-system
+      namespace: '{{ .Release.Namespace }}'
       path: /v1/admit
-  failurePolicy: Ignore
+  failurePolicy: {{ .Values.validatingWebhookFailurePolicy }}
+  matchPolicy: Exact
   name: validation.gatekeeper.sh
   namespaceSelector:
     matchExpressions:
@@ -28,20 +30,26 @@ webhooks:
     - '*'
     apiVersions:
     - '*'
-    operations:
+    operations: 
     - CREATE
     - UPDATE
+    {{- if .Values.enableDeleteOperations }}
+    - DELETE
+    {{- end}}
     resources:
     - '*'
   sideEffects: None
-  timeoutSeconds: 3
-- clientConfig:
-    caBundle: Cg==
+  timeoutSeconds: {{ .Values.validatingWebhookTimeoutSeconds }}
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
     service:
       name: gatekeeper-webhook-service
-      namespace: gatekeeper-system
+      namespace: '{{ .Release.Namespace }}'
       path: /v1/admitlabel
-  failurePolicy: Fail
+  failurePolicy: {{ .Values.validatingWebhookCheckIgnoreFailurePolicy }}
+  matchPolicy: Exact
   name: check-ignore-label.gatekeeper.sh
   rules:
   - apiGroups:
@@ -54,5 +62,5 @@ webhooks:
     resources:
     - namespaces
   sideEffects: None
-  timeoutSeconds: 3
+  timeoutSeconds: {{ .Values.validatingWebhookTimeoutSeconds }}
 {{- end }}
