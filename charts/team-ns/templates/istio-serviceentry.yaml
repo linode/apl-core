@@ -59,4 +59,19 @@ spec:
 {{- end }} {{/* if not $s.isCore */}}
 {{- end }} {{/* range $s */}}
 {{- end }} {{/* if $egressFilteringEnabled */}}
+{{- else }} {{/* if $v.teamId */}}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: platform-keycloak
+spec:
+  hosts:
+    - {{ trimPrefix "https://" .Values.charts.keycloak.address }}
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  location: MESH_EXTERNAL
+  resolution: DNS
 {{- end }} {{/* if $v.teamId */}}
