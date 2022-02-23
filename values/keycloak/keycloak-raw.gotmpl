@@ -1,14 +1,7 @@
 resources:
-  - apiVersion: networking.istio.io/v1alpha3
-    kind: ServiceEntry
+  - apiVersion: v1
+    kind: Secret
     metadata:
-      name: platform-keycloak
-    spec:
-      hosts:
-        - {{ trimPrefix "https://" .Values.charts.keycloak.address }}
-      ports:
-        - number: 443
-          name: https
-          protocol: TLS
-      location: MESH_EXTERNAL
-      resolution: DNS
+      name: custom-ca
+    data:
+      custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
