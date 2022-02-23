@@ -1,4 +1,3 @@
-import { env } from '../common/envalid'
 import stubs from '../test-stubs'
 import { applyChanges, Changes, filterChanges } from './migrate'
 
@@ -38,11 +37,14 @@ describe('Upgrading values', () => {
     }
     it('should apply changes to values', async () => {
       await applyChanges(mockChanges.slice(1), false, deps)
-      expect(deps.writeValues).toBeCalledWith({
-        version: 3,
-        some: { bla: {}, k8sVersion: 'v1.18' },
-      })
-      expect(deps.rename).toBeCalledWith(`${env.ENV_DIR}/somefile.yaml`, `${env.ENV_DIR}/newloc.yaml`)
+      expect(deps.writeValues).toBeCalledWith(
+        {
+          version: 3,
+          some: { bla: {}, k8sVersion: 'v1.18' },
+        },
+        true,
+      )
+      expect(deps.rename).toBeCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
   })
 })
