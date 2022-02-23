@@ -1042,12 +1042,12 @@ definitions:
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
-          descritpion: When set a user can define services that can reach a given team services
+          descritpion: When set a user can define ingress from other services for a particular team service
           type: boolean
           default: true
         egressPublic:
           title: Enable filtering of egress traffic outside the cluster
-          descritpion: When set a user can define allowed FQDNs and public IPs on per team service
+          description: When set a user can define egress towards FQDNs and public IPs for a team service
           type: boolean
           default: true
     required:

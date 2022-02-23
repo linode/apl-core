@@ -153,4 +153,4 @@ releases:
     installed: true
     chart: ../charts/raw
     values:
-    - ../values/connectivity/connectivity-raw.gotmpl
+    - ../values/tests/connectivity-raw.gotmpl
