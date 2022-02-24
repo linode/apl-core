@@ -25,13 +25,19 @@ Otomi is a Kubernetes Application Configuration & Automation Platform.
 - Adjust the configuration of apps based on Configuration as Code
 - Works out-of-the-box
 - One UI to access all apps and self-service features
-- Kubernetes-native: Install Otomi on any Kubernetes cluster in any cloud or on-prem
+- Kubernetes-native: Install Otomi on managed kubernetes providers such as AWS, Azure and Google
 - Over 20 pre-configured and integrated apps for Kubernetes
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
 
 ## Quick start
 
+
+**NOTE**
+
+If you already have a managed kubernetes cluster setup on one of the supported public cloud providers, then you can skip `terraform quickstart` and move straight to [helm chart install.](#helm-chart)
+
+---
 ### Terraform
 
 Use the Terraform quick start for Azure, GCP, and AWS to provision a Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
@@ -46,7 +52,7 @@ For testing and experimentation, we advise to use the following machine/instance
 
 - Azure: 3 x DS3_v2 (4 vCPU / 14 GiB RAM)
 - AWS: 3 x t2.xlarge (4 vCPU / 16 GiB RAM)
-- GCP: 3 x e2-highmem-4 (4 vCPU / 32 GiB RAM)
+- GCP: 3 x e2-standard-4 (4 vCPU / 16 GiB RAM)
 
 To install `Otomi` with minimal values using the Helm chart, first create a `values.yaml` file with the following values:
 
@@ -54,7 +60,7 @@ To install `Otomi` with minimal values using the Helm chart, first create a `val
 cluster:
   k8sVersion: '1.21' # currently 1.18, 1.19, 1.20 and 1.21 are supported
   name: # the name of your cluster
-  provider: # choose between aws, azure, google or onprem
+  provider: # choose between aws, azure, google
 ```
 
 add the Helm repository:
