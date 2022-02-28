@@ -119,18 +119,18 @@ export const module: CommandModule = {
   describe: 'Apply all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
   handler: async (argv: HelmArguments): Promise<void> => {
-    const d = terminal(`cmd:${cmdName}`)
-
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
     try {
       await apply()
     } catch (error) {
-      console.log(error)
-      const res = await nothrow($`kubectl get events -A --sort-by='.lastTimestamp'`)
-      if (res.exitCode === 0) d.error(res.stdout)
-      else d.info('Unable to fetch kubernetes events')
+      if (error.exitCode === 1) {
+        const d = terminal(`cmd:${cmdName}:k8s:events`)
+        const res = await nothrow($`kubectl get events -A --sort-by='.lastTimestamp'`)
+        if (res.exitCode === 0) d.warn(res.stdout)
+        else d.info('Unable to fetch kubernetes events')
+      }
       throw error
     }
   },
