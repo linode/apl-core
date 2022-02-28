@@ -64,9 +64,6 @@ resources:
       # Vault Pods , Services and TLS Secret labels
 
       vaultConfigurerPodSpec:
-        containers:
-          items:
-
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534

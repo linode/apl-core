@@ -39,6 +39,23 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
+      "name": "Debug validate-templates",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "validate-templates"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "env": {
+        "ENV_DIR": "${workspaceFolder}/tests/fixtures"
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "name": "Debug validate-values",
       "console": "integratedTerminal",
       "type": "pwa-node",
