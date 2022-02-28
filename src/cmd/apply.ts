@@ -1,7 +1,7 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { isCli } from '../common/envalid'
@@ -118,11 +118,20 @@ export const module: CommandModule = {
   command: cmdName,
   describe: 'Apply all, or supplied, k8s resources',
   builder: (parser: Argv): Argv => helmOptions(parser),
-
   handler: async (argv: HelmArguments): Promise<void> => {
+    const d = terminal(`cmd:${cmdName}`)
+
     setParsedArgs(argv)
     setup()
     await prepareEnvironment()
-    await apply()
+    try {
+      await apply()
+    } catch (error) {
+      console.log(error)
+      const res = await nothrow($`kubectl get events -A --sort-by='.lastTimestamp'`)
+      if (res.exitCode === 0) d.error(res.stdout)
+      else d.info('Unable to fetch kubernetes events')
+      throw error
+    }
   },
 }
