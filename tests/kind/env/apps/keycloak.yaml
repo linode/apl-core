@@ -1,22 +1,17 @@
 apps:
-  keycloak:
-    _rawValues:
-      postgresql:
-        metrics:
-          resources:
-            requests:
-              cpu: 10m
-              memory: 10Mi
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      resources:
-        requests:
-          cpu: 10m
-          memory: 10Mi
-    enabled: true
-    idp:
-      alias: redkubes-azure
-      clientID: otomi
-    theme: otomi
+    keycloak:
+        _rawValues:
+            postgresql:
+                metrics:
+                    resources:
+                        requests:
+                            cpu: 10m
+                            memory: 10Mi
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            resources:
+                requests:
+                    cpu: 10m
+                    memory: 10Mi

@@ -1,23 +1,22 @@
 apps:
-  cert-manager:
-    _rawValues:
-      cainjector:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      resources:
-        requests:
-          cpu: 10m
-          memory: 10Mi
-      startupapicheck:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      webhook:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-    issuer: custom-ca
+    cert-manager:
+        _rawValues:
+            cainjector:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            resources:
+                requests:
+                    cpu: 10m
+                    memory: 10Mi
+            startupapicheck:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            webhook:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi

@@ -5,7 +5,7 @@
 {{- $k := $c.keycloak }}
 {{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $teams := keys $v.teamConfig.teams }}
+{{- $teams := keys $v.teamConfig }}
 
 type: Job
 description: Configure OIDC as a primary authentication method and populate teams to harbor projects

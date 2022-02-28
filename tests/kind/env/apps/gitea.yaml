@@ -1,24 +1,22 @@
 apps:
-  gitea:
-    _rawValues:
-      init:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      memcached:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      postgresql:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 10Mi
-      resources:
-        requests:
-          cpu: 10m
-          memory: 10Mi
-    admin:
-      password: giteapass
+    gitea:
+        _rawValues:
+            init:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            memcached:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            postgresql:
+                resources:
+                    requests:
+                        cpu: 10m
+                        memory: 10Mi
+            resources:
+                requests:
+                    cpu: 10m
+                    memory: 10Mi

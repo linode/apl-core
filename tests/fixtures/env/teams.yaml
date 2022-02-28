@@ -1,19 +1,16 @@
 teamConfig:
-    teams:
-        demo:
-            alerts:
-                receivers:
-                    - email
-            id: demo
-            resourceQuota:
-                services.loadbalancers: '1'
-            limitRange:
-                default:
-                    cpu: 100m
-                    memory: 128Mi
-                defaultRequest:
-                    cpu: 50m
-                    memory: 64Mi
-            networkPolicy:
-                egressPublic: true
-                ingressPrivate: true
+    demo:
+        alerts:
+            email:
+                critical: admins@yourdoma.in
+            receivers:
+                - email
+        id: demo
+        networkPolicy:
+            egressPublic: true
+            ingressPrivate: true
+        oidc:
+            groupMapping: somesecretvalue
+        password: somesecretvalue
+        resourceQuota:
+            services.loadbalancers: '1'

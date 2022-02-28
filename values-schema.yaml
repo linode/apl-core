@@ -2717,12 +2717,9 @@ properties:
       - smarthost
   teamConfig:
     additionalProperties: false
-    properties:
-      teams:
-        additionalProperties: false
-        patternProperties:
-          '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
-            $ref: '#/definitions/team'
+    patternProperties:
+      '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
+        $ref: '#/definitions/team'
   version:
     type: integer
     description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.

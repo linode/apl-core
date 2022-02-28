@@ -10,6 +10,7 @@ changes:
       - env/apps/prometheus-operator.yaml: env/apps/prometheus.yaml
     relocations:
       - charts: apps
+      - teamConfig.teams: teamConfig
       - apps.gatekeeper-operator: apps.gatekeeper
       - apps.nginx-ingress: apps.ingress-nginx
       - apps.prometheus-operator: apps.prometheus

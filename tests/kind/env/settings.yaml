@@ -1,5 +1,4 @@
 otomi:
-    adminPassword: somePassword
     hasCloudLB: false
     hasExternalDNS: false
     hasExternalIDP: false

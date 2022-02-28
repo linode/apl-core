@@ -83,7 +83,7 @@ export const rename = async (
 
 export const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
   const val = get(values, lhs)
-  if (val && unset(values, lhs)) set(values, rhs, val)
+  if (val && set(values, rhs, val)) unset(values, lhs)
 }
 
 export function filterChanges(version: number, changes: Changes): Changes {

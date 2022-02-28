@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
-import { cloneDeep, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import pkg from '../../package.json'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -106,8 +106,38 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
+  if (plainValues.teamConfig) {
+    const types = ['apps', 'jobs', 'secrets', 'services']
+    const fileMap = { secrets: 'external-secrets' }
+    // We relocated teamConfig.teams to teamConfig, so one time we might have to fall back to our previous location
+    // TODO:[teamConfig] deprecate this fallback sometime in the future
+    const teams = Object.keys(plainValues.teamConfig.teams ?? plainValues.teamConfig)
+    if (!teams.includes('admin')) teams.push('admin')
+    const teamConfig = cloneDeep(plainValues.teamConfig)
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    teams.forEach(async (team) => {
+      const teamPromises: Promise<void>[] = []
+      types.forEach((type): void => {
+        const fileType = fileMap[type] || type
+        // admin only has apps
+        if (type !== 'apps' && team === 'admin') return
+        teamPromises.push(
+          writeValuesToFile(
+            `${env.ENV_DIR}/env/teams/${fileType}.${team}.yaml`,
+            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, {}) } } },
+            overwrite,
+          ),
+        )
+        // keep the teamConfig but omit the leafs that are stored in their own teams/* file
+        if (teamConfig[team] && teamConfig[team][type]) delete teamConfig[team][type]
+      })
+      await Promise.all(teamPromises)
+    })
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { teamConfig }, overwrite))
+  }
+  await Promise.all(promises)
 
-  const plainChartPromises = Object.keys((plainValues.apps || {}) as Record<string, any>).map((app) => {
+  const plainValuesPromises = Object.keys((plainValues.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
       apps: {
         [app]: plainValues.apps[app],
@@ -115,7 +145,9 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
     }
     return writeValuesToFile(`${env.ENV_DIR}/env/apps/${app}.yaml`, valueObject, overwrite)
   })
-  const secretChartPromises = Object.keys((secrets.apps || {}) as Record<string, any>).map((app) => {
+  await Promise.all(plainValuesPromises)
+
+  const secretValuesPromises = Object.keys((secrets.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
       apps: {
         [app]: secrets.apps[app],
@@ -123,8 +155,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
     }
     return writeValuesToFile(`${env.ENV_DIR}/env/apps/secrets.${app}.yaml`, valueObject, overwrite)
   })
-
-  await Promise.all([...promises, ...secretChartPromises, ...plainChartPromises])
+  await Promise.all(secretValuesPromises)
 
   d.info('All values were written to ENV_DIR')
 }
