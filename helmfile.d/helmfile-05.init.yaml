@@ -9,11 +9,11 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: gatekeeper-artifacts
-    installed: {{ $c | get "gatekeeper.enabled" }}
+    installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
     createNamespace: false
@@ -35,13 +35,13 @@ releases:
       pkg: istio
     <<: *default
   - name: keycloak
-    installed: {{ $c | get "keycloak.enabled" }}
+    installed: {{ $a | get "keycloak.enabled" }}
     namespace: keycloak
     labels:
       pkg: keycloak
     <<: *default
   - name: vault-operator-artifacts
-    installed: {{ $c | get "vault.enabled" }}
+    installed: {{ $a | get "vault.enabled" }}
     namespace: vault
     labels:
       pkg: vault

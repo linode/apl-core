@@ -9,11 +9,11 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: gitea-artifacts
-    installed: {{ and $v._derived.untrustedCA ($c | get "gitea.enabled")  }}
+    installed: {{ and $v._derived.untrustedCA ($a | get "gitea.enabled")  }}
     namespace: gitea
     labels:
       pkg: gitea
@@ -38,7 +38,7 @@ releases:
       pkg: loki
     <<: *raw
   - name: vault-operator
-    installed: {{ $c | get "vault.enabled" }}
+    installed: {{ $a | get "vault.enabled" }}
     disableValidationOnInstall: true
     namespace: vault
     labels:

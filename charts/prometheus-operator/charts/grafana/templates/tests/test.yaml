@@ -47,6 +47,8 @@ spec:
         requests:
           cpu: 25m
           memory: 32Mi
+      securityContext:
+        runAsUser: 1001
   volumes:
   - name: tests
     configMap:

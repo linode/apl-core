@@ -9,7 +9,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: grafana-dashboards
@@ -41,6 +41,6 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ $c | get "prometheus-msteams.enabled" }}
+    installed: {{ $a | get "prometheus-msteams.enabled" }}
     namespace: monitoring
     <<: *default

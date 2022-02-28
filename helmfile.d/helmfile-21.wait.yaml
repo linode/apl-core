@@ -9,7 +9,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: wait-for-otomi-realm

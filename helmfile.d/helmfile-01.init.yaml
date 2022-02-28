@@ -9,11 +9,11 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: snapshot-controller
-    installed: {{ $c | get "snapshot-controller.enabled" }}
+    installed: {{ $a | get "snapshot-controller.enabled" }}
     namespace: kube-system
     labels:
       init: true

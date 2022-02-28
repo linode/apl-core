@@ -9,11 +9,11 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: aws-ebs-csi-driver
-    installed: {{ $c | get "aws-ebs-csi-driver.enabled" }}
+    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
     namespace: kube-system
     labels:
       init: true
@@ -21,7 +21,7 @@ releases:
       provider: aws 
     <<: *default
   - name: gatekeeper
-    installed: {{ $c | get "gatekeeper.enabled" }}
+    installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: default
     chart: ../charts/gatekeeper
     disableValidationOnInstall: true
@@ -38,7 +38,7 @@ releases:
       stage: prep
     <<: *default
   - name: ingress-nginx-private
-    installed: {{ $c | get "ingress-nginx.private.enabled" }}
+    installed: {{ $a | get "ingress-nginx.private.enabled" }}
     namespace: ingress
     labels:
       tag: ingress

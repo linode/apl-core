@@ -9,27 +9,27 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 
 releases:
   - name: demo-tlspass
-    installed: {{ $c | get "demo-tlspass.enabled" }}
+    installed: {{ $a | get "demo-tlspass.enabled" }}
     namespace: team-otomi
     <<: *default
   - name: hello
-    installed: {{ $c | get "hello.enabled" }}
+    installed: {{ $a | get "hello.enabled" }}
     namespace: team-otomi
     <<: *default
   - name: httpbin
-    installed: {{ $c | get "httpbin.enabled" }}
+    installed: {{ $a | get "httpbin.enabled" }}
     namespace: shared
     <<: *default
   - name: kubeapps
-    installed: {{ $c | get "kubeapps.enabled" }}
+    installed: {{ $a | get "kubeapps.enabled" }}
     namespace: kubeapps
     <<: *default
   - name: gitea
-    installed: {{ $c | get "gitea.enabled" }}
+    installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     chart: ../charts/gitea
     labels:

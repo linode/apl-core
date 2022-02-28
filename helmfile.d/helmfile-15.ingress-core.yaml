@@ -18,7 +18,7 @@ bases:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 {{- $cm := index $v.apps "cert-manager" }}
 
 releases:

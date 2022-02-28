@@ -18,7 +18,7 @@ bases:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- $c := $v.apps }}
+{{- $a := $v.apps }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $po := index $v.apps "prometheus-operator" }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
