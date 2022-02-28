@@ -633,7 +633,10 @@ definitions:
               default:
                 - number: 443
                   protocol: HTTPS
-
+  path:
+    description: An absolute path
+    type: string
+    pattern: '^[/].*$'
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
@@ -2050,8 +2053,6 @@ properties:
                 type: string
               email:
                 $ref: '#/definitions/email'
-              localPath:
-                type: string
               password:
                 type: string
                 x-secret: ''
