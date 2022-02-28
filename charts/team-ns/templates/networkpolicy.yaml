@@ -1,5 +1,6 @@
-{{- $v := .Values }}
-{{- if not (eq $v.teamId "admin") }}
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $v := .Values | merge (dict) }}
+{{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -43,10 +44,10 @@ spec:
     #         matchLabels:
     #           name: shared
 
-{{- range $s := $v.services }}
-{{- if not $s.isCore }}
-{{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}
-{{- if eq $ingressPrivateMode "AllowAll" }}
+  {{- range $s := $v.services }}
+    {{- if not $s.isCore }}
+      {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}
+      {{- if eq $ingressPrivateMode "AllowAll" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -55,12 +56,12 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      {{- if hasKey $s "ksvc" }}
+        {{- if hasKey $s "ksvc" }}
       # The app label cannot be used because Knative appends revision number to the service
       serving.knative.dev/service: {{ $s.name }}
-      {{- else }}
+        {{- else }}
       app: {{ $s.name }}
-      {{- end }}
+        {{- end }}
   policyTypes:
     - Ingress
   ingress:
@@ -68,7 +69,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               type: team
-{{- else if eq $ingressPrivateMode "AllowOnly" }}
+      {{- else if eq $ingressPrivateMode "AllowOnly" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -77,27 +78,27 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      {{- if hasKey $s "ksvc" }}
+        {{- if hasKey $s "ksvc" }}
       # The app label cannot be used because Knative appends revision number to its value
       serving.knative.dev/service: {{ $s.name }}
-      {{- else }}
+        {{- else }}
       app: {{ $s.name }}
-      {{- end }}
+        {{- end }}
   policyTypes:
     - Ingress
-{{- with $s.networkPolicy.ingressPrivate.allow }}
+        {{- with $s.networkPolicy.ingressPrivate.allow }}
   ingress:
     - from:
-{{- range . }}
+          {{- range . }}
         - namespaceSelector:
             matchLabels:
               name: team-{{ .team }}
-          {{- if hasKey . "service" }}
+            {{- if hasKey . "service" }}
           podSelector:
             matchLabels:
               app: {{ .service }}
-          {{- end }} {{/* hasKey */}}
-        {{- if hasKey . "service" }}
+            {{- end }}
+            {{- if hasKey . "service" }}
         # An extra rule for Pods that are spawn by knative-serving
         - namespaceSelector:
             matchLabels:
@@ -105,10 +106,10 @@ spec:
           podSelector:
             matchLabels:
               serving.knative.dev/service: {{ .service}}
-        {{- end }} {{/* hasKey */}}
-{{- end }} {{/* range . */}}
-{{- end }} {{/* with ingressPrivate.allow */}}
-{{- end }} {{/* if ingressPrivateMode */}}
-{{- end }} {{/* not $s.isCore */}}
-{{- end }} {{/* range services */}}
-{{- end }} {{/* if $v.teamId */}}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

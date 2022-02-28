@@ -51,7 +51,7 @@ const setDeploymentStatus = async (): Promise<void> => {
 
 const getGiteaHealthUrl = async (): Promise<string> => {
   const d = terminal(`cmd:${cmdName}:getGiteaHealthUrl`)
-  const healthUrl = (await $`git config --get remote.origin.url`).stdout.trim()
+  const healthUrl = (await $`git -C ${env.ENV_DIR} config --get remote.origin.url`).stdout.trim()
   d.debug('gitea healthUrl: ', healthUrl)
   return healthUrl
 }

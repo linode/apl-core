@@ -2,7 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.4](https://github.com/redkubes/otomi-core/compare/v0.15.3...v0.15.4) (2022-02-28)
+
+
+### Features
+
+* network policies egress ([#732](https://github.com/redkubes/otomi-core/issues/732)) ([a740a87](https://github.com/redkubes/otomi-core/commit/a740a87bc55be1417105928857357189b5bd0ad1))
+
+
+### Bug Fixes
+
+* Kiali errors ([#731](https://github.com/redkubes/otomi-core/issues/731)) ([72c0db9](https://github.com/redkubes/otomi-core/commit/72c0db93e0521e7ceef54bb6b0122dc9b34e4ad8))
+* **remove image attribute:** removing image atteibute in console and api ([#727](https://github.com/redkubes/otomi-core/issues/727)) ([97bc36f](https://github.com/redkubes/otomi-core/commit/97bc36f85183c9172823863cb6e600897c4a54d1))
+
+
+### Docs
+
+* added development setup section [ci skip] ([ccab31b](https://github.com/redkubes/otomi-core/commit/ccab31ba8ebe94df99b0ce776eec4de2bf5e3b61))
+* **readme.md:** updating the main README.md to reflect the changes in the quickstart repo ([1a03e43](https://github.com/redkubes/otomi-core/commit/1a03e43621aeb73169e14eb6fe25a3e241bff629))
+
+
+### Others
+
+* **.cspell.json:** ignore renamings word - spell check ([08ac287](https://github.com/redkubes/otomi-core/commit/08ac287add5bcb41b943188c6f796b2ac505d65f))
+
 ### [0.15.3](https://github.com/redkubes/otomi-core/compare/v0.15.2...v0.15.3) (2022-02-02)
+
+
+### Features
+
+* updated community section ([1bf4022](https://github.com/redkubes/otomi-core/commit/1bf402255c1bd3bf79cb3e3dcec962efba9ac3f9))
+
+### [0.15.2](https://github.com/redkubes/otomi-core/compare/v0.15.1...v0.15.2) (2022-01-27)
+
+### Features
+
+- network policies for team workloads ([777dcec](https://github.com/redkubes/otomi-core/commit/777dcec1816424ba1942aee61308ffb27d1f997d))
+
+### [0.15.1](https://github.com/redkubes/otomi-core/compare/v0.15.0...v0.15.1) (2022-01-05)
 
 
 ### Features

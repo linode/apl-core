@@ -1,9 +1,10 @@
 otomi:
-  hasCloudLB: false
-  hasExternalDNS: false
-  hasExternalIDP: false
-  isHomeMonitored: false
-  isManaged: false
-  isMultitenant: true
-  version: master
+    adminPassword: somePassword
+    hasCloudLB: false
+    hasExternalDNS: false
+    hasExternalIDP: false
+    isHomeMonitored: false
+    isManaged: false
+    isMultitenant: true
+    version: master
 version: 2

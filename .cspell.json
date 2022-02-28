@@ -48,6 +48,7 @@
     "somesecretvalue",
     "spotinst",
     "westeurope",
+    "xlarge",
     "xsrf"
   ],
   "language": "en",
@@ -73,6 +74,8 @@
     "envalid",
     "esbenp",
     "foxundermoon",
+    "fqdn",
+    "fqdns",
     "gcloud",
     "gitea",
     "gitops",
@@ -116,6 +119,8 @@
     "renamings",
     "repos",
     "redkubes",
+    "renamings",
+    "repos",
     "runbook",
     "selinux",
     "semver",
@@ -123,6 +128,7 @@
     "sysctls",
     "testmode",
     "textconv",
-    "untrusted"
+    "untrusted",
+    "xlarge"
   ]
 }

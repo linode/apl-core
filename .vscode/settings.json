@@ -1,23 +1,24 @@
 {
-  "[docker]": {
+  "[dotenv]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[js]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  "[docker]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
   "[typescript]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    },
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "cSpell.diagnosticLevel": "Hint",
   "cSpell.enabled": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll": true,
+    "source.organizeImports": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
