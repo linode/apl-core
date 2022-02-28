@@ -13,7 +13,7 @@ bases:
 {{- range $s := $v.teamApps }}
 {{- if $v.apps | get $s.name | get "enabled" false }}
 {{- range $ing := $s | get "ingress" list }}
-{{- $svc := merge $s (dict "isCore" true "name" $s.name) }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}
 {{- end }}
 {{- end }}
