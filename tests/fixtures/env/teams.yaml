@@ -14,3 +14,6 @@ teamConfig:
                 defaultRequest:
                     cpu: 50m
                     memory: 64Mi
+            networkPolicy:
+                egressPublic: true
+                ingressPrivate: true

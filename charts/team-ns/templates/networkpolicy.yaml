@@ -1,5 +1,8 @@
-{{- $v := .Values }}
+{{- $v := .Values | merge (dict) }}
+{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+
 {{- if not (eq $v.teamId "admin") }}
+{{- if (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -111,4 +114,5 @@ spec:
 {{- end }} {{/* if ingressPrivateMode */}}
 {{- end }} {{/* not $s.isCore */}}
 {{- end }} {{/* range services */}}
+{{- end }} {{/* if "networkPolicy" "ingressPrivate" true $v */}}
 {{- end }} {{/* if $v.teamId */}}
