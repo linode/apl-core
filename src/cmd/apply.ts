@@ -129,7 +129,7 @@ export const module: CommandModule = {
         const d = terminal(`cmd:${cmdName}:k8s:events`)
         const res = await nothrow($`kubectl get events -A --sort-by='.lastTimestamp'`)
         if (res.exitCode === 0) d.warn(res.stdout)
-        else d.info('Unable to fetch kubernetes events')
+        else d.error('Unable to fetch kubernetes events')
       }
       throw error
     }
