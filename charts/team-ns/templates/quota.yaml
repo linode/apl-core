@@ -6,5 +6,4 @@ metadata:
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 spec:
   hard:
-    count/quota: "1"
     {{- toYaml $v.resourceQuota | nindent 4 }}

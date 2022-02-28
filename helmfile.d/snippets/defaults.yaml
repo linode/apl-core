@@ -5,6 +5,8 @@ environments:
           appgw:
             isManaged: true
         apps:
+          alertmanager:
+            enabled: false
           cert-manager:
             issuer: custom-ca
           demo-tlspass:
@@ -34,6 +36,7 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+          grafana: {}
           harbor:
             enabled: false
           hello:
@@ -85,7 +88,7 @@ environments:
           otomi-console: {}
           promtail: {}
           prometheus-blackbox-exporter: {}
-          prometheus-operator: {}
+          prometheus: {}
           redis-shared:
             enabled: false
           vault:

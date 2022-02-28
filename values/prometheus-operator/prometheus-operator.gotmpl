@@ -102,7 +102,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
-  {{ if or ($v | get "alerts" false) ($v | get "home" false) }}
+  {{- if $a.enabled }}
   enabled: true
   alertmanagerSpec:
     image:

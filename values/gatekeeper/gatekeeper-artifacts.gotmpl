@@ -9,7 +9,7 @@ config:
   {{- with $gk | get "dataSync" list }}
   dataSync: 
   {{- range $kind := . }}
-    - group: {{ $kind.group | quote }}
+    - group: {{ $kind | get "group" "" | quote }}
       version: {{ $kind.version | quote }}
       kind: {{ $kind.kind | quote }}
   {{- end }}

@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $c := $v.apps }}
-{{- $k := $c | get "keycloak" dict }}
+{{- $a := $v.apps }}
+{{- $k := $a | get "keycloak" dict }}
 {{- $o := $v | get "oidc" dict }}
 
 {{- $cm := index $v.apps "cert-manager" }}
@@ -20,7 +20,7 @@
 # Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
-{{- $droneProvider := $c.drone.sourceControl.provider }}
+{{- $droneProvider := $a.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
@@ -46,6 +46,8 @@ environments:
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
         apps:
+          alertmanager:
+            enabled: {{ and ($a | get "alertmanager.enabled" true) (or ($v | get "alerts" nil) ($v | get "home" nil)) }}
           aws-alb-ingress-controller:
             enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
           aws-ebs-csi-driver:
@@ -57,20 +59,20 @@ environments:
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $c | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
+            enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
               gitea:
-                server: {{ $c | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
-              secret: {{ $c | get "drone.sourceControl.secret" "drone-source-control" }}
+                server: {{ $a | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
+              secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
           {{- end }}
           drone-admit-members:
-            enabled: {{ and ($c | get "drone.enabled") (eq $droneProvider "github") }}
+            enabled: {{ and ($a | get "drone.enabled") (eq $droneProvider "github") }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           gitea:
-            adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $untrustedCA }}
           ingress-azure:
@@ -78,11 +80,11 @@ environments:
           keycloak:
             enabled: true
             address: https://keycloak.{{ $domainSuffix }}
-            adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
+            enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
           metrics-server:
-            enabled: {{ list "onprem" "aws" | has $provider | default ($c | get "metrics-server.enabled" false) }}
+            enabled: {{ list "onprem" "aws" | has $provider | default ($a | get "metrics-server.enabled" false) }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
