@@ -1,0 +1,8 @@
+teamConfig:
+    demo:
+        apps:
+            drone:
+                shortcuts:
+                    - title: some title
+                      description: blabla
+                      path: /ok

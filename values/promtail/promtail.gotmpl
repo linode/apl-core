@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $promtail := $v.apps.promtail }}
-{{- $t := $v.teamConfig }}
 
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
@@ -43,7 +42,7 @@ pipelineStages:
         namespace:
   - labels:
       namespace:
-  {{- range $id, $team := $t.teams }}
+  {{- range $id, $team := $v.teamConfig }}
   - match:
       selector: '{namespace="team-{{ $id }}"}'
       stages:

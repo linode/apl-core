@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $t := $v.teamConfig }}
 {{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
@@ -31,7 +30,7 @@ resources:
       - name: otomi-pullsecret-global
     {{- end }}
   {{- end }}
-  {{- range $id, $team := $t.teams }}
+  {{- range $id, $team := $v.teamConfig }}
     {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
     kind: Namespace

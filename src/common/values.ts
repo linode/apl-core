@@ -81,19 +81,31 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', values)
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
+  // We relocated teamConfig.teams to teamConfig, so one time we might have to fall back to our previous location
+  // TODO:[teamConfig] deprecate this fallback sometime in the future
+  const teams = Object.keys(values.teamConfig.teams ?? values.teamConfig).filter((i) => i !== 'teams')
   // creating secret files
   const schema = await getValuesSchema()
   const leaf = 'x-secret'
   const schemaSecrets = extract(schema, leaf, (val: any) => (val.length > 0 ? `{{ ${val} }}` : val))
   d.debug('schemaSecrets: ', JSON.stringify(schemaSecrets, null, 2))
   // Get all JSON paths for secrets, without the .x-secret appended
-  const secretsJsonPath = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
-  d.debug('secretsJsonPath: ', secretsJsonPath)
+  const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
+  // now blow up the teamConfig.$team prop as it is determined by a pattern
+  const cleanSecretPaths: string[] = []
+  const teamProp = 'teamConfig.patternProperties.^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
+  secretPaths.forEach((p) => {
+    teams.forEach((team: string) => {
+      if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
+      else if (!cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
+    })
+  })
+  d.debug('cleanSecretPaths: ', cleanSecretPaths)
   // separate out the secrets
-  const secrets = removeBlankAttributes(pick(values, secretsJsonPath))
+  const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
-  const plainValues = omit(values, secretsJsonPath) as any
+  const plainValues = omit(values, cleanSecretPaths) as any
   const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived']
   const secretSettings = omit(secrets, fieldsToOmit)
   const settings = omit(plainValues, fieldsToOmit)
@@ -109,9 +121,6 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   if (plainValues.teamConfig) {
     const types = ['apps', 'jobs', 'secrets', 'services']
     const fileMap = { secrets: 'external-secrets' }
-    // We relocated teamConfig.teams to teamConfig, so one time we might have to fall back to our previous location
-    // TODO:[teamConfig] deprecate this fallback sometime in the future
-    const teams = Object.keys(plainValues.teamConfig.teams ?? plainValues.teamConfig)
     if (!teams.includes('admin')) teams.push('admin')
     const teamConfig = cloneDeep(plainValues.teamConfig)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -134,6 +143,11 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
       await Promise.all(teamPromises)
     })
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { teamConfig }, overwrite))
+  }
+  if (secrets.teamConfig) {
+    promises.push(
+      writeValuesToFile(`${env.ENV_DIR}/env/secrets.teams.yaml`, { teamConfig: secrets.teamConfig }, overwrite),
+    )
   }
   await Promise.all(promises)
 

@@ -212,7 +212,6 @@ definitions:
         title: Azure client id
         description: An Azure client id.
         $ref: '#/definitions/wordCharacterPattern'
-        x-secret: ''
       clientSecret:
         title: Azure client secret
         description: An Azure client secret.

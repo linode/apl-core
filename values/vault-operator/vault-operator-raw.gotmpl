@@ -156,7 +156,7 @@ resources:
               path "secret/data/sandbox/*" {
                     capabilities = ["create", "read", "update", "delete", "list"]
               }
-          {{- range $teamId, $team := $tc.teams }}
+          {{- range $teamId, $team := $tc }}
           - name: allow-team-{{ $teamId }}
             rules: |
               path "secret/data/teams/team-{{ $teamId }}/*" {
@@ -204,7 +204,7 @@ resources:
                 ttl: 1h
 
         groups:
-          {{- range $teamId, $team := $tc.teams }}
+          {{- range $teamId, $team := $tc }}
           - name: team-{{ $teamId }}
             type: external
             policies: 
@@ -219,7 +219,7 @@ resources:
             - allow-all-secrets
             metadata: {}
         group-aliases:
-          {{- range $teamId, $team := $tc.teams }}
+          {{- range $teamId, $team := $tc }}
           - name: team-{{ $teamId }}
             group: team-{{ $teamId }}
             mountpath: oidc/
@@ -237,7 +237,7 @@ resources:
         # Allows writing some secrets to Vault (useful for development purposes).
         # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
         startupSecrets:
-        {{- range $teamId, $team := $tc.teams }}
+        {{- range $teamId, $team := $tc }}
           {{- if eq $teamId "demo" }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/mysecret-generic

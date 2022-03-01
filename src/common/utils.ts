@@ -136,7 +136,7 @@ export const getValuesSchema = async (): Promise<Record<string, any>> => {
   if (valuesSchema) return valuesSchema
   const schema = loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
-  valuesSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
+  valuesSchema = omit(derefSchema, ['definitions'])
 
   return valuesSchema
 }

@@ -33,8 +33,7 @@ resources:
   {{- end }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
-{{- $tc := $v.teamConfig }}
-{{- range $teamId, $team := $tc.teams }}
+{{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- $type := $s.type | default "auth" }}

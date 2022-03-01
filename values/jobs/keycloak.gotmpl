@@ -1,10 +1,9 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
-{{- $teams := $v.teamConfig }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
-{{- range $name, $team := $teams }}
+{{- range $name, $team := $v.teamConfig }}
 {{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames }}
 {{- if ($team | get "oidc.groupMapping" nil) }}
