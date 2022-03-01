@@ -30,11 +30,11 @@ Otomi is a Kubernetes Applications Configuration & Automation Platform.
 
 ### Terraform
 
-:::NOTE
+NOTE
 
 If you already have a Kubernetes cluster running in one of the supported public clouds, then you can skip `terraform quickstart` and move straight to [helm chart install.](#helm-chart)
 
-:::
+---
 
 Use the Terraform quick start for Azure, GCP, and AWS to provision a Managed Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
