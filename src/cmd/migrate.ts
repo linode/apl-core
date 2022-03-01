@@ -158,7 +158,7 @@ export const migrate = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-  const prevVersion: number = loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.version
+  const prevVersion: number = loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
