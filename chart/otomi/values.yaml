@@ -1,9 +1,8 @@
 cluster:
   # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
-  k8sVersion: '1.20'
+  k8sVersion: '1.21'
   name: 'dev'
-  provider: 'onprem' # provider can be one of aws|azure|google|onprem
-  # owner: '' # will be set to 'otomi' if left empty
+  provider: 'azure' # provider can be one of aws|azure|google|onprem
 otomi: {}
   # adminPassword: '' # Will be automatically generated if not filled-in
   # Set hasExternalDNS to true when using an external DNS zone. Otherwise a '*.nip.io' domain will be created.
@@ -12,7 +11,7 @@ otomi: {}
   # NOTE: When this is set to true you must also fill in the 'oidc:' settings below. 
   # hasExternalIDP: false
   # By default the image tag is set to .Chart.AppVersion
-  # version: master
+  # version: ''
 charts:
   cert-manager:
     # Use a custom CA (BYO or auto-generated) or use letsencrypt. When using letsencrypt, also fill in dns.

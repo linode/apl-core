@@ -63,6 +63,7 @@
     "binzx",
     "blackbox",
     "bootstrapper",
+    "calico",
     "crds",
     "creds",
     "criticals",
