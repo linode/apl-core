@@ -83,7 +83,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
   // We relocated teamConfig.teams to teamConfig, so one time we might have to fall back to our previous location
   // TODO:[teamConfig] deprecate this fallback sometime in the future
-  const teams = Object.keys(values.teamConfig.teams ?? values.teamConfig).filter((i) => i !== 'teams')
+  const teams = Object.keys((values.teamConfig?.teams ?? values.teamConfig) || {}).filter((i) => i !== 'teams')
   // creating secret files
   const schema = await getValuesSchema()
   const leaf = 'x-secret'
