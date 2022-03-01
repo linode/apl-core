@@ -1034,6 +1034,11 @@ definitions:
     properties:
       alerts:
         $ref: '#/definitions/alerts'
+      apps:
+        type: object
+        properties:
+          shortcuts:
+            $ref: '#/definitions/shortcuts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
       secrets:
