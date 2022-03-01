@@ -97,8 +97,8 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   secretPaths.forEach((p) => {
     teams.forEach((team: string) => {
       if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
-      else if (!cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
     })
+    if (p.indexOf(teamProp) === -1 && !cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
   })
   d.debug('cleanSecretPaths: ', cleanSecretPaths)
   // separate out the secrets
