@@ -27,8 +27,7 @@ spec:
       {{- end }}
       containers:
         - name: postinstall
-          image: "{{ .Values.postInstall.labelNamespace.image.repository }}:{{ .Values.postInstall.labelNamespace.image.tag }}"
-          imagePullPolicy: {{ .Values.postInstall.labelNamespace.image.pullPolicy }}
+          image: badouralix/curl-http2:alpine
           command:
             - sh
             - -c
