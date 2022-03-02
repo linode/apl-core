@@ -6,5 +6,6 @@ folders:
 sidecar:
   dashboards:
     label: grafana_dashboard
+    labelValue: '1'
 
 team: admin    

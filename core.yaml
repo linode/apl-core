@@ -37,6 +37,7 @@ k8s:
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
+      disableIstioInjection: true
     - name: operator-lifecycle-manager
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -62,17 +63,16 @@ adminApps:
   - name: drone
     tags: [cicd, deployment, pipeline]
     isShared: true
+    ownHost: true
     ingress:
       - svc: drone
         namespace: team-admin
-        ownHost: true
         type: public
         auth: true
         removeRequestHeaders:
           - authorization
       - svc: drone
         namespace: team-admin
-        ownHost: true
         type: public
         paths: [/hook, /api/user, /api/repo]
         forwardPath: true
@@ -86,19 +86,18 @@ adminApps:
   - name: gitea
     tags: [git]
     isShared: true
+    ownHost: true
     ingress:
       - namespace: gitea
         svc: gitea-http
-        ownHost: true
         port: 3000
-        forwardPath: true
         type: public
   - name: grafana
     tags: [tracing, telemetry, observability]
     deps: [prometheus]
+    ownHost: true
     ingress:
       - svc: po-grafana
-        ownHost: true
         namespace: monitoring
         removeRequestHeaders:
           - authorization
@@ -108,22 +107,20 @@ adminApps:
     tags: [security]
     deps: [istio]
     isShared: true
+    ownHost: true
     ingress:
       - svc: harbor-portal
         namespace: harbor
-        ownHost: true
         type: public
         auth: true
       - svc: harbor-core
         namespace: harbor
-        ownHost: true
         paths: [/api/, /c/, /chartrepo/]
         forwardPath: true
         type: public
         auth: true
       - svc: harbor-core
         namespace: harbor
-        ownHost: true
         paths: [/service/, /v1/, /v2/]
         forwardPath: true
         type: public
@@ -134,10 +131,10 @@ adminApps:
   - name: httpbin
     tags: [dev, testing, debugging]
     isShared: true
+    ownHost: true
     ingress:
       - namespace: shared
         svc: httpbin
-        ownHost: true
         type: public
         auth: true
   - name: ingress-nginx
@@ -158,10 +155,10 @@ adminApps:
   - name: keycloak
     tags: [auth, sso]
     deps: [istio]
+    ownHost: true
     ingress:
       - namespace: keycloak
         svc: keycloak-http
-        ownHost: true
         type: public
   - name: kiali
     tags: [tracing, telemetry, observability]
@@ -181,10 +178,10 @@ adminApps:
     tags: [dev, apps]
     deps: [operator-lifecycle-manager]
     isShared: true
+    ownHost: true
     ingress:
       - svc: kubeapps
         namespace: kubeapps
-        ownHost: true
         type: public
         auth: true
   - name: loki
@@ -211,23 +208,18 @@ adminApps:
   #       hide: true
   #       type: public
   #       auth: true
-  - name: otomi-api
+  - name: otomi
     hide: true
     isShared: true
+    ownHost: true
     ingress:
       - svc: otomi-api
         namespace: otomi
-        ownHost: true
         paths: [/api/]
         type: public
         auth: true
-  - name: otomi-console
-    hide: true
-    isShared: true
-    ingress:
       - svc: otomi-console
         namespace: otomi
-        ownHost: true
         type: public
         auth: true
   - name: prometheus
@@ -243,11 +235,11 @@ adminApps:
     tags: [secrets, security, observability]
     deps: [kubernetes-external-secrets]
     isShared: true
+    ownHost: true
     ingress:
       - namespace: vault
         svc: vault-0
         port: 8200
-        ownHost: true
         logo:
           name: vault
         path: ui/vault/secrets/secret/list/teams/#NS#/

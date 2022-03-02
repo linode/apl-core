@@ -2,16 +2,19 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-apiserver
-  namespace: {{ template "prometheus-operator.namespace" . }}
+  name: {{ template "kube-prometheus-stack.fullname" . }}-apiserver
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
-    app: {{ template "prometheus-operator.name" . }}-apiserver
-{{ include "prometheus-operator.labels" . | indent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-apiserver
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- if .Values.kubeApiServer.serviceMonitor.interval }}
     interval: {{ .Values.kubeApiServer.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.kubeApiServer.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubeApiServer.serviceMonitor.proxyUrl}}
     {{- end }}
     port: https
     scheme: https
@@ -19,9 +22,9 @@ spec:
     metricRelabelings:
 {{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.metricRelabelings | indent 6) . }}
 {{- end }}
-{{- if .Values.kubeApiServer.relabelings }}
+{{- if .Values.kubeApiServer.serviceMonitor.relabelings }}
     relabelings:
-{{ toYaml .Values.kubeApiServer.relabelings | indent 6 }}
+{{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.relabelings | indent 6) . }}
 {{- end }}
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt

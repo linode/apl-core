@@ -68,8 +68,8 @@ resources:
                   memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
               service:
                 type: ClusterIP
                 ports:
@@ -96,8 +96,8 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway-private.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway-private.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway-private.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway-private.maxReplicas" }}
               priorityClassName: "otomi-critical"
               resources:
                 {{- with $i | get "resources.ingressgateway-private" nil }}
@@ -147,8 +147,8 @@ resources:
                   memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
               service:
                 type: ClusterIP
                 ports:

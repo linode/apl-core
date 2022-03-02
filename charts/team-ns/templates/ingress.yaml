@@ -1,12 +1,12 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak | default dict }}
+{{- $k := $v.apps.keycloak | default dict }}
 # split list of services into separate ingress types:
 # - core apps that need path forwarding (apps.*/appName stuff)
 # - public/private?
 # - auth/open?
 # - tlsPass?
-{{- range $type := list "public" "private" }}{{/* cluster type does not need ingress*/}}
+{{- range $type := list "public" "private" }}{{/* type "cluster" does not need ingress*/}}
   {{- $apps := list }}
   {{- $appsForward := list }}
   {{- $auth := list }}
@@ -16,7 +16,7 @@
   {{- $tlsPass := list }}
   {{- range $s := $v.services }}
     {{- $ingType := $s.type | default "public" }}
-    {{- if eq $ingType $type }}
+    {{- if and (eq $ingType $type) (not $s.host) }}
       {{- $isApps := and $s.isCore (not (or $s.ownHost $s.isShared)) }}
       {{- $hasAuth := $s.auth | default false }}
       {{- $isTlsPass := $s.tlsPass | default false }}

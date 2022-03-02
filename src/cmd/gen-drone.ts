@@ -79,8 +79,8 @@ export const genDrone = async (): Promise<void> => {
   const providerHome = allValues.home?.drone
   const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
-  const requestsCpu = allValues.apps.drone.resources.runner.requests.cpu
-  const requestsMem = allValues.apps.drone.resources.runner.requests.memory
+  const requestsCpu = allValues.apps.drone.resources?.runner?.requests?.cpu
+  const requestsMem = allValues.apps.drone.resources?.runner?.requests?.memory
 
   const obj = {
     apiKey,

@@ -21,9 +21,8 @@ spec:
       {{- toYaml .Values.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
-{{- if and .Values.rbac.create .Values.serviceAccount.create }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       serviceAccountName: {{ template "prometheus-node-exporter.serviceAccountName" . }}
-{{- end }}
 {{- if .Values.securityContext }}
       securityContext:
 {{ toYaml .Values.securityContext | indent 8 }}
@@ -31,17 +30,27 @@ spec:
 {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
 {{- end }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+      {{ toYaml .Values.extraInitContainers | nindent 6 }}
+      {{- end }}
       containers:
         - name: node-exporter
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "prometheus-node-exporter.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - --path.procfs=/host/proc
             - --path.sysfs=/host/sys
+            {{- if .Values.hostRootFsMount.enabled }}
+            - --path.rootfs=/host/root
+            {{- end }}
             - --web.listen-address=$(HOST_IP):{{ .Values.service.port }}
 {{- if .Values.extraArgs }}
 {{ toYaml .Values.extraArgs | indent 12 }}
 {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext: {{ toYaml . | nindent 12 }}
+          {{- end }}
           env:
           - name: HOST_IP
             {{- if .Values.service.listenOnAllInterfaces }}
@@ -53,8 +62,8 @@ spec:
                 fieldPath: status.hostIP
             {{- end }}
           ports:
-            - name: metrics
-              containerPort: {{ .Values.service.targetPort }}
+            - name: {{ .Values.service.portName }}
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -73,6 +82,14 @@ spec:
             - name: sys
               mountPath: /host/sys
               readOnly: true
+            {{- if .Values.hostRootFsMount.enabled }}
+            - name: root
+              mountPath: /host/root
+              {{- with .Values.hostRootFsMount.mountPropagation }}
+              mountPropagation: {{ . }}
+              {{- end }}
+              readOnly: true
+            {{- end }}
             {{- if .Values.extraHostVolumeMounts }}
             {{- range $_, $mount := .Values.extraHostVolumeMounts }}
             - name: {{ $mount.name }}
@@ -95,6 +112,12 @@ spec:
             - name: {{ $mount.name }}
               mountPath: {{ $mount.mountPath }}
             {{- end }}
+            {{- if .Values.secrets }}
+            {{- range $_, $mount := .Values.secrets }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- end }}
             {{- end }}
 {{- if .Values.sidecars }}
 {{ toYaml .Values.sidecars | indent 8 }}
@@ -108,10 +131,14 @@ spec:
           {{- end }}
 {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
-      hostPID: true
+      hostPID: {{ .Values.hostPID }}
 {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
+{{- with .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
 {{- end }}
 {{- if .Values.nodeSelector }}
       nodeSelector:
@@ -128,6 +155,11 @@ spec:
         - name: sys
           hostPath:
             path: /sys
+        {{- if .Values.hostRootFsMount.enabled }}
+        - name: root
+          hostPath:
+            path: /
+        {{- end }}
         {{- if .Values.extraHostVolumeMounts }}
         {{- range $_, $mount := .Values.extraHostVolumeMounts }}
         - name: {{ $mount.name }}
@@ -147,5 +179,12 @@ spec:
         - name: {{ $mount.name }}
           configMap:
             name: {{ $mount.name }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.secrets }}
+        {{- range $_, $mount := .Values.secrets }}
+        - name: {{ $mount.name }}
+          secret:
+            secretName: {{ $mount.name }}
         {{- end }}
         {{- end }}

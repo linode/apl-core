@@ -8,10 +8,9 @@ import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
-import { getFilename } from '../common/utils'
+import { getFilename, rootDir } from '../common/utils'
 import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { migrate } from './migrate'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
@@ -85,9 +84,8 @@ const commitAndPush = async (): Promise<void> => {
 const bootstrapGit = async (values): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   d.info('Initializing values git repo.')
-  cd(env.ENV_DIR)
   await $`git init ${env.ENV_DIR}`
-  copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
@@ -117,12 +115,13 @@ const bootstrapGit = async (values): Promise<void> => {
     remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
 
-  await $`git config --local user.name ${username}`
-  await $`git config --local user.password ${password}`
-  await $`git config --local user.email ${email}`
-  await $`git checkout -b ${branch}`
-  await $`git remote add origin ${remote}`
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  await $`git -C ${env.ENV_DIR} config --local user.name ${username}`
+  await $`git -C ${env.ENV_DIR} config --local user.password ${password}`
+  await $`git -C ${env.ENV_DIR} config --local user.email ${email}`
+  await $`git -C ${env.ENV_DIR} checkout -b ${branch}`
+  await $`git -C ${env.ENV_DIR} remote add origin ${remote}`
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`))
+    await nothrow($`git -C ${env.ENV_DIR} config --local diff.sopsdiffer.textconv "sops -d"`)
 
   d.log(`Done bootstrapping git`)
 }

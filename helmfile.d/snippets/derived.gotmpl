@@ -47,13 +47,14 @@ environments:
           oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
         apps:
           alertmanager:
-            enabled: {{ and ($a | get "alertmanager.enabled" true) (or ($v | get "alerts" nil) ($v | get "home" nil)) }}
+            enabled: {{ or ($v | get "alerts" false) ($v | get "home" false) }}
           aws-alb-ingress-controller:
-            enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
+            enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
             enabled: false # {{ eq $provider "aws" }}
           {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
           cert-manager:
+            enabled: true
             stage: production
           {{- end }}
           cluster-autoscaler:
@@ -65,10 +66,12 @@ environments:
             sourceControl:
               gitea:
                 server: {{ $a | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
+              {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
               secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
+              {{- end }}
           {{- end }}
           drone-admit-members:
-            enabled: {{ and ($a | get "drone.enabled") (eq $droneProvider "github") }}
+            enabled: {{ eq $droneProvider "github" }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           gitea:
@@ -81,14 +84,24 @@ environments:
             enabled: true
             address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+          kubernetes-external-secrets:
+            enabled: {{ $a | get "vault.enabled" true }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
           metrics-server:
-            enabled: {{ list "onprem" "aws" | has $provider | default ($a | get "metrics-server.enabled" false) }}
+            enabled: {{ $a | get "metrics-server.enabled" (list "onprem" "aws" | has $provider) }}
+          # prometheus:
+          #   collectors:
+          #     mutatingwebhookconfigurations: {{ $a | get "prometheus.kube-state-metrics.mutatingwebhookconfigurations" (ne $provider "azure") }}
+          #     networkpolicies: {{ $a | get "prometheus.kube-state-metrics.networkpolicies" (ne $provider "azure") }}
+          #     validatingwebhookconfigurations: {{ $a | get "prometheus.kube-state-metrics.validatingwebhookconfigurations" (ne $provider "azure") }}
+          #     volumeattachments: {{ $a | get "prometheus.kube-state-metrics.volumeattachments" (ne $provider "azure") }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
+          vault:
+            enabled: {{ $a | get "vault.enabled" true }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}

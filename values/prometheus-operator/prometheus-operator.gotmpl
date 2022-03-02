@@ -46,18 +46,17 @@ prometheusOperator:
       cpu: 100m
       memory: 128Mi
   admissionWebhooks:
-    enabled: false
-  tlsProxy:
-    enabled: false
-  createCustomResource: false # chart 8.2.0 version
-  manageCrds: false # chart > 8.2.0
+    enabled: true
   priorityClassName: "otomi-critical"
 commonLabels:
   prometheus: system
 prometheus:
   prometheusSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
     image:
-      tag: {{ $g | get "image.prometheus.tag" "v2.30.3" }}
+      tag: {{ $g | get "image.prometheus.tag" "v2.33.4" }}
       pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
     podMonitorSelector:
       matchLabels:
@@ -105,6 +104,9 @@ alertmanager:
   {{- if $a.enabled }}
   enabled: true
   alertmanagerSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
     image:
       tag: {{ $a | get "image.tag" "v0.23.0" }}
       pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
@@ -127,7 +129,7 @@ alertmanager:
   enabled: false
   {{- end }}
 grafana:
-  
+  defaultDashboardsTimezone: browser
   downloadDashboards:
     resources:
       limits:
@@ -137,8 +139,8 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: {{ $g | get "image.prometheus.tag" "8.0.7" }}
-    pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
+    tag: {{ $g | get "image.tag" "8.3.6" }}
+    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   initChownData:
     resources:
       limits:
@@ -148,7 +150,7 @@ grafana:
         cpu: 100m
         memory: 128Mi
   resources:
-    {{- with $g | get "resources.prometheus" nil }}
+    {{- with $g | get "resources" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
     limits:
@@ -159,9 +161,6 @@ grafana:
       memory: 128Mi
     {{- end }}
   sidecar:
-    # @TODO:
-    image:
-      tag: 1.15.0
     resources:
       limits:
         cpu: 100m
@@ -209,7 +208,7 @@ kubeApiServer:
 
 kube-state-metrics:
   image:
-    tag: {{ $p | get "image.kube-state-metrics.tag" "v1.8.0" }}
+    tag: {{ $p | get "image.kube-state-metrics.tag" "v2.4.1" }}
     pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
   resources:
     {{- with $p | get "resources.kube-state-metrics" nil }}

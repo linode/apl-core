@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $i := $v.apps | get "istio" }}
 hub: istio
-tag: {{ $i | get "image.tag" "1.10.1" }}
+tag: {{ $i | get "image.tag" "1.13.1" }}
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
 

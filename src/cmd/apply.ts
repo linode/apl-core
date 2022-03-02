@@ -1,7 +1,7 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { isCli } from '../common/envalid'
@@ -69,7 +69,7 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await $`kubectl apply -f charts/prometheus-operator/crds`
+  await nothrow($`kubectl create -f charts/prometheus-operator/crds`)
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {

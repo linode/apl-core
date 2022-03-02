@@ -23,4 +23,6 @@
 OWNERS
 hack/
 ci/
-prometheus-operator-*.tgz
+kube-prometheus-*.tgz
+
+unittests/

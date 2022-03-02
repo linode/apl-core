@@ -67,7 +67,7 @@ metadata:
   name: platform-keycloak
 spec:
   hosts:
-    - {{ trimPrefix "https://" .Values.charts.keycloak.address }}
+    - {{ trimPrefix "https://" .Values.apps.keycloak.address }}
   ports:
     - number: 443
       name: https

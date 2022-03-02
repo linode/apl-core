@@ -5,19 +5,13 @@ environments:
           appgw:
             isManaged: true
         apps:
-          alertmanager:
-            enabled: false
+          alertmanager: {}
           cert-manager:
             issuer: custom-ca
           demo-tlspass:
             enabled: false
           drone:
             enabled: true
-            resources:
-              runner:
-                requests:
-                  cpu: 1000
-                  memory: 1Gi
             sourceControl:
               provider: gitea
               username: otomi-admin
@@ -56,7 +50,17 @@ environments:
                 minReplicas: 1
                 maxReplicas: 10
           istio:
+            enabled: true
             autoscaling:
+              egressgateway:
+                minReplicas: 1
+                maxReplicas: 10
+              ingressgateway:
+                minReplicas: 1
+                maxReplicas: 10
+              ingressgateway-private:
+                minReplicas: 1
+                maxReplicas: 10
               pilot:
                 minReplicas: 1
                 maxReplicas: 10
@@ -79,8 +83,6 @@ environments:
             enabled: false
           kube-descheduler:
             enabled: false
-          kubernetes-external-secrets:
-            enabled: false
           loki: {}
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
@@ -93,6 +95,8 @@ environments:
             enabled: false
           vault:
             enabled: true
+        cluster: {}
+        oidc: {}
         otomi:
           hasCloudLB: false
           hasExternalDNS: false
@@ -100,8 +104,7 @@ environments:
           isHomeMonitored: false
           isManaged: true
           isMultitenant: true
-        teamConfig:
-          teams: {}
+        teamConfig: {}
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

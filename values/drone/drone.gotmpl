@@ -84,10 +84,10 @@ agent:
     DRONE_DEBUG: {{ $debug }}
   runnerEnv: |
     {{- $sopsEnv | nindent 4 }}
-    {{- with $d | get "resources.runner.cpu" nil }}
+    {{- with $d | get "resources.runner.requests.cpu" nil }}
     DRONE_RESOURCE_REQUEST_CPU: {{ . }}
     {{- end }}
-    {{- with $d | get "resources.runner.memory" nil }}
+    {{- with $d | get "resources.runner.requests.memory" nil }}
     DRONE_RESOURCE_REQUEST_MEMORY: {{ . }}
     {{- end }}
     {{- if and $hasGitea $v._derived.untrustedCA }}

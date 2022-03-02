@@ -1,4 +1,4 @@
-charts:
+apps:
   istio:
     autoscaling:
       pilot:

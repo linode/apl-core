@@ -8,19 +8,19 @@ bases:
   - snippets/derived.gotmpl
 ---
 {{- $v := .Values }}
+{{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-{{- if $v.apps | get $s.name | get "enabled" false }}
+{{- if $a | get $s.name | get "enabled" false }}
 {{- range $ing := $s | get "ingress" list }}
-{{- $svc := merge $ing (dict "isCore" true "name" $s.name) }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}
 {{- end }}
 {{- end }}
 {{- end }}
-{{- $a := $v.apps }}
-{{- $cm := index $v.apps "cert-manager" }}
-{{- $po := index $v.apps "prometheus-operator" }}
+{{- $cm := $a | get "cert-manager" }}
+{{- $po := $a | get "prometheus" }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 
@@ -39,7 +39,7 @@ releases:
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        charts: {{- $v.apps | toYaml | nindent 10 }}
+        apps: {{- $a | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}

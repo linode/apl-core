@@ -1,32 +1,32 @@
 {{- $v := . }}
 {{- $tc := $v.teamConfig }}
 {{- $coreAdminServices := list }}
-{{- range $s := $v.apps }}
+{{- range $s := $v.adminApps }}
 {{- range $ing := $s | get "ingress" list }}
-{{- $svc := merge $s (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false)) }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
 {{- $coreAdminServices = append $coreAdminServices $svc }}
 {{- end }}
 {{- end }}
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
 {{- range $ing := $s | get "ingress" list }}
-{{- $svc := merge $s (dict "isCore" true "name" $s.name) }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" false "ownHost" ($s | get "ownHost" false)) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}
 {{- end }}
 {{- end }}
 {{- $domains := dict }}
-{{- $teams := set $tc.teams "admin" dict }}
-{{- range $teamId, $team := $tc.teams }}
+{{- $_ := set $tc "admin" dict }}
+{{- range $teamId, $team := $tc }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domainSuffix }}
   {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
   {{- range $s := $services }}
-    {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) }}
+    {{- if not (hasKey $s "host") }}
       {{- $domain := printf "apps.%s" $baseDomain }}
       {{- if hasKey $s "domain" }}
         {{- $domain = $s.domain }}
-      {{- else if hasKey $s "isShared" }}
+      {{- else if $s | get "isShared" false }}
         {{- $domain = printf "%s.%s" $s.name $v.cluster.domainSuffix }}
-      {{- else if hasKey $s "ownHost" }}
+      {{- else if $s | get "ownHost" false }}
         {{- $domain = printf "%s.%s" $s.name $baseDomain }}
       {{- end }}
       {{- if not (hasKey $domains $domain) }}

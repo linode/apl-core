@@ -1167,12 +1167,13 @@ properties:
   apps:
     additionalProperties: true
     properties:
-      alert-manager:
+      alertmanager:
         additionalProperties: false
         properties:
-          enabled:
-            type: boolean
-            default: false
+          image:
+            $ref: '#/definitions/imageSimple'
+          resources:
+            $ref: '#/definitions/resources'
       cert-manager:
         properties:
           _rawValues:
@@ -1311,9 +1312,11 @@ properties:
                       cpu:
                         description: Requested compute resources for all the containers started by the runner (guaranteed), expressed in millicores.
                         type: integer
+                        default: 1000
                       memory:
                         $ref: '#/definitions/memoryQuantity'
                         description: Requested memory resources for all the containers started by the runner (guaranteed).
+                        default: 1Gi
               agent:
                 $ref: '#/definitions/resources'
               server:
@@ -1409,6 +1412,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+            default: false
           auditInterval:
             type: integer
             default: 60
@@ -2418,14 +2422,6 @@ properties:
       - clientID
       - clientSecret
       - issuer
-  internal:
-    additionalProperties: true
-    description: INTERNAL USE ONLY - we store configuration here that is shared across multiple charts
-    type: object
-    properties:
-      untrustedCA:
-        type: boolean
-        default: false
   otomi:
     additionalProperties: false
     properties:

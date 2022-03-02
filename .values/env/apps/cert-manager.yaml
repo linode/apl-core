@@ -1,3 +1,0 @@
-apps:
-    cert-manager:
-        enabled: true
