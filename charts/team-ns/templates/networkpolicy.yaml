@@ -1,6 +1,6 @@
 {{- $v := .Values | merge (dict) }}
 {{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
-
+{{- $ := . }}
 {{- if not (eq $v.teamId "admin") }}
 {{- if (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
@@ -8,6 +8,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-ingress-deny
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   podSelector: {}
   policyTypes:
@@ -17,6 +18,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-ingress-platform
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   # Match all Pods in this namespace
   podSelector: {}
@@ -55,6 +57,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ $s.name }}-ingress-from-all-teams
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -77,6 +80,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ $s.name }}-ingress-allow-only
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
