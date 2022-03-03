@@ -1,0 +1,18 @@
+type: Job
+name: autoconfig
+spec:
+  template:
+    spec:
+      containers:
+      - name: autoconfig
+        image: otomi/e2e-test
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "AUTOCONFIG TASK: Creating Keycloak user"
+          yarn cypress run --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
+          echo "AUTOCONFIG TASK: Actuvate drone"
+          yarn cypress run --spec 'cypress/integration/otomi-applications/20-drone.feature'
+      restartPolicy: Never
+  backoffLimit: 4

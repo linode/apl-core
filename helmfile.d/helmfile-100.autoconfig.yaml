@@ -1,0 +1,19 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: job-autoconfig
+    installed:  true
+    <<: *jobs
+    labels:
+      group: jobs
