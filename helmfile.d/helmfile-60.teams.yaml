@@ -25,7 +25,8 @@ bases:
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 
 releases:
-  {{- range $teamId, $team := $tc | get "teams" dict }}
+  {{- range $teamId, $team := $tc }}
+  {{- if ne $teamId "admin" }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
@@ -223,6 +224,7 @@ releases:
       - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
+  {{- end }}
   {{- end }}
   {{- end }}
   {{- end }}

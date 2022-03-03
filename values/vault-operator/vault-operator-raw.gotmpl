@@ -157,11 +157,13 @@ resources:
                     capabilities = ["create", "read", "update", "delete", "list"]
               }
           {{- range $teamId, $team := $tc }}
+          {{- if ne $teamId "admin" }}
           - name: allow-team-{{ $teamId }}
             rules: |
               path "secret/data/teams/team-{{ $teamId }}/*" {
                     capabilities = ["create", "update", "read", "delete", "list"]
               }
+          {{- end }}
           {{- end }}
           - name: allow-all-secrets
             rules: |
@@ -205,6 +207,7 @@ resources:
 
         groups:
           {{- range $teamId, $team := $tc }}
+          {{- if ne $teamId "admin" }}
           - name: team-{{ $teamId }}
             type: external
             policies: 
@@ -213,6 +216,7 @@ resources:
             - allow-list-all-secrets
             metadata: {}
           {{- end }}
+          {{- end }}
           - name: team-admin
             type: external
             policies: 
@@ -220,9 +224,11 @@ resources:
             metadata: {}
         group-aliases:
           {{- range $teamId, $team := $tc }}
+          {{- if ne $teamId "admin" }}
           - name: team-{{ $teamId }}
             group: team-{{ $teamId }}
             mountpath: oidc/
+          {{- end }}
           {{- end }}
           - name: team-admin
             group: team-admin
@@ -238,6 +244,7 @@ resources:
         # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
         startupSecrets:
         {{- range $teamId, $team := $tc }}
+          {{- if ne $teamId "admin" }}
           {{- if eq $teamId "demo" }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/mysecret-generic
@@ -250,6 +257,7 @@ resources:
             data:
               data:
                 HELLO: "Welcome {{ $teamId }} team"
+        {{- end }}
         {{- end }}
           - type: kv
             path: secret/data/teams/team-admin/otomi-welcome

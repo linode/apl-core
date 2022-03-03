@@ -99,6 +99,7 @@ export const genDrone = async (): Promise<void> => {
     requestsCpu,
     requestsMem,
     responders,
+    respondersHome,
     webhook,
     webhookHome,
   }

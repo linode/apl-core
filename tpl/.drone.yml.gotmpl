@@ -57,7 +57,7 @@ steps:
           "message": "Started syncing cluster",
           "description": "Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
           "note": "Status: {{ print "{" "{" }} build.status {{ print "}" "}" }}"
-          "responders": {{ .responders }}
+          "responders": {{ .responders | toJson }}
         }
 
 {{- end }}
@@ -93,7 +93,7 @@ steps:
           "message": "Started syncing cluster",
           "description": "Started syncing cluster '{{ .cloudProvider }}/{{ .cluster }}' for owner '{{ .owner }}'...",
           "note": "Status: {{ print "{" "{" }} build.status {{ print "}" "}" }}"
-          "responders": {{ .responders }}
+          "responders": {{ .respondersHome | toJson }}
         }
 
 {{- end }}

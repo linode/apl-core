@@ -85,7 +85,7 @@ tools:
       memory: 128Mi
   {{- end }}
   env:
-    # DEBUG: '*'
+    DEBUG: '*'
     VERBOSITY: '1'
 
 podSecurityContext:
@@ -94,5 +94,4 @@ podSecurityContext:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
-  - name: gcr-json-key 
 {{- end }}
