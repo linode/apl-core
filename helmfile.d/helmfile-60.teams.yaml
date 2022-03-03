@@ -12,7 +12,7 @@ bases:
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-{{- if $a | get $s.name | get "enabled" false }}
+{{- if $a | get $s.name | get "enabled" true }}
 {{- range $ing := $s | get "ingress" list }}
 {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
 {{- $coreTeamServices = append $coreTeamServices $svc }}
