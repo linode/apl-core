@@ -9,12 +9,14 @@ definitions:
     additionalProperties: false
     properties:
       drone:
-        default: slack
-        enum:
-          - slack
-          - msteams
-          - opsgenie
-        type: string
+        items:
+          enum:
+            - slack
+            - msteams
+            - opsgenie
+          type: string
+        type: array
+        uniqueItems: true
       email:
         additionalProperties: false
         properties:
@@ -51,6 +53,7 @@ definitions:
             - email
           type: string
         type: array
+        uniqueItems: true
       repeatInterval:
         default: 3h
         description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
@@ -110,61 +113,6 @@ definitions:
                         username:
                           $ref: '#/definitions/idName'
               required: [type]
-    allOf:
-      - anyOf:
-          - not:
-              required:
-                - receivers
-          - properties:
-              receivers:
-                equals: []
-          - properties:
-              receivers:
-                contains:
-                  enum:
-                    - email
-            required:
-              - email
-          - properties:
-              receivers:
-                contains:
-                  enum:
-                    - msteams
-            required:
-              - msteams
-          - properties:
-              receivers:
-                contains:
-                  enum:
-                    - slack
-            required:
-              - slack
-          - properties:
-              receivers:
-                contains:
-                  enum:
-                    - opsgenie
-            required:
-              - opsgenie
-      - anyOf:
-          - not:
-              required:
-                - drone
-          - properties:
-              drone:
-                const: msteam
-            required:
-              - msteam
-          - properties:
-              drone:
-                const: slack
-            required:
-              - slack
-          - properties:
-              drone:
-                const: opsgenie
-            required:
-              - opsgenie
 
   annotations:
     $ref: '#/definitions/labelsAnnotations'
@@ -1168,6 +1116,9 @@ properties:
       alertmanager:
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
+            description: Discarded as derived from otomi flags.
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -1176,6 +1127,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            description: Discarded as derived from otomi flags.
           customRootCA:
             x-secret: '' # made secret to let it be added to k8s secret for chart install
             type: string
@@ -1241,10 +1195,10 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          cpu:
-            $ref: '#/definitions/cpuQuantity'
           enabled:
             type: boolean
+          cpu:
+            $ref: '#/definitions/cpuQuantity'
           memory:
             $ref: '#/definitions/memoryQuantity'
       demo-tlspass:
@@ -1262,6 +1216,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            description: Discarded as this is a core app.
           adminIsMachine:
             type: boolean
             default: false
@@ -1271,9 +1228,6 @@ properties:
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
           debug:
-            default: false
-            type: boolean
-          enabled:
             default: false
             type: boolean
           githubAdmins:
@@ -1394,12 +1348,13 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            description: Discarded as derived from otomi flags.
           domainFilters:
             items:
               type: string
             type: array
-          enabled:
-            type: boolean
           zoneIdFilters:
             items:
               type: string
@@ -2137,7 +2092,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           logLevel:
             $ref: '#/definitions/logLevel'
           seal:

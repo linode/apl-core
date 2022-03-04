@@ -67,3 +67,10 @@ export const startServer = (): void => {
   server = app.listen(17771, '0.0.0.0')
   d.log(`Container listening on http://0.0.0.0:17771`)
 }
+
+// Start server if invoked directly. We expect the script name to be the last arg
+const a = process.argv
+const lastArg = a[a.length - 1]
+if (a.length && __filename.includes(lastArg)) {
+  startServer()
+}

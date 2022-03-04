@@ -201,7 +201,7 @@ export const generateSecrets = async (
   })
   d.debug('secrets: ', secrets)
   d.info('First round of templating')
-  const firstTemplateRound = (await gucci(secrets, {}, { asObject: true })) as Record<string, any>
+  const firstTemplateRound = (await gucci(secrets, {})) as Record<string, any>
   const firstTemplateFlattend = flattenObject(firstTemplateRound)
 
   d.info('Parsing values for second round of templating')
@@ -239,9 +239,7 @@ export const generateSecrets = async (
   d.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
 
   d.info('Second round of templating')
-  const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate, {
-    asObject: true,
-  })) as Record<string, any>
+  const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate)) as Record<string, any>
   d.debug('secondTemplateRound: ', secondTemplateRound)
 
   d.info('Generated all secrets')

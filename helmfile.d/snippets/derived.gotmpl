@@ -90,12 +90,6 @@ environments:
             enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (list "onprem" "aws" | has $provider) }}
-          # prometheus:
-          #   collectors:
-          #     mutatingwebhookconfigurations: {{ $a | get "prometheus.kube-state-metrics.mutatingwebhookconfigurations" (ne $provider "azure") }}
-          #     networkpolicies: {{ $a | get "prometheus.kube-state-metrics.networkpolicies" (ne $provider "azure") }}
-          #     validatingwebhookconfigurations: {{ $a | get "prometheus.kube-state-metrics.validatingwebhookconfigurations" (ne $provider "azure") }}
-          #     volumeattachments: {{ $a | get "prometheus.kube-state-metrics.volumeattachments" (ne $provider "azure") }}
           prometheus-msteams:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:

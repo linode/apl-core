@@ -139,7 +139,7 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: {{ $g | get "image.tag" "8.3.6" }}
+    tag: {{ $g | get "image.tag" "8.4.3" }}
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   initChownData:
     resources:
@@ -201,7 +201,8 @@ grafana:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
-      root_url: https://{{ $grafanaDomain }}
+      root_url: https://{{ $appsDomain }}
+      # serve_from_sub_path: true
 
 kubeApiServer:
   enabled: false

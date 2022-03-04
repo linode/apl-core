@@ -1,5 +1,5 @@
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
-{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
 {{- if $egressFilteringEnabled }}
@@ -8,7 +8,7 @@
 {{- range $entry := (dig "networkPolicy" "egressPublic" (list) $s) }}
 {{- $host := $entry.domain }}
 {{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
-{{/* Service entry names need to globally unique */}}
+{{/* Service entry names need to be globally unique */}}
 {{- $serviceName := printf "%s-%s-%s" $v.teamId $s.name $hostName }}
 {{/* check if host is either IPv4 or IPv6 address */}}
 {{- $isIp := regexMatch "^([a-f0-9:]+:+)+[a-f0-9]+$|^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$" $host }}

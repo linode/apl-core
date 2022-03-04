@@ -30,7 +30,8 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
-          grafana: {}
+          grafana:
+            enabled: true
           harbor:
             enabled: false
           hello:
@@ -83,18 +84,21 @@ environments:
             enabled: false
           kube-descheduler:
             enabled: false
-          loki: {}
+          loki:
+            enabled: true
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}
           otomi-console: {}
-          promtail: {}
+          promtail:
+            enabled: true
           prometheus-blackbox-exporter: {}
-          prometheus: {}
+          prometheus:
+            enabled: true
           redis-shared:
             enabled: false
           vault:
-            enabled: true
+            enabled: false
         cluster: {}
         oidc: {}
         otomi:

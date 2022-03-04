@@ -87,6 +87,7 @@
     "ts-auto-mock": "^3.5.0",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.1.0",
+    "ts-node-dev": "^1.1.8",
     "ttypescript": "^1.5.13",
     "typescript": "^4.6.2"
   },
@@ -135,6 +136,7 @@
     "lint:types": "tsc",
     "migrate-values": "ENV_DIR=$PWD/.values binzx/otomi migrate && ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate && ENV_DIR=$PWD/tests/kind binzx/otomi migrate",
     "prepare": "husky install",
+    "server": "ts-node-dev --watch 'values-schema.yaml,src/**/*.ts' --inspect=4320 --respawn --transpile-only -r dotenv/config src/server/index.ts",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
     "run-if-changed": "run-if-changed",
@@ -143,7 +145,7 @@
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
     "test": "TESTING=1 run-s test:ts validate-values lint validate-templates check-policies",
     "test:opa": "binzx/otomi x opa test policies -v",
-    "test:ts": "jest",
+    "test:ts": "TESTING=1 jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "TESTING=1 binzx/otomi validate-templates",
     "validate-values": "TESTING=1 binzx/otomi validate-values"

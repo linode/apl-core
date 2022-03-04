@@ -8,16 +8,17 @@ describe('Upgrading values', () => {
   const mockChanges: Changes = [
     {
       version: 1,
-      mutations: [{ 'some.version': 'printf "v%s"' }],
+      mutations: [{ 'some.version': 'printf "v%s" .prev' }],
     },
     {
       version: 2,
       deletions: ['some.json.path'],
       relocations: [{ 'some.json': 'some.bla' }],
+      mutations: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
-      mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
+      mutations: [{ 'some.k8sVersion': 'printf "v%s" .prev' }],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
   ]
@@ -28,7 +29,7 @@ describe('Upgrading values', () => {
     })
   })
   describe('Apply changes to values', () => {
-    const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
+    const mockValues = { version: oldVersion, strToArray: 'ok', some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
     const deps = {
       rename: jest.fn(),
       hfValues: jest.fn().mockReturnValue(mockValues),
@@ -39,8 +40,9 @@ describe('Upgrading values', () => {
       await applyChanges(mockChanges.slice(1), false, deps)
       expect(deps.writeValues).toBeCalledWith(
         {
-          version: 3,
           some: { bla: {}, k8sVersion: 'v1.18' },
+          strToArray: ['ok'],
+          version: 3,
         },
         true,
       )

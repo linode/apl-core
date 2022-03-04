@@ -1,6 +1,5 @@
 import { existsSync } from 'fs'
 import { load } from 'js-yaml'
-import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
@@ -8,7 +7,6 @@ import { asArray, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 type HFParams = {
@@ -63,19 +61,10 @@ type HFOptions = {
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
-  // we do some transformations to strip out unwanted noise, which helmfile generates because reasons
-  const transform = new Transform({
-    transform(chunk, encoding, next) {
-      const str = chunk.toString()
-      const transformation = trimHFOutput(str).trim()
-      if (transformation && transformation.length > 0) this.push(transformation)
-      next()
-    },
-  })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
   const output = {
     stdout: proc.stdout,
-    stderr: proc.stderr, // .pipe(transform),
+    stderr: proc.stderr,
     proc,
   }
 

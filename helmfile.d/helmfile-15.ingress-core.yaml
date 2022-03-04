@@ -12,8 +12,8 @@ bases:
 {{- $a := $v.apps }}
 {{- $coreAdminServices := list }}
 {{- range $s := $v.adminApps }}
-{{- if $v.apps | get $s.name dict | get "enabled" true }}
-{{- range $ing := $s | get "ingress" list }}
+{{- if and ($v.apps | get $s.name dict | get "enabled" true) (hasKey $s "ingress") }}
+{{- range $ing := $s.ingress }}
 {{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
 {{- $coreAdminServices = append $coreAdminServices $svc }}
 {{- end }}

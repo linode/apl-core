@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to current script",
+      "protocol": "inspector",
+      "port": 4320,
+      "restart": true,
+      "cwd": "${workspaceRoot}"
+    },
+    {
       "name": "Debug bootstrap",
       "console": "integratedTerminal",
       "type": "pwa-node",
@@ -18,6 +27,7 @@
       "envFile": "${workspaceFolder}/.env",
       "env": {
         "CI": "1",
+        "TESTING": "1",
         "DISABLE_SYNC": "1",
         "IN_DOCKER": "1",
         "OTOMI_DEV": "1"
@@ -151,6 +161,9 @@
       "disableOptimisticBPs": true,
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "npm",
+      "env": {
+        "TESTING": "1"
+      },
       "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false"]
     },
     {
@@ -162,6 +175,9 @@
       "disableOptimisticBPs": true,
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "npm",
+      "env": {
+        "TESTING": "1"
+      },
       "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false", "${file}"]
     }
   ]

@@ -128,7 +128,7 @@ export const applyChanges = async (
     if (c.mutations)
       for (const mut of c.mutations) {
         const path = Object.keys(mut)[0]
-        const tmpl = `{{ ${Object.values(mut)[0]} .prev }}`
+        const tmpl = `{{ ${Object.values(mut)[0]} }}`
         const prev = get(values, path)
         const ret = await gucci(tmpl, { prev })
         set(values, path, ret)

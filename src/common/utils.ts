@@ -78,8 +78,8 @@ export interface GucciOptions {
 export const gucci = async (
   tmpl: string | unknown,
   ctx: { [key: string]: any },
-  opts?: GucciOptions,
-): Promise<string | Record<string, any>> => {
+  asString = false,
+): Promise<string | unknown> => {
   const kv = flattenObject(ctx)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
@@ -100,9 +100,12 @@ export const gucci = async (
       // input string is a go template content
       processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci -o missingkey=zero ${gucciArgs}`
     }
-    // Defaults to returning string, unless stated otherwise
-    if (!opts?.asObject) return processOutput.stdout.trim()
-    return load(processOutput.stdout.trim()) as Record<string, any>
+    const ret = processOutput.stdout.trim()
+    if (asString) {
+      return ret
+    }
+    // translate the output from yaml to js, and return it, whatever shape
+    return load(ret)
   } finally {
     $.quote = quoteBackup
   }

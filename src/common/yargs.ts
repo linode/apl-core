@@ -32,7 +32,7 @@ export const setParsedArgs = (args: BasicArguments): void => {
   logLevel(parsedArgs)
 }
 export const getParsedArgs = (): BasicArguments => {
-  return parsedArgs
+  return parsedArgs || {}
 }
 
 const helmOpts: { [key: string]: Options } = {

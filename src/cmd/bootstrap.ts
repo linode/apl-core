@@ -65,7 +65,7 @@ export const bootstrapSops = async (
   const values = exists ? {} : await deps.hfValues()
 
   d.log(`Creating sops file for provider ${provider}`)
-  const output = (await deps.gucci(templatePath, obj)) as string
+  const output = (await deps.gucci(templatePath, obj, true)) as string
   deps.writeFileSync(targetPath, output)
   d.log(`Ready generating sops files. The configuration is written to: ${targetPath}`)
 
