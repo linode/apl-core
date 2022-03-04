@@ -1,9 +1,10 @@
 nameOverride: ""
 fullnameOverride: ""
 
-image:
-  repo: quay.io/kiali/kiali-operator
-  tag: v1.39.0
+image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
+  repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
+  tag: v1.47.0 # version string like v1.39.0 or a digest hash
+  digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
 
@@ -12,7 +13,10 @@ nodeSelector: {}
 podAnnotations: {}
 env: []
 tolerations: []
-resources: {}
+resources:
+  requests:
+    cpu: "10m"
+    memory: "64Mi"
 affinity: {}
 replicaCount: 1
 priorityClassName: ""
@@ -36,6 +40,15 @@ watchNamespace: ""
 # if you want to support Kiali CRs with spec.deployment.accessible_namespaces of '**'.
 # Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.accessible_namespaces is ['**'].
 clusterRoleCreator: true
+
+# Set to a list of secrets in the cluster that the operator will be allowed to read. This is necessary if you want to
+# support Kiali CRs with spec.kiali_feature_flags.certificates_information_indicators.enabled=true.
+# The secrets in this list will be the only ones allowed to be specified in any Kiali CR (in the setting
+# spec.kiali_feature_flags.certificates_information_indicators.secrets).
+# If you set this to an empty list, the operator will not be given permission to read any additional secrets
+# found in the cluster, and thus will only support a value of "false" in the Kiali CR setting
+# spec.kiali_feature_flags.certificates_information_indicators.enabled.
+secretReader: ['cacerts', 'istio-ca-secret']
 
 # Set to true if you want to allow the operator to only be able to install Kiali in view-only-mode.
 # The purpose for this setting is to allow you to restrict the permissions given to the operator itself.

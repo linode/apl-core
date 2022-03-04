@@ -3,7 +3,7 @@
 
 image:
   # @TODO:
-  tag: v1.44.0
+  tag: v1.47.0
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
@@ -27,7 +27,7 @@ cr:
           cpu: 500m
           memory: 512Mi
         requests:
-          cpu: 10m
+          cpu: 50m
           memory: 32Mi
       verbose_mode: "4"
     external_services:
@@ -102,7 +102,7 @@ cr:
 resources:
   limits:
     cpu: 800m
-    memory: 256Mi
+    memory: 512Mi
   requests:
     cpu: 100m
     memory: 150Mi
