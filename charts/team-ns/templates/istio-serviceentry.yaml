@@ -25,8 +25,8 @@ spec:
     - {{ $hostName }}  # not used but still mandatory
   addresses:
     - {{ $host | quote }}
-{{- range $port := $entry.ports }}
   ports:
+{{- range $port := $entry.ports }}
   - number: {{ $port.number }}
     name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
     protocol: {{ $port.protocol }}
@@ -47,8 +47,8 @@ metadata:
 spec:
   hosts:
   - {{ $host }}
-{{- range $port := $entry.ports }}
   ports:
+{{- range $port := $entry.ports }}
   - number: {{ $port.number }}
     name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
     protocol: {{ $port.protocol }}
