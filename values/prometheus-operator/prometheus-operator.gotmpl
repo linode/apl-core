@@ -33,8 +33,6 @@ kubeScheduler:
 kubeProxy:
   enabled: false
 {{- end }}
-commonLabels:
-  prometheus: system
 prometheusOperator:
   podAnnotations:
     sidecar.istio.io/inject: "false"
@@ -56,23 +54,12 @@ prometheusOperator:
 prometheus:
   namespaceOverride: prometheus
   prometheusSpec:
-    podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "true"
-      labels:
-        prometheus: system
     image:
       tag: {{ $g | get "image.prometheus.tag" "v2.33.4" }}
       pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
-    podMonitorSelector:
-      matchLabels:
-        prometheus: system
-    serviceMonitorSelector:
-      matchLabels:
-        prometheus: system
-    probeSelector:
-      matchLabels:
-        prometheus: system
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
     resources:
       {{- with $p | get "resources" nil }}
         {{- toYaml . | nindent 6 }}
@@ -190,12 +177,12 @@ grafana:
       type: loki
       access: proxy
       {{- if $v.otomi.isMultitenant }}
-      url: http://loki:11811
+      url: http://loki.monitoring:11811
       basicAuth: true
       basicAuthUser: admins
       basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
-      url: http://loki:3100
+      url: http://loki.monitoring:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}

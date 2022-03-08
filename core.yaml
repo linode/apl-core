@@ -57,7 +57,7 @@ adminApps:
     deps: [prometheus]
     ingress:
       - svc: po-alertmanager
-        namespace: alertmanager
+        namespace: monitoring
         port: 9093
         type: public
         auth: true
@@ -232,7 +232,7 @@ adminApps:
     ingress:
       - svc: po-prometheus
         port: 9090
-        namespace: prometheus
+        namespace: monitoring
         type: public
         auth: true
   - name: vault

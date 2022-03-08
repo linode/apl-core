@@ -78,6 +78,7 @@ releases:
         fullnameOverride: {{ $teamId }}-po
         {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
+          namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
@@ -87,19 +88,9 @@ releases:
             alertmanager: false
         enabled: false
         {{- end }}
-        commonLabels:
-          prometheus: team-{{ $teamId }}
         prometheus:
+          namespaceOverride: team-{{ $teamId }}
           prometheusSpec:
-            podMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            serviceMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            probeSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
             externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:
@@ -143,6 +134,7 @@ releases:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
         grafana:
+          namespaceOverride: team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:

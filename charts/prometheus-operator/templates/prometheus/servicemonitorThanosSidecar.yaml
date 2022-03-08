@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "kube-prometheus-stack.fullname" . }}-thanos-discovery
-  namespace: {{ template "kube-prometheus-stack-prometheus.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-thanos-discovery
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
@@ -14,7 +14,7 @@ spec:
       release: {{ $.Release.Name | quote }}
   namespaceSelector:
     matchNames:
-      - {{ printf "%s" (include "kube-prometheus-stack-prometheus.namespace" .) | quote }}
+      - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
   endpoints:
   - port: {{ .Values.prometheus.thanosService.httpPortName }}
     {{- if .Values.prometheus.thanosServiceMonitor.interval }}

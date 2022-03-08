@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
-  namespace: {{ template "kube-prometheus-stack-alertmanager.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
@@ -15,7 +15,7 @@ spec:
       self-monitor: "true"
   namespaceSelector:
     matchNames:
-      - {{ printf "%s" (include "kube-prometheus-stack-alertmanager.namespace" .) | quote }}
+      - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
   endpoints:
   - port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
     {{- if .Values.alertmanager.serviceMonitor.interval }}
