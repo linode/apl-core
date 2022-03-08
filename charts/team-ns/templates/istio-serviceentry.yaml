@@ -1,5 +1,6 @@
 {{- $v := .Values | merge (dict) }}
 {{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $ := . }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
 {{- if $egressFilteringEnabled }}
@@ -7,7 +8,7 @@
 {{- if not $s.isCore }}
 {{- range $entry := (dig "networkPolicy" "egressPublic" (list) $s) }}
 {{- $host := $entry.domain }}
-{{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" ) }}
+{{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" | replace "/" "-" ) }}
 {{/* Service entry names need to globally unique */}}
 {{- $serviceName := printf "%s-%s-%s" $v.teamId $s.name $hostName }}
 {{/* check if host is either IPv4 or IPv6 address */}}
@@ -18,13 +19,14 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: {{ $serviceName }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
     - {{ $hostName }}  # not used but still mandatory
   addresses:
     - {{ $host | quote }}
-{{- range $port := $entry.ports }}
   ports:
+{{- range $port := $entry.ports }}
   - number: {{ $port.number }}
     name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
     protocol: {{ $port.protocol }}
@@ -41,11 +43,12 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: {{ $serviceName }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
   - {{ $host }}
-{{- range $port := $entry.ports }}
   ports:
+{{- range $port := $entry.ports }}
   - number: {{ $port.number }}
     name: {{ printf "%s-%s" (lower $port.protocol) (toString $port.number) }}
     protocol: {{ $port.protocol }}
@@ -65,6 +68,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: platform-keycloak
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
     - {{ trimPrefix "https://" .Values.charts.keycloak.address }}
