@@ -1,18 +1,24 @@
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $k := $c.keycloak }}
+
 type: Job
 name: autoconfig
-spec:
-  template:
-    spec:
-      containers:
-      - name: autoconfig
-        image: otomi/e2e-test:master
-        command:
-        - /bin/sh
-        - -c
-        - |
-          echo "AUTOCONFIG TASK: Creating Keycloak user"
-          yarn cypress run --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
-          echo "AUTOCONFIG TASK: Actuvate drone"
-          yarn cypress run --spec 'cypress/integration/otomi-applications/20-drone.feature'
-      restartPolicy: Never
-  backoffLimit: 4
+
+image:
+  registry: docker.io
+  repository: otomi/e2e-test
+  tag: master
+  pullPolicy: Always
+files:
+  /tmp/node/certificates.crt: |
+    {{- $v._derived.caCert | nindent 4 }}
+  /app/cypress.env.json: |
+    {{- readFile "config/cypress.env.json" | replace "BASE_URL_VALUE" $v.cluster.domainSuffix | replace "ROOT_USERNAME_VALUE" $k.adminUsername | replace "ROOT_PASSWORD_VALUE" $k.adminPassword | nindent 4  }}
+
+script: |
+    echo "AUTOCONFIG TASK: Creating Keycloak user"
+    yarn cypress run --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
+    echo "AUTOCONFIG TASK: Actuvate drone"
+    yarn cypress run --spec 'cypress/integration/otomi-applications/20-drone.feature'
