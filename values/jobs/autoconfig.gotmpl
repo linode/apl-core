@@ -1,8 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $cm := $c | get "cert-manager" }}
 {{- $k := $c.keycloak }}
-
+{{- $cypressFile := dict "BASE_URL" $v.cluster.domainSuffix "ROOT_USERNAME" $k.adminUsername "ROOT_PASSWORD" $k.adminPassword}}
 type: Job
 name: autoconfig
 
@@ -12,10 +11,8 @@ image:
   tag: master
   pullPolicy: Always
 files:
-  /tmp/node/certificates.crt: |
-    {{- $v._derived.caCert | nindent 4 }}
   /app/cypress.env.json: |
-    {{- readFile "config/cypress.env.json" | replace "BASE_URL_VALUE" $v.cluster.domainSuffix | replace "ROOT_USERNAME_VALUE" $k.adminUsername | replace "ROOT_PASSWORD_VALUE" $k.adminPassword | nindent 4  }}
+    {{- $cypressFile | toJson | nindent 4 }}
 
 script: |
     echo "AUTOCONFIG TASK: Creating Keycloak user"
