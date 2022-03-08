@@ -29,6 +29,7 @@ releases:
   {{- if ne $teamId "admin" }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
+  {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}
     installed: true
@@ -96,6 +97,9 @@ releases:
             serviceMonitorSelector:
               matchLabels:
                 prometheus: team-{{ $teamId }}
+            probeSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
             externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:
@@ -143,7 +147,7 @@ releases:
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:
             server:
-              root_url: https://{{ $appsDomain }}/grafana
+              root_url: https://{{ $grafanaDomain }}
           sidecar:
             datasources:
               defaultDatasourceEnabled: false

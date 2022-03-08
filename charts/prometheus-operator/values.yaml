@@ -127,6 +127,10 @@ alertmanager:
   ##
   enabled: true
 
+  ## The namespace for alertmanager related resources (defaults to use the namespace this chart is deployed to)
+  ##
+  namespaceOverride: ""
+
   ## Annotations for Alertmanager
   ##
   annotations: {}
@@ -405,6 +409,9 @@ alertmanager:
   ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#alertmanagerspec
   ##
   alertmanagerSpec:
+    ## If set, overrides the namespace for alertmanager related resources
+    ##
+    namespaceOverride: ""
     ## Standard object's metadata. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#metadata
     ## Metadata Labels and Annotations gets propagated to the Alertmanager pods.
     ##
@@ -1739,6 +1746,10 @@ prometheus:
 
   enabled: true
 
+  ## The namespace for prometheus related resources (defaults to use the namespace this chart is deployed to)
+  ##
+  namespaceOverride: ""
+
   ## Annotations for Prometheus
   ##
   annotations: {}
@@ -2293,7 +2304,7 @@ prometheus:
     ##
     podMonitorSelector: {}
     ## Example which selects PodMonitors with label "prometheus" set to "somelabel"
-    # podMonitorSelector:
+    #   :
     #   matchLabels:
     #     prometheus: somelabel
 

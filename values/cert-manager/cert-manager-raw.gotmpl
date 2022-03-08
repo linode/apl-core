@@ -7,7 +7,7 @@
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if and (not (eq $issuerName "custom-ca")) (or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil)) }}
+{{- if or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil) }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -26,9 +26,16 @@ resources:
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
+      name: custom-ca
+    spec:
+      ca:
+        secretName: custom-ca
+{{- if eq $cm.issuer "letsencrypt" }}
+  - apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
       name: {{ $issuerName }}
     spec:
-{{- if eq $cm.issuer "letsencrypt" }}
       acme:
         server: https://acme{{ (eq ($cm | get "stage" "") "staging") | ternary "-staging" "" }}-v02.api.letsencrypt.org/directory
         email: {{ $cm.email }}
@@ -68,18 +75,13 @@ resources:
                   key: secret
                   name: "dns-secret"
               {{- end }}
-{{- else }}
-      ca:
-        secretName: {{ $issuerName }}
-  {{- if eq $cm.issuer "custom-ca" }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: {{ $issuerName }}
+      name: custom-ca
     data:
       tls.crt: {{ $cm.customRootCA| b64enc }}
       tls.key: {{ $cm.customRootCAKey | b64enc}}
-  {{- end }}
 {{- end }}
 # generate all da certs
 {{- range $domain, $domInfo := $doms }}

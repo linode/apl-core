@@ -97,6 +97,28 @@ Allow the release namespace to be overridden for multi-namespace deployments in 
 {{- end -}}
 
 {{/*
+Use the prometheus namespace override for multi-namespace deployments in combined charts
+*/}}
+{{- define "kube-prometheus-stack-prometheus.namespace" -}}
+  {{- if .Values.prometheus.namespaceOverride -}}
+    {{- .Values.prometheus.namespaceOverride -}}
+  {{- else -}}
+    {{- .Release.Namespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Use the alertmanager namespace override for multi-namespace deployments in combined charts
+*/}}
+{{- define "kube-prometheus-stack-alertmanager.namespace" -}}
+  {{- if .Values.alertmanager.namespaceOverride -}}
+    {{- .Values.alertmanager.namespaceOverride -}}
+  {{- else -}}
+    {{- .Release.Namespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Use the grafana namespace override for multi-namespace deployments in combined charts
 */}}
 {{- define "kube-prometheus-stack-grafana.namespace" -}}

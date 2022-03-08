@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
   name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack-prometheus.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-prometheus
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
@@ -17,7 +17,7 @@ spec:
 {{- if .Values.prometheus.prometheusSpec.alertingEndpoints }}
 {{ toYaml .Values.prometheus.prometheusSpec.alertingEndpoints | indent 6 }}
 {{- else if .Values.alertmanager.enabled }}
-      - namespace: {{ template "kube-prometheus-stack.namespace" . }}
+      - namespace: {{ template "kube-prometheus-stack-prometheus.namespace" . }}
         name: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
         port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
         {{- if .Values.alertmanager.alertmanagerSpec.routePrefix }}
@@ -65,7 +65,7 @@ spec:
 {{- else if and .Values.prometheus.ingress.enabled .Values.prometheus.ingress.hosts }}
   externalUrl: "http://{{ tpl (index .Values.prometheus.ingress.hosts 0) . }}{{ .Values.prometheus.prometheusSpec.routePrefix }}"
 {{- else }}
-  externalUrl: http://{{ template "kube-prometheus-stack.fullname" . }}-prometheus.{{ template "kube-prometheus-stack.namespace" . }}:{{ .Values.prometheus.service.port }}
+  externalUrl: http://{{ template "kube-prometheus-stack.fullname" . }}-prometheus.{{ template "kube-prometheus-stack-prometheus.namespace" . }}:{{ .Values.prometheus.service.port }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.nodeSelector }}
   nodeSelector:
@@ -326,7 +326,7 @@ spec:
 {{- $prometheusDefaultRulesExcludedFromEnforce := (include "rules.names" .) | fromYaml }}
   prometheusRulesExcludedFromEnforce:
 {{- range $prometheusDefaultRulesExcludedFromEnforce.rules }}
-    - ruleNamespace: "{{ template "kube-prometheus-stack.namespace" $ }}"
+    - ruleNamespace: "{{ template "kube-prometheus-stack-prometheus.namespace" $ }}"
       ruleName: "{{ printf "%s-%s" (include "kube-prometheus-stack.fullname" $) . | trunc 63 | trimSuffix "-" }}"
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.prometheusRulesExcludedFromEnforce }}

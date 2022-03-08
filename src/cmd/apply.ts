@@ -6,12 +6,12 @@ import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getOtomiLoadBalancerIP } from '../common/k8s'
+import { getOtomiDeploymentStatus, getOtomiLoadBalancerIP } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit } from './commit'
+import { commit, setDeploymentStatus } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -98,7 +98,14 @@ const apply = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
-    if (isCli) await commit()
+    if (isCli) {
+      // commit first time only
+      const status = await getOtomiDeploymentStatus()
+      if (status !== 'deployed') {
+        await commit()
+        await setDeploymentStatus()
+      }
+    }
     return
   }
   d.info('Start apply')

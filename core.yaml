@@ -1,6 +1,9 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 k8s:
   namespaces:
+    - name: alertmanager
+    - name: cert-manager
+      disableIstioInjection: true
     - name: cert-manager
       disableIstioInjection: true
     - name: default
@@ -13,6 +16,7 @@ k8s:
       disableIstioInjection: true
     - name: harbor
     - name: gitea
+    - name: grafana
     - name: istio-system
       disableIstioInjection: true
     - name: ingress
@@ -35,12 +39,14 @@ k8s:
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
+      disableIstioInjection: true
     - name: operator-lifecycle-manager
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
     - name: overprovisioner
       disableIstioInjection: true
+    - name: prometheus
     - name: shared
     - name: team-admin
     - name: vault
@@ -51,7 +57,7 @@ adminApps:
     deps: [prometheus]
     ingress:
       - svc: po-alertmanager
-        namespace: monitoring
+        namespace: alertmanager
         port: 9093
         type: public
         auth: true
@@ -95,7 +101,7 @@ adminApps:
     ownHost: true
     ingress:
       - svc: po-grafana
-        namespace: monitoring
+        namespace: grafana
         removeRequestHeaders:
           - authorization
         type: public
@@ -226,7 +232,7 @@ adminApps:
     ingress:
       - svc: po-prometheus
         port: 9090
-        namespace: monitoring
+        namespace: prometheus
         type: public
         auth: true
   - name: vault

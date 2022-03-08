@@ -37,7 +37,7 @@ const gitPush = async (): Promise<boolean> => {
   }
 }
 
-const setDeploymentStatus = async (): Promise<void> => {
+export const setDeploymentStatus = async (): Promise<void> => {
   const status = await getOtomiDeploymentStatus()
   if (status !== 'deployed') {
     await nothrow(

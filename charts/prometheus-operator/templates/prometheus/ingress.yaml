@@ -14,7 +14,7 @@ metadata:
 {{ toYaml .Values.prometheus.ingress.annotations | indent 4 }}
 {{- end }}
   name: {{ $serviceName }}
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack-prometheus.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-prometheus
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}

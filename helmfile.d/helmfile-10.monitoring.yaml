@@ -14,7 +14,7 @@ bases:
 releases:
   - name: grafana-dashboards
     installed: true
-    namespace: monitoring
+    namespace: grafana
     <<: *default
   - name: jaeger-operator
     installed: true

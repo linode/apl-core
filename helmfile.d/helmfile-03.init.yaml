@@ -25,7 +25,7 @@ releases:
       pkg: kiali
     <<: *raw
   - name: knative-init
-    installed: true
+    installed: {{ $a | get "knative.enabled" }}
     namespace: default
     labels:
       init: true

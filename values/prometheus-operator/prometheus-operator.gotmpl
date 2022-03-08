@@ -14,16 +14,16 @@
 
 nameOverride: po
 fullnameOverride: po
-coreDns:
-  enabled: false
 global:
   {{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  rbac:
-    pspEnabled: false
 {{- if $v.otomi.isManaged }}
+kubeApiServer:
+  enabled: false
+coreDns:
+  enabled: false
 kubeEtcd:
   enabled: false
 kubeControllerManager:
@@ -33,9 +33,9 @@ kubeScheduler:
 kubeProxy:
   enabled: false
 {{- end }}
+commonLabels:
+  prometheus: system
 prometheusOperator:
-  configReloaderCpu: 50m
-  configReloaderMemory: 64Mi
   podAnnotations:
     sidecar.istio.io/inject: "false"
   resources:
@@ -47,14 +47,20 @@ prometheusOperator:
       memory: 128Mi
   admissionWebhooks:
     enabled: true
+    certManager:
+      enabled: true
+      issuerRef:
+        name: custom-ca
+        kind: ClusterIssuer
   priorityClassName: "otomi-critical"
-commonLabels:
-  prometheus: system
 prometheus:
+  namespaceOverride: prometheus
   prometheusSpec:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
+      labels:
+        prometheus: system
     image:
       tag: {{ $g | get "image.prometheus.tag" "v2.33.4" }}
       pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
@@ -62,6 +68,9 @@ prometheus:
       matchLabels:
         prometheus: system
     serviceMonitorSelector:
+      matchLabels:
+        prometheus: system
+    probeSelector:
       matchLabels:
         prometheus: system
     resources:
@@ -103,10 +112,13 @@ additionalPrometheusRules:
 alertmanager:
   {{- if $a.enabled }}
   enabled: true
+  namespaceOverride: alertmanager
   alertmanagerSpec:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
+      labels:
+        prometheus: system
     image:
       tag: {{ $a | get "image.tag" "v0.23.0" }}
       pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
@@ -141,14 +153,6 @@ grafana:
   image:
     tag: {{ $g | get "image.tag" "8.4.3" }}
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
-  initChownData:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 128Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
   resources:
     {{- with $g | get "resources" nil }}
       {{- toYaml . | nindent 4 }}
@@ -170,6 +174,7 @@ grafana:
         memory: 50Mi
   nameOverride: po-grafana
   fullnameOverride: po-grafana
+  namespaceOverride: grafana
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
@@ -179,7 +184,6 @@ grafana:
   testFramework:
     enabled: false
     
-  plugins: []
   additionalDataSources:
     - name: Loki
       editable: false
@@ -201,11 +205,8 @@ grafana:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
-      root_url: https://{{ $appsDomain }}
+      root_url: https://{{ $grafanaDomain }}
       # serve_from_sub_path: true
-
-kubeApiServer:
-  enabled: false
 
 kube-state-metrics:
   image:
@@ -222,8 +223,6 @@ kube-state-metrics:
       cpu: 100m
       memory: 128Mi
     {{- end }}
-  podSecurityPolicy:
-    enabled: false
 
 prometheus-node-exporter:
   image:
@@ -240,8 +239,6 @@ prometheus-node-exporter:
       cpu: 100m
       memory: 128Mi
     {{- end }}
-  rbac:
-    pspEnabled: false
   priorityClassName: "otomi-critical"
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security

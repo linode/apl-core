@@ -9,7 +9,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ printf "%s-%s" (include "kube-prometheus-stack.fullname" .) "node-exporter" | trunc 63 | trimSuffix "-" }}
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack-prometheus.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}

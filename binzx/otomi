@@ -33,6 +33,7 @@ if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
   calling_args="x -- ${calling_args:2}"
 fi
 readonly calling_args
+
 silent() {
   if { [[ $VERBOSITY -gt 0 ]] || [[ " $calling_args" == *' -v'* ]]; } && [ -t 1 ]; then
     "$@"
