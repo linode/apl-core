@@ -14,11 +14,11 @@
 
 nameOverride: po
 fullnameOverride: po
+{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
-  {{- end }}
+{{- end }}
 {{- if $v.otomi.isManaged }}
 kubeApiServer:
   enabled: false
