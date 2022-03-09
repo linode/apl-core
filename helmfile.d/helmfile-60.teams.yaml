@@ -26,6 +26,7 @@ bases:
 
 releases:
   {{- range $teamId, $team := $tc }}
+  {{- $teamServices := ($team | get "services" list) }}
   {{- if ne $teamId "admin" }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
@@ -47,7 +48,7 @@ releases:
         domain: {{ $domain }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
-      - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}
+      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
         {{- if $v.otomi.isMultitenant }}
         {{- if ($team | get "cicd.enabled" "false") }}
         {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
@@ -101,6 +102,7 @@ releases:
             serviceMonitorNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
+            {{- if gt (len $teamServices) 0 }}
             additionalScrapeConfigs:
               - job_name: probe-services-{{ $teamId }}
                 metrics_path: /probe
@@ -110,7 +112,7 @@ releases:
                 static_configs:
                   - targets:
                     {{ $registry := list }}
-                    {{- range $s := $team | get "services" list }}
+                    {{- range $s := $team.services }}
                     {{- $type := $s.type | default "auth" }}
                     {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
                     {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
@@ -130,6 +132,7 @@ releases:
                     target_label: instance
                   - target_label: __address__
                     replacement: prometheus-blackbox-exporter.monitoring:9115
+            {{- end }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
