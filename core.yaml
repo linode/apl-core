@@ -4,8 +4,6 @@ k8s:
     - name: alertmanager
     - name: cert-manager
       disableIstioInjection: true
-    - name: cert-manager
-      disableIstioInjection: true
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
