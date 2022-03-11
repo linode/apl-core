@@ -182,11 +182,11 @@ resources:
               {{- toYaml . | nindent 14 }}
             {{- else }}
               limits:
-                  cpu: '1'
-                  memory: 1Gi
+                cpu: '1'
+                memory: 1Gi
               requests:
-                  cpu: 20m
-                  memory: 80Mi
+                cpu: 20m
+                memory: 80Mi
             {{- end }}
             autoInject: enabled
           tracer:

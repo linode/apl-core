@@ -1846,11 +1846,6 @@ properties:
                 $ref: '#/definitions/resources'
               postgresql:
                 $ref: '#/definitions/resources'
-          theme:
-            enum:
-              - default
-              - otomi
-            type: string
         required:
           - postgresqlPassword
       kiali:

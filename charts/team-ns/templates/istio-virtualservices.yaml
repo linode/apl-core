@@ -8,7 +8,8 @@
   {{- $hasTlsPass := $s.tlsPass | default false }}
   {{- $ns := index $s "namespace" | default $.Release.Namespace }}
   {{- if not (eq $type "cluster") }}
-    {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $s.svc) $s.svc) }}
+    {{- $name := $s.svc | default $s.name }}
+    {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $name) $name) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
     {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
     {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}
