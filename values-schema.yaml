@@ -2604,6 +2604,23 @@ properties:
                   $ref: '#/definitions/wordCharacterPattern'
                 user:
                   $ref: '#/definitions/wordCharacterPattern'
+  ingress:
+    type: array
+    items:
+      type: object
+      properties:
+        className:
+          type: string
+        network:
+          type: string
+          enum:
+            - public
+            - Private
+          default: public
+        ipAddress:
+          type: boolean
+    minItems: 1
+
   smtp:
     additionalProperties: false
     properties:

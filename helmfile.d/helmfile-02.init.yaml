@@ -30,6 +30,13 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper-operator.gotmpl
       - snippets/common.gotmpl
+  - name: nginx-ingress-artifacts
+    installed: true
+    namespace: ingress
+    labels:
+      tag: ingress
+      stage: prep
+    <<: *raw
   - name: nginx-ingress
     installed: true
     namespace: ingress
