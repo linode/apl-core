@@ -1,17 +1,21 @@
 {{- $v := .Values }}
 {{- $c := $v.charts }}
 {{- $k := $c.keycloak }}
-
 type: Job
 name: autoconfig
 
 image:
   repository: docker.io/otomi/otomi-e2e
-  tag: master
+  tag: autoconfig
   pullPolicy: Always
 
-script: |
+script: | 
     echo "AUTOCONFIG TASK: Creating Keycloak user"
     yarn cypress run --env BASE_URL={{$v.cluster.domainSuffix}},ROOT_USERNAME={{$k.adminUsername}},ROOT_PASSWORD={{$k.adminPassword}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
     echo "AUTOCONFIG TASK: Actuvate drone"
     yarn cypress run --env BASE_URL={{$v.cluster.domainSuffix}},ROOT_USERNAME={{$k.adminUsername}},ROOT_PASSWORD={{$k.adminPassword}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 4Gi
