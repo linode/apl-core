@@ -4,7 +4,7 @@ nameOverride: ingress-nginx
 controller:
   # @TODO:
   image:
-    tag: {{ $n | get "image.tag" "v1.0.5" }}
+    tag: {{ $n | get "image.tag" "v1.1.2" }}
     pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
     enabled: true
