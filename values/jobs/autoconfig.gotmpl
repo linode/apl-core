@@ -12,7 +12,7 @@ image:
 script: | 
     echo "AUTOCONFIG TASK: Creating Keycloak user"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
-    echo "AUTOCONFIG TASK: Actuvate drone"
+    echo "AUTOCONFIG TASK: Activate drone"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
 
 nativeSecrets:
