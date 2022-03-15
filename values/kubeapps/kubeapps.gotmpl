@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $k := $v | get "apps.kubeapps" }}
+{{- $kk := $v | get "apps.keycloak" }}
+{{- $oauth2Url := printf "https://auth.%s" $v.cluster.domainSuffix }}
 assetsvc:
   resources:
     limits:
@@ -11,6 +13,20 @@ assetsvc:
 authProxy:
   enabled: false
   external: true
+  skipKubeappsLoginPage: true
+  # oauthLoginURI: {{ $oauth2Url }}/oauth2/start
+  # oauthLogoutURI: {{ $oauth2Url }}/oauth2/sign_out
+  # provider: oidc
+  # clientID: {{ $kk.idp.clientID }}
+  # clientSecret: {{ $kk.idp.clientSecret }}
+ 
+dashboard:
+  replicaCount: {{ $k.autoscaling.dashboard.minReplicas }}
+frontend:
+  proxypassAccessTokenAsBearer: {{ eq $v.cluster.provider "google" }}
+  replicaCount: {{ $k.autoscaling.frontend.minReplicas }}
+kubeops:
+  replicaCount: {{ $k.autoscaling.kubeops.minReplicas }}
 metrics:
   enabled: true
   resources:

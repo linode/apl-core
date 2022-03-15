@@ -20,4 +20,6 @@ releases:
     installed: {{ $a | get "kubeapps.enabled" }}
     disableValidationOnInstall: true
     namespace: operator-lifecycle-manager
+    labels:
+      pkg: kubeapps
     <<: *default

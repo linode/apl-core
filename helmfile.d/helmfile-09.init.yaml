@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: cert-manager
-    installed: true
-    namespace: cert-manager
-    labels:
-      pkg: cert-manager
-    <<: *default
   - name: cluster-autoscaler
     installed: {{ $a | get "cluster-autoscaler.enabled" }}
     namespace: kube-system

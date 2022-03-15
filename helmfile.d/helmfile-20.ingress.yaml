@@ -24,12 +24,6 @@ releases:
     labels:
       tag: ingress
     <<: *raw
-  - name: cert-manager-artifacts
-    installed: true
-    namespace: cert-manager
-    labels:
-      pkg: cert-manager
-    <<: *raw
   - name: external-dns
     installed: {{ $a | get "external-dns.enabled" }}
     namespace: external-dns

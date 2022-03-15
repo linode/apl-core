@@ -127,7 +127,6 @@ definitions:
         type: integer
         default: 1
   autoscalingEnabled:
-    additionalProperties: false
     allOf:
       - properties:
           enabled:
@@ -1159,15 +1158,6 @@ properties:
             required:
               - email
               - issuer
-            not:
-              anyOf:
-                - required:
-                    - customRootCA
-                    - customRootCAKey
-                - required:
-                    - customRootCA
-                - required:
-                    - customRootCAKey
           - allOf:
               - oneOf:
                   - not:
@@ -1178,17 +1168,6 @@ properties:
                         const: custom-ca
                     required:
                       - issuer
-              - oneOf:
-                  # we need both or none at all:
-                  - required:
-                      - customRootCA
-                      - customRootCAKey
-                  - not:
-                      anyOf:
-                        - required:
-                            - customRootCA
-                        - required:
-                            - customRootCAKey
 
       cluster-overprovisioner:
         additionalProperties: false
@@ -1698,7 +1677,7 @@ properties:
               block:
                 description: Makes nginx block requests that are marked as violating the modsec rules.
                 type: boolean
-                default: true
+                default: false
               enabled:
                 type: boolean
                 default: false
@@ -1874,22 +1853,14 @@ properties:
         additionalProperties: false
         properties:
           enabled:
-            default: true
+            default: false
             type: boolean
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: 'randAlphaNum 20'
-        allOf:
-          - anyOf:
-              - not:
-                  properties:
-                    enabled:
-                      const: true
-                  required:
-                    - enabled
-              - required:
-                  - postgresqlPassword
+        required:
+          - postgresqlPassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:

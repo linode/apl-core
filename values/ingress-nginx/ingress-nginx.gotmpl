@@ -55,20 +55,27 @@ controller:
     client-header-timeout: 5
     client-max-body-size: 0
     disable-ipv6: true
-    enable-modsecurity: {{ $n | get "modsecurity.enabled" "false" }}
-    enable-owasp-modsecurity-crs: false # modsecurity-snippet only works when this is turned off
+    enable-modsecurity: {{ $n.modsecurity.enabled }}
+    enable-owasp-modsecurity-crs: {{ $n.modsecurity.owasp }}
     hsts: true
     http2-max-field-size: 64k
     http2-max-header-size: 128k
     large-client-header-buffers: 8 16k
-    {{- if $n | get "modsecurity.enabled" "true" }}
+    {{- if $n.modsecurity.enabled }}
     modsecurity-snippet: |
-      {{ if $n | get "modsecurity.block" "true" }}SecRuleEngine On{{- end }}
+      SecRuleEngine {{ if $n.modsecurity.block }}On{{ else }}DetectionOnly{{ end }}
+      SecAuditEngine RelevantOnly
+      # SecRequestBodyAccess Off
+      SecAuditLogParts ABDEFHIJZ
+      SecAuditLogFormat JSON
+      SecAuditLogType Serial
+      SecAuditLog /dev/stdout
+      # overrides for owasp go before inclusion of the defaults in nginx-modsecurity.conf
       SecRequestBodyLimit {{ $n | get "maxBodySizeBytes" "1073741824" }}
-      # SecAuditLogFormat JSON
       SecRuleRemoveById 920350
-      {{/* so we include the owasp ruleset here if required */}}
-      {{ if ($n | get "modsecurity.owasp" "false") }}Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf{{- end }}
+      {{- if $n.modsecurity.owasp }}
+      # Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf
+      {{- end }}
     {{- end }}
     proxy-buffers-number: 8
     proxy-buffer-size: 16k

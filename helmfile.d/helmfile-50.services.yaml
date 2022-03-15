@@ -27,6 +27,9 @@ releases:
   - name: kubeapps
     installed: {{ $a | get "kubeapps.enabled" }}
     namespace: kubeapps
+    disableValidationOnInstall: true
+    labels:
+      pkg: kubeapps
     <<: *default
   - name: gitea
     installed: {{ $a | get "gitea.enabled" }}

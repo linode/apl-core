@@ -17,12 +17,12 @@ releases:
     namespace: grafana
     <<: *default
   - name: jaeger-operator
-    installed: true
+    installed: {{ $a | get "jaeger.enabled" }}
     namespace: jaeger-operator
     disableValidationOnInstall: true
     <<: *default
   - name: kiali-operator
-    installed: true
+    installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali-operator
     disableValidationOnInstall: true
     labels:

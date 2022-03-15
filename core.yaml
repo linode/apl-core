@@ -41,6 +41,9 @@ k8s:
     - name: operator-lifecycle-manager
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: operators
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: otomi
     - name: overprovisioner
       disableIstioInjection: true
@@ -185,7 +188,7 @@ adminApps:
       - svc: kubeapps
         namespace: kubeapps
         type: public
-        auth: true
+        # auth: true
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus]

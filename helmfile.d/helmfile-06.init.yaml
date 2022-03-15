@@ -12,6 +12,12 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
   - name: istio-operator-artifacts
     installed: true
     namespace: istio-operator

@@ -44,6 +44,10 @@ environments:
               enabled: true
               minReplicas: 1
               maxReplicas: 10
+            modsecurity:
+              enabled: false
+              block: false
+              owasp: true
             private:
               enabled: false
               autoscaling:
@@ -82,6 +86,16 @@ environments:
               replicas: 1
           kubeapps:
             enabled: false
+            autoscaling:
+              dashboard:
+                minReplicas: 1
+                maxReplicas: 10
+              frontend:
+                minReplicas: 1
+                maxReplicas: 10
+              kubeops:
+                minReplicas: 1
+                maxReplicas: 10
           kube-descheduler:
             enabled: false
           loki:
