@@ -11,9 +11,15 @@ image:
 
 script: | 
     echo "AUTOCONFIG TASK: Creating Keycloak user"
-    yarn cypress run --env BASE_URL={{$v.cluster.domainSuffix}},ROOT_USERNAME={{$k.adminUsername}},ROOT_PASSWORD={{$k.adminPassword}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
+    yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
     echo "AUTOCONFIG TASK: Actuvate drone"
-    yarn cypress run --env BASE_URL={{$v.cluster.domainSuffix}},ROOT_USERNAME={{$k.adminUsername}},ROOT_PASSWORD={{$k.adminPassword}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
+    yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
+
+nativeSecrets:
+  CYPRESS_ROOT_USERNAME: {{$k.adminUsername}}
+  CYPRESS_ROOT_PASSWORD: {{$k.adminPassword}}
+  CYPRESS_ADMIN_USERNAME: 'admin'
+  CYPRESS_ADMIN_PASSWORD: {{$k.adminPassword}}
 
 resources:
   limits:
