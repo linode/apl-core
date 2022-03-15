@@ -2,6 +2,7 @@
 {{- $k := $v | get "apps.kubeapps" }}
 {{- $kk := $v | get "apps.keycloak" }}
 {{- $oauth2Url := printf "https://auth.%s" $v.cluster.domainSuffix }}
+{{- $harborUrl := printf "https://harbor.%s" $v.cluster.domainSuffix }}
 assetsvc:
   resources:
     limits:
@@ -27,6 +28,19 @@ frontend:
   replicaCount: {{ $k.autoscaling.frontend.minReplicas }}
 kubeops:
   replicaCount: {{ $k.autoscaling.kubeops.minReplicas }}
+{{- if $v.apps.harbor.enabled }}
+initialRepos:
+  - name: Harbor
+    description: Local cluster chart repository
+    url: {{ $harborUrl }}
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1001
+    {{- if $v._derived.untrustedCA }}
+    caCert: |
+      {{- $v._derived.caCert | nindent 8 }}
+    {{- end }}
+{{- end }}
 metrics:
   enabled: true
   resources:
