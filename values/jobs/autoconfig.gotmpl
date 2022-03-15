@@ -25,3 +25,8 @@ resources:
   limits:
     cpu: "2"
     memory: 4Gi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: node
+  runAsGroup: node
