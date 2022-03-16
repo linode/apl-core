@@ -33,7 +33,8 @@ home:
         channelCrit: mon-otomi-crit
 ingress:
     - className: platform
-      network: public
+      network: private
+      ipAddress: '10.0.0.9'
     - className: net-a
       network: public
 oidc:

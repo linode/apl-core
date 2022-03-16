@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" }}
-
-{{ $ingress := (index $v.ingress (.Release.Labels.index | int)) }}
+{{- $ingress := (index $v.ingress (.Release.Labels.index | int)) }}
 nameOverride: {{ .Release.Name }}
 controller:
   # @TODO:
@@ -94,7 +93,7 @@ controller:
     externalTrafficPolicy: Local
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
-    {{- with $n | get "loadBalancerIP" nil }}
+    {{- with $ingress | get "ipAddress" nil }}
     loadBalancerIP: {{ . }}
     {{- end }}
     annotations:
@@ -102,12 +101,25 @@ controller:
       {{- with $n | get "service.annotations" nil }}
       {{ . | toYaml | indent 6 }}
       {{- end }}
+      {{- if eq $v.cluster.provider "azure" }}
       {{- with $n | get "loadBalancerRG" nil }}
       service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
       {{- end }}
+      {{- if eq $ingress.network "private" }}
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "azure" */}}
       {{- if eq $v.cluster.provider "aws" }}
       service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+      {{- if eq $ingress.network "private" }}
+      service.beta.kubernetes.io/aws-load-balancer-internal: true
       {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
+      {{- if eq $v.cluster.provider "google" }}
+      {{- if eq $ingress.network "private" }}
+      networking.gke.io/load-balancer-type: "Internal"
+      {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "google" */}}
   publishService:
     enabled: true
 
@@ -131,7 +143,6 @@ defaultBackend:
 {{- end }}
   service:
     omitClusterIP: true
-
 rbac:
   create: true
 
