@@ -1,10 +1,13 @@
 {{- $v := .Values }}
 {{- $n := $v.charts | get "nginx-ingress" }}
-nameOverride: nginx-ingress
+
+{{ $ingress := (index $v.ingress (.Release.Labels.index | int)) }}
+nameOverride: {{ .Release.Name }}
 controller:
   # @TODO:
   image:
     tag: v1.0.5
+  ingressClass: {{ $ingress.className }}
   scope:
     enabled: true
     namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
@@ -15,7 +18,6 @@ controller:
     enabled: false
     patch:
       priorityClassName: "otomi-critical"
-  ingressClass: nginx
   useComponentLabel: true
   # set fixed allocation with limits same as requests
   resources:

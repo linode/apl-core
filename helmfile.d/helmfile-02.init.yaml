@@ -37,13 +37,21 @@ releases:
       tag: ingress
       stage: prep
     <<: *raw
-  - name: nginx-ingress
+{{- range $index, $ingress := $v.ingress }}
+  - name: nginx-ingress-{{ $ingress.className }}
     installed: true
     namespace: ingress
     labels:
       tag: ingress
       stage: prep
-    <<: *default
+      class: {{ $ingress.className }}
+      index: {{ $index }}
+    missingFileHandler: Debug
+    chart: ../charts/nginx-ingress
+    values:
+      - ../values/nginx-ingress/nginx-ingress.gotmpl
+      - snippets/common.gotmpl
+{{- end }}
   - name: nginx-ingress-private
     installed: {{ $c | get "nginx-ingress.private.enabled" }}
     namespace: ingress
