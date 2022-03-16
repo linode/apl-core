@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: job-autoconfig
-    installed: {{ and (eq $v.otomi.hasExternalIDP false) (eq $c.gitea.enabled true) }}
+    installed: {{ or (eq $v.otomi.hasExternalIDP false) (eq $c.gitea.enabled true) }}
     <<: *jobs
     labels:
       group: jobs

@@ -10,10 +10,14 @@ image:
   pullPolicy: Always
 
 script: | 
-    echo "AUTOCONFIG TASK: Creating Keycloak user"
+    {{ if eq $v.otomi.hasExternalIDP false }}
+    echo "Creating Keycloak user"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
-    echo "AUTOCONFIG TASK: Activate drone"
+    {{ end }}
+    {{ if eq $c.gitea.enabled true }}
+    echo "Activate drone"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
+    {{ end }}
 
 nativeSecrets:
   CYPRESS_ROOT_USERNAME: {{$k.adminUsername}}
