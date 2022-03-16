@@ -13,11 +13,12 @@ script: |
     {{ if eq $v.otomi.hasExternalIDP false }}
     echo "Creating Keycloak user"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/10-keycloak.feature'
-    {{ end }}
     {{ if eq $c.gitea.enabled true }}
     echo "Activate drone"
     yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}} --spec 'cypress/integration/otomi-applications/20-drone.feature'
     {{ end }}
+    {{ end }}
+    
 
 nativeSecrets:
   CYPRESS_ROOT_USERNAME: {{$k.adminUsername}}
