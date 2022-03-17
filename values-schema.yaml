@@ -464,7 +464,6 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Otomi has compatibility with at least 2 minor versions back from the suggested default.
     enum:
-      - '1.18'
       - '1.19'
       - '1.20'
       - '1.21'
