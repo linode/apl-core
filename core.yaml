@@ -13,6 +13,8 @@ k8s:
     - name: external-dns
       disableIstioInjection: true
     - name: harbor
+    - name: gatekeeper-system
+      disableIstioInjection: true
     - name: gitea
     - name: grafana
     - name: istio-system

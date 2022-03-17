@@ -22,7 +22,7 @@ releases:
     <<: *default
   - name: gatekeeper
     installed: {{ $a | get "gatekeeper.enabled" }}
-    namespace: default
+    namespace: gatekeeper-system
     chart: ../charts/gatekeeper
     disableValidationOnInstall: true
     labels:

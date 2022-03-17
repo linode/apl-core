@@ -16,7 +16,6 @@ releases:
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
-    createNamespace: false
     labels:
       pkg: gatekeeper
     hooks:

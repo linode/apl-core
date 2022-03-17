@@ -12,12 +12,12 @@ bases:
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-{{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") }}
-{{- range $ing := $s.ingress }}
-{{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
-{{- $coreTeamServices = append $coreTeamServices $svc }}
-{{- end }}
-{{- end }}
+  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreTeamServices = append $coreTeamServices $svc }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- $cm := $a | get "cert-manager" }}
 {{- $po := $a | get "prometheus" }}
@@ -25,9 +25,8 @@ bases:
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 
 releases:
-  {{- range $teamId, $team := $tc }}
+{{- range $teamId, $team := omit $tc "admin" }}
   {{- $teamServices := ($team | get "services" list) }}
-  {{- if ne $teamId "admin" }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
@@ -49,22 +48,14 @@ releases:
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-        {{- if $v.otomi.isMultitenant }}
-        {{- if ($team | get "cicd.enabled" "false") }}
-        {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
-        {{- if eq $cicdFlavour "drone" }}
-        # TODO: fix this weirdness: the next two lines fook the yaml parser:
-        # - name: drone
-        #   svc: drone-{{ $teamId }}
-        {{- end }}
-        {{- end }}
-        {{- if ne (len ($team | get "sites" list)) 0 }}
-        - name: blackbox
-          svc: prometheus-blackbox-exporter
-          port: 9115
-        {{- end }}
-        {{- end }}
-  {{- if $v.otomi.isMultitenant }}  
+  {{- if $v.otomi.isMultitenant }}
+    {{- if ne (len ($team | get "sites" list)) 0 }}
+      - name: blackbox
+        svc: prometheus-blackbox-exporter
+        port: 9115
+    {{- end }}
+  {{- end }}
+  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}  
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -102,7 +93,7 @@ releases:
             serviceMonitorNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
-            {{- if gt (len $teamServices) 0 }}
+    {{- if gt (len $teamServices) 0 }}
             additionalScrapeConfigs:
               - job_name: probe-services-{{ $teamId }}
                 metrics_path: /probe
@@ -111,20 +102,20 @@ releases:
                   module: [http_2xx]  # Look for a HTTP 200 response.
                 static_configs:
                   - targets:
-                    {{ $registry := list }}
-                    {{- range $s := $team.services }}
-                    {{- $type := $s.type | default "auth" }}
-                    {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
-                    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
-                    {{- $paths:= $s | get "paths" list }}
-                    {{- $path := ternary "/" (first $paths) (empty $paths) }}
-                    {{- $url := printf "%s%s" $svcDomain $path }}
-                    {{- if not (has $url $registry) }}
-                    {{- $registry = append $registry $url }}
+      {{ $registry := list }}
+      {{- range $s := $team.services }}
+        {{- $type := $s.type | default "auth" }}
+        {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
+          {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
+          {{- $paths:= $s | get "paths" list }}
+          {{- $path := ternary "/" (first $paths) (empty $paths) }}
+          {{- $url := printf "%s%s" $svcDomain $path }}
+          {{- if not (has $url $registry) }}
+            {{- $registry = append $registry $url }}
                     - https://{{ $url }}
-                    {{- end }}
-                    {{- end }}
-                    {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
                 relabel_configs:
                   - source_labels: [__address__]
                     target_label: __param_target
@@ -132,7 +123,7 @@ releases:
                     target_label: instance
                   - target_label: __address__
                     replacement: prometheus-blackbox-exporter.monitoring:9115
-            {{- end }}
+    {{- end }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
@@ -161,10 +152,10 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
+    {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
-            {{- end }}
-  {{ if has "msteams" ($team | get "receivers" list) }}
+    {{- end }}
+    {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -183,7 +174,7 @@ releases:
         connectors:
           - high_priority_channel: {{ $team | get "msteams.highPrio" }}
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
-  {{- end }}
+    {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -200,8 +191,7 @@ releases:
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
   {{- end }}
-  {{- if hasKey $team "jobs" }}
-  {{- range $job := $team.jobs }}
+  {{- range $job := $team | get "jobs" list }}
   - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ $job.enabled }}
     namespace: team-{{ $teamId }}
@@ -223,7 +213,5 @@ releases:
       - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
-  {{- end }}
-  {{- end }}
-  {{- end }}
+    {{- end }}
   {{- end }}
