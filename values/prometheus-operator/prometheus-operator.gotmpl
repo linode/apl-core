@@ -152,6 +152,8 @@ grafana:
       memory: 128Mi
     {{- end }}
   sidecar:
+    image:
+      tag: 1.15.7
     resources:
       limits:
         cpu: 100m

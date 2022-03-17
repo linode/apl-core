@@ -55,7 +55,7 @@ k8s:
 adminApps:
   - name: alertmanager
     tags: [alerting, observability]
-    deps: [prometheus]
+    deps: [prometheus, grafana]
     ingress:
       - svc: po-alertmanager
         namespace: monitoring
@@ -87,7 +87,6 @@ adminApps:
     tags: [ingress, security, tls]
   - name: gatekeeper
     tags: [security, policies, observability]
-    deps: [prometheus]
   - name: gitea
     tags: [git]
     isShared: true
@@ -99,7 +98,7 @@ adminApps:
         type: public
   - name: grafana
     tags: [tracing, telemetry, observability]
-    deps: [prometheus]
+    deps: [alertmanager, prometheus]
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -110,7 +109,6 @@ adminApps:
         auth: true
   - name: harbor
     tags: [security]
-    deps: [istio]
     isShared: true
     ownHost: true
     ingress:
@@ -132,7 +130,6 @@ adminApps:
   - name: hello
     hide: true
     tags: [demo]
-    deps: []
   - name: httpbin
     tags: [dev, testing, debugging]
     isShared: true
@@ -146,7 +143,6 @@ adminApps:
     tags: [ingress, auth]
   - name: istio
     tags: [ingress, egress, routing, security, tls, observability, policies]
-    deps: [grafana, prometheus]
   - name: jaeger
     tags: [ingress, telemetry, observability]
     deps: [istio]
@@ -159,7 +155,6 @@ adminApps:
         auth: true
   - name: keycloak
     tags: [auth, sso]
-    deps: [istio]
     ingress:
       - namespace: keycloak
         svc: keycloak-http
@@ -191,7 +186,6 @@ adminApps:
         # auth: true
   - name: loki
     tags: [logging, telemetry, observability]
-    deps: [grafana, prometheus]
     useHost: grafana
     path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
     shortcuts:
@@ -230,7 +224,7 @@ adminApps:
         auth: true
   - name: prometheus
     tags: [metrics, observability]
-    deps: [grafana]
+    deps: [alertmanager, grafana]
     ingress:
       - svc: po-prometheus
         port: 9090

@@ -18,6 +18,7 @@ metadata:
 spec:
   type: {{ default "helm" .type }}
   url: {{ .url }}
+  tlsInsecureSkipVerify: {{ default false .tlsInsecureSkipVerify }}
   {{- if .ociRepositories }}
   ociRepositories:
   {{- range .ociRepositories }}

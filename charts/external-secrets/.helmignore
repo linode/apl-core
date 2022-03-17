@@ -14,9 +14,13 @@
 *.swp
 *.bak
 *.tmp
+*.orig
 *~
 # Various IDEs
 .project
 .idea/
 *.tmproj
 .vscode/
+
+# CRD README.md
+templates/crds/README.md

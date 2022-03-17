@@ -194,7 +194,7 @@ resources:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
                 bound_service_account_names: 
-                - kubernetes-external-secrets
+                - external-secrets
                 - vault
                 - default
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226

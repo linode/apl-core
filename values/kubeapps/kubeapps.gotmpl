@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $k := $v | get "apps.kubeapps" }}
+{{- $h := $v | get "apps.harbor" }}
 {{- $kk := $v | get "apps.keycloak" }}
 {{- $oauth2Url := printf "https://auth.%s" $v.cluster.domainSuffix }}
 {{- $harborUrl := printf "https://harbor.%s" $v.cluster.domainSuffix }}
@@ -29,17 +30,51 @@ frontend:
 kubeops:
   replicaCount: {{ $k.autoscaling.kubeops.minReplicas }}
 {{- if $v.apps.harbor.enabled }}
-initialRepos:
-  - name: Harbor
-    description: Local cluster chart repository
-    url: {{ $harborUrl }}
-    containerSecurityContext:
-      enabled: true
-      runAsUser: 1001
-    {{- if $v._derived.untrustedCA }}
-    caCert: |
-      {{- $v._derived.caCert | nindent 8 }}
-    {{- end }}
+apprepository:
+  initialRepos:
+    - name: common-ground
+      type: helm
+      description: Official Common Ground chart repo
+      url: https://charts.commonground.nl
+      containerSecurityContext:
+        enabled: true
+        runAsUser: 1001
+    - name: common-ground
+      type: helm
+      description: Local cluster chart repository
+      url: {{ $harborUrl }}
+      ociRepositories: 
+        - library/otomi
+      containerSecurityContext:
+        enabled: true
+        runAsUser: 1001
+      basicAuth:
+        user: admin
+        password: {{ $h.registry.credentials.password }}
+        # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
+      tlsInsecureSkipVerify: true
+      {{- if $v._derived.untrustedCA }}
+      caCert: |
+        {{- /*$v._derived.caCert | nindent 8 */}}
+      {{- end }}
+#     - name: harbor
+#       type: oci
+#       description: Local cluster chart repository
+#       url: {{ $harborUrl }}
+#       ociRepositories: 
+#         - library/otomi
+#       containerSecurityContext:
+#         enabled: true
+#         runAsUser: 1001
+#       basicAuth:
+#         user: admin
+#         password: {{ $h.registry.credentials.password }}
+#         # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
+#       tlsInsecureSkipVerify: true
+#       {{- if $v._derived.untrustedCA }}
+#       caCert: |
+#         {{- /*$v._derived.caCert | nindent 8 */}}
+#       {{- end }}
 {{- end }}
 metrics:
   enabled: true

@@ -74,6 +74,11 @@ environments:
             enabled: {{ eq $droneProvider "github" }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
+          harbor:
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            registry:
+              credentials:
+                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
@@ -84,7 +89,7 @@ environments:
             enabled: true
             address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
-          kubernetes-external-secrets:
+          external-secrets:
             enabled: {{ $a | get "vault.enabled" true }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}

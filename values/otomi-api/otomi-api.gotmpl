@@ -7,20 +7,6 @@
 {{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
-{{/* START: set the enabled flags on core apps based on the chart enabled flags */}}
-{{- $apps := list }}
-{{- range $a := $v.adminApps }}
-{{- $enabled := ($v.apps | get $a.name dict) | get "enabled" true }}
-{{- $a := set $a "enabled" $enabled }}
-{{- $apps = append $apps $a }}
-{{- end }}
-{{- $teamApps := list }}
-{{- range $a := $v.teamApps }}
-{{- $enabled := ($v.apps | get $a.name dict) | get "enabled" true }}
-{{- $_ := set $a "enabled" $enabled }}
-{{- $teamApps = append $teamApps $a }}
-{{- end }}
-{{/* END: set the enabled flags on core apps based on the chart enabled flags */}}
 
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
@@ -68,8 +54,8 @@ env:
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
-  adminApps: {{- toYaml $apps | nindent 4 }}
-  teamApps: {{- toYaml $teamApps | nindent 4 }}
+  adminApps: {{- toYaml $v.adminApps | nindent 4 }}
+  teamApps: {{- toYaml $v.teamApps | nindent 4 }}
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}

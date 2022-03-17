@@ -10,6 +10,7 @@ changes:
     relocations:
       - charts: apps
       - teamConfig.teams: teamConfig
+      - apps.kubernetes-external-secrets: apps.external-secrets
       - apps.gatekeeper-operator: apps.gatekeeper
       - apps.nginx-ingress: apps.ingress-nginx
       - apps.prometheus-operator: apps.prometheus
