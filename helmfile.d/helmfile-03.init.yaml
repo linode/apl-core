@@ -19,7 +19,7 @@ releases:
       pkg: gitea
     <<: *raw
   - name: kiali-operator-artifacts
-    installed: {{ $v._derived.untrustedCA }}
+    installed: {{ and ($a | get "kiali.enabled") $v._derived.untrustedCA }}
     namespace: kiali
     labels:
       pkg: kiali
@@ -32,7 +32,7 @@ releases:
       pkg: knative
     <<: *skeleton
   - name: loki-artifacts
-    installed: true
+    installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     labels:
       pkg: loki

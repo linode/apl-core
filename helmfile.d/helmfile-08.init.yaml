@@ -13,7 +13,8 @@ bases:
 
 releases:
   - name: prometheus-operator
-    installed: true
+    # we turn on the whole chart just by checking prometheus (not alertmanager or grafana, as all should be on)
+    installed: {{ $a | get "prometheus.enabled" }}
     namespace: monitoring
     labels:
       pkg: prometheus-operator

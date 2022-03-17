@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: grafana-dashboards
-    installed: true
+    installed: {{ $a | get "grafana.enabled" }}
     namespace: grafana
     <<: *default
   - name: jaeger-operator
@@ -29,15 +29,15 @@ releases:
       pkg: kiali
     <<: *default
   - name: loki
-    installed: true
+    installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
   - name: prometheus-blackbox-exporter
-    installed: true 
+    installed: {{ $a | get "prometheus.enabled" }} 
     namespace: monitoring
     <<: *default
   - name: promtail
-    installed: true
+    installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams

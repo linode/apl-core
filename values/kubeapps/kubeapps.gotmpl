@@ -4,6 +4,7 @@
 {{- $kk := $v | get "apps.keycloak" }}
 {{- $oauth2Url := printf "https://auth.%s" $v.cluster.domainSuffix }}
 {{- $harborUrl := printf "https://harbor.%s" $v.cluster.domainSuffix }}
+{{- $initialRepos := $k | get "initialRepos" list }}
 assetsvc:
   resources:
     limits:
@@ -29,9 +30,13 @@ frontend:
   replicaCount: {{ $k.autoscaling.frontend.minReplicas }}
 kubeops:
   replicaCount: {{ $k.autoscaling.kubeops.minReplicas }}
-{{- if $v.apps.harbor.enabled }}
 apprepository:
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+{{- if or (gt (len $initialRepos) 0) $k.enableCommonGround }}
   initialRepos:
+  {{- if $k.enableCommonGround }}
     - name: common-ground
       type: helm
       description: Official Common Ground chart repo
@@ -39,24 +44,10 @@ apprepository:
       containerSecurityContext:
         enabled: true
         runAsUser: 1001
-    - name: common-ground
-      type: helm
-      description: Local cluster chart repository
-      url: {{ $harborUrl }}
-      ociRepositories: 
-        - library/otomi
-      containerSecurityContext:
-        enabled: true
-        runAsUser: 1001
-      basicAuth:
-        user: admin
-        password: {{ $h.registry.credentials.password }}
-        # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
-      tlsInsecureSkipVerify: true
-      {{- if $v._derived.untrustedCA }}
-      caCert: |
-        {{- /*$v._derived.caCert | nindent 8 */}}
-      {{- end }}
+  {{- end}}
+  {{- range $repo := $initialRepos }}
+      - {{- toYaml $repo | nindent 8}}
+  {{- end }}
 #     - name: harbor
 #       type: oci
 #       description: Local cluster chart repository

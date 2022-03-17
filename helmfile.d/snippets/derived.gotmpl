@@ -25,6 +25,7 @@
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+{{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -46,8 +47,6 @@ environments:
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
         apps:
-          alertmanager:
-            enabled: {{ or ($v | get "alerts" false) ($v | get "home" false) }}
           aws-alb-ingress-controller:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
@@ -65,7 +64,7 @@ environments:
           drone:
             sourceControl:
               gitea:
-                server: {{ $a | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
+                server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
               {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
               secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
               {{- end }}
@@ -80,6 +79,7 @@ environments:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
+            enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $untrustedCA }}
@@ -90,13 +90,13 @@ environments:
             address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           external-secrets:
-            enabled: {{ $a | get "vault.enabled" true }}
+            enabled: {{ $a | get "vault.enabled" false }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (list "onprem" "aws" | has $provider) }}
           prometheus-msteams:
-            enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+            enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
         otomi:

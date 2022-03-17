@@ -1855,6 +1855,47 @@ properties:
           enabled:
             default: false
             type: boolean
+          enableCommonGround:
+            default: false
+            type: boolean
+          initialRepos:
+            type: array
+            items:
+              type: object
+              required:
+                - type
+                - url
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: ['helm', 'oci']
+                url:
+                  type: string
+                description:
+                  type: string
+                authorizationHeader:
+                  type: string
+                basicAuth:
+                  type: string
+                caCert:
+                  type: string
+                tlsInsecureSkipVerify:
+                  type: boolean
+                filterRule:
+                  type: object
+                  properties:
+                    jq:
+                      type: string
+                    variables:
+                      type: object
+                      additionalProperties:
+                        type: string
+                ociRepositories:
+                  type: array
+                  items:
+                    type: string
           postgresqlPassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.

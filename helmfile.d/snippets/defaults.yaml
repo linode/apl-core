@@ -5,7 +5,8 @@ environments:
           appgw:
             isManaged: true
         apps:
-          alertmanager: {}
+          alertmanager:
+            enabled: false
           cert-manager:
             issuer: custom-ca
           demo-tlspass:
@@ -31,7 +32,7 @@ environments:
             enabled: true
             adminUsername: otomi-admin
           grafana:
-            enabled: true
+            enabled: false
           harbor:
             enabled: false
             registry:
@@ -89,6 +90,7 @@ environments:
               replicas: 1
           kubeapps:
             enabled: false
+            enableCommonGround: false
             autoscaling:
               dashboard:
                 minReplicas: 1
@@ -102,16 +104,16 @@ environments:
           kube-descheduler:
             enabled: false
           loki:
-            enabled: true
+            enabled: false
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}
           otomi-console: {}
           promtail:
-            enabled: true
+            enabled: false
           prometheus-blackbox-exporter: {}
           prometheus:
-            enabled: true
+            enabled: false
           redis-shared:
             enabled: false
           vault:

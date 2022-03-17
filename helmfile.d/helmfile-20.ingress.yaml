@@ -48,7 +48,7 @@ releases:
       pkg: ingress-azure
       group: jobs
   - name: job-keycloak
-    installed: {{ $a | get "keycloak.enabled" }}
+    installed: true
     labels:
       pkg: keycloak
       group: jobs

@@ -35,7 +35,7 @@ releases:
       pkg: istio
     <<: *default
   - name: keycloak
-    installed: {{ $a | get "keycloak.enabled" }}
+    installed: true
     namespace: keycloak
     labels:
       pkg: keycloak
