@@ -74,6 +74,9 @@ type crdSchema = {
 }
 
 const processCrd = (path: string): crdSchema[] => {
+  const d = terminal(`cmd:${cmdName}:processCrd`)
+  d.info('Processing CRD file: ', path)
+
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
     (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
@@ -116,7 +119,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
   d.log('Processing CRD files...')
   cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
-  const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
+  const crdFiles = chartsFiles.filter((val: string) => val.match(/[^(templates)]\/crds\/.*\.yaml/g))
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
 
   const prep: Promise<any>[] = []
@@ -152,7 +155,7 @@ export const validateTemplates = async (): Promise<void> => {
     'PspSelinux',
   ]
   // TODO: revisit these excluded resources and see it they exist now (from original sh script)
-  const skipKinds = ['CustomResourceDefinition', 'AppRepository', ...constraintKinds]
+  const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
   const skipFilenames = ['crd', 'constraint']
 
   d.log('Validating resources')
