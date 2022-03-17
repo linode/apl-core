@@ -39,19 +39,20 @@
 {{- $hasTlsPass := $.tlsPass | default false }}
 {{- $secrets := dict }}
 {{- range $s := $.services }}
-{{- $ingressClassName := dig "refClassName" "platform" $s }}
-{{- if eq $ingressClassName $ingress.className }}
-  {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
-  {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-  {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/")) $paths }}
-  {{- if (not (hasKey $routes $domain)) }}
-    {{- $routes = merge $routes (dict $domain $paths) }}
-  {{- else }}
-    {{- $paths = concat (index $routes $domain) $paths }}
-    {{- $routes = (merge (dict $domain $paths) $routes) }}
-  {{- end }}
-  {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
-    {{- $names = (append $names $s.name) }}
+  {{- $ingressClassName := dig "refClassName" "platform" $s }}
+  {{- if eq $ingressClassName $ingress.className }}
+    {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
+    {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
+    {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/")) $paths }}
+    {{- if (not (hasKey $routes $domain)) }}
+      {{- $routes = merge $routes (dict $domain $paths) }}
+    {{- else }}
+      {{- $paths = concat (index $routes $domain) $paths }}
+      {{- $routes = (merge (dict $domain $paths) $routes) }}
+    {{- end }}
+    {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
+      {{- $names = (append $names $s.name) }}
+    {{- end }}
   {{- end }}
 {{- end }}{{/* {{- range $s := $.services }} */}}
 {{- $internetFacing := or (eq $.provider "onprem") (ne $.provider "nginx") (and (not $v.otomi.hasCloudLB) (eq $.provider "nginx")) }}
@@ -60,7 +61,6 @@
 {{- end }}
 {{- if or $routes $names }}
 ---
-# {{ $ingressClassName }} {{ $ingress.className }} {{ $s.name }}
 apiVersion: {{ template "ingress.apiVersion" $.dot }}
 kind: Ingress
 metadata:
@@ -171,6 +171,5 @@ spec:
   {{- end }}
 {{- end }}
 {{- end }} {{/*{{- if or $routes $names }}*/}}
-{{- end }} {{/* {{- if eq $ingressClassName $ingress.className */}}
 {{- end }} {{/* {{- range $ingress := $v.ingress */}}
 {{- end }} {{/* {{- define "ingress" */}}
