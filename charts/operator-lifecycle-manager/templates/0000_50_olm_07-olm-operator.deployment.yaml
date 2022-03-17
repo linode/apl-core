@@ -17,6 +17,8 @@ spec:
       labels:
         app: olm-operator
     spec:
+      securityContext:
+        runAsNonRoot: true
       serviceAccountName: olm-operator-serviceaccount
       {{- if and .Values.installType (eq .Values.installType "ocp") }}
       priorityClassName: "system-cluster-critical"
