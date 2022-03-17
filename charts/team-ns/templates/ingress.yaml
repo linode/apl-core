@@ -47,43 +47,39 @@
   {{- if gt (len $tlsPass) 0 }}
 # ingress: {{ $type }}: tlsPass ({{ len $tlsPass }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "tlspass" "hasForward" false "hasAuth" false "services" $tlsPass "tlsPass" true) }}
----
   {{- end }}
 
   {{- if gt (len $apps) 0 }}
 # ingress: {{ $type }}: apps ({{ len $apps }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "apps" "hasAuth" true "services" $apps "isApps" true) }}
----
   {{- end }}
 
   {{- if gt (len $appsForward) 0 }}
 # ingress: {{ $type }}: appsForward ({{ len $apps }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "apps-forward" "hasForward" true "hasAuth" true "services" $appsForward "isApps" true) }}
----
   {{- end }}
 
   {{- if gt (len $auth) 0 }}
 # ingress: {{ $type }}: auth  ({{ len $auth }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "auth" "hasForward" false "hasAuth" true "services" $auth) }}
----
   {{- end }}
 
   {{- if gt (len $authForward) 0 }}
 # ingress: {{ $type }}: authForward ({{ len $authForward }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "auth-forward" "hasForward" true "hasAuth" true "services" $authForward) }}
----
+
   {{- end }}
 
   {{- if gt (len $open) 0 }}
 # ingress: {{ $type }}: open ({{ len $open }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "open" "hasForward" false "hasAuth" false "services" $open) }}
----
+
   {{- end }}
 
   {{- if gt (len $openForward) 0 }}
 # ingress: {{ $type }}: openForward ({{ len $openForward }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "open-forward" "hasForward" true "hasAuth" false "services" $openForward) }}
----
+
   {{- end }}
 
   {{- if $v.otomi.hasCloudLB }}
@@ -92,7 +88,7 @@
   {{- if gt (len $svcs) 0 }}
 # ingress: {{ $type }}: cloudLB ({{ len $svcs }})
 {{ include "ingress" (dict "type" $type "dot" $ "provider" $v.cluster.provider "name" "external" "hasForward" false "hasAuth" false "services" $svcs) }}
----
+
   {{- end }}
   {{- end }}
 

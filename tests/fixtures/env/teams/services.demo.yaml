@@ -143,3 +143,6 @@ teamConfig:
                   networkPolicy:
                       ingressPrivate:
                           mode: allowOnly
+                - name: service-e
+                  type: public
+                  refClassName: net-a

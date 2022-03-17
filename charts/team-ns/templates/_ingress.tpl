@@ -31,15 +31,19 @@
 {{- $v := .dot.Values }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
+{{- range $ingress := $v.ingress }}
 # collect unique host and service names
 {{- $routes := dict }}
+{{- $paths := list }}
 {{- $names := list }}
 {{- $hasTlsPass := $.tlsPass | default false }}
 {{- $secrets := dict }}
-{{- range $s := .services }}
+{{- range $s := $.services }}
+{{- $ingressClassName := dig "refClassName" "platform" $s }}
+{{- if eq $ingressClassName $ingress.className }}
   {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
   {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-  {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
+  {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/")) $paths }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = merge $routes (dict $domain $paths) }}
   {{- else }}
@@ -49,12 +53,15 @@
   {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
     {{- $names = (append $names $s.name) }}
   {{- end }}
-{{- end }}
-{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not $v.otomi.hasCloudLB) (eq .provider "nginx")) }}
-{{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq .provider "nginx")) }}
+{{- end }}{{/* {{- range $s := $.services }} */}}
+{{- $internetFacing := or (eq $.provider "onprem") (ne $.provider "nginx") (and (not $v.otomi.hasCloudLB) (eq $.provider "nginx")) }}
+{{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq $.provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
 {{- end }}
-apiVersion: {{ template "ingress.apiVersion" .dot }}
+{{- if or $routes $names }}
+---
+# {{ $ingressClassName }} {{ $ingress.className }} {{ $s.name }}
+apiVersion: {{ template "ingress.apiVersion" $.dot }}
 kind: Ingress
 metadata:
   annotations:
@@ -64,19 +71,16 @@ metadata:
 {{- if $hasTlsPass }}
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 {{- else }}
-  {{- if eq .provider "aws" }}
-    kubernetes.io/ingress.class: merge
+  {{- if eq $.provider "aws" }}
     merge.ingress.kubernetes.io/config: merged-ingress
     alb.ingress.kubernetes.io/tags: "team=team-{{ $v.teamId }}"
     ingress.kubernetes.io/ssl-redirect: "true"
   {{- end }}
-  {{- if eq .provider "azure" }}
-    kubernetes.io/ingress.class: azure/application-gateway
+  {{- if eq $.provider "azure" }}
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     appgw.ingress.kubernetes.io/backend-protocol: "http"
   {{- end }}
-  {{- if eq .provider "nginx" }}
-    kubernetes.io/ingress.class: nginx{{ if eq $.type "private" }}-private{{ end }}
+  {{- if eq $.provider "nginx" }}
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     # nginx.ingress.kubernetes.io/proxy-buffering: "off"
     # nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
@@ -88,37 +92,44 @@ metadata:
 {{- if and (eq $v.cluster.provider "onprem") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
-{{- if .isApps }}
+{{- if $.isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
-  {{- if .hasForward }}
+  {{- if $.hasForward }}
     nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
   {{- else }}
     nginx.ingress.kubernetes.io/rewrite-target: /$2
   {{- end }}
 {{- end }}
-{{- if .hasAuth }}
+{{- if $.hasAuth }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
 {{- end }}
-{{- if .isApps }}
+{{- if $.isApps }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
       rewrite ^(/jaeger)$ $1/ permanent;
 {{- end }}
-  labels: {{- include "team-ns.chart-labels" .dot | nindent 4 }}
-  name: {{ $.provider }}-team-{{ $v.teamId }}-{{ .type }}-{{ .name }}
-  namespace: {{ if ne .provider "nginx" }}ingress{{ else }}istio-system{{ end }}
+  labels: {{- include "team-ns.chart-labels" $.dot | nindent 4 }}
+  name: {{ $.provider }}-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
+  namespace: {{ if ne $.provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
+{{/*
+    kubernetes.io/ingress.class: merge
+    kubernetes.io/ingress.class: azure/application-gateway
+    kubernetes.io/ingress.class: nginx{{ if eq $.type "private" }}-private{{ end }}
+*/}}
+  ingressClassName: {{ $ingress.className }}
   rules:
 {{- if $hasTlsPass }}
+# tlsPass jeho {{$routes}}
   {{- range $domain, $paths := $routes }}
   - host: {{ $domain }}
     http:
       paths:
       {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "port" 443) | nindent 8 }}
   {{- end }}
-{{- else if .isApps }}
+{{- else if $.isApps }}
     - host: {{ $appsDomain }}
       http:
         paths:
@@ -159,5 +170,7 @@ spec:
       {{- end }}
   {{- end }}
 {{- end }}
-
-{{- end }}
+{{- end }} {{/*{{- if or $routes $names }}*/}}
+{{- end }} {{/* {{- if eq $ingressClassName $ingress.className */}}
+{{- end }} {{/* {{- range $ingress := $v.ingress */}}
+{{- end }} {{/* {{- define "ingress" */}}

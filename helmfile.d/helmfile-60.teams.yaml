@@ -34,6 +34,7 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}
