@@ -32,7 +32,6 @@
 {{- $appsDomain := printf "apps.%s" $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- range $ingress := $v.ingress }}
-# collect unique host and service names
 {{- $routes := dict }}
 {{- $paths := list }}
 {{- $names := list }}
@@ -43,7 +42,7 @@
   {{- if eq $ingressClassName $ingress.className }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
     {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-    {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/")) $paths }}
+    {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list )) $paths }}
     {{- if (not (hasKey $routes $domain)) }}
       {{- $routes = merge $routes (dict $domain $paths) }}
     {{- else }}
@@ -61,6 +60,9 @@
 {{- end }}
 {{- if or $routes $names }}
 ---
+# ingress: {{ $.type }}: {{ $.name }} ({{ len $.services }})
+
+# collect unique host and service names
 apiVersion: {{ template "ingress.apiVersion" $.dot }}
 kind: Ingress
 metadata:
@@ -122,7 +124,6 @@ spec:
   ingressClassName: {{ $ingress.className }}
   rules:
 {{- if $hasTlsPass }}
-# tlsPass jeho {{$routes}}
   {{- range $domain, $paths := $routes }}
   - host: {{ $domain }}
     http:
