@@ -306,7 +306,7 @@ registry:
       {{- end }}
   relativeurls: false
   credentials:
-    username: {{ $h | get "registry.credentials.username" "admin" }}
+    username: {{ $h | get "registry.credentials.username" }}
     password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
     htpasswd: {{ $h | get "registry.credentials.htpasswd" nil }}
 
