@@ -87,12 +87,14 @@ environments:
             enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
+
+
+        {{- if not ($v.otomi | get "ingress" (list)) }}
+        ingress:
+            - className: platform
+              network: public
+        {{- end }}
         otomi:
-          {{- if not ($v.otomi | get "ingress" (list)) }}
-          ingress:
-              - className: platform
-                network: public
-          {{- end }}
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}
       - ../core.yaml
