@@ -33,17 +33,12 @@ if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
   calling_args="x -- ${calling_args:2}"
 fi
 readonly calling_args
-
 silent() {
   if { [[ $VERBOSITY -gt 0 ]] || [[ " $calling_args" == *' -v'* ]]; } && [ -t 1 ]; then
     "$@"
   else
     "$@" &>/dev/null
   fi
-}
-
-docker_tag_exists() {
-  curl -sflL https://index.docker.io/v1/repositories/$1/tags | grep "\"name\": \"$2\"" &>/dev/null
 }
 
 # shellcheck disable=SC2155
@@ -53,6 +48,23 @@ if [ -f "$PWD/package.json" ] && [ -d "$PWD/.git" ]; then
   in_core=1
   core_path=$(pwd)
 fi
+
+function parse_yaml {
+  local prefix=$2
+  local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @ | tr @ '\034')
+  sed -ne "s|^\($s\):|\1|" \
+    -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+    -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" $1 |
+    awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
 
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
@@ -66,23 +78,20 @@ if [ -n "$in_core" ]; then
   current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
   otomi_version=$current_branch_img
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
-  otomi_version=$(awk '/otomi/{flag=1} flag && /version:/{print $NF;flag=""}' $ENV_DIR/env/settings.yaml)
-  # If the settings.yaml doesn't contain otomi.version, we fall back to latest
-  otomi_version=${otomi_version:-$fallback_otomi_version}
+  otomi_version_rec=$(parse_yaml $ENV_DIR/env/settings.yaml | grep 'otomi__version=')
+  if [[ "$otomi_version_rec" =~ otomi__version=\"(.*)\" ]]; then
+    otomi_version=${BASH_REMATCH[1]}
+  else
+    # If the settings.yaml doesn't contain otomi.version, we fall back to latest
+    otomi_version=$fallback_otomi_version
+  fi
 else
   otomi_version=$fallback_otomi_version
 fi
 otomi_branch_or_tag=${current_branch:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
-if [ -z $NOPULL ] && [ -z $CI ] && ! docker_tag_exists otomi/core $otomi_version_used; then
-  # When working in new branch, docker image doesn't exist before first commit/push
-  # So need to fall back to working version
-  [ -n "$in_core" ] && otomi_version=$fallback_otomi_dev_version || otomi_version=$fallback_otomi_version
-  echo "Registry doesn't have otomi/core:${otomi_version_used}"
-  echo "Falling back to otomi/core:${otomi_version}"
-  otomi_version_used=$otomi_version
-fi
 readonly otomi_tools_image="otomi/core:${otomi_version_used}"
+
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
@@ -90,7 +99,7 @@ fi
 readonly script_full_path
 update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch_or_tag}/binzx/otomi"
 
-date_to_format() {
+function date_to_format() {
   date=${1:-'1970-01-01T00:00:00Z'}
   format=${2:-+%s}
   which_date=$(which date)
@@ -301,6 +310,7 @@ elif [[ $calling_args == *'--get-yargs-completions'* ]]; then
   docker run --name $container_name --rm -e SHELL=$SHELL "$otomi_tools_image" bash -c "$cmd"
   status=$?
 else
+  # set -x
   docker run --name $container_name --rm --init $it \
     $linux_workaround \
     $network \
