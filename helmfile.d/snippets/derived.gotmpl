@@ -88,6 +88,11 @@ environments:
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
         otomi:
+          {{- if not ($v.otomi | get "ingress" (list)) }}
+          ingress:
+              - className: platform
+                network: public
+          {{- end }}
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}
       - ../core.yaml
