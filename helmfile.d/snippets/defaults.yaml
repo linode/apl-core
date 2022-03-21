@@ -126,7 +126,7 @@ environments:
           hasExternalIDP: false
           isHomeMonitored: false
           isManaged: true
-          isMultitenant: true
+          isMultitenant: false
         teamConfig: {}
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
