@@ -48,14 +48,12 @@ releases:
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if $v.otomi.isMultitenant }}
-    {{- if ne (len ($team | get "sites" list)) 0 }}
+  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}
+    {{- if gt (len $teamServices) 0 }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
     {{- end }}
-  {{- end }}
-  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}  
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -93,37 +91,10 @@ releases:
             serviceMonitorNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
-    {{- if gt (len $teamServices) 0 }}
+        {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
-              - job_name: probe-services-{{ $teamId }}
-                metrics_path: /probe
-                scrape_interval: 10m
-                params:
-                  module: [http_2xx]  # Look for a HTTP 200 response.
-                static_configs:
-                  - targets:
-      {{ $registry := list }}
-      {{- range $s := $team.services }}
-        {{- $type := $s.type | default "auth" }}
-        {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
-          {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
-          {{- $paths:= $s | get "paths" list }}
-          {{- $path := ternary "/" (first $paths) (empty $paths) }}
-          {{- $url := printf "%s%s" $svcDomain $path }}
-          {{- if not (has $url $registry) }}
-            {{- $registry = append $registry $url }}
-                    - https://{{ $url }}
-          {{- end }}
+          {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
         {{- end }}
-      {{- end }}
-                relabel_configs:
-                  - source_labels: [__address__]
-                    target_label: __param_target
-                  - source_labels: [__param_target]
-                    target_label: instance
-                  - target_label: __address__
-                    replacement: prometheus-blackbox-exporter.monitoring:9115
-    {{- end }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}

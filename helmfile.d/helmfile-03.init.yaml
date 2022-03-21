@@ -13,13 +13,13 @@ bases:
 
 releases:
   - name: gitea-artifacts
-    installed: {{ and $v._derived.untrustedCA ($a | get "gitea.enabled")  }}
+    installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
     labels:
       pkg: gitea
     <<: *raw
   - name: kiali-operator-artifacts
-    installed: {{ and ($a | get "kiali.enabled") $v._derived.untrustedCA }}
+    installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
     labels:
       pkg: kiali

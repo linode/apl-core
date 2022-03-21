@@ -11,7 +11,10 @@
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
-
+{{- $hasServices := false }}
+{{- range $teamId, $team := omit $v.teamConfig "admin" }}
+  {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
+{{- end }}
 nameOverride: po
 fullnameOverride: po
 {{- with .Values.otomi | get "globalPullSecret" nil }}
@@ -89,6 +92,14 @@ prometheus:
 
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
+{{- if and (not $v.otomi.isMultitenant) $hasServices }}
+    additionalScrapeConfigs:
+{{- end }}
+{{- range $teamId, $team := omit $v.teamConfig "admin" }}
+  {{- $teamServices := ($team | get "services" list) }}
+  {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+  {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
+{{- end }}
   additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
 {{ if eq $v.cluster.provider "aws" }}  
