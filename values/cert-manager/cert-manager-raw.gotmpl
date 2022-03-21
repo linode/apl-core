@@ -75,13 +75,6 @@ resources:
                   key: secret
                   name: "dns-secret"
               {{- end }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: custom-ca
-    data:
-      tls.crt: {{ $cm.customRootCA| b64enc }}
-      tls.key: {{ $cm.customRootCAKey | b64enc}}
 {{- end }}
 # generate all da certs
 {{- range $domain, $domInfo := $doms }}
