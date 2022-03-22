@@ -65,7 +65,7 @@ export const startServer = (): void => {
     symlinkSync(k8sEnvDirPath, dockerEnvDir)
   }
   server = app.listen(17771, '0.0.0.0')
-  d.log(`Container listening on http://0.0.0.0:17771`)
+  d.log(`Server listening on http://0.0.0.0:17771`)
 }
 
 // Start server if invoked directly. We expect the script name to be the last arg
