@@ -50,18 +50,5 @@ releases:
     labels:
       pkg: host
     <<: *default
-  - name: wait-for-drone
-    installed: true
-    <<: *wait
-    namespace: maintenance
-    labels:
-      pkg: wait
-    values:
-      - url: https://drone.{{ $domainSuffix }}
-        tasksVersion: {{ $v.versions.tasks }}
-        {{- if $v._derived.untrustedCA }}
-        customCa: |
-          {{- $v._derived.caCert | nindent 10 }}
-        {{- end }}
-        runPolicy: OnSpecChange
+
 

@@ -40,7 +40,6 @@ spec:
               binzx/otomi bootstrap
               binzx/otomi apply
               binzx/otomi commit
-              binzx/otomi apply -f helmfile.tpl/helmfile-autoconfig.yaml    
           env:
             - name: CI
               value: '1'
