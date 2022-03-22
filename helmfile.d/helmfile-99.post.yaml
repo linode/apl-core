@@ -50,7 +50,7 @@ releases:
     labels:
       pkg: host
     <<: *default
-  - name: wait-for-otomi-realm
+  - name: wait-for-drone
     installed: true
     <<: *wait
     namespace: maintenance
