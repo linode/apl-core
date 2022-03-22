@@ -159,11 +159,14 @@ adminApps:
     tags: [auth, sso]
     isShared: true
     ownHost: true
-    path: /realms/otomi/account/
     ingress:
       - namespace: keycloak
         svc: keycloak-http
         type: public
+    shortcuts:
+      - title: Account
+        description: Edit your account settings.
+        path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
     deps: [istio]
