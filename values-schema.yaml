@@ -962,6 +962,10 @@ definitions:
       port:
         $ref: '#/definitions/portNumber'
         description: Points to the backing k8s service (only used when 'svc' is set).
+      ingressClassName:
+        description: Ingress class name
+        type: string
+        default: platform
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.

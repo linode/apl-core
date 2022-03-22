@@ -38,7 +38,7 @@
 {{- $hasTlsPass := $.tlsPass | default false }}
 {{- $secrets := dict }}
 {{- range $s := $.services }}
-  {{- $ingressClassName := dig "refClassName" "platform" $s }}
+  {{- $ingressClassName := dig "ingressClassName" "platform" $s }}
   {{- if eq $ingressClassName $ingress.className }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
     {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}

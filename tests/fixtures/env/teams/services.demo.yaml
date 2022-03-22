@@ -145,4 +145,4 @@ teamConfig:
                           mode: allowOnly
                 - name: service-e
                   type: public
-                  refClassName: net-a
+                  ingressClassName: net-a
