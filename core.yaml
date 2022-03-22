@@ -135,10 +135,10 @@ adminApps:
   - name: httpbin
     tags: [dev, testing, debugging]
     isShared: true
+    ownHost: true
     ingress:
       - namespace: shared
         svc: httpbin
-        ownHost: true
         type: public
         auth: true
   - name: ingress-nginx
@@ -157,10 +157,12 @@ adminApps:
         auth: true
   - name: keycloak
     tags: [auth, sso]
+    isShared: true
+    ownHost: true
+    path: /realms/otomi/account/
     ingress:
       - namespace: keycloak
         svc: keycloak-http
-        ownHost: true
         type: public
   - name: kiali
     tags: [tracing, telemetry, observability]
