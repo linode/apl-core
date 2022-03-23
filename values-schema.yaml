@@ -2619,10 +2619,10 @@ properties:
           type: string
           enum:
             - public
-            - Private
+            - private
           default: public
         ipAddress:
-          type: boolean
+          type: string
     minItems: 1
 
   smtp:
