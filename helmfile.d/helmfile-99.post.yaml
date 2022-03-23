@@ -10,7 +10,6 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $c := $v.charts }}
-{{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 
 releases:
   - name: job-certs-aws
@@ -50,5 +49,3 @@ releases:
     labels:
       pkg: host
     <<: *default
-
-
