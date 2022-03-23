@@ -33,16 +33,16 @@
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- range $ingress := $v.ingress }}
 {{- $routes := dict }}
-{{- $paths := list }}
 {{- $names := list }}
 {{- $hasTlsPass := $.tlsPass | default false }}
 {{- $secrets := dict }}
 {{- range $s := $.services }}
+  {{- $paths := list }}
   {{- $ingressClassName := dig "ingressClassName" "platform" $s }}
   {{- if eq $ingressClassName $ingress.className }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
     {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-    {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list )) $paths }}
+    {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/" )) $paths }}
     {{- if (not (hasKey $routes $domain)) }}
       {{- $routes = merge $routes (dict $domain $paths) }}
     {{- else }}
