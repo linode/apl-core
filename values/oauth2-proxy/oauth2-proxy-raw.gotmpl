@@ -14,7 +14,6 @@ resources:
         {{- if eq $v.cluster.provider "onprem" }}
         external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
         {{- end }}
-        kubernetes.io/ingress.class: nginx
         ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
         {{- if $v.charts.keycloak.enabled }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
@@ -24,6 +23,7 @@ resources:
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
       name: oauth2-proxy
     spec:
+      ingressClassName: platform
       rules:
       - host: '{{ $domain }}'
         http:
