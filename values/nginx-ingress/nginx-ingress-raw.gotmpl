@@ -13,5 +13,5 @@ resources:
       ingressclass.kubernetes.io/is-default-class: "true"
     {{- end }}
   spec:
-    controller: "otomi.io/ingress-{{ $ingress.className }}"
+    controller: "k8s.io/ingress-nginx"
 {{- end }}

@@ -32,3 +32,4 @@ releases:
         domain: {{ $v | get "cluster.domainSuffix" nil }}
         services: {{- $coreAdminServices | toYaml | nindent 10 }}
         resourceQuota: null
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}

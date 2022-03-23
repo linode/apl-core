@@ -1,4 +1,7 @@
 version: 1
+ingress:
+    - className: platform
+      network: public
 otomi:
     hasExternalDNS: false
     hasExternalIDP: false

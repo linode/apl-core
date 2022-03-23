@@ -31,12 +31,12 @@ home:
     slack:
         channel: mon-otomi
         channelCrit: mon-otomi-crit
-# ingress:
-#     - className: platform
-#       network: private
-#       ipAddress: '10.0.0.9'
-#     - className: net-a
-#       network: public
+ingress:
+    - className: platform
+      network: private
+      ipAddress: '10.0.0.9'
+    - className: net-a
+      network: public
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
