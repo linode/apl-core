@@ -12,7 +12,7 @@ bases:
 {{- $c := $v.charts }}
 
 releases:
-  - name: job-autoconfig
+  - name: job-e2e
     installed: {{ or (eq $v.otomi.hasExternalIDP false) (eq $c.gitea.enabled true) }}
     <<: *jobs
     labels:
