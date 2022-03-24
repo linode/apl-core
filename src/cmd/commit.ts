@@ -165,9 +165,7 @@ export const commit = async (): Promise<void> => {
     #
     #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/
     #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
-    #  The URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
-    #  When no external IDP was configured, please log into Keycloak first to create one or more users and add them either to the 'team-admin' or 'admin' group.
-    #  The password of the Keycloak ${credentials.adminUsername} user is: ${credentials.adminPassword}
+    #  The password of the '${credentials.adminUsername}' user is: ${credentials.adminPassword}
     #
     ########################################################################################################################################`
     d.info(message)
