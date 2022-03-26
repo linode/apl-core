@@ -1807,7 +1807,7 @@ properties:
             x-secret: 'randAlphaNum 20'
           adminUsername:
             type: string
-            default: admin
+            default: otomi-admin
           adminPassword:
             type: string
             x-secret: ''

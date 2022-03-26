@@ -17,7 +17,7 @@ resources:
     spec:
       size: 1
       image: vault:{{ $vaultVersion }}
-      bankVaultsImage: 'ghcr.io/banzaicloud/bank-vaults:{{ $bankVaultsVersion }}'
+      bankVaultsImage: ghcr.io/banzaicloud/bank-vaults:{{ $bankVaultsVersion }}
 
       # Common annotations for all created resources
       annotations:
@@ -194,7 +194,7 @@ resources:
               # Allow every pod in the vault namespace to use the secret kv store
               - name: default
                 bound_service_account_names: 
-                - external-secrets
+                - kubernetes-external-secrets
                 - vault
                 - default
                 # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
