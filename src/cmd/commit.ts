@@ -163,9 +163,9 @@ export const commit = async (): Promise<void> => {
     const message = `
     ########################################################################################################################################
     #
-    #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/
-    #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
-    #  The password of the '${credentials.adminUsername}' user is: ${credentials.adminPassword}
+    #  To start using Otomi, go to https://otomi.${values!.cluster.domainSuffix} and sign in to the web console
+    #  as: '${credentials.adminUsername}' and password:  ${credentials.adminPassword}
+    #  Then activate Drone. For more information see: https://otomi.io/docs/installation/post-install/
     #
     ########################################################################################################################################`
     d.info(message)
