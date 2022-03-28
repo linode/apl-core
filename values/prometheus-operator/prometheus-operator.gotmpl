@@ -94,11 +94,11 @@ prometheus:
     externalUrl: https://{{ $appsDomain }}/prometheus
 {{- if and (not $v.otomi.isMultitenant) $hasServices }}
     additionalScrapeConfigs:
-{{- end }}
-{{- range $teamId, $team := omit $v.teamConfig "admin" }}
-  {{- $teamServices := ($team | get "services" list) }}
-  {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
-  {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
+  {{- range $teamId, $team := omit $v.teamConfig "admin" }}
+    {{- $teamServices := ($team | get "services" list) }}
+    {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+    {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
+  {{- end }}
 {{- end }}
   additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
