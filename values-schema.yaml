@@ -1587,6 +1587,9 @@ properties:
             default: false
       host-mods:
         properties:
+          enabled:
+            type: boolean
+            default: false
           certDir:
             type: string
             description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
