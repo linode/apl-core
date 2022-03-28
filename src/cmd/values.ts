@@ -16,7 +16,7 @@ const values = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:values`)
   d.info('Get values')
   const argv: Arguments = getParsedArgs()
-  const hfVal = await hfValues({ filesOnly: true })
+  const hfVal = await hfValues({ filesOnly: argv.filesOnly })
 
   d.info('Print values')
   console.log(dump(hfVal))
