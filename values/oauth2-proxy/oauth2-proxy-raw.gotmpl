@@ -11,7 +11,7 @@ resources:
         externaldns: "true"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         {{- end }}
-        {{- if eq $v.cluster.provider "onprem" }}
+        {{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") }}
         external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
         {{- end }}
         kubernetes.io/ingress.class: nginx

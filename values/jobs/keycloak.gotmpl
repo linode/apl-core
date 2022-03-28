@@ -25,8 +25,8 @@ annotations:
   {{- end }}
 env:
   # DEBUG: '*'
-  KEYCLOAK_ADMIN: {{ $k.adminUsername }}
-  FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
+  KEYCLOAK_ADMIN: otomi-admin
+  FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
   KEYCLOAK_ADDRESS: {{ $k.address }}
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}

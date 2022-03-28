@@ -59,7 +59,7 @@ environments:
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
+            enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "custom" "kind")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
@@ -92,9 +92,9 @@ environments:
             address: https://keycloak.{{ $domainSuffix }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $a | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
+            enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
           metrics-server:
-            enabled: {{ $a | get "metrics-server.enabled" (list "onprem" "aws" | has $provider) }}
+            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:

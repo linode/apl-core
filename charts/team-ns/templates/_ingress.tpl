@@ -50,7 +50,7 @@
     {{- $names = (append $names $s.name) }}
   {{- end }}
 {{- end }}
-{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not $v.otomi.hasCloudLB) (eq .provider "nginx")) }}
+{{- $internetFacing := or (eq .provider "custom") (ne .provider "nginx") (and (not $v.otomi.hasCloudLB) (eq .provider "nginx")) }}
 {{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
 {{- end }}
@@ -85,7 +85,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "onprem") (hasKey $v.cluster "entrypoint") $internetFacing }}
+{{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}

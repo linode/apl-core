@@ -2,7 +2,7 @@ cluster:
   # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
   k8sVersion: '1.21'
   name: 'dev'
-  provider: 'aws' # provider can be one of aws|azure|google|onprem
+  provider: 'aws' # provider can be one of aws|azure|google|custom
   # owner: '' # will be set to 'otomi' if left empty
 otomi: {}
   # adminPassword: '' # Will be automatically generated if not filled-in

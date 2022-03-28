@@ -37,7 +37,7 @@ environments:
             enabled: false
             registry:
               credentials:
-                username: admin
+                username: otomi-admin
           hello:
             enabled: false
           httpbin:
@@ -77,7 +77,7 @@ environments:
             enabled: false
           keycloak:
             enabled: true
-            adminUsername: admin
+            adminUsername: otomi-admin
             theme: otomi
             idp:
               alias: otomi-idp

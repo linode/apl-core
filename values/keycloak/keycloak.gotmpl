@@ -77,9 +77,9 @@ extraInitContainers: |
 
 extraEnv: |
   - name: KEYCLOAK_USER
-    value: {{ $k | get "admin.username" "admin" }}
+    value: {{ $k.adminUsername }}
   - name: KEYCLOAK_PASSWORD
-    value: {{ $k | get "admin.password" $v.otomi.adminPassword }}
+    value: {{ $k.adminPassword }}
 extraVolumeMounts: |
   - name: theme
     mountPath: /themes

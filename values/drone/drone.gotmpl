@@ -106,8 +106,9 @@ agent:
 
 persistence:
   enabled: true
+  {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
   storageClass: fast
-
+  {{- end }}
 metrics:
   prometheus:
     enabled: true
