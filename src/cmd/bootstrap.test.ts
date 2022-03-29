@@ -206,11 +206,6 @@ describe('Bootstrapping values', () => {
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
       })
-      it('should not ask to create a CA if issuer is not custom-ca', async () => {
-        deps.loadYaml.mockReturnValue(merge(cloneDeep(values), { apps: { 'cert-manager': { issuer: 'nono' } } }))
-        await processValues(deps)
-        expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
-      })
     })
     describe('processing app values', () => {
       it('should not retrieve values from env dir', async () => {
