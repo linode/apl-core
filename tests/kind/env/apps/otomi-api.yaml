@@ -1,5 +1,5 @@
 apps:
-  otomi-api:
-    git:
-      email: some@secret.value
-      user: otomi-admin
+    otomi-api:
+        git:
+            email: some@secret.value
+            user: otomi-admin

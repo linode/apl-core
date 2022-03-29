@@ -1,5 +1,6 @@
 alerts:
-    drone: [slack]
+    drone:
+        - slack
     groupInterval: 5m
     receivers:
         - slack
@@ -9,6 +10,7 @@ azure:
     appgw:
         isManaged: true
     monitor:
+        clientId: somesecretvalue
         subscriptionId: somesecretvalue
         tenantId: somesecretvalue
     resourceGroup: somevalue
@@ -32,6 +34,7 @@ home:
 kms:
     sops:
         azure:
+            clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
 oidc:
@@ -56,4 +59,4 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 1
+version: 2

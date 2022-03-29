@@ -3,6 +3,6 @@ teamConfig:
         apps:
             drone:
                 shortcuts:
-                    - title: some title
-                      description: blabla
+                    - description: blabla
                       path: /ok
+                      title: some title

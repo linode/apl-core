@@ -7,7 +7,7 @@ name: gitea-prepare
 runPolicy: OnSpecChange
 env:
   # GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
-  GITEA_URL: http://gitea-http.gitea
+  GITEA_URL: http://gitea-http.gitea:3000
   DRONE_URL: https://drone.{{ $v.cluster.domainSuffix }}
 nativeSecrets:
   GITEA_PASSWORD: {{ $g.adminPassword }}

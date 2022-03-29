@@ -6,4 +6,4 @@ otomi:
     isManaged: false
     isMultitenant: true
     version: master
-version: 1
+version: 2

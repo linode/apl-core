@@ -6,7 +6,7 @@ type: CronJob
 name: gitea-add-users
 env:
   # GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
-  GITEA_URL: http://gitea-http.gitea
+  GITEA_URL: http://gitea-http.gitea:3000
   GITEA_REPO: values
 nativeSecrets:
   GITEA_PASSWORD: {{ $g.adminPassword }}

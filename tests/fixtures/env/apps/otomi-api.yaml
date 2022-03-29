@@ -1,6 +1,6 @@
 apps:
     otomi-api:
         git:
-            user: someuser
             email: some@secret.value
             repoUrl: github.com/redkubes/otomi-values-demo.git
+            user: someuser

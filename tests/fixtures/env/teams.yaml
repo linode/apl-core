@@ -1,8 +1,6 @@
 teamConfig:
     demo:
         alerts:
-            email:
-                critical: admins@yourdoma.in
             receivers:
                 - email
         id: demo
@@ -11,6 +9,5 @@ teamConfig:
             ingressPrivate: true
         oidc:
             groupMapping: somesecretvalue
-        password: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'

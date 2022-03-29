@@ -8,6 +8,8 @@ teamConfig:
             defaultRequest:
                 cpu: 50m
                 memory: 64Mi
-        password: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'
+    teams:
+        demo:
+            password: somesecretvalue
