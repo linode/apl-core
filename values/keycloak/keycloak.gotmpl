@@ -41,7 +41,7 @@ startupScripts:
 
     # hostname SPI modification
     /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.frontendUrl,value="https://keycloak.{{ $v.cluster.domainSuffix }}/")
-    /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=true)
+    /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=false)
 
     run-batch
     stop-embedded-server

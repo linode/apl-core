@@ -1806,8 +1806,9 @@ properties:
                 x-secret: 'randAlphaNum 32'
           postgresqlPassword:
             type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
+            description: This password was generated and cannot be changed without manual intervention.
             x-secret: 'randAlphaNum 20'
+            readOnly: true
           adminPassword:
             type: string
             x-secret: ''
