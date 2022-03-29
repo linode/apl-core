@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
-import { copy, move, pathExists, renameSync, rm } from 'fs-extra'
+import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
@@ -32,6 +33,10 @@ interface Change {
   renamings?: Array<{
     [oldName: string]: string
   }>
+  additions?: Array<{
+    [mutation: string]: string
+  }>
+  fileAdditions?: Array<string>
 }
 
 export type Changes = Array<Change>
@@ -44,7 +49,7 @@ export const rename = async (
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:rename`)
   if (!(await deps.pathExists(`${env.ENV_DIR}/${oldName}`))) {
-    d.warn(`File does not exist: ${env.ENV_DIR}/${oldName}. Already renamed?`)
+    d.warn(`File does not exist: "${env.ENV_DIR}/${oldName}". Already renamed?`)
     return
   }
   // so the file exists, check if it has a '/secrets.' companion
@@ -83,7 +88,7 @@ export const rename = async (
 
 export const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
   const val = get(values, lhs)
-  if (val && set(values, rhs, val)) unset(values, lhs)
+  if (val !== undefined && set(values, rhs, val)) unset(values, lhs)
 }
 
 export function filterChanges(version: number, changes: Changes): Changes {
@@ -109,30 +114,29 @@ export const applyChanges = async (
   cd(env.ENV_DIR)
   // do file renamings first as those have to match the current containers expectations
   for (const c of changes) {
-    if (c.renamings)
-      for (const r of c.renamings) {
-        const oldName = Object.keys(r)[0]
-        const newName = Object.values(r)[0]
-        await deps.rename(oldName, newName, dryRun)
-      }
+    c.renamings?.forEach((entry) => each(entry, async (newName, oldName) => deps.rename(oldName, newName, dryRun)))
+    // same for any new file additions
+    c.fileAdditions?.forEach((path) => createFileSync(`${env.ENV_DIR}/${path}`))
   }
   // only then can we get the values and do mutations on them
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.deletions?.forEach((del) => unset(values, del))
-    c.relocations?.forEach((r) => {
-      each(r, (newName, oldName) => moveGivenJsonPath(values, oldName, newName))
-    })
-
+    c.deletions?.forEach((entry) => unset(values, entry) && unset(values, entry))
+    c.additions?.forEach((entry) => each(entry, (val, path) => set(values, path, val)))
+    c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
     if (c.mutations)
+      // 'for const of' is used here to allow await in loop
       for (const mut of c.mutations) {
-        const path = Object.keys(mut)[0]
-        const tmpl = `{{ ${Object.values(mut)[0]} }}`
+        const [path, tmplStr] = Object.entries(mut)[0]
+        const tmpl = `{{ ${tmplStr} }}`
         const prev = get(values, path)
-        const ret = await gucci(tmpl, { prev })
-        set(values, path, ret)
+        if (prev !== undefined) {
+          const ret = await gucci(tmpl, { prev })
+          set(values, path, ret)
+        }
       }
+
     Object.assign(values, { version: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)

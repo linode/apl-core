@@ -3,6 +3,7 @@ import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import pkg from '../../package.json'
+import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
@@ -61,19 +62,27 @@ const writeValuesToFile = async (
   d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
   if (!existsSync(targetPath) || overwrite) {
-    return writeFile(targetPath + suffix, objectToYaml(newValues))
+    // create the non-suffixed file for encryption to not skip this later on
+    const notExists = !existsSync(targetPath)
+    if (isSecretsFile && notExists) {
+      await writeFile(targetPath, objectToYaml(newValues))
+      await encrypt(targetPath)
+      await decrypt(targetPath)
+      return
+    }
+    await writeFile(targetPath + suffix, objectToYaml(newValues))
+    return
   }
   const originalValues = loadYaml(targetPath + suffix, { noError: true }) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
   const mergeResult = merge(cloneDeep(originalValues), newValues)
   if (isEqual(originalValues, mergeResult)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
-    return undefined
+    return
   }
   d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
-  const res = writeFile(targetPath + suffix, objectToYaml(mergeResult))
+  await writeFile(targetPath + suffix, objectToYaml(mergeResult))
   d.info(`Values were written to ${targetPath}${suffix}`)
-  return res
 }
 
 /**

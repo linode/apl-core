@@ -42,6 +42,8 @@ spec:
           env:
             - name: WAIT_URL
               value: '{{ .Values.url }}'
+            - name: WAIT_HOST
+              value: '{{ .Values.host }}'
             - name: WAIT_OPTIONS
               value: '{"retries":{{ $retries }}}'
             {{- if .Values.customCa }}

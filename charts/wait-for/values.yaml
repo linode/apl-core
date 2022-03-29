@@ -1,6 +1,9 @@
 # the url of the service:
 url: ''
 
+# the host of the service (used as header)
+host: ''
+
 # retries defaults to 50 with backoff strategy of eventually 30 secs max:
 # retries: 100
 

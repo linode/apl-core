@@ -227,12 +227,10 @@ export const processValues = async (
   // do we need to create a custom CA? if so add it to the secrets
   const cm = get(originalInput, 'apps.cert-manager', {})
   let caSecrets = {}
-  if (cm.issuer === 'custom-ca' || cm.issuer === undefined) {
-    if (cm.customRootCA && cm.customRootCAKey) {
-      d.info('Skipping custom RootCA generation')
-    } else {
-      caSecrets = deps.createCustomCA()
-    }
+  if (cm.customRootCA && cm.customRootCAKey) {
+    d.info('Skipping custom RootCA generation')
+  } else {
+    caSecrets = deps.createCustomCA()
   }
   // merge existing secrets over newly generated ones to keep them
   const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
