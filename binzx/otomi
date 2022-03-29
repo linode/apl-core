@@ -323,6 +323,7 @@ else
     $(check_volume_path $HOME/.config/gcloud "/home/app/.config/gcloud") \
     $(check_volume_path $HOME/.aws "/home/app/.aws") \
     $(check_volume_path $HOME/.azure "/home/app/.azure") \
+    $(check_volume_path $HOME/.minikube "/home/app/.minikube") \
     $(check_volume_path $ENV_DIR "$stack_dir/env") \
     $(check_volume_path $ENV_DIR "$ENV_DIR") \
     $(check_volume_path /var/run/docker.sock "/var/run/docker.sock") \
