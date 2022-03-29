@@ -52,6 +52,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   const stringArray = [...(labels ?? []), ...(files ?? [])]
 
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
+  process.env.HELM_DIFF_COLOR = 'true'
   const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
   return proc
 }

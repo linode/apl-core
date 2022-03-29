@@ -101,6 +101,7 @@ postgresql:
     runAsUser: 1001
   postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   postgresqlPassword: {{ $k.postgresqlPassword }}
+  postgresqlUsername: {{ $k.adminUsername }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
