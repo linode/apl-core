@@ -77,7 +77,8 @@ extraArgs:
   # exclude-logging-paths: /ping
   set-authorization-header: true
   # set-xauthrequest: true
-  oidc-issuer-url: {{ $v._derived.oidcBaseUrl }}
+  oidc-issuer-url: {{ $v._derived.oidcWellKnownUrl }}
+  # oidc-issuer-url: {{ $v._derived.oidcWellKnownUrlBackchannel }}
   insecure-oidc-allow-unverified-email: true
   show-debug-on-error: true
 

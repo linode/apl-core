@@ -3,7 +3,6 @@
 {{- $g := $v.apps.gitea }}
 {{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
-{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $v._derived.oidcBaseUrl }}
 {{- $cm := $v.apps | get "cert-manager" }}
 
 nameOverride: gitea
@@ -75,7 +74,8 @@ gitea:
       provider: openidConnect
       key: {{ $k.idp.clientID  }}
       secret: {{ $k.idp.clientSecret }}
-      autoDiscoverUrl: {{ $oidcWellKnownUrl }}
+      autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
+      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
 
 init:
   resources:

@@ -10,7 +10,8 @@
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
-{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
+# {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcWellKnownUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
+{{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcWellKnownUrlBackchannel "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := omit $v.teamConfig "admin" }}
   {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
@@ -55,6 +56,7 @@ prometheusOperator:
         kind: ClusterIssuer
   priorityClassName: "otomi-critical"
 prometheus:
+  enabled: {{ $p.enabled }}
   namespaceOverride: prometheus
   prometheusSpec:
     image:
@@ -108,8 +110,7 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
-  {{- if $a.enabled }}
-  enabled: true
+  enabled: {{ $a.enabled }}
   namespaceOverride: alertmanager
   alertmanagerSpec:
     podMetadata:
@@ -135,9 +136,6 @@ alertmanager:
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
-  {{- else }}
-  enabled: false
-  {{- end }}
 grafana:
   defaultDashboardsTimezone: browser
   downloadDashboards:

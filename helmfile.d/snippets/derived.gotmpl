@@ -26,6 +26,10 @@
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
+{{- $oidcBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
+{{- $oidcWellKnownUrl := printf "%s/realms/otomi" $oidcBaseUrl }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak" }}
+{{- $oidcWellKnownBackchannel := printf "%s/realms/otomi" $oidcBaseUrlBackchannel }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -45,7 +49,10 @@ environments:
             {{- end }}
           {{- end }}
           untrustedCA: {{ $untrustedCA }}
-          oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
+          oidcBaseUrl: {{ $oidcBaseUrl }}
+          oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
+          oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
+          oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
         apps:
           aws-alb-ingress-controller:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
@@ -89,7 +96,7 @@ environments:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
-            address: https://keycloak.{{ $domainSuffix }}
+            address: {{ $oidcBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}

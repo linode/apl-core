@@ -20,3 +20,7 @@ releases:
       pkg: csi
       provider: aws 
     <<: *default
+  - name: metrics-server
+    installed: {{ $a | get "metrics-server.enabled" }}
+    namespace: kube-system
+    <<: *default

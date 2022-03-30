@@ -3,7 +3,7 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
 resources:
-  - apiVersion: networking.k8s.io/v1beta1
+  - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
       annotations:
@@ -29,9 +29,12 @@ resources:
         http:
           paths:
           - backend:
-              serviceName: oauth2-proxy
-              servicePort: 80
-            path: /oauth2
+              service:
+                name: oauth2-proxy
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
       {{- if not $v.otomi.hasCloudLB }}
       tls: 
         - secretName: {{ $domain | replace "." "-" }}
