@@ -28,7 +28,7 @@ env:
   KEYCLOAK_ADMIN: otomi-admin
   FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
   KEYCLOAK_ADDRESS: {{ $k.address }}
-  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak:3000
+  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
