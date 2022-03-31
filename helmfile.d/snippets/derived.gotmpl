@@ -48,7 +48,7 @@ environments:
               {{- $v.letsencryptCA | nindent 12 }}
             {{- end }}
           {{- end }}
-          majorCloud: {{ has $v.cluster.provider (list "aws" "azure" "google") }}
+          supportedCloud: {{ has $v.cluster.provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
