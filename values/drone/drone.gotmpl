@@ -106,7 +106,7 @@ agent:
 
 persistence:
   enabled: true
-  {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+  {{- if $v._derived.supportedCloud }}
   storageClass: fast
   {{- end }}
 metrics:

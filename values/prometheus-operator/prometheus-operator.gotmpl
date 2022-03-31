@@ -87,7 +87,9 @@ prometheus:
         metadata:
           name: promdata
         spec:
+          {{- if $v._derived.supportedCloud }}
           storageClassName: fast
+          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" "5Gi" }}

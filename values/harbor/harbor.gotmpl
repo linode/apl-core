@@ -181,7 +181,7 @@ persistence:
       # Specify the 'storageClass' used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to '-' to disable dynamic provisioning
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast
       {{- end }}
       subPath: ''
@@ -189,7 +189,7 @@ persistence:
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast
       {{- end }}
       subPath: ''
@@ -197,7 +197,7 @@ persistence:
       size: 5Gi
     jobservice:
       existingClaim: ''
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast-immediate
       {{- end }}
       subPath: ''
@@ -208,7 +208,7 @@ persistence:
     # be ignored
     database:
       existingClaim: ''
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast
       {{- end }}
       subPath: ''
@@ -218,7 +218,7 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast
       {{- end }}
       subPath: ''
@@ -226,7 +226,7 @@ persistence:
       size: 1Gi
     trivy:
       existingClaim: ''
-      {{- if has $v.cluster.provider (list "aws" "azure" "google") }}
+      {{- if $v._derived.supportedCloud }}
       storageClass: fast
       {{- end }}
       subPath: ''

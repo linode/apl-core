@@ -63,7 +63,9 @@ persistence:
   accessModes:
   - ReadWriteOnce
   size: {{ $l | get "persistence.size" "20Gi" }}
+  {{- if $v._derived.supportedCloud }}
   storageClassName: fast
+  {{- end }}
 
 ## Assign a PriorityClassName to pods if set
 # priorityClassName:
