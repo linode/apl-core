@@ -114,6 +114,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            retentionSize: 4GB
+            storageSize: 5Gi
           redis-shared:
             enabled: false
           vault:

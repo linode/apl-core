@@ -61,7 +61,7 @@ extraArgs:
   scope: {{ $o | get "scope" "openid email profile" }}
   session-store-type: redis
   redis-connection-url: redis://oauth2-proxy-redis-master
-  redis-password: {{ $r | get "password" "str1cli4u" }}
+  redis-password: {{ $r | get "password" }}
   redirect-url: https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}

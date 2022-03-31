@@ -75,7 +75,8 @@ gitea:
       key: {{ $k.idp.clientID  }}
       secret: {{ $k.idp.clientSecret }}
       autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
-      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+      # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
 
 init:
   resources:

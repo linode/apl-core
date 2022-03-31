@@ -14,8 +14,8 @@ runPolicy: OnSpecChange
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
   HARBOR_USER: admin
-  # OIDC_ENDPOINT: '{{ $v._derived.oidcWellKnownUrl }}'
-  OIDC_ENDPOINT: '{{ $v._derived.oidcWellKnownUrlBackchannel }}'
+  # OIDC_ENDPOINT: {{ $v._derived.oidcWellKnownUrl }}
+  OIDC_ENDPOINT: {{ $v._derived.oidcWellKnownUrlBackchannel }}
   OIDC_CLIENT_ID: {{ $k.idp.clientID  }}
   OIDC_CLIENT_SECRET: {{ $k.idp.clientSecret }}
 

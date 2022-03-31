@@ -137,6 +137,7 @@ alertmanager:
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
+  enabled: {{ $g.enabled }}
   defaultDashboardsTimezone: browser
   downloadDashboards:
     resources:

@@ -19,7 +19,8 @@ releases:
     labels:
       pkg: wait
     values:
-      - url: http://keycloak-http.keycloak/realms/otomi/.well-known/openid-configuration
+      # - url: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+      - url: {{ $v._derived.oidcWellKnownUrl }}
         host: keycloak.{{ $v.cluster.domainSuffix }}
         tasksVersion: {{ $v.versions.tasks }}
         {{- if $v._derived.untrustedCA }}

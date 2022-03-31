@@ -57,7 +57,7 @@ k8s:
 adminApps:
   - name: alertmanager
     tags: [alerting, observability]
-    deps: [prometheus, grafana]
+    deps: [prometheus]
     ingress:
       - svc: po-alertmanager
         namespace: monitoring
@@ -100,7 +100,7 @@ adminApps:
         type: public
   - name: grafana
     tags: [tracing, telemetry, observability]
-    deps: [alertmanager, prometheus]
+    deps: [prometheus]
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -193,6 +193,7 @@ adminApps:
         # auth: true
   - name: loki
     tags: [logging, telemetry, observability]
+    deps: [grafana]
     useHost: grafana
     path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
     shortcuts:
@@ -231,7 +232,6 @@ adminApps:
         auth: true
   - name: prometheus
     tags: [metrics, observability]
-    deps: [alertmanager, grafana]
     ingress:
       - svc: po-prometheus
         port: 9090
