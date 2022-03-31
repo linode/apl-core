@@ -102,6 +102,8 @@ environments:
             enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
+          oauth2-proxy-redis:
+            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
