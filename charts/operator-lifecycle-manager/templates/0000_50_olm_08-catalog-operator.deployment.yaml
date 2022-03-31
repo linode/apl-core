@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: catalog-operator
+  annotations:
+    policy.otomi.io/ignore: 'psp-allowed-users'
 spec:
   strategy:
     type: RollingUpdate
