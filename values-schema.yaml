@@ -735,7 +735,8 @@ definitions:
             items:
               description: A property name at vaultPath
               minItems: 1
-              pattern: '^[a-zA-Z0-9_]*$'
+              # a valid secret key must consist of alphanumeric characters, '-', '_' or '.' (e.g. 'key.name',  or 'KEY_NAME',  or 'key-name' )
+              pattern: '^[-._a-zA-Z0-9]+$'
               type: string
             uniqueItems: true
         required:
@@ -996,6 +997,7 @@ definitions:
     type: string
   subdomainType:
     type: string
+    # A lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com')
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   team:
     additionalProperties: false
