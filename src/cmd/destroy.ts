@@ -1,12 +1,12 @@
+import { cleanupHandler, prepareEnvironment } from 'common/cli'
+import { logLevelString, terminal } from 'common/debug'
+import { hf } from 'common/hf'
+import { getFilename } from 'common/utils'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'common/yargs'
+import { ProcessOutputTrimmed, stream } from 'common/zx-enhance'
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { logLevelString, terminal } from '../common/debug'
-import { hf } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
-import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'

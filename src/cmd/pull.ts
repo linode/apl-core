@@ -1,17 +1,17 @@
+import { prepareEnvironment, scriptName } from 'common/cli'
+import { terminal } from 'common/debug'
+import { hfValues } from 'common/hf'
+import { getFilename } from 'common/utils'
+import { HelmArguments, setParsedArgs } from 'common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { prepareEnvironment, scriptName } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfValues } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { HelmArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
 export const pull = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:pull`)
   const allValues = await hfValues()
-  const branch = allValues!.apps?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues?.apps?.['otomi-api']?.git?.branch ?? 'main'
   d.info('Pulling latest values')
   try {
     await $`git fetch`

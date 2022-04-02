@@ -1,3 +1,13 @@
+import { prepareEnvironment } from 'common/cli'
+import { DEPLOYMENT_PASSWORDS_SECRET } from 'common/constants'
+import { decrypt, encrypt } from 'common/crypt'
+import { terminal } from 'common/debug'
+import { env, isChart, isCli } from 'common/envalid'
+import { hfValues } from 'common/hf'
+import { createK8sSecret, getK8sSecret, secretId } from 'common/k8s'
+import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from 'common/utils'
+import { generateSecrets, getImageTag, writeValues } from 'common/values'
+import { BasicArguments, setParsedArgs } from 'common/yargs'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { copy, outputFileSync } from 'fs-extra'
 import { copyFile } from 'fs/promises'
@@ -5,16 +15,6 @@ import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
-import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
-import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
-import { generateSecrets, getImageTag, writeValues } from '../common/values'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -62,7 +62,7 @@ export const bootstrapSops = async (
 
   const exists = deps.existsSync(targetPath)
   // we can just get the values the first time because those are unencrypted
-  const values = exists ? {} : await deps.hfValues()
+  const values = exists ? {} : ((await deps.hfValues()) as Record<string, any>)
 
   d.log(`Creating sops file for provider ${provider}`)
   const output = (await deps.gucci(templatePath, obj, true)) as string
@@ -81,21 +81,21 @@ export const bootstrapSops = async (
       const secretsFile = `${env.ENV_DIR}/.secrets`
       if (provider === 'google') {
         // and we also assume the correct values are given by using '!' (we want to err when not set)
-        const serviceKeyJson = JSON.parse(values!.kms!.sops!.google!.accountJson)
+        const serviceKeyJson = JSON.parse(values.kms!.sops!.google!.accountJson)
         // and set it in env for later decryption
-        process.env.GCLOUD_SERVICE_KEY = values!.kms!.sops!.google!.accountJson
+        process.env.GCLOUD_SERVICE_KEY = values.kms!.sops!.google!.accountJson
         d.log('Creating gcp-key.json for vscode.')
         deps.writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
         d.log(`Creating credentials file: ${secretsFile}`)
         deps.writeFileSync(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
       } else if (provider === 'aws') {
-        const v = values!.kms!.sops!.aws!
+        const v = values.kms!.sops!.aws!
         deps.writeFileSync(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
       } else if (provider === 'azure') {
-        const v = values!.kms!.sops!.azure!
+        const v = values.kms!.sops!.azure!
         deps.writeFileSync(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
       } else if (provider === 'vault') {
-        const v = values!.kms!.sops!.vault!
+        const v = values.kms!.sops!.vault!
         deps.writeFileSync(secretsFile, `VAULT_TOKEN='${v.token}'`)
       }
     }

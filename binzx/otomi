@@ -258,8 +258,8 @@ if [ -n "$in_core" ]; then
 
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
-
-  executable="node --no-warnings -r ts-node/register ${stack_dir}/src/otomi.ts --"
+  export TS_NODE_PROJECT="$PWD/tsconfig.json"
+  executable="node --no-warnings -r ts-node/register -r tsconfig-paths/register ${stack_dir}/src/otomi.ts --"
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 

@@ -1,15 +1,15 @@
+import { prepareEnvironment } from 'common/cli'
+import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from 'common/constants'
+import { encrypt } from 'common/crypt'
+import { terminal } from 'common/debug'
+import { env, isChart, isCli } from 'common/envalid'
+import { hfValues } from 'common/hf'
+import { getOtomiDeploymentStatus, waitTillAvailable } from 'common/k8s'
+import { getFilename, rootDir } from 'common/utils'
+import { HelmArguments, setParsedArgs } from 'common/yargs'
 import { copyFileSync, existsSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
-import { encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
-import { getFilename, rootDir } from '../common/utils'
-import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -20,9 +20,9 @@ interface Arguments extends HelmArguments, DroneArgs {}
 
 const gitPush = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
-  const values = await hfValues()
+  const values = (await hfValues()) as Record<string, any>
   let branch = 'main'
-  if (values?.apps?.gitea?.enabled === false) {
+  if (values.apps?.gitea?.enabled === false) {
     branch = values.apps!['otomi-api']!.git!.branch ?? branch
   }
   d.info('Starting git push.')
@@ -135,20 +135,20 @@ export const commit = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
-  const values = await hfValues()
+  const values = (await hfValues()) as Record<string, any>
   if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
   if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
 
-  if (values!.apps!.gitea!.enabled) {
+  if (values?.apps!.gitea!.enabled) {
     const url = await getGiteaHealthUrl()
-    const { adminPassword } = values!.apps!.gitea
+    const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(url, {
       // we wait for a 404 as that is the best we can do,
       // since that is what gitea gives for repos that have nothing public
       status: 404,
-      skipSsl: values?._derived?.untrustedCA,
+      skipSsl: values._derived?.untrustedCA,
       username: 'otomi-admin',
       password: adminPassword,
     })
@@ -159,11 +159,11 @@ export const commit = async (): Promise<void> => {
 
   if (isChart) {
     await setDeploymentStatus()
-    const credentials = values!.apps.keycloak
+    const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################
     #
-    #  To start using Otomi, go to https://otomi.${values!.cluster.domainSuffix} and sign in to the web console
+    #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
     #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
     #  Then activate Drone. For more information see: https://otomi.io/docs/installation/post-install/
     #

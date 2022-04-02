@@ -1,15 +1,15 @@
+import { cleanupHandler, prepareEnvironment } from 'common/cli'
+import { terminal } from 'common/debug'
+import { hfTemplate } from 'common/hf'
+import { getFilename, readdirRecurse, rootDir } from 'common/utils'
+import { getK8sVersion } from 'common/values'
+import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'common/yargs'
 import { readFileSync, rmSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfTemplate } from '../common/hf'
-import { getFilename, readdirRecurse, rootDir } from '../common/utils'
-import { getK8sVersion } from '../common/values'
-import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -27,10 +27,10 @@ const cleanup = (argv: BasicArguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: BasicArguments): Promise<void> => {
+const setup = async (argv: HelmArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
-  k8sVersion = getK8sVersion()
+  k8sVersion = getK8sVersion(argv)
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
@@ -111,10 +111,7 @@ const processCrd = (path: string): crdSchema[] => {
 const processCrdWrapper = async (argv: BasicArguments) => {
   const d = terminal(`cmd:${cmdName}:processCrdWrapper`)
   d.log(`Generating k8s ${k8sVersion} manifests`)
-  await hfTemplate(
-    { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
-    `${k8sResourcesPath}/${vk8sVersion}`,
-  )
+  await hfTemplate(argv, `${k8sResourcesPath}/${vk8sVersion}`)
 
   d.log('Processing CRD files...')
   cd(rootDir)
@@ -136,7 +133,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
 
 export const validateTemplates = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateTemplates`)
-  const argv: BasicArguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [

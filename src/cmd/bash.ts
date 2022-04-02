@@ -1,9 +1,9 @@
+import { prepareEnvironment } from 'common/cli'
+import { terminal } from 'common/debug'
+import { getFilename } from 'common/utils'
+import { BasicArguments, getParsedArgs, parser, setParsedArgs } from 'common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, parser, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

@@ -55,49 +55,20 @@ npm run compile:watch &
 
 ## Shell scripts
 
-| Done? | Command                            |
-| :---: | ---------------------------------- |
-|  🟨   | bin/aliases                        |
-|  ✅   | bin/bootstrap.sh                   |
-|  ⬜   | bin/build-constraints.sh           |
-|  ⬜   | bin/check-console.sh               |
-|  ✅   | bin/check-policies.sh              |
-|  ✅   | bin/ci-test.sh                     |
-|  🟥   | bin/colors.sh #Using chalk package |
-|  ✅   | bin/common-modules.sh              |
-|  ✅   | bin/common.sh                      |
-|  ⬜   | bin/create-pull-keys.sh            |
-|  ✅   | bin/crypt.sh                       |
-|  ✅   | bin/deploy.sh                      |
-|  ✅   | bin/destroy.sh                     |
-|  ✅   | bin/gen-demo-mtls-cert-secret.sh   |
-|  ✅   | bin/gen-drone.sh                   |
-|  ⬜   | bin/gen-ssh-key.sh                 |
-|  🟥   | bin/get-team-kubeconf.sh           |
-|  ✅   | bin/gitea-push.sh                  |
-|  ⬜   | bin/job-presync.sh                 |
-|  ✅   | bin/otomi                          |
-|  ✅   | bin/pre-commit.sh                  |
-|  ✅   | bin/regcred.sh                     |
-|  ✅   | bin/serve-handler.sh               |
-|  ✅   | bin/server.sh                      |
-|  ⬜   | bin/skeleton-chart.sh              |
-|  ✅   | bin/test.sh                        |
-|  ✅   | bin/validate-templates.sh          |
-|  ✅   | bin/validate-values                |
-|       |                                    |
-|  ⬜   | bin/hooks/pre-commit               |
-|  --   | -------------------------------    |
-|  🟥   | bin/tests/ # These are BATS tests  |
-|  --   | -------------------------------    |
-|  ⬜   | bin/upgrades/adopt-by-helm.sh      |
-|  ⬜   | bin/upgrades/v0.10.sh              |
+| Done? | Command                         |
+| :---: | ------------------------------- |
+|  🟨   | bin/aliases                     |
+|  ⬜   | bin/build-constraints.sh        |
+|  ⬜   | bin/job-presync.sh              |
+|  ⬜   | bin/skeleton-chart.sh           |
+|       |                                 |
+|  ⬜   | bin/hooks/pre-commit            |
+|  --   | ------------------------------- |
+|  ⬜   | bin/upgrades/adopt-by-helm.sh   |
+|  ⬜   | bin/upgrades/v0.10.sh           |
 
 ## General tasks
 
 | Done? | Task                        |
 | :---: | --------------------------- |
-|  ✅   | Implement cleanup functions |
-|  ✅   | Upgrade node to non-LTS     |
 |  ⬜   | Use a git package for node? |
-|  ✅   | Validate against linters    |

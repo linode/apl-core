@@ -16,6 +16,7 @@ import {
   removeBlankAttributes,
   stringContainsSome,
 } from './utils'
+import { HelmArguments } from './yargs'
 
 const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
@@ -26,7 +27,9 @@ let otomiK8sVersion: string
  * Find the cluster kubernetes version in the values
  * @returns String of the kubernetes version on the cluster
  */
-export const getK8sVersion = (): string => {
+export const getK8sVersion = (argv?: HelmArguments): string => {
+  if (argv?.kubeVersion) return argv?.kubeVersion
+  if (process.env.KUBE_VERSION_OVERRIDE) return process.env.KUBE_VERSION_OVERRIDE
   if (otomiK8sVersion) return otomiK8sVersion
   const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiK8sVersion = clusterFile.cluster!.k8sVersion!

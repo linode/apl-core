@@ -1,12 +1,12 @@
+import { cleanupHandler, prepareEnvironment } from 'common/cli'
+import { logLevel, logLevels, terminal } from 'common/debug'
+import { env } from 'common/envalid'
+import { hfTemplate } from 'common/hf'
+import { getFilename } from 'common/utils'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from 'common/yargs'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { logLevel, logLevels, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { hfTemplate } from '../common/hf'
-import { getFilename, loadYaml } from '../common/utils'
-import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
@@ -31,18 +31,12 @@ export const checkPolicies = async (): Promise<void> => {
   if (!existsSync(outDir)) mkdirSync(outDir)
   // the policy parameters file's root prop is 'policies:', but conftest expects it to be served with 'parameters:'
   writeFileSync(parametersFile, readFileSync(policiesFile, 'utf8').replace('policies:', 'parameters:'))
-  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
-  const settings = loadYaml(settingsFile)
-  if (settings?.otomi?.addons?.conftest && !settings?.otomi?.addons?.conftest.enabled) {
-    d.log('Skipping')
-    return
-  }
   d.info('Generating k8s manifests for cluster')
   await hfTemplate(argv, outDir, { stdout: d.stream.debug })
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
-  if (env.CI) extraArgs.push('--no-color')
+  // if (env.CI) extraArgs.push('--no-color')
 
   d.info('Checking manifests for policy violations')
   const confTestOutput = (

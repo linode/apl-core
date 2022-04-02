@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
+    "baseUrl": "src",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
@@ -9,6 +10,9 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "dist",
+    // "paths": {
+    //   "*": ["*"]
+    // },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
@@ -27,6 +31,7 @@
     "files": true,
     "compilerOptions": {
       "rootDir": "."
-    }
+    },
+    "require": ["tsconfig-paths/register"]
   }
 }

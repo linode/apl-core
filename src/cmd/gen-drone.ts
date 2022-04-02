@@ -1,14 +1,14 @@
 /* eslint-disable no-param-reassign */
+import { prepareEnvironment } from 'common/cli'
+import { terminal } from 'common/debug'
+import { env } from 'common/envalid'
+import { hfValues } from 'common/hf'
+import { getFilename, gucci, rootDir } from 'common/utils'
+import { getImageTag } from 'common/values'
+import { BasicArguments, getParsedArgs, setParsedArgs } from 'common/yargs'
 import { writeFileSync } from 'fs'
 import { each } from 'lodash'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { getFilename, gucci, rootDir } from '../common/utils'
-import { getImageTag } from '../common/values'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 export interface Arguments extends BasicArguments {
   dryRun?: boolean

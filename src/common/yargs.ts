@@ -14,12 +14,14 @@ export interface BasicArguments extends YargsArguments {
 }
 
 export interface HelmArguments extends BasicArguments {
-  label?: string[]
+  args?: string
   a?: string
+  kubeVersion?: string
+  k?: string
+  label?: string[]
   l?: string[]
   file?: string[]
   f?: string[]
-  args?: string
 }
 
 let parsedArgs: BasicArguments
@@ -62,6 +64,10 @@ const helmOpts: { [key: string]: Options } = {
       })
       return files
     },
+  },
+  'kube-version': {
+    alias: 'k',
+    string: true,
   },
   args: {
     alias: 'a',

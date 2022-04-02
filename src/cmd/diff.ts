@@ -1,11 +1,11 @@
+import { prepareEnvironment } from 'common/cli'
+import { Arguments } from 'common/crypt'
+import { logLevelString, terminal } from 'common/debug'
+import { hf } from 'common/hf'
+import { getFilename } from 'common/utils'
+import { getParsedArgs, helmOptions, setParsedArgs } from 'common/yargs'
+import { ProcessOutputTrimmed } from 'common/zx-enhance'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { Arguments } from '../common/crypt'
-import { logLevelString, terminal } from '../common/debug'
-import { hf } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
-import { ProcessOutputTrimmed } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 

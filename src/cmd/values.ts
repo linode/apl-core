@@ -1,10 +1,10 @@
+import { prepareEnvironment } from 'common/cli'
+import { terminal } from 'common/debug'
+import { hfValues } from 'common/hf'
+import { getFilename } from 'common/utils'
+import { BasicArguments, getParsedArgs, setParsedArgs } from 'common/yargs'
 import { dump } from 'js-yaml'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfValues } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

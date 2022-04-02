@@ -55,7 +55,7 @@
       "request": "launch",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
-      "args": ["src/otomi.ts", "--", "validate-templates"],
+      "args": ["src/otomi.ts", "--", "validate-templates", "-a", "--kube-version=1.22"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
@@ -179,6 +179,20 @@
         "TESTING": "1"
       },
       "args": ["run", "test:ts", "--", "--runInBand", "--watchAll=false", "${file}"]
+    },
+    {
+      "name": "Debug get-api-resources.ts",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/get-api-resources.ts"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     }
   ]
 }

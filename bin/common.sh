@@ -228,7 +228,7 @@ function crypt() {
 }
 
 function hf() {
-  [ -n "$KUBE_VERSION_OVERRIDE" ] && args="--set kubeVersionOverride=${KUBE_VERSION_OVERRIDE}"
+  # [ -n "$KUBE_VERSION_OVERRIDE" ] && args="--set kubeVersionOverride=${KUBE_VERSION_OVERRIDE}"
   helmfile $FILE_OPT $LABEL_OPT $LOG_LEVEL "$@" $args
 }
 
