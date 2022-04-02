@@ -1,12 +1,12 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
-import { prepareEnvironment } from 'common/cli'
-import { terminal } from 'common/debug'
-import { hfValues } from 'common/hf'
-import { getFilename, loadYaml, rootDir } from 'common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'common/yargs'
 import { unset } from 'lodash'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
+import { prepareEnvironment } from '../common/cli'
+import { terminal } from '../common/debug'
+import { hfValues } from '../common/hf'
+import { getFilename, loadYaml, rootDir } from '../common/utils'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

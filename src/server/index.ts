@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
-import { genDrone } from 'cmd/gen-drone'
-import { migrate } from 'cmd/migrate'
-import { validateValues } from 'cmd/validate-values'
-import { decrypt, encrypt } from 'common/crypt'
-import { terminal } from 'common/debug'
-import { env } from 'common/envalid'
-import { rootDir } from 'common/utils'
 import express, { Request, Response } from 'express'
 import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
+import { genDrone } from '../cmd/gen-drone'
+import { migrate } from '../cmd/migrate'
+import { validateValues } from '../cmd/validate-values'
+import { decrypt, encrypt } from '../common/crypt'
+import { terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { rootDir } from '../common/utils'
 
 const d = terminal('server')
 const app = express()

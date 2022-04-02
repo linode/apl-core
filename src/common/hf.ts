@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { load } from 'js-yaml'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
@@ -84,18 +84,19 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
 export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
-  const args = ['template', '--skip-deps', '--validate']
+  // const args = ['template', '--skip-deps', '--validate']
+  const args = ['template', '--skip-deps']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
   const argsArr: string[] = ['--skip-tests']
-  if (argv.kubeVersion) {
-    argsArr.push(`--kube-version=${argv.kubeVersion}`)
-    const apiVersions = readFileSync(`${rootDir}/schemas/api-versions/${argv.kubeVersion}.txt`, 'utf8')
-      .toString()
-      .replace(/\r\n/g, '\n')
-      .split('\n')
-    argsArr.push(`--api-versions='${apiVersions.join(' ')}'`)
-  }
+  // if (argv.kubeVersion) {
+  //   argsArr.push(`--kube-version=${argv.kubeVersion}`)
+  //   const apiVersions = readFileSync(`${rootDir}/schemas/api-versions/${argv.kubeVersion}.txt`, 'utf8')
+  //     .toString()
+  //     .replace(/\r\n/g, '\n')
+  //     .split('\n')
+  //   argsArr.push(`--api-versions='${apiVersions.join(' ')}'`)
+  // }
   if (argv.args) argsArr.push(argv.args)
   args.push(`--args="${argsArr.join(' ')}"`)
   let template = ''

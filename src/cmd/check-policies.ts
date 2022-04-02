@@ -1,12 +1,12 @@
-import { cleanupHandler, prepareEnvironment } from 'common/cli'
-import { logLevel, logLevels, terminal } from 'common/debug'
-import { env } from 'common/envalid'
-import { hfTemplate } from 'common/hf'
-import { getFilename } from 'common/utils'
-import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from 'common/yargs'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { logLevel, logLevels, terminal } from '../common/debug'
+import { env } from '../common/envalid'
+import { hfTemplate } from '../common/hf'
+import { getFilename } from '../common/utils'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'

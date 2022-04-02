@@ -1,8 +1,8 @@
-import { prepareEnvironment } from 'common/cli'
-import { terminal } from 'common/debug'
-import { getFilename } from 'common/utils'
-import { BasicArguments, setParsedArgs } from 'common/yargs'
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { terminal } from '../common/debug'
+import { getFilename } from '../common/utils'
+import { BasicArguments, setParsedArgs } from '../common/yargs'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts

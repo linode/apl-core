@@ -1,15 +1,15 @@
-import { cleanupHandler, prepareEnvironment } from 'common/cli'
-import { terminal } from 'common/debug'
-import { hfTemplate } from 'common/hf'
-import { getFilename, readdirRecurse, rootDir } from 'common/utils'
-import { getK8sVersion } from 'common/values'
-import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'common/yargs'
 import { readFileSync, rmSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
+import { cleanupHandler, prepareEnvironment } from '../common/cli'
+import { terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { getFilename, readdirRecurse, rootDir } from '../common/utils'
+import { getK8sVersion } from '../common/values'
+import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

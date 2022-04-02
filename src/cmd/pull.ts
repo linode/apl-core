@@ -1,10 +1,10 @@
-import { prepareEnvironment, scriptName } from 'common/cli'
-import { terminal } from 'common/debug'
-import { hfValues } from 'common/hf'
-import { getFilename } from 'common/utils'
-import { HelmArguments, setParsedArgs } from 'common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
+import { prepareEnvironment, scriptName } from '../common/cli'
+import { terminal } from '../common/debug'
+import { hfValues } from '../common/hf'
+import { getFilename } from '../common/utils'
+import { HelmArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

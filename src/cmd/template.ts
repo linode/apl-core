@@ -1,9 +1,9 @@
-import { prepareEnvironment } from 'common/cli'
-import { DebugStream, terminal } from 'common/debug'
-import { hfTemplate } from 'common/hf'
-import { getFilename } from 'common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'common/yargs'
 import { Argv } from 'yargs'
+import { prepareEnvironment } from '../common/cli'
+import { terminal } from '../common/debug'
+import { hfTemplate } from '../common/hf'
+import { getFilename } from '../common/utils'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 interface Arguments extends HelmArguments {
   outDir: string
@@ -15,13 +15,13 @@ const template = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:template`)
   const argv = getParsedArgs() as Arguments
   d.info('Templating STARTED')
-  // await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
-  if (argv.nonInteractive)
-    await hfTemplate(argv, argv.outDir, {
-      stdout: new DebugStream(console.log),
-      stderr: new DebugStream(console.error),
-    })
-  else await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
+  await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
+  // if (argv.nonInteractive)
+  //   await hfTemplate(argv, argv.outDir, {
+  //     stdout: new DebugStream(console.log),
+  //     stderr: new DebugStream(console.error),
+  //   })
+  // else await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
   d.info('Templating DONE')
 }
 
