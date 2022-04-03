@@ -37,6 +37,7 @@ app.get('/init', async (req: Request, res: Response) => {
 app.get('/prepare', async (req: Request, res: Response) => {
   try {
     d.log('Request to prepare values repo')
+    await decrypt()
     await validateValues()
     await genDrone()
     await encrypt()
