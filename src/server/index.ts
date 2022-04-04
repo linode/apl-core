@@ -2,6 +2,7 @@
 import express, { Request, Response } from 'express'
 import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
+import { bootstrapSops } from '../cmd/bootstrap'
 import { genDrone } from '../cmd/gen-drone'
 import { migrate } from '../cmd/migrate'
 import { validateValues } from '../cmd/validate-values'
@@ -40,6 +41,7 @@ app.get('/prepare', async (req: Request, res: Response) => {
     await decrypt()
     await validateValues()
     await genDrone()
+    await bootstrapSops()
     await encrypt()
     res.status(200).send('ok')
   } catch (error) {
