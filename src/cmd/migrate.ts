@@ -101,6 +101,35 @@ export function filterChanges(version: number, changes: Changes): Changes {
  * NOTE: renamings,deletions,relocations and mutations MUST be given in arrays only,
  * with max 1 item per array, to preserve order of operation
  */
+const setDeep = (values, path, val) => {
+  // {{}}. []
+  const teamMarker = '{{teamId}}'
+
+  if (!path.includes(teamMarker) && !path.includes('[]')) {
+    set(values, path, val)
+    return
+  }
+
+  let paths: string[] = []
+  if (path.includes(teamMarker)) {
+    paths = Object.keys(values.teamConfig).map((t) => path.replace(teamMarker, t))
+  }
+
+  const arrayMarker = '[]'
+
+  paths.forEach((p) => {
+    if (!p.includes(arrayMarker)) {
+      set(values, p, val)
+      return
+    }
+
+    const [lhs, rhs] = p.split(arrayMarker)
+    get(values, lhs).forEach((item) => {
+      set(item, rhs, val)
+    })
+  })
+}
+
 export const applyChanges = async (
   changes: Changes,
   dryRun = false,
@@ -132,8 +161,11 @@ export const applyChanges = async (
         const tmpl = `{{ ${tmplStr} }}`
         const prev = get(values, path)
         if (prev !== undefined) {
-          const ret = await gucci(tmpl, { prev })
-          set(values, path, ret)
+          let ret = tmplStr
+          if (tmplStr.includes('.prev')) {
+            ret = (await gucci(tmpl, { prev })) as string
+          }
+          setDeep(values, path, ret)
         }
       }
 
