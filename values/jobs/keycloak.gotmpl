@@ -34,8 +34,7 @@ env:
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
 {{- if $v.otomi.hasExternalIDP }}
-  {{- with $k | get "idp.alias" nil }}
-  IDP_ALIAS: {{ . }}{{ end }}
+  IDP_ALIAS: {{ $k.idp.alias }}
   {{- with $o | get "usernameClaimMapper" nil }}
   IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
   {{- with $o | get "subClaimMapper" nil }}
