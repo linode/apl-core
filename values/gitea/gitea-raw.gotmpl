@@ -1,3 +1,5 @@
+{{- $v := .Values }}
+
 {{- if $v._derived.untrustedCA }}
 resources:
   - apiVersion: v1

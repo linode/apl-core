@@ -38,9 +38,9 @@ spec:
                 exit
               fi
               binzx/otomi bootstrap
-              binzx/otomi values -l name=gitea-artifacts
-              # binzx/otomi apply
-              # binzx/otomi commit
+              # binzx/otomi values -l name=gitea-artifacts
+              binzx/otomi apply
+              binzx/otomi commit
           env:
             - name: CI
               value: '1'
