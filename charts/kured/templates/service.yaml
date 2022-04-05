@@ -2,7 +2,11 @@
 apiVersion: v1
 kind: Service
 metadata:
+  {{- if .Values.service.name }}
+  name: {{ .Values.service.name }}
+  {{- else }}
   name: {{ template "kured.fullname" . }}
+  {{- end }}
   labels:
     {{- include "kured.labels" . | nindent 4 }}
   {{- if .Values.service.annotations }}
@@ -12,11 +16,14 @@ metadata:
   {{- end }}
   {{- end }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   ports:
     - name: metrics
       port: {{ .Values.service.port }}
       targetPort: 8080
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
   selector:
     {{- include "kured.matchLabels" . | nindent 4 }}
 {{- end }}
