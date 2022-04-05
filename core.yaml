@@ -120,13 +120,13 @@ adminApps:
         auth: true
       - svc: harbor-core
         namespace: harbor
-        paths: [/api/, /c/, /chartrepo/]
+        paths: [/api/, /c/]
         forwardPath: true
         type: public
         auth: true
       - svc: harbor-core
         namespace: harbor
-        paths: [/service/, /v1/, /v2/]
+        paths: [/chartrepo/, /service/, /v1/, /v2/]
         forwardPath: true
         type: public
   - name: hello

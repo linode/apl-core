@@ -1,3 +1,9 @@
 apps:
     kubeapps:
         enabled: false
+        initialRepos:
+            - name: bitnami
+              url: https://charts.bitnami.com/bitnami
+            # - name: common-ground
+            #   description: Official Common Ground chart repo
+            #   url: https://charts.commonground.nl

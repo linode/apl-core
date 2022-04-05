@@ -1117,6 +1117,8 @@ properties:
       alertmanager:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             description: Discarded as derived from otomi flags.
@@ -1431,6 +1433,8 @@ properties:
       grafana:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -1443,6 +1447,13 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          privateLibrary:
+            type: boolean
+            default: true
+            description: Will mark the main project named "library" as private.
           adminPassword:
             type: string
             x-secret: ''
@@ -1454,9 +1465,6 @@ properties:
               xsrfKey:
                 type: string
                 x-secret: 'randAlphaNum 32'
-          enabled:
-            type: boolean
-            default: true
           jobservice:
             properties:
               secret:
