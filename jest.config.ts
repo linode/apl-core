@@ -21,6 +21,7 @@ const config: Config.InitialOptions = {
   // testPathIgnorePatterns: ['<rootDir>/src/test-stubs.ts'],
   // collectCoverageFrom: ['src/**/{!(test-stubs),}.ts'],
   // collectCoverageFrom: ['src/**/*.ts'],
+  silent: false,
   verbose: true,
 }
 export default config

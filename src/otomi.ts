@@ -1,5 +1,4 @@
-#!/usr/bin/env node --nolazy -r ts-node/register
-// -r tsconfig-paths/register
+#!/usr/bin/env node --nolazy -r ts-node/register -r tsconfig-paths/register
 
 import { existsSync, symlinkSync, unlinkSync } from 'fs'
 import { CommandModule } from 'yargs'

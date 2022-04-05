@@ -95,52 +95,84 @@ export function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
+const replace = async (tmplStr: string, prev: any): Promise<string> => {
+  if (!tmplStr.includes('.prev')) return tmplStr
+  const tmpl = `{{ ${tmplStr} }}`
+  return (await gucci(tmpl, { prev })) as string
+}
+
+/**
+ * Allows to mutate or set values in dynamic paths that can include team marker or array notation.
+ * Example:
+ * - teamConfig.{team}.services[].someProp: replaceMe
+ * This would update someProp for all team services
+ */
+const setDeep = async (obj, path, tmplStr): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:setDeep`)
+  d.debug(`(obj, ${path}, ${tmplStr}`)
+  const teamMarker = '{team}'
+  const arrayMarker = '[].'
+
+  if (!path.includes(teamMarker) && !path.includes(arrayMarker)) {
+    return
+  }
+
+  let paths: string[] = [path]
+  // expand if we have a team marker
+  if (path.includes(teamMarker)) {
+    paths = Object.keys(obj.teamConfig).map((t) => path.replace(teamMarker, t))
+  }
+
+  // expand on array markers
+  await Promise.all(
+    paths.map(async (p) => {
+      if (!p.includes(arrayMarker)) {
+        const prev = get(obj, p)
+        const ret = await replace(tmplStr, prev)
+        set(obj, p, ret)
+        return
+      }
+
+      const [lhs, ...rhs] = p.split(arrayMarker)
+      const holder = get(obj, lhs)
+      if (!holder) return
+      await Promise.all(
+        holder.map(async (item, idx) => {
+          if (rhs.length === 1) {
+            const prev = get(item, rhs)
+            const ret = await replace(tmplStr, prev)
+            const realPath = `${lhs}[${idx}].${rhs[0]}`
+            set(obj, realPath, ret)
+            return
+          }
+          const rhsPath = rhs.join(arrayMarker)
+          // recurse
+          const realPath = `${lhs}[${idx}].${rhsPath}`
+          await setDeep(obj, realPath, tmplStr)
+        }),
+      )
+    }),
+  )
+}
+
 /**
  * Applies changes from configuration.
  *
  * NOTE: renamings,deletions,relocations and mutations MUST be given in arrays only,
  * with max 1 item per array, to preserve order of operation
  */
-const setDeep = (values, path, val) => {
-  // {{}}. []
-  const teamMarker = '{{teamId}}'
-
-  if (!path.includes(teamMarker) && !path.includes('[]')) {
-    set(values, path, val)
-    return
-  }
-
-  let paths: string[] = []
-  if (path.includes(teamMarker)) {
-    paths = Object.keys(values.teamConfig).map((t) => path.replace(teamMarker, t))
-  }
-
-  const arrayMarker = '[]'
-
-  paths.forEach((p) => {
-    if (!p.includes(arrayMarker)) {
-      set(values, p, val)
-      return
-    }
-
-    const [lhs, rhs] = p.split(arrayMarker)
-    get(values, lhs).forEach((item) => {
-      set(item, rhs, val)
-    })
-  })
-}
-
 export const applyChanges = async (
   changes: Changes,
   dryRun = false,
   deps = {
+    cd,
     rename,
     hfValues,
     terminal,
     writeValues,
   },
 ): Promise<Record<string, any>> => {
-  cd(env.ENV_DIR)
+  deps.cd(env.ENV_DIR)
   // do file renamings first as those have to match the current containers expectations
   for (const c of changes) {
     c.renamings?.forEach((entry) => each(entry, async (newName, oldName) => deps.rename(oldName, newName, dryRun)))
@@ -158,14 +190,14 @@ export const applyChanges = async (
       // 'for const of' is used here to allow await in loop
       for (const mut of c.mutations) {
         const [path, tmplStr] = Object.entries(mut)[0]
-        const tmpl = `{{ ${tmplStr} }}`
         const prev = get(values, path)
         if (prev !== undefined) {
-          let ret = tmplStr
-          if (tmplStr.includes('.prev')) {
-            ret = (await gucci(tmpl, { prev })) as string
-          }
-          setDeep(values, path, ret)
+          // path worked and we found something, simple scenario, just replace directly
+          const ret = await replace(tmplStr, prev)
+          set(values, path, ret)
+        } else {
+          // we might have a complex path, which we will deal with in setDeep
+          await setDeep(values, path, tmplStr)
         }
       }
 
