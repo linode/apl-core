@@ -28,9 +28,6 @@ interface Change {
     [oldLocation: string]: string
   }>
   mutations?: Array<{
-    [mutation: string]: string[]
-  }>
-  mutationsTemplate?: Array<{
     [mutation: string]: string
   }>
   renamings?: Array<{
@@ -99,6 +96,7 @@ export function filterChanges(version: number, changes: Changes): Changes {
 }
 
 const replace = async (tmplStr: string, prev: any): Promise<string> => {
+  if (!tmplStr.includes('.prev')) return tmplStr
   const tmpl = `{{ ${tmplStr} }}`
   return (await gucci(tmpl, { prev })) as string
 }
@@ -109,7 +107,7 @@ const replace = async (tmplStr: string, prev: any): Promise<string> => {
  * - teamConfig.{team}.services[].someProp: replaceMe
  * This would update someProp for all team services
  */
-export const setDeep = async (obj, path: string, tmplStr: string[]): Promise<void> => {
+export const setDeep = async (obj, path: string, tmplStr: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDeep`)
   d.debug(`(obj, ${path}, ${tmplStr}`)
   const teamMarker = '{team}'
@@ -129,7 +127,8 @@ export const setDeep = async (obj, path: string, tmplStr: string[]): Promise<voi
   await Promise.all(
     paths.map(async (p) => {
       if (!p.includes(arrayMarker)) {
-        const ret = get(obj, p)
+        const prev = get(obj, p)
+        const ret = await replace(tmplStr, prev)
         set(obj, p, ret)
         return
       }
@@ -140,8 +139,10 @@ export const setDeep = async (obj, path: string, tmplStr: string[]): Promise<voi
       await Promise.all(
         holder.map(async (item, idx) => {
           if (rhs.length === 1) {
+            const prev = get(item, rhs[0])
+            const ret = await replace(tmplStr, prev)
             const realPath = `${lhs}[${idx}].${rhs[0]}`
-            if (get(obj, realPath) === tmplStr[0]) set(obj, realPath, tmplStr[1])
+            set(obj, realPath, ret)
             return
           }
           const rhsPath = rhs.join(arrayMarker)
@@ -185,19 +186,21 @@ export const applyChanges = async (
     c.deletions?.forEach((entry) => unset(values, entry) && unset(values, entry))
     c.additions?.forEach((entry) => each(entry, (val, path) => set(values, path, val)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
-    if (c.mutationsTemplate)
-      // 'for const of' is used here to allow await in loop
-      for (const mut of c.mutationsTemplate) {
-        const [path, tmplStr] = Object.entries(mut)[0]
-        const prev = get(values, path)
-        const ret = await replace(tmplStr, prev)
-        set(values, path, ret)
-      }
     if (c.mutations)
+      // 'for const of' is used here to allow await in loop
       for (const mut of c.mutations) {
         const [path, tmplStr] = Object.entries(mut)[0]
-        await setDeep(values, path, tmplStr)
+        const prev = get(values, path)
+        if (prev !== undefined) {
+          // path worked and we found something, simple scenario, just replace directly
+          const ret = await replace(tmplStr, prev)
+          set(values, path, ret)
+        } else {
+          // we might have a complex path, which we will deal with in setDeep
+          await setDeep(values, path, tmplStr)
+        }
       }
+
     Object.assign(values, { version: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)

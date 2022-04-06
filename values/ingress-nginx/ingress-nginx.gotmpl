@@ -14,8 +14,10 @@ controller:
     https: 443
   {{- if eq $v.cluster.provider "local" }}
   hostPort:
-    http: 80
-    https: 443
+    enabled: true
+    ports:
+      http: 80
+      https: 443
   {{- end }}
   admissionWebhooks:
     enabled: false

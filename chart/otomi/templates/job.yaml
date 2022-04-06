@@ -38,14 +38,13 @@ spec:
                 exit
               fi
               binzx/otomi bootstrap
-              # binzx/otomi values -l name=gitea-artifacts
               binzx/otomi apply
               binzx/otomi commit
           env:
             - name: CI
               value: '1'
             - name: VERBOSITY
-              value: '2'
+              value: '1'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT

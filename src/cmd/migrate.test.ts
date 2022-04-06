@@ -11,7 +11,6 @@ describe('Upgrading values', () => {
         services: [
           { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] },
           { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
-          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
         ],
       },
     },
@@ -22,19 +21,19 @@ describe('Upgrading values', () => {
   const mockChanges: Changes = [
     {
       version: 1,
-      mutationsTemplate: [{ 'some.version': 'printf "v%s" .prev' }],
+      mutations: [{ 'some.version': 'printf "v%s" .prev' }],
     },
     {
       version: 2,
       deletions: ['some.json.path'],
       relocations: [{ 'some.json': 'some.bla' }],
-      mutationsTemplate: [{ strToArray: 'list .prev' }],
+      mutations: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
-      mutations: [{ 'teamConfig.{team}.services[].prop': ['replaceMe', 'replaced'] }],
-      mutationsTemplate: [
+      mutations: [
         { 'some.k8sVersion': 'printf "v%s" .prev' },
+        { 'teamConfig.{team}.services[].prop': 'replaced' },
         { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
@@ -74,103 +73,5 @@ describe('Upgrading values', () => {
       )
       expect(deps.rename).toBeCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
-  })
-})
-
-describe('Values mutation', () => {
-  it('should apply changes to values', async () => {
-    const valueChanges: Changes = [
-      {
-        version: 1,
-        mutations: [
-          {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['allowAll', 'AllowAll'],
-          },
-          {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['allowOnly', 'AllowOnly'],
-          },
-          {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['denyAll', 'DenyAll'],
-          },
-        ],
-      },
-    ]
-    const valuesBefore = {
-      teamConfig: {
-        a1: {
-          services: [
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'allowAll',
-                },
-              },
-            },
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'denyAll',
-                },
-              },
-            },
-          ],
-        },
-        a2: {
-          services: [
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'allowOnly',
-                },
-              },
-            },
-          ],
-        },
-      },
-    }
-    const valuesAfter = {
-      teamConfig: {
-        a1: {
-          services: [
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'AllowAll',
-                },
-              },
-            },
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'DenyAll',
-                },
-              },
-            },
-          ],
-        },
-        a2: {
-          services: [
-            {
-              networkPolicy: {
-                ingressPrivate: {
-                  mode: 'AllowOnly',
-                },
-              },
-            },
-          ],
-        },
-      },
-      version: 1,
-    }
-
-    const deps = {
-      cd: jest.fn(),
-      rename: jest.fn(),
-      hfValues: jest.fn().mockReturnValue(valuesBefore),
-      terminal,
-      writeValues: jest.fn(),
-    }
-    await applyChanges(valueChanges, false, deps)
-    expect(deps.writeValues).toBeCalledWith(valuesAfter, true)
   })
 })
