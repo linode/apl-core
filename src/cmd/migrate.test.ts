@@ -11,6 +11,7 @@ describe('Upgrading values', () => {
         services: [
           { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] },
           { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
+          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
         ],
       },
     },
@@ -73,5 +74,103 @@ describe('Upgrading values', () => {
       )
       expect(deps.rename).toBeCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
+  })
+})
+
+describe('Values mutation', () => {
+  it('should apply changes to values', async () => {
+    const valueChanges: Changes = [
+      {
+        version: 1,
+        mutations: [
+          {
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowAll': 'AllowAll',
+          },
+          {
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowOnly': 'AllowOnly',
+          },
+          {
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.denyAll': 'DenyAll',
+          },
+        ],
+      },
+    ]
+    const valuesBefore = {
+      teamConfig: {
+        a1: {
+          services: [
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'allowAll',
+                },
+              },
+            },
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'denyAll',
+                },
+              },
+            },
+          ],
+        },
+        a2: {
+          services: [
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'allowOnly',
+                },
+              },
+            },
+          ],
+        },
+      },
+    }
+    const valuesAfter = {
+      teamConfig: {
+        a1: {
+          services: [
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'AllowAll',
+                },
+              },
+            },
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'DenyAll',
+                },
+              },
+            },
+          ],
+        },
+        a2: {
+          services: [
+            {
+              networkPolicy: {
+                ingressPrivate: {
+                  mode: 'AllowOnly',
+                },
+              },
+            },
+          ],
+        },
+      },
+      version: 1,
+    }
+
+    const deps = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(valuesBefore),
+      terminal,
+      writeValues: jest.fn(),
+    }
+    await applyChanges(valueChanges, false, deps)
+    expect(deps.writeValues).toBeCalledWith(valuesAfter, true)
   })
 })
