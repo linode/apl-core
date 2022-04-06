@@ -141,8 +141,6 @@ export const setDeep = async (obj, path: string, tmplStr: string[]): Promise<voi
         holder.map(async (item, idx) => {
           if (rhs.length === 1) {
             const realPath = `${lhs}[${idx}].${rhs[0]}`
-            console.log(realPath)
-            console.log(get(obj, realPath))
             if (get(obj, realPath) === tmplStr[0]) set(obj, realPath, tmplStr[1])
             return
           }
