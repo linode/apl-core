@@ -19,10 +19,11 @@ changes:
       - apps.prometheus.alertmanager: apps.alertmanager
       - apps.prometheus.resources.alertmanager: apps.alertmanager.resources
     mutations:
+      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: [allowAll, AllowAll]
+      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: [allowOnly, AllowOnly]
+      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: [denyAll, DenyAll]
+    mutationsTemplate:
       - alerts.drone: 'list .prev'
-      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowAll: 'AllowAll'
-      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowOnly: 'AllowOnly'
-      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.denyAll: 'DenyAll'
   - version: 2
     fileAdditions:
       - env/teams/apps.admin.yaml

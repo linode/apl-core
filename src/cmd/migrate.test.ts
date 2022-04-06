@@ -22,19 +22,19 @@ describe('Upgrading values', () => {
   const mockChanges: Changes = [
     {
       version: 1,
-      mutations: [{ 'some.version': 'printf "v%s" .prev' }],
+      mutationsTemplate: [{ 'some.version': 'printf "v%s" .prev' }],
     },
     {
       version: 2,
       deletions: ['some.json.path'],
       relocations: [{ 'some.json': 'some.bla' }],
-      mutations: [{ strToArray: 'list .prev' }],
+      mutationsTemplate: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
-      mutations: [
+      mutations: [{ 'teamConfig.{team}.services[].prop': ['replaceMe', 'replaced'] }],
+      mutationsTemplate: [
         { 'some.k8sVersion': 'printf "v%s" .prev' },
-        { 'teamConfig.{team}.services[].prop': 'replaced' },
         { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
@@ -84,13 +84,13 @@ describe('Values mutation', () => {
         version: 1,
         mutations: [
           {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowAll': 'AllowAll',
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['allowAll', 'AllowAll'],
           },
           {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.allowOnly': 'AllowOnly',
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['allowOnly', 'AllowOnly'],
           },
           {
-            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode.denyAll': 'DenyAll',
+            'teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode': ['denyAll', 'DenyAll'],
           },
         ],
       },
