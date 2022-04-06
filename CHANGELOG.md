@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.5](https://github.com/redkubes/otomi-core/compare/v0.15.4...v0.15.5) (2022-04-06)
+
+
+### Features
+
+* bump api and console versions ([#750](https://github.com/redkubes/otomi-core/issues/750)) ([3ec44f8](https://github.com/redkubes/otomi-core/commit/3ec44f876cd634fa41e05fb07d9a7b13fee9772e))
+* upgrade kured ([#749](https://github.com/redkubes/otomi-core/issues/749)) ([f6d7488](https://github.com/redkubes/otomi-core/commit/f6d74884b4e3ad6de8d1f262d611dcd54b19acfb))
+
+
+### Bug Fixes
+
+* labels and duplicated ports ([#738](https://github.com/redkubes/otomi-core/issues/738)) ([9ae771f](https://github.com/redkubes/otomi-core/commit/9ae771f2142f3013f915669348e858c093d0f888))
+* update schema regex for secrets ([#746](https://github.com/redkubes/otomi-core/issues/746)) ([e8ab4b0](https://github.com/redkubes/otomi-core/commit/e8ab4b03fe426125517db5d63661b9f3b717713e))
+
+
+### Docs
+
+* modify README [ci skip] ([e3abb6f](https://github.com/redkubes/otomi-core/commit/e3abb6f3fff7dd67a0af7206259cb8c53476d884))
+* modify README [ci skip] ([59acb0c](https://github.com/redkubes/otomi-core/commit/59acb0cef5a88c1f23a3e8aa98e57ed7b89b4a8d))
+
+
+### Others
+
+* **deps:** bumped tasks ([febc499](https://github.com/redkubes/otomi-core/commit/febc49926b061c48575367744bfccf0c21d172f9))
+
 ### [0.15.4](https://github.com/redkubes/otomi-core/compare/v0.15.3...v0.15.4) (2022-02-28)
 
 
