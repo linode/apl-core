@@ -1,8 +1,0 @@
-host: ""
-pvc:
-  results: 10Gi
-  graphite: 2Gi
-config:
-  carbon:
-  storageAggregation:
-  storageSchemas:

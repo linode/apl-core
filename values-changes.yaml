@@ -1,17 +1,26 @@
-#####
-# Example changes
-#####
-# ---
-changes: []
-#   - version: 1
-#     deletions:
-#       - cluster.provider
-#     locations:
-#       - charts.hello.enabled: charts.hello.enabledCharts.enabled
-#     mutations:
-#       - cluster.domainSuffix: printf "v%s"
-#   - version: 2
-#     deletions:
-#       - cluster.name
-#     locations:
-#       - charts.hello.enabledCharts.enabled: charts.hello.enabledCharts.bla.enabled
+changes:
+  - version: 1
+  - version: 2
+    deletions:
+      - charts.istio.addonComponents
+    renamings:
+      - env/charts: env/apps
+      - env/apps/gatekeeper-operator.yaml: env/apps/gatekeeper.yaml
+      - env/apps/nginx-ingress.yaml: env/apps/ingress-nginx.yaml
+      - env/apps/prometheus-operator.yaml: env/apps/prometheus.yaml
+    relocations:
+      - charts: apps
+      - teamConfig.teams: teamConfig
+      - apps.kubernetes-external-secrets: apps.external-secrets
+      - apps.gatekeeper-operator: apps.gatekeeper
+      - apps.nginx-ingress: apps.ingress-nginx
+      - apps.prometheus-operator: apps.prometheus
+      - apps.prometheus.grafana: apps.grafana
+      - apps.prometheus.resources.grafana: apps.grafana.resources
+      - apps.prometheus.alertmanager: apps.alertmanager
+      - apps.prometheus.resources.alertmanager: apps.alertmanager.resources
+    mutations:
+      - alerts.drone: 'list .prev'
+      - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: '.prev | title'
+    fileAdditions:
+      - env/teams/apps.admin.yaml

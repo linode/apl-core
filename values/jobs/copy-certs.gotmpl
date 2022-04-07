@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $teams := keys $v.teamConfig.teams }}
+{{- $teams := keys $v.teamConfig }}
 
 type: CronJob
 env:

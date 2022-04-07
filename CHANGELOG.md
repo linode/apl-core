@@ -67,16 +67,27 @@ All notable changes to this project will be documented in this file. See [standa
 ### [0.15.1](https://github.com/redkubes/otomi-core/compare/v0.15.0...v0.15.1) (2022-01-05)
 
 
+### Features
+
+* updated community section ([1bf4022](https://github.com/redkubes/otomi-core/commit/1bf402255c1bd3bf79cb3e3dcec962efba9ac3f9))
+
+### [0.15.2](https://github.com/redkubes/otomi-core/compare/v0.15.1...v0.15.2) (2022-01-27)
+
+### Features
+
+- network policies for team workloads ([777dcec](https://github.com/redkubes/otomi-core/commit/777dcec1816424ba1942aee61308ffb27d1f997d))
+
+### [0.15.1](https://github.com/redkubes/otomi-core/compare/v0.15.0...v0.15.1) (2022-01-05)
+
 ### Bug Fixes
 
-* ca condition, fixes [#704](https://github.com/redkubes/otomi-core/issues/704) ([#705](https://github.com/redkubes/otomi-core/issues/705)) ([1e97cfb](https://github.com/redkubes/otomi-core/commit/1e97cfb046a4a49427479194a97bc38ad41f9ec3))
-* missing ca conditions, google kms conf ([0a8ca8a](https://github.com/redkubes/otomi-core/commit/0a8ca8acadadbf994ed3a7475ee93fd2356f6706))
-
+- ca condition, fixes [#704](https://github.com/redkubes/otomi-core/issues/704) ([#705](https://github.com/redkubes/otomi-core/issues/705)) ([1e97cfb](https://github.com/redkubes/otomi-core/commit/1e97cfb046a4a49427479194a97bc38ad41f9ec3))
+- missing ca conditions, google kms conf ([0a8ca8a](https://github.com/redkubes/otomi-core/commit/0a8ca8acadadbf994ed3a7475ee93fd2356f6706))
 
 ### Others
 
-* **release:** 0.15.0 ([a22b67d](https://github.com/redkubes/otomi-core/commit/a22b67d11e1f72460f2334d1b359e07e75ae27ed))
-* **release:** 0.15.0 ([99a09da](https://github.com/redkubes/otomi-core/commit/99a09da8a51106a2fcd65df795a69700b717e34c))
+- **release:** 0.15.0 ([a22b67d](https://github.com/redkubes/otomi-core/commit/a22b67d11e1f72460f2334d1b359e07e75ae27ed))
+- **release:** 0.15.0 ([99a09da](https://github.com/redkubes/otomi-core/commit/99a09da8a51106a2fcd65df795a69700b717e34c))
 
 ## [0.15.0](https://github.com/redkubes/otomi-core/compare/v0.14.56...v0.15.0) (2022-01-03)
 
@@ -877,7 +888,7 @@ Most notable features:
 - chart release pipeline ([5744d1b](https://github.com/redkubes/otomi-core/commit/5744d1b83c1ed7dd56d71b17ba7f4c25a91190c2))
 - chart release pipeline ([6bbb7b9](https://github.com/redkubes/otomi-core/commit/6bbb7b93dbd3dac4b332c8c470afc525122f09e4))
 - moving to alpha4 ([0492b26](https://github.com/redkubes/otomi-core/commit/0492b26c01c2f8d4df49b5dc013d5819741553eb))
-- nginx-ingress grafana dash [ci skip] ([8d1dbed](https://github.com/redkubes/otomi-core/commit/8d1dbed94770ae7be3c8856b6443bfac145abdb6))
+- ingress-nginx grafana dash [ci skip] ([8d1dbed](https://github.com/redkubes/otomi-core/commit/8d1dbed94770ae7be3c8856b6443bfac145abdb6))
 - otomi install chart ([#431](https://github.com/redkubes/otomi-core/issues/431)) ([16152b1](https://github.com/redkubes/otomi-core/commit/16152b1a8c00a345a3531d7dabf0293d0a28eca9))
 - user master tag for otomi/tasks image ([2b78538](https://github.com/redkubes/otomi-core/commit/2b78538f2187ca2a1b96f33fcb60e276ba79a553))
 

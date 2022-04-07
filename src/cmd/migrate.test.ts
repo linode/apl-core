@@ -1,20 +1,42 @@
+import stubs from '../test-stubs'
 import { applyChanges, Changes, filterChanges } from './migrate'
+
+const { terminal } = stubs
 
 describe('Upgrading values', () => {
   const oldVersion = 1
+  const mockValues = {
+    teamConfig: {
+      teamA: {
+        services: [
+          { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] },
+          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
+        ],
+      },
+    },
+    version: oldVersion,
+    strToArray: 'ok',
+    some: { json: { path: 'bla' }, k8sVersion: '1.18' },
+  }
   const mockChanges: Changes = [
     {
       version: 1,
-      mutations: [{ 'some.version': 'printf "v%s"' }],
+      mutations: [{ 'some.version': 'printf "v%s" .prev' }],
     },
     {
       version: 2,
       deletions: ['some.json.path'],
-      locations: [{ 'some.json': 'some.bla' }],
+      relocations: [{ 'some.json': 'some.bla' }],
+      mutations: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
-      mutations: [{ 'some.k8sVersion': 'printf "v%s"' }],
+      mutations: [
+        { 'some.k8sVersion': 'printf "v%s" .prev' },
+        { 'teamConfig.{team}.services[].prop': 'replaced' },
+        { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
+      ],
+      renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
   ]
 
@@ -24,12 +46,32 @@ describe('Upgrading values', () => {
     })
   })
   describe('Apply changes to values', () => {
-    const mockValues = { version: oldVersion, some: { json: { path: 'bla' }, k8sVersion: '1.18' } }
+    const deps = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(mockValues),
+      terminal,
+      writeValues: jest.fn(),
+    }
     it('should apply changes to values', async () => {
-      expect(await applyChanges(mockValues, mockChanges.slice(1))).toEqual({
-        version: 3,
-        some: { bla: {}, k8sVersion: 'v1.18' },
-      })
+      await applyChanges(mockChanges.slice(1), false, deps)
+      expect(deps.writeValues).toBeCalledWith(
+        {
+          teamConfig: {
+            teamA: {
+              services: [
+                { name: 'svc1', prop: 'replaced', bla: [{ ok: 'replaceMeee' }] },
+                { name: 'svc1', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
+              ],
+            },
+          },
+          some: { bla: {}, k8sVersion: 'v1.18' },
+          strToArray: ['ok'],
+          version: 3,
+        },
+        true,
+      )
+      expect(deps.rename).toBeCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
   })
 })

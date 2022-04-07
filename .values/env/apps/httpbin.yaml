@@ -1,0 +1,3 @@
+apps:
+    httpbin:
+        enabled: false

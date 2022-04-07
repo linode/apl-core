@@ -9,23 +9,12 @@ metadata:
     role: alert-rules
 spec:
   groups:
-    - name: olm.csv_abnormal.rules
+    - name: olm.failing_operators.rules
       rules:
-        - alert: CsvAbnormalFailedOver2Min
-          expr: csv_abnormal{phase=~"^Failed$"}
-          for: 2m
-          labels:
-            severity: warning
-            namespace: "{{ "{{ $labels.namespace }}" }}"
+        - alert: FailingOperator
           annotations:
             message: Failed to install Operator {{ printf "{{ $labels.name }}"  }} version {{ printf "{{ $labels.version }}"  }}. Reason-{{ printf "{{ $labels.reason }}" }}
-
-        - alert: CsvAbnormalOver30Min
-          expr: csv_abnormal{phase=~"(^Replacing$|^Pending$|^Deleting$|^Unknown$)"}
-          for: 30m
+          expr: csv_abnormal{phase="Failed"}
           labels:
             severity: warning
-            namespace: "{{ "{{ $labels.namespace }}" }}"
-          annotations:
-            message: Failed to install Operator {{ printf "{{ $labels.name }}"  }} version {{ printf "{{ $labels.version }}"  }}. Phase-{{ printf "{{ $labels.phase }}" }} Reason-{{ printf "{{ $labels.reason }}" }}
 {{ end }}

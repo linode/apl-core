@@ -1,0 +1,14 @@
+apps:
+    kiali-operator:
+        _rawValues:
+            cr:
+                spec:
+                    deployment:
+                        resources:
+                            requests:
+                                cpu: 10m
+                                memory: 10Mi
+            resources:
+                requests:
+                    cpu: 10m
+                    memory: 10Mi

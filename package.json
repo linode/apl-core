@@ -32,7 +32,7 @@
     "tar": "^6.1.0",
     "validator": "^13.7.0",
     "yargs": "^17.0.1",
-    "zx": "^4.2.0"
+    "zx": "^4.3.0"
   },
   "description": "Otomi Core is an opinionated stack of Kubernetes apps and configurations. Part of Otomi Container Platform.",
   "devDependencies": {
@@ -82,13 +82,15 @@
     "jsonpath": "^1.1.1",
     "lint-staged": "^10.5.4",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.3.1",
+    "prettier": "^2.5.1",
     "standard-version": "^9.3.0",
     "ts-auto-mock": "^3.5.0",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.1.0",
+    "ts-node-dev": "^1.1.8",
+    "tsconfig-paths": "^3.14.1",
     "ttypescript": "^1.5.13",
-    "typescript": "^4.3.4"
+    "typescript": "^4.6.2"
   },
   "engines": {
     "node": ">=15.0.0",
@@ -133,19 +135,20 @@
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc",
-    "migrate:values": "CI=1; ENV_DIR=$PWD/.values binzx/otomi migrate && ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate && ENV_DIR=$PWD/tests/kind binzx/otomi migrate",
+    "migrate-values": "ENV_DIR=$PWD/.values binzx/otomi migrate && ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate && ENV_DIR=$PWD/tests/kind binzx/otomi migrate",
     "prepare": "husky install",
+    "server": "ts-node-dev --watch 'values-schema.yaml,src/**/*.ts' --inspect=4320 --respawn --transpile-only -r tsconfig-paths/register -r dotenv/config src/server/index.ts",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
     "run-if-changed": "run-if-changed",
     "score-templates": "TESTING=1 binzx/otomi score-templates",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
-    "test": "TESTING=1 run-s test:ts validate-values lint validate-templates check-policies",
+    "test": "TESTING=1 run-s test:ts validate-values lint check-policies",
     "test:opa": "binzx/otomi x opa test policies -v",
-    "test:ts": "jest",
+    "test:ts": "TESTING=1 jest",
     "test:ts-cov": "jest --coverage",
-    "validate-templates": "TESTING=1 binzx/otomi validate-templates",
+    "validate-templates": "set -e; i=19; while [ $i -le 23 ]; do KUBE_VERSION_OVERRIDE=\"1.$i\" TESTING=1 binzx/otomi validate-templates -a \"--kube-version=1.$i\"; i=$(($i+1)); done",
     "validate-values": "TESTING=1 binzx/otomi validate-values"
   },
   "standard-version": {

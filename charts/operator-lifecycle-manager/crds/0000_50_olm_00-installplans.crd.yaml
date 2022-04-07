@@ -206,9 +206,6 @@ spec:
                       type:
                         description: InstallPlanConditionType describes the state of an InstallPlan at a certain point as a whole.
                         type: string
-                message:
-                  description: Message is a human-readable message containing detailed information that may be important to understanding why the plan has its current status.
-                  type: string
                 phase:
                   description: InstallPlanPhase is the current status of a InstallPlan as a whole.
                   type: string
@@ -252,10 +249,6 @@ spec:
                       status:
                         description: StepStatus is the current status of a particular resource an in InstallPlan
                         type: string
-                startTime:
-                  description: StartTime is the time when the controller began applying the resources listed in the plan to the cluster.
-                  type: string
-                  format: date-time
       served: true
       storage: true
       subresources:

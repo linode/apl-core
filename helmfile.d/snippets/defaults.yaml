@@ -4,25 +4,22 @@ environments:
       - azure:
           appgw:
             isManaged: true
-        charts:
+        apps:
+          alertmanager:
+            enabled: false
           cert-manager:
             issuer: custom-ca
           demo-tlspass:
             enabled: false
           drone:
             enabled: true
-            resources:
-              runner:
-                requests:
-                  cpu: 1000
-                  memory: 1Gi
             sourceControl:
               provider: gitea
               username: otomi-admin
           external-dns:
             domainFilters: []
-          gatekeeper-operator:
-            enabled: true
+          gatekeeper:
+            enabled: false
             auditFromCache: false
             auditInterval: 60
             constraintViolationsLimit: 20
@@ -34,71 +31,105 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+          grafana:
+            enabled: false
           harbor:
-            enabled: true
+            enabled: false
+            registry:
+              credentials:
+                username: otomi-admin
           hello:
             enabled: false
           httpbin:
             enabled: false
-          istio:
+          ingress-nginx:
+            enabled: true
             autoscaling:
+              enabled: true
+              minReplicas: 1
+              maxReplicas: 10
+            modsecurity:
+              enabled: false
+              block: false
+              owasp: true
+            private:
+              enabled: false
+              autoscaling:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 10
+          istio:
+            enabled: true
+            autoscaling:
+              egressgateway:
+                minReplicas: 1
+                maxReplicas: 10
+              ingressgateway:
+                minReplicas: 1
+                maxReplicas: 10
+              ingressgateway-private:
+                minReplicas: 1
+                maxReplicas: 10
               pilot:
                 minReplicas: 1
                 maxReplicas: 10
           jaeger:
-            enabled: true
+            enabled: false
           keycloak:
             enabled: true
-            adminUsername: admin
+            adminUsername: otomi-admin
             theme: otomi
             idp:
               alias: otomi-idp
               clientID: otomi
           kiali:
-            enabled: true
+            enabled: false
           knative:
+            enabled: false
             serving:
               replicas: 1
           kubeapps:
             enabled: false
-          kube-descheduler:
-            enabled: true
-          kubernetes-external-secrets:
-            enabled: true
-          loki: {}
-          nginx-ingress:
+            enableCommonGround: false
             autoscaling:
-              minReplicas: 1
-              maxReplicas: 10
-            private:
-              enabled: false
-              autoscaling:
+              dashboard:
                 minReplicas: 1
-                maxReplicas: 6
+                maxReplicas: 10
+              frontend:
+                minReplicas: 1
+                maxReplicas: 10
+              kubeops:
+                minReplicas: 1
+                maxReplicas: 10
+          kube-descheduler:
+            enabled: false
+          loki:
+            enabled: false
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}
           otomi-console: {}
-          promtail: {}
+          promtail:
+            enabled: false
           prometheus-blackbox-exporter: {}
-          prometheus-operator: {}
+          prometheus:
+            enabled: false
+            retentionSize: 4GB
+            storageSize: 5Gi
           redis-shared:
             enabled: false
-          sitespeed:
-            enabled: false
           vault:
-            enabled: true
-          weave-scope:
             enabled: false
+        cluster: {}
+        oidc: {}
         otomi:
           hasCloudLB: false
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
           isManaged: true
-          isMultitenant: true
-        teamConfig:
-          teams: {}
+          isMultitenant: false
+        teamConfig: {}
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

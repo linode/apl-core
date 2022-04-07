@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 

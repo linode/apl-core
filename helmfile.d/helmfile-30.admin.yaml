@@ -9,7 +9,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: gitlab
@@ -17,7 +17,9 @@ releases:
     namespace: team-admin
     <<: *default
   - name: operator-lifecycle-manager
-    installed: {{ $c | get "kubeapps.enabled" }}
+    installed: {{ $a | get "kubeapps.enabled" }}
     disableValidationOnInstall: true
     namespace: operator-lifecycle-manager
+    labels:
+      pkg: kubeapps
     <<: *default

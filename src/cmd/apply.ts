@@ -1,17 +1,17 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getOtomiLoadBalancerIP } from '../common/k8s'
+import { getOtomiDeploymentStatus, getOtomiLoadBalancerIP } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit } from './commit'
+import { commit, setDeploymentStatus } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -31,7 +31,7 @@ const setup = (): void => {
 const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
   d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
-  const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+  const ingressIP = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
   const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
 
@@ -69,7 +69,7 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await $`kubectl apply -f charts/prometheus-operator/crds`
+  await nothrow($`kubectl create -f charts/prometheus-operator/crds`)
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
@@ -98,7 +98,14 @@ const apply = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
-    if (isCli) await commit()
+    if (isCli) {
+      // commit first time only
+      const status = await getOtomiDeploymentStatus()
+      if (status !== 'deployed') {
+        await commit()
+        await setDeploymentStatus()
+      }
+    }
     return
   }
   d.info('Start apply')

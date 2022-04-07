@@ -30,9 +30,8 @@ plugins:
 settings:
   import/resolver:
     node:
-      extensions:
-        - .js
-        - .ts
+      extensions: [.js, .ts]
+      paths: ['src']
 
 env:
   es6: true

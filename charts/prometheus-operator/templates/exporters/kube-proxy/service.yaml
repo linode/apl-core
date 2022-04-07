@@ -1,12 +1,12 @@
-{{- if .Values.kubeProxy.enabled }}
+{{- if and .Values.kubeProxy.enabled .Values.kubeProxy.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-kube-proxy
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kube-proxy
   labels:
-    app: {{ template "prometheus-operator.name" . }}-kube-proxy
+    app: {{ template "kube-prometheus-stack.name" . }}-kube-proxy
     jobLabel: kube-proxy
-{{ include "prometheus-operator.labels" . | indent 4 }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
   namespace: kube-system
 spec:
   clusterIP: None

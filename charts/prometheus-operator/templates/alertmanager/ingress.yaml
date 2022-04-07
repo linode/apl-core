@@ -1,28 +1,32 @@
 {{- if and .Values.alertmanager.enabled .Values.alertmanager.ingress.enabled }}
-{{- $serviceName := printf "%s-%s" (include "prometheus-operator.fullname" .) "alertmanager" }}
+{{- $pathType := .Values.alertmanager.ingress.pathType | default "ImplementationSpecific" }}
+{{- $serviceName := printf "%s-%s" (include "kube-prometheus-stack.fullname" .) "alertmanager" }}
 {{- $servicePort := .Values.alertmanager.service.port -}}
 {{- $routePrefix := list .Values.alertmanager.alertmanagerSpec.routePrefix }}
 {{- $paths := .Values.alertmanager.ingress.paths | default $routePrefix -}}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
-apiVersion: networking.k8s.io/v1beta1
-{{ else }}
-apiVersion: networking.k8s.io/v1beta1
-{{ end -}}
+{{- $apiIsStable := eq (include "kube-prometheus-stack.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "kube-prometheus-stack.ingress.supportsPathType" .) "true" -}}
+apiVersion: {{ include "kube-prometheus-stack.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ $serviceName }}
-  namespace: {{ template "prometheus-operator.namespace" . }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
 {{- if .Values.alertmanager.ingress.annotations }}
   annotations:
 {{ toYaml .Values.alertmanager.ingress.annotations | indent 4 }}
 {{- end }}
   labels:
-    app: {{ template "prometheus-operator.name" . }}-alertmanager
+    app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
 {{- if .Values.alertmanager.ingress.labels }}
 {{ toYaml .Values.alertmanager.ingress.labels | indent 4 }}
 {{- end }}
-{{ include "prometheus-operator.labels" . | indent 4 }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
+  {{- if $apiIsStable }}
+  {{- if .Values.alertmanager.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.alertmanager.ingress.ingressClassName }}
+  {{- end }}
+  {{- end }}
   rules:
   {{- if .Values.alertmanager.ingress.hosts }}
   {{- range $host := .Values.alertmanager.ingress.hosts }}
@@ -31,23 +35,43 @@ spec:
         paths:
   {{- range $p := $paths }}
           - path: {{ tpl $p $ }}
+            {{- if and $pathType $ingressSupportsPathType }}
+            pathType: {{ $pathType }}
+            {{- end }}
             backend:
+              {{- if $apiIsStable }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
               serviceName: {{ $serviceName }}
               servicePort: {{ $servicePort }}
-  {{- end -}}
+    {{- end }}
+    {{- end -}}
   {{- end -}}
   {{- else }}
     - http:
         paths:
   {{- range $p := $paths }}
           - path: {{ tpl $p $ }}
+            {{- if and $pathType $ingressSupportsPathType }}
+            pathType: {{ $pathType }}
+            {{- end }}
             backend:
+              {{- if $apiIsStable }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
               serviceName: {{ $serviceName }}
               servicePort: {{ $servicePort }}
+  {{- end }}
   {{- end -}}
   {{- end -}}
   {{- if .Values.alertmanager.ingress.tls }}
   tls:
-{{ toYaml .Values.alertmanager.ingress.tls | indent 4 }}
+{{ tpl (toYaml .Values.alertmanager.ingress.tls | indent 4) . }}
   {{- end -}}
 {{- end -}}

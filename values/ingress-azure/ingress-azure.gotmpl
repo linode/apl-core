@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $i := $v.charts | get "ingress-azure" }}
+{{- $i := $v.apps | get "ingress-azure" }}
 
 ################################################################################
 # Specify the authentication with Azure Resource Manager

@@ -1,0 +1,7 @@
+apps:
+    keycloak:
+        enabled: true
+        idp:
+            alias: redkubes-azure
+            clientID: otomi
+        theme: otomi

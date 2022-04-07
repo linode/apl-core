@@ -2,11 +2,11 @@
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-prometheus
-  namespace: {{ template "prometheus-operator.namespace" . }}
+  name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
-    app: {{ template "prometheus-operator.name" . }}-prometheus
-{{ include "prometheus-operator.labels" . | indent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-prometheus
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
 {{- if .Values.prometheus.annotations }}
   annotations:
 {{ toYaml .Values.prometheus.annotations | indent 4 }}
@@ -17,8 +17,8 @@ spec:
 {{- if .Values.prometheus.prometheusSpec.alertingEndpoints }}
 {{ toYaml .Values.prometheus.prometheusSpec.alertingEndpoints | indent 6 }}
 {{- else if .Values.alertmanager.enabled }}
-      - namespace: {{ template "prometheus-operator.namespace" . }}
-        name: {{ template "prometheus-operator.fullname" . }}-alertmanager
+      - namespace: {{ template "kube-prometheus-stack.namespace" . }}
+        name: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
         port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
         {{- if .Values.alertmanager.alertmanagerSpec.routePrefix }}
         pathPrefix: "{{ .Values.alertmanager.alertmanagerSpec.routePrefix }}"
@@ -32,7 +32,15 @@ spec:
 {{ toYaml .Values.prometheus.prometheusSpec.apiserverConfig | indent 4}}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.image }}
-  baseImage: {{ .Values.prometheus.prometheusSpec.image.repository }}
+  {{- if and .Values.prometheus.prometheusSpec.image.tag .Values.prometheus.prometheusSpec.image.sha }}
+  image: "{{ .Values.prometheus.prometheusSpec.image.repository }}:{{ .Values.prometheus.prometheusSpec.image.tag }}@sha256:{{ .Values.prometheus.prometheusSpec.image.sha }}"
+  {{- else if .Values.prometheus.prometheusSpec.image.sha }}
+  image: "{{ .Values.prometheus.prometheusSpec.image.repository }}@sha256:{{ .Values.prometheus.prometheusSpec.image.sha }}"
+  {{- else if .Values.prometheus.prometheusSpec.image.tag }}
+  image: "{{ .Values.prometheus.prometheusSpec.image.repository }}:{{ .Values.prometheus.prometheusSpec.image.tag }}"
+  {{- else }}
+  image: "{{ .Values.prometheus.prometheusSpec.image.repository }}"
+  {{- end }}
   version: {{ .Values.prometheus.prometheusSpec.image.tag }}
   {{- if .Values.prometheus.prometheusSpec.image.sha }}
   sha: {{ .Values.prometheus.prometheusSpec.image.sha }}
@@ -40,7 +48,7 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.externalLabels }}
   externalLabels:
-{{ toYaml .Values.prometheus.prometheusSpec.externalLabels | indent 4}}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.externalLabels | indent 4) . }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.prometheusExternalLabelNameClear }}
   prometheusExternalLabelName: ""
@@ -57,7 +65,7 @@ spec:
 {{- else if and .Values.prometheus.ingress.enabled .Values.prometheus.ingress.hosts }}
   externalUrl: "http://{{ tpl (index .Values.prometheus.ingress.hosts 0) . }}{{ .Values.prometheus.prometheusSpec.routePrefix }}"
 {{- else }}
-  externalUrl: http://{{ template "prometheus-operator.fullname" . }}-prometheus.{{ template "prometheus-operator.namespace" . }}:{{ .Values.prometheus.service.port }}
+  externalUrl: http://{{ template "kube-prometheus-stack.fullname" . }}-prometheus.{{ template "kube-prometheus-stack.namespace" . }}:{{ .Values.prometheus.service.port }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.nodeSelector }}
   nodeSelector:
@@ -65,12 +73,26 @@ spec:
 {{- end }}
   paused: {{ .Values.prometheus.prometheusSpec.paused }}
   replicas: {{ .Values.prometheus.prometheusSpec.replicas }}
+  shards: {{ .Values.prometheus.prometheusSpec.shards }}
   logLevel:  {{ .Values.prometheus.prometheusSpec.logLevel }}
   logFormat:  {{ .Values.prometheus.prometheusSpec.logFormat }}
   listenLocal: {{ .Values.prometheus.prometheusSpec.listenLocal }}
   enableAdminAPI: {{ .Values.prometheus.prometheusSpec.enableAdminAPI }}
+{{- if .Values.prometheus.prometheusSpec.web }}
+  web:
+{{ toYaml .Values.prometheus.prometheusSpec.web | indent 4 }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enableFeatures }}
+  enableFeatures:
+{{- range $enableFeatures := .Values.prometheus.prometheusSpec.enableFeatures }}
+  - {{ tpl $enableFeatures $ }}
+{{- end }}
+{{- end }}
 {{- if .Values.prometheus.prometheusSpec.scrapeInterval }}
   scrapeInterval: {{ .Values.prometheus.prometheusSpec.scrapeInterval }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.scrapeTimeout }}
+  scrapeTimeout: {{ .Values.prometheus.prometheusSpec.scrapeTimeout }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.evaluationInterval }}
   evaluationInterval: {{ .Values.prometheus.prometheusSpec.evaluationInterval }}
@@ -97,7 +119,7 @@ spec:
   configMaps:
 {{ toYaml .Values.prometheus.prometheusSpec.configMaps | indent 4 }}
 {{- end }}
-  serviceAccountName: {{ template "prometheus-operator.prometheus.serviceAccountName" . }}
+  serviceAccountName: {{ template "kube-prometheus-stack.prometheus.serviceAccountName" . }}
 {{- if .Values.prometheus.prometheusSpec.serviceMonitorSelector }}
   serviceMonitorSelector:
 {{ toYaml .Values.prometheus.prometheusSpec.serviceMonitorSelector | indent 4 }}
@@ -130,13 +152,39 @@ spec:
 {{ else }}
   podMonitorNamespaceSelector: {}
 {{- end }}
-{{- if .Values.prometheus.prometheusSpec.remoteRead }}
-  remoteRead:
-{{ toYaml .Values.prometheus.prometheusSpec.remoteRead | indent 4 }}
+{{- if .Values.prometheus.prometheusSpec.probeSelector }}
+  probeSelector:
+{{ toYaml .Values.prometheus.prometheusSpec.probeSelector | indent 4 }}
+{{ else if .Values.prometheus.prometheusSpec.probeSelectorNilUsesHelmValues  }}
+  probeSelector:
+    matchLabels:
+      release: {{ $.Release.Name | quote }}
+{{ else }}
+  probeSelector: {}
 {{- end }}
-{{- if .Values.prometheus.prometheusSpec.remoteWrite }}
+{{- if .Values.prometheus.prometheusSpec.probeNamespaceSelector }}
+  probeNamespaceSelector:
+{{ toYaml .Values.prometheus.prometheusSpec.probeNamespaceSelector | indent 4 }}
+{{ else }}
+  probeNamespaceSelector: {}
+{{- end }}
+{{- if (or .Values.prometheus.prometheusSpec.remoteRead .Values.prometheus.prometheusSpec.additionalRemoteRead) }}
+  remoteRead:
+{{- if .Values.prometheus.prometheusSpec.remoteRead }}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.remoteRead | indent 4) . }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.additionalRemoteRead }}
+{{ toYaml .Values.prometheus.prometheusSpec.additionalRemoteRead | indent 4 }}
+{{- end }}
+{{- end }}
+{{- if (or .Values.prometheus.prometheusSpec.remoteWrite .Values.prometheus.prometheusSpec.additionalRemoteWrite) }}
   remoteWrite:
-{{ toYaml .Values.prometheus.prometheusSpec.remoteWrite | indent 4 }}
+{{- if .Values.prometheus.prometheusSpec.remoteWrite }}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.remoteWrite | indent 4) . }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.additionalRemoteWrite }}
+{{ toYaml .Values.prometheus.prometheusSpec.additionalRemoteWrite | indent 4 }}
+{{- end }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.securityContext }}
   securityContext:
@@ -154,7 +202,6 @@ spec:
 {{- else if .Values.prometheus.prometheusSpec.ruleSelectorNilUsesHelmValues }}
   ruleSelector:
     matchLabels:
-      app: {{ template "prometheus-operator.name" . }}
       release: {{ $.Release.Name | quote }}
 {{ else }}
   ruleSelector: {}
@@ -165,7 +212,7 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.podMetadata }}
   podMetadata:
-{{ toYaml .Values.prometheus.prometheusSpec.podMetadata | indent 4 }}
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.podMetadata | indent 4) . }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.query }}
   query:
@@ -181,9 +228,9 @@ spec:
       requiredDuringSchedulingIgnoredDuringExecution:
       - topologyKey: {{ .Values.prometheus.prometheusSpec.podAntiAffinityTopologyKey }}
         labelSelector:
-          matchLabels:
-            app: prometheus
-            prometheus: {{ template "prometheus-operator.fullname" . }}-prometheus
+          matchExpressions:
+            - {key: app.kubernetes.io/name, operator: In, values: [prometheus]}
+            - {key: prometheus, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-prometheus]}
 {{- else if eq .Values.prometheus.prometheusSpec.podAntiAffinity "soft" }}
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -191,14 +238,18 @@ spec:
         podAffinityTerm:
           topologyKey: {{ .Values.prometheus.prometheusSpec.podAntiAffinityTopologyKey }}
           labelSelector:
-            matchLabels:
-              app: prometheus
-              prometheus: {{ template "prometheus-operator.fullname" . }}-prometheus
+            matchExpressions:
+              - {key: app.kubernetes.io/name, operator: In, values: [prometheus]}
+              - {key: prometheus, operator: In, values: [{{ template "kube-prometheus-stack.fullname" . }}-prometheus]}
 {{- end }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.tolerations }}
   tolerations:
 {{ toYaml .Values.prometheus.prometheusSpec.tolerations | indent 4 }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.topologySpreadConstraints }}
+  topologySpreadConstraints:
+{{ toYaml .Values.prometheus.prometheusSpec.topologySpreadConstraints | indent 4 }}
 {{- end }}
 {{- if .Values.global.imagePullSecrets }}
   imagePullSecrets:
@@ -206,7 +257,7 @@ spec:
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalScrapeConfigs }}
   additionalScrapeConfigs:
-    name: {{ template "prometheus-operator.fullname" . }}-prometheus-scrape-confg
+    name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus-scrape-confg
     key: additional-scrape-configs.yaml
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.enabled }}
@@ -214,14 +265,20 @@ spec:
     name: {{ .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.name }}
     key: {{ .Values.prometheus.prometheusSpec.additionalScrapeConfigsSecret.key }}
 {{- end }}
-{{- if .Values.prometheus.prometheusSpec.additionalAlertManagerConfigs }}
+{{- if or .Values.prometheus.prometheusSpec.additionalAlertManagerConfigs .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret }}
   additionalAlertManagerConfigs:
-    name: {{ template "prometheus-operator.fullname" . }}-prometheus-am-confg
+{{- if .Values.prometheus.prometheusSpec.additionalAlertManagerConfigs }}
+    name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus-am-confg
     key: additional-alertmanager-configs.yaml
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret }}
+    name: {{ .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.name }}
+    key: {{ .Values.prometheus.prometheusSpec.additionalAlertManagerConfigsSecret.key }}
+{{- end }}
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.additionalAlertRelabelConfigs }}
   additionalAlertRelabelConfigs:
-    name: {{ template "prometheus-operator.fullname" . }}-prometheus-am-relabel-confg
+    name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus-am-relabel-confg
     key: additional-alert-relabel-configs.yaml
 {{- end }}
 {{- if .Values.prometheus.prometheusSpec.containers }}
@@ -243,10 +300,6 @@ spec:
   disableCompaction: {{ .Values.prometheus.prometheusSpec.disableCompaction }}
 {{- end }}
   portName: {{ .Values.prometheus.prometheusSpec.portName }}
-{{- end }}
-{{- if .Values.prometheus.prometheusSpec.enforcedNamespaceLabel }}
-  enforcedNamespaceLabel: {{ .Values.prometheus.prometheusSpec.enforcedNamespaceLabel }}
-{{- end }}
 {{- if .Values.prometheus.prometheusSpec.volumes }}
   volumes:
 {{ toYaml .Values.prometheus.prometheusSpec.volumes | indent 4 }}
@@ -254,4 +307,51 @@ spec:
 {{- if .Values.prometheus.prometheusSpec.volumeMounts }}
   volumeMounts:
 {{ toYaml .Values.prometheus.prometheusSpec.volumeMounts | indent 4 }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.arbitraryFSAccessThroughSMs }}
+  arbitraryFSAccessThroughSMs:
+{{ toYaml .Values.prometheus.prometheusSpec.arbitraryFSAccessThroughSMs | indent 4 }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.overrideHonorLabels }}
+  overrideHonorLabels: {{ .Values.prometheus.prometheusSpec.overrideHonorLabels }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.overrideHonorTimestamps }}
+  overrideHonorTimestamps: {{ .Values.prometheus.prometheusSpec.overrideHonorTimestamps }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.ignoreNamespaceSelectors }}
+  ignoreNamespaceSelectors: {{ .Values.prometheus.prometheusSpec.ignoreNamespaceSelectors }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedNamespaceLabel }}
+  enforcedNamespaceLabel: {{ .Values.prometheus.prometheusSpec.enforcedNamespaceLabel }}
+{{- $prometheusDefaultRulesExcludedFromEnforce := (include "rules.names" .) | fromYaml }}
+  prometheusRulesExcludedFromEnforce:
+{{- range $prometheusDefaultRulesExcludedFromEnforce.rules }}
+    - ruleNamespace: "{{ template "kube-prometheus-stack.namespace" $ }}"
+      ruleName: "{{ printf "%s-%s" (include "kube-prometheus-stack.fullname" $) . | trunc 63 | trimSuffix "-" }}"
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.prometheusRulesExcludedFromEnforce }}
+{{ toYaml .Values.prometheus.prometheusSpec.prometheusRulesExcludedFromEnforce | indent 4 }}
+{{- end }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.queryLogFile }}
+  queryLogFile: {{ .Values.prometheus.prometheusSpec.queryLogFile }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedSampleLimit }}
+  enforcedSampleLimit: {{ .Values.prometheus.prometheusSpec.enforcedSampleLimit }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedTargetLimit }}
+  enforcedTargetLimit: {{ .Values.prometheus.prometheusSpec.enforcedTargetLimit }}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedLabelLimit	}}
+  enforcedLabelLimit: {{ .Values.prometheus.prometheusSpec.enforcedLabelLimit	}}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedLabelNameLengthLimit	}}
+  enforcedLabelNameLengthLimit: {{ .Values.prometheus.prometheusSpec.enforcedLabelNameLengthLimit	}}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.enforcedLabelValueLengthLimit}}
+  enforcedLabelValueLengthLimit: {{ .Values.prometheus.prometheusSpec.enforcedLabelValueLengthLimit	}}
+{{- end }}
+{{- if .Values.prometheus.prometheusSpec.allowOverlappingBlocks }}
+  allowOverlappingBlocks: {{ .Values.prometheus.prometheusSpec.allowOverlappingBlocks }}
+{{- end }}
 {{- end }}

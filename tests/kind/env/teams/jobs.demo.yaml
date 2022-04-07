@@ -1,4 +1,3 @@
 teamConfig:
-  teams:
     demo:
-      jobs: []
+        jobs: []

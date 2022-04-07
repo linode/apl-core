@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $pbe := $v.charts | get "prometheus-blackbox-exporter" }}
+{{- $pbe := $v.apps | get "prometheus-blackbox-exporter" }}
 
 cluster:
   enabled: false

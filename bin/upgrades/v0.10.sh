@@ -21,9 +21,9 @@ for NAME in $(k get crd | grep istio-operator | awk '{print $1}'); do
   . bin/upgrades/adopt-by-helm.sh
 done
 
-# gatekeeper-operator
+# gatekeeper
 NAME=gatekeeper-system
-RELEASE=gatekeeper-operator
+RELEASE=gatekeeper
 NAMESPACE=default
 RUNNING_NS=gatekeeper-system
 KIND=crd
@@ -41,9 +41,9 @@ for KIND in namespace clusterrolebinding clusterrole ValidatingWebhookConfigurat
   . bin/upgrades/adopt-by-helm.sh
 done
 
-# # gatekeeper-operator-config
+# # gatekeeper-config
 RUNNING_NS=gatekeeper-system
-RELEASE=gatekeeper-operator-config
+RELEASE=gatekeeper-config
 NAMESPACE=gatekeeper-system
 KIND=constrainttemplates.templates.gatekeeper.sh
 
@@ -69,10 +69,10 @@ for NAME in $(k get crd | grep cert-manager | awk '{print $1}'); do
   . bin/upgrades/adopt-by-helm.sh 1
 done
 
-# nginx-ingress
+# ingress-nginx
 RUNNING_NS=ingress
-RELEASE=nginx-ingress
-NAME=nginx-ingress
+RELEASE=ingress-nginx
+NAME=ingress-nginx
 NAMESPACE=ingress
 for KIND in "clusterrolebinding" "clusterrole" "rolebinding" "role"; do
   . bin/upgrades/adopt-by-helm.sh

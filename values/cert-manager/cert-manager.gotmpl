@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $cm := $v.charts | get "cert-manager" }}
+{{- $cm := $v.apps | get "cert-manager" }}
 
 global:
   {{- with $v.otomi | get "globalPullSecret" nil }}

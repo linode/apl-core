@@ -1,12 +1,12 @@
 {{- $v := .Values }}
-{{- $h := $v.charts.harbor }}
+{{- $h := $v.apps.harbor }}
 {{- $hp := $h | get "persistence" dict }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := "v2.4.0" }}
+{{- $tag := $h | get "image.tag" "v2.4.0" }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -21,14 +21,14 @@ clair:
     image:
       tag: {{ $tag }}
     resources:
-      {{- with $h | get "resources.adapter" nil }}
+      {{- with $h | get "resources.clair-adapter" nil }}
       {{- toYaml . | nindent 6 }}
       {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 256Mi
       limits:
         cpu: 400m
+        memory: 256Mi
+      requests:
+        cpu: 100m 
         memory: 256Mi
       {{- end }}
   clair:
@@ -74,12 +74,12 @@ core:
     {{- with $h | get "resources.core" nil }}
     {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      memory: 256Mi
-      cpu: 50m
     limits:
-      memory: 512Mi
       cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
     {{- end }}
   secret: {{ $h | get "core.secret" nil }}
   # secretName: {{ $harborSecretName }}
@@ -92,30 +92,30 @@ database:
     initContainer:
       migrator:
         resources:
-          requests:
-            memory: 256Mi
-            cpu: 50m
           limits:
-            memory: 512Mi
             cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
       permissions:
         resources:
-          requests:
-            memory: 256Mi
-            cpu: 50m
           limits:
-            memory: 512Mi
             cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
     resources:
       {{- with $h | get "resources.database" nil }}
       {{- toYaml . | nindent 6 }}
       {{- else }}
-      requests:
-        memory: 256Mi
-        cpu: 50m
       limits:
-        memory: 512Mi
         cpu: 100m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
       {{- end }}
   password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
   podAnnotations:
@@ -147,12 +147,12 @@ jobservice:
     {{- with $h | get "resources.jobservice" nil }}
     {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      memory: 256Mi
-      cpu: 50m
     limits:
-      memory: 512Mi
       cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
     {{- end }}
   secret: {{ $h | get "jobservice.secret" nil }}
 
@@ -181,19 +181,25 @@ persistence:
       # Specify the 'storageClass' used to provision the volume. Or the default
       # StorageClass will be used(the default).
       # Set it to '-' to disable dynamic provisioning
-      storageClass: 'fast'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      storageClass: 'fast'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
     jobservice:
       existingClaim: ''
-      storageClass: 'fast-immediate'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast-immediate
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -202,7 +208,9 @@ persistence:
     # be ignored
     database:
       existingClaim: ''
-      storageClass: 'fast'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -210,13 +218,17 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      storageClass: 'fast'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
       existingClaim: ''
-      storageClass: 'fast'
+      {{- if $v._derived.supportedCloud }}
+      storageClass: fast
+      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
@@ -242,11 +254,11 @@ portal:
     {{- with $h | get "resources.portal" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      cpu: 100m 
-      memory: 128Mi
     limits:
       cpu: 400m
+      memory: 256Mi
+    requests:
+      cpu: 100m 
       memory: 128Mi
     {{- end }}
   podAnnotations:
@@ -263,11 +275,11 @@ redis:
       {{- with $h | get "resources.redis" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 128Mi
       limits:
         cpu: 400m
+        memory: 256Mi
+      requests:
+        cpu: 100m 
         memory: 128Mi
       {{- end }}
 
@@ -283,12 +295,12 @@ registry:
       {{- with $h | get "resources.registry" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
-      requests:
-        memory: 64Mi
-        cpu: 50m
       limits:
-        memory: 128Mi
         cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
       {{- end }}
   controller:
     image:
@@ -297,22 +309,33 @@ registry:
       {{- with $h | get "resources.registry-controller" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
-      requests:
-        memory: 256Mi
-        cpu: 50m
       limits:
-        memory: 512Mi
         cpu: 100m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
       {{- end }}
   relativeurls: false
   credentials:
-    username: {{ $h | get "registry.credentials.username" "admin" }}
+    username: {{ $h | get "registry.credentials.username" }}
     password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
     htpasswd: {{ $h | get "registry.credentials.htpasswd" nil }}
 
 trivy:
   image:
     tag: {{ $tag }}
+  resources:
+    {{- with $h | get "resources.trivy" nil }}
+      {{- toYaml . | nindent 6 }}
+    {{- else }}
+      requests:
+        cpu: 100m 
+        memory: 1Gi
+      limits:
+        cpu: 400m
+        memory: 2Gi
+    {{- end }}
   automountServiceAccountToken: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

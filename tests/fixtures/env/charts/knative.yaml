@@ -1,4 +1,0 @@
-charts:
-    knative:
-        serving:
-            replicas: 5
