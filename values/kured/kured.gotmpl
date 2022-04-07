@@ -1,18 +1,17 @@
 {{- $v := .Values }}
 {{- $k := $v.apps | get "kured" }}
 
-# Using --annotation-ttl=30m will allow other nodes to take over if TTL has expired (in this case 30min) and continue reboot process.
-
+# Using --lock-ttl=30m will allow other nodes to take over if TTL has expired and continue reboot process.
 configuration:
-  annotationTtl: 10m
+  lockTtl: 30m 
 
 resources:
   limits:
-    cpu: 500m
-    memory: 128Mi
+    cpu: 10m
+    memory: 64Mi
   requests:
-    cpu: 150m
-    memory: 40Mi
+    cpu: 5m
+    memory: 32Mi
 
 
 # the container's securityContext must have "privileged:true" thus we cannot set a non-root user for this chart

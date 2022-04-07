@@ -1,4 +1,4 @@
-cluster:
+h+cluster:
   # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
   k8sVersion: '1.21'
   name: 'dev'

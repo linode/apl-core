@@ -1,4 +1,5 @@
 {{- $v := .Values | merge (dict) }}
+{{- $ := . }}
 {{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true $v }}
 {{- if $egressFilteringEnabled }}
 {{- if not (eq $v.teamId "admin") }}
@@ -7,6 +8,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
 metadata:
   name: default
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY

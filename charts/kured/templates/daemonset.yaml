@@ -5,9 +5,19 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "kured.labels" . | nindent 4 }}
+  {{- if .Values.dsAnnotations }}
+  annotations:
+  {{- range $key, $value := .Values.dsAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
 spec:
   updateStrategy:
     type: {{ .Values.updateStrategy }}
+{{- if eq .Values.updateStrategy "RollingUpdate"}}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.maxUnavailable }}
+{{- end}}
   selector:
     matchLabels:
       {{- include "kured.matchLabels" . | nindent 6 }}
@@ -15,6 +25,9 @@ spec:
     metadata:
       labels:
         {{- include "kured.labels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
       {{- range $key, $value := .Values.podAnnotations }}
@@ -34,10 +47,10 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            privileged: true # Give permission to nsenter /proc/1/ns/mnt
+{{ toYaml .Values.containerSecurityContext | indent 12 }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           command:
@@ -45,11 +58,17 @@ spec:
           args:
             - --ds-name={{ template "kured.fullname" . }}
             - --ds-namespace={{ .Release.Namespace }}
-          {{- if .Values.configuration.annotationTtl }}
-            - --annotation-ttl={{ .Values.configuration.annotationTtl }}
+          {{- if .Values.configuration.lockTtl }}
+            - --lock-ttl={{ .Values.configuration.lockTtl }}
+          {{- end }}
+          {{- if .Values.configuration.lockReleaseDelay }}
+            - --lock-release-delay={{ .Values.configuration.lockReleaseDelay }}
           {{- end }}
           {{- if .Values.configuration.alertFilterRegexp }}
-            - --alert-filter-regexp={{ .Values.configuration.alertFilterRegexp | quote }}
+            - --alert-filter-regexp={{ .Values.configuration.alertFilterRegexp }}
+          {{- end }}
+          {{- if .Values.configuration.alertFiringOnly }}
+            - --alert-firing-only={{ .Values.configuration.alertFiringOnly }}
           {{- end }}
           {{- range .Values.configuration.blockingPodSelector }}
             - --blocking-pod-selector={{ . }}
@@ -63,6 +82,18 @@ spec:
           {{- if .Values.configuration.period }}
             - --period={{ .Values.configuration.period }}
           {{- end }}
+          {{- if .Values.configuration.forceReboot }}
+            - --force-reboot
+          {{- end }}
+          {{- if .Values.configuration.drainGracePeriod }}
+            - --drain-grace-period={{ .Values.configuration.drainGracePeriod }}
+          {{- end }}
+          {{- if .Values.configuration.drainTimeout }}
+            - --drain-timeout={{ .Values.configuration.drainTimeout }}
+          {{- end }}
+          {{- if .Values.configuration.skipWaitForDeleteTimeout }}
+             - --skip-wait-for-delete-timeout={{ .Values.configuration.skipWaitForDeleteTimeout }}
+          {{- end }}
           {{- if .Values.configuration.prometheusUrl }}
             - --prometheus-url={{ .Values.configuration.prometheusUrl }}
           {{- end }}
@@ -72,20 +103,47 @@ spec:
           {{- if .Values.configuration.rebootSentinel }}
             - --reboot-sentinel={{ .Values.configuration.rebootSentinel }}
           {{- end }}
+          {{- if .Values.configuration.rebootSentinelCommand }}
+            - --reboot-sentinel-command={{ .Values.configuration.rebootSentinelCommand }}
+          {{- end }}
+          {{- if .Values.configuration.rebootCommand }}
+            - --reboot-command={{ .Values.configuration.rebootCommand }}
+          {{- end }}
+          {{- if .Values.configuration.rebootDelay }}
+            - --reboot-delay={{ .Values.configuration.rebootDelay }}
+          {{- end }}
           {{- if .Values.configuration.slackChannel }}
-            - --slack-channel={{ .Values.configuration.slackChannel }}
+            - --slack-channel={{ tpl .Values.configuration.slackChannel . }}
           {{- end }}
           {{- if .Values.configuration.slackHookUrl }}
-            - --slack-hook-url={{ .Values.configuration.slackHookUrl }}
+            - --slack-hook-url={{ tpl .Values.configuration.slackHookUrl . }}
           {{- end }}
           {{- if .Values.configuration.slackUsername }}
-            - --slack-username={{ .Values.configuration.slackUsername }}
+            - --slack-username={{ tpl .Values.configuration.slackUsername . }}
+          {{- end }}
+          {{- if .Values.configuration.notifyUrl }}
+            - --notify-url={{ .Values.configuration.notifyUrl }}
+          {{- end }}
+          {{- if .Values.configuration.messageTemplateDrain }}
+            - --message-template-drain={{ .Values.configuration.messageTemplateDrain }}
+          {{- end }}
+          {{- if .Values.configuration.messageTemplateReboot }}
+            - --message-template-reboot={{ .Values.configuration.messageTemplateReboot }}
           {{- end }}
           {{- if .Values.configuration.startTime }}
             - --start-time={{ .Values.configuration.startTime }}
           {{- end }}
           {{- if .Values.configuration.timeZone }}
             - --time-zone={{ .Values.configuration.timeZone }}
+          {{- end }}
+          {{- if .Values.configuration.annotateNodes }}
+            - --annotate-nodes={{ .Values.configuration.annotateNodes }}
+          {{- end }}
+          {{- if .Values.configuration.preferNoScheduleTaint }}
+            - --prefer-no-schedule-taint={{ .Values.configuration.preferNoScheduleTaint }}
+          {{- end }}
+          {{- if .Values.configuration.logFormat }}
+            - --log-format={{ .Values.configuration.logFormat }}
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
             {{- if $value }}
@@ -94,9 +152,13 @@ spec:
             - --{{ $key }}
             {{- end }}
           {{- end }}
+{{- if .Values.volumeMounts }}
+          volumeMounts:
+{{- toYaml .Values.volumeMounts  | nindent 12 }}
+{{- end }}
           ports:
             - containerPort: 8080
-              name: metrics          
+              name: metrics
           env:
             # Pass in the name of the node on which this pod is scheduled
             # for use with drain/uncordon operations and lock acquisition
@@ -119,3 +181,7 @@ spec:
       affinity:
 {{ toYaml . | indent 8 }}
       {{- end }}
+{{- if .Values.volumes }}
+      volumes:
+{{- toYaml .Values.volumes  | nindent 8 }}
+{{- end }}
