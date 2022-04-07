@@ -180,7 +180,6 @@ adminApps:
   - name: knative
     tags: [serverless, functions]
     deps: [istio]
-    logo: knative_logo.png
   - name: kubeapps
     tags: [dev, apps]
     deps: [operator-lifecycle-manager]
