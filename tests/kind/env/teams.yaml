@@ -10,6 +10,3 @@ teamConfig:
                 memory: 64Mi
         resourceQuota:
             services.loadbalancers: '1'
-    teams:
-        demo:
-            password: somesecretvalue
