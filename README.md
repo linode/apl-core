@@ -13,6 +13,13 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
 </p>
 
+<p align="center">
+<a href="https://otomi.io/">Documentation</a>
+<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join Slack Channel</a>
+<a href="https://twitter.com/RedKubes">Twitter</a>
+<a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA">YouTube</a>
+
+</p>
 ## About Otomi
 
 - Brings a full PaaS (like Heroku) to your own Kubernetes cluster. The only thing you'll need to do is deploy your application and Otomi will do the rest.
