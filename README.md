@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Shift left with Otomi
 </h1>
-<p align="center">Otomi empowers developers and lowers the burden on operations when using <b>Kubernetes</b> by providing a complete suite of pre-configured Kubernetes application combined with automation and developer self-service</p>
+<p align="center">Otomi empowers developers and lowers the burden on operations when using <b>Kubernetes</b> by providing a complete platform experience</p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -15,50 +15,35 @@
 
 ## About Otomi
 
-Otomi is a Kubernetes Applications Configuration & Automation Platform.
-
-- Install all your favorite Kubernetes apps in one run on AKS, EKS or GKE
-- Turn apps on/off to create your ideal suite of apps
-- Adjust the configuration of apps based on Configuration as Code
-- Get a full multi-tenant platform experience with an advanced ingress architecture out-of-the-box
-- Make developers self-serving
+- Brings a full PaaS (like Heroku) to your own Kubernetes cluster. The only thing you'll need to do is deploy your application and Otomi will do the rest.
+- Allows you to use a PaaS on top of K8s without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku.
+- Removes the burden of reinveting the wheel when building and maintaining your internal (developer) platform, lowers operational costs, and empowers developers to focus on application deployment and management only.
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
 
-## Quick start
+## Get started
 
-### Terraform
-
-NOTE
+**NOTE**
 
 If you already have a Kubernetes cluster running in one of the supported public clouds, then you can skip `terraform quickstart` and move straight to [helm chart install.](#helm-chart)
 
 ---
 
+### Terraform quick starts
+
 Use the Terraform quick start for Azure, GCP, and AWS to provision a Managed Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
 When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs of the job and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
 
-### Helm Chart
+### Install on your own K8s cluster using the Helm Chart
 
-To install Otomi using the Helm chart, make sure to have a running Kubernetes cluster of version `1.18` up to `1.21` with a node pool with at least **12 vCPU** and **32GB+ RAM** in AWS, Azure, GCP. To use the network policies features in Otomi, make sure to use a CNI that supports Kubernetes network policies (like Calico).
+To install Otomi using the Helm chart, make sure to have a K8s cluster running with at least:
+- Version `1.18` up to `1.23`
+- A node pool with **8 vCPU** and **8GB+ RAM**
+- Calico add-on (or any other CNI that supports network policies) installed to use the network policies features
 
-For testing and experimentation, we advise to use the following machine/instance types:
 
-- Azure: 3 x DS3_v2 (4 vCPU / 14 GiB RAM)
-- AWS: 3 x t2.xlarge (4 vCPU / 16 GiB RAM)
-- GCP: 3 x e2-standard-4 (4 vCPU / 16 GiB RAM)
-
-To install `Otomi` with minimal values using the Helm chart, first create a `values.yaml` file with the following values:
-
-```yaml
-cluster:
-  k8sVersion: '1.21' # currently 1.18, 1.19, 1.20 and 1.21 are supported
-  name: # the name of your cluster
-  provider: # choose between aws, azure, google
-```
-
-add the Helm repository:
+First add the Helm repository:
 
 ```bash
 helm repo add otomi https://otomi.io/otomi-core
@@ -68,24 +53,13 @@ helm repo update
 and then install the Helm chart:
 
 ```bash
-helm install -f values.yaml otomi otomi/otomi
+helm install otomi otomi/otomi \
+--set cluster.k8sVersion="$VERSION" \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
+--set cluster.name=$CLUSTERNAME \
+--set cluster.provider=$PROVIDER \ # use azure, aws, google or custom (for any other K8s)
 ```
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs and complete the [post-installation steps](https://otomi.io/docs/installation/post-install/).
-
-After installing `Otomi`, you can use [Otomi Console](https://otomi.io/docs/console/) to access all integrated applications and self-service features.
-
-## Advanced configuration
-
-`Otomi` can be installed with the following advanced configuration options:
-
-- Use a DNS zone with LetsEncrypt certificates
-- Use your own CA
-- Configure Azure Active Directory as IdP
-- Use SOPS/KMS to encrypt sensitive configuration code like passwords
-- Use GitHub or GitLab as the configuration code repository
-
-Go to [otomi.io](https://otomi.io) for more detailed instructions.
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console and then first activate Drone.
 
 ## Developer self-service features
 
@@ -135,7 +109,6 @@ See how your team workloads comply to security policies.
 Get direct access to logs of your deployed workloads. Logs are only accessible for team members.
 
 ## Platform admin features
-
 ### Create Teams for multi-tenancy
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/teams.png" width="100%" align="center" alt="Kubernetes multi-tenancy"></p>
