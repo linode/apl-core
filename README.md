@@ -11,16 +11,16 @@
   <a href="https://img.shields.io/github/last-commit/redkubes/otomi-core"><img alt="Last commit" src="https://img.shields.io/github/last-commit/redkubes/otomi-core" /></a>
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
+  <a href="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"><img alt="GitHub User's stars" src="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"></a>
+  <a href="https://img.shields.io/twitter/follow/redkubes?style=social"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/redkubes?style=social"></a>
+  <a href="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
 </p>
 
 <p align="center">
-<a href="https://otomi.io/">Documentation</a>
+<a href="https://otomi.io/">Go to documentation</a>
 |
-<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Slack</a>
-|
-<a href="https://twitter.com/RedKubes">Twitter</a>
-|
-<a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA">YouTube</a>
+<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel</a>
+
 
 </p>
 
@@ -30,7 +30,7 @@ Otomi brings a full PaaS to your own Kubernetes cluster without the constraints 
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
 
-## :rocket: Getting started
+## 🚀 Getting started
 
 ### Quick starts
 
@@ -63,7 +63,7 @@ helm install otomi otomi/otomi \
 
 When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console and then activate Drone.
 
-## :tada: Otomi Features
+## 🎉 Otomi Features
 
 
 ✅  Advanced ingress architecture
@@ -92,7 +92,7 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ✅  Connect with your own DNS zone
 
-## Integrated technologies
+## 🧑‍💻 Integrated technologies
 
 `Otomi` install, configures, integrates and automates all of your favorite technologies into a single installable platform package:
 
@@ -134,7 +134,7 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation and [tutorials](https://otomi.io/docs/tutorials/).
 
-## :handshake: Contribution
+## 🤝 Contribution
 
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
 
