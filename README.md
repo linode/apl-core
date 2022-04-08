@@ -26,7 +26,7 @@
 
 <h1></h1>
 
-Otomi brings a full PaaS to your own Kubernetes cluste without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your internal (developer) platform.
+Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your internal (developer) platform.
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
 
@@ -65,8 +65,6 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ## :tada: Otomi Features
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/technologies.svg" width="100%" align="center" alt="Integrated technologies"></p>
-
 
 ✅  Advanced ingress architecture
 
@@ -98,11 +96,10 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 `Otomi` install, configures, integrates and automates all of your favorite technologies into a single installable platform package:
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/configure-ingress.png" width="100%" align="center" alt="Configure Ingress"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/technologies.png" width="100%" align="center" alt="Integrated technologies"></p>
 
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
-
 
 - [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
 - [Knative](https://knative.dev/): Deploy and manage serverless workloads
