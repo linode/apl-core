@@ -20,15 +20,11 @@
 <a href="https://otomi.io/">Go to documentation</a>
 |
 <a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel</a>
-
-
 </p>
-
-<h1></h1>
 
 Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your internal (developer) platform.
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/platform-apps.png" width="100%" align="center" alt="Otomi platform apps"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-apps.png" width="100%" align="center" alt="Otomi apps"></p>
 
 ## 🚀 Getting started
 
@@ -36,7 +32,7 @@ Otomi brings a full PaaS to your own Kubernetes cluster without the constraints 
 
 Use the Terraform quick starts for Azure, GCP, and AWS to provision a Managed Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the installer job logs and [activate Drone](https://otomi.io/docs/installation/post-install/).
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console with the provided URL, username and password, and then [activate Drone](https://otomi.io/docs/installation/post-install/).
 
 ### Helm
 
@@ -44,6 +40,8 @@ To install Otomi using the Helm chart, make sure to have a K8s cluster running w
 - Version `1.18` up to `1.23`
 - A node pool with **8 vCPU** and **8GB+ RAM**
 - Calico CNI installed (or any other CNI that supports K8s network policies)
+
+When installing `Otomi` using the `custom` provider, make sure you have an external accessible IP (like from a cloud load balancer or using MetalLB)
 
 First add the Helm repository:
 
@@ -61,7 +59,7 @@ helm install otomi otomi/otomi \
   --set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other K8s)
 ```
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console and then activate Drone.
+When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console with the provided URL, username and password, and then activate Drone.
 
 ## 🎉 Otomi Features
 
@@ -78,19 +76,17 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ✅  Create Kubernetes Jobs and Cron Jobs without writing any YAML
 
-✅  Role-based access to all integrated applications based on team membership
+✅  Role-based access to all integrated applications based on  group membership
 
 ✅  Policy enforcement based on a customizable set of security policies
 
-✅  Direct access to logs of your deployed workloads. Logs are only accessible for team members
+✅  Direct access to logs and metrics of your deployed workloads
 
 ✅  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup 
 
-✅  Make development teams with self-serving by providing access to automation tasks
+✅  Make development teams self-serving by providing access to predefined automatated tasks
 
-✅  Connect with your favorite IdP
-
-✅  Connect with your own DNS zone
+✅  Bring your favorite IdP, DNS and/or CA
 
 ## 🧑‍💻 Integrated technologies
 
@@ -120,7 +116,7 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 </details>
 
-## Otomi Projects
+## 💪 Otomi Projects
 
 `Otomi` consists out of the following projects:
 
@@ -130,7 +126,7 @@ When the installer job (in the default namespace) has finished, copy the URL and
 - [Otomi Console](https://hub.docker.com/repository/docker/otomi/console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
-## Documentation
+## 📖 Documentation
 
 Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation and [tutorials](https://otomi.io/docs/tutorials/).
 
