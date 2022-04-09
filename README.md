@@ -32,7 +32,7 @@ Otomi brings a full PaaS to your own Kubernetes cluster without the constraints 
 
 Use the Terraform quick starts for Azure, GCP, and AWS to provision a Managed Kubernetes cluster in your cloud of choice and install Otomi with minimal values. Go to the [quickstart repository](https://github.com/redkubes/quickstart) to get started.
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console with the provided URL, username and password, and then [activate Drone](https://otomi.io/docs/installation/post-install/).
+When the installer job is finished, follow the [activation steps](https://otomi.io/docs/installation/activation/)
 
 ### Helm
 
@@ -58,10 +58,11 @@ helm install otomi otomi/otomi \
   --set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other K8s)
 ```
 
-When the installer job (in the default namespace) has finished, copy the URL and the generated password from the bottom of the logs, sign in to the console with the provided URL, username and password, and then activate Drone.
+When the installer job is finished, follow the [activation steps](https://otomi.io/docs/installation/activation/)
 
 ## 🎉 Otomi Features
 
+![Otomi features](https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/features.gif)
 
 ✅  Drag and Drop apps to create your own preferred suite
 
