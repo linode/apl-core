@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
-
+{{- $pinnedConsoleVersion := "v0.5.4" }}
 image:
   tag: 15.1.1
 contextPath: ""
@@ -51,7 +51,7 @@ startupScripts:
     cp -Rv /themes/* /opt/jboss/keycloak/themes/
 extraInitContainers: |
   - name: keycloak-otomi-branding
-    image: otomi/console:v{{ $v.versions.console }}
+    image: otomi/console:v{{ $pinnedConsoleVersion }}
     imagePullPolicy: IfNotPresent
     securityContext:
       runAsUser: 1000
