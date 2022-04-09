@@ -6,14 +6,14 @@
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
-  <a href="https://img.shields.io/docker/pulls/otomi/core"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/otomi/core" /></a>
+  <a href="https://hub.docker.com/r/otomi/core"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/otomi/core" /></a>
   <a href="https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker"><img alt="Build status" src="https://img.shields.io/github/workflow/status/redkubes/otomi-core/Build%20and%20publish%20Docker" /></a>
   <a href="https://img.shields.io/github/last-commit/redkubes/otomi-core"><img alt="Last commit" src="https://img.shields.io/github/last-commit/redkubes/otomi-core" /></a>
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"><img alt="GitHub User's stars" src="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"></a>
-  <a href="https://img.shields.io/twitter/follow/redkubes?style=social"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/redkubes?style=social"></a>
-  <a href="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
+  <a href="https://twitter.com/RedKubes"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/redkubes?style=social"></a>
+  <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
 </p>
 
 <p align="center">
@@ -22,7 +22,7 @@
 <a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel</a>
 </p>
 
-Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your internal (developer) platform.
+Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your own K8s based internal (developer) platform.
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-apps.png" width="100%" align="center" alt="Otomi apps"></p>
 
@@ -36,17 +36,16 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ### Helm
 
-To install Otomi using the Helm chart, make sure to have a K8s cluster running with at least:
+To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 - Version `1.18` up to `1.23`
 - A node pool with **8 vCPU** and **8GB+ RAM**
 - Calico CNI installed (or any other CNI that supports K8s network policies)
+- When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by Otomi can obtain a external accessible IP (using a cloud load balancer or MetalLB)
 
-When installing `Otomi` using the `custom` provider, make sure you have an external accessible IP (like from a cloud load balancer or using MetalLB)
-
-First add the Helm repository:
+Add the Helm repository:
 
 ```bash
-helm repo add otomi https://otomi.io/otomi-core
+helm repo add otomi https://otomi.io/otomi-core \
 helm repo update
 ```
 
@@ -64,11 +63,11 @@ When the installer job (in the default namespace) has finished, copy the URL and
 ## 🎉 Otomi Features
 
 
-✅  Advanced ingress architecture
-
 ✅  Drag and Drop apps to create your own preferred suite
 
-✅  Configure network policies for ingress and egress
+✅  Advanced ingress architecture. Expose services with just one click
+
+✅  Configure network policies for internal ingress and external egress
 
 ✅  Deploy Knative serverless workloads without writing any YAML
 
@@ -84,13 +83,13 @@ When the installer job (in the default namespace) has finished, copy the URL and
 
 ✅  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup 
 
-✅  Make development teams self-serving by providing access to predefined automatated tasks
+✅  Make development teams self-serving by providing access to predefined automation tasks
 
 ✅  Bring your favorite IdP, DNS and/or CA
 
 ## 🧑‍💻 Integrated technologies
 
-`Otomi` install, configures, integrates and automates all of your favorite technologies into a single installable platform package:
+`Otomi` installs, configures, integrates and automates all of your favorite technologies into a single installable and customizable package:
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/technologies.png" width="100%" align="center" alt="Integrated technologies"></p>
 
