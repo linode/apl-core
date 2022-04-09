@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/redkubes/otomi-core/compare/v0.15.5...v0.16.0) (2022-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgraded app dbs, some namespaces changed
+
+Co-authored-by: Jehoszafat Zimnowoda <jehoszafat.zimnowoda@redkubes.com>
+Co-authored-by: srodenhuis <sander.rodenhuis@redkubes.com>
+
+### Features
+
+* app store and shortcuts ([#722](https://github.com/redkubes/otomi-core/issues/722)) ([5bc23bc](https://github.com/redkubes/otomi-core/commit/5bc23bc41f882123514a24907c2ce0bb2d71bf4e))
+
+
+### Bug Fixes
+
+* disabled integration as it is not working anymore ([d694484](https://github.com/redkubes/otomi-core/commit/d6944846febcf6876b341718ed11ad021fa6c5d7))
+* **gatekeeper:** psp-host-networking + psp-host-security + psp-priviliged issues ([#752](https://github.com/redkubes/otomi-core/issues/752)) ([eb34be0](https://github.com/redkubes/otomi-core/commit/eb34be0c523f2c54e6aa7d2227374647e967e6af)), closes [#402](https://github.com/redkubes/otomi-core/issues/402)
+* integration input ([844d2b3](https://github.com/redkubes/otomi-core/commit/844d2b33b82c95b55a99ea783aed4364c5fa741b))
+* keycloak them version tag ([98c2900](https://github.com/redkubes/otomi-core/commit/98c290055ac02a0e7d26a7bcd0000816f32d5faf))
+* typo ([8ce1d58](https://github.com/redkubes/otomi-core/commit/8ce1d587aae3f454f69ee612379ddbec2b23754f))
+* workflow ([169560c](https://github.com/redkubes/otomi-core/commit/169560cda9dc32215ad2390b635f4d9b3bf8e30c))
+
+
+### Others
+
+* **deps:** bumped console ([ed5517d](https://github.com/redkubes/otomi-core/commit/ed5517d2cbc05a9a2d383dda5625d56e19fc2c18))
+* **deps:** bumped console ([f3a4b61](https://github.com/redkubes/otomi-core/commit/f3a4b6147bb13655740c791ca1ecf57c210fd090))
+
 ### [0.15.5](https://github.com/redkubes/otomi-core/compare/v0.15.4...v0.15.5) (2022-04-06)
 
 
