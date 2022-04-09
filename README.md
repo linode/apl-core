@@ -24,7 +24,7 @@
 
 Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your own K8s based internal (developer) platform.
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-apps.png" width="100%" align="center" alt="Otomi apps"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
 
 ## 🚀 Getting started
 
@@ -62,7 +62,7 @@ When the installer job is finished, follow the [activation steps](https://otomi.
 
 ## 🎉 Otomi Features
 
-![Otomi features](https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/features.gif)
+![Otomi features](https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-features.gif)
 
 ✅  Drag and Drop apps to create your own preferred suite
 
@@ -92,7 +92,7 @@ When the installer job is finished, follow the [activation steps](https://otomi.
 
 `Otomi` installs, configures, integrates and automates all of your favorite technologies into a single installable and customizable package:
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/technologies.png" width="100%" align="center" alt="Integrated technologies"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/technologies.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
@@ -139,6 +139,6 @@ If you want to say **thank you** or/and support the active development of `Otomi
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi
 
-## :bookmark: License
+## 🔖 License
 
 `Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/master/LICENSE).
