@@ -619,6 +619,7 @@ definitions:
     type: integer
   provider:
     type: string
+    description: Enter the cloud provider of this cluster. Choose 'local' for laptop install (minikube, kind), and 'custom' for onprem clusters.
     enum:
       - aws
       - azure
