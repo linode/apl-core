@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
-{{- $pinnedConsoleVersion := "v0.5.4" }}
+{{- $pinnedConsoleVersion := "0.5.4" }}
 image:
   tag: 15.1.1
 contextPath: ""
