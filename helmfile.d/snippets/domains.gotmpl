@@ -15,6 +15,9 @@
 {{- end }}
 {{- end }}
 {{- $domains := dict }}
+{{- if not (hasKey $tc "admin") }}
+  {{- $_ := set $tc "admin" dict }}
+{{- end }}
 {{- range $teamId, $team := $tc }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domainSuffix }}
   {{- $services := (eq $teamId "admin" | ternary (concat $coreAdminServices ($team | get "services" list)) (concat $coreTeamServices ($team | get "services" list))) }}
