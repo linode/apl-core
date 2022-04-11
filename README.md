@@ -92,7 +92,7 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 `Otomi` installs, configures, integrates and automates all of your favorite technologies into a single installable and customizable package:
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/technologies.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/technologies.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
