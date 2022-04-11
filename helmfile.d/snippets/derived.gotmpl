@@ -26,10 +26,10 @@
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
-{{- $oidcBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
-{{- $oidcWellKnownUrl := printf "%s/realms/otomi" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak" }}
-{{- $oidcWellKnownBackchannel := printf "%s/realms/otomi" $oidcBaseUrlBackchannel }}
+{{- $oidcBaseUrl := printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
+{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
