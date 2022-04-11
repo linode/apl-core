@@ -49,7 +49,7 @@ environments:
               {{- $v.letsencryptCA | nindent 12 }}
             {{- end }}
           {{- end }}
-          supportedCloud: {{ has $v.cluster.provider (list "aws" "azure" "google") }}
+          supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
@@ -93,7 +93,7 @@ environments:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
-            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
+            enabled: {{ $a | get "host-mods.enabled" (and $untrustedCA (ne $provider "local")) }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
