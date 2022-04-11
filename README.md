@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Self-hosted PaaS for Kubernetes
 </h1>
-<p align="center"><b>A full platform experience on top of Kubernetes to empower developers and lower the burden on operations</b></p>
+<p align="center"><b>A complete platform experience on top of any Kubernetes cluster to empower developers and lower the burden on operations</b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -22,9 +22,9 @@
 <a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel</a>
 </p>
 
-Otomi brings a full PaaS to your own Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your own K8s based internal (developer) platform.
+Otomi brings a complete PaaS to your Kubernetes clusters without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your own K8s based internal (developer) platform.
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
 
 ## 🚀 Getting started
 
@@ -38,7 +38,7 @@ When the installer job is finished, follow the [activation steps](https://otomi.
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 - Version `1.18` up to `1.23`
-- A node pool with **8 vCPU** and **8GB+ RAM**
+- A node pool with **6 vCPU** and **8GB+ RAM** (more is advised)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by Otomi can obtain a external accessible IP (using a cloud load balancer or MetalLB)
 
@@ -58,11 +58,11 @@ helm install otomi otomi/otomi \
   --set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other K8s)
 ```
 
-When the installer job is finished, follow the [activation steps](https://otomi.io/docs/installation/activation/)
+When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/)
 
 ## 🎉 Otomi Features
 
-![Otomi features](https://github.com/redkubes/otomi-core/blob/README-0.15.0/docs/img/otomi-features.gif)
+![Otomi features](https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-features.gif)
 
 ✅  Drag and Drop apps to create your own preferred suite
 
