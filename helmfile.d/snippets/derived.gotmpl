@@ -26,7 +26,8 @@
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
-{{- $oidcBaseUrl := printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
+{{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
+{{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
@@ -97,7 +98,7 @@ environments:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
-            address: {{ $oidcBaseUrl }}
+            address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
