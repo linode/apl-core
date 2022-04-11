@@ -19,8 +19,8 @@ releases:
     labels:
       pkg: wait
     values:
-      # - url: {{ $v._derived.oidcWellKnownUrlBackchannel }}
-      - url: {{ $v._derived.oidcWellKnownUrl }}
+      # - url: {{ $v._derived.oidcBaseUrlBackchannel }}
+      - url: {{ $v._derived.oidcBaseUrl }}
         host: keycloak.{{ $v.cluster.domainSuffix }}
         tasksVersion: {{ $v.versions.tasks }}
         {{- if $v._derived.untrustedCA }}

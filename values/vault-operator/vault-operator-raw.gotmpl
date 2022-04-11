@@ -173,8 +173,8 @@ resources:
         auth:
           - type: oidc
             config:
-              oidc_discovery_url: {{ $v._derived.oidcWellKnownUrl }}
-              # oidc_discovery_url: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+              oidc_discovery_url: {{ $v._derived.oidcBaseUrl }}
+              # oidc_discovery_url: {{ $v._derived.oidcBaseUrlBackchannel }}
               oidc_client_id: {{ $k.idp.clientID  }}
               oidc_client_secret: {{ $k.idp.clientSecret }}
               namespace_in_state: true

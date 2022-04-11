@@ -26,10 +26,11 @@
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
-{{- $oidcBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
-{{- $oidcWellKnownUrl := printf "%s/realms/otomi" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak" }}
-{{- $oidcWellKnownBackchannel := printf "%s/realms/otomi" $oidcBaseUrlBackchannel }}
+{{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
+{{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
+{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -48,7 +49,7 @@ environments:
               {{- $v.letsencryptCA | nindent 12 }}
             {{- end }}
           {{- end }}
-          supportedCloud: {{ has $v.cluster.provider (list "aws" "azure" "google") }}
+          supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
@@ -92,12 +93,12 @@ environments:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
-            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
+            enabled: {{ $a | get "host-mods.enabled" (and $untrustedCA (ne $provider "local")) }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
-            address: {{ $oidcBaseUrl }}
+            address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
