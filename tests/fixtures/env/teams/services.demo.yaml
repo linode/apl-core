@@ -1,86 +1,72 @@
 teamConfig:
-    teams:
-        demo:
-            services:
-                - name: hello
-                  port: 80
-                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
-                  ownHost: true
-                  ksvc:
-                      image:
-                          repository: otomi/nodejs-helloworld
-                          tag: v1.2.12
-                      scaleToZero: false
-                      resources:
-                          limits:
-                              cpu: 50m
-                              memory: 64Mi
-                          requests:
-                              cpu: 50m
-                              memory: 64Mi
-                      secrets:
-                          - mysecret-generic
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: allowAll
-                  type: public
-                - name: hello-auth
-                  port: 80
-                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
-                  ownHost: true
-                  auth: true
-                  paths: []
-                  ksvc:
-                      securityContext:
-                          runAsUser: 1002
-                      image:
-                          repository: otomi/nodejs-helloworld
-                          tag: v1.2.12
-                      scaleToZero: false
-                      resources:
-                          limits:
-                              cpu: 50m
-                              memory: 64Mi
-                          requests:
-                              cpu: 50m
-                              memory: 64Mi
-                      secrets:
-                          - mysecret-generic
-                  type: public
-                - name: tlspass
-                  port: 443
-                  id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
-                  domain: tlspass.eks.dev.otomi.cloud
-                  ksvc:
-                      containerPort: 80
-                      image:
-                          repository: nginx
-                          tag: latest
-                      scaleToZero: false
-                      resources:
-                          limits:
-                              cpu: 50m
-                              memory: 64Mi
-                          requests:
-                              cpu: 50m
-                              memory: 64Mi
-                      files:
-                          /etc/nginx.conf: |
-                              events {
-                              }
+    demo:
+        services:
+            - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+              ksvc:
+                  image:
+                      repository: otomi/nodejs-helloworld
+                      tag: v1.2.12
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
+                  scaleToZero: false
+                  secrets:
+                      - mysecret-generic
+              name: hello
+              networkPolicy:
+                  ingressPrivate:
+                      mode: AllowAll
+              ownHost: true
+              port: 80
+              type: public
+            - auth: true
+              id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
+              ksvc:
+                  image:
+                      repository: otomi/nodejs-helloworld
+                      tag: v1.2.12
+                  resources:
+                      limits:
+                          cpu: 50m
+                          memory: 64Mi
+                      requests:
+                          cpu: 50m
+                          memory: 64Mi
+                  scaleToZero: false
+                  secrets:
+                      - mysecret-generic
+                  securityContext:
+                      runAsUser: 1002
+              name: hello-auth
+              ownHost: true
+              paths: []
+              port: 80
+              type: public
+            - domain: tlspass.eks.dev.otomi.cloud
+              id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
+              ksvc:
+                  containerPort: 80
+                  files:
+                      /etc/nginx.conf: |
+                          events {
+                          }
 
-                              http {
-                                log_format main '$remote_addr - $remote_user [$time_local]  $status '
-                                '"$request" $body_bytes_sent "$http_referer" '
-                                '"$http_user_agent" "$http_x_forwarded_for"';
-                                access_log /var/log/nginx/access.log main;
-                                error_log  /var/log/nginx/error.log;
+                          http {
+                            log_format main '$remote_addr - $remote_user [$time_local]  $status '
+                            '"$request" $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for"';
+                            access_log /var/log/nginx/access.log main;
+                            error_log  /var/log/nginx/error.log;
 
-                                server {
-                                  listen 443 ssl;
+                            server {
+                              listen 443 ssl;
 
-                                  root /usr/share/nginx/html;
-                                  index index.html;
+                              root /usr/share/nginx/html;
+                              index index.html;
 
                                   server_name tlspass.eks.dev.otomi.cloud;
                                   ssl_certificate /etc/nginx-server-certs/tls.crt;
@@ -92,57 +78,57 @@ teamConfig:
                   type: public
                   tlsPass: true
                   networkPolicy: {}
-                - name: some-svc
-                  port: 80
-                  id: f7275813-a461-44c5-b174-612e0865efd3
-                  type: cluster
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: allowAll
-                - name: has-cert-svc
-                  hasCert: true
-                  certArn: arn:aws:acm:eu-central-1:12345678:certificate/has-cert-svc
-                  certName: 'has-cert-svc'
-                  type: public
-                  paths:
-                      - /jeho
-                - name: service-a
-                  type: cluster
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: allowOnly
-                          allow:
-                              - team: team1
-                              - team: team2
-                                service: service-x
-                      egressPublic:
-                          - domain: domain1.com
-                            ports:
-                                - protocol: TCP
-                                  number: 8443
-                          - domain: domain2.com
-                            ports:
-                                - protocol: HTTPS
-                                  number: 443
-                          - domain: 185.199.110.153
-                            ports:
-                                - protocol: TCP
-                                  number: 443
-                          - domain: ae::1
-                            ports:
-                                - protocol: TCP
-                                  number: 443
-                - name: service-b
-                  type: cluster
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: denyAll
-                      egressPublic: []
-                - name: service-d
-                  type: cluster
-                  networkPolicy:
-                      ingressPrivate:
-                          mode: allowOnly
-                - name: service-e
-                  type: public
-                  ingressClassName: net-a
+            - name: some-svc
+              port: 80
+              id: f7275813-a461-44c5-b174-612e0865efd3
+              type: cluster
+              networkPolicy:
+                  ingressPrivate:
+                      mode: AllowAll
+            - name: has-cert-svc
+              hasCert: true
+              certArn: arn:aws:acm:eu-central-1:12345678:certificate/has-cert-svc
+              certName: 'has-cert-svc'
+              type: public
+              paths:
+                  - /jeho
+            - name: service-a
+              type: cluster
+              networkPolicy:
+                  ingressPrivate:
+                      mode: AllowOnly
+                      allow:
+                          - team: team1
+                          - team: team2
+                            service: service-x
+                  egressPublic:
+                      - domain: domain1.com
+                        ports:
+                            - protocol: TCP
+                              number: 8443
+                      - domain: domain2.com
+                        ports:
+                            - protocol: HTTPS
+                              number: 443
+                      - domain: 185.199.110.153
+                        ports:
+                            - protocol: TCP
+                              number: 443
+                      - domain: ae::1
+                        ports:
+                            - protocol: TCP
+                              number: 443
+            - name: service-b
+              type: cluster
+              networkPolicy:
+                  ingressPrivate:
+                      mode: DenyAll
+                  egressPublic: []
+            - name: service-d
+              type: cluster
+              networkPolicy:
+                  ingressPrivate:
+                      mode: AllowOnly
+            - name: service-e
+              type: public
+              ingressClassName: net-a

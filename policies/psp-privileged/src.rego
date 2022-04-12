@@ -15,7 +15,7 @@ import data.lib.security
 
 policyID = "psp-privileged"
 
-violation[msg] {
+violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pods.containers[container]
 	not exceptions.is_container_exception(container.name, policyID)

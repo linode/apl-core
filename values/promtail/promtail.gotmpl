@@ -1,6 +1,5 @@
 {{- $v := .Values }}
-{{- $promtail := $v.charts.promtail }}
-{{- $t := $v.teamConfig }}
+{{- $promtail := $v.apps.promtail }}
 
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
@@ -43,7 +42,7 @@ pipelineStages:
         namespace:
   - labels:
       namespace:
-  {{- range $id, $team := $t.teams }}
+  {{- range $id, $team := $v.teamConfig }}
   - match:
       selector: '{namespace="team-{{ $id }}"}'
       stages:
@@ -59,7 +58,7 @@ config:
 
 # @TODO:
 image:
-  tag: 2.4.1
+  tag: 2.4.2
 {{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - otomi-pullsecret-global

@@ -1,0 +1,3 @@
+apps:
+    jaeger:
+        enabled: false

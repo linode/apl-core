@@ -12,11 +12,11 @@ describe('Asking a question', () => {
   const defaultAnswer = 'aa'
   it('should return the default answer when no choice is made', async () => {
     deps.question.mockReturnValue('')
-    expect(await ask(q, { choices, matching, defaultAnswer })).toBe(defaultAnswer)
+    expect(await ask(q, { choices, matching, defaultAnswer }, deps)).toBe(defaultAnswer)
   })
   it('should return an allowed choice', async () => {
     deps.question.mockReturnValue('aa')
-    expect(await ask(q, { choices, matching, defaultAnswer })).toBe('aa')
+    expect(await ask(q, { choices, matching, defaultAnswer }, deps)).toBe('aa')
   })
 
   describe('Asking a yes/no question', () => {

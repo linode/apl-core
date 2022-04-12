@@ -1,20 +1,22 @@
-{{- if .Values.kubeControllerManager.enabled }}
+{{- if and .Values.kubeControllerManager.enabled .Values.kubeControllerManager.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-kube-controller-manager
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kube-controller-manager
   labels:
-    app: {{ template "prometheus-operator.name" . }}-kube-controller-manager
+    app: {{ template "kube-prometheus-stack.name" . }}-kube-controller-manager
     jobLabel: kube-controller-manager
-{{ include "prometheus-operator.labels" . | indent 4 }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
     - name: http-metrics
-      port: {{ .Values.kubeControllerManager.service.port }}
+      {{- $kubeControllerManagerDefaultInsecurePort := 10252 }}
+      {{- $kubeControllerManagerDefaultSecurePort := 10257 }}
+      port: {{ include "kube-prometheus-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.port) }}
       protocol: TCP
-      targetPort: {{ .Values.kubeControllerManager.service.targetPort }}
+      targetPort: {{ include "kube-prometheus-stack.kubeControllerManager.insecureScrape" (list . $kubeControllerManagerDefaultInsecurePort $kubeControllerManagerDefaultSecurePort .Values.kubeControllerManager.service.targetPort) }}
 {{- if .Values.kubeControllerManager.endpoints }}{{- else }}
   selector:
     {{- if .Values.kubeControllerManager.service.selector }}

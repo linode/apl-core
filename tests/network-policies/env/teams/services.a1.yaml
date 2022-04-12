@@ -6,7 +6,7 @@ teamConfig:
           port: 8080
           networkPolicy:
             ingressPrivate:
-              mode: denyAll
+              mode: DenyAll
             egressPublic:
               - domain: 'httpbin.org'
                 ports:
@@ -28,14 +28,14 @@ teamConfig:
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: allowAll
+              mode: AllowAll
         - name: s2
           port: 8080
           id: 6c901b91-e8a4-4422-8c9e-b12e077692f2
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: allowOnly
+              mode: AllowOnly
               allow:
                 - team: a1
         - name: s3
@@ -44,7 +44,7 @@ teamConfig:
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: allowOnly
+              mode: AllowOnly
               allow:
                 - team: a2
         - name: s4
@@ -53,14 +53,14 @@ teamConfig:
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: denyAll
+              mode: DenyAll
         - name: s5
           port: 8080
           id: 6c901b91-e8a4-4422-8c9e-b12e077692f5
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: allowOnly
+              mode: AllowOnly
               allow:
                 - team: a1
                 - team: a2
@@ -70,7 +70,7 @@ teamConfig:
           type: cluster
           networkPolicy:
             ingressPrivate:
-              mode: allowOnly
+              mode: AllowOnly
               allow:
                 - team: a1
                   service: c6
@@ -97,7 +97,7 @@ teamConfig:
           type: public
           networkPolicy:
             ingressPrivate:
-              mode: allowOnly
+              mode: AllowOnly
               allow:
                 - team: a1
                   service: c7

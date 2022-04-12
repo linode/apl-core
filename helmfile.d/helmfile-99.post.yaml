@@ -9,42 +9,42 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: job-certs-aws
-    installed:  {{ $c | get "aws-alb-ingress-controller.enabled" }}
+    installed:  {{ $a | get "aws-alb-ingress-controller.enabled" }}
     <<: *jobs
     labels:
       group: jobs
       type: cronjob
   - name: job-copy-certs
-    installed:  {{ not ($c | get "aws-alb-ingress-controller.enabled") }}
+    installed:  {{ not ($a | get "aws-alb-ingress-controller.enabled") }}
     <<: *jobs
     labels:
       group: jobs
       type: cronjob
   - name: job-gitea-add-users
-    installed: {{ and (ne $v.cluster.provider "kind") ($c | get "gitea.enabled" false) }}
+    installed: {{ and ($a | get "gitea.enabled" false) (ne $v.cluster.provider "kind") }}
     labels:
       pkg: gitea
       group: jobs
       type: cronjob
     <<: *jobs
   - name: job-harbor
-    installed: {{ $c | get "harbor.enabled" }}
+    installed: {{ $a | get "harbor.enabled" }}
     labels:
       pkg: harbor
       group: jobs
     <<: *jobs
   - name: job-ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
+    installed: {{ $a | get "ingress-azure.enabled" }}
     <<: *jobs
     labels:
       pkg: ingress-azure
       group: jobs
   - name: host-mods
-    installed: {{ $c | get "host-mods.enabled" }}
+    installed: {{ $a | get "host-mods.enabled" }}
     namespace: kube-system
     labels:
       pkg: host

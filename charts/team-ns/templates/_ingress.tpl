@@ -54,7 +54,7 @@
     {{- end }}
   {{- end }}
 {{- end }}{{/* {{- range $s := $.services }} */}}
-{{- $internetFacing := or (eq $.provider "onprem") (ne $.provider "nginx") (and (not $v.otomi.hasCloudLB) (eq $.provider "nginx")) }}
+{{- $internetFacing := or (eq $.provider "custom") (ne $.provider "nginx") (and (not $v.otomi.hasCloudLB) (eq $.provider "nginx")) }}
 {{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq $.provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
 {{- end }}
@@ -91,7 +91,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "onprem") $internetFacing }}
+{{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if $.isApps }}
@@ -145,7 +145,7 @@ spec:
       {{- if eq $.provider "aws" }}
           {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
       {{- end }}
-          {{- include "ingress.path" (dict "dot" $.dot "svc" "nginx-ingress-controller") | nindent 8 }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ingress-nginx-controller") | nindent 8 }}
     {{- else }}
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}

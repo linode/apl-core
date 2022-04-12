@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
-{{- $k := $c | get "keycloak" dict }}
+{{- $a := $v.apps }}
+{{- $k := $a | get "keycloak" dict }}
 {{- $o := $v | get "oidc" dict }}
 
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
 {{- $otomiVersion := $v.otomi | get "version" nil }}
@@ -20,11 +20,17 @@
 # Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
-{{- $droneProvider := $c.drone.sourceControl.provider }}
+{{- $droneProvider := $a.drone.sourceControl.provider }}
 {{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+{{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
+{{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
+{{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
+{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 
 {{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -43,48 +49,65 @@ environments:
               {{- $v.letsencryptCA | nindent 12 }}
             {{- end }}
           {{- end }}
+          supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
-          oidcBaseUrl: {{ printf "https://keycloak.%s/realms/otomi" $domainSuffix }}
-        charts:
+          oidcBaseUrl: {{ $oidcBaseUrl }}
+          oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
+          oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
+          oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+        apps:
           aws-alb-ingress-controller:
-            enabled: {{ and $v.otomi.hasCloudLB (eq $provider "aws") }}
+            enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
             enabled: false # {{ eq $provider "aws" }}
           {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
           cert-manager:
+            enabled: true
             stage: production
           {{- end }}
           cluster-autoscaler:
             enabled: {{ eq $provider "aws" }}
           cluster-overprovisioner:
-            enabled: {{ $c | get "cluster-overprovisioner.enabled" (has $provider (list "onprem" "kind")) }}
+            enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "custom" "kind")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
               gitea:
-                server: {{ $c | get "drone.sourceControl.gitea.server" (printf "https://gitea.%s" $domainSuffix) }}
-              secret: {{ $c | get "drone.sourceControl.secret" "drone-source-control" }}
+                server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
+              {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
+              secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
+              {{- end }}
           {{- end }}
           drone-admit-members:
-            enabled: {{ and ($c | get "drone.enabled") (eq $droneProvider "github") }}
+            enabled: {{ eq $droneProvider "github" }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
+          external-secrets:
+            enabled: {{ $a | get "vault.enabled" false }}
+          harbor:
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            registry:
+              credentials:
+                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
-            adminPassword: {{ $c | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
-            enabled: {{ $untrustedCA }}
+            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
-            address: https://keycloak.{{ $domainSuffix }}
-            adminPassword: {{ $c | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+            address: {{ $keycloakBaseUrl }}
+            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $c | get "kured.enabled" (list "onprem" "azure" | has $provider) }}
+            enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
           metrics-server:
-            enabled: {{ list "onprem" "aws" | has $provider }}
+            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
+          oauth2-proxy-redis:
+            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
           prometheus-msteams:
-            enabled: {{ or (eq ($v | get "alerts.receiver" "slack") "msteams") (eq ($v | get "home.receiver" "slack") "msteams") }}
+            enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
         {{- if not ($v | get "ingress" nil) }}

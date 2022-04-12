@@ -10,8 +10,6 @@ rules:
   resources:
   - configmaps
   - endpoints
-  - events
-  - persistentvolumeclaims
   - pods
   - serviceaccounts
   - services
@@ -38,6 +36,17 @@ rules:
   - create
   - list
   - watch
+{{- if gt (len .Values.secretReader) 0 }}
+- apiGroups: [""]
+  resourceNames:
+  {{- range .Values.secretReader }}
+  - {{ . }}
+  {{- end }}
+  resources:
+  - secrets
+  verbs:
+  - get
+{{- end }}
 - apiGroups: [""]
   resourceNames:
   - kiali-signing-key
@@ -97,6 +106,11 @@ rules:
   - patch
   - update
   - watch
+- apiGroups: ["authorization.k8s.io"]
+  resources:
+  - selfsubjectaccessreviews
+  verbs:
+  - list
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources:
   {{- if or (and (.Values.cr.create) (has "**" .Values.cr.spec.deployment.accessible_namespaces)) (.Values.clusterRoleCreator) }}
@@ -177,24 +191,12 @@ rules:
   - patch
   - update
   - watch
-- apiGroups: ["monitoring.kiali.io"]
-  resources:
-  - monitoringdashboards
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 # The permissions below are for Kiali itself; operator needs these so it can escalate when creating Kiali's roles
 - apiGroups: [""]
   resources:
   - configmaps
   - endpoints
   - pods/log
-  - pods/proxy
   verbs:
   - get
   - list
@@ -302,24 +304,6 @@ rules:
   - routes
   verbs:
   - get
-- apiGroups: ["monitoring.kiali.io"]
-  resources:
-  - monitoringdashboards
-  verbs:
-  - get
-  - list
-- apiGroups: ["iter8.tools"]
-  resources:
-  - experiments
-  verbs:
-  - get
-  - list
-  - watch
-  {{- if eq .Values.onlyViewOnlyMode false }}
-  - create
-  - delete
-  - patch
-  {{- end }}
 - apiGroups: ["authentication.k8s.io"]
   resources:
   - tokenreviews

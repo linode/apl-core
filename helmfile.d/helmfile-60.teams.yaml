@@ -8,17 +8,28 @@ bases:
   - snippets/derived.gotmpl
 ---
 {{- $v := .Values }}
+{{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
-{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $c := $v.charts }}
-{{- $cm := index $v.charts "cert-manager" }}
-{{- $po := index $v.charts "prometheus-operator" }}
-{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+{{- $coreTeamServices := list }}
+{{- range $s := $v.teamApps }}
+  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreTeamServices = append $coreTeamServices $svc }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $cm := $a | get "cert-manager" }}
+{{- $po := $a | get "prometheus" }}
+{{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
+{{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 
 releases:
-  {{- range $teamId, $team := $tc | get "teams" dict }}
+{{- range $teamId, $team := omit $tc "admin" }} 
+  {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
   {{- $appsDomain := printf "apps.%s" $domain }}
+  {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: team-ns-{{ $teamId }}
     installed: true
@@ -30,30 +41,20 @@ releases:
       team: {{ $teamId }}
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        charts: {{- $v.charts | toYaml | nindent 10 }}
+        apps: {{- $a | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
       - {{- $team | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
-      - services: {{- concat $coreTeamServices ($team | get "services" list) | toYaml | nindent 10 }}
-        {{- if $v.otomi.isMultitenant }}
-        {{- if ($team | get "cicd.enabled" "false") }}
-        {{- $cicdFlavour := ($team | get "cicd.type" "drone") }}
-        {{- if eq $cicdFlavour "drone" }}
-        # TODO: fix this weirdness: the next two lines fook the yaml parser:
-        # - name: drone
-        #   svc: drone-{{ $teamId }}
-        {{- end }}
-        {{- end }}
-        {{- if ne (len ($team | get "sites" list)) 0 }}
-        - name: blackbox
-          svc: prometheus-blackbox-exporter
-          port: 9115
-        {{- end }}
-        {{- end }}
-  {{- if $v.otomi.isMultitenant }}  
+      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
+  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}
+    {{- if gt (len $teamServices) 0 }}
+      - name: blackbox
+        svc: prometheus-blackbox-exporter
+        port: 9115
+    {{- end }}
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -68,25 +69,19 @@ releases:
         fullnameOverride: {{ $teamId }}-po
         {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
+          namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl) | nindent 12 }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         {{- else }}
         defaultRules:
           rules:
             alertmanager: false
         enabled: false
         {{- end }}
-        commonLabels:
-          prometheus: team-{{ $teamId }}
         prometheus:
+          namespaceOverride: team-{{ $teamId }}
           prometheusSpec:
-            podMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            serviceMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
             externalUrl: https://{{ $appsDomain }}/prometheus
             ruleNamespaceSelector:
               matchLabels:
@@ -97,44 +92,20 @@ releases:
             serviceMonitorNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
+        {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
-              - job_name: probe-services-{{ $teamId }}
-                metrics_path: /probe
-                scrape_interval: 10m
-                params:
-                  module: [http_2xx]  # Look for a HTTP 200 response.
-                static_configs:
-                  - targets:
-                    {{ $registry := list }}
-                    {{- range $s := $team | get "services" list }}
-                    {{- $type := $s.type | default "auth" }}
-                    {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
-                    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $domain)) }}
-                    {{- $paths:= $s | get "paths" list }}
-                    {{- $path := ternary "/" (first $paths) (empty $paths) }}
-                    {{- $url := printf "%s%s" $svcDomain $path }}
-                    {{- if not (has $url $registry) }}
-                    {{- $registry = append $registry $url }}
-                    - https://{{ $url }}
-                    {{- end }}
-                    {{- end }}
-                    {{- end }}
-                relabel_configs:
-                  - source_labels: [__address__]
-                    target_label: __param_target
-                  - source_labels: [__param_target]
-                    target_label: instance
-                  - target_label: __address__
-                    replacement: prometheus-blackbox-exporter.monitoring:9115
+          {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
+        {{- end }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
         grafana:
+          namespaceOverride: team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:
             server:
-              root_url: https://{{ $appsDomain }}/grafana
+              root_url: https://{{ $grafanaDomain }}
           sidecar:
             datasources:
               defaultDatasourceEnabled: false
@@ -153,17 +124,10 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
-            {{- if $c | get "sitespeed.enabled" false }}
-            - name: Graphite
-              editable: false
-              type: graphite
-              access: proxy
-              url: http://graphite.monitoring:80
-            {{- end }}
-            {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
+    {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
-            {{- end }}
-  {{ if has "msteams" ($team | get "receivers" list) }}
+    {{- end }}
+    {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -182,7 +146,7 @@ releases:
         connectors:
           - high_priority_channel: {{ $team | get "msteams.highPrio" }}
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
-  {{- end }}
+    {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -198,11 +162,8 @@ releases:
           # - istio-teams
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure{{ end }}
-          {{- if $team | get "stack.sitespeed" false }}
-          - sitespeed{{ end }}
   {{- end }}
-  {{- if hasKey $team "jobs" }}
-  {{- range $job := $team.jobs }}
+  {{- range $job := $team | get "jobs" list }}
   - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ $job.enabled }}
     namespace: team-{{ $teamId }}
@@ -224,6 +185,5 @@ releases:
       - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
-  {{- end }}
-  {{- end }}
+    {{- end }}
   {{- end }}

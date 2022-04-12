@@ -1,33 +1,45 @@
 {{- $v := . }}
-{{- $tc := .teamConfig }}
-{{- $coreAdminServices := list }}{{- range $s := .services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $coreTeamServices := list }}{{- range $s := $tc.services }}{{ $coreTeamServices = append $coreTeamServices (merge $s (dict "isCore" true)) }}{{ end }}
+{{- $tc := $v.teamConfig }}
+{{- $coreAdminServices := list }}
+{{- range $s := $v.adminApps }}
+{{- range $ing := $s | get "ingress" list }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
+{{- $coreAdminServices = append $coreAdminServices $svc }}
+{{- end }}
+{{- end }}
+{{- $coreTeamServices := list }}
+{{- range $s := $v.teamApps }}
+{{- range $ing := $s | get "ingress" list }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" false "ownHost" ($s | get "ownHost" false)) }}
+{{- $coreTeamServices = append $coreTeamServices $svc }}
+{{- end }}
+{{- end }}
 {{- $domains := dict }}
-{{- $teams := set $tc.teams "admin" dict }}
-{{- range $teamId, $team := $tc.teams }}
+{{- if not (hasKey $tc "admin") }}
+  {{- $_ := set $tc "admin" dict }}
+{{- end }}
+{{- range $teamId, $team := $tc }}
   {{- $baseDomain := printf "%s%s" (eq $teamId "admin" | ternary "" (printf "team-%s." $teamId)) $v.cluster.domainSuffix }}
-  {{- $services := (eq $teamId "admin" | ternary $coreAdminServices (concat $coreTeamServices ($team | get "services" list))) }}
+  {{- $services := (eq $teamId "admin" | ternary (concat $coreAdminServices ($team | get "services" list)) (concat $coreTeamServices ($team | get "services" list))) }}
   {{- range $s := $services }}
-    {{- if and (not (hasKey $s "internal")) (not (hasKey $s "host")) }}
-      {{- $domain := printf "apps.%s" $baseDomain }}
-      {{- if hasKey $s "domain" }}
-        {{- $domain = $s.domain }}
-      {{- else if hasKey $s "isShared" }}
-        {{- $domain = printf "%s.%s" $s.name $v.cluster.domainSuffix }}
-      {{- else if hasKey $s "ownHost" }}
-        {{- $domain = printf "%s.%s" $s.name $baseDomain }}
+    {{- $domain := printf "apps.%s" $baseDomain }}
+    {{- if hasKey $s "domain" }}
+      {{- $domain = $s.domain }}
+    {{- else if $s | get "isShared" false }}
+      {{- $domain = printf "%s.%s" $s.name $v.cluster.domainSuffix }}
+    {{- else if $s | get "ownHost" false }}
+      {{- $domain = printf "%s.%s" $s.name $baseDomain }}
+    {{- end }}
+    {{- if not (hasKey $domains $domain) }}
+      {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert")) }}
+    {{- end }}
+    {{- $domInfo := index $domains $domain }}
+    {{- if hasKey $s "hasCert" }}
+      {{- if ne ($s | get "certName" "") "" }}
+        {{- $_ := set $domInfo "certName" $s.certName }}
       {{- end }}
-      {{- if not (hasKey $domains $domain) }}
-        {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert")) }}
-      {{- end }}
-      {{- $domInfo := index $domains $domain }}
-      {{- if hasKey $s "hasCert" }}
-        {{- if ne ($s | get "certName" "") "" }}
-          {{- $_ := set $domInfo "certName" $s.certName }}
-        {{- end }}
-        {{- if ne ($s | get "certArn" "") "" }}
-          {{- $_ := set $domInfo "certArn" $s.certArn }}
-        {{- end }}
+      {{- if ne ($s | get "certArn" "") "" }}
+        {{- $_ := set $domInfo "certArn" $s.certArn }}
       {{- end }}
     {{- end }}
   {{- end }}

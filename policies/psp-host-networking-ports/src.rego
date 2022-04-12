@@ -12,7 +12,7 @@ import data.lib.pods
 
 policyID = "psp-host-networking-ports"
 
-violation[msg] {
+violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pod_has_hostnetwork
 	msg := sprintf("Policy: %s - HostNetwork not allowed, pod/%v", [policyID, core.name])

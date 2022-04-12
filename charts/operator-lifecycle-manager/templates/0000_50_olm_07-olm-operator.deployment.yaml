@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: olm-operator
+  annotations:
+    policy.otomi.io/ignore: 'psp-allowed-users'
 spec:
   strategy:
     type: RollingUpdate
@@ -17,8 +19,8 @@ spec:
       labels:
         app: olm-operator
     spec:
-      securityContext:
-        runAsNonRoot: true
+      # securityContext:
+      #   runAsNonRoot: true
       serviceAccountName: olm-operator-serviceaccount
       {{- if and .Values.installType (eq .Values.installType "ocp") }}
       priorityClassName: "system-cluster-critical"

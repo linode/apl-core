@@ -1,0 +1,3 @@
+apps:
+    kubeapps:
+        enabled: true

@@ -1,4 +1,4 @@
-charts:
+apps:
   istio:
     autoscaling:
       pilot:
@@ -7,7 +7,7 @@ charts:
     serving:
       # See: https://github.com/knative/operator/issues/376
       replicas: 5
-  nginx-ingress:
+  ingress-nginx:
     autoscaling:
       minReplicas: 2
     private:

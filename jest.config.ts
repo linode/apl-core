@@ -6,7 +6,11 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest',
   roots: ['<rootDir>/src'],
   setupFilesAfterEnv: ['<rootDir>/src/test-init.ts'],
+  moduleDirectories: ['node_modules', 'src'],
   modulePathIgnorePatterns: ['src/cmd/test.ts'],
+  // moduleNameMapper: {
+  //   '(.*)': '<rootDir>/src/$1',
+  // },
   testEnvironment: 'node',
   globals: {
     'ts-jest': {
@@ -17,6 +21,7 @@ const config: Config.InitialOptions = {
   // testPathIgnorePatterns: ['<rootDir>/src/test-stubs.ts'],
   // collectCoverageFrom: ['src/**/{!(test-stubs),}.ts'],
   // collectCoverageFrom: ['src/**/*.ts'],
+  silent: false,
   verbose: true,
 }
 export default config

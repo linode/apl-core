@@ -3,7 +3,8 @@
 # Declare variables to be passed into your templates.
 image:
   repository: quay.io/prometheus/node-exporter
-  tag: v1.0.0
+  # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
+  tag: ""
   pullPolicy: IfNotPresent
 
 service:
@@ -11,6 +12,7 @@ service:
   port: 9100
   targetPort: 9100
   nodePort:
+  portName: metrics
   listenOnAllInterfaces: true
   annotations:
     prometheus.io/scrape: "true"
@@ -21,6 +23,23 @@ prometheus:
     additionalLabels: {}
     namespace: ""
 
+    jobLabel: ""
+
+    scheme: http
+    bearerTokenFile:
+    tlsConfig: {}
+
+    ## proxyUrl: URL of a proxy that should be used for scraping.
+    ##
+    proxyUrl: ""
+
+    ## Override serviceMonitor selector
+    ##
+    selectorOverride: {}
+
+    relabelings: []
+    metricRelabelings: []
+    interval: ""
     scrapeTimeout: 10s
 
 ## Customize the updateStrategy if set
@@ -47,13 +66,20 @@ serviceAccount:
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+  annotations: {}
   imagePullSecrets: []
+  automountServiceAccountToken: false
 
 securityContext:
   fsGroup: 65534
   runAsGroup: 65534
   runAsNonRoot: true
   runAsUser: 65534
+
+containerSecurityContext: {}
+  # capabilities:
+  #   add:
+  #   - SYS_TIME
 
 rbac:
   ## If true, create & use RBAC resources
@@ -62,6 +88,7 @@ rbac:
   ## If true, create & use Pod Security Policy resources
   ## https://kubernetes.io/docs/concepts/policy/pod-security-policy/
   pspEnabled: true
+  pspAnnotations: {}
 
 # for deployments that have node_exporter deployed outside of the cluster, list
 # their addresses here
@@ -69,6 +96,19 @@ endpoints: []
 
 # Expose the service to the host network
 hostNetwork: true
+
+# Share the host process ID namespace
+hostPID: true
+
+# Mount the node's root file system (/) at /host/root in the container
+hostRootFsMount:
+  enabled: true
+  # Defines how new mounts in existing mounts on the node or in the container
+  # are propagated to the container or node, respectively. Possible values are
+  # None, HostToContainer, and Bidirectional. If this field is omitted, then
+  # None is used. More information on:
+  # https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation
+  mountPropagation: HostToContainer
 
 ## Assign a group of affinity scheduling rules
 ##
@@ -83,10 +123,24 @@ affinity: {}
 #                 - target-host-name
 
 # Annotations to be added to node exporter pods
-podAnnotations: {}
+podAnnotations:
+  # Fix for very slow GKE cluster upgrades
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
 # Extra labels to be added to node exporter pods
 podLabels: {}
+
+# Custom DNS configuration to be added to prometheus-node-exporter pods
+dnsConfig: {}
+# nameservers:
+#   - 1.2.3.4
+# searches:
+#   - ns1.svc.cluster-domain.example
+#   - my.dns.search.suffix
+# options:
+#   - name: ndots
+#     value: "2"
+#   - name: edns0
 
 ## Assign a nodeSelector if operating a hybrid cluster
 ##
@@ -121,7 +175,9 @@ extraHostVolumeMounts: []
 configmaps: []
 # - name: <configMapName>
 #   mountPath: <mountPath>
-
+secrets: []
+# - name: <secretName>
+#   mountPath: <mountPatch>
 ## Override the deployment namespace
 ##
 namespaceOverride: ""
@@ -138,3 +194,7 @@ sidecarVolumeMount: []
 ##  - name: collector-textfiles
 ##    mountPath: /run/prometheus
 ##    readOnly: false
+
+## Additional InitContainers to initialize the pod
+##
+extraInitContainers: []

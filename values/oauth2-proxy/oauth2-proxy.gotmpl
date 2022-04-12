@@ -1,8 +1,8 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
-{{- $cm := $v.charts | get "cert-manager" }}
-{{- $oauth2 := $v.charts | get "oauth2-proxy" }}
-{{- $r := $v.charts | get "oauth2-proxy-redis" }}
+{{- $k := $v.apps.keycloak }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $oauth2 := $v.apps | get "oauth2-proxy" }}
+{{- $r := $v.apps | get "oauth2-proxy-redis" }}
 {{- $o := $v | get "oidc" dict }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
@@ -33,8 +33,7 @@ resources:
   {{- end }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
-{{- $tc := $v.teamConfig }}
-{{- range $teamId, $team := $tc.teams }}
+{{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
       {{- $type := $s.type | default "auth" }}
@@ -62,7 +61,7 @@ extraArgs:
   scope: {{ $o | get "scope" "openid email profile" }}
   session-store-type: redis
   redis-connection-url: redis://oauth2-proxy-redis-master
-  redis-password: {{ $r | get "password" "str1cli4u" }}
+  redis-password: {{ $r | get "password" }}
   redirect-url: https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   email-domain: "*"
   cookie-domain: {{ $domainList }}
@@ -79,6 +78,7 @@ extraArgs:
   set-authorization-header: true
   # set-xauthrequest: true
   oidc-issuer-url: {{ $v._derived.oidcBaseUrl }}
+  # oidc-issuer-url: {{ $v._derived.oidcBaseUrlBackchannel }}
   insecure-oidc-allow-unverified-email: true
   show-debug-on-error: true
 

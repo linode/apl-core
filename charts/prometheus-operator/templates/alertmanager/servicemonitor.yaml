@@ -2,24 +2,36 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-alertmanager
-  namespace: {{ template "prometheus-operator.namespace" . }}
+  name: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
-    app: {{ template "prometheus-operator.name" . }}-alertmanager
-{{ include "prometheus-operator.labels" . | indent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ template "prometheus-operator.name" . }}-alertmanager
+      app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
       release: {{ $.Release.Name | quote }}
       self-monitor: "true"
   namespaceSelector:
     matchNames:
-      - {{ printf "%s" (include "prometheus-operator.namespace" .) | quote }}
+      - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
   endpoints:
   - port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
     {{- if .Values.alertmanager.serviceMonitor.interval }}
     interval: {{ .Values.alertmanager.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.alertmanager.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.alertmanager.serviceMonitor.proxyUrl}}
+    {{- end }}
+    {{- if .Values.alertmanager.serviceMonitor.scheme }}
+    scheme: {{ .Values.alertmanager.serviceMonitor.scheme }}
+    {{- end }}
+    {{- if .Values.alertmanager.serviceMonitor.bearerTokenFile }}
+    bearerTokenFile: {{ .Values.alertmanager.serviceMonitor.bearerTokenFile }}
+    {{- end }}
+    {{- if .Values.alertmanager.serviceMonitor.tlsConfig }}
+    tlsConfig: {{ toYaml .Values.alertmanager.serviceMonitor.tlsConfig | nindent 6 }}
     {{- end }}
     path: "{{ trimSuffix "/" .Values.alertmanager.alertmanagerSpec.routePrefix }}/metrics"
 {{- if .Values.alertmanager.serviceMonitor.metricRelabelings }}

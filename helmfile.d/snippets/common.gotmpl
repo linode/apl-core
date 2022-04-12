@@ -1,2 +1,2 @@
-{{- $rawValues := .Values | get (printf "charts.%s._rawValues" .Release.Name) nil }}
+{{- $rawValues := .Values | get (printf "apps.%s._rawValues" .Release.Name) nil }}
 {{- with $rawValues }}{{ toYaml . }}{{ end }}

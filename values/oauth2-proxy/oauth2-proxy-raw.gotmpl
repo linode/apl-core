@@ -1,9 +1,9 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
-{{- $cm := $v.charts | get "cert-manager" }}
+{{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
 resources:
-  - apiVersion: networking.k8s.io/v1beta1
+  - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
       annotations:
@@ -11,11 +11,11 @@ resources:
         externaldns: "true"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         {{- end }}
-        {{- if eq $v.cluster.provider "onprem" }}
+        {{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") }}
         external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
         {{- end }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
-        {{- if $v.charts.keycloak.enabled }}
+        {{- if $v.apps.keycloak.enabled }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         {{- end }}
         nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -29,9 +29,12 @@ resources:
         http:
           paths:
           - backend:
-              serviceName: oauth2-proxy
-              servicePort: 80
-            path: /oauth2
+              service:
+                name: oauth2-proxy
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
       {{- if not $v.otomi.hasCloudLB }}
       tls: 
         - secretName: {{ $domain | replace "." "-" }}

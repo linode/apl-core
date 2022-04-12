@@ -8,10 +8,9 @@ import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
-import { getFilename } from '../common/utils'
+import { getFilename, rootDir } from '../common/utils'
 import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
-import { migrate } from './migrate'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
 
@@ -21,10 +20,10 @@ interface Arguments extends HelmArguments, DroneArgs {}
 
 const gitPush = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
-  const values = await hfValues()
+  const values = (await hfValues()) as Record<string, any>
   let branch = 'main'
-  if (values?.charts?.gitea?.enabled === false) {
-    branch = values.charts!['otomi-api']!.git!.branch ?? branch
+  if (values.apps?.gitea?.enabled === false) {
+    branch = values.apps!['otomi-api']!.git!.branch ?? branch
   }
   d.info('Starting git push.')
   try {
@@ -38,7 +37,7 @@ const gitPush = async (): Promise<boolean> => {
   }
 }
 
-const setDeploymentStatus = async (): Promise<void> => {
+export const setDeploymentStatus = async (): Promise<void> => {
   const status = await getOtomiDeploymentStatus()
   if (status !== 'deployed') {
     await nothrow(
@@ -85,16 +84,15 @@ const commitAndPush = async (): Promise<void> => {
 const bootstrapGit = async (values): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   d.info('Initializing values git repo.')
-  cd(env.ENV_DIR)
   await $`git init ${env.ENV_DIR}`
-  copyFileSync(`bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
-  const giteaEnabled = values?.charts?.gitea?.enabled ?? true
+  const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
-  const byor = !!values?.charts?.['otomi-api']?.git
+  const byor = !!values?.apps?.['otomi-api']?.git
 
   if (!giteaEnabled && !byor) {
-    throw new Error('Gitea is disabled but no charts.otomi-api.git config was given.')
+    throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
   }
   let username = 'Otomi Admin'
   let email: string
@@ -102,14 +100,14 @@ const bootstrapGit = async (values): Promise<void> => {
   let remote: string
   const branch = 'main'
   if (!giteaEnabled) {
-    const otomiApiGit = values?.charts?.['otomi-api']?.git
+    const otomiApiGit = values?.apps?.['otomi-api']?.git
     username = otomiApiGit?.user
     password = otomiApiGit?.password
     remote = otomiApiGit?.repoUrl
     email = otomiApiGit?.email
   } else {
     username = 'otomi-admin'
-    password = values?.charts?.gitea?.adminPassword ?? values?.otomi?.adminPassword
+    password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
     email = `otomi-admin@${clusterDomain}`
     const giteaUrl = `gitea.${clusterDomain}`
     const giteaOrg = 'otomi'
@@ -117,18 +115,18 @@ const bootstrapGit = async (values): Promise<void> => {
     remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
 
-  await $`git config --local user.name ${username}`
-  await $`git config --local user.password ${password}`
-  await $`git config --local user.email ${email}`
-  await $`git checkout -b ${branch}`
-  await $`git remote add origin ${remote}`
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  await $`git -C ${env.ENV_DIR} config --local user.name ${username}`
+  await $`git -C ${env.ENV_DIR} config --local user.password ${password}`
+  await $`git -C ${env.ENV_DIR} config --local user.email ${email}`
+  await $`git -C ${env.ENV_DIR} checkout -b ${branch}`
+  await $`git -C ${env.ENV_DIR} remote add origin ${remote}`
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`))
+    await nothrow($`git -C ${env.ENV_DIR} config --local diff.sopsdiffer.textconv "sops -d"`)
 
   d.log(`Done bootstrapping git`)
 }
 
 const preCommit = async (): Promise<void> => {
-  await migrate()
   await genDrone()
   await encrypt()
 }
@@ -137,39 +135,37 @@ export const commit = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
-  const values = await hfValues()
+  const values = (await hfValues()) as Record<string, any>
   if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
   if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
 
-  if (values!.charts!.gitea!.enabled) {
+  if (values?.apps!.gitea!.enabled) {
     const url = await getGiteaHealthUrl()
-    const { adminPassword } = values!.charts!.gitea
+    const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(url, {
       // we wait for a 404 as that is the best we can do,
       // since that is what gitea gives for repos that have nothing public
       status: 404,
-      skipSsl: values?._derived?.untrustedCA,
+      skipSsl: values._derived?.untrustedCA,
       username: 'otomi-admin',
       password: adminPassword,
     })
   }
   await preCommit()
-  if (values?.charts?.gitea?.enabled) await commitAndPush()
+  if (values?.apps?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) {
     await setDeploymentStatus()
-    const credentials = values!.charts.keycloak
+    const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################
     #
-    #  To start using Otomi, first follow the post installation steps: https://otomi.io/docs/installation/post-install/
-    #  The URL to access Otomi Console is: https://otomi.${values!.cluster.domainSuffix}
-    #  The URL to access Keycloak is: https://keycloak.${values!.cluster.domainSuffix}
-    #  When no external IDP was configured, please log into Keycloak first to create one or more users and add them either to the 'team-admin' or 'admin' group.
-    #  The password of the Keycloak ${credentials.adminUsername} user is: ${credentials.adminPassword}
+    #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
+    #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
+    #  Then activate Drone. For more information see: https://otomi.io/docs/installation/activation/
     #
     ########################################################################################################################################`
     d.info(message)

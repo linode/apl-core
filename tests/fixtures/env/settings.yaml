@@ -1,5 +1,6 @@
 alerts:
-    drone: slack
+    drone:
+        - slack
     groupInterval: 5m
     receivers:
         - slack
@@ -8,6 +9,10 @@ alerts:
 azure:
     appgw:
         isManaged: true
+    monitor:
+        clientId: somesecretvalue
+        subscriptionId: somesecretvalue
+        tenantId: somesecretvalue
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
@@ -15,16 +20,11 @@ cloud:
     skipStorageClasses:
         - std
         - std-immediate
-charts:
-    hello:
-        enabled: true
-    httpbin:
-        enabled: true
 dns:
-    zones: []
     provider:
         aws:
             region: eu-central-1
+    zones: []
 home:
     receivers:
         - slack
@@ -37,13 +37,18 @@ ingress:
       ipAddress: '10.0.0.9'
     - className: net-a
       network: public
+kms:
+    sops:
+        azure:
+            clientId: somesecretvalue
+            keys: somesecretvalue
+            tenantId: somesecretvalue
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
-    clientSecret: someClientSecret
     issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     subClaimMapper: oid
+    teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 otomi:
     additionalClusters:
         - domainSuffix: demo.eks.otomi.cloud
@@ -60,4 +65,4 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 1
+version: 2

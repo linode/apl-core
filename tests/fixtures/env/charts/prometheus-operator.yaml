@@ -1,4 +1,0 @@
-charts:
-    prometheus-operator:
-        prometheus:
-            storageSize: 10Gi

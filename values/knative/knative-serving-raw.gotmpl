@@ -6,14 +6,14 @@ resources:
       name: knative-serving
       namespace: knative-serving
     spec:
-      version: 1.1.0
+      version: 1.2.0
       {{- if $v._derived.untrustedCA }}
       controller-custom-certs:
         name: certs
         type: Secret
       {{- end }}
       high-availability:
-        replicas: {{ $v.charts.knative.serving.replicas }}
+        replicas: {{ $v.apps.knative.serving.replicas }}
       config:
         defaults:
           revision-timeout-seconds: "300"  # 5 minutes

@@ -1,7 +1,7 @@
 {{- $v := .Values -}}
-{{- $l := $v.charts | get "loki" }}
+{{- $l := $v.apps | get "loki" }}
 {{- $teamNames := "" }}
-{{- range $name, $config := $v.teamConfig.teams }}
+{{- range $name, $config := $v.teamConfig }}
 {{- $teamNames = print "%s%s" $teamNames $name }}
 {{- end }}
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
@@ -63,7 +63,9 @@ persistence:
   accessModes:
   - ReadWriteOnce
   size: {{ $l | get "persistence.size" "20Gi" }}
+  {{- if $v._derived.supportedCloud }}
   storageClassName: fast
+  {{- end }}
 
 ## Assign a PriorityClassName to pods if set
 # priorityClassName:

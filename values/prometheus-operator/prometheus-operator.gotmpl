@@ -1,26 +1,33 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
-{{- $k := $v.charts.keycloak }}
+{{- $c := $v.apps }}
+{{- $k := $v.apps.keycloak }}
 {{- $o := $v | get "oidc" dict }}
-{{- $p := $v.charts | get "prometheus-operator" }}
+{{- $a := $v.apps | get "alertmanager" }}
+{{- $g := $v.apps | get "grafana" }}
+{{- $p := $v.apps | get "prometheus" }}
 {{- $hasKeycloak := $k.enabled }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 {{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
-{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/slack.gotmpl") $v | toString }}
+{{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
+{{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
+# {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrlBackchannel "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
-
+{{- $hasServices := false }}
+{{- range $teamId, $team := omit $v.teamConfig "admin" }}
+  {{- if gt (len ($team | get "services" list)) 0 }}{{ $hasServices = true }}{{ end }}
+{{- end }}
 nameOverride: po
 fullnameOverride: po
-coreDns:
-  enabled: false
+{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
-  {{- end }}
-  rbac:
-    pspEnabled: false
+{{- end }}
 {{- if $v.otomi.isManaged }}
+kubeApiServer:
+  enabled: false
+coreDns:
+  enabled: false
 kubeEtcd:
   enabled: false
 kubeControllerManager:
@@ -31,8 +38,6 @@ kubeProxy:
   enabled: false
 {{- end }}
 prometheusOperator:
-  configReloaderCpu: 50m
-  configReloaderMemory: 64Mi
   podAnnotations:
     sidecar.istio.io/inject: "false"
   resources:
@@ -43,26 +48,25 @@ prometheusOperator:
       cpu: 100m
       memory: 128Mi
   admissionWebhooks:
-    enabled: false
-  tlsProxy:
-    enabled: false
-  createCustomResource: false # chart 8.2.0 version
-  manageCrds: false # chart > 8.2.0
+    enabled: true
+    certManager:
+      enabled: true
+      issuerRef:
+        name: custom-ca
+        kind: ClusterIssuer
   priorityClassName: "otomi-critical"
-commonLabels:
-  prometheus: system
 prometheus:
+  enabled: {{ $p.enabled }}
+  namespaceOverride: prometheus
   prometheusSpec:
     image:
-      tag: v2.30.3
-    podMonitorSelector:
-      matchLabels:
-        prometheus: system
-    serviceMonitorSelector:
-      matchLabels:
-        prometheus: system
+      tag: {{ $g | get "image.prometheus.tag" "v2.33.4" }}
+      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
     resources:
-      {{- with $p | get "resources.prometheus" nil }}
+      {{- with $p | get "resources" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
@@ -76,20 +80,30 @@ prometheus:
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     portName: http-web
-    retention: {{ $p | get "prometheus.retention" "1d" }}
-    retentionSize: {{ $p | get "prometheus.retentionSize" "4GB" }}
+    retention: {{ $p | get "retention" "1d" }}
+    retentionSize: {{ $p | get "retentionSize" "4GB" }}
     storageSpec:
       volumeClaimTemplate:
         metadata:
           name: promdata
         spec:
+          {{- if $v._derived.supportedCloud }}
           storageClassName: fast
+          {{- end }}
           resources:
             requests:
-              storage: {{ $p | get "prometheus.storageSize" "5Gi" }}
+              storage: {{ $p | get "storageSize" "5Gi" }}
 
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
+{{- if and (not $v.otomi.isMultitenant) $hasServices }}
+    additionalScrapeConfigs:
+  {{- range $teamId, $team := omit $v.teamConfig "admin" }}
+    {{- $teamServices := ($team | get "services" list) }}
+    {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+    {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
+  {{- end }}
+{{- end }}
   additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
   additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
 {{ if eq $v.cluster.provider "aws" }}  
@@ -98,26 +112,35 @@ additionalPrometheusRules:
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
 {{- end }}
 alertmanager:
-  {{ if or ($v | get "alerts" false) ($v | get "home" false) }}
-  enabled: true
+  enabled: {{ $a.enabled }}
+  namespaceOverride: alertmanager
   alertmanagerSpec:
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        prometheus: system
     image:
-      tag: v0.23.0
+      tag: {{ $a | get "image.tag" "v0.23.0" }}
+      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
     priorityClassName: "otomi-critical"
     resources:
-      requests:
-        memory: 128Mi
-        cpu: 100m
+      {{- with $a | get "resources" nil }}
+        {{- toYaml . | nindent 4 }}
+      {{- else }}
       limits:
-        memory: 256Mi
         cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      {{- end }}
     portName: http-web
     externalUrl: https://{{ $appsDomain }}/alertmanager
-  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl) | nindent 4 }}
-  {{- else }}
-  enabled: false
-  {{- end }}
+  config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
+  enabled: {{ $g.enabled }}
+  defaultDashboardsTimezone: browser
   downloadDashboards:
     resources:
       limits:
@@ -127,30 +150,22 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    tag: 8.0.7
-  initChownData:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 128Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
+    tag: {{ $g | get "image.tag" "8.4.3" }}
+    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   resources:
-    {{- with $p | get "resources.grafana" nil }}
+    {{- with $g | get "resources" nil }}
       {{- toYaml . | nindent 4 }}
     {{- else }}
-    requests:
-      memory: 128Mi
-      cpu: 100m
     limits:
-      memory: 256Mi
       cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
     {{- end }}
   sidecar:
-    # @TODO:
     image:
-      tag: 1.15.0
+      tag: 1.15.7
     resources:
       limits:
         cpu: 100m
@@ -160,6 +175,7 @@ grafana:
         memory: 50Mi
   nameOverride: po-grafana
   fullnameOverride: po-grafana
+  namespaceOverride: grafana
   rbac:
     pspUseAppArmor: false
     pspEnabled: false
@@ -167,78 +183,63 @@ grafana:
     sidecar.istio.io/inject: "true"
 
   testFramework:
-    # enabled: true
-    # image: "bats/bats"
-    # tag: "v1.1.0"
-    # imagePullPolicy: IfNotPresent
-    securityContext: 
-      runAsUser: 1000
+    enabled: false
     
-  plugins: []
   additionalDataSources:
     - name: Loki
       editable: false
       type: loki
       access: proxy
       {{- if $v.otomi.isMultitenant }}
-      url: http://loki:11811
+      url: http://loki.monitoring:11811
       basicAuth: true
       basicAuthUser: admins
-      basicAuthPassword: {{ $v.charts.loki.adminPassword }}
+      basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
-      url: http://loki:3100
+      url: http://loki.monitoring:3100
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
-    {{- if $c | get "sitespeed.enabled" false }}
-    - name: Graphite
-      editable: false
-      type: graphite
-      access: proxy
-      url: http://graphite:80
-    {{- end }}
-  adminPassword: {{ $p | get "grafana.adminPassword" $v.otomi.adminPassword }}
+  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   service:
     portName: http-service
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $grafanaDomain }}
-
-kubeApiServer:
-  enabled: false
+      # serve_from_sub_path: true
 
 kube-state-metrics:
-  # image:
-  #   tag: v1.8.0
-  # collectors:
-  #   networkpolicies: false
-  #   mutatingwebhookconfigurations: false
-  #   validatingwebhookconfigurations: false
-  #   volumeattachments: false
-  #   verticalpodautoscalers: false
-  # podAnnotations:
-  #   sidecar.istio.io/inject: "false"
+  image:
+    tag: {{ $p | get "image.kube-state-metrics.tag" "v2.4.1" }}
+    pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
   resources:
-    requests:
-      memory: 128Mi
-      cpu: 100m
+    {{- with $p | get "resources.kube-state-metrics" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
+      cpu: 100m
       memory: 256Mi
-      cpu: 400m
-  podSecurityPolicy:
-    enabled: false
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    {{- end }}
 
 prometheus-node-exporter:
+  image:
+    tag: {{ $p | get "image.node-exporter.tag" "v1.3.1" }}
+    pullPolicy: {{ $p | get "image.node-exporter.pullPolicy" "IfNotPresent" }}
   resources:
-    requests:
-      memory: 128Mi
-      cpu: 100m
+    {{- with $p | get "resources.prometheus-node-exporter" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
-      memory: 128Mi
       cpu: 500m
-  rbac:
-    pspEnabled: false
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    {{- end }}
   priorityClassName: "otomi-critical"
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security

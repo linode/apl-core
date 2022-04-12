@@ -1,6 +1,7 @@
 # These values are intended for use to demo Otomi on a server/laptop.
 # Minimal recommended specs: 32GB+ RAM, 12+ (v)CPU
 cluster:
-  provider: onprem
-  domainSuffix: 127.0.0.1.nip.io
+  provider: local
+  # set the below nip.io ip to your metal LB ip when using minikube:
+  domainSuffix: 192.168.64.16.nip.io
   # k8sContext: minikube # if using minikube

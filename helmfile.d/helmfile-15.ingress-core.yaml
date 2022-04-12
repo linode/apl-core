@@ -9,9 +9,16 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $coreAdminServices := list }}{{- range $s := $v.services }}{{ $coreAdminServices = append $coreAdminServices (merge $s (dict "isCore" true)) }}{{ end }}
-{{- $c := $v.charts }}
-{{- $cm := index $v.charts "cert-manager" }}
+{{- $a := $v.apps }}
+{{- $coreAdminServices := list }}
+{{- range $s := $v.adminApps }}
+{{- if and ($v.apps | get $s.name dict | get "enabled" true) (hasKey $s "ingress") }}
+{{- range $ing := $s.ingress }}
+{{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
+{{- $coreAdminServices = append $coreAdminServices $svc }}
+{{- end }}
+{{- end }}
+{{- end }}
 
 releases:
   - name: team-ns-admin
@@ -25,8 +32,8 @@ releases:
     values:
       - name: admin
         teamId: admin
-        charts: {{- $v.charts | toYaml | nindent 10 }}
-        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
+        apps: {{- $a | toYaml | nindent 10 }}
+        oidc: {{- $v.oidc | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         domain: {{ $v | get "cluster.domainSuffix" nil }}

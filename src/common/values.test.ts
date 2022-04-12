@@ -5,7 +5,7 @@ import { generateSecrets } from './values'
 const { terminal } = stubs
 
 describe('generateSecrets', () => {
-  const values = { one: 'val', secret: 'prop', charts: { yo: { di: { lo: 'loves you' } } } }
+  const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }
   const simpleTemplate = '"dummy"'
   const twoStageTemplate = '.dot.templatedSecret | upper'
   const schema = {
@@ -17,7 +17,7 @@ describe('generateSecrets', () => {
         type: 'string',
         'x-secret': '',
       },
-      charts: {
+      apps: {
         properties: {
           yo: {
             properties: {
@@ -53,7 +53,7 @@ describe('generateSecrets', () => {
   const expected = {
     secret: 'prop',
     nested: { templatedSecret: 'dummy', twoStage: 'DUMMY' },
-    charts: { yo: { mama: 'loves you!' } },
+    apps: { yo: { mama: 'loves you!' } },
   }
   let deps
   beforeEach(() => {
