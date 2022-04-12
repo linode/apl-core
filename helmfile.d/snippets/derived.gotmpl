@@ -93,7 +93,7 @@ environments:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
-            enabled: {{ $a | get "host-mods.enabled" (and $untrustedCA (ne $provider "local")) }}
+            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:

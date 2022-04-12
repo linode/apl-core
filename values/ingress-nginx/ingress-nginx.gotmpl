@@ -12,13 +12,6 @@ controller:
   containerPort:
     http: 80
     https: 443
-  {{- if eq $v.cluster.provider "local" }}
-  hostPort:
-    enabled: true
-    ports:
-      http: 80
-      https: 443
-  {{- end }}
   admissionWebhooks:
     enabled: false
     patch:
@@ -122,7 +115,7 @@ controller:
       service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
       {{- end }}
   publishService:
-    enabled: {{ ne $v.cluster.provider "local" }}
+    enabled: true
 
 defaultBackend:
   enabled: true
