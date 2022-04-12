@@ -13,7 +13,7 @@ metadata:
     heritage: {{ $.Release.Service }}
     dashboard-provider: {{ $provider }}
     custom_label: {{ $provider }}
-    {{ $v.sidecar.dashboards.label }}: "1"
+    {{ $v.sidecar.dashboards.label }}: {{ $v.sidecar.dashboards.labelValue | quote }}
 data:
   {{- range $path, $bytes := $files.Glob (printf "%s/*" $provider) }}
   {{- $file := $files.Get $path }}

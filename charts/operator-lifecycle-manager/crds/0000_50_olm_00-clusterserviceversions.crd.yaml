@@ -4527,19 +4527,6 @@ spec:
                       type: string
                     url:
                       type: string
-                relatedImages:
-                  description: List any related images, or other container images that your Operator might require to perform their functions. This list should also include operand images as well. All image references should be specified by digest (SHA) and not by tag. This field is only used during catalog creation and plays no part in cluster runtime.
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - image
-                      - name
-                    properties:
-                      image:
-                        type: string
-                      name:
-                        type: string
                 replaces:
                   description: The name of a CSV this one replaces. Should match the `metadata.Name` field of the old CSV.
                   type: string
@@ -4573,11 +4560,6 @@ spec:
                       type: object
                       additionalProperties:
                         type: string
-                skips:
-                  description: The name(s) of one or more CSV(s) that should be skipped in the upgrade graph. Should match the `metadata.Name` field of the CSV that should be skipped. This field is only used during catalog creation and plays no part in cluster runtime.
-                  type: array
-                  items:
-                    type: string
                 version:
                   description: OperatorVersion is a wrapper around semver.Version which supports correct marshaling to YAML and JSON.
                   type: string

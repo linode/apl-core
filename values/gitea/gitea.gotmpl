@@ -1,21 +1,24 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
-{{- $g := $v.charts.gitea }}
-{{- $k := $v.charts.keycloak }}
+{{- $g := $v.apps.gitea }}
+{{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
-{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $v._derived.oidcBaseUrl }}
-{{- $cm := $v.charts | get "cert-manager" }}
+{{- $cm := $v.apps | get "cert-manager" }}
 
 nameOverride: gitea
 fullnameOverride: gitea
 
 resources:
+  {{ with $g | get "resources.gitea" nil }}
+    {{- toYaml . | nindent 2 }}
+  {{- else }}
   limits:
     cpu: 1
     memory: 1Gi
   requests:
     cpu: 100m
     memory: 128Mi
+  {{- end }}
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -29,12 +32,12 @@ securityContext:
   runAsUser: 1000
 
 image:
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  tag: 1.15.8
-  pullPolicy: IfNotPresent
+  tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
+  pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
 
 gitea:
@@ -52,9 +55,6 @@ gitea:
       ENABLE_OPENID_SIGNUP: true
     repository:
       DEFAULT_BRANCH: main
-    {{- with $g | get "config" nil }}
-      {{- toYaml . | nindent 4}}
-    {{- end }}
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
     server:
@@ -74,7 +74,9 @@ gitea:
       provider: openidConnect
       key: {{ $k.idp.clientID  }}
       secret: {{ $k.idp.clientSecret }}
-      autoDiscoverUrl: {{ $oidcWellKnownUrl }}
+      autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
+      # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
 
 init:
   resources:
@@ -88,14 +90,19 @@ init:
 memcached:
   # @TODO:
   image:
-    tag: 1.6.12
+    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
+    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
   resources:
+    {{ with $g | get "resources.memcached" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
       cpu: 250m
       memory: 256Mi
     requests:
       cpu: 100m
       memory: 128Mi
+    {{- end }}
 
 persistence:
   size: 1Gi
@@ -103,7 +110,8 @@ persistence:
 postgresql:
   # @TODO:
   image:
-    tag: 13.5.0
+    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
+    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
   metrics:
     image:
       tag: 0.10.0
@@ -114,12 +122,16 @@ postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:
+    {{ with $g | get "resources.postgresql" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
     limits:
-      memory: 512Mi
       cpu: 500m
+      memory: 512Mi
     requests:
-      memory: 256Mi
       cpu: 250m
+      memory: 256Mi
+    {{- end }}
 
 {{- if $v._derived.untrustedCA }}
 extraVolumeMounts:

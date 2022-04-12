@@ -1,17 +1,17 @@
-{{- if .Values.kubeEtcd.enabled }}
+{{- if and .Values.kubeEtcd.enabled .Values.kubeEtcd.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-kube-etcd
-  namespace: {{ template "prometheus-operator.namespace" . }}
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kube-etcd
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
-    app: {{ template "prometheus-operator.name" . }}-kube-etcd
-{{ include "prometheus-operator.labels" . | indent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-kube-etcd
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
   jobLabel: jobLabel
   selector:
     matchLabels:
-      app: {{ template "prometheus-operator.name" . }}-kube-etcd
+      app: {{ template "kube-prometheus-stack.name" . }}-kube-etcd
       release: {{ $.Release.Name | quote }}
   namespaceSelector:
     matchNames:
@@ -22,6 +22,9 @@ spec:
     interval: {{ .Values.kubeEtcd.serviceMonitor.interval }}
     {{- end }}
     bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- if .Values.kubeEtcd.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubeEtcd.serviceMonitor.proxyUrl}}
+    {{- end }}
     {{- if eq .Values.kubeEtcd.serviceMonitor.scheme "https" }}
     scheme: https
     tlsConfig:
@@ -45,6 +48,6 @@ spec:
 {{- end }}
 {{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
     relabelings:
-{{ toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4 }}
+{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4) . }}
 {{- end }}
 {{- end }}

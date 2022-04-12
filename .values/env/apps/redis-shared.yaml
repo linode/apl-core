@@ -1,0 +1,3 @@
+apps:
+    redis-shared:
+        enabled: false

@@ -40,13 +40,6 @@ spec:
         - mountPath: /tests
           name: tests
           readOnly: true
-      resources:
-        limits:
-          cpu: 250m
-          memory: 128Mi
-        requests:
-          cpu: 25m
-          memory: 32Mi
   volumes:
   - name: tests
     configMap:

@@ -9,7 +9,7 @@ import { terminal } from '../common/debug'
 import { hfTemplate } from '../common/hf'
 import { getFilename, readdirRecurse, rootDir } from '../common/utils'
 import { getK8sVersion } from '../common/values'
-import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
+import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -27,10 +27,10 @@ const cleanup = (argv: BasicArguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: BasicArguments): Promise<void> => {
+const setup = async (argv: HelmArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
-  k8sVersion = getK8sVersion()
+  k8sVersion = getK8sVersion(argv)
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
@@ -74,6 +74,9 @@ type crdSchema = {
 }
 
 const processCrd = (path: string): crdSchema[] => {
+  const d = terminal(`cmd:${cmdName}:processCrd`)
+  d.info('Processing CRD file: ', path)
+
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
     (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
   )
@@ -108,15 +111,12 @@ const processCrd = (path: string): crdSchema[] => {
 const processCrdWrapper = async (argv: BasicArguments) => {
   const d = terminal(`cmd:${cmdName}:processCrdWrapper`)
   d.log(`Generating k8s ${k8sVersion} manifests`)
-  await hfTemplate(
-    { ...argv, args: `--set kubeVersionOverride=${vk8sVersion}.0` },
-    `${k8sResourcesPath}/${vk8sVersion}`,
-  )
+  await hfTemplate(argv, `${k8sResourcesPath}/${vk8sVersion}`)
 
   d.log('Processing CRD files...')
   cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
-  const crdFiles = chartsFiles.filter((val: string) => val.match(/crds\/.*\.yaml/g))
+  const crdFiles = chartsFiles.filter((val: string) => val.match(/\/crds\/.*\.yaml/g))
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
 
   const prep: Promise<any>[] = []
@@ -133,7 +133,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
 
 export const validateTemplates = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateTemplates`)
-  const argv: BasicArguments = getParsedArgs()
+  const argv: HelmArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
@@ -152,7 +152,7 @@ export const validateTemplates = async (): Promise<void> => {
     'PspSelinux',
   ]
   // TODO: revisit these excluded resources and see it they exist now (from original sh script)
-  const skipKinds = ['CustomResourceDefinition', 'AppRepository', ...constraintKinds]
+  const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
   const skipFilenames = ['crd', 'constraint']
 
   d.log('Validating resources')

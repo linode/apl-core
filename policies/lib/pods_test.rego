@@ -1,9 +1,3 @@
-# @title Resources must be recognized as having a pod spec
-#
-# Knative services also have a spec with a container spec, and those need to be inspected for image tags, as
-# their deployments pull image SHAs and so it's too late to be able to block them
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
 package lib.pods
 
 resource_matching_core := {

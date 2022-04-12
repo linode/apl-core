@@ -1,12 +1,12 @@
-{{- if .Values.kubeEtcd.enabled }}
+{{- if and .Values.kubeEtcd.enabled .Values.kubeEtcd.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-kube-etcd
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kube-etcd
   labels:
-    app: {{ template "prometheus-operator.name" . }}-kube-etcd
+    app: {{ template "kube-prometheus-stack.name" . }}-kube-etcd
     jobLabel: kube-etcd
-{{ include "prometheus-operator.labels" . | indent 4 }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
   namespace: kube-system
 spec:
   clusterIP: None

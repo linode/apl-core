@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v | get "charts.kube-descheduler" }}
+{{- $k := $v | get "apps.kube-descheduler" }}
 
 nameOverride: "kube-descheduler"
 fullnameOverride: "kube-descheduler"

@@ -1,6 +1,5 @@
 import { existsSync } from 'fs'
 import { load } from 'js-yaml'
-import { Transform } from 'stream'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
@@ -8,7 +7,6 @@ import { asArray, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
-const trimHFOutput = (output: string): string => output.replace(/(^\W+$|skipping|^.*: basePath=\.)/gm, '')
 const replaceHFPaths = (output: string): string => output.replaceAll('../env', env.ENV_DIR)
 
 type HFParams = {
@@ -44,16 +42,13 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
     throw new Error('No arguments were passed')
   }
 
-  if (env.KUBE_VERSION_OVERRIDE && env.KUBE_VERSION_OVERRIDE.length > 0) {
-    paramsCopy.args.push(`--set kubeVersionOverride=${env.KUBE_VERSION_OVERRIDE}`)
-  }
-
   const labels = paramsCopy.labelOpts?.map((item: string) => `-l=${item}`)
   const files = paramsCopy.fileOpts?.map((item: string) => `-f=${item}`)
 
   const stringArray = [...(labels ?? []), ...(files ?? [])]
 
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
+  process.env.HELM_DIFF_COLOR = 'true'
   const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
   return proc
 }
@@ -63,25 +58,10 @@ type HFOptions = {
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutputTrimmed> => {
-  // we do some transformations to strip out unwanted noise, which helmfile generates because reasons
-  const transform = new Transform({
-    transform(chunk, encoding, next) {
-      const str = chunk.toString()
-      const transformation = trimHFOutput(str).trim()
-      if (transformation && transformation.length > 0) this.push(transformation)
-      next()
-    },
-  })
   const proc: ProcessPromise<ProcessOutput> = hfCore(args)
-  const output = {
-    stdout: proc.stdout,
-    stderr: proc.stderr.pipe(transform),
-    proc,
-  }
-
-  if (opts?.streams?.stdout) output.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) output.stderr.pipe(opts.streams.stderr, { end: false })
-  return new ProcessOutputTrimmed(await output.proc)
+  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
+  return new ProcessOutputTrimmed(await proc)
 }
 
 export type ValuesArgs = {
@@ -104,10 +84,21 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
 export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
+  // const args = ['template', '--skip-deps', '--validate']
   const args = ['template', '--skip-deps']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
-  if (argv.args) args.push(`--args='${argv.args}'`)
+  const argsArr: string[] = ['--skip-tests']
+  // if (argv.kubeVersion) {
+  //   argsArr.push(`--kube-version=${argv.kubeVersion}`)
+  //   const apiVersions = readFileSync(`${rootDir}/schemas/api-versions/${argv.kubeVersion}.txt`, 'utf8')
+  //     .toString()
+  //     .replace(/\r\n/g, '\n')
+  //     .split('\n')
+  //   argsArr.push(`--api-versions='${apiVersions.join(' ')}'`)
+  // }
+  if (argv.args) argsArr.push(argv.args)
+  args.push(`--args="${argsArr.join(' ')}"`)
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {

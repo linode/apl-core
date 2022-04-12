@@ -20,19 +20,19 @@ import data.lib.pods
 
 policyID := "psp-host-security"
 
-violation[msg] {
+violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pod_has_hostpid
 	msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host PID namespace", [policyID, core.kind, core.name])
 }
 
-violation[msg] {
+violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pod_has_hostipc
 	msg := sprintf("Policy: %s - %s/%s: Pod allows for accessing the host IPC", [policyID, core.kind, core.name])
 }
 
-violation[msg] {
+violation[{"msg": msg}] {
 	not exceptions.is_exception(policyID)
 	pod_host_alias
 	msg := sprintf("Policy: %s - %s/%s: Pod has hostAliases defined", [policyID, core.kind, core.name])

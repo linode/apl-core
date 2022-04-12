@@ -1,0 +1,3 @@
+apps:
+    prometheus:
+        enabled: false

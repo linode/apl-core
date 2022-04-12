@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $cm := $v.charts | get "cert-manager" }}
-{{- $i := $v.charts.istio }}
+{{- $cm := $v.apps | get "cert-manager" }}
+{{- $i := $v.apps.istio }}
 {{- $ig := $i | get "global" dict }}
 {{- $excludedNamespaces := list "kube-system" }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
@@ -68,8 +68,8 @@ resources:
                   memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
               service:
                 type: ClusterIP
                 ports:
@@ -96,11 +96,11 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.ingressgateway-auth.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.ingressgateway-auth.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.ingressgateway-private.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway-private.maxReplicas" }}
               priorityClassName: "otomi-critical"
               resources:
-                {{- with $i | get "resources.ingressgateway-auth" nil }}
+                {{- with $i | get "resources.ingressgateway-private" nil }}
                   {{- toYaml . | nindent 16 }}
                 {{- else }}
                 limits:
@@ -147,8 +147,8 @@ resources:
                   memory: 128Mi
               {{- end }}
               hpaSpec:
-                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" 2 }}
-                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" 10 }}
+                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
               service:
                 type: ClusterIP
                 ports:
@@ -182,11 +182,11 @@ resources:
               {{- toYaml . | nindent 14 }}
             {{- else }}
               limits:
-                  cpu: '1'
-                  memory: 1Gi
+                cpu: '1'
+                memory: 1Gi
               requests:
-                  cpu: 20m
-                  memory: 80Mi
+                cpu: 20m
+                memory: 80Mi
             {{- end }}
             autoInject: enabled
           tracer:
@@ -197,7 +197,7 @@ resources:
           accessLogFile: "/dev/stdout"
           defaultConfig:
           {{ with $i | get "meshConfig.defaultConfig" nil }}
-            {{- . | toYaml | nindent 14 }}
+            {{- toYaml . | nindent 14 }}
           {{- else }}
             tracing:
               sampling: 0.1

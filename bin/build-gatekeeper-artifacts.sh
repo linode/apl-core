@@ -7,8 +7,8 @@ set -e
 run_from_hook=$1
 [ -n "$run_from_hook" ] && cd ..
 
-. bin/common.sh
-. bin/common-modules.sh
+# . bin/common.sh
+# . bin/common-modules.sh
 
 readonly policies_path="./policies"
 readonly policies_file="$ENV_DIR/env/policies.yaml"

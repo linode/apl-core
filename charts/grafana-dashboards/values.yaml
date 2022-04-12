@@ -2,10 +2,10 @@ folders:
   - k8s
   - istio
   - azure
-  - sitespeed
 
 sidecar:
   dashboards:
     label: grafana_dashboard
+    labelValue: '1'
 
 team: admin    

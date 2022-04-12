@@ -12,6 +12,7 @@ import { BasicArguments, setParsedArgs } from '../common/yargs'
 const cmdName = getFilename(__filename)
 
 const playground = async (): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const d = terminal(`cmd:${cmdName}:playGround`)
 
   await Promise.resolve()

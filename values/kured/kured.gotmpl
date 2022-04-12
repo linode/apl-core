@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v.charts | get "kured" }}
+{{- $k := $v.apps | get "kured" }}
 
 # Using --lock-ttl=30m will allow other nodes to take over if TTL has expired and continue reboot process.
 configuration:

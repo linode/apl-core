@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $ms := $v | get "charts.prometheus-operator.alertmanager.msteams" }}
+{{- $ms := $v | get "apps.prometheus-operator.alertmanager.msteams" }}
 replicaCount: 1
 image:
   repository: quay.io/prometheusmsteams/prometheus-msteams
