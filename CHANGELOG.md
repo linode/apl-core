@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.1](https://github.com/redkubes/otomi-core/compare/v0.15.5...v0.17.0) (2022-04-12)
+
+### Features
+
+- admin services ([#753](https://github.com/redkubes/otomi-core/issues/753)) ([38ff678](https://github.com/redkubes/otomi-core/commit/38ff6783aa18ab6b2fda3c18482b1fa99698cab7))
+- app store and shortcuts ([#722](https://github.com/redkubes/otomi-core/issues/722)) ([5bc23bc](https://github.com/redkubes/otomi-core/commit/5bc23bc41f882123514a24907c2ce0bb2d71bf4e))
+
+### Bug Fixes
+
+- disabled integration as it is not working anymore ([d694484](https://github.com/redkubes/otomi-core/commit/d6944846febcf6876b341718ed11ad021fa6c5d7))
+- don't add harbor repo in kubeapps when it is not enabled ([9ab62d1](https://github.com/redkubes/otomi-core/commit/9ab62d1a1af8ce9d46910098fc1079a3fd6f611d))
+- empty admin services ([0cb8d06](https://github.com/redkubes/otomi-core/commit/0cb8d063ec05599a9e1cd60a6b2942ebdb04f8bc))
+- **gatekeeper:** psp-host-networking + psp-host-security + psp-priviliged issues ([#752](https://github.com/redkubes/otomi-core/issues/752)) ([eb34be0](https://github.com/redkubes/otomi-core/commit/eb34be0c523f2c54e6aa7d2227374647e967e6af)), closes [#402](https://github.com/redkubes/otomi-core/issues/402)
+- gitea oidc login ([f601041](https://github.com/redkubes/otomi-core/commit/f601041bef89766c1d1e14ab8862d8273fe38271))
+- grafana deps, provider local no host-mods by default ([9986c7f](https://github.com/redkubes/otomi-core/commit/9986c7f855efaf94ee7bfec091b5cf2bc0838171))
+- integration input ([844d2b3](https://github.com/redkubes/otomi-core/commit/844d2b33b82c95b55a99ea783aed4364c5fa741b))
+- keycloak address ([00d0160](https://github.com/redkubes/otomi-core/commit/00d01601a4f1a013c0f6be971c9f94ded776c53b))
+- keycloak them version tag ([98c2900](https://github.com/redkubes/otomi-core/commit/98c290055ac02a0e7d26a7bcd0000816f32d5faf))
+- keycloak theme version ([a07ba34](https://github.com/redkubes/otomi-core/commit/a07ba3451a931af79d53f3ea47c9135a0b04a33b))
+- link to documentation ([7b43f4b](https://github.com/redkubes/otomi-core/commit/7b43f4b85f750dfe191934600737177b902a5310))
+- local provider does not exist ([30a8470](https://github.com/redkubes/otomi-core/commit/30a847096bc3654e94bcf021a2abb694d51565c9))
+- typo ([8ce1d58](https://github.com/redkubes/otomi-core/commit/8ce1d587aae3f454f69ee612379ddbec2b23754f))
+- workflow ([169560c](https://github.com/redkubes/otomi-core/commit/169560cda9dc32215ad2390b635f4d9b3bf8e30c))
+
+### Docs
+
+- added local provider ([4ea92e9](https://github.com/redkubes/otomi-core/commit/4ea92e94fc20e7923b9928ceb482e45a92391b0b))
+- change urls to point to master ([de5767a](https://github.com/redkubes/otomi-core/commit/de5767ae19789e528531d1b7fde7916fe85ba0b3))
+- links to img in master ([767380d](https://github.com/redkubes/otomi-core/commit/767380d1d5432dac09ffd044f92e92b2a57a21eb))
+- new contents ([a17dfaf](https://github.com/redkubes/otomi-core/commit/a17dfafe256a9b4a51de7b31592b5b8ef24d4152))
+- new readme ([31b5af6](https://github.com/redkubes/otomi-core/commit/31b5af6661eee59ec78d0a62b003f9d546ad4555))
+- readme rework 5 ([4e3d357](https://github.com/redkubes/otomi-core/commit/4e3d357c96c1fdb92f51994f18d2d43abf87f7d8))
+- readme rework 7 ([c750509](https://github.com/redkubes/otomi-core/commit/c7505099256baa8a11dfde183f825d25dc786d58))
+- readme rework 8 ([333d491](https://github.com/redkubes/otomi-core/commit/333d491860439913e6ca71a36be5477b44da7e9a))
+- readme rework 9 ([fe8b5cc](https://github.com/redkubes/otomi-core/commit/fe8b5cc77b2142feb179b39bab79b3a782cb4cd7))
+- redame rework 6 ([c5fa755](https://github.com/redkubes/otomi-core/commit/c5fa75563f0f55aa35471a8081c642a0ecad526e))
+- rework 1 ([0c54e4f](https://github.com/redkubes/otomi-core/commit/0c54e4f6c5c91e488275ff730b43defce2590e2b))
+- rework readme ([7114540](https://github.com/redkubes/otomi-core/commit/71145403fbed2ea830894ddefbebc09fd488498c))
+
+### Others
+
+- **deps:** bumped api ([c1e7d48](https://github.com/redkubes/otomi-core/commit/c1e7d48e6fadbeef04132dc0eb812e485f5efe65))
+- **deps:** bumped console ([1375218](https://github.com/redkubes/otomi-core/commit/1375218961eca35fcda8a7188e9f144d31e42607))
+- **deps:** bumped console ([44a0404](https://github.com/redkubes/otomi-core/commit/44a04041ff9d321b9028ac4dbcd0e60c742aa3bb))
+- **deps:** bumped console ([ed5517d](https://github.com/redkubes/otomi-core/commit/ed5517d2cbc05a9a2d383dda5625d56e19fc2c18))
+- **deps:** bumped console ([f3a4b61](https://github.com/redkubes/otomi-core/commit/f3a4b6147bb13655740c791ca1ecf57c210fd090))
+- **release:** 0.16.0 ([17eff7c](https://github.com/redkubes/otomi-core/commit/17eff7c703949ef9c67f0f89fa757fbbdaf646a9))
+
 ### [0.16.0](https://github.com/redkubes/otomi-core/compare/v0.15.5...v0.16.0) (2022-04-11)
 
 ### ⚠ BREAKING CHANGES
