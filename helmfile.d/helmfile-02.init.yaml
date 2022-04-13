@@ -30,7 +30,7 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
-  - name: nginx-ingress-artifacts
+  - name: ingress-nginx-artifacts
     installed: true
     namespace: ingress
     labels:
@@ -38,7 +38,7 @@ releases:
       stage: prep
     <<: *raw
 {{- range $index, $ingress := $v.ingress }}
-  - name: nginx-ingress-{{ $ingress.className }}
+  - name: ingress-nginx-{{ $ingress.className }}
     installed: true
     namespace: ingress
     labels:
@@ -47,8 +47,8 @@ releases:
       class: {{ $ingress.className }}
       index: {{ $index }}
     missingFileHandler: Debug
-    chart: ../charts/nginx-ingress
+    chart: ../charts/ingress-nginx
     values:
-      - ../values/nginx-ingress/nginx-ingress.gotmpl
+      - ../values/ingress-nginx/ingress-nginx.gotmpl
       - snippets/common.gotmpl
 {{- end }}
