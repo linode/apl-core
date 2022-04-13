@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $n := $v.charts | get "nginx-ingress" }}
+{{- $n := $v.apps | get "ingress-nginx" }}
 resources:
 {{- range $ingress := $v.ingress }}
 - apiVersion: networking.k8s.io/v1
