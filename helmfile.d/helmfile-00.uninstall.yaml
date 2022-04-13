@@ -1,0 +1,17 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+
+releases:
+  - name: gatekeeper-operator
+    installed: false
+    namespace: default
+    chart: not-used-but-required
+    # TODO: remove definition of this release in release 0.16.3
