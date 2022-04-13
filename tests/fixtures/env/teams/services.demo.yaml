@@ -46,8 +46,10 @@ teamConfig:
               paths: []
               port: 80
               type: public
-            - domain: tlspass.eks.dev.otomi.cloud
+            - name: hello-public-custom
+              domain: tlspass.eks.dev.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd2
+              type: public
               ksvc:
                   containerPort: 80
                   files:
