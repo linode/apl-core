@@ -40,7 +40,7 @@ k8s:
       disableIstioInjection: true
     - name: monitoring
       disableIstioInjection: true
-    - name: operator-lifecycle-manager
+    - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: operators
