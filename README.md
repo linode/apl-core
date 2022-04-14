@@ -12,17 +12,16 @@
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"><img alt="GitHub User's stars" src="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"></a>
-  <a href="https://twitter.com/RedKubes"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/redkubes?style=social"></a>
+  <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
+  <a href="https://twitter.com/intent/tweet?text=Otomi%20self-hosted%20PaaS%20for%20Kubernetes ,%20Go%20try%20it%20out!!%20&hashtags=OpenSource,Kubernetes,DevOps,go&url=https://github.com/redkubes/otomi-core%0a"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet"></a>
   <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
 </p>
 
 <p align="center">
-<a href="https://otomi.io/">Go to documentation</a>
-|
-<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel</a>
+<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel for Q&A</a>
 </p>
 
-Otomi brings a complete PaaS to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinveting the wheel when building and maintaining your own K8s based internal (developer) platform.
+Otomi brings a complete PaaS to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based internal (developer) platform.
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
 
@@ -53,9 +52,9 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
-  --set cluster.k8sVersion="$VERSION" \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
-  --set cluster.name=$CLUSTERNAME \
-  --set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other cloud or onprem K8s)
+--set cluster.k8sVersion="$VERSION" \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
+--set cluster.name=$CLUSTERNAME \
+--set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other cloud or onprem K8s)
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/)
