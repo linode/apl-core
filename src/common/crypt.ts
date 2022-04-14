@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { existsSync, statSync, utimesSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
@@ -80,6 +80,14 @@ const runOnSecretFiles = async (crypt: CR, filesArgs: string[] = []): Promise<vo
   if (files.length === 0) {
     files = await getAllSecretFiles()
   }
+  files = files.filter((f) => {
+    const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
+    let file = `${f}${suffix}`
+    // first time encryption might not have a .dec companion, so test existence first
+    if (suffix && !existsSync(file)) file = f
+    const content = readFileSync(file, 'utf-8')
+    return !!content
+  })
   preCrypt()
   const chunkSize = 5
   const filesChunked = chunk(files, chunkSize)
