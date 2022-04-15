@@ -165,7 +165,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
     promises.push(
       writeValuesToFile(
         `${env.ENV_DIR}/env/secrets.teams.yaml`,
-        secrets.teamConfig ? { teamConfig: secrets.teamConfig } : '',
+        secrets.teamConfig ? { teamConfig: secrets.teamConfig } : undefined,
         overwrite,
       ),
     )
