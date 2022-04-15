@@ -13,7 +13,7 @@
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"><img alt="GitHub User's stars" src="https://img.shields.io/github/stars/redkubes/otomi-core?style=social"></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
-  <a href="https://twitter.com/intent/tweet?text=Otomi%20self-hosted%20PaaS%20for%20K8s%20Go%20try%20it%20out!!%20&hashtags=OpenSource,Kubernetes,DevOps,go&url=https://github.com/redkubes/otomi-core%0a"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet"></a>
+  <a href="https://twitter.com/intent/tweet?text=Otomi%20self-hosted%20PaaS%20for%20K8s.%20Try%20it%20out!%20&hashtags=OpenSource,Kubernetes,DevOps,Otomi,PaaS&url=https://github.com/redkubes/otomi-core%0a"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet"></a>
   <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
 </p>
 
@@ -57,7 +57,13 @@ helm install otomi otomi/otomi \
 --set cluster.provider=$PROVIDER # use azure, aws, google or custom (for any other cloud or onprem K8s)
 ```
 
-When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/)
+When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
+
+### Get started articles
+
+- [Install Otomi on Minikube (Mac)](https://itnext.io/installing-otomi-on-minikube-2f83dfc421d2)
+- [install Otomi on Minikube (Windows)](https://medium.com/@diabhey/otomi-self-hosted-paas-for-kubernetes-on-windows-minikube-55fdfe588652)
+- [Install Otomi on DigitalOcean](https://medium.com/@diabhey/otomi-on-digital-ocean-16778f4466b8)
 
 ## 🎉 Otomi Features
 
