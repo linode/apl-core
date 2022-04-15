@@ -62,13 +62,13 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ### Get started articles
 
-- [Install Otomi on Minikube (Mac)](https://itnext.io/installimainmi-on-minikube-2f83dfc421d2)
+- [Install Otomi on Minikube (Mac)](https://itnext.io/installing-otomi-on-minikube-2f83dfc421d2)
 - [install Otomi on Minikube (Windows)](https://medium.com/@diabhey/otomi-self-hosted-paas-for-kubernetes-on-windows-minikube-55fdfe588652)
 - [Install Otomi on DigitalOcean](https://medium.com/@diabhey/otomi-on-digital-ocean-16778f4466b8)
 
 ## 🎉 Otomi Features
 
-![Otomi features](https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-features.gif)
+![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
 ✅ Drag and Drop apps to create your own preferred suite
 
@@ -98,7 +98,7 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 `Otomi` installs, configures, integrates and automates all of your favorite technologies into a single installable and customizable package:
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/technologies.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/technologies.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
@@ -148,4 +148,4 @@ main
 
 ## 🔖 License
 
-`Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/master/LICENSE).
+`Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
