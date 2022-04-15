@@ -17,7 +17,7 @@ services:
       CLUSTER_ID: ${CLUSTER_ID:-google/dev}
       GIT_LOCAL_PATH: /tmp/otomi-values-core
       GIT_REPO_URL: ${GIT_REPO_URL:-github.com/redkubes/otomi-values.git}
-      GIT_BRANCH: ${GIT_BRANCH:-master}
+      GIT_BRANCH: ${GIT_BRANCH:-main}
       GIT_USER: ${GIT_USER}
       GIT_EMAIL: ${GIT_EMAIL}
       GIT_PASSWORD: ${GIT_PASSWORD}
