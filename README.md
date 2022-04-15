@@ -23,7 +23,7 @@
 
 Otomi brings a PaaS experience to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based internal (developer) platform.
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi apps"></p>
 
 ## 🚀 Getting started
 
@@ -36,6 +36,7 @@ When the installer job is finished, follow the [activation steps](https://otomi.
 ### Helm
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
+
 - Version `1.18` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
@@ -61,7 +62,7 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ### Get started articles
 
-- [Install Otomi on Minikube (Mac)](https://itnext.io/installing-otomi-on-minikube-2f83dfc421d2)
+- [Install Otomi on Minikube (Mac)](https://itnext.io/installimainmi-on-minikube-2f83dfc421d2)
 - [install Otomi on Minikube (Windows)](https://medium.com/@diabhey/otomi-self-hosted-paas-for-kubernetes-on-windows-minikube-55fdfe588652)
 - [Install Otomi on DigitalOcean](https://medium.com/@diabhey/otomi-on-digital-ocean-16778f4466b8)
 
@@ -69,29 +70,29 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/master/docs/img/otomi-features.gif)
 
-✅  Drag and Drop apps to create your own preferred suite
+✅ Drag and Drop apps to create your own preferred suite
 
-✅  Advanced ingress architecture. Expose services with just one click
+✅ Advanced ingress architecture. Expose services with just one click
 
-✅  Configure network policies for internal ingress and external egress
+✅ Configure network policies for internal ingress and external egress
 
-✅  Deploy Knative serverless workloads without writing any YAML
+✅ Deploy Knative serverless workloads without writing any YAML
 
-✅  Create and manage secrets in HashiCorp Vault and use them in your workloads
+✅ Create and manage secrets in HashiCorp Vault and use them in your workloads
 
-✅  Create Kubernetes Jobs and Cron Jobs without writing any YAML
+✅ Create Kubernetes Jobs and Cron Jobs without writing any YAML
 
-✅  Role-based access to all integrated applications based on  group membership
+✅ Role-based access to all integrated applications based on group membership
 
-✅  Policy enforcement based on a customizable set of security policies
+✅ Policy enforcement based on a customizable set of security policies
 
-✅  Direct access to logs and metrics of your deployed workloads
+✅ Direct access to logs and metrics of your deployed workloads
 
-✅  Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup 
+✅ Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
 
-✅  Make development teams self-serving by providing access to predefined automation tasks
+✅ Make development teams self-serving by providing access to predefined automation tasks
 
-✅  Bring your favorite IdP, DNS and/or CA
+✅ Bring your favorite IdP, DNS and/or CAmain
 
 ## 🧑‍💻 Integrated technologies
 
@@ -140,6 +141,7 @@ Check out the [dev docs index](./docs/index.md) for developer documentation or g
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
 
 If you want to say **thank you** or/and support the active development of `Otomi`:
+main
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi
