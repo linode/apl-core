@@ -6,5 +6,17 @@
   "docker-compose": {
     "enabled": false
   },
-  "extends": ["github>redkubes/renovate-config"]
+  "extends": ["github>redkubes/renovate-config"],
+  "helm-requirements": {
+    "enabled": false
+  },
+  "helm-values": {
+    "enabled": false
+  },
+  "helmfile": {
+    "enabled": false
+  },
+  "helmv3": {
+    "enabled": false
+  }
 }
