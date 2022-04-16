@@ -42,7 +42,7 @@
     "@jest/types": "27.4.2",
     "@types/async-retry": "1.4.3",
     "@types/chai": "4.2.22",
-    "@types/chai-as-promised": "7.1.4",
+    "@types/chai-as-promised": "7.1.5",
     "@types/debug": "4.1.7",
     "@types/express": "4.17.13",
     "@types/ignore-walk": "3.0.2",
