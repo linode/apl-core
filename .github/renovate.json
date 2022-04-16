@@ -1,19 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "docker": {
-    "enabled": true
-  },
-  "docker-compose": {
-    "enabled": false
-  },
   "extends": ["github>redkubes/renovate-config"],
   "helmfile": {
     "enabled": false
-  },
-  "helm": {
-    "enabled": true
-  },
-  "helmv3": {
-    "enabled": true
   }
 }
