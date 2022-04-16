@@ -6,12 +6,5 @@
   "docker-compose": {
     "enabled": false
   },
-  "extends": ["github>redkubes/renovate-config"],
-  "hostRules": [
-    {
-      "matchHost": "docker.io",
-      "password": "wcFMA/xDdHCJBTolARAAjBCm7iiszt9KY/sB5QeEHW79wIFvzyXbsMaiS03+57eg18NcO5gKZEIlBZQFHFQiNvgInjvsQ4fJMMhqnNSYfJ+1HGYlWWAnsQ3MS6Vh6U9lDs9bidxq8VdG6XjoSDGO/UmTLLQOKiuebhvmlvj8PVJYltqUyAfmMP5EGdNaKJHXYifxYRphSdzygYXOX0bFvZj7tAQAmFmfajtJ7kMCNB2hFcVU9q9F4EcWa2Haj+eV/8JZEHaFEfmRZAU8L2SYLiA6XdWXw5LIq/cR3B+dRc2lRTUnY5kn4OK8Tn4got6Hvx3GRC17LNIE1F+bmDUfAuwwLv900v+NLx2zQNMeNity8L1SahVyAEHSTtPi0aQ0pwkh3+gdQYM6rtj4oO8E0AXp51GrRgZwW69pI8OqvHr61/0r094yRmKsCIKy9WaNTWCf/zbBdB85OSXpFXBua/nvFgwFqayB2xTWBv7mArEmK/krY3qadJjrjAaEV5Xg8fRU4oWOo2OaDYhuKaDUt7ALwQsMNmgnziN4ubMRzBVaJ/DXhgVL8Sm6fOlwtfsPDv+42FL7V9RoLryKoxiWrt/BOfsW7PtMxQglEnIKjdjfV7/CuoesWYo7LViNw9bHsCSKrKgrn0rE0pwPeVajeP2uiYgqjrBcPZ0umtfgVpcpvJRUW3E4RcweAL9i+lDSfQF7ykKfPsraxTyMdBhg+uJXwXAuTXew1mFXwBskV9jYkU+xTYMOZy7B5mjrHPS4U1KQ6/M+kQwBgD6DG8hw6bEc0XePKg+f9RZzpafKyHj36047AjzqfZ/TMVi+1jsM31dl2GwypeCYtzruCUNgqhTdpCzmjAbYi0ekV93F",
-      "username": "otomi"
-    }
-  ]
+  "extends": ["github>redkubes/renovate-config"]
 }
