@@ -18,5 +18,13 @@
   },
   "helmv3": {
     "enabled": false
+  },
+  "npm": {
+    "packageRules": [
+      {
+        "groupName": "all",
+        "matchPackagePatterns": ["*"]
+      }
+    ]
   }
 }

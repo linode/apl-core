@@ -1,3 +1,0 @@
-@redkubes/devops
-package-*.json app/renovate-approve app/renovate-approve-2
-.github/actions/* app/renovate-approve app/renovate-approve-2
