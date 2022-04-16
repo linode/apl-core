@@ -54,7 +54,7 @@
     "@types/node-forge": "0.10.10",
     "@types/sinon": "9.0.11",
     "@types/sinon-chai": "3.2.8",
-    "@types/supertest": "2.0.11",
+    "@types/supertest": "2.0.12",
     "@types/tar": "4.0.5",
     "@types/validator": "13.7.2",
     "@types/yargs": "17.0.7",
