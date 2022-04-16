@@ -26,7 +26,7 @@ jobs:
           git config --global user.email $GIT_USER@users.noreply.github.com
           git config --global user.name $GIT_USER
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       # - name: CI tests, image build and push tag for main or branch
       #   uses: whoan/docker-build-with-cache-action@v5
       #   with:
@@ -60,7 +60,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set globalPullSecret if not running locally
         if: (!github.event.act)
         run: |
@@ -114,7 +114,7 @@ jobs:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set env
         run: |
           git config --global user.email $GIT_USER@users.noreply.github.com
@@ -158,7 +158,7 @@ jobs:
       options: --user 0
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Prepare chart
         run: |
           # Release new chart only if its version changes
