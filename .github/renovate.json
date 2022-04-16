@@ -7,14 +7,11 @@
     "enabled": false
   },
   "extends": ["github>redkubes/renovate-config"],
-  "helm-requirements": {
-    "enabled": true
-  },
-  "helm-values": {
-    "enabled": true
-  },
   "helmfile": {
     "enabled": false
+  },
+  "helm": {
+    "enabled": true
   },
   "helmv3": {
     "enabled": true
