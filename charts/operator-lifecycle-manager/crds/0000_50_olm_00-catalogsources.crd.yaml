@@ -1,0 +1,166 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: catalogsources.operators.coreos.com
+spec:
+  group: operators.coreos.com
+  names:
+    categories:
+      - olm
+    kind: CatalogSource
+    listKind: CatalogSourceList
+    plural: catalogsources
+    shortNames:
+      - catsrc
+    singular: catalogsource
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns:
+        - description: The pretty name of the catalog
+          jsonPath: .spec.displayName
+          name: Display
+          type: string
+        - description: The type of the catalog
+          jsonPath: .spec.sourceType
+          name: Type
+          type: string
+        - description: The publisher of the catalog
+          jsonPath: .spec.publisher
+          name: Publisher
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: CatalogSource is a repository of CSVs, CRDs, and operator packages.
+          type: object
+          required:
+            - metadata
+            - spec
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - sourceType
+              properties:
+                address:
+                  description: 'Address is a host that OLM can use to connect to a pre-existing registry. Format: <registry-host or ip>:<port> Only used when SourceType = SourceTypeGrpc. Ignored when the Image field is set.'
+                  type: string
+                configMap:
+                  description: ConfigMap is the name of the ConfigMap to be used to back a configmap-server registry. Only used when SourceType = SourceTypeConfigmap or SourceTypeInternal.
+                  type: string
+                description:
+                  type: string
+                displayName:
+                  description: Metadata
+                  type: string
+                icon:
+                  type: object
+                  required:
+                    - base64data
+                    - mediatype
+                  properties:
+                    base64data:
+                      type: string
+                    mediatype:
+                      type: string
+                image:
+                  description: Image is an operator-registry container image to instantiate a registry-server with. Only used when SourceType = SourceTypeGrpc. If present, the address field is ignored.
+                  type: string
+                priority:
+                  description: 'Priority field assigns a weight to the catalog source to prioritize them so that it can be consumed by the dependency resolver. Usage: Higher weight indicates that this catalog source is preferred over lower weighted catalog sources during dependency resolution. The range of the priority value can go from positive to negative in the range of int32. The default value to a catalog source with unassigned priority would be 0. The catalog source with the same priority values will be ranked lexicographically based on its name.'
+                  type: integer
+                publisher:
+                  type: string
+                secrets:
+                  description: Secrets represent set of secrets that can be used to access the contents of the catalog. It is best to keep this list small, since each will need to be tried for every catalog entry.
+                  type: array
+                  items:
+                    type: string
+                sourceType:
+                  description: SourceType is the type of source
+                  type: string
+                updateStrategy:
+                  description: UpdateStrategy defines how updated catalog source images can be discovered Consists of an interval that defines polling duration and an embedded strategy type
+                  type: object
+                  properties:
+                    registryPoll:
+                      type: object
+                      properties:
+                        interval:
+                          description: Interval is used to determine the time interval between checks of the latest catalog source version. The catalog operator polls to see if a new version of the catalog source is available. If available, the latest image is pulled and gRPC traffic is directed to the latest catalog source.
+                          type: string
+            status:
+              type: object
+              properties:
+                configMapReference:
+                  type: object
+                  required:
+                    - name
+                    - namespace
+                  properties:
+                    lastUpdateTime:
+                      type: string
+                      format: date-time
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    resourceVersion:
+                      type: string
+                    uid:
+                      description: UID is a type that holds unique ID values, including UUIDs.  Because we don't ONLY use UUIDs, this is an alias to string.  Being a type captures intent and helps make sure that UIDs and names do not get conflated.
+                      type: string
+                connectionState:
+                  type: object
+                  required:
+                    - lastObservedState
+                  properties:
+                    address:
+                      type: string
+                    lastConnect:
+                      type: string
+                      format: date-time
+                    lastObservedState:
+                      type: string
+                latestImageRegistryPoll:
+                  description: The last time the CatalogSource image registry has been polled to ensure the image is up-to-date
+                  type: string
+                  format: date-time
+                message:
+                  description: A human readable message indicating details about why the CatalogSource is in this condition.
+                  type: string
+                reason:
+                  description: Reason is the reason the CatalogSource was transitioned to its current state.
+                  type: string
+                registryService:
+                  type: object
+                  properties:
+                    createdAt:
+                      type: string
+                      format: date-time
+                    port:
+                      type: string
+                    protocol:
+                      type: string
+                    serviceName:
+                      type: string
+                    serviceNamespace:
+                      type: string
+      served: true
+      storage: true
+      subresources:
+        status: {}

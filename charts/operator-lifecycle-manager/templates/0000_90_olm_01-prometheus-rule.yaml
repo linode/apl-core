@@ -1,0 +1,20 @@
+{{ if and .Values.installType (eq .Values.installType "ocp") }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: olm-alert-rules
+  namespace: {{ .Values.namespace }}
+  labels:
+    prometheus: alert-rules
+    role: alert-rules
+spec:
+  groups:
+    - name: olm.failing_operators.rules
+      rules:
+        - alert: FailingOperator
+          annotations:
+            message: Failed to install Operator {{ printf "{{ $labels.name }}"  }} version {{ printf "{{ $labels.version }}"  }}. Reason-{{ printf "{{ $labels.reason }}" }}
+          expr: csv_abnormal{phase="Failed"}
+          labels:
+            severity: warning
+{{ end }}

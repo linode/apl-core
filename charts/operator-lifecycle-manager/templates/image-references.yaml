@@ -1,0 +1,14 @@
+{{- if .Values.imagestream }}
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+spec:
+  tags:
+  - name: operator-lifecycle-manager
+    from:
+      kind: DockerImage
+      name: {{ .Values.olm.image.ref }}
+  - name: operator-registry
+    from:
+      kind: DockerImage
+      name: quay.io/operator-framework/configmap-operator-registry:latest
+{{- end }}

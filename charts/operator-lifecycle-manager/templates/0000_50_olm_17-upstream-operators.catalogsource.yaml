@@ -1,0 +1,12 @@
+{{- if and .Values.installType (eq .Values.installType "upstream") -}}
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: operatorhubio-catalog
+  namespace: {{ .Values.catalog_namespace }}
+spec:
+  sourceType: grpc
+  image: quay.io/operatorhubio/catalog:latest
+  displayName: Community Operators
+  publisher: OperatorHub.io
+{{- end }}
