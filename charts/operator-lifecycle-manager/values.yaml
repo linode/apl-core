@@ -1,6 +1,6 @@
 rbacApiVersion: rbac.authorization.k8s.io
-namespace: operator-lifecycle-manager
-catalog_namespace: operator-lifecycle-manager
+namespace: olm
+catalog_namespace: olm
 operator_namespace: operators
 minKubeVersion: 1.11.0
 writeStatusName: '""'

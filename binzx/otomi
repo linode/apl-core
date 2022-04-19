@@ -19,7 +19,7 @@ if [ -n "$TESTING" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
-  OTOMI_TAG="master"
+  OTOMI_TAG="main"
 elif [ -z "$ENV_DIR" ] && [ -n "$IN_DOCKER" ]; then
   ENV_DIR="$PWD/env"
 elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
@@ -70,11 +70,11 @@ function parse_yaml {
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 fallback_otomi_version='latest'
-fallback_otomi_dev_version='master'
+fallback_otomi_dev_version='main'
 if [ -n "$in_core" ]; then
   current_branch=$(git branch --show-current 2>/dev/null)
   current_branch_img=${current_branch##*/}
-  # If the git branch command fails to get the img, then we use the fallback of master
+  # If the git branch command fails to get the img, then we use the fallback of main
   current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
   otomi_version=$current_branch_img
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
@@ -277,7 +277,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { { [ "$otomi_version_used" = 'latest' ] || [ "$otomi_version_used" = 'master' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$otomi_version_used" = 'latest' ] || [ "$otomi_version_used" = 'main' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?
