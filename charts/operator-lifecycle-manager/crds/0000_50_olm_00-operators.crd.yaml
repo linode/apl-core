@@ -1,0 +1,137 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: operators.operators.coreos.com
+spec:
+  group: operators.coreos.com
+  names:
+    categories:
+      - olm
+    kind: Operator
+    listKind: OperatorList
+    plural: operators
+    singular: operator
+  scope: Cluster
+  versions:
+    - name: v1
+      schema:
+        openAPIV3Schema:
+          description: Operator represents a cluster operator.
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: OperatorSpec defines the desired state of Operator
+              type: object
+            status:
+              description: OperatorStatus defines the observed state of an Operator and its components
+              type: object
+              properties:
+                components:
+                  description: Components describes resources that compose the operator.
+                  type: object
+                  required:
+                    - labelSelector
+                  properties:
+                    labelSelector:
+                      description: LabelSelector is a label query over a set of resources used to select the operator's components
+                      type: object
+                      properties:
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                          type: array
+                          items:
+                            description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                            type: object
+                            required:
+                              - key
+                              - operator
+                            properties:
+                              key:
+                                description: key is the label key that the selector applies to.
+                                type: string
+                              operator:
+                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                                type: string
+                              values:
+                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                                type: array
+                                items:
+                                  type: string
+                        matchLabels:
+                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                          type: object
+                          additionalProperties:
+                            type: string
+                    refs:
+                      description: Refs are a set of references to the operator's component resources, selected with LabelSelector.
+                      type: array
+                      items:
+                        description: RichReference is a reference to a resource, enriched with its status conditions.
+                        type: object
+                        properties:
+                          apiVersion:
+                            description: API version of the referent.
+                            type: string
+                          conditions:
+                            description: Conditions represents the latest state of the component.
+                            type: array
+                            items:
+                              description: Condition represent the latest available observations of an component's state.
+                              type: object
+                              required:
+                                - status
+                                - type
+                              properties:
+                                lastTransitionTime:
+                                  description: Last time the condition transitioned from one status to another.
+                                  type: string
+                                  format: date-time
+                                lastUpdateTime:
+                                  description: Last time the condition was probed
+                                  type: string
+                                  format: date-time
+                                message:
+                                  description: A human readable message indicating details about the transition.
+                                  type: string
+                                reason:
+                                  description: The reason for the condition's last transition.
+                                  type: string
+                                status:
+                                  description: Status of the condition, one of True, False, Unknown.
+                                  type: string
+                                type:
+                                  description: Type of condition.
+                                  type: string
+                          fieldPath:
+                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
+                            type: string
+                          kind:
+                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                            type: string
+                          namespace:
+                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                            type: string
+                          resourceVersion:
+                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                            type: string
+                          uid:
+                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                            type: string
+      served: true
+      storage: true
+      subresources:
+        status: {}

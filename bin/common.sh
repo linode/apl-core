@@ -151,7 +151,7 @@ function otomi_image_tag() {
   local otomi_version=$OTOMI_VERSION
   [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
   [ -z "$otomi_version" ] && otomi_version=$(cat $PWD/package.json | jq -r .version)
-  [ -z "$otomi_version" ] && otomi_version='master'
+  [ -z "$otomi_version" ] && otomi_version='main'
   echo $otomi_version
 }
 
