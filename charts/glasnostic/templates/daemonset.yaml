@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: glasnosticd
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "glasnosticd.name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "glasnosticd.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "glasnosticd.name" . }}
+    spec:
+      serviceAccountName: glasnosticd
+      volumes:
+      - name: injection-secret
+        secret:
+          secretName: injection-secret
+      containers:
+      - name: glasnosticd
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - mountPath: "/etc/glasnostic"
+          name: injection-secret
+          readOnly: true
+        envFrom:
+          - configMapRef:
+              name: glasnostic-config
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: INJECT_CERT_PATH
+          value: "/etc/glasnostic/tls.crt"
+        - name: INJECT_KEY_PATH
+          value: "/etc/glasnostic/tls.key"
+        - name: SIDECAR_IMAGE
+          value: "{{ .Values.sidecarImage }}:{{ .Values.sidecarImageTag }}"
+        - name: NODE_PORT
+          value: {{ .Values.nodePort | quote }} # this port is using the hostPort
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        resources:
+          limits:
+            cpu: 800m
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        ports:
+        - name: exchange
+          containerPort: 40753
+          hostPort: {{ .Values.nodePort }} # this port should be the same as the env NODE_PORT
+        - name: service-port
+          containerPort: 9091
+          hostPort: 9091

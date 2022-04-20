@@ -1,0 +1,5 @@
+{{ $v := .Values }}
+{{- $g := $v.apps.glasnostic }}
+
+hostPort: {{ $g.hostPort }}
+networkKey: {{ $g.networkKey }}

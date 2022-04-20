@@ -1436,6 +1436,14 @@ properties:
                 $ref: '#/definitions/resources'
               memcached:
                 $ref: '#/definitions/resources'
+      glasnostic:
+        properties:
+          hostPort:
+            type: number
+            default: 40753
+          networkKey:
+            type: string
+            description: The network key as found in the environment created in the Glasnostic account.
       grafana:
         additionalProperties: false
         properties:
