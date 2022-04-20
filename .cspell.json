@@ -18,6 +18,8 @@
     "encodedkey",
     "envs",
     "gcpckms",
+    "glasnostic",
+    "glasnosticd",
     "gotmpl",
     "groupsname",
     "gzrs",
