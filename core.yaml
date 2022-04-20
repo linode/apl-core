@@ -16,9 +16,6 @@ k8s:
     - name: gatekeeper-system
       disableIstioInjection: true
     - name: gitea
-    - name: glasnostic
-      disablePolicyChecks: true
-      disableIstioInjection: true
     - name: grafana
     - name: istio-system
       disableIstioInjection: true
