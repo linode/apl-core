@@ -1,0 +1,74 @@
+{{- define "packageserver.deployment-spec" -}}
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: {{ .Values.package.replicaCount }}
+  selector:
+    matchLabels:
+      app: packageserver
+  template:
+    metadata:
+      labels:
+        app: packageserver
+    spec:
+      serviceAccountName: olm-operator-serviceaccount
+      {{- if and .Values.installType (eq .Values.installType "ocp") }}
+      priorityClassName: "system-cluster-critical"
+      {{- end }}
+      {{- if .Values.package.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.package.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.package.tolerations }}
+      tolerations:
+        {{- toYaml .Values.package.tolerations | nindent 6 }}
+      {{- end }}
+      containers:
+      - name: packageserver
+        command:
+        - /bin/package-server
+        - -v=4
+        {{- if .Values.watchedNamespaces }}
+        - --watched-namespaces
+        - {{ .Values.watchedNamespaces }}
+        {{- end }}
+        - --secure-port
+        - {{ .Values.package.service.internalPort | quote }}
+        - --global-namespace
+        - {{ .Values.catalog_namespace }}
+        {{- if .Values.debug }}
+        - --debug
+        {{- end }}
+        {{- if .Values.package.commandArgs }}
+        - {{ .Values.package.commandArgs }}
+        {{- end }}
+        image: {{ .Values.package.image.ref }}
+        imagePullPolicy: {{ .Values.package.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.package.service.internalPort }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /healthz
+            port: {{ .Values.package.service.internalPort }}
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /healthz
+            port: {{ .Values.package.service.internalPort }}
+        terminationMessagePolicy: FallbackToLogsOnError
+        {{- if .Values.package.resources }}
+        resources:
+{{ toYaml .Values.package.resources | indent 10 }}
+        {{- end }}
+        {{- if .Values.package.securityContext }}
+        securityContext:
+          runAsUser: {{ .Values.package.securityContext.runAsUser }}
+        {{- end }}
+        volumeMounts:
+        - name: tmpfs
+          mountPath: /tmp
+      volumes:
+      - name: tmpfs
+        emptyDir: {}
+{{- end -}}
