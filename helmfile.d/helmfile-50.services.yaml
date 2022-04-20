@@ -38,8 +38,3 @@ releases:
     labels:
       pkg: gitea
     <<: *default
-  - name: glasnostic
-    installed: {{ $a | get "glasnostic.enabled" }}
-    namespace: glasnostic
-    chart: ../charts/glasnostic
-    <<: *default

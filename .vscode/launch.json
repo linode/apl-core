@@ -104,7 +104,6 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
       "args": ["src/otomi.ts", "--", "apply"],
-      // "args": ["src/otomi.ts", "--", "apply", "-l", "name=glasnostic"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
