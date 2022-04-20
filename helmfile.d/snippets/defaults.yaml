@@ -31,6 +31,9 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+          glasnostic:
+            enabled: false
+            hostPort: 40753
           grafana:
             enabled: false
           harbor:

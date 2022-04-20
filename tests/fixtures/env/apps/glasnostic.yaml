@@ -1,0 +1,4 @@
+apps:
+    glasnostic:
+        enabled: true
+        networkKey: somekey

@@ -1438,12 +1438,27 @@ properties:
                 $ref: '#/definitions/resources'
       glasnostic:
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
           hostPort:
             type: number
             default: 40753
           networkKey:
             type: string
             description: The network key as found in the environment created in the Glasnostic account.
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - networkKey
       grafana:
         additionalProperties: false
         properties:
@@ -1452,6 +1467,9 @@ properties:
           enabled:
             type: boolean
             default: false
+          adminPassword:
+            type: string
+            x-secret: ''
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -2011,8 +2029,6 @@ properties:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
             type: string
-        required:
-          - adminPassword
       metrics-server:
         additionalProperties: false
         properties:

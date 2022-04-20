@@ -4,4 +4,3 @@ apps:
         idp:
             alias: redkubes-azure
             clientID: otomi
-        theme: otomi

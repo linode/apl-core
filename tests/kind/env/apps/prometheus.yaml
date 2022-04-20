@@ -1,5 +1,6 @@
 apps:
     prometheus:
+        enabled: true
         _rawValues:
             alertmanager:
                 alertmanagerSpec:
