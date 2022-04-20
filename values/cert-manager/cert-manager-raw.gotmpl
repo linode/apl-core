@@ -22,7 +22,7 @@ resources:
       secret: "{{ $p.aws.secretAccessKey | b64enc }}"
       {{- end }}
 {{- end }}
-
+{{- if eq $cm.issuer "custom-ca" }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
@@ -30,6 +30,7 @@ resources:
     spec:
       ca:
         secretName: custom-ca
+{{- end }}
 {{- if eq $cm.issuer "letsencrypt" }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
