@@ -61,3 +61,5 @@ spec:
         - name: service-port
           containerPort: 9091
           hostPort: 9091
+        securityContext:
+          runAsUser: 1001
