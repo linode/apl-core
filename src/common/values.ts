@@ -60,13 +60,13 @@ const writeValuesToFile = async (
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
-  if (isEmpty(inValues) && isSecretsFile) {
+  const values = cloneDeep(inValues) as Record<string, any>
+  const newValues = removeBlankAttributes(values)
+  if (isEmpty(newValues) && isSecretsFile) {
     // get rid of empty secrets files as those are problematic
     if (existsSync(targetPath)) unlinkSync(targetPath)
     if (existsSync(`${targetPath}.dec`)) unlinkSync(`${targetPath}.dec`)
   }
-  const values = cloneDeep(inValues) as Record<string, any>
-  const newValues = removeBlankAttributes(values)
   d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
   if (!existsSync(targetPath) || overwrite) {
