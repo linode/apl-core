@@ -14,7 +14,7 @@ otomi: {}
   # NOTE: When this is set to true you must also fill in the 'oidc:' settings below. 
   # hasExternalIDP: false
   # By default the image tag is set to .Chart.AppVersion
-  # version: master
+  # version: main
 apps:
   cert-manager:
     # Use a custom CA (BYO or auto-generated) or use letsencrypt. When using letsencrypt, also fill in dns.

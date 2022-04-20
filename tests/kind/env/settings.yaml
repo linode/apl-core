@@ -5,5 +5,5 @@ otomi:
     isHomeMonitored: false
     isManaged: false
     isMultitenant: true
-    version: master
+    version: main
 version: 2
