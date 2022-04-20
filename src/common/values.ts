@@ -55,12 +55,12 @@ let hasSops = false
  */
 const writeValuesToFile = async (
   targetPath: string,
-  inValues: Record<string, any> | undefined,
+  inValues: Record<string, any> = {},
   overwrite = false,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
-  const values = cloneDeep(inValues) as Record<string, any>
+  const values = cloneDeep(inValues)
   const newValues = removeBlankAttributes(values)
   if (isEmpty(newValues) && isSecretsFile) {
     // get rid of empty secrets files as those are problematic
@@ -150,7 +150,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
         teamPromises.push(
           writeValuesToFile(
             `${env.ENV_DIR}/env/teams/${fileType}.${team}.yaml`,
-            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, {}) } } },
+            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, []) } } },
             overwrite,
           ),
         )
