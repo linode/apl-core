@@ -110,7 +110,7 @@ resources:
     value: 1000000
     globalDefault: false
     description: "This priority class should be used for Otomi High priority service pods only."
-
+{{- if eq $cm.issuer "custom-ca" }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -119,3 +119,4 @@ resources:
     data:
       tls.crt: {{ $cm.customRootCA | b64enc }}
       tls.key: {{ $cm.customRootCAKey | b64enc}}
+{{- end }}
