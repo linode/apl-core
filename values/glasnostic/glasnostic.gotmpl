@@ -4,3 +4,5 @@
 hostPort: {{ $g.hostPort }}
 networkKey: {{ $g.networkKey }}
 certManager: {{ $g.certManager | toYaml | nindent 2 }}
+podSecurityContext:
+  runAsUser: 1001
