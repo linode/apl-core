@@ -120,7 +120,7 @@ export const setDeep = async (obj, path: string, tmplStr: string): Promise<void>
   let paths: string[] = [path]
   // expand if we have a team marker
   if (path.includes(teamMarker)) {
-    paths = Object.keys(obj.teamConfig).map((t) => path.replace(teamMarker, t))
+    paths = Object.keys(obj.teamConfig || {}).map((t) => path.replace(teamMarker, t))
   }
 
   // expand on array markers
