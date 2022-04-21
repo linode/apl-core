@@ -1,25 +1,22 @@
----
-# rbac role definition
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: glasnosticd
+  name: {{ include "glasnostic.fullname" . }}
 rules:
   - apiGroups: ["", "coordination.k8s.io"]
     resources: ["leases", "nodes", "pods", "services", "endpoints"]
     verbs: ["get", "list", "update", "delete", "create", "watch"]
 
 ---
-# rbac role binding to service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: glasnosticd
+  name: {{ include "glasnostic.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    name: glasnosticd # ServiceAccount name
-    namespace: {{ .Values.namespace }}
+    name: {{ include "glasnostic.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: glasnosticd # rbac role definition name
+  name: {{ include "glasnostic.fullname" . }}
   apiGroup: rbac.authorization.k8s.io

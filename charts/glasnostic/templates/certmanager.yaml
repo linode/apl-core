@@ -1,0 +1,55 @@
+{{- if .Values.certManager.enabled -}}
+{{- if not .Values.certManager.issuerRef -}}
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "glasnostic.fullname" . }}-self-signed-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+---
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "glasnostic.fullname" . }}-root-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ template "glasnostic.fullname" . }}-root-cert
+  duration: {{ .Values.certManager.rootCert.duration | default "43800h0m0s" | quote }}
+  issuerRef:
+    name: {{ template "glasnostic.fullname" . }}-self-signed-issuer
+  commonName: "ca.webhook.glasnostic"
+  isCA: true
+---
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ template "glasnostic.fullname" . }}-root-issuer
+spec:
+  ca:
+    secretName: {{ template "glasnostic.fullname" . }}-root-cert
+{{- end }}
+---
+# generate a server certificate for the apiservices to use
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "glasnostic.fullname" . }}-admission
+spec:
+  secretName: {{ template "glasnostic.fullname" . }}-admission
+  duration: {{ .Values.certManager.admissionCert.duration | default "8760h0m0s" | quote }}
+  issuerRef:
+    {{- if .Values.certManager.issuerRef }}
+    {{- toYaml .Values.certManager.issuerRef | nindent 4 }}
+    {{- else }}
+    name: {{ template "glasnostic.fullname" . }}-root-issuer
+    {{- end }}
+  dnsNames:
+  - {{ template "glasnostic.fullname" . }}
+  - {{ template "glasnostic.fullname" . }}.{{ .Release.Namespace }}
+  - {{ template "glasnostic.fullname" . }}.{{ .Release.Namespace }}.svc
+{{- end -}}

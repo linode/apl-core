@@ -1,17 +1,35 @@
-# Default values for glasnosticd.
+# Default values for glasnostic.
 # This is a YAML-formatted file.
 
 # Glasnostic Network ID - The network ID of the network to use for the dataplane.
 # Go to https://app.glasnostic.com/ to see the network ID.
 networkKey: ""
 
-nameOverride: ""
-fullnameOverride: ""
+# NodePort that Glasnostic will use. Should be free to use.
+nodePort: 40753
 
 image:
   repository: public.ecr.aws/glasnostic/glasnosticd
   pullPolicy: IfNotPresent
-  tag: "v0.99.8"
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+sidecar:
+  repository: public.ecr.aws/glasnostic/sidecar
+  # TODO: Christoph: remove next line if not used:
+  pullPolicy: IfNotPresent
+  tag: v0.99.8
+
+certManager:
+  # Use cert manager for webhook certs?
+  enabled: false
+  # issuerRef:
+  #   name: custom-ca
+  #   kind: ClusterIssuer
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
  # Specifies whether a service account should be created
@@ -20,11 +38,24 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
-sidecarImage: "public.ecr.aws/glasnostic/sidecar"
-sidecarImageTag: "v0.99.8"
+podAnnotations: {}
 
-namespace: "glasnostic-system"
+podSecurityContext: {}
+  # runAsUser: 1001
+  # fsGroup: 2000
 
-nodePort: 40755
+resources:
+  limits:
+    cpu: 800m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 200Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

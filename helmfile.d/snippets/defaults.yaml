@@ -34,6 +34,13 @@ environments:
           glasnostic:
             enabled: false
             hostPort: 40753
+            certManager:
+              enabled: true
+              issuerRef: custom-ca
+              rootCert:
+                duration: 43800h0m0s
+              admissionCert:
+                duration: 8760h0m0s
           grafana:
             enabled: false
           harbor:

@@ -1449,6 +1449,24 @@ properties:
           networkKey:
             type: string
             description: The network key as found in the environment created in the Glasnostic account.
+          certManager:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+                issuerRef:
+                  type: string
+                  default: custom-ca
+              rootCert:
+                properties:
+                  duration:
+                    type: string
+                    default: 43800h0m0s
+              admissionCert:
+                properties:
+                  duration:
+                    type: string
+                    default: 8760h0m0s
         allOf:
           - anyOf:
               - not:

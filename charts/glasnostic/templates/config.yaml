@@ -1,16 +1,7 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Values.namespace }}
-  labels:
-    glasnostic: disable
-
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: glasnostic-config
-  namespace: {{ .Values.namespace }}
+  name: {{ include "glasnostic.fullname" . }}
 data:
   NETWORK_KEY: {{ required "You must set a valid Glasnostic Network ID API key" .Values.networkKey | quote }}
   IGNORE_PASSTHROUGH_REPORT: "true"
