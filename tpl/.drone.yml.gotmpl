@@ -79,6 +79,8 @@ steps:
     depends_on:
       - prepare-env
     commands:
+      # if there is anything to migrate, do it now commit without triggering another run
+      - cd .. && if ! binzx/otomi migrate | grep 'No changes detected, skipping' >/dev/null; then binzx/otomi commit -m "values migration [ci skip]"; fi 
       - cd .. && binzx/otomi test
 
   - name: apply

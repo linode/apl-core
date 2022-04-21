@@ -1,13 +1,14 @@
 import { copyFileSync, existsSync } from 'fs'
+import { map } from 'lodash'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
-import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
+import { DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getOtomiDeploymentStatus, waitTillAvailable } from '../common/k8s'
+import { getDeploymentState, waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
 import { HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -16,7 +17,9 @@ import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
 
-interface Arguments extends HelmArguments, DroneArgs {}
+interface Arguments extends HelmArguments, DroneArgs {
+  m?: string
+}
 
 const gitPush = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
@@ -37,15 +40,11 @@ const gitPush = async (): Promise<boolean> => {
   }
 }
 
-export const setDeploymentStatus = async (): Promise<void> => {
-  const status = await getOtomiDeploymentStatus()
-  if (status !== 'deployed') {
-    await nothrow(
-      $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} --from-literal=status='deployed'`,
-    )
-    // Since status is an indicator of successful deployment, the generated passwords must be deleted later.
-    await nothrow($`kubectl delete secret ${DEPLOYMENT_PASSWORDS_SECRET}`)
-  }
+export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
+  const currentState = await getDeploymentState()
+  const newState = { ...currentState, ...state }
+  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`).join(' ')
+  await nothrow($`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`)
 }
 
 const getGiteaHealthUrl = async (): Promise<string> => {
@@ -158,7 +157,7 @@ export const commit = async (): Promise<void> => {
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) {
-    await setDeploymentStatus()
+    await setDeploymentState()
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################

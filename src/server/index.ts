@@ -4,7 +4,6 @@ import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
 import { bootstrapSops } from '../cmd/bootstrap'
 import { genDrone } from '../cmd/gen-drone'
-import { migrate } from '../cmd/migrate'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
@@ -26,8 +25,10 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 app.get('/init', async (req: Request, res: Response) => {
   try {
     d.log('Request to initialize values repo')
-    await decrypt()
-    await migrate()
+    // nothing to do here anymore as migrate now performed in drone pipeline
+    // TODO: remove this endpoint after removing call in api
+    // await decrypt()
+    // await migrate()
     res.status(200).send('ok')
   } catch (error) {
     d.error(error)

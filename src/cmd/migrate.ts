@@ -86,7 +86,7 @@ export const rename = async (
   }
 }
 
-export const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
+const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
   const val = get(values, lhs)
   if (val !== undefined && set(values, rhs, val)) unset(values, lhs)
 }
@@ -229,12 +229,13 @@ export const migrate = async (): Promise<void> => {
   const prevVersion: number = loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
+    d.log('Changes detected, migrating...')
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
     // encrypt and decrypt to
     await encrypt()
     await decrypt()
-    d[argv.dryRun ? 'log' : 'info'](`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
-  } else d.info('No changes detected, skipping')
+    d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
+  } else d.log('No changes detected, skipping')
 }
 
 export const module = {

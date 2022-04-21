@@ -50,11 +50,11 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
-export const getOtomiDeploymentStatus = async (): Promise<string> => {
+export const getDeploymentState = async (): Promise<Record<string, any>> => {
   const result = await nothrow(
-    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`,
   )
-  return result.stdout
+  return JSON.parse(result.stdout || '{}')
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

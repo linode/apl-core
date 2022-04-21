@@ -6,12 +6,12 @@ import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getOtomiDeploymentStatus, getOtomiLoadBalancerIP } from '../common/k8s'
+import { getDeploymentState, getOtomiLoadBalancerIP } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit, setDeploymentStatus } from './commit'
+import { commit, setDeploymentState } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -97,13 +97,13 @@ const apply = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
+    const state = await getDeploymentState()
     await applyAll()
     if (isCli) {
       // commit first time only
-      const status = await getOtomiDeploymentStatus()
-      if (status !== 'deployed') {
+      if (state.status !== 'deployed') {
         await commit()
-        await setDeploymentStatus()
+        await setDeploymentState({ status: 'deployed' })
       }
     }
     return

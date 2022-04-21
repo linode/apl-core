@@ -97,6 +97,20 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
+      "name": "Debug pre-upgrade",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "pre-upgrade", "-r", "prometheus-operator", "--dry-run"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "name": "Debug apply",
       "console": "integratedTerminal",
       "type": "pwa-node",
