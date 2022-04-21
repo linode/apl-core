@@ -69,7 +69,7 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await nothrow($`kubectl create -f charts/prometheus-operator/crds`)
+  await nothrow($`kubectl apply -f charts/prometheus-operator/crds`)
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
