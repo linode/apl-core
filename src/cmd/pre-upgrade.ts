@@ -37,7 +37,8 @@ function filterChanges(version: number, changes: Changes): Changes {
 export const preUpgrade = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:upgrade`)
   const argv = getParsedArgs() as Arguments
-  const changes: Changes = loadYaml(`${rootDir}/code-changes.yaml`)?.changes
+  // The rootDir for helmfile process is /home/app/stack/helmfile.d
+  const changes: Changes = loadYaml(`${rootDir}/../code-changes.yaml`)?.changes
   const prevVersion: string = (await getDeploymentState()).version || 0
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredChanges = filterChanges(Number(prevVersion), changes)
