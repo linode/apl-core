@@ -1,13 +1,13 @@
 templates:
   preUpgrade: &preUpgrade
-    hooks:
-      - events: ["presync"]
-        showlogs: true
-        command: ../binzx/otomi
-        args:
-          - pre-upgrade
-          - -r
-          - "{{ .Release.Name }}"
+    hooks: []
+      # - events: ["presync"]
+      #   showlogs: true
+      #   command: ../binzx/otomi
+      #   args:
+      #     - pre-upgrade
+      #     - -r
+      #     - "{{ .Release.Name }}"
   default: &default
     missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
