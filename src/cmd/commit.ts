@@ -10,7 +10,7 @@ import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getDeploymentState, waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
-import { HelmArguments, setParsedArgs } from '../common/yargs'
+import { HelmArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -19,6 +19,7 @@ const cmdName = getFilename(__filename)
 
 interface Arguments extends HelmArguments, DroneArgs {
   m?: string
+  message?: string
 }
 
 const gitPush = async (): Promise<boolean> => {
@@ -57,10 +58,11 @@ const getGiteaHealthUrl = async (): Promise<string> => {
 const commitAndPush = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
+  const argv = getParsedArgs()
   cd(env.ENV_DIR)
   await $`git add -A`
   try {
-    await $`git commit -m 'otomi commit' --no-verify`
+    await $`git commit -m ${argv.message || 'otomi commit'} --no-verify`
   } catch (e) {
     d.info(e.stdout)
     d.error(e.stderr)
@@ -157,7 +159,7 @@ export const commit = async (): Promise<void> => {
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) {
-    await setDeploymentState()
+    await setDeploymentState({ deployed: true })
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################

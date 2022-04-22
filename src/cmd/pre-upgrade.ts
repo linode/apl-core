@@ -5,11 +5,11 @@ import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
 import pkg from '../../package.json'
 import { prepareEnvironment } from '../common/cli'
-import { logLevel, terminal } from '../common/debug'
+import { terminal } from '../common/debug'
 import { getDeploymentState } from '../common/k8s'
 import { getFilename, loadYaml, rootDir } from '../common/utils'
 import { getImageTag } from '../common/values'
-import { BasicArguments } from '../common/yargs'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 import { setDeploymentState } from './commit'
 
 const cmdName = getFilename(__filename)
@@ -31,22 +31,12 @@ function filterChanges(version: number, changes: Changes): Changes {
   return changes.filter((c) => c.version - version > 0)
 }
 
-let parsedArgs: Arguments
-const setParsedArgs = (args: Arguments): void => {
-  parsedArgs = args
-  // Call needed to init LL for debugger and ZX calls:
-  logLevel(parsedArgs as BasicArguments)
-}
-const getParsedArgs = (): Arguments => {
-  return parsedArgs || {}
-}
-
 /**
  * Checks if any operations need to be ran for releases and executes those.
  */
 export const preUpgrade = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:upgrade`)
-  const argv: Arguments = getParsedArgs()
+  const argv = getParsedArgs() as Arguments
   const changes: Changes = loadYaml(`${rootDir}/code-changes.yaml`)?.changes
   const prevVersion: string = (await getDeploymentState()).version || 0
   d.info(`Current version of otomi: ${prevVersion}`)
