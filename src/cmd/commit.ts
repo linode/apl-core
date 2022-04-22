@@ -1,14 +1,12 @@
 import { copyFileSync, existsSync } from 'fs'
-import { map } from 'lodash'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
-import { DEPLOYMENT_STATUS_CONFIGMAP } from '../common/constants'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { getDeploymentState, waitTillAvailable } from '../common/k8s'
+import { waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
 import { getParsedArgs, HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -39,13 +37,6 @@ const gitPush = async (): Promise<boolean> => {
     d.error(e.stderr)
     return false
   }
-}
-
-export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
-  const currentState = await getDeploymentState()
-  const newState = { ...currentState, ...state }
-  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`).join(' ')
-  await nothrow($`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`)
 }
 
 const getGiteaHealthUrl = async (): Promise<string> => {
@@ -155,7 +146,6 @@ export const commit = async (): Promise<void> => {
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (isChart) {
-    await setDeploymentState({ deployed: true })
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################

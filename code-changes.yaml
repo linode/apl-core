@@ -1,7 +1,0 @@
-changes:
-  - version: 0.16
-    releases:
-      prometheus-operator:
-        operations:
-          # immutability prevents updating this resource we will have to delete first:
-          - kubectl delete deploy -n monitoring prometheus-operator-kube-state-metrics

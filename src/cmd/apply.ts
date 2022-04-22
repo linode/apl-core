@@ -4,14 +4,13 @@ import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getDeploymentState, getOtomiLoadBalancerIP } from '../common/k8s'
+import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { writeValues } from '../common/values'
+import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit, setDeploymentState } from './commit'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -57,6 +56,12 @@ const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
   d.info('Start apply all')
+
+  const { status } = await getDeploymentState()
+  const tag = await getImageTag()
+  const version = await getCurrentVersion()
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
@@ -91,21 +96,18 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+  await setDeploymentState({ status: 'deployed' })
+  // commit first time only
+  if (status !== 'deployed') {
+    await commit()
+  }
 }
 
 const apply = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:applyAll`)
+  const d = terminal(`cmd:${cmdName}:apply`)
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
-    const state = await getDeploymentState()
     await applyAll()
-    if (isCli) {
-      // commit first time only
-      if (state.status !== 'deployed') {
-        await commit()
-        await setDeploymentState({ status: 'deployed' })
-      }
-    }
     return
   }
   d.info('Start apply')

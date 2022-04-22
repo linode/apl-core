@@ -7,7 +7,7 @@ import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
 import { dump, load } from 'js-yaml'
-import { isEmpty } from 'lodash'
+import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { $, nothrow, sleep } from 'zx'
@@ -50,11 +50,26 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
-export const getDeploymentState = async (): Promise<Record<string, any>> => {
+export interface DeploymentState {
+  status?: 'deploying' | 'deployed'
+  tag?: string
+  version?: string
+  deployingTag?: string
+  deployingVersion?: string
+}
+
+export const getDeploymentState = async (): Promise<DeploymentState> => {
   const result = await nothrow(
     $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`,
   )
   return JSON.parse(result.stdout || '{}')
+}
+
+export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
+  const currentState = await getDeploymentState()
+  const newState = { ...currentState, ...state }
+  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`).join(' ')
+  await nothrow($`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`)
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

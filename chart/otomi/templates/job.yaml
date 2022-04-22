@@ -39,7 +39,6 @@ spec:
               fi
               binzx/otomi bootstrap
               binzx/otomi apply
-              binzx/otomi commit
           env:
             - name: CI
               value: '1'

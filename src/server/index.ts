@@ -25,10 +25,8 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 app.get('/init', async (req: Request, res: Response) => {
   try {
     d.log('Request to initialize values repo')
-    // nothing to do here anymore as migrate now performed in drone pipeline
+    // nothing to do here anymore as bootstrap now performed in drone pipeline
     // TODO: remove this endpoint after removing call in api
-    // await decrypt()
-    // await migrate()
     res.status(200).send('ok')
   } catch (error) {
     d.error(error)
