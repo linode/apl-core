@@ -174,9 +174,11 @@ export const module = {
   describe: 'Wrapper that validates values, generates the Drone pipeline and then commits changed files',
   builder: (parser: Argv): Argv =>
     parser.options({
-      release: {
-        alias: ['r'],
+      message: {
+        alias: ['m'],
+        string: true,
         hidden: true,
+        describe: 'Commit message',
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {
