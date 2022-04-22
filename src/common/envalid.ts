@@ -15,7 +15,6 @@ const cliEnvSpec = {
   DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
-  HELM_DIFF_USE_UPGRADE_DRY_RUN: bool({ default: true }),
   IN_DOCKER: bool({ default: false }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
   NODE_TLS_REJECT_UNAUTHORIZED: bool({ default: true }),

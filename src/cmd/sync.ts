@@ -17,7 +17,7 @@ const sync = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['sync', '--skip-deps', skipCleanup],
+      args: ['sync', skipCleanup],
     },
     { streams: { stdout: d.stream.log } },
   )

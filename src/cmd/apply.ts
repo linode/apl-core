@@ -82,7 +82,7 @@ const applyAll = async () => {
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
@@ -93,7 +93,7 @@ const applyAll = async () => {
       fileOpts: argv.file,
       labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
@@ -118,7 +118,7 @@ const apply = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps', skipCleanup],
+      args: ['apply', skipCleanup],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

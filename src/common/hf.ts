@@ -49,6 +49,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
 
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
+  process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
   const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
   return proc
 }
@@ -84,8 +85,8 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
 export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
-  // const args = ['template', '--skip-deps', '--validate']
-  const args = ['template', '--skip-deps']
+  // const args = ['template', '--validate']
+  const args = ['template', '--no-hooks']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
   const argsArr: string[] = ['--skip-tests']
