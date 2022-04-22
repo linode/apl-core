@@ -39,31 +39,28 @@ export const preUpgrade = async (): Promise<void> => {
   const prevVersion: string = (await getDeploymentState()).version || '0'
   // we want minor only, so remove last tuple
   const minor = prevVersion.substring(0, prevVersion.lastIndexOf('.'))
-
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredChanges = filterChanges(Number(minor), changes)
   if (filteredChanges.length) {
-    d.log('Operations detected, executing...')
+    d.info('Upgrade records detected')
     const r = argv.release
     for (let i = 0; i < filteredChanges.length; i++) {
       const c: Record<string, any> = filteredChanges[i]
       if (c.releases[r]) {
         const release = c.releases[r]
         for (const op of release.blockingOperations || []) {
-          if (argv.dryRun) d.log(`blockingOperation: ${op}`)
-          else {
-            const res = await nothrow($`${op.split(' ')}`)
-            if (res.stdout) d.debug(res.stdout)
-            if (res.stderr) d.error(res.stderr)
-          }
+          d[argv.dryRun ? 'log' : 'info'](`blockingOperation: ${op}`)
+          if (argv.dryRun) return
+          const res = await nothrow($`${op.split(' ')}`)
+          if (res.stdout) d.debug(res.stdout)
+          if (res.stderr) d.error(res.stderr)
         }
         for (const op of release.nonBlockingOperations || []) {
-          if (argv.dryRun) d.log(`nonBlockingOperation: ${op}`)
-          else {
-            const res = await nothrow($`${op.split(' ')} || true`)
-            if (res.stdout) d.debug(res.stdout)
-            if (res.stderr) d.error(res.stderr)
-          }
+          d[argv.dryRun ? 'log' : 'info'](`nonBlockingOperation: ${op}`)
+          if (argv.dryRun) return
+          const res = await nothrow($`${op.split(' ')} || true`)
+          if (res.stdout) d.debug(res.stdout)
+          if (res.stderr) d.error(res.stderr)
         }
       }
     }
