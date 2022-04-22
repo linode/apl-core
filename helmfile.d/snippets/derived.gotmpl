@@ -40,15 +40,13 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
-          {{- if $untrustedCA }}
           caCert: |
-            {{- if eq $issuer "custom-ca" }}
-              {{- $cm | get "customRootCA" "" | nindent 12 }}
-            {{- else }}
+            {{- if eq $issuer "letsencrypt" }}
               {{- $v.letsencryptRootCA | nindent 12 }}
               {{- $v.letsencryptCA | nindent 12 }}
+            {{- else }}
+              {{- $cm | get "customRootCA" "" | nindent 12 }}
             {{- end }}
-          {{- end }}
           supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
