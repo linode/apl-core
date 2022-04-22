@@ -69,7 +69,8 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await nothrow($`kubectl apply -f charts/prometheus-operator/crds`)
+  // We use kubectl replace instead of kubectl apply because the latter adds kubectl.kubernetes.io/last-applied-configuration annotation which  exeeds allowed size
+  await nothrow($`kubectl replace -f charts/prometheus-operator/crds`)
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
