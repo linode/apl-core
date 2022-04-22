@@ -107,7 +107,7 @@ const replace = async (tmplStr: string, prev: any): Promise<string> => {
  * - teamConfig.{team}.services[].someProp: replaceMe
  * This would update someProp for all team services
  */
-export const setDeep = async (obj, path: string, tmplStr: string): Promise<void> => {
+export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDeep`)
   d.debug(`(obj, ${path}, ${tmplStr}`)
   const teamMarker = '{team}'

@@ -10,7 +10,7 @@ kind: Installation
 metadata:
   name: default
 spec:
-{{- $installSpec | toYaml | indent 2 }}
+{{- $installSpec | toYaml | nindent 2 }}
 {{- if .Values.apiServer.enabled }}
 ---
 apiVersion: operator.tigera.io/v1

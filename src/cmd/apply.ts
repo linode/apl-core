@@ -4,7 +4,7 @@ import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { hf, hfValues } from '../common/hf'
+import { getHelmArgs, hf, hfValues } from '../common/hf'
 import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
@@ -79,7 +79,6 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],
@@ -90,7 +89,6 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage!=prep')
   await hf(
     {
-      fileOpts: argv.file,
       labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
       args: ['apply'],

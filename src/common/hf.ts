@@ -82,6 +82,13 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
   return res
 }
 
+export const getHelmArgs = (argv: HelmArguments, args: string[] = []): string[] => {
+  const argsArr: string[] = args
+  if (argv.args) argsArr.push(argv.args)
+  if (argv.kubeVersion) argsArr.push(`--kube-version=${argv.kubeVersion}`)
+  return ['--args', argsArr.join(' ')]
+}
+
 export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?: Streams): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
@@ -89,17 +96,8 @@ export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?:
   const args = ['template']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
-  const argsArr: string[] = ['--skip-tests']
-  // if (argv.kubeVersion) {
-  //   argsArr.push(`--kube-version=${argv.kubeVersion}`)
-  //   const apiVersions = readFileSync(`${rootDir}/schemas/api-versions/${argv.kubeVersion}.txt`, 'utf8')
-  //     .toString()
-  //     .replace(/\r\n/g, '\n')
-  //     .split('\n')
-  //   argsArr.push(`--api-versions='${apiVersions.join(' ')}'`)
-  // }
-  if (argv.args) argsArr.push(argv.args)
-  args.push(`--args="${argsArr.join(' ')}"`)
+  const helmArgs = getHelmArgs(argv, ['--skip-tests'])
+  args.push(...helmArgs)
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
