@@ -3,8 +3,8 @@
 {{- $d := $v | get "apps.aws-ebs-csi-driver" }}
 
 podAnnotations:
-  policy.otomi.io/ignore.ebs-csi-node: "psp-privileged"
-  policy.otomi.io/ignore.ebs-plugin: "psp-privileged"
+  policy.otomi.io/ignore: psp-privileged
+  policy.otomi.io/ignore.ebs-csi-node: psp-host-filesystem
 
 controller:
   resources:

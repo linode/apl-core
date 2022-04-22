@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-app: tigera-operator
   annotations:
-    policy.otomi.io/ignore: psp-host-filesystem
+    policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports
 spec:
   replicas: 1
   selector:
