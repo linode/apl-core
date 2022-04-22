@@ -18,6 +18,12 @@ spec:
         name: tigera-operator
         k8s-app: tigera-operator
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
       securityContext:
         runAsNonRoot: true
       nodeSelector:

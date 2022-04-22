@@ -1,7 +1,6 @@
 imagePullSecrets: {}
 
 installation:
-  enabled: true
   kubernetesProvider: ""
 
 apiServer:
