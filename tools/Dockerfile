@@ -105,7 +105,7 @@ RUN chmod +x gucci
 RUN pip3 install --upgrade --no-cache-dir awscli
 
 # aws-iam-authenticator
-ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
 RUN chmod +x aws-iam-authenticator
 
 # opa
