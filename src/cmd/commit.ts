@@ -10,7 +10,7 @@ import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getDeploymentState, waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
-import { HelmArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
+import { getParsedArgs, HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { pull } from './pull'
 import { validateValues } from './validate-values'
@@ -127,11 +127,6 @@ const bootstrapGit = async (values): Promise<void> => {
   d.log(`Done bootstrapping git`)
 }
 
-const preCommit = async (): Promise<void> => {
-  await genDrone()
-  await encrypt()
-}
-
 export const commit = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
@@ -154,7 +149,8 @@ export const commit = async (): Promise<void> => {
       password: adminPassword,
     })
   }
-  await preCommit()
+  await genDrone()
+  await encrypt()
   if (values?.apps?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
@@ -175,9 +171,14 @@ export const commit = async (): Promise<void> => {
 
 export const module = {
   command: cmdName,
-  describe: 'Execute wrapper for generate pipelines -> git commit changed files',
-  builder: (parser: Argv): Argv => parser,
-
+  describe: 'Wrapper that validates values, generates the Drone pipeline and then commits changed files',
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      release: {
+        alias: ['r'],
+        hidden: true,
+      },
+    }),
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
