@@ -73,27 +73,25 @@ steps:
       - groupadd -r -g 999 app && useradd -r -g 999 -u 999 app
       - chmod -R a+w .* env && chown -R app .* env
 
-  - name: test
+  - name: migrate
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
-    user: 999
     depends_on:
       - prepare-env
     commands:
-      - "cd /home/app/stack"
-      # if there is anything to bootstrap, do it now, and commit if we migrated values without triggering another run
-      - "res=$(binzx/otomi bootstrap)"
-      - "set +e && echo $res | grep 'migrate:log No changes detected, skipping'"
-      - "res=$?; set -e"
-      - "if $res; then binzx/otomi commit -m 'values migration [ci skip]' && cd env && git push; fi"
-      - "set -e"
-      - "cd /home/app/stack"
-      - "binzx/otomi test"
+      - cd .. binzx/otomi migrate
+
+  - name: test
+    image: otomi/core:{{ .imageTag }}
+    pull: {{ .pullPolicy }}
+    depends_on:
+      - migrate
+    commands:
+      - cd .. && binzx/otomi test
 
   - name: apply
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
-    user: 999
     commands:
       - cd .. && binzx/otomi apply
     depends_on:

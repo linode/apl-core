@@ -4,7 +4,7 @@ import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
+import { env, isChart } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
@@ -167,7 +167,7 @@ export const module = {
     parser.options({
       message: {
         alias: ['m'],
-        string: true,
+        type: 'string',
         hidden: true,
         describe: 'Commit message',
       },

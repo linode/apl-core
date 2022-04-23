@@ -6,6 +6,7 @@ import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
+import { commit } from './commit'
 import { prepareEnvironment } from '../common/cli'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
@@ -222,7 +223,7 @@ export const applyChanges = async (
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
-export const migrate = async (): Promise<void> => {
+export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
@@ -235,7 +236,10 @@ export const migrate = async (): Promise<void> => {
     await encrypt()
     await decrypt()
     d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
-  } else d.log('No changes detected, skipping')
+    return true
+  }
+  d.log('No changes detected, skipping')
+  return false
 }
 
 export const module = {
@@ -255,6 +259,10 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await migrate()
+    const res = await migrate()
+    if (env.CI && res) {
+      setParsedArgs({ ...argv, message: 'migrated values [ci skip]' })
+      await commit()
+    }
   },
 }

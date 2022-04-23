@@ -84,7 +84,7 @@ export const module = {
       },
       release: {
         alias: ['r'],
-        string: true,
+        type: 'string',
         hidden: true,
       },
     }),

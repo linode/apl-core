@@ -1,9 +1,9 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
-import { setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
+import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
+import { commit } from './commit'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -16,7 +16,10 @@ const playground = async (): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const d = terminal(`cmd:${cmdName}:playGround`)
   process.env.VERBOSITY = '3'
-  await setDeploymentState({ status: 'deployed' })
+  // await setDeploymentState({ status: 'deployed' })
+  const argv = getParsedArgs()
+  setParsedArgs({ ...argv, message: 'fasdfasd' })
+  await commit()
   // await Promise.resolve()
 }
 
