@@ -38,7 +38,13 @@ templates:
         showlogs: false
         command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}"]
-    <<: *preUpgrade
+      - events: ["presync"]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - pre-upgrade
+          - -r
+          - "{{ .Release.Name }}"
   wait: &wait
     namespace: maintenance
     chart: ../charts/wait-for
