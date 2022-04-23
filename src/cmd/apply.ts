@@ -4,7 +4,7 @@ import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { getHelmArgs, hf, hfValues } from '../common/hf'
+import { hf, hfValues } from '../common/hf'
 import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
@@ -74,8 +74,9 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  // We use kubectl replace instead of kubectl apply because the latter adds kubectl.kubernetes.io/last-applied-configuration annotation which  exeeds allowed size
-  await nothrow($`kubectl replace -f charts/prometheus-operator/crds`)
+  await nothrow(
+    $`if ! kubectl replace -f charts/prometheus-operator/crds; then kubectl create -f charts/prometheus-operator/crds; fi`,
+  )
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {

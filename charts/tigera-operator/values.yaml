@@ -1,4 +1,4 @@
-imagePullSecrets: {}
+imagePullSecrets: []
 
 installation:
   kubernetesProvider: ""
