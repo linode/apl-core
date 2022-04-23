@@ -2,7 +2,6 @@
 /* eslint-disable no-await-in-loop */
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
-// eslint-disable-next-line import/no-unresolved
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
@@ -59,6 +58,7 @@ export interface DeploymentState {
 }
 
 export const getDeploymentState = async (): Promise<DeploymentState> => {
+  if (env.DISABLE_SYNC) return {}
   const result = await nothrow(
     $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`,
   )
@@ -66,10 +66,17 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
+  if (env.DISABLE_SYNC) return
+  const d = terminal('common:k8s:setDeploymentState')
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
-  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`)
-  await $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} apply cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`
+  const data = map(newState, (val, prop) => `--from-literal=${prop}=${val}`)
+  const cmdCreate = `kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`
+  const cmdPatch = `kubectl -n ${
+    env.DEPLOYMENT_NAMESPACE
+  } patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p '{"data":${JSON.stringify(newState)}}'`
+  const res = await nothrow($`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`)
+  d.info(res.stdout)
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

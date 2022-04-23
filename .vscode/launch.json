@@ -191,6 +191,20 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
+      "name": "Debug playground",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "playground"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "type": "node",
       "name": "Debug jest",
       "request": "launch",
