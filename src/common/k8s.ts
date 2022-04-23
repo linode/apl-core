@@ -68,7 +68,7 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
-  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`).join(' ')
+  const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`)
   await $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} apply cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`
 }
 

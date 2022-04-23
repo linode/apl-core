@@ -38,6 +38,7 @@ templates:
         showlogs: false
         command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}"]
+    <<: *preUpgrade
   wait: &wait
     namespace: maintenance
     chart: ../charts/wait-for
