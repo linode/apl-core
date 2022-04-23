@@ -4,9 +4,9 @@ import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isChart } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { waitTillAvailable } from '../common/k8s'
+import { setDeploymentState, waitTillAvailable } from '../common/k8s'
 import { getFilename, rootDir } from '../common/utils'
 import { getParsedArgs, HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -46,7 +46,7 @@ const getGiteaHealthUrl = async (): Promise<string> => {
   return healthUrl
 }
 
-const commitAndPush = async (): Promise<void> => {
+const commitAndPush = async (remote): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
@@ -62,7 +62,7 @@ const commitAndPush = async (): Promise<void> => {
 
   // If the values are committed for the very first time then pull does not take an effect
   // if (isCli) await pull()
-  await pull()
+  await pull(remote)
 
   try {
     await $`git remote show origin`
@@ -74,13 +74,8 @@ const commitAndPush = async (): Promise<void> => {
   }
 }
 
-const bootstrapGit = async (values): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:bootstrapGit`)
-  d.info('Initializing values git repo.')
-  cd(env.ENV_DIR)
-  await $`git init ${env.ENV_DIR}`
-  copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
-
+let remote
+export const getRepo = (values): Record<string, any> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
   const byor = !!values?.apps?.['otomi-api']?.git
@@ -91,14 +86,14 @@ const bootstrapGit = async (values): Promise<void> => {
   let username = 'Otomi Admin'
   let email: string
   let password: string
-  let remote: string
-  const branch = 'main'
+  let branch = 'main'
   if (!giteaEnabled) {
     const otomiApiGit = values?.apps?.['otomi-api']?.git
     username = otomiApiGit?.user
     password = otomiApiGit?.password
     remote = otomiApiGit?.repoUrl
     email = otomiApiGit?.email
+    branch = otomiApiGit?.branch ?? branch
   } else {
     username = 'otomi-admin'
     password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
@@ -108,15 +103,23 @@ const bootstrapGit = async (values): Promise<void> => {
     const giteaRepo = 'values'
     remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
+  return { remote, branch, email, username, password }
+}
 
-  await $`git -C ${env.ENV_DIR} config --local user.name ${username}`
-  await $`git -C ${env.ENV_DIR} config --local user.password ${password}`
-  await $`git -C ${env.ENV_DIR} config --local user.email ${email}`
-  await $`git -C ${env.ENV_DIR} checkout -b ${branch}`
-  await $`git -C ${env.ENV_DIR} remote add origin ${remote}`
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`))
-    await nothrow($`git -C ${env.ENV_DIR} config --local diff.sopsdiffer.textconv "sops -d"`)
-
+const bootstrapGit = async (values): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:bootstrapGit`)
+  d.info('Initializing values git repo.')
+  cd(env.ENV_DIR)
+  await $`git init ${env.ENV_DIR}`
+  if (isCli) copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  const { branch, email, username, password } = getRepo(values)
+  await $`git config --global --add safe.directory ${env.ENV_DIR}`
+  await $`git config --local user.name ${username}`
+  await $`git config --local user.password ${password}`
+  await $`git config --local user.email ${email}`
+  await $`git checkout -b ${branch}`
+  await $`git remote add origin ${remote}`
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
   d.log(`Done bootstrapping git`)
 }
 
@@ -129,9 +132,9 @@ export const commit = async (firstTime = false): Promise<void> => {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
   if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
-
+  else getRepo(values) // to set remote
   if (values?.apps!.gitea!.enabled) {
-    const url = await getGiteaHealthUrl()
+    const url = remote // await getGiteaHealthUrl()
     const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(url, {
       // we wait for a 404 as that is the best we can do,
@@ -144,10 +147,11 @@ export const commit = async (firstTime = false): Promise<void> => {
   }
   await genDrone()
   await encrypt()
-  if (values?.apps?.gitea?.enabled) await commitAndPush()
+  if (values?.apps?.gitea?.enabled) await commitAndPush(remote)
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
-  if (isChart && firstTime) {
+  if (firstTime) {
+    await setDeploymentState({ status: 'deployed' })
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################
