@@ -61,7 +61,8 @@ const commitAndPush = async (): Promise<void> => {
   }
 
   // If the values are committed for the very first time then pull does not take an effect
-  if (isCli) await pull()
+  // if (isCli) await pull()
+  await pull()
 
   try {
     await $`git remote show origin`
@@ -118,7 +119,7 @@ const bootstrapGit = async (values): Promise<void> => {
   d.log(`Done bootstrapping git`)
 }
 
-export const commit = async (): Promise<void> => {
+export const commit = async (firstTime = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
@@ -145,7 +146,7 @@ export const commit = async (): Promise<void> => {
   if (values?.apps?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
-  if (isChart) {
+  if (isChart && firstTime) {
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################

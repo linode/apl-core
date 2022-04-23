@@ -322,7 +322,7 @@ export const bootstrap = async (
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
 
-  // if CI: we are called from pipeline on each deplyment, which is costly
+  // if CI: we are called from pipeline on each deployment, which is costly
   // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
   const tag = await deps.getImageTag()
   const version = await deps.getCurrentVersion()

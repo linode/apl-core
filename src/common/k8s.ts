@@ -69,7 +69,7 @@ export const setDeploymentState = async (state: Record<string, any>): Promise<vo
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
   const data = map(newState, (val, prop) => `--from-literal='${prop}=${val}'`).join(' ')
-  await nothrow($`kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`)
+  await $`kubectl -n ${env.DEPLOYMENT_NAMESPACE} apply cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

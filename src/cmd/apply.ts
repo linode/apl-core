@@ -99,7 +99,7 @@ const applyAll = async () => {
   await setDeploymentState({ status: 'deployed' })
   // commit first time only
   if (status !== 'deployed') {
-    await commit()
+    await commit(true)
   }
 }
 
