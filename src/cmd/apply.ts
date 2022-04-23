@@ -98,8 +98,8 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await setDeploymentState({ status: 'deployed' })
-  // commit first time only when in cli, as CI does its own steps
-  if (!status && isCli) {
+  // commit first time only
+  if (!status) {
     await commit(true)
   }
 }
