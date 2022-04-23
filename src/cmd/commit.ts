@@ -77,6 +77,7 @@ const commitAndPush = async (): Promise<void> => {
 const bootstrapGit = async (values): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   d.info('Initializing values git repo.')
+  cd(env.ENV_DIR)
   await $`git init ${env.ENV_DIR}`
   copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
 
