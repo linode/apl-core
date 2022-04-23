@@ -15,7 +15,7 @@ const cmdName = getFilename(__filename)
 const playground = async (): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const d = terminal(`cmd:${cmdName}:playGround`)
-  process.env.VERBOSITY = 3
+  process.env.VERBOSITY = '3'
   await setDeploymentState({ status: 'deployed' })
   // await Promise.resolve()
 }
