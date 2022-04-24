@@ -16,7 +16,7 @@ export const lint = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['lint', '--skip-deps'],
+      args: ['lint'],
     },
     {
       streams: {

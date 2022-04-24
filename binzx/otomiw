@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# wrapper for helmfile hooks that just cds to root and then executes otomi command
+cd ..
+# echo $@
+$PWD/binzx/otomi $@

@@ -1,5 +1,5 @@
 {{- if and .Values.rbac.create (not .Values.rbac.clusterRole) }}
-apiVersion: rbac.authorization.k8s.io/{{ .Values.rbac.apiVersion }}
+apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 kind: Role
 metadata:
   name: {{ template "external-dns.fullname" . }}

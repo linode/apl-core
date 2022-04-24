@@ -163,14 +163,3 @@ export const providerMap = (provider: string): string => {
   }
   return map[provider] ?? provider
 }
-
-// export const inject =
-//   <Dependencies, FunctionFactory>(
-//     buildFunction: (dependencies: Dependencies) => FunctionFactory,
-//     buildDependencies: () => Dependencies,
-//   ) =>
-//   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-//   (dependencies = buildDependencies()) => ({
-//     execute: buildFunction(dependencies),
-//     dependencies,
-//   })

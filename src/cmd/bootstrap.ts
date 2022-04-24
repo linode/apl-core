@@ -11,9 +11,9 @@ import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
+import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
-import { generateSecrets, getImageTag, writeValues } from '../common/values'
+import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
@@ -301,10 +301,12 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
   }
 }
 
-export const bootstrapValues = async (
+export const bootstrap = async (
   deps = {
     existsSync,
+    getDeploymentState,
     getImageTag,
+    getCurrentVersion,
     terminal,
     copyBasicFiles,
     processValues,
@@ -313,16 +315,25 @@ export const bootstrapValues = async (
     writeValues,
     bootstrapSops,
     copyFile,
+    migrate,
     encrypt,
     decrypt,
   },
 ): Promise<void> => {
-  const d = deps.terminal(`cmd:${cmdName}:bootstrapValues`)
+  const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
+
+  // if CI: we are called from pipeline on each deployment, which is costly
+  // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
+  const tag = await deps.getImageTag()
+  const version = await deps.getCurrentVersion()
+  if (env.CI) {
+    const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
+    if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
+  }
   const { ENV_DIR } = env
   const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
 
-  const imageTag = await deps.getImageTag()
-  const otomiImage = `otomi/core:${imageTag}`
+  const otomiImage = `otomi/core:${tag}`
   d.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
 
@@ -365,7 +376,7 @@ export const bootstrapValues = async (
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-
+  await deps.migrate()
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
@@ -381,7 +392,6 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
-    await bootstrapValues()
-    await migrate()
+    await bootstrap()
   },
 }
