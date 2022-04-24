@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { prepareEnvironment, scriptName } from '../common/cli'
 import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename } from '../common/utils'
 import { HelmArguments, setParsedArgs } from '../common/yargs'
@@ -27,10 +27,14 @@ export const pull = async (remote = undefined): Promise<void> => {
     }
     try {
       d.debug('Removing empty .git folder and checking out remote')
-      await $`rm -rf .git && git clone ${remote} /tmp/xx && mv /tmp/xx/.git . && rm -rf /tmp/xx && git pull`
+      await $`mv .git /tmp/x && rm -rf .git && git clone ${remote} /tmp/xx && mv /tmp/xx/.git . && git checkout ${branch} && git pull`
     } catch (e) {
+      if (`${e}`.includes('You appear to have cloned an empty repository')) {
+        await $`rm -rf .git && mv /tmp/x .git && rm -rf /tmp/xx /tmp/x`
+        return
+      }
       d.error(e)
-      throw new Error(`An error occured when trying to clone the remote ${remote}. This is a fatal error.`)
+      throw new Error(`An error occured when trying to clone the remote ${remote}. This is a fatal error: ${e}`)
     }
   }
 }
