@@ -71,12 +71,12 @@ export const setDeploymentState = async (state: Record<string, any>): Promise<vo
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
   const data = map(newState, (val, prop) => `--from-literal=${prop}=${val}`)
-  const cmdCreate = `kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data}`
+  const cmdCreate = `kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data.join(' ')}`
   const cmdPatch = `kubectl -n ${
     env.DEPLOYMENT_NAMESPACE
-  } patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p '{"data":${JSON.stringify(newState)}}'`
+  } patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(newState)}}`
   const res = await nothrow($`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`)
-  d.info(res.stdout)
+  if (res.stderr) d.error(res.stderr)
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

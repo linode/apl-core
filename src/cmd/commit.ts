@@ -59,11 +59,8 @@ const commitAndPush = async (remote): Promise<void> => {
     d.error(e.stderr)
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
-
   // If the values are committed for the very first time then pull does not take an effect
-  // if (isCli) await pull()
   await pull(remote)
-
   try {
     await $`git remote show origin`
     await gitPush()
@@ -74,12 +71,10 @@ const commitAndPush = async (remote): Promise<void> => {
   }
 }
 
-let remote
 export const getRepo = (values): Record<string, any> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
   const byor = !!values?.apps?.['otomi-api']?.git
-
   if (!giteaEnabled && !byor) {
     throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
   }
@@ -87,6 +82,7 @@ export const getRepo = (values): Record<string, any> => {
   let email: string
   let password: string
   let branch = 'main'
+  let remote
   if (!giteaEnabled) {
     const otomiApiGit = values?.apps?.['otomi-api']?.git
     username = otomiApiGit?.user
@@ -112,7 +108,7 @@ const bootstrapGit = async (values): Promise<void> => {
   cd(env.ENV_DIR)
   await $`git init ${env.ENV_DIR}`
   if (isCli) copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
-  const { branch, email, username, password } = getRepo(values)
+  const { remote, branch, email, username, password } = getRepo(values)
   await $`git config --global --add safe.directory ${env.ENV_DIR}`
   await $`git config --local user.name ${username}`
   await $`git config --local user.password ${password}`
@@ -132,11 +128,10 @@ export const commit = async (firstTime = false): Promise<void> => {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
   if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
-  else getRepo(values) // to set remote
+  const { remote } = getRepo(values)
   if (values?.apps!.gitea!.enabled) {
-    const url = remote // await getGiteaHealthUrl()
     const { adminPassword } = values.apps!.gitea
-    await waitTillAvailable(url, {
+    await waitTillAvailable(remote, {
       // we wait for a 404 as that is the best we can do,
       // since that is what gitea gives for repos that have nothing public
       status: 404,

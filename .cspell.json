@@ -97,6 +97,7 @@
     "knative",
     "ksvc",
     "kube",
+    "kubelet",
     "kubeconfig",
     "kubectl",
     "kubernetes",

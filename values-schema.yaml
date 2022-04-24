@@ -619,14 +619,14 @@ definitions:
     type: integer
   provider:
     type: string
-    description: Enter the cloud provider of this cluster. Choose 'local' for laptop install (minikube, kind), and 'custom' for onprem clusters.
+    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
     enum:
       - aws
       - azure
+      - digitalocean
       - google
       - custom
       - kind
-      - local
   redisChart:
     properties:
       _rawValues:
@@ -2013,6 +2013,24 @@ properties:
           enabled:
             type: boolean
             default: true
+          apiServer:
+            additionalProperties: false
+            properties:
+              enabled:
+                type: boolean
+                default: true
+          extraArgs:
+            type: object
+            description: See https://github.com/kubernetes-sigs/metrics-server for details.
+            default:
+              kubelet-preferred-address-types: InternalIP
+          resources:
+            additionalProperties: false
+            properties:
+              api:
+                $ref: '#/definitions/resources'
+              tools:
+                $ref: '#/definitions/resources'
       oauth2-proxy:
         additionalProperties: false
         properties:

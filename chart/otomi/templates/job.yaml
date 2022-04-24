@@ -33,7 +33,7 @@ spec:
           args:
             - |
               set -e
-              if kubectl get cm otomi-status &>/dev/null; then
+              if [ "$(kubectl get cm otomi-status -o jsonpath='{.data.status}')" = "deployed" ]; then
                 echo 'The initial Otomi deployment hes been performed successfully! To modify the configuration please use either the Otomi CLI or Otomi console.'
                 exit
               fi

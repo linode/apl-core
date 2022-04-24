@@ -99,11 +99,13 @@ environments:
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
+            enabled: {{ $a | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
-            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
-          oauth2-proxy-redis:
-            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
+            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
+            apiServer:
+              create: {{ $a | get "metrics-server.apiServer.create" true }}
+            extraArgs:
+              kubelet-preferred-address-types: {{ $a | get "metrics-server.extraArgs.kubelet-preferred-address-types" "InternalIP" }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
