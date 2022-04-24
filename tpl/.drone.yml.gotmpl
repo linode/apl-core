@@ -79,7 +79,7 @@ steps:
     depends_on:
       - prepare-env
     commands:
-      - cd .. && binzx/otomi migrate -vvv
+      - cd .. && binzx/otomi migrate
 
   - name: test
     image: otomi/core:{{ .imageTag }}

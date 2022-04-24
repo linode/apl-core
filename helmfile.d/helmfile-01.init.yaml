@@ -27,6 +27,7 @@ releases:
   - name: tigera-operator
     installed: {{ $a | get "tigera-operator.enabled" }}
     namespace: tigera-operator
+    disableValidationOnInstall: true
     labels:
       init: true
       pkg: calico
