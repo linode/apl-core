@@ -148,7 +148,7 @@
     "test:opa": "binzx/otomi x opa test policies -v",
     "test:ts": "TESTING=1 jest",
     "test:ts-cov": "jest --coverage",
-    "validate-templates": "set -e; i=19; while [ $i -le 23 ]; do KUBE_VERSION_OVERRIDE=\"1.$i\" TESTING=1 binzx/otomi validate-templates -a \"--kube-version=1.$i\"; i=$(($i+1)); done",
+    "validate-templates": "set -e; i=19; while [ $i -le 23 ]; do TESTING=1 binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "TESTING=1 binzx/otomi validate-values"
   },
   "standard-version": {

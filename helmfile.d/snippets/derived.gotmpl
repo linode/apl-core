@@ -40,15 +40,13 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
-          {{- if $untrustedCA }}
           caCert: |
-            {{- if eq $issuer "custom-ca" }}
-              {{- $cm | get "customRootCA" "" | nindent 12 }}
-            {{- else }}
+            {{- if eq $issuer "letsencrypt" }}
               {{- $v.letsencryptRootCA | nindent 12 }}
               {{- $v.letsencryptCA | nindent 12 }}
+            {{- else }}
+              {{- $cm | get "customRootCA" "" | nindent 12 }}
             {{- end }}
-          {{- end }}
           supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
@@ -101,15 +99,19 @@ environments:
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $a | get "kured.enabled" (list "azure" | has $provider) }}
+            enabled: {{ $a | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
-            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
-          oauth2-proxy-redis:
-            enabled: {{ $a | get "metrics-server.enabled" (list "custom" "aws" | has $provider) }}
+            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
+            apiServer:
+              create: {{ $a | get "metrics-server.apiServer.create" true }}
+            extraArgs:
+              kubelet-preferred-address-types: {{ $a | get "metrics-server.extraArgs.kubelet-preferred-address-types" "InternalIP" }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
+          tigera-operator:
+            enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}

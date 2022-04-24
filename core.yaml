@@ -52,6 +52,9 @@ k8s:
     - name: prometheus
     - name: shared
     - name: team-admin
+    - name: tigera-operator
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: vault
 
 adminApps:

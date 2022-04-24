@@ -50,7 +50,6 @@ The policy engine is aware of the following annotations for a pod spec:
 ```
 annotations:
   policy.otomi.io/ignore: $policy[,$policy2] # pod level ignore for all containers
-  policy.otomi.io/ignore-sidecar: $policy[,$policy2] # pod level ignore for sidecars, such as istio-proxy
   policy.otomi.io/ignore.$container: $policy[,$policy2] # ignore for just the mentioned container
   policy.otomi.io/parameters.$policy: '{"extra":"parameters"}'
 ```

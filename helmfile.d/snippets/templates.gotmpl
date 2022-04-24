@@ -1,10 +1,20 @@
 templates:
+  preUpgrade: &preUpgrade
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - pre-upgrade
+          - -r
+          - "{{ .Release.Name }}"
   default: &default
     missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
       - snippets/common.gotmpl
+    <<: *preUpgrade
   raw: &raw
     chart: ../charts/raw
     values:
@@ -28,6 +38,13 @@ templates:
         showlogs: false
         command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}"]
+      - events: ["presync"]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - pre-upgrade
+          - -r
+          - "{{ .Release.Name }}"
   wait: &wait
     namespace: maintenance
     chart: ../charts/wait-for

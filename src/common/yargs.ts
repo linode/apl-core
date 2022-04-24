@@ -67,7 +67,7 @@ const helmOpts: { [key: string]: Options } = {
   },
   'kube-version': {
     alias: 'k',
-    string: true,
+    type: 'string',
   },
   args: {
     alias: 'a',

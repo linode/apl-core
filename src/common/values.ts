@@ -49,6 +49,16 @@ export const getImageTag = async (): Promise<string> => {
   return `v${pkg.version}`
 }
 
+/**
+ * Find the current version of otomi that is running.
+ * @returns string
+ */
+export const getCurrentVersion = async (): Promise<string> => {
+  const tag = await getImageTag()
+  const potentialVersion = tag.replace('/^v/', '')
+  return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
+}
+
 let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.

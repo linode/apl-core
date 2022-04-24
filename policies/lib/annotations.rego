@@ -12,8 +12,6 @@ import data.lib.pods
 
 default ignoreAnnotationField = "policy.otomi.io/ignore"
 
-default sidecarAnnotationField = "policy.otomi.io/ignore-sidecar"
-
 default paramsAnnotationField = "policy.otomi.io/parameters"
 
 default containerIgnoreAnnotationField = "policy.otomi.io/ignore.%s"

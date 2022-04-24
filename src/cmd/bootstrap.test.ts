@@ -3,8 +3,8 @@ import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
 import stubs from '../test-stubs'
 import {
+  bootstrap,
   bootstrapSops,
-  bootstrapValues,
   copyBasicFiles,
   createCustomCA,
   generateLooseSchema,
@@ -24,7 +24,9 @@ describe('Bootstrapping values', () => {
   beforeEach(() => {
     deps = {
       existsSync: jest.fn(),
+      getDeploymentState: jest.fn().mockReturnValue({}),
       getImageTag: jest.fn(),
+      getCurrentVersion: jest.fn(),
       bootstrapSops: jest.fn(),
       terminal,
       copyBasicFiles: jest.fn(),
@@ -35,6 +37,7 @@ describe('Bootstrapping values', () => {
       writeValues: jest.fn(),
       genSops: jest.fn(),
       copyFile: jest.fn(),
+      migrate: jest.fn(),
       getK8sSecret: jest.fn(),
       encrypt: jest.fn(),
       decrypt: jest.fn(),
@@ -43,14 +46,14 @@ describe('Bootstrapping values', () => {
   it('should call relevant sub routines', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSops).toHaveBeenCalled()
     expect(deps.getImageTag).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
@@ -66,7 +69,7 @@ describe('Bootstrapping values', () => {
   it('should set apiName, k8sContext and owner if needed', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.writeValues).toHaveBeenCalledWith(
       expect.objectContaining({
         cluster: expect.objectContaining({
