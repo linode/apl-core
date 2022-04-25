@@ -58,6 +58,8 @@ spec:
       labels:
         app: olm-operator
     spec:
+      securityContext:
+        runAsUser: 1000
       serviceAccountName: olm-operator-serviceaccount
       containers:
         - name: olm-operator
@@ -92,6 +94,9 @@ spec:
           - name: OPERATOR_NAME
             value: olm-operator
           resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
             requests:
               cpu: 10m
               memory: 160Mi
@@ -117,6 +122,8 @@ spec:
       labels:
         app: catalog-operator
     spec:
+      securityContext:
+        runAsUser: 1000
       serviceAccountName: olm-operator-serviceaccount
       containers:
         - name: catalog-operator
@@ -145,6 +152,9 @@ spec:
               port: 8080
           terminationMessagePolicy: FallbackToLogsOnError
           resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
             requests:
               cpu: 10m
               memory: 80Mi
@@ -282,8 +292,6 @@ spec:
               serviceAccountName: olm-operator-serviceaccount
               nodeSelector:
                 kubernetes.io/os: linux
-              securityContext:
-                runAsNonRoot: true
               containers:
               - name: packageserver
                 command:
