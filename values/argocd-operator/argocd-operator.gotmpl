@@ -1,0 +1,6 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+teams:
+  {{- range $teamId, $_ := $v.teamConfig }}
+  - {{ $teamId }}
+  {{- end }}
