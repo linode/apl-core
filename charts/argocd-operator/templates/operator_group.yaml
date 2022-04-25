@@ -5,6 +5,3 @@ metadata:
 spec:
   targetNamespaces:
   - {{ .Release.Namespace }}
-  {{- range $teamId := .Values.teams }}
-  - team-{{ $teamId }}
-  {{- end }}
