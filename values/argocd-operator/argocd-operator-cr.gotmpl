@@ -22,7 +22,13 @@ spec:
   rbac:
     policy: |
       g, admin, role:admin
+{{- if $v.otomi.isMultitenant }}
+    defaultPolicy: ''
+{{- else }}
+      # not multitenant, make team-admin admin and keep global read-only
       g, team-admin, role:admin
+    defaultPolicy: role:readonly
+{{- end }}
   gaTrackingID: G-KERXM426H2
   server:
     host: argocd.{{ $v.cluster.domainSuffix }}

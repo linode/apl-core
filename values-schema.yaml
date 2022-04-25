@@ -1048,18 +1048,22 @@ definitions:
     type: object
     properties:
       Service:
-        title: Service
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
       Team:
-        title: Team
         type: array
         items:
           type: string
           enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
+        uniqueItems: true
+      App:
+        type: array
+        items:
+          type: string
+          enum: [argocd]
         uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
