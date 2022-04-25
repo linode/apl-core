@@ -282,6 +282,8 @@ spec:
               serviceAccountName: olm-operator-serviceaccount
               nodeSelector:
                 kubernetes.io/os: linux
+              securityContext:
+                runAsNonRoot: true
               containers:
               - name: packageserver
                 command:
