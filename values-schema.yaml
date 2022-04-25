@@ -1047,19 +1047,19 @@ definitions:
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
-      Service:
+      service:
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
-      Team:
+      team:
         type: array
         items:
           type: string
           enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
         uniqueItems: true
-      App:
+      app:
         type: array
         items:
           type: string

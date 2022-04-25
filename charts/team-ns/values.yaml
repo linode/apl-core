@@ -13,3 +13,7 @@ resourceQuota:
   pods: "50"
   services.loadbalancers: 0
 services: []
+selfService:
+  app: []
+  service: []
+  team: []

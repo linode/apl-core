@@ -50,7 +50,7 @@ spec:
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
     policies:
-{{- if has "argocd" $v.selfService.Apps }}
+{{- if has "argocd" $v.selfService.app }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, *, team-{{ $v.teamId }}/*, allow
 {{- else }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, get, team-{{ $v.teamId }}/*, allow
