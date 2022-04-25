@@ -1,0 +1,112 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+{{- $k := $v.apps.keycloak }}
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: argocd
+spec:
+  usersAnonymousEnabled: false
+  oidcConfig: |
+    issuer: {{ $v._derived.oidcBaseUrl }}
+    clientID: {{ $k.idp.clientID }}
+    clientSecret: {{ $k.idp.clientSecret }}
+    requestedScopes:
+      - openid
+      - profile
+      - email
+    {{- if $v._derived.untrustedCA }}
+    rootCA: |
+      {{- $v._derived.caCert | nindent 6 }}
+    {{- end }}
+  rbac:
+    policy: |
+      g, admin, role:admin
+      g, team-admin, role:admin
+  gaTrackingID: G-KERXM426H2
+  server:
+    host: argocd.{{ $v.cluster.domainSuffix }}
+    insecure: true # nginx terminates tls
+    autoscale:
+      enabled: {{ $a.autoscaling.enabled }} 
+    {{- with $a.autoscaling }}
+      hpa:
+        maxReplicas: {{ .maxReplicas }}
+        minReplicas: {{ .minReplicas }}
+        scaleTargetRef:
+          apiVersion: extensions/v1
+          kind: Deployment
+          name: otomi-argocd
+        targetCPUUtilizationPercentage: 70
+    {{- end }}
+    resources:
+      {{- with $a | get "resources.server" nil }}
+        {{- toYaml .| nindent 4 }}
+      {{- else }}
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
+      {{- end }}
+  controller:
+    logLevel: info
+    resources:
+      {{- with $a | get "resources.controller" nil }}
+        {{- toYaml .| nindent 4 }}
+      {{- else }}
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
+      {{- end }}
+  repo:
+    logLevel: info
+    resources:
+      {{- with $a | get "resources.repo" nil }}
+        {{- toYaml .| nindent 4 }}
+      {{- else }}
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
+      {{- end }}
+  redis:
+    resources:
+      {{- with $a | get "resources.redis" nil }}
+        {{- toYaml .| nindent 4 }}
+      {{- else }}
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
+      {{- end }}
+  # initialRepositories: |
+  #   - url: https://github.com/argoproj/my-private-repository
+  #     passwordSecret:
+  #       name: my-secret
+  #       key: password
+  #     usernameSecret:
+  #       name: my-secret
+  #       key: username
+  #     sshPrivateKeySecret:
+  #       name: my-secret
+  #       key: sshPrivateKey
+  #   - type: helm
+  #     url: https://harbor.{{ $v.cluster.domainSuffix }}
+  #     name: Harbor cluster charts
+  #     usernameSecret:
+  #       name: my-secret
+  #       key: username
+  #     passwordSecret:
+  #       name: my-secret
+  #       key: password
+  #   - type: git
+  #     url: https://github.com/argoproj/argocd-example-apps.git

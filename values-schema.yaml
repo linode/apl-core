@@ -1127,11 +1127,34 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as derived from otomi flags.
+            default: false
           image:
             $ref: '#/definitions/imageSimple'
           resources:
             $ref: '#/definitions/resources'
+      argocd:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          image:
+            $ref: '#/definitions/imageSimple'
+          autoscaling:
+            $ref: '#/definitions/autoscalingEnabled'
+          resources:
+            additionalProperties: false
+            properties:
+              server:
+                $ref: '#/definitions/resources'
+              controller:
+                $ref: '#/definitions/resources'
+              repo:
+                $ref: '#/definitions/resources'
+              redis:
+                $ref: '#/definitions/resources'
       cert-manager:
         properties:
           _rawValues:
