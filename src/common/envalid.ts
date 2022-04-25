@@ -47,5 +47,6 @@ export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record
 
 export const env = cleanEnvironment()
 
-export const isChart: boolean = env.CI && !!env.VALUES_INPUT
+export const isChart = !!env.VALUES_INPUT
+export const isCi: boolean = env.CI
 export const isCli: boolean = !env.CI && !isChart

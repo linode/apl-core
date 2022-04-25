@@ -1,7 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-export CI=1
 npm run lint
 
 # Not in main

@@ -36,7 +36,6 @@ export const checkPolicies = async (): Promise<void> => {
 
   const extraArgs: string[] = []
   if (logLevel() === logLevels.TRACE) extraArgs.push('--trace')
-  // if (env.CI) extraArgs.push('--no-color')
 
   d.info('Checking manifests for policy violations')
   const confTestOutput = (

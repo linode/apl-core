@@ -9,7 +9,7 @@ import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
+import { env, isChart, isCi, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
@@ -326,7 +326,7 @@ export const bootstrap = async (
   // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
   const tag = await deps.getImageTag()
   const version = await deps.getCurrentVersion()
-  if (env.CI) {
+  if (isCi) {
     const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
     if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
   }
