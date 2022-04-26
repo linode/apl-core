@@ -9,12 +9,23 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 
+{{- $v := .Values }}
+{{- $tc := $v.teamConfig }}
+
 releases:
   - name: gatekeeper-operator
     installed: false
     namespace: default
     chart: not-used-but-required
     # TODO: remove definition of this release in release 0.16.3
+  - name: gatekeeper-artifacts
+    installed: false
+    namespace: gatekeeper-system
+    chart: not-used-but-required
+  - name: gatekeeper-constraints
+    installed: false
+    namespace: gatekeeper-system
+    chart: not-used-but-required
   - name: nginx-ingress
     namespace: ingress
     installed: false
@@ -29,4 +40,12 @@ releases:
     namespace: monitoring
     installed: false
     chart: not-used-but-required
+    # TODO: remove definition of this release in release 0.16.3
+
+{{- range $teamId, $team := $tc }} 
+  - name: prometheus-{{ $teamId }}
+    namespace: team-{{ $teamId }}
+    installed: false
+    chart: not-used-but-required
+{{- end }}
     # TODO: remove definition of this release in release 0.16.3
