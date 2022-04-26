@@ -6,7 +6,7 @@ resources:
       name: knative-serving
       namespace: knative-serving
     spec:
-      version: 1.2.0
+      version: 1.4.0
       {{- if $v._derived.untrustedCA }}
       controller-custom-certs:
         name: certs
