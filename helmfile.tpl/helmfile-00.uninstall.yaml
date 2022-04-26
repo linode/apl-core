@@ -18,10 +18,6 @@ releases:
     namespace: default
     chart: not-used-but-required
     # TODO: remove definition of this release in release 0.16.3
-  # - name: gatekeeper-artifacts
-  #   installed: false
-  #   namespace: gatekeeper-system
-  #   chart: not-used-but-required
   - name: gatekeeper-constraints
     installed: false
     namespace: gatekeeper-system
@@ -49,3 +45,7 @@ releases:
     chart: not-used-but-required
 {{- end }}
     # TODO: remove definition of this release in release 0.16.3
+  - name: gatekeeper-artifacts
+    installed: false
+    namespace: gatekeeper-system
+    chart: not-used-but-required
