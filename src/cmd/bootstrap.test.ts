@@ -229,7 +229,7 @@ describe('Bootstrapping values', () => {
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(allSecrets)
         await processValues(deps)
-        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'default', allSecrets)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', allSecrets)
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
@@ -251,7 +251,7 @@ describe('Bootstrapping values', () => {
         await processValues(deps)
         expect(deps.createK8sSecret).toHaveBeenCalledWith(
           'otomi-generated-passwords',
-          'default',
+          'otomi',
           mergedSecretsWithGenAndCa,
         )
       })
@@ -262,7 +262,7 @@ describe('Bootstrapping values', () => {
         deps.generateSecrets.mockReturnValue(generatedSecrets)
         await processValues(deps)
         expect(deps.generateSecrets).toHaveBeenCalledWith(generatedSecrets)
-        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'default', generatedSecrets)
+        expect(deps.createK8sSecret).toHaveBeenCalledWith('otomi-generated-passwords', 'otomi', generatedSecrets)
       })
       it('should only write and return original values', async () => {
         const writtenValues = merge(cloneDeep(values), cloneDeep(secrets))
