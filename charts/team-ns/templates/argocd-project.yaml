@@ -53,10 +53,10 @@ spec:
 {{- if has "argocd" $v.selfService.app }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, *, team-{{ $v.teamId }}/*, allow
 {{- else }}
+  {{- if $v.otomi.isMultitenant }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, get, team-{{ $v.teamId }}/*, allow
-  {{- if not $v.otomi.isMultitenant }}
-    # also allow to see what else exists
-    - p, proj:team-{{ $v.teamId }}:team-member, *, get, *, allow
+  {{- else }}
+    # we already have read-only rights globally when not in multitenancy
   {{- end }}
 {{- end }}
     groups:
