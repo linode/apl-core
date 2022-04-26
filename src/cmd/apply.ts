@@ -58,7 +58,8 @@ const applyAll = async () => {
   const argv: HelmArguments = getParsedArgs()
   d.info('Start apply all')
 
-  const { status } = await getDeploymentState()
+  const prevState = await getDeploymentState()
+  d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
@@ -98,7 +99,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   if (!env.DISABLE_SYNC)
-    if (isChart || !status)
+    if (isChart || !prevState.status)
       // commit first time when not deployed only, always commit in chart (might have previous failure)
       await commit(true) // will set deployment state after
     else await setDeploymentState({ status: 'deployed' })

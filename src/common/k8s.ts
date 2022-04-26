@@ -17,7 +17,7 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
@@ -59,9 +59,7 @@ export interface DeploymentState {
 
 export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.DISABLE_SYNC) return {}
-  const result = await nothrow(
-    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`,
-  )
+  const result = await nothrow($`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`)
   return JSON.parse(result.stdout || '{}')
 }
 
@@ -71,10 +69,10 @@ export const setDeploymentState = async (state: Record<string, any>): Promise<vo
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
   const data = map(newState, (val, prop) => `--from-literal=${prop}=${val}`)
-  const cmdCreate = `kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data.join(' ')}`
-  const cmdPatch = `kubectl -n ${
-    env.DEPLOYMENT_NAMESPACE
-  } patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(newState)}}`
+  const cmdCreate = `kubectl -n otomi create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data.join(' ')}`
+  const cmdPatch = `kubectl -n otomi patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(
+    newState,
+  )}}`
   const res = await nothrow($`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`)
   if (res.stderr) d.error(res.stderr)
 }

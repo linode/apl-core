@@ -32,11 +32,6 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -e
-              if [ "$(kubectl get cm otomi-status -o jsonpath='{.data.status}')" = "deployed" ] &>/dev/null; then
-                echo 'The initial Otomi deployment hes been performed successfully! To modify the configuration please use either the Otomi CLI or Otomi console.'
-                exit
-              fi
               binzx/otomi bootstrap
               binzx/otomi apply
           env:
@@ -46,8 +41,6 @@ spec:
               value: /home/app/stack/env
             - name: VALUES_INPUT
               value: /secret/values.yaml
-            - name: DEPLOYMENT_NAMESPACE
-              value: {{ .Release.Namespace }}
           {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:

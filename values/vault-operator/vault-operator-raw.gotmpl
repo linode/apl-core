@@ -7,7 +7,7 @@
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}
 {{- $vaultVersion := "1.6.1" }}
-{{- $bankVaultsVersion := $vt | get "image.tag" "1.14.4" }}
+{{- $bankVaultsVersion := $vt | get "image.tag" "1.15.2" }}
 
 resources:
   - apiVersion: "vault.banzaicloud.com/v1alpha1"
