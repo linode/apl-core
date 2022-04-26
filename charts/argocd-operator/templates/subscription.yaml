@@ -12,3 +12,5 @@ spec:
     env:
       - name: DISABLE_DEX
         value: "true"
+      - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+        value: argocd
