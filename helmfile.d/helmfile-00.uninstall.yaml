@@ -15,3 +15,18 @@ releases:
     namespace: default
     chart: not-used-but-required
     # TODO: remove definition of this release in release 0.16.3
+  - name: nginx-ingress
+    namespace: ingress
+    installed: false
+    chart: not-used-but-required
+    # TODO: remove definition of this release in release 0.16.3
+  - name: prometheus-operator
+    namespace: monitoring
+    installed: false
+    chart: not-used-but-required
+    # TODO: remove definition of this release in release 0.16.3
+  - name: grafana-dashboard
+    namespace: monitoring
+    installed: false
+    chart: not-used-but-required
+    # TODO: remove definition of this release in release 0.16.3
