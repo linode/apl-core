@@ -1,13 +1,13 @@
 bases:
-  - snippets/defaults.yaml
+  - ../helmfile.d/snippets/defaults.yaml
 ---
 bases:
-  - snippets/env.gotmpl
+  - ../helmfile.d/snippets/env.gotmpl
 ---
 bases:
-  - snippets/derived.gotmpl
+  - ../helmfile.d/snippets/derived.gotmpl
 ---
-{{ readFile "snippets/templates.gotmpl" }}
+{{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
 
 {{- $v := .Values }}
 {{- $tc := $v.teamConfig }}
@@ -18,10 +18,10 @@ releases:
     namespace: default
     chart: not-used-but-required
     # TODO: remove definition of this release in release 0.16.3
-  - name: gatekeeper-artifacts
-    installed: false
-    namespace: gatekeeper-system
-    chart: not-used-but-required
+  # - name: gatekeeper-artifacts
+  #   installed: false
+  #   namespace: gatekeeper-system
+  #   chart: not-used-but-required
   - name: gatekeeper-constraints
     installed: false
     namespace: gatekeeper-system
