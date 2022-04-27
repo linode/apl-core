@@ -33,9 +33,10 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -x
-              kubectl create ns otomi
-              binzx/otomi bootstrap -t
+              set +e
+              kubectl create ns otomi &> /dev/null
+              set -e
+              binzx/otomi bootstrap
               binzx/otomi apply
           env:
             - name: VERBOSITY
