@@ -35,8 +35,9 @@ export const createK8sSecret = async (
   }
 
   await writeFile(filePath, rawString)
-  const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`
+  const result = await nothrow(
+    $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`,
+  )
   if (result.stderr) d.error(result.stderr)
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }

@@ -21,6 +21,11 @@ spec:
     {{- end }}
   rbac:
     policy: |
+      # image updater
+      p, role:image-updater, applications, get, */*, allow
+      p, role:image-updater, applications, update, */*, allow
+      g, image-updater, role:image-updater
+      # admin
       g, admin, role:admin
 {{- if $v.otomi.isMultitenant }}
     defaultPolicy: ''

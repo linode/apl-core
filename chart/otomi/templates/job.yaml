@@ -8,6 +8,7 @@ metadata:
 spec:
   template:
     metadata:
+      name: installer
       {{- with .Values.podAnnotations }}
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -32,11 +33,13 @@ spec:
           command: [bash, -c]
           args:
             - |
-              binzx/otomi bootstrap
+              set -x
+              kubectl create ns otomi
+              binzx/otomi bootstrap -t
               binzx/otomi apply
           env:
             - name: VERBOSITY
-              value: '1'
+              value: '2'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT

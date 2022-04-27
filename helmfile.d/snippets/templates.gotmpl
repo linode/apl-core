@@ -42,7 +42,8 @@ templates:
       - events: [prepare]
         showlogs: false
         command: ../bin/skeleton-chart.sh
-        args: ["{{ .Release.Name }}"]
+        args: ["{{ .Release.Name }}", "{{ .Values.cluster.k8sVersion }}"]
+
       - events: ["presync"]
         showlogs: true
         command: ../binzx/otomiw
