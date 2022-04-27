@@ -5,11 +5,9 @@ set -ex
 root=..
 
 app=${1}
-k8sVersion=$2
-shift
-shift
-args=${@-}
-appDir=/tmp/charts/$app-$k8sVersion
+subFolder=''
+[ -n "$2" ] && subFolder="/${k8sVersion}"
+appDir=/tmp/charts/$app$subFolder
 tplDir="$appDir/templates"
 tpls="$tplDir/all.yaml"
 SKEL_DIR=${SKEL_DIR:-'k8s'}
@@ -21,11 +19,7 @@ mkdir -p $tplDir
 cp -r $root/charts/skeleton/* $appDir/
 sed -i -e "s/##CHART/$app/g" $appDir/Chart.yaml
 printf "" >$tpls
-if [ "$args" != '' ]; then
-  kubectl apply $args -f $root/$SKEL_DIR/$app --dry-run -o yaml >$tpls
-else
-  find $root/$SKEL_DIR/$app/$k8sVersion/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
-fi
+find $root/$SKEL_DIR/$app$subFolder/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
 # sed -i -e 's/^[ \t]*#.*$//g' $tpls
 sed -i -e 's/{{/{{ \`{{/g' $tpls
 sed -i -e "s/}}/\` }}/g" $tpls
