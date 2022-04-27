@@ -1,0 +1,11 @@
+{{- $v := .Values }}
+
+{{- if $v._derived.untrustedCA }}
+resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: custom-ca
+    data:
+      custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
+{{- end }}commo

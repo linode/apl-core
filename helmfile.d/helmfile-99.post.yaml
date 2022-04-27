@@ -25,7 +25,7 @@ releases:
       group: jobs
       type: cronjob
   - name: job-gitea-add-users
-    installed: {{ and ($a | get "gitea.enabled" false) (ne $v.cluster.provider "kind") }}
+    installed: false # {{ and ($a | get "gitea.enabled" false) (ne $v.cluster.provider "kind") }}
     labels:
       pkg: gitea
       group: jobs

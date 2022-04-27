@@ -14,6 +14,6 @@ resourceQuota:
   services.loadbalancers: 0
 services: []
 selfService:
-  app: []
+  apps: []
   service: []
   team: []

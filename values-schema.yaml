@@ -1059,7 +1059,7 @@ definitions:
           type: string
           enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
         uniqueItems: true
-      app:
+      apps:
         type: array
         items:
           type: string
@@ -2434,6 +2434,9 @@ properties:
       clientSecret:
         type: string
         x-secret: ''
+      emailDomainWhitelist:
+        type: string
+        description: Comma separated list of email domains that are allowed to authenticate via the IDP.
       adminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:

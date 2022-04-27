@@ -82,6 +82,15 @@ spec:
         cpu: 100m
         memory: 256M
       {{- end }}
+    volumeMounts:
+      - name: custom-ca
+        mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+        subPath: custom-ca-certificates.crt
+    volumes:
+      - name: custom-ca
+        secret:
+          defaultMode: 420
+          secretName: custom-ca
   redis:
     resources:
       {{- with $a | get "resources.redis" nil }}

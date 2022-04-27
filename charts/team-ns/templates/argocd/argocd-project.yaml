@@ -13,7 +13,7 @@ spec:
   description: ArgoCD project for team {{ $v.teamId }}
   # Allow manifests to deploy from any Git repos
   sourceRepos:
-  - '*'
+  - https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
   # Only permit applications to deploy to the guestbook namespace in the same cluster
   destinations:
   - namespace: team-{{ $v.teamId }}
@@ -50,7 +50,7 @@ spec:
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
     policies:
-{{- if has "argocd" $v.selfService.app }}
+{{- if has "argocd" $v.selfService.apps }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, *, team-{{ $v.teamId }}/*, allow
 {{- else }}
   {{- if $v.otomi.isMultitenant }}
