@@ -1063,7 +1063,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [argocd]
+          enum: [argocd, gitea]
         uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
