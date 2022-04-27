@@ -24,13 +24,6 @@ releases:
     labels:
       group: jobs
       type: cronjob
-  - name: job-gitea-add-users
-    installed: false # {{ and ($a | get "gitea.enabled" false) (ne $v.cluster.provider "kind") }}
-    labels:
-      pkg: gitea
-      group: jobs
-      type: cronjob
-    <<: *jobs
   - name: job-harbor
     installed: {{ $a | get "harbor.enabled" }}
     labels:
