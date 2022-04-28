@@ -40,9 +40,9 @@ templates:
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
       - events: [prepare]
-        showlogs: false
+        showlogs: true
         command: ../bin/skeleton-chart.sh
-        args: ["{{ .Release.Name }}"]
+        args: ["{{ .Release.Name }}", "{{ .Values.cluster.k8sVersion }}"]
 
       - events: ["presync"]
         showlogs: true

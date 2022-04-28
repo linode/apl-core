@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 # called from a helm chart in helmfile.d folder, so root:
 root=..
@@ -7,8 +6,8 @@ root=..
 app=${1}
 subFolder=''
 [ -n "$2" ] && subFolder="/$2"
-appDir=/tmp/charts/$app$subFolder
-[ -f "/tmp/charts" ] && rm -rf /tmp/charts
+appDir="/tmp/charts/$app"
+rm -rf /tmp/charts/* /tmp/charts/.* >/dev/null
 tplDir="$appDir/templates"
 tpls="$tplDir/all.yaml"
 SKEL_DIR=${SKEL_DIR:-'k8s'}
@@ -19,7 +18,7 @@ mkdir -p $tplDir
 cp -r $root/charts/skeleton/* $appDir/
 sed -i -e "s/##CHART/$app/g" $appDir/Chart.yaml
 printf "" >$tpls
+set -x
 find $root/$SKEL_DIR/${app}${subFolder}/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
 sed -i -e 's/{{/{{ \`{{/g' $tpls
 sed -i -e "s/}}/\` }}/g" $tpls
-rm -rf /tmp/charts
