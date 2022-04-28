@@ -40,7 +40,7 @@ spec:
               binzx/otomi apply
           env:
             - name: VERBOSITY
-              value: '2'
+              value: '3'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT

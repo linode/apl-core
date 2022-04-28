@@ -45,7 +45,8 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
 const prepareValues = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:prepareValues`)
 
-  const values = await hfValues()
+  const values = await hfValues({ filesOnly: true })
+  if (!values) throw new Error('No values???')
   d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
@@ -82,6 +83,8 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],

@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync } from 'fs'
+import { copyFileSync, existsSync } from 'fs-extra'
 import { Argv } from 'yargs'
 import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
@@ -20,6 +20,45 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
+const bootstrapGit = async (values): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:bootstrapGit`)
+  const { remote, branch, email, username, password } = getRepo(values)
+  if (!existsSync(`${env.ENV_DIR}/.git`)) {
+    d.info('Initializing values git repo.')
+    cd(env.ENV_DIR)
+    await $`git init ${env.ENV_DIR}`
+    if (isCli) copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+    await $`git config --global --add safe.directory ${env.ENV_DIR}`
+    await $`git config --local user.name ${username}`
+    await $`git config --local user.password ${password}`
+    await $`git config --local user.email ${email}`
+    await $`git checkout -b ${branch}`
+    await $`git remote add origin ${remote}`
+    if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  }
+  // check remote exists
+  try {
+    await $`curl -m 3 ${remote}` // bails with timeout, whereas git fetch below would hang
+    try {
+      await $`git fetch`
+      await $`if git log; then git merge origin/${branch}; fi`
+    } catch (e) {
+      // we know we have remote commits, so do what we can: some nasty work to pull and sync the remote
+      d.debug('Checking out remote into tmp and rsyncing new bootstrap files into it')
+      try {
+        await $`rm -rf /tmp/xx && git clone ${remote} /tmp/xx`
+        await $`rsync -av --ignore-existing . /tmp/xx/`
+        await $`cd .. && rm -rf $ENV_DIR && mv /tmp/xx $ENV_DIR && cd $ENV_DIR && git checkout ${branch}`
+      } catch (e2) {
+        throw new Error(`An error occured when trying to clone the remote ${remote}. This is a fatal error: ${e}`)
+      }
+    }
+  } catch (e1) {
+    d.info('Remote does not exist yet. Expecting first commit.')
+  }
+  d.log(`Done bootstrapping git`)
+}
+
 const gitPush = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
   const values = (await hfValues()) as Record<string, any>
@@ -39,14 +78,7 @@ const gitPush = async (): Promise<boolean> => {
   }
 }
 
-const getGiteaHealthUrl = async (): Promise<string> => {
-  const d = terminal(`cmd:${cmdName}:getGiteaHealthUrl`)
-  const healthUrl = (await $`git -C ${env.ENV_DIR} config --get remote.origin.url`).stdout.trim()
-  d.debug('gitea healthUrl: ', healthUrl)
-  return healthUrl
-}
-
-const commitAndPush = async (remote): Promise<void> => {
+const commitAndPush = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
@@ -60,7 +92,7 @@ const commitAndPush = async (remote): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
   // If the values are committed for the very first time then pull does not take an effect
-  await pull(remote)
+  await pull()
   try {
     await $`git remote show origin`
     await gitPush()
@@ -99,24 +131,8 @@ export const getRepo = (values): Record<string, any> => {
     const giteaRepo = 'values'
     remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
+  console.log(`Remote: ${remote}`)
   return { remote, branch, email, username, password }
-}
-
-const bootstrapGit = async (values): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:bootstrapGit`)
-  d.info('Initializing values git repo.')
-  cd(env.ENV_DIR)
-  await $`git init ${env.ENV_DIR}`
-  if (isCli) copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
-  const { remote, branch, email, username, password } = getRepo(values)
-  await $`git config --global --add safe.directory ${env.ENV_DIR}`
-  await $`git config --local user.name ${username}`
-  await $`git config --local user.password ${password}`
-  await $`git config --local user.email ${email}`
-  await $`git checkout -b ${branch}`
-  await $`git remote add origin ${remote}`
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
-  d.log(`Done bootstrapping git`)
 }
 
 export const commit = async (firstTime = false): Promise<void> => {
@@ -127,8 +143,8 @@ export const commit = async (firstTime = false): Promise<void> => {
   if (values?._derived?.untrustedCA) {
     process.env.GIT_SSL_NO_VERIFY = 'true'
   }
-  if (!existsSync(`${env.ENV_DIR}/.git`)) await bootstrapGit(values)
   const { remote } = getRepo(values)
+  await bootstrapGit(values)
   if (values?.apps!.gitea!.enabled) {
     const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(remote, {
@@ -142,7 +158,7 @@ export const commit = async (firstTime = false): Promise<void> => {
   }
   await genDrone()
   await encrypt()
-  if (values?.apps?.gitea?.enabled) await commitAndPush(remote)
+  if (values?.apps?.gitea?.enabled) await commitAndPush()
   else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
 
   if (firstTime) {
