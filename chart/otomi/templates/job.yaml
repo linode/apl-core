@@ -22,7 +22,7 @@ spec:
       containers:
         - name: otomi-install
           image: otomi/core:{{ $version }}
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
+          imagePullPolicy: Always # {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           resources:
             limits:
               memory: 2Gi
@@ -33,14 +33,12 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set +e
               kubectl create ns otomi &> /dev/null
-              set -e
               binzx/otomi bootstrap
               binzx/otomi apply
           env:
             - name: VERBOSITY
-              value: '3'
+              value: '1'
             - name: ENV_DIR
               value: /home/app/stack/env
             - name: VALUES_INPUT
@@ -64,4 +62,4 @@ spec:
         - name: otomi-values
           emptyDir: {}
       restartPolicy: Never
-  backoffLimit: 1
+  backoffLimit: 2

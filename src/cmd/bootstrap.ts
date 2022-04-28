@@ -5,6 +5,7 @@ import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
+import { migrate } from './migrate'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
@@ -15,7 +16,7 @@ import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
-import { migrate } from './migrate'
+import { bootstrapGit } from './commit'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -392,6 +393,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
+    await bootstrapGit()
     await bootstrap()
   },
 }
