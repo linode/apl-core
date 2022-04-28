@@ -20,7 +20,10 @@ interface Arguments extends HelmArguments, DroneArgs {
 }
 
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
-  const values = inValues ?? ((await hfValues({ filesOnly: true })) as Record<string, any>)
+  let values = inValues
+  if (!inValues && isCli) {
+    values = (await hfValues({ filesOnly: true })) as Record<string, any>
+  } else return
   if (!values?.cluster?.domainSuffix) return // too early, commit will handle it
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   const { remote, branch, email, username, password } = getRepo(values)
@@ -47,10 +50,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     }
     // we know we have commits, so we use the clone and rsync local files if these don't exist yet
     try {
-      await $`rsync -av --ignore-existing . /tmp/xx/`
+      await $`rsync -a --ignore-existing . /tmp/xx/`
       await $`rm -rf .[!.]* *  && rsync -av --no-o --no-g --no-p /tmp/xx/ ./`
     } catch (e) {
-      throw new Error(`An error occured when trying to sync with the clone. This is a fatal error: ${e}`)
+      d.warn(`An error occured when trying to sync with the clone. This is a fatal error: ${e}`)
     }
   } catch (e) {
     d.log(e)
@@ -99,8 +102,8 @@ const commitAndPush = async (): Promise<void> => {
   d.info('Committing values')
   const argv = getParsedArgs()
   cd(env.ENV_DIR)
-  await $`git add -A`
   try {
+    await $`git add -A`
     await $`git commit -m ${argv.message || 'otomi commit'} --no-verify`
   } catch (e) {
     d.info(e.stdout)

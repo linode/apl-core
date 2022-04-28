@@ -45,7 +45,7 @@ const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
 const prepareValues = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:prepareValues`)
 
-  const values = await hfValues({ filesOnly: true })
+  const values = await hfValues()
   if (!values) throw new Error('No values???')
   d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
