@@ -27,7 +27,7 @@ bases:
 releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
-  {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+  {{- $domain := printf "team-%s.%s" $teamId ($v.cluster | get "domainSuffix" nil) }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
