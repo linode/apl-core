@@ -11,6 +11,8 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 100
   template:
+    annotations:
+      sidecar.istio.io/inject: "false"
     metadata:
       name: {{ include "gatekeeper-artifacts.fullname" . }}-postinstall
       labels:
