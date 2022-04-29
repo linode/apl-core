@@ -161,8 +161,7 @@ export const commit = async (firstTime = false): Promise<void> => {
   if (values?.apps!.gitea!.enabled) {
     const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(remote, {
-      // we wait for a 302 as that is the redirect we get to login page
-      status: 302,
+      status: 200,
       skipSsl: values._derived?.untrustedCA,
       username: 'otomi-admin',
       password: adminPassword,
