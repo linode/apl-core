@@ -1,6 +1,13 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
+toolsTag: v1.4.25
 teams:
   {{- range $teamId, $_ := $v.teamConfig }}
   - {{ $teamId }}
   {{- end }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+  
