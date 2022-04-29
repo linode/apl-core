@@ -4,19 +4,19 @@
 
 ```
 otomi-core
-├── adr
-├── bin                       # deprecated otomi CLI
-├── binzx                     # entrypoint to otomi CLI
-├── chart                     # otomi chart used for initial installation only
-├── charts                    # helm charts that otomi integrates
-├── docs                      # documentation
-├── helmfile.d                # many helmfiles executed on otomi apply command
-├── helmfile.tpl              # additional helmfiles that are not executed on otomi apply command
-├── k8s                       # kubernetes manifests that needs to be deployed before any other chart
+├── adr                       # Architectural Decision Records [read more](https://adr.github.io/madr/)
+├── bin                       # Otomi CLI entrypoint (deprecated)
+├── binzx                     # Otomi CLI entrypoint
+├── chart                     # Helm chart for installing Otomi
+├── charts                    # All other Helm charts that comprise Otomi
+├── docs                      # Documentation
+├── helmfile.d                # Helmfiles ordered by name that executed accordigly on otomi apply command
+├── helmfile.tpl              # Additional Helmfiles that are not executed on otomi apply command
+├── k8s                       # Kubernetes manifests that before any other chart
 ├── policies                  # OPA policies for Gatekeeper
-├── src                       # otomi CLI code
-├── tests                     # values used for testing purpose
-├── values                    # value templates that serves as input to helm charts
+├── src                       # Otomi CLI source code
+├── tests                     # Values used for testing purpose
+├── values                    # Value templates that serves as input to coresponing Helm charts
 ```
 
 There are some essential concepts that you need to know before diving into code. The otomi-core follow DRY pattern thus, you can find many technics
