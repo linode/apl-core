@@ -21,9 +21,10 @@ interface Arguments extends HelmArguments, DroneArgs {
 
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   let values = inValues
-  if (!inValues && isCli) {
-    values = (await hfValues({ filesOnly: true })) as Record<string, any>
-  } else return
+  if (!values) {
+    if (isCli) values = (await hfValues({ filesOnly: true })) as Record<string, any>
+    else return
+  }
   if (!values?.cluster?.domainSuffix) return // too early, commit will handle it
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   const { remote, branch, email, username, password } = getRepo(values)
@@ -103,7 +104,7 @@ const commitAndPush = async (): Promise<void> => {
   const argv = getParsedArgs()
   cd(env.ENV_DIR)
   try {
-    await $`git add -A`
+    await $`pwd && ls -aln && git add -A`
     await $`git commit -m ${argv.message || 'otomi commit'} --no-verify`
   } catch (e) {
     d.info(e.stdout)
@@ -111,7 +112,7 @@ const commitAndPush = async (): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
   try {
-    await $`git remote show origin`
+    await $`pwd && ls -aln && git remote show origin`
     await gitPush()
     d.log('Successfully pushed the updated values')
   } catch (error) {
