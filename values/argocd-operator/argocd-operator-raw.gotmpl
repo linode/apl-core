@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 
-{{- if $v._derived.untrustedCA }}
 resources:
+{{- if $v._derived.untrustedCA }}
   - apiVersion: v1
     kind: Secret
     metadata:
