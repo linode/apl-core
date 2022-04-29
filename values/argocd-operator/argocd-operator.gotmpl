@@ -10,4 +10,5 @@ teams:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
   
