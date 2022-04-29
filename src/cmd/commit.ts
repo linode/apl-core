@@ -161,9 +161,8 @@ export const commit = async (firstTime = false): Promise<void> => {
   if (values?.apps!.gitea!.enabled) {
     const { adminPassword } = values.apps!.gitea
     await waitTillAvailable(remote, {
-      // we wait for a 404 as that is the best we can do,
-      // since that is what gitea gives for repos that have nothing public
-      status: 404,
+      // we wait for a 302 as that is the redirect we get to login page
+      status: 302,
       skipSsl: values._derived?.untrustedCA,
       username: 'otomi-admin',
       password: adminPassword,
