@@ -261,26 +261,22 @@ definitions:
         description: 'An AWS region. Only required for AWS.'
         examples:
           - eu-central-1
-        $ref: '#/definitions/wordCharacterPattern'
+    required:
+      - k8sVersion
+      - name
+      - provider
     allOf:
-      - anyOf:
+      - oneOf:
           - properties:
               provider:
-                eq: aws
+                enum: [aws]
             required:
               - apiName
-              - k8sVersion
-              - name
-              - provider
               - region
           - not:
               properties:
                 provider:
-                  eq: aws
-            required:
-              - k8sVersion
-              - name
-              - provider
+                  enum: [aws]
   clusterName:
     $ref: '#/definitions/wordCharacterPattern'
     type: string
