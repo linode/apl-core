@@ -21,7 +21,7 @@ releases:
     values:
       # - url: {{ $v._derived.oidcBaseUrlBackchannel }}
       - url: {{ $v._derived.oidcBaseUrl }}
-        host: keycloak.{{ $v.cluster.domainSuffix }}
+        host: keycloak.{{ $v.cluster | get "domainSuffix" nil }}
         tasksVersion: {{ $v.versions.tasks }}
         {{- if $v._derived.untrustedCA }}
         customCa: |
