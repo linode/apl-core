@@ -9,14 +9,26 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: snapshot-controller
-    installed: {{ $c | get "snapshot-controller.enabled" }}
+    installed: {{ $a | get "snapshot-controller.enabled" }}
     namespace: kube-system
     labels:
       init: true
       pkg: csi
       provider: aws 
+    <<: *default
+  - name: metrics-server
+    installed: {{ $a | get "metrics-server.enabled" }}
+    namespace: kube-system
+    <<: *default
+  - name: tigera-operator
+    installed: {{ $a | get "tigera-operator.enabled" }}
+    namespace: tigera-operator
+    disableValidationOnInstall: true
+    labels:
+      init: true
+      pkg: calico
     <<: *default

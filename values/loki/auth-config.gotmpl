@@ -4,6 +4,6 @@ users:
     orgId: admins
   {{- range $id, $team := .teams }}
   - username: {{ $id }}
-    password: {{ $team.password }}
+    password: {{ $team | get "password" "XXXX" }}
     orgId: {{ $id }}
   {{- end }}

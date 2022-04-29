@@ -2,7 +2,7 @@
 import express, { Request, Response } from 'express'
 import { existsSync, mkdirSync, symlinkSync } from 'fs'
 import { Server } from 'http'
-import { commit } from '../cmd/commit'
+import { bootstrapSops } from '../cmd/bootstrap'
 import { genDrone } from '../cmd/gen-drone'
 import { validateValues } from '../cmd/validate-values'
 import { decrypt, encrypt } from '../common/crypt'
@@ -22,21 +22,25 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
   return res.send({ status: 'ok' })
 })
 
-app.get('/decrypt', async (req: Request, res: Response) => {
+app.get('/init', async (req: Request, res: Response) => {
   try {
-    d.log('Request to decrypt')
-    await decrypt()
+    d.log('Request to initialize values repo')
+    // nothing to do here anymore as bootstrap now performed in drone pipeline
+    // TODO: remove this endpoint after removing call in api
     res.status(200).send('ok')
   } catch (error) {
     d.error(error)
     res.status(500).send(`${error}`)
   }
 })
-app.get('/encrypt', async (req: Request, res: Response) => {
+
+app.get('/prepare', async (req: Request, res: Response) => {
   try {
-    d.log('Request to encrypt')
+    d.log('Request to prepare values repo')
+    await decrypt()
     await validateValues()
     await genDrone()
+    await bootstrapSops()
     await encrypt()
     res.status(200).send('ok')
   } catch (error) {
@@ -47,17 +51,6 @@ app.get('/encrypt', async (req: Request, res: Response) => {
       status = 422
     }
     res.status(status).send(err)
-  }
-})
-
-app.get('/commit', async (req: Request, res: Response) => {
-  try {
-    d.log('Request to commit')
-    await commit()
-    res.status(200).send('ok')
-  } catch (error) {
-    d.error(error)
-    res.status(500).send(`${error}`)
   }
 })
 
@@ -74,5 +67,12 @@ export const startServer = (): void => {
     symlinkSync(k8sEnvDirPath, dockerEnvDir)
   }
   server = app.listen(17771, '0.0.0.0')
-  d.log(`Container listening on http://0.0.0.0:17771`)
+  d.log(`Server listening on http://0.0.0.0:17771`)
+}
+
+// Start server if invoked directly. We expect the script name to be the last arg
+const a = process.argv
+const lastArg = a[a.length - 1]
+if (a.length && __filename.includes(lastArg)) {
+  startServer()
 }

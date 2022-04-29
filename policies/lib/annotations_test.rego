@@ -3,7 +3,7 @@
 # Privileged containers can easily escalate to root privileges on the node. 
 # As such containers with sufficient capabilities granted to obtain escalated access are not allowed.
 #
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
 package lib.annotations
 
 policyID = "annotations"

@@ -1,6 +1,6 @@
 rbacApiVersion: rbac.authorization.k8s.io
-namespace: operator-lifecycle-manager
-catalog_namespace: operator-lifecycle-manager
+namespace: olm
+catalog_namespace: olm
 operator_namespace: operators
 minKubeVersion: 1.11.0
 writeStatusName: '""'
@@ -23,7 +23,7 @@ olm:
 
 catalog:
   replicaCount: 1
-  commandArgs: -configmapServerImage=quay.io/operator-framework/configmap-operator-registry:latest
+  commandArgs: --configmapServerImage=quay.io/operator-framework/configmap-operator-registry:latest
   image:
     ref: quay.io/operator-framework/olm:master
     pullPolicy: Always
@@ -38,8 +38,6 @@ catalog:
 
 package:
   replicaCount: 2
-  maxUnavailable: 1
-  maxSurge: 1
   image:
     ref: quay.io/operator-framework/olm:master
     pullPolicy: Always

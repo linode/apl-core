@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak | default dict }}
+{{- $k := $v.apps.keycloak | default dict }}
 {{- $kkMaster := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $ := . }}
 {{- range $s := $v.services }}
@@ -7,8 +7,9 @@
   {{- $hasAuth := $s.auth | default false }}
   {{- $hasTlsPass := $s.tlsPass | default false }}
   {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-  {{- if not (or (eq $type "cluster") (hasKey $s "host")) }}
-    {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId ($s.svc | default $s.name)) ($s.svc | default $s.name)) }}
+  {{- if not (eq $type "cluster") }}
+    {{- $name := $s.svc | default $s.name }}
+    {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $name) $name) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
     {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
     {{- if not (and $s.ksvc (eq $knativeServiceDomain $domain)) }}

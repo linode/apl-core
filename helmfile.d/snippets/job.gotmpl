@@ -1,7 +1,7 @@
 {{- $v := .v }}
 {{- $version := $v.versions | get .item }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-{{- $cm := $v.charts | get "cert-manager" }}
+{{- $cm := $v.apps | get "cert-manager" }}
 {{- $skipScript := . | get "skipScript" false }}
 {{- $task := . | get "task" nil }}
 {{- $type := . | get "type" "job" }}

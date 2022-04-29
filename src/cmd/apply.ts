@@ -1,14 +1,14 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isIPv6 } from 'net'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { isCli } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getOtomiLoadBalancerIP } from '../common/k8s'
+import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { writeValues } from '../common/values'
+import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { commit } from './commit'
@@ -31,7 +31,7 @@ const setup = (): void => {
 const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
   d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
-  const ingressIP = values.charts['nginx-ingress']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+  const ingressIP = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
   // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
   const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
 
@@ -57,6 +57,12 @@ const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
   d.info('Start apply all')
+
+  const { status } = await getDeploymentState()
+  const tag = await getImageTag()
+  const version = await getCurrentVersion()
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
@@ -69,14 +75,15 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await $`kubectl apply -f charts/prometheus-operator/crds`
+  await nothrow(
+    $`if ! kubectl replace -f charts/prometheus-operator/crds; then kubectl create -f charts/prometheus-operator/crds; fi`,
+  )
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
@@ -84,21 +91,23 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage!=prep')
   await hf(
     {
-      fileOpts: argv.file,
       labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+  // commit first time only if cli, always commit in chart (might have previous failure)
+  if (!env.DISABLE_SYNC && (!isCli || !status)) {
+    await commit(true)
+  }
 }
 
 const apply = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:applyAll`)
+  const d = terminal(`cmd:${cmdName}:apply`)
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
-    if (isCli) await commit()
     return
   }
   d.info('Start apply')
@@ -108,7 +117,7 @@ const apply = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps', skipCleanup],
+      args: ['apply', skipCleanup],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

@@ -3,8 +3,8 @@ import { pki } from 'node-forge'
 import { createMock } from 'ts-auto-mock'
 import stubs from '../test-stubs'
 import {
+  bootstrap,
   bootstrapSops,
-  bootstrapValues,
   copyBasicFiles,
   createCustomCA,
   generateLooseSchema,
@@ -16,7 +16,7 @@ const { terminal } = stubs
 
 describe('Bootstrapping values', () => {
   const values = {
-    charts: { 'cert-manager': { issuer: 'custom-ca' } },
+    apps: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
   }
   const secrets = { secret: 'true', deep: { nested: 'secret' } }
@@ -24,7 +24,9 @@ describe('Bootstrapping values', () => {
   beforeEach(() => {
     deps = {
       existsSync: jest.fn(),
+      getDeploymentState: jest.fn().mockReturnValue({}),
       getImageTag: jest.fn(),
+      getCurrentVersion: jest.fn(),
       bootstrapSops: jest.fn(),
       terminal,
       copyBasicFiles: jest.fn(),
@@ -35,6 +37,7 @@ describe('Bootstrapping values', () => {
       writeValues: jest.fn(),
       genSops: jest.fn(),
       copyFile: jest.fn(),
+      migrate: jest.fn(),
       getK8sSecret: jest.fn(),
       encrypt: jest.fn(),
       decrypt: jest.fn(),
@@ -43,14 +46,14 @@ describe('Bootstrapping values', () => {
   it('should call relevant sub routines', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.copyBasicFiles).toHaveBeenCalled()
     expect(deps.bootstrapSops).toHaveBeenCalled()
-    expect(deps.getImageTag).toHaveBeenCalledWith(true)
+    expect(deps.getImageTag).toHaveBeenCalled()
   })
   it('should copy only skeleton files to env dir if it is empty or nonexisting', async () => {
     deps.processValues.mockReturnValue(undefined)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.hfValues).toHaveBeenCalledTimes(0)
   })
   it('should get stored cluster secrets if those exist', async () => {
@@ -66,7 +69,7 @@ describe('Bootstrapping values', () => {
   it('should set apiName, k8sContext and owner if needed', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
-    await bootstrapValues(deps)
+    await bootstrap(deps)
     expect(deps.writeValues).toHaveBeenCalledWith(
       expect.objectContaining({
         cluster: expect.objectContaining({
@@ -75,7 +78,6 @@ describe('Bootstrapping values', () => {
           owner: expect.any(String),
         }),
       }),
-      true,
     )
   })
   describe('Generating a loose schema', () => {
@@ -166,7 +168,7 @@ describe('Bootstrapping values', () => {
     it('should create a new key pair when none exist', () => {
       const res = createCustomCA(deps)
       expect(res).toMatchObject({
-        charts: {
+        apps: {
           'cert-manager': {
             customRootCA: 'certpem',
             customRootCAKey: 'keypem',
@@ -207,13 +209,8 @@ describe('Bootstrapping values', () => {
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalledTimes(1)
       })
-      it('should not ask to create a CA if issuer is not custom-ca', async () => {
-        deps.loadYaml.mockReturnValue(merge(cloneDeep(values), { charts: { 'cert-manager': { issuer: 'nono' } } }))
-        await processValues(deps)
-        expect(deps.createCustomCA).toHaveBeenCalledTimes(0)
-      })
     })
-    describe('processing chart values', () => {
+    describe('processing app values', () => {
       it('should not retrieve values from env dir', async () => {
         await processValues(deps)
         expect(deps.hfValues).toHaveBeenCalledTimes(0)
@@ -236,13 +233,13 @@ describe('Bootstrapping values', () => {
         expect(deps.createK8sSecret).toHaveBeenCalledTimes(1)
       })
       it('should create a custom ca if issuer is custom-ca or undefined and no CA yet exists', async () => {
-        deps.loadYaml.mockReturnValue({ charts: { 'cert-manager': { issuer: 'custom-ca' } } })
+        deps.loadYaml.mockReturnValue({ apps: { 'cert-manager': { issuer: 'custom-ca' } } })
         await processValues(deps)
         expect(deps.createCustomCA).toHaveBeenCalled()
       })
       it('should not re-create a custom ca if issuer is custom-ca or undefined and a CA already exists', async () => {
         deps.loadYaml.mockReturnValue({
-          charts: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
+          apps: { 'cert-manager': { issuer: 'custom-ca', customRootCA: 'certpem', customRootCAKey: 'keypem' } },
         })
         await processValues(deps)
         expect(deps.createCustomCA).not.toHaveBeenCalled()
@@ -274,7 +271,7 @@ describe('Bootstrapping values', () => {
         deps.generateSecrets.mockReturnValue(generatedSecrets)
         deps.createCustomCA.mockReturnValue(ca)
         const res = await processValues(deps)
-        expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues, true)
+        expect(deps.writeValues).toHaveBeenNthCalledWith(1, writtenValues)
         expect(res).toEqual(mergedValues)
       })
       it('should merge original with generated values and write them to env dir', async () => {

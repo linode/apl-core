@@ -16,6 +16,12 @@ const template = async (): Promise<void> => {
   const argv = getParsedArgs() as Arguments
   d.info('Templating STARTED')
   await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
+  // if (argv.nonInteractive)
+  //   await hfTemplate(argv, argv.outDir, {
+  //     stdout: new DebugStream(console.log),
+  //     stderr: new DebugStream(console.error),
+  //   })
+  // else await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
   d.info('Templating DONE')
 }
 

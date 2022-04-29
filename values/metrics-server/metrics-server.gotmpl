@@ -1,12 +1,10 @@
 {{- $v := .Values }}
-{{- $m := $v.charts | get "metrics-server" }}
+{{- $m := $v.apps | get "metrics-server" }}
 
-extraArgs:
-  kubelet-insecure-tls: true
-  kubelet-preferred-address-types: InternalIP
+extraArgs: {{- $m.extraArgs | toYaml | nindent 2 }}
 
 apiService:
-  create: {{ eq $v.cluster.provider "aws" }}
+  create: {{ $m.apiServer.create }}
 
 resources:
   {{- if (hasKey $m "resources") }}
@@ -19,9 +17,6 @@ resources:
     cpu: 100m
     memory: 64Mi
   {{- end }}
-
-securityContext:
-  runAsUser: 1001
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:

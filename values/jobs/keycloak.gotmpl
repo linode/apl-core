@@ -1,10 +1,9 @@
 {{- $v := .Values }}
 {{- $o := $v | get "oidc" dict }}
-{{- $teams := $v.teamConfig.teams }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
-{{- range $name, $team := $teams }}
+{{- range $name, $team := omit $v.teamConfig "admin" }}
 {{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames }}
 {{- if ($team | get "oidc.groupMapping" nil) }}
@@ -13,7 +12,7 @@
 {{- end }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $c := $v.charts }}
+{{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
 {{- $k := $c.keycloak }}
 type: Job
@@ -26,16 +25,16 @@ annotations:
   {{- end }}
 env:
   # DEBUG: '*'
-  KEYCLOAK_ADMIN: {{ $k.adminUsername }}
-  FEAT_EXTERNAL_IDP: '{{ $v.otomi.hasExternalIDP }}'
-  KEYCLOAK_ADDRESS: {{ $k.address }}
+  KEYCLOAK_ADMIN: otomi-admin
+  FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
+  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
+  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
 {{- if $v.otomi.hasExternalIDP }}
-  {{- with $k | get "idp.alias" nil }}
-  IDP_ALIAS: {{ . }}{{ end }}
+  IDP_ALIAS: {{ $k.idp.alias }}
   {{- with $o | get "usernameClaimMapper" nil }}
   IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
   {{- with $o | get "subClaimMapper" nil }}

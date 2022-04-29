@@ -1,5 +1,5 @@
 {{- $v := .Values -}}
-{{- $o := $v.charts | get "cluster-overprovisioner" dict }}
+{{- $o := $v.apps | get "cluster-overprovisioner" dict }}
 
 deployments:
   - name: default

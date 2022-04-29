@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "prometheus-operator.fullname" . }}-coredns
+  name: {{ template "kube-prometheus-stack.fullname" . }}-coredns
   labels:
-    app: {{ template "prometheus-operator.name" . }}-coredns
+    app: {{ template "kube-prometheus-stack.name" . }}-coredns
     jobLabel: coredns
-{{ include "prometheus-operator.labels" . | indent 4 }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
   namespace: kube-system
 spec:
   clusterIP: None

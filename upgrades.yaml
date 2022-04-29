@@ -1,0 +1,5 @@
+changes:
+  - version: 0.16
+    releases:
+      prometheus-operator:
+        nonBlockingOperations: []

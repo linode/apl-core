@@ -3,29 +3,29 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.21.5
+ARG KUBECTL_VERSION=1.23.6
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.7.2
+ARG HELM_VERSION=3.8.2
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.1.3
+ARG HELM_DIFF_VERSION=3.4.2
 # https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=3.9.1
+ARG HELM_SECRETS_VERSION=3.13.0
 # https://github.com/mozilla/sops/releases
-ARG SOPS_VERSION=3.7.1
+ARG SOPS_VERSION=3.7.2
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.5.0
+ARG GUCCI_VERSION=1.5.4
 # https://github.com/roboll/helmfile/releases
-ARG HELMFILE_VERSION=0.141.0
+ARG HELMFILE_VERSION=0.144.0
 # https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.33.1
+ARG OPA_VERSION=0.39.0
 # https://github.com/zegl/kube-score/releases
-ARG KUBESCORE_VERSION=1.12.0
+ARG KUBESCORE_VERSION=1.14.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.28.1
+ARG CONFTEST_VERSION=0.31.0
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.15.0
+ARG KONSTRAINT_VERSION=0.19.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 
@@ -105,7 +105,7 @@ RUN chmod +x gucci
 RUN pip3 install --upgrade --no-cache-dir awscli
 
 # aws-iam-authenticator
-ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
 RUN chmod +x aws-iam-authenticator
 
 # opa

@@ -3,7 +3,7 @@
 
 image:
   # @TODO:
-  tag: v1.44.0
+  tag: v1.47.0
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
@@ -27,7 +27,7 @@ cr:
           cpu: 500m
           memory: 512Mi
         requests:
-          cpu: 10m
+          cpu: 50m
           memory: 32Mi
       verbose_mode: "4"
     external_services:
@@ -36,7 +36,7 @@ cr:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
           password: {{ $v.otomi.adminPassword }}
           type: basic
-          username: admin
+          username: otomi-admin
         dashboards:
           - name: Istio Service Dashboard
           - name: Istio Workload Dashboard
@@ -89,6 +89,12 @@ cr:
       grafana: monitoring
       jaeger: jaeger
     istio_namespace: istio-system
+    kiali_feature_flags:
+      certificates_information_indicators:
+        enabled: true
+        secrets:
+        - cacerts
+        - istio-ca-secret
     server:
       web_root: /kiali
       web_fqdn: {{ $appsDomain }}
@@ -96,7 +102,7 @@ cr:
 resources:
   limits:
     cpu: 800m
-    memory: 256Mi
+    memory: 512Mi
   requests:
     cpu: 100m
     memory: 150Mi

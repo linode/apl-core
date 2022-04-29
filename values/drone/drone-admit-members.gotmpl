@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $d := $v.charts.drone }}
+{{- $d := $v.apps.drone }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 
 nameOverride: "drone-admit-members"

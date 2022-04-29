@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $t := $v.charts | get "demo-tlspass" dict }}
+{{- $t := $v.apps | get "demo-tlspass" dict }}
 
 nameOverride: tlspass
 fullnameOverride: tlspass

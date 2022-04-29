@@ -1,4 +1,6 @@
+/* eslint-disable no-param-reassign */
 import { writeFileSync } from 'fs'
+import { each } from 'lodash'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
@@ -14,64 +16,82 @@ export interface Arguments extends BasicArguments {
 
 const cmdName = getFilename(__filename)
 
+const getApiKey = (provider) => {
+  switch (provider) {
+    case 'opsgenie':
+      return 'apiKey'
+    default:
+      throw new Error(`No such provider that has 'apiKey': ${provider}`)
+  }
+}
+
+const getUrlKey = (provider) => {
+  switch (provider) {
+    case 'slack':
+    case 'opsgenie':
+      return 'url'
+    case 'msteams':
+      return 'lowPrio'
+    default:
+      throw new Error(`No such provider: ${provider}`)
+  }
+}
+
 export const genDrone = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:genDrone`)
   const argv: Arguments = getParsedArgs()
-  const allValues = await hfValues()
-  if (!allValues?.charts?.drone?.enabled) {
+  const allValues = (await hfValues()) as Record<string, any>
+  if (allValues.apps?.drone?.enabled !== undefined && !allValues.apps?.drone?.enabled) {
     return
   }
-  const receiver = allValues.alerts?.drone
-  const homeReceiver = allValues.home?.drone
-  const branch = allValues.charts?.['otomi-api']?.git?.branch ?? 'main'
+  const branch = allValues.apps?.['otomi-api']?.git?.branch ?? 'main'
 
-  let webhook
-  let webhookHome
-  let channel
-  let channelHome
-  if (receiver) {
-    const key = receiver === 'slack' ? 'url' : 'lowPrio'
-    channel = receiver === 'slack' ? allValues.alerts?.[receiver]?.channel ?? 'mon-otomi' : undefined
-    webhook = allValues.alerts?.[receiver]?.[key]
-    if (!webhook) throw new Error(`Could not find webhook url in 'alerts.${receiver}.${key}'`)
+  const r = {
+    alerts: {},
+    home: {},
   }
-  if (homeReceiver) {
-    const key = homeReceiver === 'slack' ? 'url' : 'lowPrio'
-    channelHome = receiver === 'slack' ? allValues.home?.[homeReceiver]?.channel ?? 'mon-otomi' : undefined
-    webhookHome = allValues.home?.[homeReceiver]?.[key]
-    if (!webhookHome) throw new Error(`Could not find webhook url in 'home.${homeReceiver}.${key}'`)
-  }
+
+  each({ alerts: allValues.alerts?.drone || [], home: allValues.home?.drone || [] }, (providers, type) => {
+    providers.forEach((provider) => {
+      const holder: Record<string, any> = {}
+      // shared amongst all
+      holder.provider = provider
+      holder.webhook = allValues[type][provider][getUrlKey(provider)]
+      // exceptions
+      if (provider === 'slack') {
+        holder.channel = allValues[type]?.[provider]?.channel ?? 'mon-otomi'
+      }
+      if (provider === 'opsgenie') {
+        holder.apiKey = allValues[type][provider][getApiKey(provider)]
+        holder.responders = allValues[type]?.[provider]?.responders
+      }
+      r[type][provider] = holder
+    })
+  })
 
   const cluster = allValues.cluster?.name
   const owner = allValues.cluster?.owner
   const cloudProvider = allValues.cluster?.provider
   const globalPullSecret = allValues.otomi?.globalPullSecret
-  const provider = allValues.alerts?.drone
-  const providerHome = allValues.home?.drone
   const imageTag = await getImageTag()
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
-  const requestsCpu = allValues.charts.drone.resources.runner.requests.cpu
-  const requestsMem = allValues.charts.drone.resources.runner.requests.memory
+  const requestsCpu = allValues.apps.drone.resources?.runner?.requests?.cpu
+  const requestsMem = allValues.apps.drone.resources?.runner?.requests?.memory
 
   const obj = {
     imageTag,
     branch,
     cluster,
     cloudProvider,
-    channel,
-    channelHome,
-    owner,
     globalPullSecret,
-    provider,
-    providerHome,
-    webhook,
-    webhookHome,
+    owner,
     pullPolicy,
     requestsCpu,
     requestsMem,
+    r,
   }
 
-  const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj)) as string
+  const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj, true)) as string
 
   // TODO: Remove when validate-values can validate subpaths
   if (!output) {

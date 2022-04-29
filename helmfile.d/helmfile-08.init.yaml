@@ -9,29 +9,32 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: prometheus-operator
-    installed: true
+    # we turn on the whole chart just by checking prometheus (not alertmanager or grafana, as all should be on)
+    installed: {{ $a | get "prometheus.enabled" }}
     namespace: monitoring
     labels:
       pkg: prometheus-operator
-    <<: *default
-  - name: metrics-server
-    installed: {{ $c | get "metrics-server.enabled" }}
-    namespace: kube-system
-    <<: *default
+    chart: ../charts/prometheus-operator
+    values:
+      - ../values/prometheus-operator/prometheus-operator.gotmpl
+      - {{- $a | get "prometheus._rawValues" dict | toYaml | nindent 8 }}
+      - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }} 
+      - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
+    <<: *preUpgrade 
   - name: kured
-    installed: {{ $c | get "kured.enabled" }}
+    installed: {{ $a | get "kured.enabled" }}
     namespace: kube-system
     <<: *default
   - name: kube-descheduler
-    installed: {{ $c | get "kube-descheduler.enabled" }}
+    installed: {{ $a | get "kube-descheduler.enabled" }}
     namespace: kube-system
     <<: *default
   - name: cluster-overprovisioner
-    installed: {{ $c | get "cluster-overprovisioner.enabled" }}
+    installed: {{ $a | get "cluster-overprovisioner.enabled" }}
     namespace: overprovisioner
     <<: *default
 

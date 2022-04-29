@@ -1,7 +1,7 @@
 {{- $v := .Values }}
-{{- $k := $v.charts.keycloak }}
+{{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
-
+{{- $pinnedConsoleVersion := "0.5.4" }}
 image:
   tag: 15.1.1
 contextPath: ""
@@ -17,7 +17,7 @@ resources:
   {{- else }}
   limits:
     cpu: 1
-    memory: 1Gi
+    memory: 1.5Gi
   requests:
     cpu: 100m
     memory: 1Gi
@@ -41,7 +41,7 @@ startupScripts:
 
     # hostname SPI modification
     /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.frontendUrl,value="https://keycloak.{{ $v.cluster.domainSuffix }}/")
-    /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=true)
+    /subsystem=keycloak-server/spi=hostname/provider=default:write-attribute(name=properties.forceBackendUrlToFrontendUrl,value=false)
 
     run-batch
     stop-embedded-server
@@ -51,7 +51,7 @@ startupScripts:
     cp -Rv /themes/* /opt/jboss/keycloak/themes/
 extraInitContainers: |
   - name: keycloak-otomi-branding
-    image: otomi/console:v0.4.53
+    image: otomi/console:v{{ $pinnedConsoleVersion }}
     imagePullPolicy: IfNotPresent
     securityContext:
       runAsUser: 1000
@@ -70,31 +70,27 @@ extraInitContainers: |
         memory: 16Mi
       limits:
         cpu: 500m
-        memory: 16Mi
+        memory: 64Mi
     volumeMounts:
       - name: theme
         mountPath: /themes
 
 extraEnv: |
   - name: KEYCLOAK_USER
-    value: {{ $k | get "admin.username" "admin" }}
+    value: {{ $k.adminUsername }}
   - name: KEYCLOAK_PASSWORD
-    value: {{ $k | get "admin.password" $v.otomi.adminPassword }}
+    value: {{ $k.adminPassword }}
 extraVolumeMounts: |
   - name: theme
     mountPath: /themes
 extraVolumes: |
   - name: theme
     emptyDir: {}
-podAnnotations: 
-  policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
   # @TODO:
   image:
     tag: 13.5.0
-  commonAnnotations: 
-    policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
     enabled: true
     fsGroup: 1001
@@ -127,7 +123,7 @@ postgresql:
     {{- else }}
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 1.5Gi
     requests:
       cpu: 100m
       memory: 1Gi

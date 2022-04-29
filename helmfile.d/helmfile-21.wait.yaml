@@ -9,7 +9,7 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: wait-for-otomi-realm
@@ -19,7 +19,9 @@ releases:
     labels:
       pkg: wait
     values:
-      - url: {{ $v._derived.oidcBaseUrl }}/.well-known/openid-configuration
+      # - url: {{ $v._derived.oidcBaseUrlBackchannel }}
+      - url: {{ $v._derived.oidcBaseUrl }}
+        host: keycloak.{{ $v.cluster.domainSuffix }}
         tasksVersion: {{ $v.versions.tasks }}
         {{- if $v._derived.untrustedCA }}
         customCa: |

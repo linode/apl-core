@@ -9,46 +9,38 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: grafana-dashboards
-    installed: true
-    namespace: monitoring
+    installed: {{ $a | get "grafana.enabled" }}
+    namespace: grafana
     <<: *default
   - name: jaeger-operator
-    installed: true
+    installed: {{ $a | get "jaeger.enabled" }}
     namespace: jaeger-operator
     disableValidationOnInstall: true
     <<: *default
   - name: kiali-operator
-    installed: true
+    installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali-operator
     disableValidationOnInstall: true
     labels:
       pkg: kiali
     <<: *default
   - name: loki
-    installed: true
+    installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
   - name: prometheus-blackbox-exporter
-    installed: true 
+    installed: {{ $a | get "prometheus.enabled" }} 
     namespace: monitoring
     <<: *default
   - name: promtail
-    installed: true
+    installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ $c | get "prometheus-msteams.enabled" }}
-    namespace: monitoring
-    <<: *default
-  - name: sitespeed
-    installed: {{ $c | get "sitespeed.enabled" }}
-    namespace: monitoring
-    <<: *default
-  - name: weave-scope
-    installed: {{ $c | get "weave-scope.enabled" }}
+    installed: {{ $a | get "prometheus-msteams.enabled" }}
     namespace: monitoring
     <<: *default

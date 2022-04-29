@@ -14,12 +14,14 @@ export interface BasicArguments extends YargsArguments {
 }
 
 export interface HelmArguments extends BasicArguments {
-  label?: string[]
+  args?: string
   a?: string
+  kubeVersion?: string
+  k?: string
+  label?: string[]
   l?: string[]
   file?: string[]
   f?: string[]
-  args?: string
 }
 
 let parsedArgs: BasicArguments
@@ -32,7 +34,7 @@ export const setParsedArgs = (args: BasicArguments): void => {
   logLevel(parsedArgs)
 }
 export const getParsedArgs = (): BasicArguments => {
-  return parsedArgs
+  return parsedArgs || {}
 }
 
 const helmOpts: { [key: string]: Options } = {
@@ -62,6 +64,10 @@ const helmOpts: { [key: string]: Options } = {
       })
       return files
     },
+  },
+  'kube-version': {
+    alias: 'k',
+    type: 'string',
   },
   args: {
     alias: 'a',

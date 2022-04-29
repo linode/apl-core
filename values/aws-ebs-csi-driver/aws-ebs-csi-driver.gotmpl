@@ -1,10 +1,6 @@
 
 {{- $v := .Values }}
-{{- $d := $v | get "charts.aws-ebs-csi-driver" }}
-
-podAnnotations:
-  policy.otomi.io/ignore.ebs-csi-node: "psp-privileged"
-  policy.otomi.io/ignore.ebs-plugin: "psp-privileged"
+{{- $d := $v | get "apps.aws-ebs-csi-driver" }}
 
 controller:
   resources:
@@ -16,6 +12,8 @@ controller:
       memory: 128Mi
 
 node:
+  podAnnotations:
+    policy.otomi.io/ignore: psp-privileged,psp-host-filesystem
   resources:
     limits:
       cpu: 100m
@@ -73,3 +71,9 @@ sidecars:
       requests:
         cpu: 100m
         memory: 128Mi
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+image:
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}

@@ -9,40 +9,42 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: aws-ebs-csi-driver
-    installed: {{ $c | get "aws-ebs-csi-driver.enabled" }}
+    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
     namespace: kube-system
     labels:
       init: true
       pkg: csi
       provider: aws 
     <<: *default
-  - name: gatekeeper-operator
-    installed: {{ $c | get "gatekeeper-operator.enabled" }}
-    namespace: default
-    chart: ../charts/gatekeeper-operator
+  - name: gatekeeper
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    namespace: gatekeeper-system
+    chart: ../charts/gatekeeper
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     values:
-      - ../values/gatekeeper/gatekeeper-operator.gotmpl
+      - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
-  - name: nginx-ingress
+    <<: *preUpgrade
+  - name: ingress-nginx
     installed: true
     namespace: ingress
     labels:
       tag: ingress
       stage: prep
     <<: *default
-  - name: nginx-ingress-private
-    installed: {{ $c | get "nginx-ingress.private.enabled" }}
+  - name: ingress-nginx-private
+    installed: {{ $a | get "ingress-nginx.private.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
-    chart: ../charts/nginx-ingress
+    chart: ../charts/ingress-nginx
     values:
-      - ../values/nginx-ingress/nginx-ingress.gotmpl
-      - ../values/nginx-ingress/nginx-ingress-private.gotmpl
+      - ../values/ingress-nginx/ingress-nginx.gotmpl
+      - ../values/ingress-nginx/ingress-nginx-private.gotmpl
+    <<: *preUpgrade

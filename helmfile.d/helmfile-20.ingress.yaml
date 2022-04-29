@@ -9,52 +9,46 @@ bases:
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
-{{- $c := $v.charts }}
+{{- $a := $v.apps }}
 
 releases:
   - name: aws-alb-ingress-controller
-    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
   - name: aws-alb-ingress-controller-artifacts
-    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *raw
-  - name: cert-manager-artifacts
-    installed: true
-    namespace: cert-manager
-    labels:
-      pkg: cert-manager
-    <<: *raw
   - name: external-dns
-    installed: {{ $c | get "external-dns.enabled" }}
+    installed: {{ $a | get "external-dns.enabled" }}
     namespace: external-dns
     <<: *default
   - name: ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
+    installed: {{ $a | get "ingress-azure.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
       pkg: ingress-azure
     <<: *default
   - name: ingress-merge
-    installed: {{ $c | get "aws-alb-ingress-controller.enabled" }}
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
     namespace: ingress
     labels:
       tag: ingress
     <<: *default
   - name: job-ingress-azure
-    installed: {{ $c | get "ingress-azure.enabled" }}
+    installed: {{ $a | get "ingress-azure.enabled" }}
     <<: *jobs
     labels:
       pkg: ingress-azure
       group: jobs
   - name: job-keycloak
-    installed: {{ $c | get "keycloak.enabled" }}
+    installed: true
     labels:
       pkg: keycloak
       group: jobs

@@ -1,0 +1,3 @@
+apps:
+    knative:
+        enabled: false

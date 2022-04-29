@@ -1,37 +1,79 @@
+# Default values for Otomi.
+# This is a YAML-formatted file.
+# Declare variables to be passed into chart templates.
+
 cluster:
-  # domainSuffix: '' # Needs to be set when hasExternalDNS is set to true
+
+  ## Needs to be set when hasExternalDNS is set to true
+  ##
+  # domainSuffix: ''
+
+  ## Set the Kubernetes version
+  ## Currently 1.19, 1.20, 1.21 and 1.22 are supported
+  ##
   k8sVersion: '1.21'
+
+  ## Set the name of your cluster
+  ## 
   name: 'dev'
-  provider: 'azure' # provider can be one of aws|azure|google|onprem
+
+  ## Set provider
+  ## Can be one of aws|azure|google|custom
+  ## Choose 'custom' for laptop install (minikube, kind) and for onprem clusters.
+  ##
+  provider: 'custom'
+
+  ## Set the owner of the cluster
+  ## Can be the name of your organization. Will be set to 'otomi' if left empty
+  ##
+  # owner: ''
+
 otomi: {}
-  # adminPassword: '' # Will be automatically generated if not filled-in
-  # Set hasExternalDNS to true when using an external DNS zone. Otherwise a '*.nip.io' domain will be created.
+
+  ## Set the admin password
+  ## Will be automatically generated if not filled-in
+  # adminPassword: ''
+
+  ## Set hasExternalDNS to true when using an external DNS zone. 
+  ## Otherwise a '*.nip.io' domain will be created.
   # hasExternalDNS: false
-  # Set hasExternalIDP to true,when you bring your own IDP such as Azure AD. When set to false Keycloak will become the IDP.
-  # NOTE: When this is set to true you must also fill in the 'oidc:' settings below. 
+
+  ## Set hasExternalIDP to true,when you bring your own IDP such as Azure AD. 
+  ## When set to false Keycloak will become the IDP.
+  ## When set to true, also fill in the 'oidc:' settings below.
   # hasExternalIDP: false
-  # By default the image tag is set to .Chart.AppVersion
-  # version: ''
-charts:
+
+  ## Set the version of Otomi
+  ## By default the image tag is set to .Chart.AppVersion
+  # version: main
+
+apps:
   cert-manager:
-    # Use a custom CA (BYO or auto-generated) or use letsencrypt. When using letsencrypt, also fill in dns.
+    ## Set issuer 
+    ## Use a custom-ca (for BYO CA or auto-generated CA) or letsencrypt. 
+    ## When using letsencrypt, also fill in 'dns'.
     issuer: custom-ca
-    # Fill in when using BYO CA. If not filled in, a CA will be auto generated
+    ## Set when using BYO CA. 
+    ## If not filled in, a CA will be auto generated
     # customRootCA:
     # customRootCAKey:
-    # Fill in when issuer is letsencrypt
+
+    ## Set when issuer is letsencrypt
     # email: ''
     # stage: staging # defaults to 'production' when commented out
+
   external-dns:
-    # list one or more domains that the credentials under dns give access to
+    ## List one or more domains that the credentials under dns give access to
     domainFilters:
       - ''
-    # if your dns credentials give authorization to manage everything on a root domain (i.e. *.example.com)
-    # you can limit the scope to a list of zones that only operate on a subdomain (i.e. test.example.com):
+    ## if your dns credentials give authorization to manage everything on a root domain (i.e. *.example.com)
+    ## you can limit the scope to a list of zones that only operate on a subdomain (i.e. test.example.com):
     # zoneIdFilters:
     #   - ''
-# Optional configuration
-# External dns zone configuration
+    
+## Optional configuration
+
+## External dns zone configuration
 # dns:
 #   provider:
 #     # provide one of the following below: aws|azure|google

@@ -1,13 +1,14 @@
 
 {{- define "ingress.apiVersion" -}}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- else -}}
-{{- print "extensions/v1beta1" -}}
+{{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1beta1
+{{- else  -}}
+extensions/v1
+{{- end }}
 {{- end -}}
-{{- end -}}
+
 
 {{- define "ingress.path" }}
 - backend:
@@ -50,7 +51,7 @@
     {{- $names = (append $names $s.name) }}
   {{- end }}
 {{- end }}
-{{- $internetFacing := or (eq .provider "onprem") (ne .provider "nginx") (and (not $v.otomi.hasCloudLB) (eq .provider "nginx")) }}
+{{- $internetFacing := or (eq .provider "custom") (ne .provider "nginx") (and (not $v.otomi.hasCloudLB) (eq .provider "nginx")) }}
 {{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq .provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
 {{- end }}
@@ -85,7 +86,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "onprem") $internetFacing }}
+{{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}
@@ -133,7 +134,7 @@ spec:
       {{- if eq $.provider "aws" }}
           {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
       {{- end }}
-          {{- include "ingress.path" (dict "dot" $.dot "svc" "nginx-ingress-controller") | nindent 8 }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ingress-nginx-controller") | nindent 8 }}
     {{- else }}
       {{- if gt (len $paths) 0 }}
         {{- range $path := $paths }}

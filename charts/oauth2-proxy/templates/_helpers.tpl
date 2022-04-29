@@ -41,3 +41,17 @@ Get the secret name.
 {{- printf "%s" (include "oauth2-proxy.fullname" .) -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Generate a right Ingress apiVersion
+*/}}
+{{- define "ingress.apiVersion" -}}
+{{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1beta1
+{{- else  -}}
+extensions/v1
+{{- end }}
+{{- end -}}
+

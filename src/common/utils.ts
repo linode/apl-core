@@ -78,13 +78,14 @@ export interface GucciOptions {
 export const gucci = async (
   tmpl: string | unknown,
   ctx: { [key: string]: any },
-  opts?: GucciOptions,
-): Promise<string | Record<string, any>> => {
+  asString = false,
+): Promise<string | unknown> => {
   const kv = flattenObject(ctx)
   const gucciArgs = Object.entries(kv).map(([k, v]) => {
     // Cannot template if key contains regex characters, so skip
     if (stringContainsSome(k, ...'^()[]$'.split(''))) return ''
-    return `-s ${k}='${v ?? ''}'`
+    const val = typeof v === 'object' ? JSON.stringify(v) : v
+    return `-s ${k}='${val ?? ''}'`
   })
 
   const quoteBackup = $.quote
@@ -99,16 +100,19 @@ export const gucci = async (
       // input string is a go template content
       processOutput = await $`echo "${templateContent.replaceAll('"', '\\"')}" | gucci -o missingkey=zero ${gucciArgs}`
     }
-    // Defaults to returning string, unless stated otherwise
-    if (!opts?.asObject) return processOutput.stdout.trim()
-    return load(processOutput.stdout.trim()) as Record<string, any>
+    const ret = processOutput.stdout.trim()
+    if (asString) {
+      return ret
+    }
+    // translate the output from yaml to js, and return it, whatever shape
+    return load(ret)
   } finally {
     $.quote = quoteBackup
   }
 }
 
 export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
-  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret']
+  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret', 'x-acl']
   return Object.keys(schema)
     .map((key) => {
       const childObj = schema[key]
@@ -135,7 +139,7 @@ export const getValuesSchema = async (): Promise<Record<string, any>> => {
   if (valuesSchema) return valuesSchema
   const schema = loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
-  valuesSchema = omit(derefSchema, ['definitions', 'properties.teamConfig'])
+  valuesSchema = omit(derefSchema, ['definitions'])
 
   return valuesSchema
 }
@@ -159,14 +163,3 @@ export const providerMap = (provider: string): string => {
   }
   return map[provider] ?? provider
 }
-
-// export const inject =
-//   <Dependencies, FunctionFactory>(
-//     buildFunction: (dependencies: Dependencies) => FunctionFactory,
-//     buildDependencies: () => Dependencies,
-//   ) =>
-//   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-//   (dependencies = buildDependencies()) => ({
-//     execute: buildFunction(dependencies),
-//     dependencies,
-//   })

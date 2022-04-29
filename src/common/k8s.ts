@@ -2,12 +2,11 @@
 /* eslint-disable no-await-in-loop */
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
-// eslint-disable-next-line import/no-unresolved
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
 import { dump, load } from 'js-yaml'
-import { isEmpty } from 'lodash'
+import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { $, nothrow, sleep } from 'zx'
@@ -50,11 +49,34 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
-export const getOtomiDeploymentStatus = async (): Promise<string> => {
+export interface DeploymentState {
+  status?: 'deploying' | 'deployed'
+  tag?: string
+  version?: string
+  deployingTag?: string
+  deployingVersion?: string
+}
+
+export const getDeploymentState = async (): Promise<DeploymentState> => {
+  if (env.DISABLE_SYNC) return {}
   const result = await nothrow(
-    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
+    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`,
   )
-  return result.stdout
+  return JSON.parse(result.stdout || '{}')
+}
+
+export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
+  if (env.DISABLE_SYNC) return
+  const d = terminal('common:k8s:setDeploymentState')
+  const currentState = await getDeploymentState()
+  const newState = { ...currentState, ...state }
+  const data = map(newState, (val, prop) => `--from-literal=${prop}=${val}`)
+  const cmdCreate = `kubectl -n ${env.DEPLOYMENT_NAMESPACE} create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data.join(' ')}`
+  const cmdPatch = `kubectl -n ${
+    env.DEPLOYMENT_NAMESPACE
+  } patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(newState)}}`
+  const res = await nothrow($`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`)
+  if (res.stderr) d.error(res.stderr)
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {
@@ -63,7 +85,7 @@ const fetchLoadBalancerIngressData = async (): Promise<string> => {
   let count = 0
   for (;;) {
     ingressDataString = (
-      await $`kubectl get -n ingress svc nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress}"`
+      await $`kubectl get -n ingress svc ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress}"`
     ).stdout.trim()
     count += 1
     if (ingressDataString) return ingressDataString

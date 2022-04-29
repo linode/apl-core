@@ -44,7 +44,7 @@ export type OtomiDebugger = {
 }
 
 // this needs to be set at some point with the real cli args:
-let _argv: any = {}
+let _argv: any
 
 export const terminal = (namespace: string): OtomiDebugger => {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {

@@ -2,6 +2,7 @@
 {{- $ := . }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
+{{- $ns := index $s "namespace" | default $.Release.Namespace }}
 {{- $type := $s.type | default "public" }}
 {{- if hasKey $s "ksvc" }}
 {{- $k := $s.ksvc }}
@@ -11,6 +12,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: {{ $s.name }}
+  namespace: {{ $ns }}  
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
     {{- with $k.labels }}
     {{- . | toYaml | nindent 4 }}
@@ -27,7 +29,7 @@ spec:
           {{- if (contains "autoscaling.knative.dev/minScale" $a) }}{{ $hasMinScale = true }}{{ end }}
         {{- end }}
         {{- if or (not $k.annotations) (not $hasMinScale) }}
-        autoscaling.knative.dev/minScale: {{ $k.scaleToZero | ternary "0" "1" | quote }}
+        autoscaling.knative.dev/minScale: {{ ($k.scaleToZero | default false) | ternary "0" "1" | quote }}
         {{- end }}
         {{- with $k.annotations }}
         {{- . | toYaml | nindent 8 }}

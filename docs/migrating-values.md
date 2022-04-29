@@ -85,7 +85,7 @@ ex ante `otomi-values`:
 
 ```yaml
 version: 3
-charts:
+apps:
   bla:
     someProp: someValue
     anotherProp: anotherValue
@@ -97,7 +97,7 @@ ex ante `values-schema.yaml`:
 version: 3
 definitions:
   type: object
-  charts:
+  apps:
     type: object
     bla:
       type: object
@@ -115,7 +115,7 @@ ex post `values-schema.yaml`:
 version: 4
 definitions:
   type: object
-  charts:
+  apps:
     type: object
     bla:
       type: object
@@ -137,7 +137,7 @@ ex post `otomi-values` (end result)
 
 ```yaml
 version: 4
-charts:
+apps:
   bla:
     anotherProp: anotherValue
 ```

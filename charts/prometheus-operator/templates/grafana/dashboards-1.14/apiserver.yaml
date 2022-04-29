@@ -1,23 +1,23 @@
 {{- /*
-Generated from 'apiserver' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+Generated from 'apiserver' from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/main/manifests/grafana-dashboardDefinitions.yaml
 Do not change in-place! In order to change this file first read following link:
-https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack/hack
 */ -}}
 {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
-{{- if and (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.grafana.enabled .Values.grafana.defaultDashboardsEnabled .Values.kubeApiServer.enabled }}
+{{- if and (or .Values.grafana.enabled .Values.grafana.forceDeployDashboards) (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.grafana.defaultDashboardsEnabled .Values.kubeApiServer.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: {{ template "prometheus-operator.namespace" . }}
-  name: {{ printf "%s-%s" (include "prometheus-operator.fullname" $) "apiserver" | trunc 63 | trimSuffix "-" }}
+  namespace: {{ template "kube-prometheus-stack-grafana.namespace" . }}
+  name: {{ printf "%s-%s" (include "kube-prometheus-stack.fullname" $) "apiserver" | trunc 63 | trimSuffix "-" }}
   annotations:
 {{ toYaml .Values.grafana.sidecar.dashboards.annotations | indent 4 }}
   labels:
     {{- if $.Values.grafana.sidecar.dashboards.label }}
-    {{ $.Values.grafana.sidecar.dashboards.label }}: "1"
+    {{ $.Values.grafana.sidecar.dashboards.label }}: {{ ternary $.Values.grafana.sidecar.dashboards.labelValue "1" (not (empty $.Values.grafana.sidecar.dashboards.labelValue)) | quote }}
     {{- end }}
-    app: {{ template "prometheus-operator.name" $ }}-grafana
-{{ include "prometheus-operator.labels" $ | indent 4 }}
+    app: {{ template "kube-prometheus-stack.name" $ }}-grafana
+{{ include "kube-prometheus-stack.labels" $ | indent 4 }}
 data:
   apiserver.json: |-
     {
@@ -88,7 +88,11 @@ data:
 
                         },
                         "id": 3,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
 
                         ],
@@ -159,19 +163,21 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "decimals": 3,
-                        "description": "How much error budget is left looking at our 0.990% availability gurantees?",
+                        "description": "How much error budget is left looking at our 0.990% availability guarantees?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -283,7 +289,11 @@ data:
 
                         },
                         "id": 5,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
 
                         ],
@@ -355,17 +365,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many read requests (LIST,GET) per second do the apiservers get by code?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -463,17 +475,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many percent of read requests (LIST,GET) per second are returned with errors (5xx)?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -556,17 +570,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many seconds is the 99th percentile for reading (LIST|GET) a given resource?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -676,7 +692,11 @@ data:
 
                         },
                         "id": 9,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
 
                         ],
@@ -748,17 +768,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many write requests (POST|PUT|PATCH|DELETE) per second do the apiservers get by code?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -856,17 +878,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many percent of write requests (POST|PUT|PATCH|DELETE) per second are returned with errors (5xx)?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -949,17 +973,19 @@ data:
                         "datasource": "$datasource",
                         "description": "How many seconds is the 99th percentile for writing (POST|PUT|PATCH|DELETE) a given resource?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -1054,17 +1080,19 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": false,
                             "sideWidth": null,
                             "total": false,
@@ -1090,7 +1118,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_adds_total{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name)",
+                                "expr": "sum(rate(workqueue_adds_total{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{`{{`}}instance{{`}}`}} {{`{{`}}name{{`}}`}}",
@@ -1146,17 +1174,19 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 14,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": false,
                             "sideWidth": null,
                             "total": false,
@@ -1182,7 +1212,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_depth{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name)",
+                                "expr": "sum(rate(workqueue_depth{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{`{{`}}instance{{`}}`}} {{`{{`}}name{{`}}`}}",
@@ -1238,10 +1268,12 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 15,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1274,7 +1306,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{`{{`}}instance{{`}}`}} {{`{{`}}name{{`}}`}}",
@@ -1343,17 +1375,19 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 16,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -1435,17 +1469,19 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 17,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -1471,7 +1507,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\", cluster=\"$cluster\"}[5m])",
+                                "expr": "rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{`{{`}}instance{{`}}`}}",
@@ -1527,17 +1563,19 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
 
                         },
                         "id": 18,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -1633,7 +1671,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
 
@@ -1649,7 +1687,7 @@ data:
 
                     },
                     "datasource": "$datasource",
-                    "hide": 2,
+                    "hide": {{ if .Values.grafana.sidecar.dashboards.multicluster.global.enabled }}0{{ else }}2{{ end }},
                     "includeAll": false,
                     "label": "cluster",
                     "multi": false,
@@ -1657,7 +1695,7 @@ data:
                     "options": [
 
                     ],
-                    "query": "label_values(apiserver_request_total, cluster)",
+                    "query": "label_values(up{job=\"apiserver\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -1683,7 +1721,7 @@ data:
                     "options": [
 
                     ],
-                    "query": "label_values(apiserver_request_total{job=\"apiserver\", cluster=\"$cluster\"}, instance)",
+                    "query": "label_values(up{job=\"apiserver\", cluster=\"$cluster\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -1726,7 +1764,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "{{ .Values.grafana.defaultDashboardsTimezone }}",
         "title": "Kubernetes / API server",
         "uid": "09ec8aa1e996d6ffcd6817bbaff4db1b",
         "version": 0

@@ -1,0 +1,49 @@
+
+{{- $v := .Values }}
+{{- $g := $v.apps | get "gatekeeper" }}
+
+image:
+  repository: openpolicyagent/gatekeeper
+  release: {{ $g | get "image.tag" "v3.7.1" }}
+  pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
+
+replicas: {{ $g | get "replicas" }} 
+
+emitAuditEvents:  {{ $g | get "emitAuditEvents" }} 
+emitAdmissionEvents: {{ $g | get "emitAdmissionEvents" }}  
+constraintViolationsLimit: {{ $g | get "constraintViolationsLimit" }}
+auditMatchKindOnly: true
+auditInterval: {{ $g | get "auditInterval" 60 }}  
+logLevel: {{ $g | get "logLevel" "INFO" }}  
+
+auditFromCache: {{ $g | get "auditFromCache" }}
+disableValidatingWebhook: {{ $g | get "disableValidatingWebhook" }}
+
+audit:
+  resources:
+    {{- with $g | get "resources.audit" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    {{- end }}
+controllerManager:
+  resources:
+    {{- with $g | get "resources.controller" nil }}
+      {{- toYaml . | nindent 4 }}
+    {{- else }}
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    {{- end }}
