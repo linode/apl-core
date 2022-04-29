@@ -82,6 +82,7 @@ gitea:
       # basic auth can't be turned off because it nukes otomi commit
       # TODO: create token on initial deploy and store in values
       # ENABLE_BASIC_AUTHENTICATION: false
+      REQUIRE_SIGNIN_VIEW: true
       SHOW_REGISTRATION_BUTTON: false
     session:
       COOKIE_SECURE: true

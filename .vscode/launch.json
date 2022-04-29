@@ -25,9 +25,6 @@
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DISABLE_SYNC": "1"
-      },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
