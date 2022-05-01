@@ -15,10 +15,10 @@ spec:
       - openid
       - profile
       - email
-    {{- if $v._derived.untrustedCA }}
+{{- if $v._derived.untrustedCA }}
     rootCA: |
       {{- $v._derived.caCert | nindent 6 }}
-    {{- end }}
+{{- end }}
   rbac:
     policy: |
       # image updater
@@ -87,6 +87,7 @@ spec:
         cpu: 100m
         memory: 256M
       {{- end }}
+{{- if $v._derived.untrustedCA }}    
     volumeMounts:
       - name: custom-ca
         mountPath: /etc/ssl/certs/custom-ca-certificates.crt
@@ -96,6 +97,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: custom-ca
+{{- end }}
   redis:
     resources:
       {{- with $a | get "resources.redis" nil }}
