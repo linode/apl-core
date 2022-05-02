@@ -1,3 +1,5 @@
+# Bash coding standard
+
 Maurice:
 
 Seeing we have too many discussions around bash best practices we will settle for a style guide.
