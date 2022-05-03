@@ -30,6 +30,12 @@ spec:
     kind: LimitRange
   - group: ''
     kind: NetworkPolicy
+  - group: networking.istio.io
+    kind: VirtualService
+  - group: networking.istio.io
+    kind: Sidecar
+  - group: networking.istio.io
+    kind: Gateway
   # Deny all namespaced-scoped resources from being created
   # namespaceResourceWhitelist: []
   # - group: 'apps'

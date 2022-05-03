@@ -5,6 +5,7 @@ import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
+import { $, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
@@ -133,6 +134,8 @@ export const getStoredClusterSecrets = async (
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already exists`)
   if (env.DISABLE_SYNC) return undefined
+  // we might need to create the 'otomi' namespace if we are in CLI mode
+  if (isCli) await nothrow($`kubectl create ns otomi &> /dev/null`)
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
