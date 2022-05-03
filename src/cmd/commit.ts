@@ -170,8 +170,6 @@ export const commit = async (firstTime = false): Promise<void> => {
   }
   await genDrone()
   await encrypt()
-  // if (values?.apps?.gitea?.enabled) await commitAndPush()
-  // else d.log('The files have been prepared, but you have to commit and push to the remote yourself.')
   await commitAndPush()
 
   if (firstTime) {
@@ -191,7 +189,7 @@ export const commit = async (firstTime = false): Promise<void> => {
 
 export const module = {
   command: cmdName,
-  describe: 'Wrapper that validates values, generates the Drone pipeline and then commits changed files',
+  describe: 'Wrapper that validates values, generates the Drone pipeline and then commits and pushes changed files',
   builder: (parser: Argv): Argv =>
     parser.options({
       message: {
