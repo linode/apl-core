@@ -54,7 +54,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
       await $`rsync -a --ignore-existing . /tmp/xx/`
       await $`rm -rf .[!.]* *  && rsync -av --no-o --no-g --no-p /tmp/xx/ ./`
     } catch (e) {
-      d.warn(`An error occured when trying to sync with the clone. This is a fatal error: ${e}`)
+      d.error(`An error occured when trying to sync with the clone. This is a fatal error: ${e}`)
     }
   } catch (e) {
     d.log(e)
