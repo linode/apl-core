@@ -4,7 +4,7 @@ import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { isCli } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
 import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
@@ -98,7 +98,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   // commit first time only if cli, always commit in chart (might have previous failure)
-  if (!isCli || !status) {
+  if (!env.DISABLE_SYNC && (!isCli || !status)) {
     await commit(true)
   }
 }

@@ -1,3 +1,5 @@
+# Values migration
+
 Maurice:
 
 When changing `otomi.version`, and then calling `otomi migrate`, the values are migrated to the latest schema version. It will perform the actions found in `values-changes.yaml` for the change records found between the old and new version.
