@@ -86,15 +86,11 @@ extraVolumeMounts: |
 extraVolumes: |
   - name: theme
     emptyDir: {}
-podAnnotations: 
-  policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
   # @TODO:
   image:
     tag: 13.5.0
-  commonAnnotations: 
-    policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
     enabled: true
     fsGroup: 1001

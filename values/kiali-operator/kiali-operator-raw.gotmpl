@@ -1,3 +1,4 @@
+{{- if .Values._derived.untrustedCA }}
 resources:
   - apiVersion: v1
     kind: ConfigMap
@@ -5,3 +6,4 @@ resources:
       name: kiali-cabundle
     data:
       openid-server-ca.crt: {{ .Values._derived.caCert | b64enc }}
+{{- end }}

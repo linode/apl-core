@@ -30,6 +30,7 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
+    <<: *preUpgrade
   - name: ingress-nginx
     installed: true
     namespace: ingress
@@ -46,3 +47,4 @@ releases:
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
       - ../values/ingress-nginx/ingress-nginx-private.gotmpl
+    <<: *preUpgrade

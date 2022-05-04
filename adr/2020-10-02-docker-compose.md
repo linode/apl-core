@@ -1,3 +1,5 @@
+# docker compose
+
 Maurice:
 
 Added docker-compose with implications: Can't mount an existing git repo to work with.

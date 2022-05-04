@@ -25,6 +25,7 @@ releases:
     values:
       - ../values/knative/knative-serving-raw.gotmpl
       - snippets/common.gotmpl
+    <<: *preUpgrade
   - name: oauth2-proxy-redis
     installed: true
     namespace: istio-system
@@ -34,4 +35,5 @@ releases:
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl
+    <<: *preUpgrade
 
