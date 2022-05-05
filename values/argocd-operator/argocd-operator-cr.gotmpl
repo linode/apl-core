@@ -10,7 +10,7 @@ spec:
   oidcConfig: |
     issuer: {{ $v._derived.oidcBaseUrl }}
     clientID: {{ $k.idp.clientID }}
-    clientSecret: {{ $k.idp.clientSecret }}
+    clientSecret: '$oidc.clientSecret'
     requestedScopes:
       - openid
       - profile
