@@ -104,7 +104,7 @@ const commitAndPush = async (): Promise<void> => {
   const argv = getParsedArgs()
   cd(env.ENV_DIR)
   try {
-    await $`pwd && ls -aln && git add -A`
+    await $`git add -A`
     await $`git commit -m ${argv.message || 'otomi commit'} --no-verify`
   } catch (e) {
     d.info(e.stdout)
@@ -112,7 +112,7 @@ const commitAndPush = async (): Promise<void> => {
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
   try {
-    await $`pwd && ls -aln && git remote show origin`
+    await $`git remote show origin`
     await gitPush()
     d.log('Successfully pushed the updated values')
   } catch (error) {
