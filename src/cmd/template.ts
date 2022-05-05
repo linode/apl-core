@@ -15,12 +15,10 @@ const template = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:template`)
   const argv = getParsedArgs() as Arguments
   d.info('Templating STARTED')
-  if (argv.nonInteractive) await hfTemplate(argv, argv.outDir, { stdout: d.stream.log, stderr: d.stream.error })
-  else
-    await hfTemplate(argv, argv.outDir, {
-      stdout: new DebugStream(console.log),
-      stderr: new DebugStream(console.error),
-    })
+  await hfTemplate(argv, argv.outDir, {
+    stdout: new DebugStream(console.log),
+    stderr: new DebugStream(console.error),
+  })
   d.info('Templating DONE')
 }
 
