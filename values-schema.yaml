@@ -227,42 +227,59 @@ definitions:
     additionalProperties: false
     properties:
       apiName:
-        description: Only used for API/UI to show in app.
+        description:
+          Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
+          When on AWS this name is used for chart cluster-autoscaler and aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
         $ref: '#/definitions/wordCharacterPattern'
       apiServer:
-        description: Used by kubectl for local deployment to target cluster.
+        description: Used to generate KUBECONFIG for download, for local access to target cluster.
         pattern: '^https:\/\/.*'
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
       entrypoint:
-        description: A Kubernetes API public IP address (provider "custom" only).
+        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
         type: string
       k8sContext:
         $ref: '#/definitions/k8sContext'
+        description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
+        readOnly: true
       name:
         $ref: '#/definitions/clusterName'
+        description: Short name that will be used in construction of cluster domain and messaging.
+        readOnly: true
       owner:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
+        default: otomi
       provider:
         $ref: '#/definitions/provider'
+        readOnly: true
       region:
-        description: Dependent on provider.
+        description: 'An AWS region. Only required for AWS.'
         examples:
-          - europe-west4
           - eu-central-1
-          - westeurope
-        $ref: '#/definitions/wordCharacterPattern'
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        $ref: '#/definitions/wordCharacterPattern'
     required:
       - k8sVersion
       - name
       - provider
+    allOf:
+      - oneOf:
+          - properties:
+              provider:
+                enum: [aws]
+            required:
+              - apiName
+              - region
+          - not:
+              properties:
+                provider:
+                  enum: [aws]
+  clusterName:
+    $ref: '#/definitions/wordCharacterPattern'
+    type: string
   containerSpecNoSec:
     properties:
       image:
@@ -354,9 +371,6 @@ definitions:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
     type: string
-  clusterName:
-    $ref: '#/definitions/wordCharacterPattern'
-    type: string
   image:
     additionalProperties: false
     properties:
@@ -393,6 +407,9 @@ definitions:
       - tag
     type: object
     title: Container image
+  ipV4Address:
+    type: string
+    pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
   jobs:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
@@ -463,12 +480,13 @@ definitions:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
-    description: The cluster k8s version. Otomi has compatibility with at least 2 minor versions back from the suggested default.
+    description: The cluster k8s version. Must match one of the list.
     enum:
       - '1.19'
       - '1.20'
       - '1.21'
       - '1.22'
+      - '1.23'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1047,19 +1065,23 @@ definitions:
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
-      Service:
-        title: Service
+      service:
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
-      Team:
-        title: Team
+      team:
         type: array
         items:
           type: string
           enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
+        uniqueItems: true
+      apps:
+        type: array
+        items:
+          type: string
+          enum: [argocd, gitea]
         uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
@@ -1127,11 +1149,32 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as derived from otomi flags.
+            default: false
           image:
             $ref: '#/definitions/imageSimple'
           resources:
             $ref: '#/definitions/resources'
+      argocd:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          autoscaling:
+            $ref: '#/definitions/autoscalingEnabled'
+          resources:
+            additionalProperties: false
+            properties:
+              server:
+                $ref: '#/definitions/resources'
+              controller:
+                $ref: '#/definitions/resources'
+              repo:
+                $ref: '#/definitions/resources'
+              redis:
+                $ref: '#/definitions/resources'
       cert-manager:
         properties:
           _rawValues:
@@ -1178,7 +1221,6 @@ properties:
                         const: custom-ca
                     required:
                       - issuer
-
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -2309,6 +2351,9 @@ properties:
                   - project
             required:
               - google
+      entrypoint:
+        $ref: '#/definitions/ipV4Address'
+        description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
   kms:

@@ -12,6 +12,12 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: argocd-operator-artifacts
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *raw
   - name: gatekeeper-artifacts
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system

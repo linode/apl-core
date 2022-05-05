@@ -16,10 +16,3 @@ releases:
     installed: false
     namespace: team-admin
     <<: *default
-  - name: operator-lifecycle-manager
-    installed: {{ $a | get "kubeapps.enabled" }}
-    disableValidationOnInstall: true
-    namespace: operator-lifecycle-manager
-    labels:
-      pkg: kubeapps
-    <<: *default

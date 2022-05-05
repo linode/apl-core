@@ -1,3 +1,4 @@
+teamId: ""
 cluster:
   provider: ""
   name: ""
@@ -11,4 +12,9 @@ namespace: ""
 resourceQuota:
   pods: "50"
   services.loadbalancers: 0
+apps: {}
 services: []
+selfService:
+  apps: []
+  service: []
+  team: []

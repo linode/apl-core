@@ -32,7 +32,7 @@
 {{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 
-{{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+{{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
 {{- end }}
