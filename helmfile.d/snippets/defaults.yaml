@@ -43,7 +43,9 @@ environments:
             hostPort: 40753
             certManager:
               enabled: true
-              issuerRef: custom-ca
+              issuerRef:
+                name: custom-ca
+                kind: ClusterIssuer
               rootCert:
                 duration: 43800h0m0s
               admissionCert:
