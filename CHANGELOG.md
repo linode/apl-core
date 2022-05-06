@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.3](https://github.com/redkubes/otomi-core/compare/v0.16.2...v0.16.3) (2022-05-06)
+
+
+### Features
+
+* argocd gitops for teams ([#788](https://github.com/redkubes/otomi-core/issues/788)) ([5e9a868](https://github.com/redkubes/otomi-core/commit/5e9a8688ac0ef90324e37f99077fa0e3292c5f30))
+* pr lint action [ci skip] ([e921978](https://github.com/redkubes/otomi-core/commit/e92197803e079333b390cfe092744574a2c06cae))
+
+
+### Bug Fixes
+
+* chart placeholder [ci skip] ([744b090](https://github.com/redkubes/otomi-core/commit/744b090fcc8053636d0cf26f9087115a6cdbfd86))
+
+
+### Docs
+
+* adr index and template [ci skip] ([c252efe](https://github.com/redkubes/otomi-core/commit/c252efe22a64ac315be0f4484f7b4adc431a07a7))
+
+
+### Others
+
+* **deps:** update all-npm ([#784](https://github.com/redkubes/otomi-core/issues/784)) ([ebd5c51](https://github.com/redkubes/otomi-core/commit/ebd5c512e0bd62ae0ba2a819f8440be6af54c953))
+
 ### [0.16.2](https://github.com/redkubes/otomi-core/compare/v0.16.0...v0.16.2) (2022-05-02)
 
 ### Features
