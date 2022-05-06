@@ -1,6 +1,7 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 k8s:
   namespaces:
+    - name: argocd
     - name: alertmanager
     - name: cert-manager
       disableIstioInjection: true
@@ -71,6 +72,17 @@ adminApps:
         port: 9093
         type: public
         auth: true
+  - name: argocd
+    tags: [cicd, gitops]
+    isShared: true
+    ownHost: true
+    ingress:
+      - svc: argocd-server
+        namespace: argocd
+        type: public
+        auth: true
+        # removeRequestHeaders:
+        #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: drone

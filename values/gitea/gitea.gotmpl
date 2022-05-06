@@ -36,7 +36,8 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
+  # tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
+  tag: {{ $g | get "image.gitea.tag" "1.16.6" }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
 
@@ -48,20 +49,51 @@ gitea:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
   config:
+    admin:
+      DISABLE_REGULAR_ORG_CREATION: false
     log:
       LEVEL: trace
+    {{ with $v | get "smtp" nil }}
+    mailer:
+      enabled: true
+      HELO_HOSTNAME: {{ .hello }}
+      FROM: {{ .from }}
+      USER: {{ .auth_username }}
+      PASSWD: {{ .auth_password }}
+      MAILER_TYPE: smtp
+      IS_TLS_ENABLED: true
+      SUBJECT_PREFIX: 'Otomi[Gitea]: '
+    {{- end }}
     openid:
       ENABLE_OPENID_SIGNIN: true
       ENABLE_OPENID_SIGNUP: true
+    oauth2_client:
+      OPENID_CONNECT_SCOPES: openid email profile
+      ENABLE_AUTO_REGISTRATION: true
+      ACCOUNT_LINKING: auto
+      USERNAME: email
     repository:
       DEFAULT_BRANCH: main
     service:
       ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+      DEFAULT_ALLOW_CREATE_ORGANIZATION: false
+      DEFAULT_ORG_MEMBER_VISIBLE: {{ not $v.otomi.isMultitenant }}
+      DEFAULT_USER_IS_RESTRICTED: {{ $v.otomi.isMultitenant }}
+      # basic auth can't be turned off because it nukes otomi commit
+      # TODO: create token on initial deploy and store in values
+      # ENABLE_BASIC_AUTHENTICATION: false
+      SHOW_REGISTRATION_BUTTON: false
+      REQUIRE_SIGNIN_VIEW: false
+    service.explore:
+      REQUIRE_SIGNIN_VIEW: true
+    session:
+      COOKIE_SECURE: true
+      DOMAIN: {{ $giteaDomain }}
+      
     server:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-    
     
   metrics:
     enabled: true
@@ -77,6 +109,8 @@ gitea:
       autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
       # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
       autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
+      adminGroup: team-admin
+      groupClaimName: groups
 
 init:
   resources:

@@ -1,3 +1,5 @@
+# A new otomi pre-upgrade command
+
 Maurice:
 
 After changing `otomi.version`, and then calling `otomi pre-upgrade -r $release`, that will trigger any operations found in `upgrades.yaml` for the upgrade path.

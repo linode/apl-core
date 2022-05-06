@@ -40,7 +40,7 @@ extensions/v1
 {{- range $s := .services }}
   {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
   {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-  {{- $paths := hasKey $s "paths" | ternary $s.paths (list "/") }}
+  {{- $paths := $s.paths | default (list "/") }}
   {{- if (not (hasKey $routes $domain)) }}
     {{- $routes = merge $routes (dict $domain $paths) }}
   {{- else }}
@@ -86,7 +86,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") $internetFacing }}
+{{- if and (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if .isApps }}

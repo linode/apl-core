@@ -14,6 +14,20 @@
       "cwd": "${workspaceRoot}"
     },
     {
+      "name": "Debug bash",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "bash"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
       "name": "Debug bootstrap",
       "console": "integratedTerminal",
       "type": "pwa-node",
@@ -25,9 +39,6 @@
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DISABLE_SYNC": "1"
-      },
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
@@ -184,6 +195,20 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
       "args": ["src/otomi.ts", "--", "server"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
+    },
+    {
+      "name": "Debug destroy",
+      "console": "integratedTerminal",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+      "args": ["src/otomi.ts", "--", "destroy"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"],

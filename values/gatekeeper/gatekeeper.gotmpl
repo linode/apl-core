@@ -47,3 +47,5 @@ controllerManager:
       cpu: 100m
       memory: 256Mi
     {{- end }}
+
+otomiVersions: {{- toYaml .Values.versions | nindent 2 }}

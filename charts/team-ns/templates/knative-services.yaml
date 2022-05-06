@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $ := . }}
+{{- if $v.apps.knative.enabled }}
 {{- $secrets := (include "itemsByName" ($v.secrets | default list) | fromYaml) }}
 {{- range $s := $v.services }}
 {{- $ns := index $s "namespace" | default $.Release.Namespace }}
@@ -106,6 +107,7 @@ spec:
   {{- end }}
 {{- end }}
 ---      
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

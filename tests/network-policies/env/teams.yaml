@@ -5,10 +5,10 @@ teamConfig:
         ingressPrivate: true
         egressPublic: true
       selfService:
-        Service:
+        service:
           - ingress
           - networkPolicy
-        Team:
+        team:
           - alerts
       id: a1
     a2:
@@ -16,9 +16,9 @@ teamConfig:
         ingressPrivate: true
         egressPublic: true
       selfService:
-        Service:
+        service:
           - ingress
           - networkPolicy
-        Team:
+        team:
           - alerts
       id: a2
