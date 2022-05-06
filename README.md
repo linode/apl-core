@@ -49,14 +49,14 @@ and then install the Helm chart:
 helm install otomi otomi/otomi \
 --set cluster.k8sVersion=$VERSION \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use azure, aws, google, digitalocean or custom (for any other cloud or onprem K8s)
+--set cluster.provider=$PROVIDER # use azure, aws, google, digitalocean or custom for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
 
 ### K8s quick starts
 
-Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Managed Kubernetes cluster in your cloud of choice. Then use the helm chart to install Otomi.
+Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install Otomi.
 
 ### Workshops
 
@@ -80,7 +80,7 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 
 ✅ Role-based access to all integrated applications based on group membership
 
-✅ Policy enforcement based on a customizable set of security policies
+✅ Policy enforcement based on a default set of security policies
 
 ✅ Direct access to logs and metrics of your deployed workloads
 
