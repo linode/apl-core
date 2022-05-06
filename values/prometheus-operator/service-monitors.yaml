@@ -57,3 +57,13 @@
     - bearerTokenSecret:
         key: ''
       port: cr-metrics
+- name: argocd-metrics
+  namespace: argocd
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-metrics
+  namespaceSelector:
+    matchNames:
+      - argocd
+  endpoints:
+    - port: metrics

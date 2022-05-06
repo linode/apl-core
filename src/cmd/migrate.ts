@@ -6,15 +6,15 @@ import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
-import { commit } from './commit'
 import { prepareEnvironment } from '../common/cli'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
+import { env, isCi } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 
@@ -260,7 +260,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
     const res = await migrate()
-    if (env.CI && res) {
+    if (isCi && res) {
       setParsedArgs({ ...argv, message: 'migrated values [ci skip]' })
       await commit()
     }

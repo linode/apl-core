@@ -10,6 +10,7 @@ const cmdName = getFilename(__filename)
 const bash = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}bash`)
   const argv: BasicArguments = getParsedArgs()
+  console.log(argv)
   if (argv._[0] === 'bash') parser.showHelp()
   else {
     const command = argv._.slice(1).join(' ')

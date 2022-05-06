@@ -56,6 +56,7 @@ RUN apt-get update -qq \
   nano \
   groff \
   awscli \
+  rsync \
   && rm -rf /var/lib/apt/lists/*
 
 # set locale

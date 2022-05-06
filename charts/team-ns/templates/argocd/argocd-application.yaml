@@ -1,0 +1,18 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+{{- if and (not (eq $v.teamId "admin")) $a.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: team-{{ $v.teamId }}
+  namespace: argocd
+spec:
+  project: team-{{ $v.teamId }}
+  source:
+    repoURL: https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
+    targetRevision: HEAD
+    path: ./
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: team-{{ $v.teamId }}
+{{- end }}
