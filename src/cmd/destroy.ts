@@ -5,11 +5,15 @@ import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
+import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed, stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
+
+export interface Arguments extends BasicArguments {
+  full?: boolean
+}
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -105,7 +109,15 @@ const destroy = async (): Promise<void> => {
 export const module = {
   command: cmdName,
   describe: 'Destroy all, or supplied, k8s resources',
-  builder: (parser: Argv): Argv => helmOptions(parser),
+  builder: (parser: Argv): Argv =>
+    helmOptions(
+      parser.options({
+        full: {
+          boolean: true,
+          default: false,
+        },
+      }),
+    ),
 
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)

@@ -4,10 +4,10 @@ import { $, cd, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isCli } from '../common/envalid'
+import { env, isChart, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { setDeploymentState, waitTillAvailable } from '../common/k8s'
-import { getFilename, rootDir } from '../common/utils'
+import { getFilename, loadYaml, rootDir } from '../common/utils'
 import { getParsedArgs, HelmArguments, setParsedArgs } from '../common/yargs'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
@@ -19,10 +19,16 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
+/**
+ * Prepare the ENV_DIR before anything else. Scenario's:
+ * - It might be a fresh empty folder that needs init and files added
+ * - It might have a remote with commits: clone it first and add files back in that don't exist yet
+ */
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   let values = inValues
   if (!values) {
     if (isCli) values = (await hfValues({ filesOnly: true })) as Record<string, any>
+    else if (isChart) values = loadYaml(env.VALUES_INPUT) as Record<string, any>
     else return
   }
   if (!values?.cluster?.domainSuffix) return // too early, commit will handle it

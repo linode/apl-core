@@ -18,16 +18,22 @@ spec:
       restartPolicy: Never
       serviceAccountName: {{ include "otomi.fullname" . }}
       containers:
-        - name: pre-delete
-          image: bitnami/kubectl:{{ .Values.cluster.k8sVersion }}
+        - name: destroy
+          image: otomi/core:{{ $version }}
           command:
             - sh
             - -c
           args:
             - |
-              kubectl delete cm otomi-status
-              kubectl delete secret otomi-generated-passwords
+              binzx/otomi bootstrap && binzx/otomi destroy
               echo "Otomi has been uninstalled."
+          env:
+            - name: VERBOSITY
+              value: '1'
+            - name: ENV_DIR
+              value: /home/app/stack/env
+            - name: VALUES_INPUT
+              value: /secret/values.yaml
           resources:
             limits:
               memory: 100Mi

@@ -396,11 +396,7 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
-    if (isCli) {
-      // for ease of dev: could be first time trying to connect to a remote, so
-      // let bootstrap figure out wether to clone fresh and swap out
-      await bootstrapGit()
-    }
+    await bootstrapGit()
     await bootstrap()
   },
 }
