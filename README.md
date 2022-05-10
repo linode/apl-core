@@ -141,9 +141,10 @@ If you want to say **thank you** or/and support the active development of `Otomi
 main
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
-- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi
+- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
 
 This project exists thanks to all the people who contribute and have contributed.
+
 <a href="https://github.com/redkubes/otomi-core/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
 </a>
