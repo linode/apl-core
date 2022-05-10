@@ -21,7 +21,7 @@
 <a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel for Q&A</a>
 </p>
 
-Otomi brings a PaaS experience to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+`Otomi` brings a PaaS experience to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
@@ -29,12 +29,12 @@ Otomi brings a PaaS experience to your Kubernetes cluster without the constraint
 
 ### Helm
 
-To install Otomi using Helm, make sure to have a K8s cluster running with at least:
+To install `Otomi` using Helm, make sure to have a K8s cluster running with at least:
 
 - Version `1.18` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
-- When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by Otomi can obtain an external accessible IP (using a cloud load balancer or MetalLB)
+- When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
 
 Add the Helm repository:
 
@@ -56,7 +56,7 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ### K8s quick starts
 
-Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install Otomi.
+Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install `Otomi`.
 
 ### Workshops
 
@@ -143,6 +143,10 @@ main
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi
 
+This project exists thanks to all the people who contribute and have contributed.
+<a href="https://github.com/redkubes/otomi-core/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
+</a>
 ## 🔖 License
 
 `Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
