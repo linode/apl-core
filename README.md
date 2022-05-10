@@ -148,6 +148,7 @@ This project exists thanks to all the people who contribute and have contributed
 <a href="https://github.com/redkubes/otomi-core/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
 </a>
+
 ## 🔖 License
 
 `Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
