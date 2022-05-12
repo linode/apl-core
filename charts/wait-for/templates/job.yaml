@@ -16,6 +16,7 @@ spec:
       labels:
         {{- include "wait-for.selectorLabels" . | nindent 8 }}
       annotations:
+        sidecar.istio.io/inject: "false"
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
       restartPolicy: Never

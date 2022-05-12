@@ -18,7 +18,7 @@ export const diff = async (): Promise<ProcessOutputTrimmed> => {
       fileOpts: argv.file as string[],
       labelOpts: argv.label as string[],
       logLevel: logLevelString(),
-      args: ['diff', '--skip-deps'],
+      args: ['diff'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

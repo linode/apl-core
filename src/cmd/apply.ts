@@ -4,14 +4,14 @@ import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { isCli } from '../common/envalid'
+import { env, isChart } from '../common/envalid'
 import { hf, hfValues } from '../common/hf'
-import { getOtomiDeploymentStatus, getOtomiLoadBalancerIP } from '../common/k8s'
+import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { writeValues } from '../common/values'
+import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
-import { commit, setDeploymentStatus } from './commit'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -46,6 +46,7 @@ const prepareValues = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:prepareValues`)
 
   const values = await hfValues()
+  if (!values) throw new Error('No values???')
   d.info('Checking if domainSuffix needs a fallback domain')
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
@@ -57,6 +58,13 @@ const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
   d.info('Start apply all')
+
+  const prevState = await getDeploymentState()
+  d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
+  const tag = await getImageTag()
+  const version = await getCurrentVersion()
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
@@ -69,14 +77,17 @@ const applyAll = async () => {
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
-  await nothrow($`kubectl create -f charts/prometheus-operator/crds`)
+  await nothrow(
+    $`if ! kubectl replace -f charts/prometheus-operator/crds; then kubectl create -f charts/prometheus-operator/crds; fi`,
+  )
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
@@ -84,28 +95,24 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage!=prep')
   await hf(
     {
-      fileOpts: argv.file,
       labelOpts: [...(argv.label || []), 'stage!=prep'],
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps'],
+      args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+  if (!env.DISABLE_SYNC)
+    if (isChart || !prevState.status)
+      // commit first time when not deployed only, always commit in chart (might have previous failure)
+      await commit(true) // will set deployment state after
+    else await setDeploymentState({ status: 'deployed' })
 }
 
 const apply = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:applyAll`)
+  const d = terminal(`cmd:${cmdName}:apply`)
   const argv: HelmArguments = getParsedArgs()
   if (!argv.label && !argv.file) {
     await applyAll()
-    if (isCli) {
-      // commit first time only
-      const status = await getOtomiDeploymentStatus()
-      if (status !== 'deployed') {
-        await commit()
-        await setDeploymentStatus()
-      }
-    }
     return
   }
   d.info('Start apply')
@@ -115,7 +122,7 @@ const apply = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['apply', '--skip-deps', skipCleanup],
+      args: ['apply', skipCleanup],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

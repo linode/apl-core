@@ -9,11 +9,12 @@ import { cd } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
+import { env, isCi } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 
@@ -86,7 +87,7 @@ export const rename = async (
   }
 }
 
-export const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
+const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
   const val = get(values, lhs)
   if (val !== undefined && set(values, rhs, val)) unset(values, lhs)
 }
@@ -107,7 +108,7 @@ const replace = async (tmplStr: string, prev: any): Promise<string> => {
  * - teamConfig.{team}.services[].someProp: replaceMe
  * This would update someProp for all team services
  */
-export const setDeep = async (obj, path: string, tmplStr: string): Promise<void> => {
+export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:setDeep`)
   d.debug(`(obj, ${path}, ${tmplStr}`)
   const teamMarker = '{team}'
@@ -120,7 +121,7 @@ export const setDeep = async (obj, path: string, tmplStr: string): Promise<void>
   let paths: string[] = [path]
   // expand if we have a team marker
   if (path.includes(teamMarker)) {
-    paths = Object.keys(obj.teamConfig).map((t) => path.replace(teamMarker, t))
+    paths = Object.keys(obj.teamConfig || {}).map((t) => path.replace(teamMarker, t))
   }
 
   // expand on array markers
@@ -222,19 +223,23 @@ export const applyChanges = async (
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
-export const migrate = async (): Promise<void> => {
+export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
   const prevVersion: number = loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
+    d.log('Changes detected, migrating...')
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
     // encrypt and decrypt to
     await encrypt()
     await decrypt()
-    d[argv.dryRun ? 'log' : 'info'](`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
-  } else d.info('No changes detected, skipping')
+    d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
+    return true
+  }
+  d.log('No changes detected, skipping')
+  return false
 }
 
 export const module = {
@@ -254,6 +259,10 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await migrate()
+    const res = await migrate()
+    if (isCi && res) {
+      setParsedArgs({ ...argv, message: 'migrated values [ci skip]' })
+      await commit()
+    }
   },
 }

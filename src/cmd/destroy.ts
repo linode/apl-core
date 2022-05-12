@@ -49,6 +49,7 @@ const destroyAll = async () => {
   d.info('Uninstalling CRDs...')
 
   const ourCRDS = [
+    'argoproj.io',
     'appgw.ingress.k8s.io',
     'cert-manager.io',
     'externalsecrets.kubernetes-client.io',
@@ -64,9 +65,15 @@ const destroyAll = async () => {
   const kubeCRDString: string = (await $`kubectl get crd`).stdout.trim()
   const kubeCRDS: string[] = kubeCRDString.split('\n')
   const allOurCRDS: string[] = kubeCRDS
-    .filter((crd) => ourCRDS.filter((ourCRD) => ourCRD.includes(crd)).length > 0)
+    .filter(
+      (crd) =>
+        ourCRDS.filter((ourCRD) => {
+          return crd.includes(ourCRD)
+        }).length > 0,
+    )
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
+  d.info('Our CRDs will be removed: ', allOurCRDS)
   await Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
   d.info('Removing problematic api service: v1.packages.operators.coreos.com...')
   await stream(

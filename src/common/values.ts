@@ -1,4 +1,4 @@
-import { existsSync } from 'fs'
+import { existsSync, unlinkSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
@@ -49,19 +49,34 @@ export const getImageTag = async (): Promise<string> => {
   return `v${pkg.version}`
 }
 
+/**
+ * Find the current version of otomi that is running.
+ * @returns string
+ */
+export const getCurrentVersion = async (): Promise<string> => {
+  const tag = await getImageTag()
+  const potentialVersion = tag.replace('/^v/', '')
+  return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
+}
+
 let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
 const writeValuesToFile = async (
   targetPath: string,
-  inValues: Record<string, any>,
+  inValues: Record<string, any> = {},
   overwrite = false,
 ): Promise<void> => {
-  const values = cloneDeep(inValues)
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
+  const values = cloneDeep(inValues)
   const newValues = removeBlankAttributes(values)
+  if (isEmpty(newValues) && isSecretsFile) {
+    // get rid of empty secrets files as those are problematic
+    if (existsSync(targetPath)) unlinkSync(targetPath)
+    if (existsSync(`${targetPath}.dec`)) unlinkSync(`${targetPath}.dec`)
+  }
   d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
   if (!existsSync(targetPath) || overwrite) {
@@ -107,7 +122,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
   // now blow up the teamConfig.$team prop as it is determined by a pattern
   const cleanSecretPaths: string[] = []
-  const teamProp = 'teamConfig.patternProperties.^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
+  const teamProp = `teamConfig.patternProperties.${Object.keys(schema.properties.teamConfig.patternProperties)[0]}`
   secretPaths.forEach((p) => {
     teams.forEach((team: string) => {
       if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
@@ -126,41 +141,43 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   // and write to their files
   const promises: Promise<void>[] = []
   if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
-  if (secretSettings)
+  if (secretSettings || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
-  if (plainValues.cluster)
+  if (plainValues.cluster || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
-  if (plainValues.policies)
+  if (plainValues.policies || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
-  if (plainValues.teamConfig) {
+  if (plainValues.teamConfig || overwrite) {
     const types = ['apps', 'jobs', 'secrets', 'services']
     const fileMap = { secrets: 'external-secrets' }
     if (!teams.includes('admin')) teams.push('admin')
-    const teamConfig = cloneDeep(plainValues.teamConfig)
+    const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
       types.forEach((type): void => {
         const fileType = fileMap[type] || type
-        // admin only has apps
-        if (type !== 'apps' && team === 'admin') return
         teamPromises.push(
           writeValuesToFile(
             `${env.ENV_DIR}/env/teams/${fileType}.${team}.yaml`,
-            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, {}) } } },
+            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, []) } } },
             overwrite,
           ),
         )
-        // keep the teamConfig but omit the leafs that are stored in their own teams/* file
+        // keep the teamConfig but omit the leafs that were just stored in their own teams/* file
         if (teamConfig[team] && teamConfig[team][type]) delete teamConfig[team][type]
       })
       await Promise.all(teamPromises)
     })
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { teamConfig }, overwrite))
   }
-  if (secrets.teamConfig) {
+  if (secrets.teamConfig || overwrite) {
     promises.push(
-      writeValuesToFile(`${env.ENV_DIR}/env/secrets.teams.yaml`, { teamConfig: secrets.teamConfig }, overwrite),
+      writeValuesToFile(
+        `${env.ENV_DIR}/env/secrets.teams.yaml`,
+        secrets.teamConfig ? { teamConfig: secrets.teamConfig } : undefined,
+        overwrite,
+      ),
     )
   }
   await Promise.all(promises)

@@ -86,22 +86,17 @@ extraVolumeMounts: |
 extraVolumes: |
   - name: theme
     emptyDir: {}
-podAnnotations: 
-  policy.otomi.io/ignore-sidecar: psp-allowed-users
 
 postgresql:
   # @TODO:
   image:
     tag: 13.5.0
-  commonAnnotations: 
-    policy.otomi.io/ignore-sidecar: psp-allowed-users
   securityContext:
     enabled: true
     fsGroup: 1001
     runAsUser: 1001
   postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   postgresqlPassword: {{ $k.postgresqlPassword }}
-  postgresqlUsername: {{ $k.adminUsername }}
   persistence:
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:

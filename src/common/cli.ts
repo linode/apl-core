@@ -38,8 +38,8 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   const d = terminal('common:prepareEnvironment')
   d.info('Checking environment')
   if (!options?.skipEnvDirCheck && isReadyEnvDir()) {
-    if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
     if (!options?.skipDecrypt) await decrypt()
+    if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
   }
 }
 

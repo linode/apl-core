@@ -1,6 +1,7 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
+import { setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 /**
@@ -14,8 +15,11 @@ const cmdName = getFilename(__filename)
 const playground = async (): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const d = terminal(`cmd:${cmdName}:playGround`)
-
-  await Promise.resolve()
+  await setDeploymentState({ status: 'deployed', deployingTag: 'fasdf' })
+  // const argv = getParsedArgs()
+  // setParsedArgs({ ...argv, message: 'fasdfasd' })
+  // await commit()
+  // await Promise.resolve()
 }
 
 export const module = {

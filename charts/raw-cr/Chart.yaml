@@ -1,0 +1,8 @@
+apiVersion: v1
+appVersion: 0.1.0
+description: A place for custom resources that can receive value overrides
+maintainers:
+- email: maurice.faber@redkubes.com
+  name: morriz
+name: raw-cr
+version: 0.1.0

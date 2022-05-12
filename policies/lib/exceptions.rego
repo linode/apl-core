@@ -21,7 +21,6 @@ get_safe_annotation[return] {
 	trace(sprintf("all_annotations: %v", [all_annotations]))
 	policy_list := sprintf("%s,%s", [
 		object.get(all_annotations, annotations.ignoreAnnotationField, ""),
-		object.get(all_annotations, annotations.sidecarAnnotationField, ""),
 	])
 
 	trace(sprintf("pod ignore list: %v", [policy_list]))

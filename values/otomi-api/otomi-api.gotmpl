@@ -49,7 +49,6 @@ env:
   CUSTOM_ROOT_CA: |
     {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
-  CI: '1'
   IN_DOCKER: '1'
 
 core:

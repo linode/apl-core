@@ -27,7 +27,7 @@ bases:
 releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
-  {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+  {{- $domain := printf "team-%s.%s" $teamId ($v.cluster | get "domainSuffix" nil) }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
@@ -46,7 +46,7 @@ releases:
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
-      - {{- $team | toYaml | nindent 8 }}
+      - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
   {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}

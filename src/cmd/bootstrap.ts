@@ -5,16 +5,18 @@ import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
+import { $, nothrow } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
+import { env, isChart, isCi, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
-import { createK8sSecret, getK8sSecret, secretId } from '../common/k8s'
+import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
-import { generateSecrets, getImageTag, writeValues } from '../common/values'
+import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
+import { bootstrapGit } from './commit'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -132,7 +134,9 @@ export const getStoredClusterSecrets = async (
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already exists`)
   if (env.DISABLE_SYNC) return undefined
-  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
+  // we might need to create the 'otomi' namespace if we are in CLI mode
+  if (isCli) await nothrow($`kubectl create ns otomi &> /dev/null`)
+  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
     return kubeSecretObject
@@ -239,7 +243,7 @@ export const processValues = async (
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
+    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -301,10 +305,12 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
   }
 }
 
-export const bootstrapValues = async (
+export const bootstrap = async (
   deps = {
     existsSync,
+    getDeploymentState,
     getImageTag,
+    getCurrentVersion,
     terminal,
     copyBasicFiles,
     processValues,
@@ -313,16 +319,25 @@ export const bootstrapValues = async (
     writeValues,
     bootstrapSops,
     copyFile,
+    migrate,
     encrypt,
     decrypt,
   },
 ): Promise<void> => {
-  const d = deps.terminal(`cmd:${cmdName}:bootstrapValues`)
+  const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
+
+  // if CI: we are called from pipeline on each deployment, which is costly
+  // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
+  const tag = await deps.getImageTag()
+  const version = await deps.getCurrentVersion()
+  if (isCi) {
+    const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
+    if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
+  }
   const { ENV_DIR } = env
   const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
 
-  const imageTag = await deps.getImageTag()
-  const otomiImage = `otomi/core:${imageTag}`
+  const otomiImage = `otomi/core:${tag}`
   d.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
 
@@ -365,7 +380,7 @@ export const bootstrapValues = async (
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-
+  await deps.migrate()
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
@@ -381,7 +396,11 @@ export const module = {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
-    await bootstrapValues()
-    await migrate()
+    if (isCli) {
+      // for ease of dev: could be first time trying to connect to a remote, so
+      // let bootstrap figure out wether to clone fresh and swap out
+      await bootstrapGit()
+    }
+    await bootstrap()
   },
 }

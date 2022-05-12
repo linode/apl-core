@@ -7,6 +7,13 @@ environments:
         apps:
           alertmanager:
             enabled: false
+          argocd:
+            enabled: false
+            autoscaling:
+              enabled: false
+              minReplicas: 1
+              maxReplicas: 3
+              targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
           demo-tlspass:

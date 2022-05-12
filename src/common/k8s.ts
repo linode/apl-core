@@ -2,12 +2,11 @@
 /* eslint-disable no-await-in-loop */
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
-// eslint-disable-next-line import/no-unresolved
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
 import { dump, load } from 'js-yaml'
-import { isEmpty } from 'lodash'
+import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { $, nothrow, sleep } from 'zx'
@@ -18,7 +17,7 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
-export const secretId = `secret/${env.DEPLOYMENT_NAMESPACE}/${DEPLOYMENT_PASSWORDS_SECRET}`
+export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
 export const createK8sSecret = async (
   name: string,
@@ -36,8 +35,9 @@ export const createK8sSecret = async (
   }
 
   await writeFile(filePath, rawString)
-  const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`
+  const result = await nothrow(
+    $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`,
+  )
   if (result.stderr) d.error(result.stderr)
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
@@ -50,11 +50,32 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   return undefined
 }
 
-export const getOtomiDeploymentStatus = async (): Promise<string> => {
-  const result = await nothrow(
-    $`kubectl get cm -n ${env.DEPLOYMENT_NAMESPACE} ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data.status}'`,
-  )
-  return result.stdout
+export interface DeploymentState {
+  status?: 'deploying' | 'deployed'
+  tag?: string
+  version?: string
+  deployingTag?: string
+  deployingVersion?: string
+}
+
+export const getDeploymentState = async (): Promise<DeploymentState> => {
+  if (env.DISABLE_SYNC) return {}
+  const result = await nothrow($`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`)
+  return JSON.parse(result.stdout || '{}')
+}
+
+export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
+  if (env.DISABLE_SYNC) return
+  const d = terminal('common:k8s:setDeploymentState')
+  const currentState = await getDeploymentState()
+  const newState = { ...currentState, ...state }
+  const data = map(newState, (val, prop) => `--from-literal=${prop}=${val}`)
+  const cmdCreate = `kubectl -n otomi create cm ${DEPLOYMENT_STATUS_CONFIGMAP} ${data.join(' ')}`
+  const cmdPatch = `kubectl -n otomi patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(
+    newState,
+  )}}`
+  const res = await nothrow($`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`)
+  if (res.stderr) d.error(res.stderr)
 }
 
 const fetchLoadBalancerIngressData = async (): Promise<string> => {

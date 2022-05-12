@@ -1,6 +1,7 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 k8s:
   namespaces:
+    - name: argocd
     - name: alertmanager
     - name: cert-manager
       disableIstioInjection: true
@@ -40,7 +41,7 @@ k8s:
       disableIstioInjection: true
     - name: monitoring
       disableIstioInjection: true
-    - name: operator-lifecycle-manager
+    - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: operators
@@ -52,6 +53,9 @@ k8s:
     - name: prometheus
     - name: shared
     - name: team-admin
+    - name: tigera-operator
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: vault
 
 adminApps:
@@ -65,6 +69,17 @@ adminApps:
         port: 9093
         type: public
         auth: true
+  - name: argocd
+    tags: [cicd, gitops]
+    isShared: true
+    ownHost: true
+    ingress:
+      - svc: argocd-server
+        namespace: argocd
+        type: public
+        auth: true
+        # removeRequestHeaders:
+        #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: drone

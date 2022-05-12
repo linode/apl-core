@@ -2,6 +2,94 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.3](https://github.com/redkubes/otomi-core/compare/v0.16.2...v0.16.3) (2022-05-06)
+
+
+### Features
+
+* argocd gitops for teams ([#788](https://github.com/redkubes/otomi-core/issues/788)) ([5e9a868](https://github.com/redkubes/otomi-core/commit/5e9a8688ac0ef90324e37f99077fa0e3292c5f30))
+* pr lint action [ci skip] ([e921978](https://github.com/redkubes/otomi-core/commit/e92197803e079333b390cfe092744574a2c06cae))
+
+
+### Bug Fixes
+
+* chart placeholder [ci skip] ([744b090](https://github.com/redkubes/otomi-core/commit/744b090fcc8053636d0cf26f9087115a6cdbfd86))
+
+
+### Docs
+
+* adr index and template [ci skip] ([c252efe](https://github.com/redkubes/otomi-core/commit/c252efe22a64ac315be0f4484f7b4adc431a07a7))
+
+
+### Others
+
+* **deps:** update all-npm ([#784](https://github.com/redkubes/otomi-core/issues/784)) ([ebd5c51](https://github.com/redkubes/otomi-core/commit/ebd5c512e0bd62ae0ba2a819f8440be6af54c953))
+
+### [0.16.2](https://github.com/redkubes/otomi-core/compare/v0.16.0...v0.16.2) (2022-05-02)
+
+### Features
+
+- add helmifile for uninstalling charts ([#759](https://github.com/redkubes/otomi-core/issues/759)) ([d38fba1](https://github.com/redkubes/otomi-core/commit/d38fba1add980b032e29dac89ae59da1da1a9c02))
+- values migration step in Drone pipeline ([#783](https://github.com/redkubes/otomi-core/issues/783)) ([b7fb997](https://github.com/redkubes/otomi-core/commit/b7fb9977738e7f7abe2f45702c57fe609dd47de1)), closes [#403](https://github.com/redkubes/otomi-core/issues/403)
+
+### Bug Fixes
+
+- **deps:** pin dependencies ([#763](https://github.com/redkubes/otomi-core/issues/763)) ([eab11b8](https://github.com/redkubes/otomi-core/commit/eab11b809a55b86d9bb9420bc9bb71f448116583))
+- **deps:** update dependency @kubernetes/client-node to v0.16.3 ([#774](https://github.com/redkubes/otomi-core/issues/774)) ([d0a81fb](https://github.com/redkubes/otomi-core/commit/d0a81fb8eeb24dd0513082c9f576e92b817e8362))
+- **deps:** update dependency debug to v4.3.4 ([#773](https://github.com/redkubes/otomi-core/issues/773)) ([ef99f34](https://github.com/redkubes/otomi-core/commit/ef99f3444612f6e551c0466410fa1fbdeefd5d41))
+- disable sync for kind ([e9acc5d](https://github.com/redkubes/otomi-core/commit/e9acc5db211d6cdf06716d1f1b017507efad68e7))
+- handling of empty values ([#761](https://github.com/redkubes/otomi-core/issues/761)) ([850e0b3](https://github.com/redkubes/otomi-core/commit/850e0b36d4f70a46e2e4e9b728b37948ac56050b))
+- supported k8s versions ([75bae47](https://github.com/redkubes/otomi-core/commit/75bae47c0f3d7ccfd79358e2f3ff556c331fea70))
+- remove reference to the local provider ([30a8470](https://github.com/redkubes/otomi-core/commit/30a847096bc3654e94bcf021a2abb694d51565c9))
+- olm chart ([c9f4fdb](https://github.com/redkubes/otomi-core/commit/c9f4fdbadfef99aee09631be4305bde16286ed91))
+- **policies:** only skip policy enforcement for Istio-init container [#779](https://github.com/redkubes/otomi-core/issues/779) ([596d526](https://github.com/redkubes/otomi-core/commit/596d5269c852d6908133877f4e446daac4a375b8))
+- remove team role that allows reading all k8s resources ([#745](https://github.com/redkubes/otomi-core/issues/745)) ([d29da03](https://github.com/redkubes/otomi-core/commit/d29da03ebdeced12d2dbe83be1bc5998049a5b22))
+- upgrade api and console and fix minor issues ([#787](https://github.com/redkubes/otomi-core/issues/787)) ([140a8cd](https://github.com/redkubes/otomi-core/commit/140a8cdf27ec8cbd8c6139a28874e1a8586eb585))
+- upgraded pkg vault for 1.22+ ([7e31f18](https://github.com/redkubes/otomi-core/commit/7e31f18c2c1fd4aaa8a6dcf632c610505669c3f1))
+- cleanup otomi chart values.yaml ([eaa395e](https://github.com/redkubes/otomi-core/commit/eaa395e93855688147512a9eb91399b269a44565))
+
+### Code Refactoring
+
+- master refs to main ([80232bd](https://github.com/redkubes/otomi-core/commit/80232bd9c499d93dbc3b5f9a0884c08bd466520e))
+
+### Docs
+
+- missing master refs ([d94ae16](https://github.com/redkubes/otomi-core/commit/d94ae163638c3deecb8d14c8453db546b4437e38))
+
+### Others
+
+- **deps:** update all ([#775](https://github.com/redkubes/otomi-core/issues/775)) ([f2ff15b](https://github.com/redkubes/otomi-core/commit/f2ff15b36c88136220e53717dfcb33274dd32d9c))
+- **deps:** update dependency @types/chai-as-promised to v7.1.5 ([#765](https://github.com/redkubes/otomi-core/issues/765)) ([f08d4d3](https://github.com/redkubes/otomi-core/commit/f08d4d3dbc938763161921bd6556621c7632b6ac))
+- **deps:** update dependency @types/lodash to v4.14.181 ([#766](https://github.com/redkubes/otomi-core/issues/766)) ([27fc078](https://github.com/redkubes/otomi-core/commit/27fc0786c7103905d2dab20bb5c5ce40c27103e1))
+- **deps:** update dependency @types/node to v16.11.27 ([#767](https://github.com/redkubes/otomi-core/issues/767)) ([b57446e](https://github.com/redkubes/otomi-core/commit/b57446e520a505151edd871ad2bd74ce49658559))
+- **deps:** update dependency @types/sinon-chai to v3.2.8 ([#769](https://github.com/redkubes/otomi-core/issues/769)) ([deeaebd](https://github.com/redkubes/otomi-core/commit/deeaebde22abc424d526ca16ded54114e1ddb867))
+- **deps:** update dependency @types/supertest to v2.0.12 ([#770](https://github.com/redkubes/otomi-core/issues/770)) [ci skip] ([27914b6](https://github.com/redkubes/otomi-core/commit/27914b649f8f0eddfeafc2d50b04752982d6215c))
+- **deps:** update dependency @types/validator to v13.7.2 ([#772](https://github.com/redkubes/otomi-core/issues/772)) [ci skip] ([308682e](https://github.com/redkubes/otomi-core/commit/308682e5e1f49572908ae55717e8bb082b8cb963))
+- **deps:** update dependency chai to v4.3.6 ([#768](https://github.com/redkubes/otomi-core/issues/768)) [ci skip] ([6c2eff2](https://github.com/redkubes/otomi-core/commit/6c2eff2b1be788e45d645414ec6fa7d019fe0d82))
+- **deps:** update dependency typescript to v4.6.3 ([#771](https://github.com/redkubes/otomi-core/issues/771)) [ci skip] ([a670af5](https://github.com/redkubes/otomi-core/commit/a670af53430caf7089a44a9449d4ccde8750b3c2))
+- **deps:** update helm/chart-releaser-action action to v1.4.0 ([#778](https://github.com/redkubes/otomi-core/issues/778)) ([6340d1b](https://github.com/redkubes/otomi-core/commit/6340d1baa81b32aefa0e625cefa84171e88c7191))
+- **release:** 0.16.1 ([6638f31](https://github.com/redkubes/otomi-core/commit/6638f312a7d6bae3ca321c6d42b177c3b73acb03))
+- **release:** 0.16.1 ([5263a25](https://github.com/redkubes/otomi-core/commit/5263a25eb4ead9d4268093fb3013c8a3063fa089))
+
+### CI
+
+- **codeowners:** and removed [ci skip] ([1e3c92b](https://github.com/redkubes/otomi-core/commit/1e3c92b338c7d0da61ddab605e8c23b21ed36982))
+- **codeowners:** put back [ci skip] ([de77c80](https://github.com/redkubes/otomi-core/commit/de77c809cf9c984447caa7947bc8470d992f089b))
+- **integration:** re-enabled integration as it should work correctly again ([2183161](https://github.com/redkubes/otomi-core/commit/21831611402ff8094a496646351ca78c22b5593c))
+- **renovate:** add docker creds [ci skip] ([0f8a942](https://github.com/redkubes/otomi-core/commit/0f8a9426e61eb7f25ec087d9c4fd7a209169886a))
+- **renovate:** add more docker creds hoping it helps [ci skip] ([585a470](https://github.com/redkubes/otomi-core/commit/585a47085e79b825b8c30238ca4e01c08c94f5e9))
+- **renovate:** added app/renovate-approve-2 to codeowners for packages [ci skip] ([c583d2a](https://github.com/redkubes/otomi-core/commit/c583d2a1523258eaa5786ce592d73b3c788c9a0c))
+- **renovate:** diabled docker for now [ci skip] ([8fdaec6](https://github.com/redkubes/otomi-core/commit/8fdaec6863e293a69eff58fc67c40afb8588ad66))
+- **renovate:** diabled docker for now [ci skip] ([814bbc3](https://github.com/redkubes/otomi-core/commit/814bbc3257e3011c729726779e447b8ab72f654a))
+- **renovate:** disable all docker related resources for now [ci skip] ([b451aae](https://github.com/redkubes/otomi-core/commit/b451aaeaa9c9d8a4ee1eda8b18c86fc0aa2e8470))
+- **renovate:** disable docker for now [ci skip] ([e75f506](https://github.com/redkubes/otomi-core/commit/e75f50684caa6b181a7a13a90b2d33c3fef199f9))
+- **renovate:** disable docker for now [ci skip] ([74b8e66](https://github.com/redkubes/otomi-core/commit/74b8e6650e81a3cce1b23c48baac0a874de8c43f))
+- **renovate:** fixing resources [ci skip] ([2003a77](https://github.com/redkubes/otomi-core/commit/2003a77b3afd83df2b9f680ca758ed2783e96e30))
+- **renovate:** group name [ci skip] ([b2413f1](https://github.com/redkubes/otomi-core/commit/b2413f128b2773a68983274aff89b0b479312ccd))
+- **renovate:** re-enabled resources [ci skip] ([c2d9235](https://github.com/redkubes/otomi-core/commit/c2d923558956c46b13d21b8cb8194ae3a488adb2))
+- **renovate:** re-enabled resources [ci skip] ([3169c8a](https://github.com/redkubes/otomi-core/commit/3169c8a013057179f1573a841928e4835df86fa1))
+- **renovate:** removed redkubesbot from codeowners [ci skip] ([4b280da](https://github.com/redkubes/otomi-core/commit/4b280da3a3536a4b30e72ca5be569c3cd20e8cbc))
+
 ## [0.16.1](https://github.com/redkubes/otomi-core/compare/v0.15.5...v0.17.0) (2022-04-12)
 
 ### Bug Fixes

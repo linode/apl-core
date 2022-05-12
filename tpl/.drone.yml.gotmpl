@@ -71,13 +71,21 @@ steps:
     image: ubuntu:20.04
     commands:
       - groupadd -r -g 999 app && useradd -r -g 999 -u 999 app
-      - chmod -R a+w env && chown -R app env
+      - chmod -R a+w .* env && chown -R app .* env
+
+  - name: migrate
+    image: otomi/core:{{ .imageTag }}
+    pull: {{ .pullPolicy }}
+    depends_on:
+      - prepare-env
+    commands:
+      - cd .. && binzx/otomi migrate
 
   - name: test
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     depends_on:
-      - prepare-env
+      - migrate
     commands:
       - cd .. && binzx/otomi test
 

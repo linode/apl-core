@@ -1,13 +1,14 @@
 
 {{- define "ingress.apiVersion" -}}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress" -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- else -}}
-{{- print "extensions/v1beta1" -}}
+{{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+networking.k8s.io/v1beta1
+{{- else  -}}
+extensions/v1
+{{- end }}
 {{- end -}}
-{{- end -}}
+
 
 {{- define "ingress.path" }}
 - backend:
@@ -91,7 +92,7 @@ metadata:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (eq $v.cluster.provider "custom") (hasKey $v.cluster "entrypoint") $internetFacing }}
+{{- if and (hasKey $v.cluster "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
 {{- end }}
 {{- if $.isApps }}

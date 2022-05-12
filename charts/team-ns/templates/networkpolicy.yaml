@@ -101,8 +101,6 @@ spec:
           podSelector:
             matchLabels:
               app: {{ .service }}
-            {{- end }}
-            {{- if hasKey . "service" }}
         # An extra rule for Pods that are spawn by knative-serving
         - namespaceSelector:
             matchLabels:

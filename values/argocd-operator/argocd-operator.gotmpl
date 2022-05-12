@@ -1,0 +1,14 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+
+teams:
+  {{- range $teamId, $_ := $v.teamConfig }}
+  - {{ $teamId }}
+  {{- end }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
+  
