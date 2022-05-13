@@ -17,8 +17,8 @@
 # team-a1     client-c2-team-a1-to-s2-team-a1   2/3     NotReady   0          3m24s
 #
 # From above:
-# The pod client-c2-team-a1-to-s2-team-a1  was able to connect workload in team-a1 namespace and label app=s2
-# The pod client-c1-team-a2-to-s1-team-a1  was NOT able able to connect with workload in team-a1 namespace and label app=s1
+# The pod client-c2-team-a1-to-s2-team-a1  was able to connect workload in team-a1 namespace and label otomi.io/app=s2
+# The pod client-c1-team-a2-to-s1-team-a1  was NOT able able to connect with workload in team-a1 namespace and label otomi.io/app=s1
 
 
 environments:
@@ -54,85 +54,85 @@ environments:
         - server:
             namespace: team-a1
             labels:
-                app: s1
+                otomi.io/app: s1
           clients:
             - namespace: team-a1
               labels:
-                app: c1
+                otomi.io/app: c1
             - namespace: team-a2
               labels:
-                app: c1
+                otomi.io/app: c1
         - server:
             namespace: team-a1
             labels:
-                app: s2
+                otomi.io/app: s2
           clients:
             - namespace: team-a1
               labels:
-                app: c2
+                otomi.io/app: c2
             - namespace: team-a2
               labels:
-                app: c2
+                otomi.io/app: c2
         - server:
             namespace: team-a1
             labels:
-                app: s3
+                otomi.io/app: s3
           clients:
             - namespace: team-a1
               labels:
-                app: c3
+                otomi.io/app: c3
             - namespace: team-a2
               labels:
-                app: c3
+                otomi.io/app: c3
         - server:
             namespace: team-a1
             labels:
-                app: s4
+                otomi.io/app: s4
           clients:
             - namespace: team-a1
               labels:
-                app: c4
+                otomi.io/app: c4
             - namespace: team-a2
               labels:
-                app: c4
+                otomi.io/app: c4
         - server:
             namespace: team-a1
             labels:
-                app: s5
+                otomi.io/app: s5
           clients:
             - namespace: team-a1
               labels:
-                app: c5
+                otomi.io/app: c5
             - namespace: team-a2
               labels:
-                app: c5
+                otomi.io/app: c5
         - server:
             namespace: team-a1
             labels:
-                app: s6
+                otomi.io/app: s6
           clients:
             - namespace: team-a1
               labels:
-                app: c6
+                otomi.io/app: c6
             - namespace: team-a1
               labels:
-                app: c6b
+                otomi.io/app: c6b
             - namespace: team-a2
               labels:
-                app: c6
+                otomi.io/app: c6
         - server:
             namespace: team-a1
             labels:
-                app: s7-00001
+                otomi.io/app: s7-00001
                 serving.knative.dev/service: s7
             ksvc: true
           clients:
             - namespace: team-a1
               labels:
-                app: c7
+                otomi.io/app: c7
             - namespace: team-a2
               labels:
-                app: c7
+                otomi.io/app: c7
 releases:
   - name: inter-team-connectivity
     installed: true

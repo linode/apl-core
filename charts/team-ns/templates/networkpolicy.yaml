@@ -63,7 +63,7 @@ spec:
       # The app label cannot be used because Knative appends revision number to the service
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}
-      app: {{ $s.name }}
+      otomi.io/app: {{ $s.name }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -86,7 +86,7 @@ spec:
       # The app label cannot be used because Knative appends revision number to its value
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}
-      app: {{ $s.name }}
+      otomi.io/app: {{ $s.name }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -100,7 +100,7 @@ spec:
             {{- if hasKey . "service" }}
           podSelector:
             matchLabels:
-              app: {{ .service }}
+              otomi.io/app: {{ .service }}
         # An extra rule for Pods that are spawn by knative-serving
         - namespaceSelector:
             matchLabels:
