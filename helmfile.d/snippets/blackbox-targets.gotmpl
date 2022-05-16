@@ -27,4 +27,4 @@
     - source_labels: [__param_target]
       target_label: instance
     - target_label: __address__
-      replacement: prometheus-blackbox-exporter.{{ . | get "namespace" "monitoring" }}:9115
+      replacement: prometheus-blackbox-exporter.monitoring:9115
