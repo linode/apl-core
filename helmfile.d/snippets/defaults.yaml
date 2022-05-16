@@ -128,6 +128,14 @@ environments:
           vault:
             enabled: false
         cluster: {}
+        ingress:
+          platformPrivate:
+            enabled: false
+            className: platform-private
+            privateCoreApps: false
+          platformPublic:
+            className: platform-public
+          classes: []
         oidc: {}
         otomi:
           hasCloudLB: false

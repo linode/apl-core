@@ -52,6 +52,7 @@ releases:
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
     <<: *preUpgrade
+{{- end }}
   - name: operator-lifecycle-manager
     installed: true
     disableValidationOnInstall: true

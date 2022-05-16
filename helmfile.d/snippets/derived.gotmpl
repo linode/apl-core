@@ -110,11 +110,13 @@ environments:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
-        {{- if not ($v | get "ingress" nil) }}
         ingress:
-            - className: platform
-              network: public
-        {{- end }}
+          classes:
+          - {{ $v.ingress.platformPrivate | toYaml | nindent 12 }}
+          - {{ $v.ingress.platformPublic | toYaml | nindent 12 }}
+          {{- with $v.ingress.classes }}
+          {{- . toYaml | nindent 10 }}
+          {{- end }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
         otomi:
