@@ -39,7 +39,6 @@ k8s:
       disablePolicyChecks: true
     - name: kubeclarity
       disableIstioInjection: true
-      disablePolicyChecks: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
@@ -210,6 +209,7 @@ adminApps:
         # auth: true
   - name: kubeclarity
     tags: [security]
+    ownHost: true
     ingress:
       - svc: kubeclarity-kubeclarity
         namespace: kubeclarity
