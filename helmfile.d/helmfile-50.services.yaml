@@ -38,3 +38,9 @@ releases:
     labels:
       pkg: gitea
     <<: *default
+  - name: kubeclarity
+    installed: {{ $a | get "kubeclarity.enabled" }}
+    namespace: kubeclarity
+    labels:
+      pkg: kubeclarity
+    <<: *default
