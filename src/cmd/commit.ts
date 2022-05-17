@@ -121,7 +121,7 @@ const commitAndPush = async (): Promise<void> => {
   }
 }
 
-export const getRepo = (values): Record<string, any> => {
+export const getRepo = (values: Record<string, any>): Record<string, string> => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
   const byor = !!values?.apps?.['otomi-api']?.git
