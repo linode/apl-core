@@ -129,12 +129,8 @@ environments:
             enabled: false
         cluster: {}
         ingress:
-          platformPrivate:
-            enabled: false
-            className: platform-private
-            privateCoreApps: false
-          platformPublic:
-            className: platform-public
+          platformAppsClassName: platform
+          platformKeycloakClassName: platform
           classes: []
         oidc: {}
         otomi:

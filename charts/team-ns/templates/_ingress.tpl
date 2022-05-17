@@ -32,7 +32,7 @@ extensions/v1
 {{- $v := .dot.Values }}
 {{- $appsDomain := printf "apps.%s" $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
-{{- range $ingress := $v.ingress }}
+{{- range $ingress := $v.ingress.classes }}
 {{- $routes := dict }}
 {{- $names := list }}
 {{- $hasTlsPass := $.tlsPass | default false }}

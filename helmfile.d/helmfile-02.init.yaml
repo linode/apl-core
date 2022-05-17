@@ -38,7 +38,7 @@ releases:
       tag: ingress
       stage: prep
     <<: *raw
-{{- range $index, $ingress := $v.ingress }}
+{{- range $index, $ingress := $v.ingress.classes }}
   - name: ingress-nginx-{{ $ingress.className }}
     installed: true
     namespace: ingress

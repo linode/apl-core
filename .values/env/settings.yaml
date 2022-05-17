@@ -1,4 +1,1 @@
 version: 2
-ingress:
-    - className: platform
-      network: public
