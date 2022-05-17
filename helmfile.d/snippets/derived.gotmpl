@@ -115,8 +115,9 @@ environments:
         ingress:
           classes:
           - className: platform
+            network: public
           {{- with $v.ingress.classes }}
-          {{- . toYaml | nindent 10 }}
+          {{- . | toYaml | nindent 10 }}
           {{- end }}
 
         otomi:

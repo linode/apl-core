@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $n := $v.apps | get "ingress-nginx" }}
-{{- $ingress := (index $v.ingress (.Release.Labels.index | int)) }}
+{{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
 nameOverride: {{ .Release.Name }}
 controller:
   # @TODO:

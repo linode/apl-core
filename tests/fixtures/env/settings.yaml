@@ -32,11 +32,12 @@ home:
         channel: mon-otomi
         channelCrit: mon-otomi-crit
 ingress:
-    - className: platform
-      network: private
-      ipAddress: '10.0.0.9'
-    - className: net-a
-      network: public
+    classes:
+        - className: private
+          network: private
+          ipAddress: '10.0.0.9'
+        - className: net-a
+          network: public
 kms:
     sops:
         azure:
