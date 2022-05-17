@@ -1485,7 +1485,7 @@ properties:
           enabled:
             type: boolean
             default: false
-          hostPort:
+          nodePort:
             type: number
             default: 40753
           networkKey:

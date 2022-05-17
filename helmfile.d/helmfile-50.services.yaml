@@ -40,6 +40,6 @@ releases:
     <<: *default
   - name: glasnostic
     installed: {{ $a | get "glasnostic.enabled" }}
-    namespace: glasnostic
+    namespace: glasnostic-system
     chart: ../charts/glasnostic
     <<: *default

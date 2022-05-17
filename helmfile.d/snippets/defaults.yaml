@@ -40,7 +40,7 @@ environments:
             adminUsername: otomi-admin
           glasnostic:
             enabled: false
-            hostPort: 40753
+            nodePort: 40753
             certManager:
               enabled: true
               issuerRef:

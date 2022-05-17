@@ -1,30 +1,29 @@
-# Default values for glasnostic.
+# Default values for Glasnostic Kubernetes Data Plane.
 # This is a YAML-formatted file.
 
 # Glasnostic Network ID - The network ID of the network to use for the dataplane.
 # Go to https://app.glasnostic.com/ to see the network ID.
 networkKey: ""
 
-# NodePort that Glasnostic will use. Should be free to use.
+# NodePort that Glasnostic will use. Change only when port is already in use.
 nodePort: 40753
 
 image:
   repository: public.ecr.aws/glasnostic/glasnosticd
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "v1.12.1"
 
 sidecar:
   repository: public.ecr.aws/glasnostic/sidecar
   # TODO: Christoph: remove next line if not used:
   pullPolicy: IfNotPresent
-  tag: v0.99.8
+  tag: "v1.12.1"
 
 certManager:
   # Use cert manager for webhook certs?
   enabled: false
   # issuerRef:
-  #   name: custom-ca
+  #   name: glasnostic-ca
   #   kind: ClusterIssuer
 
 imagePullSecrets: []

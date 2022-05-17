@@ -1,4 +1,4 @@
-# this release file is used to dump the values used by helmfile, which are found in the env files
+# this release file is used to dump only the user input used by helmfile, which are found in the values repo files
 # so no defaults or derived values are dumped!!
 bases:
   - ../helmfile.d/snippets/env.gotmpl

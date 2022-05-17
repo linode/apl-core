@@ -1,4 +1,15 @@
-{{ $tls := fromYaml ( include "glasnostic.gen-certs" . ) }}
+{{ $tls := fromYaml ( include "glasnosticd.gen-certs" . ) }}
+{{- if not .Values.certManager.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: injection-secret
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ $tls.clientCert }}
+  tls.key: {{ $tls.clientKey }}
+---
+{{- end }}
 {{- if .Capabilities.APIVersions.Has "admissionregistration.k8s.io/v1" }}
 apiVersion: admissionregistration.k8s.io/v1
 {{- else }}
@@ -6,19 +17,19 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 {{- end }}
 kind: MutatingWebhookConfiguration
 metadata:
-  name: {{ include "glasnostic.fullname" . }}-sidecar-injector
+  name: glasnostic-sidecar-injector
   {{- if .Values.certManager.enabled }}
   annotations:
-    certmanager.k8s.io/inject-ca-from: {{ printf "%s/%s-admission" .Release.Namespace (include "glasnostic.fullname" .) | quote }}
-    cert-manager.io/inject-ca-from: {{ printf "%s/%s-admission" .Release.Namespace (include "glasnostic.fullname" .) | quote }}
+    certmanager.k8s.io/inject-ca-from: {{ printf "%s/%s-admission" .Release.Namespace (include "glasnosticd.fullname" .) | quote }}
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-admission" .Release.Namespace (include "glasnosticd.fullname" .) | quote }}
   {{- end }}
 webhooks:
 - name: sidecar-injector.glasnostic.com
   namespaceSelector:
     matchExpressions:
     - key: glasnostic
-      operator: NotIn
-      values: [ "disable" ]
+      operator: In
+      values: [ "enable" ]
   sideEffects: None
   clientConfig:
     {{- if not .Values.certManager.enabled }}
@@ -26,7 +37,7 @@ webhooks:
     {{- end }}
     service:
       namespace: {{ .Release.Namespace }}
-      name: {{ include "glasnostic.fullname" . }}-glasnosticd
+      name: {{ include "glasnosticd.fullname" . }}
       path: /inject
   failurePolicy: Fail
   rules:
@@ -43,15 +54,3 @@ webhooks:
   admissionReviewVersions:
   - v1
   - v1beta1
-{{- if not .Values.certManager.enabled }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ include "glasnostic.fullname" . }}-admission
-type: kubernetes.io/tls
-data:
-  ca.crt: {{ $tls.caCert }}
-  tls.crt: {{ $tls.clientCert }}
-  tls.key: {{ $tls.clientKey }}
-{{- end }}

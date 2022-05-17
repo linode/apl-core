@@ -1,10 +1,16 @@
 {{ $v := .Values }}
 {{- $g := $v.apps.glasnostic }}
 
-hostPort: {{ $g.hostPort }}
+nameOverride: glasnosticd
+nodePort: {{ $g.nodePort }}
 networkKey: {{ $g.networkKey }}
 certManager: {{ $g.certManager | toYaml | nindent 2 }}
 securityContext:
   allowPrivilegeEscalation: false
 podAnnotations:
-  policy.otomi.io/ignore: "psp-privileged"  
+  policy.otomi.io/ignore: "psp-privileged"
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

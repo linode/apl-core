@@ -1,43 +1,45 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ include "glasnostic.fullname" . }}
+  name: {{ include "glasnosticd.fullname" . }}
   labels:
-    {{- include "glasnostic.labels" . | nindent 4 }}
+    {{- include "glasnosticd.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "glasnostic.selectorLabels" . | nindent 6 }}
+      {{- include "glasnosticd.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/webhook.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "glasnostic.selectorLabels" . | nindent 8 }}
+        {{- include "glasnosticd.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "glasnostic.serviceAccountName" . }}
+      serviceAccountName: {{ include "glasnosticd.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-        - name: admission-secret
+        - name: injection-secret
           secret:
-            secretName: {{ include "glasnostic.fullname" . }}-admission
+            secretName: injection-secret
+            optional: false
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
-                name: {{ include "glasnostic.fullname" . }}
+                name: {{ include "glasnosticd.fullname" . }}-config
           env:
             - name: NODE_NAME
               valueFrom:
@@ -66,7 +68,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - mountPath: "/etc/glasnostic"
-              name: admission-secret
+              name: injection-secret
               readOnly: true
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}

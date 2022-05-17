@@ -11,7 +11,6 @@ resources:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
-        glasnostic: disable
   {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
@@ -42,6 +41,9 @@ resources:
         name: {{ $ns }}
         type: team
         istio-injection: enabled
+        {{- if $v.apps | get "glasnostic.enabled" false }}
+        glasnostic: enable
+        {{- end }}
   {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
