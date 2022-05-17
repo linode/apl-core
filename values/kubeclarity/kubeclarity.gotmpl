@@ -1,0 +1,11 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.kubeclarity }}
+
+global:
+  databasePassword: {{ $k | get "databasePassword" }}
+
+kubeclarity:
+  logLevel: {{ $k | get "logLevel" "warning" }}  
+
+
+
