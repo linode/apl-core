@@ -5,7 +5,7 @@ policies:
             - latest
     container-limits:
         cpu: '2'
-        enabled: false
+        enabled: true
         memory: 2Gi
     psp-allowed-repos:
         enabled: false

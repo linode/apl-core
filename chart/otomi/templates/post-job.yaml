@@ -20,12 +20,18 @@ spec:
       containers:
         - name: destroy
           image: otomi/core:{{ $version }}
-          command:
-            - sh
-            - -c
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: '2'
+            requests:
+              memory: 1Gi
+              cpu: '1'
+          command: [bash, -c]
           args:
             - |
-              binzx/otomi bootstrap && binzx/otomi destroy
+              binzx/otomi bootstrap --destroy && binzx/otomi destroy
               echo "Otomi has been uninstalled."
           env:
             - name: VERBOSITY

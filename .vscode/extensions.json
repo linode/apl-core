@@ -7,6 +7,7 @@
     "eamodio.gitlens",
     "esbenp.prettier-vscode",
     "foxundermoon.shell-format",
+    "jaimeolivares.yuml",
     "mads-hartmann.bash-ide-vscode",
     "ms-azuretools.vscode-docker",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
@@ -15,7 +16,7 @@
     "redhat.vscode-yaml",
     "streetsidesoftware.code-spell-checker",
     "timonwong.shellcheck",
-    "xyz.local-history",
-    "tsandall.opa"
+    "tsandall.opa",
+    "xyz.local-history"
   ]
 }

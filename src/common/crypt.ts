@@ -131,7 +131,7 @@ const matchTimestamps = (file: string) => {
 export const decrypt = async (...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:decrypt`)
   if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    d.debug('Skipping decryption')
+    d.info('Skipping decryption')
     return
   }
   d.info('Starting decryption')
@@ -150,7 +150,7 @@ export const decrypt = async (...files: string[]): Promise<void> => {
 export const encrypt = async (...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:encrypt`)
   if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
-    d.debug('Skipping encryption')
+    d.info('Skipping encryption')
     return
   }
   d.info('Starting encryption')

@@ -9,7 +9,7 @@ cluster:
   # domainSuffix: ''
 
   ## Set the Kubernetes version
-  ## Currently 1.19, 1.20, 1.21 and 1.22 are supported
+  ## Currently 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
   ##
   k8sVersion: '1.21'
 
@@ -18,8 +18,8 @@ cluster:
   name: 'dev'
 
   ## Set provider
-  ## Can be one of aws|azure|google|custom
-  ## Choose 'custom' for laptop install (minikube, kind) and for onprem clusters.
+  ## Can be one of aws|azure|google|digitalocean|custom
+  ## Choose 'custom' for Minikube and any other K8s cluster.
   ##
   provider: 'custom'
 

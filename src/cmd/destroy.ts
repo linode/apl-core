@@ -25,6 +25,7 @@ const setup = (argv: HelmArguments): void => {
 }
 
 const destroyAll = async () => {
+  const argv = getParsedArgs()
   const d = terminal(`cmd:${cmdName}:destroyAll`)
   d.log('Uninstalling otomi...')
   const debugStream = { stdout: d.stream.debug, stderr: d.stream.error }
@@ -50,8 +51,8 @@ const destroyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await stream(nothrow($`kubectl delete -f ${templateFile}`), debugStream)
   d.info('Uninstalled all manifests.')
+  if (!argv.full) return
   d.info('Uninstalling CRDs...')
-
   const ourCRDS = [
     'argoproj.io',
     'appgw.ingress.k8s.io',
