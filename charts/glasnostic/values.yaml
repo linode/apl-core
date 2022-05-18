@@ -11,6 +11,7 @@ nodePort: 40753
 image:
   repository: public.ecr.aws/glasnostic/glasnosticd
   pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
   tag: "v1.12.1"
 
 sidecar:
