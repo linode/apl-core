@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Self-hosted PaaS for Kubernetes
 </h1>
-<p align="center"><b>A complete platform experience on top of any Kubernetes cluster to empower developers and lower the burden on operations</b></p>
+<p align="center"><b>Deploy your apps fast and safe on any Kubernetes cluster in any cloud.</b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -25,7 +25,7 @@
 <a href="https://redkubes.com/live-otomi-demo-env/"> 🚀 See Otomi live on Digital Ocean 🚀</a>
 </p>
 
-`Otomi` brings a PaaS experience to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+`Otomi` brings a PaaS experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
