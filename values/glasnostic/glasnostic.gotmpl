@@ -9,7 +9,7 @@ securityContext:
   allowPrivilegeEscalation: false
 podAnnotations:
   policy.otomi.io/ignore: "psp-privileged"
-
+  sidecar.glasnostic.io/logLevel: "debug"
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global

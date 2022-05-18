@@ -40,7 +40,7 @@ webhooks:
     {{- end }}
     service:
       namespace: {{ .Release.Namespace }}
-      name: glasnosticd
+      name: {{ include "glasnosticd.fullname" . }}
       path: /inject
   failurePolicy: Fail
   rules:
