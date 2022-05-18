@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Self-hosted PaaS for Kubernetes
 </h1>
-<p align="center"><b>A complete platform experience on top of any Kubernetes cluster to empower developers and lower the burden on operations</b></p>
+<p align="center"><b>Deploy your apps fast and safe on any Kubernetes cluster in any cloud.</b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -21,7 +21,11 @@
 <a href="https://join.slack.com/t/otomi/shared_invite/zt-18wo93idx-qFecVX9MzcAAsnfzbliHlg">Join our Slack channel for Q&A</a>
 </p>
 
-`Otomi` brings a PaaS experience to your Kubernetes cluster without the constraints and abstractions of traditional PaaS offerings like OpenShift, Cloud Foundry and Heroku. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+<p align="center">
+<a href="https://redkubes.com/live-otomi-demo-env/"> 🚀 See Otomi live on Digital Ocean 🚀</a>
+</p>
+
+`Otomi` brings a PaaS experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
@@ -99,23 +103,23 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
 
-- [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
-- [Argo CD](https://argo-cd.readthedocs.io/en/stable/): Declarative continuous deployment
-- [Knative](https://knative.dev/): Deploy and manage serverless workloads
-- [Prometheus](https://prometheus.io/): Collecting container application metrics
-- [Loki](https://grafana.com/oss/loki/): Collecting container application logs
-- [Harbor](https://goharbor.io/): Container image registry with role-based access control, image scanning, and image signing
-- [HashiCorp Vault](https://www.vaultproject.io/): Manage Secrets and Protect Sensitive Data
-- [Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
-- [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
-- [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud-native environments
+- [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
+- [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
+- [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
+- [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
+- [Loki](https://github.com/grafana/loki): Collecting container application logs
+- [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control, image scanning, and image signing
+- [HashiCorp Vault](https://github.com/hashicorp/vault): Manage Secrets and Protect Sensitive Data
+- [Kubeapps](https://github.com/vmware-tanzu/kubeapps): Launching and managing applications on Kubernetes
+- [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services
+- [OPA](https://github.com/open-policy-agent/opa): Policy-based control for cloud-native environments
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry-recognized TLS certificates
-- [Jaeger](https://www.jaegertracing.io/): End-to-end distributed tracing and monitor for complex distributed systems
-- [Kiali](https://kiali.io/): Observe Istio service mesh relations and connections
+- [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
+- [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
-- [Drone](https://www.drone.io/): Continuous integration platform built on Docker
-- [Gitea](https://gitea.io/): Self-hosted Git service
-- [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/): Ingress controller for Kubernetes
+- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
+- [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
+- [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 
 </details>
 
