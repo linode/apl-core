@@ -26,7 +26,7 @@ global:
 kubeclarity:
   ## Docker Image values.
   docker:
-    imageTag: "v2.2.0"
+    imageTag: "latest"
     imagePullPolicy: Always
 
   ## Logging level (debug, info, warning, error, fatal, panic).
@@ -63,7 +63,7 @@ kubeclarity-runtime-scan:
   cis-docker-benchmark-scanner:
     ## Docker Image values.
     docker:
-      imageTag: "v2.2.0"
+      imageTag: "latest"
       imagePullPolicy: Always
 
     ## Scanner logging level (debug, info, warning, error, fatal, panic).
@@ -83,7 +83,7 @@ kubeclarity-runtime-scan:
   vulnerability-scanner:
     ## Docker Image values.
     docker:
-      imageTag: "v2.2.0"
+      imageTag: "latest"
       imagePullPolicy: Always
 
     ## Scanner logging level (debug, info, warning, error, fatal, panic).
@@ -167,7 +167,7 @@ kubeclarity-grype-server:
 kubeclarity-sbom-db:
   ## Docker Image values.
   docker:
-    imageTag: "v2.2.0"
+    imageTag: "latest"
     imagePullPolicy: Always
 
   ## Logging level (debug, info, warning, error, fatal, panic).
