@@ -5,6 +5,9 @@ nameOverride: glasnosticd
 nodePort: {{ $g.nodePort }}
 networkKey: {{ $g.networkKey }}
 certManager: {{ $g.certManager | toYaml | nindent 2 }}
+  {{- if not ($g | get "certManager.caCert" nil) }}
+  caCert: {{ $v.apps | get "cert-manager.customRootCA" | b64enc }}
+  {{- end }}
 securityContext:
   allowPrivilegeEscalation: false
 podAnnotations:

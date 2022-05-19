@@ -22,6 +22,8 @@ sidecar:
 certManager:
   # Use cert manager for webhook certs?
   enabled: false
+  # custom CA?
+  # caCert: ''
   # issuerRef:
   #   name: glasnostic-ca
   #   kind: ClusterIssuer

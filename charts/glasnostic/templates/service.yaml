@@ -15,7 +15,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: glasnosticd
+  name: {{ include "glasnosticd.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "glasnosticd.labels" . | nindent 4 }}

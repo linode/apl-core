@@ -37,6 +37,8 @@ webhooks:
   clientConfig:
     {{- if not .Values.certManager.enabled }}
     caBundle: {{ $tls.caCert }}
+    {{- else if .Values.certManager.caCert }}
+    caBundle: {{ .Values.certManager.caCert }}
     {{- end }}
     service:
       namespace: {{ .Release.Namespace }}
