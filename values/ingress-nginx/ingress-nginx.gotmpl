@@ -3,9 +3,15 @@
 {{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
 {{- $privateNetwork := eq "private" ($ingress | get "network" "public")  }}
 nameOverride: {{ .Release.Name }}
+
+
 controller:
   # @TODO:
-  ingressClass: {{ $ingress.className }}
+  electionID: ingress-controller-leader-{{ $ingress.className }}
+  ingressClassResource: 
+    enabled: false
+    controllerValue: k8s.io/{{ $ingress.className }}
+  # ingressClass: {{ $ingress.className }}
   image:
     tag: v1.0.5
     tag: {{ $n | get "image.tag" "v1.1.2" }}

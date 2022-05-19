@@ -2769,6 +2769,8 @@ properties:
               default: public
             ipAddress:
               type: string
+          required:
+            - className
   smtp:
     additionalProperties: false
     properties:
