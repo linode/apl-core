@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $n := $v.apps | get "ingress-nginx" }}
 {{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
+{{- $privateNetwork := eq "private" ($ingress | get "network" "public")  }}
 nameOverride: {{ .Release.Name }}
 controller:
   # @TODO:
@@ -114,18 +115,18 @@ controller:
       {{- with $n | get "loadBalancerRG" nil }}
       service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
       {{- end }}
-      {{- if eq $ingress.network "private" }}
+      {{- if $privateNetwork }}
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "azure" */}}
       {{- if eq $v.cluster.provider "aws" }}
       service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
-      {{- if eq $ingress.network "private" }}
+      {{- if $privateNetwork }}
       service.beta.kubernetes.io/aws-load-balancer-internal: true
       {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
       {{- if eq $v.cluster.provider "google" }}
-      {{- if eq $ingress.network "private" }}
+      {{- if $privateNetwork }}
       networking.gke.io/load-balancer-type: "Internal"
       {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "google" */}}
