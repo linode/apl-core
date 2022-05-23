@@ -209,6 +209,14 @@ kubeclarity-postgresql:
   postgresqlDatabase: kubeclarity
   # secretKey: postgresql-password
 
+  resources:
+    requests:
+      memory: "250Mi"
+      cpu: "250m"
+    limits:
+      memory: "500Mi"
+      cpu: "1"
+
   serviceAccount:
     enabled: true
   securityContext:
