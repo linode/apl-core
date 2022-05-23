@@ -25,6 +25,13 @@ spec:
           securityContext:
             runAsUser: 1001
           {{- end }}
+          resources:
+            requests:
+              memory: "20Mi"
+              cpu: "10m"
+            limits:
+              memory: "100Mi"
+              cpu: "100m"
         - name: '{{ include "kubeclarity.name" . }}-wait-for-sbom-db'
           image: yauritux/busybox-curl
           args:
@@ -35,6 +42,13 @@ spec:
               while [ $(curl -sw '%{http_code}' "http://{{ include "kubeclarity.sbom-db.name" . }}:8081/healthz/ready" -o /dev/null) -ne 200 ]; do
                 echo waiting for sbom database; sleep 2;
               done;
+          resources:
+            requests:
+              memory: "20Mi"
+              cpu: "10m"
+            limits:
+              memory: "100Mi"
+              cpu: "100m"
 {{- if index .Values "kubeclarity-grype-server" "enabled" }}
         - name: '{{ include "kubeclarity.name" . }}-wait-for-grype-server'
           image: yauritux/busybox-curl
@@ -51,6 +65,13 @@ spec:
           securityContext:
             runAsUser: 1001
           {{- end }}
+          resources:
+            requests:
+              memory: "20Mi"
+              cpu: "10m"
+            limits:
+              memory: "100Mi"
+              cpu: "100m"
       containers:
         - name: kubeclarity
           image: '{{ .Values.global.docker.registry }}/kubeclarity:{{ .Values.kubeclarity.docker.imageTag }}'
