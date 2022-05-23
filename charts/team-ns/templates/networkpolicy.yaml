@@ -45,6 +45,75 @@ spec:
     #     - namespaceSelector:
     #         matchLabels:
     #           name: shared
+---
+# Allow traffic from team's prometheus to team's alertmanager
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-alertmanager
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              prometheus: {{ .team }}-po-prometheus
+  podSelector:
+    matchLabels:
+      alertmanager: {{ .team }}-po-alertmanager
+  policyTypes:
+    - Ingress
+---
+# Allow traffic from team's kube-state-metrics + team's alertmanager to team's prometheus
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              alertmanager: {{ .team }}-po-alertmanager
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kube-state-metrics
+  podSelector:
+    matchLabels:
+      prometheus: {{ .team }}-po-prometheus
+  policyTypes:
+    - Ingress
+---
+# Allow traffic from team's prometheus to team's kube-state-metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-kube-state-metrics
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ .team }}
+          podSelector:
+            matchLabels:
+              prometheus: {{ .team }}-po-prometheus
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+  policyTypes:
+    - Ingress
 
   {{- range $s := $v.services }}
     {{- if not $s.isCore }}

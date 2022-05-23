@@ -25,8 +25,7 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 app.get('/init', async (req: Request, res: Response) => {
   try {
     d.log('Request to initialize values repo')
-    // nothing to do here anymore as bootstrap now performed in drone pipeline
-    // TODO: remove this endpoint after removing call in api
+    await decrypt()
     res.status(200).send('ok')
   } catch (error) {
     d.error(error)
@@ -37,7 +36,6 @@ app.get('/init', async (req: Request, res: Response) => {
 app.get('/prepare', async (req: Request, res: Response) => {
   try {
     d.log('Request to prepare values repo')
-    await decrypt()
     await validateValues()
     await genDrone()
     await bootstrapSops()

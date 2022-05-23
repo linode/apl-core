@@ -46,6 +46,10 @@ spec:
               value: "{{ .Values.certDir }}"
             - name: UPDATE_CMD
               value: "{{ .Values.updateCmd }}"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
           securityContext:
             runAsUser: 0
             privileged: true
@@ -54,3 +58,7 @@ spec:
           image: k8s.gcr.io/pause:3.1
           securityContext:
             runAsUser: 1000
+          resources:
+            limits:
+              cpu: 50m
+              memory: 64Mi
