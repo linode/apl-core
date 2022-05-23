@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-<a href="https://join.slack.com/t/otomi/shared_invite/zt-18wo93idx-qFecVX9MzcAAsnfzbliHlg">Join our Slack channel for Q&A</a>
+<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel for Q&A</a>
 </p>
 
 <p align="center">
