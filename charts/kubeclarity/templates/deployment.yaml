@@ -49,6 +49,8 @@ spec:
             limits:
               memory: "100Mi"
               cpu: "100m"
+          securityContext:
+            runAsNonRoot: true
 {{- if index .Values "kubeclarity-grype-server" "enabled" }}
         - name: '{{ include "kubeclarity.name" . }}-wait-for-grype-server'
           image: yauritux/busybox-curl
