@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        otomi.io/app: {{ template "otomi.name" . }}
+        app: {{ template "otomi.name" . }}
         release: {{ .Release.Name }}
     spec:
       restartPolicy: Never
