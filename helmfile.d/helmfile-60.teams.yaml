@@ -72,6 +72,8 @@ releases:
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+        defaultRules:
+          appNamespacesTarget: team-{{ $teamId }}
         {{- else }}
         defaultRules:
           rules:
@@ -89,6 +91,9 @@ releases:
               matchLabels:
                 name: team-{{ $teamId }}
             serviceMonitorNamespaceSelector:
+              matchLabels:
+                name: team-{{ $teamId }}
+            probeNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
         {{- if gt (len .services) 0 }}
