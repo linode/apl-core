@@ -48,6 +48,7 @@ spec:
               cpu: "10m"
             limits:
               memory: "100Mi"
+              cpu: "100m"
           {{- if not .Values.global.openShiftRestricted }}
           securityContext:
             runAsUser: 1001
