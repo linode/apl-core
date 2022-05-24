@@ -45,6 +45,75 @@ spec:
     #     - namespaceSelector:
     #         matchLabels:
     #           name: shared
+---
+# Allow traffic from team's prometheus to team's alertmanager
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-alertmanager
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              prometheus: {{ $v.teamId }}-po-prometheus
+  podSelector:
+    matchLabels:
+      alertmanager: {{ $v.teamId }}-po-alertmanager
+  policyTypes:
+    - Ingress
+---
+# Allow traffic from team's kube-state-metrics + team's alertmanager to team's prometheus
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              alertmanager: {{ $v.teamId }}-po-alertmanager
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kube-state-metrics
+  podSelector:
+    matchLabels:
+      prometheus: {{ $v.teamId }}-po-prometheus
+  policyTypes:
+    - Ingress
+---
+# Allow traffic from team's prometheus to team's kube-state-metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-kube-state-metrics
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              prometheus: {{ $v.teamId }}-po-prometheus
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+  policyTypes:
+    - Ingress
 
   {{- range $s := $v.services }}
     {{- if not $s.isCore }}
@@ -63,7 +132,7 @@ spec:
       # The app label cannot be used because Knative appends revision number to the service
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}
-      app: {{ $s.name }}
+      otomi.io/app: {{ $s.name }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -86,7 +155,7 @@ spec:
       # The app label cannot be used because Knative appends revision number to its value
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}
-      app: {{ $s.name }}
+      otomi.io/app: {{ $s.name }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -100,7 +169,7 @@ spec:
             {{- if hasKey . "service" }}
           podSelector:
             matchLabels:
-              app: {{ .service }}
+              otomi.io/app: {{ .service }}
         # An extra rule for Pods that are spawn by knative-serving
         - namespaceSelector:
             matchLabels:

@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.5](https://github.com/redkubes/otomi-core/compare/v0.16.4...v0.16.5) (2022-05-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **networkpolicies:** requires teams to change labels from 'app: <svc>' to 'otomi.io/app: <svc>'
+
+### Bug Fixes
+
+* **alerting:** prometheus metrics and alerts for teams ([#801](https://github.com/redkubes/otomi-core/issues/801)) ([90fdaa7](https://github.com/redkubes/otomi-core/commit/90fdaa7faa3f7c7e6d9eff0bfdb73b2c55364d5c)), closes [#797](https://github.com/redkubes/otomi-core/issues/797)
+* knative operator manifest for 1.21 was empty ([417d2f0](https://github.com/redkubes/otomi-core/commit/417d2f0b44f65b8f0ed4f627a3909ee1d926796f))
+* slack URL [ci skip] ([100fd9c](https://github.com/redkubes/otomi-core/commit/100fd9ca67aa2315ed46592b60b2c8987c3877a7))
+
+
+### Code Refactoring
+
+* **networkpolicies:** change Pod label requirement for network policies ([#802](https://github.com/redkubes/otomi-core/issues/802)) ([aaffee5](https://github.com/redkubes/otomi-core/commit/aaffee51b92d8618fea152e49b5c7f9115755157)), closes [#739](https://github.com/redkubes/otomi-core/issues/739)
+
+
+### Others
+
+* bump api and console ([6bbf43f](https://github.com/redkubes/otomi-core/commit/6bbf43fe14994580a265914ab273190e2931412b))
+
+### [0.16.4](https://github.com/redkubes/otomi-core/compare/v0.16.3...v0.16.4) (2022-05-18)
+
+
+### Bug Fixes
+
+* add resource limits ([#796](https://github.com/redkubes/otomi-core/issues/796)) ([d847810](https://github.com/redkubes/otomi-core/commit/d847810b599b0db6e3514ca0db28678428db1711))
+* api decryption regression, knative upgrade ([8b8f9e5](https://github.com/redkubes/otomi-core/commit/8b8f9e5b8d97224b92e8896924954ec8e21dc28a))
+* **blackbox-exporter:** fix: [#792](https://github.com/redkubes/otomi-core/issues/792) ([#793](https://github.com/redkubes/otomi-core/issues/793)) ([2b0643c](https://github.com/redkubes/otomi-core/commit/2b0643c7961d5c194c522ff417563e23cd06f216))
+* incorrect text [ci skip] ([9020390](https://github.com/redkubes/otomi-core/commit/90203900343fc265810bbc93dc2e69042bf89776))
+* slack url [ci skip] ([30c8186](https://github.com/redkubes/otomi-core/commit/30c8186f88ff2de9587f7525c3e34db4027b14d4))
+
+
+### Others
+
+* **deps:** bumped api + console [ci skip] ([7a7f1fe](https://github.com/redkubes/otomi-core/commit/7a7f1feb8431786efb3bc5fa3f1c31b4db1b5c57))
+
 ### [0.16.3](https://github.com/redkubes/otomi-core/compare/v0.16.2...v0.16.3) (2022-05-06)
 
 
