@@ -8,7 +8,7 @@ resources:
     labels:
       app.kubernetes.io/component: controller
     name: {{ $ingress.className }}
-    {{- if eq $ingress.className "platform" }} 
+    {{- if eq $ingress.className $v.ingress.platformClass.className }} 
     annotations:
       ingressclass.kubernetes.io/is-default-class: "true"
     {{- end }}

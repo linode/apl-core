@@ -129,7 +129,6 @@ environments:
             enabled: false
         cluster: {}
         ingress:
-          defaultTeamClassName: platform
           keycloakClassName: platform
           platformClass:
             className: platform
