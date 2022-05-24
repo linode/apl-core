@@ -6,6 +6,7 @@ import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
+import { bootstrapGit } from '../common/bootstrap'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
@@ -16,7 +17,6 @@ import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
-import { bootstrapGit } from './commit'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -391,16 +391,19 @@ export const module = {
   command: cmdName,
   hidden: true,
   describe: 'Bootstrap all necessary settings and values',
-  builder: (parser: Argv): Argv => parser,
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      destroy: {
+        type: 'string',
+        hidden: true,
+        describe: 'Informs bootstrapper to check LB IP if no domainsuffix was found',
+      },
+    }),
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
-    if (isCli) {
-      // for ease of dev: could be first time trying to connect to a remote, so
-      // let bootstrap figure out wether to clone fresh and swap out
-      await bootstrapGit()
-    }
     await bootstrap()
+    await bootstrapGit()
   },
 }
