@@ -209,10 +209,9 @@ adminApps:
         # auth: true
   - name: kubeclarity
     tags: [security]
-    isShared: true
     ownHost: true
     ingress:
-      - svc: kubeclarity-kubeclarity
+      - svc: kubeclarity
         namespace: kubeclarity
         port: 8080
         type: public

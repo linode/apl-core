@@ -4,6 +4,9 @@
 global:
   databasePassword: {{ $k | get "databasePassword" }}
 
+kubeclarity-postgresql:
+  fullnameOverride: kubeclarity-postgresql
+
 kubeclarity:
   logLevel: {{ $k | get "logLevel" "warning" }}  
 
