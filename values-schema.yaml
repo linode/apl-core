@@ -528,7 +528,7 @@ definitions:
     properties:
       ingressPrivate:
         title: Internal ingress filtering
-        description: 'Pods belonging to this service must contain "app: <service name>" label'
+        description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -555,7 +555,7 @@ definitions:
                       type: string
                     service:
                       title: Service name
-                      description: 'Allow traffic from pods with "app: <some service name>" label'
+                      description: 'Allow traffic from pods with "otomi.io/app: <some service name>" label'
                       type: string
                   required:
                     - team

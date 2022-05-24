@@ -1,4 +1,3 @@
 teamConfig:
-  teams:
-    a2:
-      jobs: []
+  a2:
+    jobs: []
