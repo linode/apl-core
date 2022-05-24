@@ -129,8 +129,11 @@ environments:
             enabled: false
         cluster: {}
         ingress:
-          platformAppsClassName: platform
-          platformKeycloakClassName: platform
+          defaultTeamClassName: platform
+          keycloakClassName: platform
+          platformClass:
+            className: platform
+            network: public
           classes: []
         oidc: {}
         otomi:

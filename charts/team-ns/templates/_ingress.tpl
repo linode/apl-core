@@ -39,7 +39,11 @@ extensions/v1
 {{- $secrets := dict }}
 {{- range $s := $.services }}
   {{- $paths := list }}
-  {{- $ingressClassName := dig "ingressClassName" "platform" $s }}
+  {{- if $s.isCore -}}
+    {{- $ingressClassName := dig "ingressClassName" "platform" $s }}
+  {{- else }}
+    {{- $ingressClassName := dig "ingressClassName" $v.ingress.defaultTeamClassName $s }}
+  {{- end }}
   {{- if eq $ingressClassName $ingress.className }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
     {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}

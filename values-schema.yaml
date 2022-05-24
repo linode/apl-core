@@ -2746,11 +2746,11 @@ properties:
                   $ref: '#/definitions/wordCharacterPattern'
   ingress:
     properties:
-      platformAppsClassName:
+      defaultTeamClassName:
         type: string
         default: platform
-        description: Assign ingress class to all core apps except Keycloak.
-      platformKeycloakClassName:
+        description: Set default ingress class for all team services.
+      keycloakClassName:
         type: string
         default: platform
         description: Assign ingress class to keycloak app. Ensure that this network is accessible by any users that needs to authenticate via OIDC connect.
