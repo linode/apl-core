@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.5](https://github.com/redkubes/otomi-core/compare/v0.16.4...v0.16.5) (2022-05-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **networkpolicies:** requires teams to change labels from 'app: <svc>' to 'otomi.io/app: <svc>'
+
+### Bug Fixes
+
+* **alerting:** prometheus metrics and alerts for teams ([#801](https://github.com/redkubes/otomi-core/issues/801)) ([90fdaa7](https://github.com/redkubes/otomi-core/commit/90fdaa7faa3f7c7e6d9eff0bfdb73b2c55364d5c)), closes [#797](https://github.com/redkubes/otomi-core/issues/797)
+* knative operator manifest for 1.21 was empty ([417d2f0](https://github.com/redkubes/otomi-core/commit/417d2f0b44f65b8f0ed4f627a3909ee1d926796f))
+* slack URL [ci skip] ([100fd9c](https://github.com/redkubes/otomi-core/commit/100fd9ca67aa2315ed46592b60b2c8987c3877a7))
+
+
+### Code Refactoring
+
+* **networkpolicies:** change Pod label requirement for network policies ([#802](https://github.com/redkubes/otomi-core/issues/802)) ([aaffee5](https://github.com/redkubes/otomi-core/commit/aaffee51b92d8618fea152e49b5c7f9115755157)), closes [#739](https://github.com/redkubes/otomi-core/issues/739)
+
+
+### Others
+
+* bump api and console ([6bbf43f](https://github.com/redkubes/otomi-core/commit/6bbf43fe14994580a265914ab273190e2931412b))
+
 ### [0.16.4](https://github.com/redkubes/otomi-core/compare/v0.16.3...v0.16.4) (2022-05-18)
 
 
