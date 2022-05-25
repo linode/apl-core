@@ -109,16 +109,16 @@ controller:
     externalTrafficPolicy: Local
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
-    {{- with $ingress | get "ipAddress" nil }}
+    {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . }}
     {{- end }}
     annotations:
       dummy: 'true'
-      {{- with $n | get "service.annotations" nil }}
+      {{- with $ingress | get "service.annotations" nil }}
       {{ toYaml . | indent 6 }}
       {{- end }}
       {{- if eq $v.cluster.provider "azure" }}
-      {{- with $n | get "loadBalancerRG" nil }}
+      {{- with $ingress | get "loadBalancerRG" nil }}
       service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
       {{- end }}
       {{- if $privateNetwork }}

@@ -2762,8 +2762,13 @@ properties:
               - public
               - private
             default: public
-          ipAddress:
+          loadBalancerIP:
             type: string
+          loadBalancerRG:
+            type: string
+          loadBalancerSubnet:
+            type: string
+            description: Load IP address from a specific subnet (applies to private network only)
         required:
           - className
       classes:
