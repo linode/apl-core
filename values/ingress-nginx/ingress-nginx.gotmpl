@@ -123,6 +123,9 @@ controller:
       {{- end }}
       {{- if $privateNetwork }}
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        {{- with $ingress | get "loadBalancerIP" nil }}
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "{{ . }}"
+        {{- end }}
       {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "azure" */}}
       {{- if eq $v.cluster.provider "aws" }}
