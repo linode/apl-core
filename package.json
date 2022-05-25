@@ -61,6 +61,7 @@
     "@typescript-eslint/eslint-plugin": "4.33.0",
     "@typescript-eslint/parser": "4.33.0",
     "@vercel/ncc": "0.33.4",
+    "adr-log": "^2.2.0",
     "chai": "4.3.6",
     "commitizen": "4.2.4",
     "cspell": "4.2.8",
@@ -118,6 +119,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "adr": "adr-log -d adr -i",
     "check-policies": "TESTING=1 binzx/otomi check-policies",
     "compile": "tsc && chmod +x ./dist/src/otomi.js",
     "compile:watch": "npm run compile && tsc -w",

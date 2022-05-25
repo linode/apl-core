@@ -1,0 +1,8 @@
+// {type:sequence}
+// {generate:true}
+
+[:User]helm install CHART_VALUES>[:K8s]
+[:K8s]otomi bootstrap && otomi apply>[:K8s]
+[:K8s]if needed create domain suffix from LB IP>[:K8s]
+[:K8s]otomi commit>[:Git]
+

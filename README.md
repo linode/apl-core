@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-<a href="https://otomi.slack.com/ssb/redirect#/shared-invite/email">Join our Slack channel for Q&A</a>
+<a href="https://join.slack.com/t/otomi/shared_invite/zt-18wo93idx-qFecVX9MzcAAsnfzbliHlg">Join our Slack channel for Q&A</a>
 </p>
 
 <p align="center">
@@ -103,6 +103,28 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 <details>
  <summary><b>Learn more about all the integrated technologies</b></summary>
 
+<<<<<<< HEAD
+- [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
+- [Argo CD](https://argo-cd.readthedocs.io/en/stable/): Declarative continuous deployment
+- [Knative](https://knative.dev/): Deploy and manage serverless workloads
+- [Prometheus](https://prometheus.io/): Collecting container application metrics
+- [Loki](https://grafana.com/oss/loki/): Collecting container application logs
+- [Harbor](https://goharbor.io/): Container image registry with role-based access control, image scanning, and image signing
+- [HashiCorp Vault](https://www.vaultproject.io/): Manage Secrets and Protect Sensitive Data
+- [Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
+- [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
+- [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud-native environments
+||||||| 5e9a8688
+- [Istio](https://istio.io/): The service mesh framework with end-to-end transit encryption
+- [Knative](https://knative.dev/): Deploy and manage serverless workloads
+- [Prometheus](https://prometheus.io/): Collecting container application metrics
+- [Loki](https://grafana.com/oss/loki/): Collecting container application logs
+- [Harbor](https://goharbor.io/): Container image registry with role-based access control, image scanning, and image signing
+- [HashiCorp Vault](https://www.vaultproject.io/): Manage Secrets and Protect Sensitive Data
+- [Kubeapps](https://bitnami.com/kubernetes/kubeapps): Launching and managing applications on Kubernetes
+- [Keycloak](https://www.keycloak.org/): Identity and access management for modern applications and services
+- [OPA](https://www.openpolicyagent.org/): Policy-based control for cloud-native environments
+=======
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
@@ -113,6 +135,7 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 - [Kubeapps](https://github.com/vmware-tanzu/kubeapps): Launching and managing applications on Kubernetes
 - [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services
 - [OPA](https://github.com/open-policy-agent/opa): Policy-based control for cloud-native environments
+>>>>>>> origin/main
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry-recognized TLS certificates
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
