@@ -103,7 +103,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
   {{- end }}
 {{- end }}
-  {{- with $ingress.ipAddressFiltering }}
+  {{- with $ingress.sourceIpAddressFiltering }}
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
   {{- end}}
 {{- if $.hasAuth }}
