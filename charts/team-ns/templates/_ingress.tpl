@@ -103,6 +103,9 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
   {{- end }}
 {{- end }}
+  {{- with $ingress.ipAddressFiltering }}
+    nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
+  {{- end}}
 {{- if $.hasAuth }}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"

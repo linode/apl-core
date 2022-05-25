@@ -2768,6 +2768,9 @@ properties:
           loadBalancerSubnet:
             type: string
             description: Load IP address from a specific subnet (applies to private network only)
+          ipAddressFiltering:
+            type: string
+            description: Whitelist source IP range. The value is a comma separated list of CIDRs,
         required:
           - className
       classes:
