@@ -983,7 +983,6 @@ definitions:
         description: Will determine the ingress routing.
         enum:
           - public
-          - private
           - cluster
         type: string
       removeRequestHeaders:
@@ -2784,8 +2783,13 @@ properties:
                 - public
                 - private
               default: public
-            ipAddress:
+            loadBalancerIP:
               type: string
+            loadBalancerRG:
+              type: string
+            loadBalancerSubnet:
+              type: string
+              description: Load IP address from a specific subnet (applies to private network only)
           required:
             - className
   smtp:
