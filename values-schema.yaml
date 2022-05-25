@@ -1888,6 +1888,9 @@ properties:
                 $ref: '#/definitions/resources'
               postgresql:
                 $ref: '#/definitions/resources'
+          ingressClassName:
+            type: string
+            default: platform
         required:
           - postgresqlPassword
       kiali:
@@ -2745,10 +2748,6 @@ properties:
                   $ref: '#/definitions/wordCharacterPattern'
   ingress:
     properties:
-      keycloakClassName:
-        type: string
-        default: platform
-        description: Assign ingress class to keycloak app. Ensure that this network is accessible by any users that needs to authenticate via OIDC connect.
       platformClass:
         type: object
         properties:

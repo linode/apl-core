@@ -89,6 +89,7 @@ environments:
             idp:
               alias: otomi-idp
               clientID: otomi
+            ingressClassName: platform
           kiali:
             enabled: false
           knative:
@@ -129,7 +130,6 @@ environments:
             enabled: false
         cluster: {}
         ingress:
-          keycloakClassName: platform
           platformClass:
             className: platform
             network: public

@@ -24,7 +24,7 @@ bases:
 {{- range $s := $coreAdminServices }}
 {{- $ingressClass := $v.ingress.platformClass.className }}
 {{- if eq $s.name "keycloak" }}
-{{- $ingressClass = $v.ingress.keycloakClassName }}
+{{- $ingressClass = $a.keycloak.ingressClassName }}
 {{- end }}
 {{- $svc := merge $s (dict "ingressClassName" $ingressClass ) }}
 {{- $services = append $services $svc }}
