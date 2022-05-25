@@ -1,4 +1,4 @@
-api: 0.5.7
-console: 0.5.11
+api: ingress-class
+console: ingress-class
 tasks: 0.2.27
 tools: v1.4.25
