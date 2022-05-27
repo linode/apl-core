@@ -35,7 +35,7 @@
 
 To install `Otomi` using Helm, make sure to have a K8s cluster running with at least:
 
-- Version `1.18` up to `1.22` (support for 1.23 coming soon)
+- Version `1.18` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
