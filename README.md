@@ -25,7 +25,7 @@
 <a href="https://redkubes.com/live-otomi-demo-env/"> 🚀 See Otomi live on Digital Ocean 🚀</a>
 </p>
 
-`Otomi` brings a PaaS experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+`Otomi` brings a full platform experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
