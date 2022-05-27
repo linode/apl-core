@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into chart templates.
 
-cluster:
+cluster: {}
 
   ## Needs to be set when hasExternalDNS is set to true
   ##
@@ -11,17 +11,17 @@ cluster:
   ## Set the Kubernetes version
   ## Currently 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
   ##
-  k8sVersion: '1.21'
+  # k8sVersion: '1.22'
 
   ## Set the name of your cluster
   ## 
-  name: 'dev'
+  # name: 'dev'
 
   ## Set provider
   ## Can be one of aws|azure|google|digitalocean|custom
   ## Choose 'custom' for Minikube and any other K8s cluster.
   ##
-  provider: 'custom'
+  # provider: 'custom'
 
   ## Set the owner of the cluster
   ## Can be the name of your organization. Will be set to 'otomi' if left empty
