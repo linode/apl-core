@@ -2,7 +2,7 @@
 
 # called from a helm chart in helmfile.d folder, so root:
 root=..
-
+set -x
 app=${1}
 subFolder=''
 [ -n "$2" ] && subFolder="/$2"

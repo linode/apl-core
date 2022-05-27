@@ -1,0 +1,21 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: knative-init
+    installed: false
+    namespace: default
+    labels:
+      init: true
+      pkg: knative
+    <<: *skeleton
