@@ -3,6 +3,7 @@
 {{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
+    {{- if or (not (hasKey $ns "app")) ($v.apps | get ($ns | get "app" "-dummy-") dict | get "enabled" false) }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -11,6 +12,7 @@ resources:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
+    {{- end }}
   {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
