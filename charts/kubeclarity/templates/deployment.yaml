@@ -78,8 +78,12 @@ spec:
               cpu: "100m"
       containers:
         - name: kubeclarity
-          image: '{{ .Values.global.docker.registry }}/kubeclarity:{{ .Values.kubeclarity.docker.imageTag }}'
-          imagePullPolicy: {{ .Values.kubeclarity.docker.imagePullPolicy }}
+          {{- if .Values.kubeclarity.docker.imageName }}
+          image: '{{ .Values.kubeclarity.docker.imageName }}'
+          {{- else }}
+          image: '{{ .Values.global.docker.registry }}/kubeclarity:{{ .Values.global.docker.tag }}'
+          {{- end }}
+          imagePullPolicy: {{ .Values.global.docker.imagePullPolicy }}
           args:
             - run
             - --log-level
