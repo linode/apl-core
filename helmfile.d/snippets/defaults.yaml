@@ -110,7 +110,7 @@ environments:
                 maxReplicas: 10
           kubeclarity:
             enabled: false
-            logLevel: "WARNING"
+            logLevel: "warning"
           kube-descheduler:
             enabled: false
           loki:

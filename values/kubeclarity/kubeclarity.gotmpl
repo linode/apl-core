@@ -8,7 +8,7 @@ kubeclarity-postgresql:
   fullnameOverride: kubeclarity-postgresql
 
 kubeclarity:
-  logLevel: {{ $k | get "logLevel" "warning" }}  
+  logLevel: {{ $k.logLevel }}  
 
 
 

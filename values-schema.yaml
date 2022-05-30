@@ -1968,7 +1968,13 @@ properties:
             type: boolean
             default: false
           logLevel:
-            $ref: '#/definitions/logLevel'
+            enum:
+              - debug
+              - info
+              - warning
+              - error
+              - fatal
+              - panic
           databasePassword:
             type: string
             description: Once set and deployed it cannot be changed with manual intervention.
