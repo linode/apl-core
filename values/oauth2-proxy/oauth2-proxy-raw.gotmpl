@@ -2,6 +2,8 @@
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
+{{- $ingressClass := $v | get "apps.keycloak.ingressClassName" "$v.ingress.platformClass.className" }}
+
 resources:
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
@@ -23,7 +25,7 @@ resources:
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
       name: oauth2-proxy
     spec:
-      ingressClassName: platform
+      ingressClassName: {{ $ingressClass }}
       rules:
       - host: '{{ $domain }}'
         http:
