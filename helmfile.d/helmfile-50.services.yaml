@@ -22,7 +22,7 @@ releases:
     <<: *default
   - name: httpbin
     installed: {{ $a | get "httpbin.enabled" }}
-    namespace: shared
+    namespace: httpbin
     <<: *default
   - name: kubeapps
     installed: {{ $a | get "kubeapps.enabled" }}

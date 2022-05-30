@@ -3,29 +3,29 @@ kind: Service
 metadata:
   name: {{ template "webhook.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
+{{- with .Values.webhook.serviceAnnotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
   labels:
     app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
     {{- include "labels" . | nindent 4 }}
-{{- if .Values.webhook.serviceLabels }}
-{{ toYaml .Values.webhook.serviceLabels | indent 4 }}
-{{- end }}
-{{- if .Values.webhook.serviceAnnotations }}
-  annotations:
-    {{ toYaml .Values.webhook.serviceAnnotations | indent 4 }}
-{{- end }}
+    {{- with .Values.webhook.serviceLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.webhook.serviceType }}
-  {{- if .Values.webhook.loadBalancerIP }}
-  loadBalancerIP: {{ .Values.webhook.loadBalancerIP }}
+  {{- with .Values.webhook.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
   {{- end }}
   ports:
   - name: https
     port: 443
     protocol: TCP
-    targetPort: {{ .Values.webhook.securePort }}
+    targetPort: "https"
   selector:
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

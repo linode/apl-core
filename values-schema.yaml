@@ -245,18 +245,15 @@ definitions:
         description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
-        readOnly: true
       name:
         $ref: '#/definitions/clusterName'
         description: Short name that will be used in construction of cluster domain and messaging.
-        readOnly: true
       owner:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
         default: otomi
       provider:
         $ref: '#/definitions/provider'
-        readOnly: true
       region:
         description: 'An AWS region. Only required for AWS.'
         examples:

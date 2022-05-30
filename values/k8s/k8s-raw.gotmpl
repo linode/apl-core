@@ -3,6 +3,7 @@
 {{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
   {{- range $ns := $v.k8s.namespaces }}
+    {{- if or (not (hasKey $ns "app")) ($v.apps | get ($ns | get "app" "-dummy-") dict | get "enabled" false) }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -11,7 +12,7 @@ resources:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
-  {{- with $v.otomi | get "globalPullSecret" nil }}
+      {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
     type: kubernetes.io/dockerconfigjson
@@ -20,15 +21,16 @@ resources:
       namespace: {{ $ns.name }}
     data:
       .dockerconfigjson: {{ tpl $dockerConfigTpl . | b64enc }}
-  {{- end }}
+      {{- end }}
   - apiVersion: v1
     kind: ServiceAccount
     metadata:
       name: default
       namespace: {{ $ns.name }}
-    {{- if or ($v.otomi | get "globalPullSecret" nil) }}
+      {{- if or ($v.otomi | get "globalPullSecret" nil) }}
     imagePullSecrets:
       - name: otomi-pullsecret-global
+      {{- end }}
     {{- end }}
   {{- end }}
   {{- range $id, $team := omit $v.teamConfig "admin" }}

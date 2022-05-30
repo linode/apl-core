@@ -59,6 +59,6 @@ releases:
     <<: *default
   - name: redis-shared
     installed: {{ $a | get "redis-shared.enabled" }}
-    namespace: shared
+    namespace: redis
     <<: *default
     chart: ../charts/redis

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.6](https://github.com/redkubes/otomi-core/compare/v0.16.5...v0.16.6) (2022-05-27)
+
+
+### Features
+
+* chart destroy ([#798](https://github.com/redkubes/otomi-core/issues/798)) ([c66431d](https://github.com/redkubes/otomi-core/commit/c66431d2f86c869940590deaa20420e05a870bc9))
+* **component:** add kubeclarity helm chart ([#804](https://github.com/redkubes/otomi-core/issues/804)) [ci-skip] ([cd5482b](https://github.com/redkubes/otomi-core/commit/cd5482b109de74af396976086bb1f385ce6cb720)), closes [redkubes/unassigned-issues#409](https://github.com/redkubes/unassigned-issues/issues/409)
+
+
+### Bug Fixes
+
+* add 1.23 support [ci skip] ([e244ad6](https://github.com/redkubes/otomi-core/commit/e244ad67275ce98cf5b8614c59a9d5ad627230ac))
+* knative versioning + raw values, app namespaces, cert-manager upgrade for 1.23 ([#809](https://github.com/redkubes/otomi-core/issues/809)) ([ac722fd](https://github.com/redkubes/otomi-core/commit/ac722fd53a9bc0f20ba076785644eb31cbf62fea))
+* supported versions [ci skip] ([fab9ccc](https://github.com/redkubes/otomi-core/commit/fab9cccc9e5be803d351ed05d54b9e6d4cbf0d59))
+
 ### [0.16.5](https://github.com/redkubes/otomi-core/compare/v0.16.4...v0.16.5) (2022-05-24)
 
 
