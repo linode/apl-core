@@ -51,6 +51,7 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: kubeclarity
+      app: kubeclarity
       disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
