@@ -1912,8 +1912,9 @@ properties:
                 $ref: '#/definitions/resources'
           ingressClassName:
             type: string
+            title: Ingress class name
             default: platform
-            description: Select ingress class to ensure that keycloak is accessible by any users that needs to authenticate via OIDC connect.
+            description: Overwrite the default ingress class if keycloak should be accessible under differrent IP address than the other platform applications.
         required:
           - postgresqlPassword
       kiali:
