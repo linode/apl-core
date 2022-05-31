@@ -1745,10 +1745,6 @@ properties:
             $ref: '#/definitions/rawValues'
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
-          loadBalancerIP:
-            type: string
-          loadBalancerRG:
-            type: string
           maxBodySize:
             type: string
             default: 1024m
@@ -1782,28 +1778,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-          private:
-            description: Private loadbalancer configuration.
-            properties:
-              enabled:
-                title: Enable private loadbalancer
-                description: Enable to start an extra loadbalancer for private network traffic.
-                type: boolean
-                default: false
-              autoscaling:
-                $ref: '#/definitions/autoscalingEnabled'
-              loadBalancerIP:
-                type: string
-              loadBalancerRG:
-                type: string
-              resources:
-                $ref: '#/definitions/resources'
-              service:
-                properties:
-                  annotations:
-                    $ref: '#/definitions/annotations'
-            title: Private loadbalancer
-            type: object
           service:
             properties:
               annotations:
