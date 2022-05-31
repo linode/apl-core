@@ -1959,6 +1959,30 @@ properties:
             x-secret: 'randAlphaNum 20'
         required:
           - postgresqlPassword
+      kubeclarity:
+        description: Kubeclarity security scanning Helm chart.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          logLevel:
+            enum:
+              - debug
+              - info
+              - warning
+              - error
+              - fatal
+              - panic
+          databasePassword:
+            type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
+          resources:
+            $ref: '#/definitions/resources'
+        required:
+          - databasePassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:

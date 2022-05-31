@@ -32,8 +32,12 @@ data:
           {{- end }}         
           containers:
           - name: vulnerability-scanner
-            image: '{{ .Values.global.docker.registry }}/kubeclarity-runtime-k8s-scanner:{{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "docker" "imageTag" }}'
-            imagePullPolicy: {{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "docker" "imagePullPolicy" }}
+            {{- if index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "docker" "imageName" }}
+            image: '{{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "docker" "imageName" }}'
+            {{- else }}
+            image: '{{ .Values.global.docker.registry }}/kubeclarity-runtime-k8s-scanner:{{ .Values.global.docker.tag }}'
+            {{- end }}
+            imagePullPolicy: {{ .Values.global.docker.imagePullPolicy }}
             volumeMounts:
               - mountPath: /tmp
                 name: tmp-volume
@@ -106,8 +110,12 @@ data:
             resources:
 {{- toYaml (index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "resources") | nindent 14 }}
           - name: cis-docker-benchmark-scanner
-            image: '{{ .Values.global.docker.registry }}/kubeclarity-cis-docker-benchmark-scanner:{{ index .Values "kubeclarity-runtime-scan" "cis-docker-benchmark-scanner" "docker" "imageTag" }}'
-            imagePullPolicy: {{ index .Values "kubeclarity-runtime-scan" "cis-docker-benchmark-scanner" "docker" "imagePullPolicy" }}
+            {{- if index .Values "kubeclarity-runtime-scan" "cis-docker-benchmark-scanner" "docker" "imageName" }}
+            image: '{{ index .Values "kubeclarity-runtime-scan" "cis-docker-benchmark-scanner" "docker" "imageName" }}'
+            {{- else }}
+            image: '{{ .Values.global.docker.registry }}/kubeclarity-cis-docker-benchmark-scanner:{{ .Values.global.docker.tag }}'
+            {{- end }}
+            imagePullPolicy: {{ .Values.global.docker.imagePullPolicy }}
             args:
             - scan
             - --log-level

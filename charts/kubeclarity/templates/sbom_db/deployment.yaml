@@ -25,8 +25,12 @@ spec:
       {{- end }}
       containers:
         - name: sbom-db
-          image: '{{ .Values.global.docker.registry }}/kubeclarity-sbom-db:{{ index .Values "kubeclarity-sbom-db" "docker" "imageTag" }}'
-          imagePullPolicy: {{ index .Values "kubeclarity-sbom-db" "docker" "imagePullPolicy" }}
+          {{- if index .Values "kubeclarity-sbom-db" "docker" "imageName" }}
+          image: '{{ index .Values "kubeclarity-sbom-db" "docker" "imageName" }}'
+          {{- else }}
+          image: '{{ .Values.global.docker.registry }}/kubeclarity-sbom-db:{{ .Values.global.docker.tag }}'
+          {{- end }}
+          imagePullPolicy: {{ .Values.global.docker.imagePullPolicy }}
           args:
             - run
             - --log-level
