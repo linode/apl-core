@@ -64,7 +64,7 @@ k8s:
       disablePolicyChecks: true
     - name: otomi
     - name: overprovisioner
-      app: overprovisioner§
+      app: overprovisioner
       disableIstioInjection: true
     - name: prometheus
       app: prometheus
