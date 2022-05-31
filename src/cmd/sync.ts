@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { getHelmArgs, hf } from '../common/hf'
+import { hf } from '../common/hf'
 import { getFilename } from '../common/utils'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 

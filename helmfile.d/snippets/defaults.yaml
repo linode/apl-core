@@ -109,6 +109,9 @@ environments:
               kubeops:
                 minReplicas: 1
                 maxReplicas: 10
+          kubeclarity:
+            enabled: false
+            logLevel: "warning"
           kube-descheduler:
             enabled: false
           loki:

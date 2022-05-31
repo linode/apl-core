@@ -6,23 +6,23 @@ metadata:
   name: {{ include "otomi.fullname" . }}
   labels: {{- include "otomi.labels" . | nindent 4 }}
 spec:
+  backoffLimit: 2
   template:
     metadata:
-      name: installer
       {{- with .Values.podAnnotations }}
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
-        otomi-core: "true"
     spec:
+      restartPolicy: Never
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:
         runAsUser: 999
         runAsGroup: 999
       containers:
-        - name: otomi-install
+        - name: install
           image: otomi/core:{{ $version }}
-          imagePullPolicy: Always # {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           resources:
             limits:
               memory: 2Gi
@@ -53,12 +53,8 @@ spec:
             - name: values-secret
               mountPath: /secret
       volumes:
-        # Mount data provided by user
         - name: values-secret
           secret:
-            secretName: '{{ .Release.Name }}-values'
-        # Otomi bootstrap populates data /secret/values.yaml to /home/app/stack/env
+            secretName: {{ .Release.Name }}-values
         - name: otomi-values
           emptyDir: {}
-      restartPolicy: Never
-  backoffLimit: 2

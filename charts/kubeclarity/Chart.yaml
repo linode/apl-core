@@ -1,0 +1,19 @@
+apiVersion: v2
+name: kubeclarity
+appVersion: 2.3.0
+description: Charts for KubeClarity deployment.
+version: 2.3.0
+home: https://github.com/openclarity/kubeclarity
+icon: https://github.com/openclarity/kubeclarity/raw/main/images/kubeclarity-logo.png
+sources:
+  - https://github.com/openclarity/kubeclarity
+maintainers:
+  - name: KubeClarity
+    url: https://github.com/openclarity/kubeclarity
+type: application
+dependencies:
+  - name: postgresql
+    version: "10.12.2"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kubeclarity-postgresql.enabled
+    alias: kubeclarity-postgresql

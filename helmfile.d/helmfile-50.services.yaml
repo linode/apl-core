@@ -22,7 +22,7 @@ releases:
     <<: *default
   - name: httpbin
     installed: {{ $a | get "httpbin.enabled" }}
-    namespace: shared
+    namespace: httpbin
     <<: *default
   - name: kubeapps
     installed: {{ $a | get "kubeapps.enabled" }}
@@ -34,7 +34,12 @@ releases:
   - name: gitea
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
-    chart: ../charts/gitea
     labels:
       pkg: gitea
+    <<: *default
+  - name: kubeclarity
+    installed: {{ $a | get "kubeclarity.enabled" }}
+    namespace: kubeclarity
+    labels:
+      pkg: kubeclarity
     <<: *default

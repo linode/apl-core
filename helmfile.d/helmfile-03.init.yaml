@@ -30,7 +30,17 @@ releases:
     labels:
       pkg: kiali
     <<: *raw
-  - name: knative-init
+  - name: knative-serving-artifacts
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    chart: ../charts/raw
+    labels:
+      init: true
+      pkg: knative
+    values:
+      - ../values/knative/knative-serving-raw.gotmpl
+    <<: *preUpgrade
+  - name: knative-operator
     installed: {{ $a | get "knative.enabled" }}
     namespace: default
     labels:
