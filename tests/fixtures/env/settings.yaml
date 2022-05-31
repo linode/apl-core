@@ -35,9 +35,12 @@ ingress:
     classes:
         - className: private
           network: private
-          ipAddress: '10.0.0.9'
+          loadBalancerSubnet: subnet
         - className: net-a
           network: public
+          loadBalancerIP: '11.0.0.1'
+          loadBalancerRG: myrg
+          sourceIpAddressFiltering: '10.0.0.0/24'
 kms:
     sops:
         azure:
