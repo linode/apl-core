@@ -1,13 +1,5 @@
 {{- $v := .Values }}
 resources:
-  - apiVersion: security.istio.io/v1beta1
-    kind: PeerAuthentication
-    metadata:
-      name: default
-      namespace: knative-serving
-    spec:
-      mtls:
-        mode: PERMISSIVE
   {{- if $v._derived.untrustedCA }}
   - apiVersion: v1
     kind: Secret
