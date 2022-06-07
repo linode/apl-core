@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-<a href="https://marketplace.digitalocean.com/apps/otomi"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
+<a href="https://marketplace.digitalocean.com/apps/otomi?refcode=476bfcac9ec9&action=deploy"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
 </p>
 
 `Otomi` brings a full platform experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
