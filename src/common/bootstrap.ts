@@ -88,8 +88,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     // finally write back the new values without overwriting existing values
     await writeValues(newValues)
   } catch (e) {
-    d.log(e)
-    $.verbose = false
+    d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   }
   cd(env.ENV_DIR)
