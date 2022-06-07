@@ -14,3 +14,5 @@ To allow network segmentation of the ingress a user can define new ingress class
 To allow the keycloak to serve as an authentication gateway for services exposed behind both public and private LBs, the keycloak needs to be assigned to a public ingress class. If `platform` ingress class is private, then an additional public ingress class needs to be created. A public class can be assigned to keycloak at `apps.keycloak.ingressClassName`.
 
 To enable source IP filtering it is possible to define CIDRS at `sourceIpAddressFiltering` property for each ingress class
+
+To stay consistent with the design of ingress classes the old `nginx-ingress` helm release will be removed (if exists) whenever otomi apply command is called. See: `helmfile.d/helmfile-00.uninstall.yaml`.
