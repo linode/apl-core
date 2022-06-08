@@ -22,3 +22,4 @@ releases:
   - name: ingress-nginx
     installed: false
     namespace: ingress
+    chart: not-used
